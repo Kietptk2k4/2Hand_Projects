@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: auth-service
+
+  data:
+    redis:
+      host: redis-18424.crce194.ap-seast-1-1.ec2.cloud.redislabs.com
+      port: 18424
+      username: default
+      password: JbVl0PzxCqEIfurlaN0A0S36N2bkYZhJ
+      ssl: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+    properties:
+      security.protocol: SASL_SSL
+      sasl.mechanism: PLAIN
+
+      sasl.jaas.config: >
+        org.apache.kafka.common.security.plain.PlainLoginModule required
+        username="API_KEY"
+        password="API_SECRET";
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+    consumer:
+      group-id: auth-group
+      auto-offset-reset: earliest
