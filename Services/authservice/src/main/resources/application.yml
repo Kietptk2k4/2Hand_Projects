@@ -11,21 +11,16 @@ spring:
       ssl: true
 
   kafka:
-    bootstrap-servers: localhost:9092
-
-    properties:
-      security.protocol: SASL_SSL
-      sasl.mechanism: PLAIN
-
-      sasl.jaas.config: >
-        org.apache.kafka.common.security.plain.PlainLoginModule required
-        username="API_KEY"
-        password="API_SECRET";
-
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
 
     consumer:
       group-id: auth-group
       auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
