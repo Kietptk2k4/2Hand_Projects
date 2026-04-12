@@ -2,13 +2,21 @@ spring:
   application:
     name: auth-service
 
+  datasource:
+    url: jdbc:postgresql://localhost:5433/auth_service?options=-c%20TimeZone%3DUTC
+    username: kietne
+    password: 123456
+
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  
   data:
     redis:
-      host: redis-18424.crce194.ap-seast-1-1.ec2.cloud.redislabs.com
-      port: 18424
-      username: default
-      password: JbVl0PzxCqEIfurlaN0A0S36N2bkYZhJ
-      ssl: true
+      host: localhost
+      port: 6379
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
@@ -24,3 +32,25 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+  logging:
+  level:
+    org.springframework.security: DEBUG
+
+
+auth:
+  otp:
+    ttl-seconds: 300
+    max-attempts:  5
+
+  resend:
+    max-times: 3
+    window-seconds: 3600
+
+  rate-limit:
+    max-requests: 5
+    window-seconds: 60
+
+  cleanup:
+    retention-hours: 24
+    cron: "0 0 * * * *"

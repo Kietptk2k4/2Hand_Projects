@@ -1,4 +1,4 @@
-package main.java.com.twohands.authservice.infrastructure.message.kafka;
+package com.twohands.authservice.infrastructure.message.kafka;
 
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
