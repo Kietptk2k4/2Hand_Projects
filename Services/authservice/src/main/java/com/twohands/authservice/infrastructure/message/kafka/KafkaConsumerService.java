@@ -1,13 +1,17 @@
 package com.twohands.authservice.infrastructure.message.kafka;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 @Service
 public class KafkaConsumerService {
 
-    @KafkaListener(topics = "auth.events", groupId = "auth-group")
+    private static final Logger log = LoggerFactory.getLogger(KafkaConsumerService.class);
+
+    @KafkaListener(topics = "system.events", groupId = "auth-group")
     public void consume(String message) {
-        System.out.println("Received: " + message);
+        log.debug("Received event from system.events: {}", message);
     }
 }

@@ -3,20 +3,22 @@ spring:
     name: auth-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5433/auth_service?options=-c%20TimeZone%3DUTC
-    username: kietne
-    password: 123456
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/auth_service?options=-c%20TimeZone%3DUTC}
+    username: ${DB_USERNAME:kietne}
+    password: ${DB_PASSWORD:123456}
 
   jpa:
+    hibernate:
+      ddl-auto: update
     properties:
       hibernate:
         jdbc:
           time_zone: UTC
-  
+
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
@@ -33,15 +35,15 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
-  logging:
+logging:
   level:
     org.springframework.security: DEBUG
-
+    com.twohands.authservice: INFO
 
 auth:
   otp:
     ttl-seconds: 300
-    max-attempts:  5
+    max-attempts: 5
 
   resend:
     max-times: 3
@@ -50,6 +52,9 @@ auth:
   rate-limit:
     max-requests: 5
     window-seconds: 60
+
+  outbox:
+    poll-delay-ms: 5000
 
   cleanup:
     retention-hours: 24

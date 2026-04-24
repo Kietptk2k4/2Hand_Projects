@@ -1,71 +1,37 @@
 package com.twohands.authservice.domain.user;
 
+import com.twohands.authservice.domain.login.LoginLog;
+import com.twohands.authservice.domain.oauth.OAuthAccount;
 import com.twohands.authservice.domain.role.Role;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+import com.twohands.authservice.domain.session.RefreshTokenSession;
+
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
-@Entity
-@Table(name = "users")
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
-    @Column(name = "email")
     private String email;
-
-    @Column(name = "email_normalized")
     private String emailNormalized;
-
-    @Column(name = "phone")
     private String phone;
-
-    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(columnDefinition = "user_status")
     private UserStatus status;
-
-    @Column(name = "email_verified")
     private Boolean emailVerified;
-
-    @Column(name = "phone_verified")
     private Boolean phoneVerified;
-
-    @Column(name = "password_changed_at")
-    private LocalDateTime passwordChangedAt;
-
-    @Column(name = "last_login_at")
-    private LocalDateTime lastLoginAt;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Instant passwordChangedAt;
+    private Instant lastLoginAt;
+    private Instant createdAt;
+    private Instant updatedAt;
     private Set<Role> roles = new HashSet<>();
+    private UserSettings settings;
+    private UserProfile profile;
+    private List<LoginLog> loginLogs = new ArrayList<>();
+    private List<OAuthAccount> oauthAccounts = new ArrayList<>();
+    private List<RefreshTokenSession> refreshTokenSessions = new ArrayList<>();
 
     public User() {
     }
@@ -134,35 +100,35 @@ public class User {
         this.phoneVerified = phoneVerified;
     }
 
-    public LocalDateTime getPasswordChangedAt() {
+    public Instant getPasswordChangedAt() {
         return passwordChangedAt;
     }
 
-    public void setPasswordChangedAt(LocalDateTime passwordChangedAt) {
+    public void setPasswordChangedAt(Instant passwordChangedAt) {
         this.passwordChangedAt = passwordChangedAt;
     }
 
-    public LocalDateTime getLastLoginAt() {
+    public Instant getLastLoginAt() {
         return lastLoginAt;
     }
 
-    public void setLastLoginAt(LocalDateTime lastLoginAt) {
+    public void setLastLoginAt(Instant lastLoginAt) {
         this.lastLoginAt = lastLoginAt;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
+    public Instant getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
+    public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
     }
 
@@ -172,5 +138,45 @@ public class User {
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    public UserSettings getSettings() {
+        return settings;
+    }
+
+    public void setSettings(UserSettings settings) {
+        this.settings = settings;
+    }
+
+    public UserProfile getProfile() {
+        return profile;
+    }
+
+    public void setProfile(UserProfile profile) {
+        this.profile = profile;
+    }
+
+    public List<LoginLog> getLoginLogs() {
+        return loginLogs;
+    }
+
+    public void setLoginLogs(List<LoginLog> loginLogs) {
+        this.loginLogs = loginLogs;
+    }
+
+    public List<OAuthAccount> getOauthAccounts() {
+        return oauthAccounts;
+    }
+
+    public void setOauthAccounts(List<OAuthAccount> oauthAccounts) {
+        this.oauthAccounts = oauthAccounts;
+    }
+
+    public List<RefreshTokenSession> getRefreshTokenSessions() {
+        return refreshTokenSessions;
+    }
+
+    public void setRefreshTokenSessions(List<RefreshTokenSession> refreshTokenSessions) {
+        this.refreshTokenSessions = refreshTokenSessions;
     }
 }
