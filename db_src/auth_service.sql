@@ -189,6 +189,37 @@ CREATE TABLE refresh_token_sessions (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+
+-- Create Enum for Outbox Status to ensure data integrity
+-- Tạo Enum cho trạng thái Outbox để đảm bảo tính toàn vẹn dữ liệu
+CREATE TYPE outbox_status AS ENUM (
+    'PENDING', 
+    'PROCESSING', 
+    'PUBLISHED', 
+    'FAILED'
+);
+
+CREATE TABLE outbox_events (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    
+    event_type TEXT NOT NULL,
+    source TEXT NOT NULL,
+    payload TEXT NOT NULL, -- Storing JSON data
+    
+    status outbox_status DEFAULT 'PENDING',
+    
+    retry_count INT DEFAULT 0,
+    
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    published_at TIMESTAMP WITH TIME ZONE,
+    
+    -- Error message if the event fails to publish
+    last_error TEXT 
+);
+
+-- Indexes for optimized polling by the background Worker
+-- Các chỉ mục để tối ưu việc quét bảng của Worker chạy ngầm
+CREATE INDEX idx_outbox_status_created ON outbox_events(status, created_at) WHERE status = 'PENDING';
 CREATE INDEX idx_users_email_norm ON users(email_normalized);
 CREATE INDEX idx_users_phone_norm ON users(phone_normalized);
 

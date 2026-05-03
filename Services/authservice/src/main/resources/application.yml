@@ -52,6 +52,21 @@ auth:
   rate-limit:
     max-requests: 5
     window-seconds: 60
+    login:
+      max-requests: ${RATE_LIMIT_LOGIN_MAX_REQUESTS:5}
+      window-seconds: ${RATE_LIMIT_LOGIN_WINDOW_SECONDS:60}
+    refresh:
+      max-requests: ${RATE_LIMIT_REFRESH_MAX_REQUESTS:10}
+      window-seconds: ${RATE_LIMIT_REFRESH_WINDOW_SECONDS:60}
+    session:
+      max-requests: ${RATE_LIMIT_SESSION_MAX_REQUESTS:20}
+      window-seconds: ${RATE_LIMIT_SESSION_WINDOW_SECONDS:60}
+
+  security:
+    failed-login-lock-threshold: ${SECURITY_FAILED_LOGIN_LOCK_THRESHOLD:5}
+    failed-login-window-seconds: ${SECURITY_FAILED_LOGIN_WINDOW_SECONDS:900}
+    suspicious-reuse-lock-threshold: ${SECURITY_SUSPICIOUS_REUSE_LOCK_THRESHOLD:2}
+    suspicious-reuse-window-seconds: ${SECURITY_SUSPICIOUS_REUSE_WINDOW_SECONDS:900}
 
   outbox:
     poll-delay-ms: 5000
@@ -59,3 +74,19 @@ auth:
   cleanup:
     retention-hours: 24
     cron: "0 0 * * * *"
+
+  jwt:
+    secret: ${JWT_SECRET:change-this-to-a-256-bit-secret-key-in-production!!}
+    issuer: ${JWT_ISSUER:auth-service}
+    access-token-expiration-seconds: ${JWT_ACCESS_EXPIRATION_SECONDS:900}
+    refresh-token-expiration-seconds: ${JWT_REFRESH_EXPIRATION_SECONDS:2592000}
+
+  reset:
+    ttl-seconds: ${RESET_TOKEN_TTL_SECONDS:900}
+
+  oauth:
+    google:
+      client-id: ${GOOGLE_CLIENT_ID:}
+    facebook:
+      app-id: ${FACEBOOK_APP_ID:}
+      app-secret: ${FACEBOOK_APP_SECRET:}
