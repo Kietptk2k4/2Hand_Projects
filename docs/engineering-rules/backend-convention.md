@@ -1,74 +1,565 @@
-# Backend Development Convention - Dự án 2Hands
+# backend-convention.md
 
-Tài liệu này quy định các tiêu chuẩn lập trình và cấu trúc dự án dựa trên kiến trúc Microservices của hệ thống 2Hands. Mọi thành viên phát triển Backend cần tuân thủ nghiêm ngặt các quy tắc dưới đây để đảm bảo tính đồng nhất, sạch sẽ và dễ bảo trì cho toàn bộ codebase.
+# Backend Development Convention - 2Hands
 
-## 1. Cấu trúc Package (Project Structure)
+Version: 1.0
+Architecture Style:
 
-Dựa trên cấu trúc thực tế của dự án, mỗi Microservice phải được tổ chức theo các package chức năng như sau:
+* Domain-Centric Architecture
+* Clean Architecture (DDD-lite)
+* Modular Monolith
+* Microservice-ready
+* Event-Driven Architecture
 
-| Package | Trách nhiệm |
-| :--- | :--- |
-| **`common`** | Chứa các logic, helper dùng chung trên toàn service (ví dụ: StringUtils, DateUtils chung). |
-| **`configs`** | Các lớp cấu hình hệ thống: Security, CORS, Swagger/OpenAPI, Database, Redis... |
-| **`constants`** | Chứa các hằng số tĩnh, mã lỗi nội bộ, hoặc các chuỗi cố định không thay đổi. |
-| **`controllers`** | Tầng tiếp nhận request. Chỉnh định tuyến URL, validate format và gọi Service. |
-| **`dtos`** | Chứa các đối tượng vận chuyển dữ liệu (Request/Response). Tuyệt đối không để logic tại đây. |
-| **`entities`** | Các class map 1-1 với các bảng trong Database (JPA/Hibernate hoặc MongoDB). |
-| **`enums`** | Định nghĩa các tập giá trị cố định (ví dụ: UserStatus, OrderStatus, PaymentMethod). |
-| **`exceptions`** | Chứa các Custom Exception và `GlobalExceptionHandler` để xử lý lỗi tập trung. |
-| **`mappers`** | Chuyển đổi dữ liệu qua lại giữa Entity và DTO (Khuyến khích dùng MapStruct). |
-| **`repositories`** | Tầng truy cập dữ liệu (Spring Data JPA / MongoDB Repository). |
-| **`services`** | Chứa các Interface định nghĩa nghiệp vụ. |
-| **`services.impl`** | Nơi triển khai (Implementation) chi tiết các logic nghiệp vụ của Interface. |
-| **`utils`** | Các công cụ tiện ích nhỏ phục vụ cho các logic cục bộ trong service. |
+---
 
-## 2. Quy tắc Giao tiếp giữa các Tầng (Layer Communication)
+# 1. Purpose
 
-Để tránh tình trạng "Spaghetti code", luồng dữ liệu phải đi theo một chiều:
-1.  **Client** gọi đến **Controller**.
-2.  **Controller** CHỈ được phép gọi **Service**. Không được gọi trực tiếp Repository.
-3.  **Service** xử lý nghiệp vụ, gọi **Repository** để truy xuất dữ liệu.
-4.  **Service** trả kết quả về **Controller** dưới dạng **DTO**.
-5.  **Controller** trả DTO về cho **Client**.
+Tài liệu này quy định:
 
-**Lưu ý cực kỳ quan trọng:** Không bao giờ trả đối tượng `Entity` trực tiếp ra ngoài API. Phải luôn qua bước mapping sang `DTO`.
+* coding standards
+* package structure
+* architecture rules
+* naming conventions
+* engineering practices
 
-## 3. Quản lý Transaction & Outbox Pattern
+cho toàn bộ backend system của dự án 2Hands.
 
-Vì hệ thống sử dụng kiến trúc Event-Driven qua Outbox Pattern:
-* Các phương thức trong `service.impl` có thao tác ghi dữ liệu (Save/Update/Delete) kèm theo phát Event bắt buộc phải có annotation `@Transactional`.
-* **Thứ tự thực hiện:** `Mở Transaction -> Thực thi logic -> Ghi Entity chính -> Ghi record vào bảng outbox_events -> Commit`.
-* Việc đẩy event lên Message Broker (RabbitMQ/Kafka) sẽ do một Worker riêng biệt đảm nhận (đọc từ bảng `outbox_events`).
+Mục tiêu:
 
-## 4. Xử lý Lỗi (Exception Handling)
+* consistency giữa services
+* maintainability
+* scalability
+* clean code
+* dễ onboarding
+* dễ tách microservice trong tương lai
 
-* Sử dụng **Custom Exceptions** (ví dụ: `UserNotFoundException`, `InsufficientStockException`) thay vì các exception chung chung của Java.
-* Tất cả lỗi phải được bắt tại `GlobalExceptionHandler` và trả về cấu trúc Response chuẩn:
-    ```json
-    {
-      "success": false,
-      "code": "ERROR_AUTH_001",
-      "message": "Mô tả lỗi thân thiện",
-      "timestamp": "2023-10-27T..."
-    }
-    ```
+---
 
-## 5. Quy tắc Đặt tên (Naming Conventions)
+# 2. Standard Project Structure
 
-* **Class/Interface:** PascalCase (ví dụ: `AuthService`, `OrderController`).
-* **Method/Variable:** camelCase (ví dụ: `lastLoginAt`, `processOrder()`).
-* **Repository:** Phải kết thúc bằng hậu tố `Repository` (ví dụ: `UserRepository`).
-* **Service Interface:** Tên trực tiếp (ví dụ: `ProductService`).
-* **Service Impl:** Tên Interface + `Impl` (ví dụ: `ProductServiceImpl`).
-* **DTO:** Kết thúc bằng `Request` hoặc `Response` (ví dụ: `CreateUserRequest`, `LoginResponse`).
+Mỗi service phải tuân theo structure sau:
 
-## 6. Bảo mật (Security)
+```txt
+src/main/java/com/twohands/{service-name}
 
-* Không lưu mật khẩu dạng bản rõ (plaintext). Luôn sử dụng Bcrypt để hash.
-* Mọi API (trừ Login/Register) phải được bảo vệ bởi JWT. 
-* Luôn kiểm tra quyền sở hữu tài nguyên (Owner check): Ví dụ: User A không được phép cập nhật địa chỉ của User B dù biết `address_id`.
+├── application
+├── delivery
+├── domain
+├── infrastructure
+├── common
+├── config
+├── constant
+├── exception
+└── env
+```
 
-## 7. Logging
+---
 
-* Sử dụng `SLF4J` với log level phù hợp (`INFO` cho luồng chính, `ERROR` cho lỗi, `DEBUG` khi cần dev).
-* Tuyệt đối không log các thông tin nhạy cảm như Mật khẩu, Token, OTP trong file log.
+# 3. Layer Responsibilities
+
+## 3.1 application
+
+Application layer chứa:
+
+* use case
+* orchestration logic
+* transaction boundary
+* coordination giữa domain và infrastructure
+
+Ví dụ:
+
+```txt
+application/auth
+ ├── login
+ ├── register
+ ├── verify
+ └── refresh
+```
+
+Ví dụ class:
+
+```txt
+LoginUseCase
+RegisterUserUseCase
+VerifyEmailUseCase
+```
+
+---
+
+## 3.2 domain
+
+Domain layer là trung tâm business system.
+
+Chỉ chứa:
+
+* domain entity
+* value object
+* business rule
+* domain service
+* repository interface
+
+Ví dụ:
+
+```txt
+domain
+ ├── user
+ ├── role
+ ├── permission
+ ├── session
+ └── oauth
+```
+
+Domain layer KHÔNG được phụ thuộc:
+
+* Spring Framework
+* Kafka
+* Redis
+* HTTP
+* Security Framework
+* Infrastructure implementation
+
+---
+
+## 3.3 delivery
+
+Delivery layer expose API ra bên ngoài.
+
+Ví dụ:
+
+```txt
+delivery/http
+ ├── auth
+ │    ├── request
+ │    ├── response
+ │    ├── mapper
+ │    └── AuthController
+```
+
+Controller chỉ được:
+
+* nhận request
+* validate request format
+* gọi application layer
+* trả response
+
+Controller KHÔNG được:
+
+* chứa business logic
+* gọi repository trực tiếp
+* thao tác transaction
+
+---
+
+## 3.4 infrastructure
+
+Infrastructure layer chứa technical implementation.
+
+Ví dụ:
+
+```txt
+infrastructure
+ ├── persistence
+ ├── cache
+ ├── security
+ ├── message
+ └── external
+```
+
+Bao gồm:
+
+* JPA
+* Redis
+* Kafka/RabbitMQ
+* JWT
+* External API
+* Security implementation
+
+---
+
+# 4. Dependency Rules
+
+Dependency chỉ được đi theo chiều:
+
+```txt
+delivery
+   ↓
+application
+   ↓
+domain
+   ↓
+infrastructure
+```
+
+Forbidden:
+
+* delivery gọi database trực tiếp
+* domain phụ thuộc framework
+* infrastructure gọi delivery
+* controller gọi repository
+
+---
+
+# 5. DTO Convention
+
+DTO chỉ được tồn tại trong delivery layer.
+
+Ví dụ:
+
+```txt
+delivery/http/auth/request/LoginRequest
+delivery/http/auth/response/LoginResponse
+```
+
+Naming:
+
+* Request DTO → `SomethingRequest`
+* Response DTO → `SomethingResponse`
+
+Forbidden:
+
+* business logic trong DTO
+* validation business trong DTO
+* expose entity trực tiếp
+
+---
+
+# 6. Repository Convention
+
+Repository interface đặt trong domain.
+
+Ví dụ:
+
+```txt
+domain/user/UserRepository
+```
+
+Repository implementation đặt trong infrastructure.
+
+Ví dụ:
+
+```txt
+infrastructure/persistence/repository/JpaUserRepository
+```
+
+---
+
+# 7. Mapper Convention
+
+Khuyến khích sử dụng:
+
+* MapStruct
+
+Ví dụ:
+
+```txt
+delivery/http/auth/mapper
+infrastructure/persistence/mapper
+```
+
+Mapper chỉ dùng để:
+
+* DTO ↔ Domain
+* Domain ↔ Persistence Entity
+
+Không chứa business logic.
+
+---
+
+# 8. Exception Handling
+
+Mỗi service bắt buộc có:
+
+```txt
+GlobalExceptionHandler
+```
+
+Response format chuẩn:
+
+```json
+{
+  "success": false,
+  "code": "AUTH_INVALID_CREDENTIAL",
+  "message": "Invalid credentials",
+  "timestamp": "2026-05-14T10:00:00Z"
+}
+```
+
+Custom Exception naming:
+
+```txt
+UserNotFoundException
+InvalidOtpException
+AccessDeniedException
+```
+
+Không sử dụng:
+
+* RuntimeException chung chung
+* Exception không có meaning business
+
+---
+
+# 9. Transaction Convention
+
+Mọi use case:
+
+* save/update/delete
+* publish event
+
+bắt buộc dùng:
+
+```java
+@Transactional
+```
+
+Transaction boundary phải nằm ở application layer.
+
+Ví dụ:
+
+```txt
+RegisterUserUseCase
+CreateOrderUseCase
+```
+
+---
+
+# 10. Outbox Pattern Convention
+
+Flow chuẩn:
+
+```txt
+BEGIN TRANSACTION
+    ↓
+Save Business Entity
+    ↓
+Save Outbox Event
+    ↓
+COMMIT
+```
+
+Event publisher không được publish trực tiếp trong controller.
+
+Worker riêng sẽ:
+
+* poll outbox table
+* publish event
+* update status
+
+---
+
+# 11. Security Convention
+
+## Password
+
+* Password phải hash bằng BCrypt
+* Không lưu plaintext password
+
+---
+
+## JWT
+
+Mọi protected API phải dùng JWT authentication.
+
+---
+
+## Authorization
+
+Bắt buộc validate:
+
+* ownership
+* role
+* permission
+
+Ví dụ:
+
+* User A không được update resource của User B
+
+---
+
+## Structure
+
+```txt
+infrastructure/security
+ ├── jwt
+ ├── filter
+ ├── config
+ ├── password
+ └── context
+```
+
+---
+
+# 12. Logging Convention
+
+Framework:
+
+* SLF4J
+
+Log levels:
+
+| Level | Usage                 |
+| ----- | --------------------- |
+| INFO  | Business flow chính   |
+| WARN  | Hành vi bất thường    |
+| ERROR | Exception/failure     |
+| DEBUG | Development debugging |
+
+Không log:
+
+* password
+* token
+* refresh token
+* otp
+* secret key
+
+---
+
+# 13. Naming Convention
+
+| Component  | Convention       |
+| ---------- | ---------------- |
+| Class      | PascalCase       |
+| Method     | camelCase        |
+| Variable   | camelCase        |
+| Package    | lowercase        |
+| Constant   | UPPER_SNAKE_CASE |
+| Enum       | PascalCase       |
+| Enum Value | UPPER_SNAKE_CASE |
+
+---
+
+# 14. Use Case Naming
+
+Ví dụ:
+
+```txt
+LoginUseCase
+RegisterUserUseCase
+CreateOrderUseCase
+VerifyEmailUseCase
+```
+
+Không dùng:
+
+* GenericService
+* BaseService
+* AbstractCrudManager
+
+trừ khi có use-case thực tế.
+
+---
+
+# 15. Event Naming Convention
+
+Domain event:
+
+```txt
+UserRegisteredEvent
+OrderCreatedEvent
+PaymentCompletedEvent
+```
+
+Kafka/RabbitMQ topic:
+
+```txt
+auth.user.registered
+commerce.order.created
+notification.email.sent
+```
+
+---
+
+# 16. Redis Key Convention
+
+Format:
+
+```txt
+{service}:{domain}:{purpose}:{id}
+```
+
+Ví dụ:
+
+```txt
+auth:otp:email:123
+auth:ratelimit:login:ip
+commerce:product:stock:15
+```
+
+---
+
+# 17. API Response Convention
+
+Success response:
+
+```json
+{
+  "success": true,
+  "data": {},
+  "meta": {}
+}
+```
+
+Error response:
+
+```json
+{
+  "success": false,
+  "code": "AUTH_INVALID_OTP",
+  "message": "OTP is invalid",
+  "timestamp": "2026-05-14T10:00:00Z"
+}
+```
+
+---
+
+# 18. Testing Convention
+
+Structure:
+
+```txt
+src/test
+ ├── unit
+ ├── integration
+ └── e2e
+```
+
+Rules:
+
+* unit test cho business logic quan trọng
+* integration test cho DB/message broker
+* không test getter/setter trivial
+
+---
+
+# 19. Clean Code Rules
+
+Bắt buộc:
+
+* class đúng responsibility
+* method ngắn gọn
+* không God Service
+* không business logic trong controller
+* không generic abstraction vô nghĩa
+
+Không over-engineer:
+
+* không interface mọi thứ
+* không abstraction giả
+* không BaseEverything pattern
+
+---
+
+# 20. Final Goal
+
+Codebase phải:
+
+* clean
+* scalable
+* maintainable
+* consistent
+* microservice-ready
+* dễ onboarding
+* dễ evolve trong tương lai
+
+Mọi service trong hệ thống phải tuân thủ convention này để đảm bảo consistency toàn hệ thống.
