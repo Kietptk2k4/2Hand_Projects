@@ -29,7 +29,7 @@
         </root>
     </springProfile>
 
-    <springProfile name="!dev & !prod">
+    <springProfile name="!dev,!prod">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
         </root>
