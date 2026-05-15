@@ -6,6 +6,8 @@ public enum ErrorCode {
     INTERNAL_ERROR("AUTH-500", HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error"),
     BAD_REQUEST("AUTH-400", HttpStatus.BAD_REQUEST, "Invalid request"),
     VALIDATION_ERROR("AUTH-400-VALIDATION", HttpStatus.BAD_REQUEST, "Validation failed"),
+    DUPLICATE_EMAIL("AUTH-409-DUPLICATE-EMAIL", HttpStatus.CONFLICT, "Email da duoc su dung."),
+    REGISTER_RATE_LIMITED("AUTH-429-REGISTER", HttpStatus.TOO_MANY_REQUESTS, "Ban thao tac qua nhanh, vui long thu lai sau."),
     UNAUTHORIZED("AUTH-401", HttpStatus.UNAUTHORIZED, "Authentication required"),
     FORBIDDEN("AUTH-403", HttpStatus.FORBIDDEN, "Access denied"),
     RESOURCE_NOT_FOUND("AUTH-404", HttpStatus.NOT_FOUND, "Resource not found"),

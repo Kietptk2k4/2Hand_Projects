@@ -44,6 +44,20 @@ public final class UserProfile {
         return new UserProfile(userId, displayName, null, null, null, Map.of(), false, now, now);
     }
 
+    public static UserProfile rehydrate(
+            UUID userId,
+            String displayName,
+            String avatarUrl,
+            String bio,
+            String website,
+            Map<String, String> socialLinks,
+            boolean isPrivate,
+            Instant createdAt,
+            Instant updatedAt
+    ) {
+        return new UserProfile(userId, displayName, avatarUrl, bio, website, socialLinks, isPrivate, createdAt, updatedAt);
+    }
+
     public void updateBasicInfo(String displayName, String bio, String website, Map<String, String> socialLinks, Instant now) {
         this.displayName = normalize(displayName);
         this.bio = normalizeNullable(bio);

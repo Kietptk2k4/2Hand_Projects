@@ -23,6 +23,10 @@ public final class UserSettings {
         return new UserSettings(userId, AppearanceMode.SYSTEM, now, now);
     }
 
+    public static UserSettings rehydrate(UUID userId, AppearanceMode appearanceMode, Instant createdAt, Instant updatedAt) {
+        return new UserSettings(userId, appearanceMode, createdAt, updatedAt);
+    }
+
     public void updateAppearanceMode(AppearanceMode mode, Instant now) {
         if (mode == null) {
             throw new UserDomainError("USER_APPEARANCE_MODE_REQUIRED", "Appearance mode is required");

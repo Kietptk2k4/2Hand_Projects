@@ -47,6 +47,13 @@ jwt:
   access-expiration: ${JWT_ACCESS_EXPIRATION:900000}
   refresh-expiration: ${JWT_REFRESH_EXPIRATION:2592000000}
 
+auth:
+  register:
+    verify-token-ttl-seconds: ${AUTH_REGISTER_VERIFY_TOKEN_TTL_SECONDS:900}
+    rate-limit:
+      max-attempts: ${AUTH_REGISTER_RATE_LIMIT_MAX_ATTEMPTS:5}
+      window-seconds: ${AUTH_REGISTER_RATE_LIMIT_WINDOW_SECONDS:3600}
+
 management:
   endpoints:
     web:

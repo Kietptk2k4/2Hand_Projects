@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:auth_service_test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: false
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema-test.sql
+
+auth:
+  register:
+    rate-limit:
+      max-attempts: 10000
+      window-seconds: 3600
+
+jwt:
+  access-secret: test-access-secret-key-minimum-32-characters-123456
+  refresh-secret: test-refresh-secret-key-minimum-32-characters-1234
+
+logging:
+  level:
+    root: WARN

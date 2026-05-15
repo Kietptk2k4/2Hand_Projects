@@ -1,10 +1,9 @@
 package com.twohands.auth_service.exception;
 
-import com.twohands.auth_service.common.dto.ErrorResponse;
-import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.MDC;
+import com.twohands.auth_service.common.dto.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
@@ -18,58 +17,64 @@ import java.util.List;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(AppException.class)
-    public ResponseEntity<ErrorResponse> handleAppException(AppException ex, HttpServletRequest request) {
-        ErrorCode errorCode = ex.getErrorCode();
-        return build(errorCode, ex.getMessage(), request, null);
-    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest request) {
-        List<ErrorResponse.FieldViolation> violations = ex.getBindingResult()
+    public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException ex) {
+        List<ApiResponse.ApiError> errors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(this::toViolation)
+                .map(this::toApiError)
                 .toList();
 
-        return build(ErrorCode.VALIDATION_ERROR, ErrorCode.VALIDATION_ERROR.defaultMessage(), request, violations);
+        return buildApi(ErrorCode.VALIDATION_ERROR.status(), ErrorCode.VALIDATION_ERROR.defaultMessage(), errors);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUnreadableBody(HttpMessageNotReadableException ex) {
+        return buildApi(HttpStatus.BAD_REQUEST, "Invalid request payload", null);
+    }
+
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAppException(AppException ex) {
+        ErrorCode errorCode = ex.getErrorCode();
+        List<ApiResponse.ApiError> errors = null;
+        if (ex.getField() != null && ex.getReason() != null) {
+            errors = List.of(new ApiResponse.ApiError(ex.getField(), ex.getReason()));
+        }
+        return buildApi(errorCode.status(), ex.getMessage(), errors);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex, HttpServletRequest request) {
-        return build(ErrorCode.UNAUTHORIZED, "Invalid username or password", request, null);
+    public ResponseEntity<ApiResponse<Void>> handleBadCredentials(BadCredentialsException ex) {
+        return buildApi(ErrorCode.UNAUTHORIZED.status(), "Invalid username or password", null);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
-        return build(ErrorCode.FORBIDDEN, ErrorCode.FORBIDDEN.defaultMessage(), request, null);
+    public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException ex) {
+        return buildApi(ErrorCode.FORBIDDEN.status(), ErrorCode.FORBIDDEN.defaultMessage(), null);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleUnknown(Exception ex, HttpServletRequest request) {
-        return build(ErrorCode.INTERNAL_ERROR, ErrorCode.INTERNAL_ERROR.defaultMessage(), request, null);
+    public ResponseEntity<ApiResponse<Void>> handleUnknown(Exception ex) {
+        return buildApi(ErrorCode.INTERNAL_ERROR.status(), ErrorCode.INTERNAL_ERROR.defaultMessage(), null);
     }
 
-    private ResponseEntity<ErrorResponse> build(
-            ErrorCode errorCode,
+    private ResponseEntity<ApiResponse<Void>> buildApi(
+            HttpStatus status,
             String message,
-            HttpServletRequest request,
-            List<ErrorResponse.FieldViolation> errors
+            List<ApiResponse.ApiError> errors
     ) {
-        HttpStatus status = errorCode.status();
-        ErrorResponse response = new ErrorResponse(
-                errorCode.code(),
-                message,
+        ApiResponse<Void> response = new ApiResponse<>(
                 status.value(),
-                request.getRequestURI(),
+                false,
+                message,
+                null,
                 errors,
-                Instant.now(),
-                MDC.get("traceId")
+                Instant.now()
         );
         return ResponseEntity.status(status).body(response);
     }
 
-    private ErrorResponse.FieldViolation toViolation(FieldError fieldError) {
-        return new ErrorResponse.FieldViolation(fieldError.getField(), fieldError.getDefaultMessage());
+    private ApiResponse.ApiError toApiError(FieldError fieldError) {
+        return new ApiResponse.ApiError(fieldError.getField(), fieldError.getDefaultMessage());
     }
 }

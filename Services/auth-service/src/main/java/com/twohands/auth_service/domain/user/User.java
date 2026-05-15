@@ -58,6 +58,26 @@ public final class User {
         return user;
     }
 
+    public static User rehydrate(
+            UUID id,
+            EmailAddress email,
+            PasswordHash passwordHash,
+            UserStatus status,
+            boolean emailVerified,
+            boolean phoneVerified,
+            Instant lastLoginAt,
+            Instant passwordChangedAt,
+            Instant deletedAt,
+            Instant createdAt,
+            Instant updatedAt
+    ) {
+        User user = new User(id, email, passwordHash, status, emailVerified, phoneVerified, createdAt, updatedAt);
+        user.lastLoginAt = lastLoginAt;
+        user.passwordChangedAt = passwordChangedAt;
+        user.deletedAt = deletedAt;
+        return user;
+    }
+
     public static User registerWithOAuth(UUID id, EmailAddress email, Instant now) {
         User user = new User(id, email, PasswordHash.of("OAUTH_NO_PASSWORD"), UserStatus.ACTIVE, true, false, now, now);
         user.pendingEvents.add(new UserCreatedEvent(id, email.normalizedValue(), UserStatus.ACTIVE, now));
