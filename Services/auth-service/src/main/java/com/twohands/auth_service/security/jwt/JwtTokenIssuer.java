@@ -49,6 +49,20 @@ public class JwtTokenIssuer {
         return new TokenPair(accessToken, refreshToken, accessExpiresAt, refreshExpiresAt, accessExpirationMillis / 1000);
     }
 
+    public AccessTokenOnly issueAccessToken(UUID userId, String email, String status, Instant now) {
+        Instant accessExpiresAt = now.plusMillis(accessExpirationMillis);
+        String accessToken = Jwts.builder()
+                .subject(userId.toString())
+                .claim("email", email)
+                .claim("status", status)
+                .claim("roles", List.of("USER"))
+                .issuedAt(java.util.Date.from(now))
+                .expiration(java.util.Date.from(accessExpiresAt))
+                .signWith(accessSecretKey)
+                .compact();
+        return new AccessTokenOnly(accessToken, accessExpiresAt, accessExpirationMillis / 1000);
+    }
+
     private String generateOpaqueRefreshToken() {
         byte[] bytes = new byte[48];
         secureRandom.nextBytes(bytes);
@@ -60,6 +74,13 @@ public class JwtTokenIssuer {
             String refreshToken,
             Instant accessExpiresAt,
             Instant refreshExpiresAt,
+            long accessExpiresInSeconds
+    ) {
+    }
+
+    public record AccessTokenOnly(
+            String accessToken,
+            Instant accessExpiresAt,
             long accessExpiresInSeconds
     ) {
     }

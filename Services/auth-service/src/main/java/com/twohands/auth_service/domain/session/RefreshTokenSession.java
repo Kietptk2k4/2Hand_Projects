@@ -84,7 +84,7 @@ public final class RefreshTokenSession {
         if (status != SessionStatus.ACTIVE) {
             throw new SessionDomainError("SESSION_NOT_ACTIVE", "Refresh token session is not active");
         }
-        if (expiresAt.isBefore(now)) {
+        if (!expiresAt.isAfter(now)) {
             throw new SessionDomainError("SESSION_EXPIRED", "Refresh token session is expired");
         }
     }

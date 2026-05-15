@@ -1,11 +1,16 @@
 package com.twohands.auth_service.delivery.http.auth;
 
+import com.twohands.auth_service.application.auth.refresh.RefreshAccessTokenCommand;
+import com.twohands.auth_service.application.auth.refresh.RefreshAccessTokenResult;
+import com.twohands.auth_service.application.auth.refresh.RefreshAccessTokenUseCase;
 import com.twohands.auth_service.application.auth.login.LoginUserCommand;
 import com.twohands.auth_service.application.auth.login.LoginUserResult;
 import com.twohands.auth_service.application.auth.login.LoginUserUseCase;
 import com.twohands.auth_service.common.dto.ApiResponse;
 import com.twohands.auth_service.delivery.http.auth.request.LoginRequest;
+import com.twohands.auth_service.delivery.http.auth.request.RefreshAccessTokenRequest;
 import com.twohands.auth_service.delivery.http.auth.response.LoginResponse;
+import com.twohands.auth_service.delivery.http.auth.response.RefreshAccessTokenResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -21,9 +26,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class LoginController {
 
     private final LoginUserUseCase loginUserUseCase;
+    private final RefreshAccessTokenUseCase refreshAccessTokenUseCase;
 
-    public LoginController(LoginUserUseCase loginUserUseCase) {
+    public LoginController(
+            LoginUserUseCase loginUserUseCase,
+            RefreshAccessTokenUseCase refreshAccessTokenUseCase
+    ) {
         this.loginUserUseCase = loginUserUseCase;
+        this.refreshAccessTokenUseCase = refreshAccessTokenUseCase;
     }
 
     @PostMapping("/login")
@@ -55,6 +65,28 @@ public class LoginController {
                 .body(ApiResponse.success(
                         HttpStatus.OK.value(),
                         loginUserUseCase.loginSuccessMessage(),
+                        response
+                ));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<RefreshAccessTokenResponse>> refresh(
+            @Valid @RequestBody RefreshAccessTokenRequest request,
+            HttpServletRequest httpServletRequest
+    ) {
+        RefreshAccessTokenResult result = refreshAccessTokenUseCase.execute(
+                new RefreshAccessTokenCommand(request.refreshToken(), httpServletRequest.getRemoteAddr())
+        );
+
+        RefreshAccessTokenResponse response = new RefreshAccessTokenResponse(
+                result.accessToken(),
+                result.expiresIn()
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        refreshAccessTokenUseCase.refreshSuccessMessage(),
                         response
                 ));
     }
