@@ -61,6 +61,10 @@ auth:
     rate-limit:
       max-attempts: ${AUTH_REFRESH_RATE_LIMIT_MAX_ATTEMPTS:20}
       window-seconds: ${AUTH_REFRESH_RATE_LIMIT_WINDOW_SECONDS:60}
+  logout:
+    rate-limit:
+      max-attempts: ${AUTH_LOGOUT_RATE_LIMIT_MAX_ATTEMPTS:30}
+      window-seconds: ${AUTH_LOGOUT_RATE_LIMIT_WINDOW_SECONDS:60}
 
 management:
   endpoints:

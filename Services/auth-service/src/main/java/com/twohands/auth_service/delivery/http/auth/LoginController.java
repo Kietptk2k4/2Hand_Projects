@@ -3,11 +3,14 @@ package com.twohands.auth_service.delivery.http.auth;
 import com.twohands.auth_service.application.auth.refresh.RefreshAccessTokenCommand;
 import com.twohands.auth_service.application.auth.refresh.RefreshAccessTokenResult;
 import com.twohands.auth_service.application.auth.refresh.RefreshAccessTokenUseCase;
+import com.twohands.auth_service.application.auth.logout.LogoutCommand;
+import com.twohands.auth_service.application.auth.logout.LogoutUseCase;
 import com.twohands.auth_service.application.auth.login.LoginUserCommand;
 import com.twohands.auth_service.application.auth.login.LoginUserResult;
 import com.twohands.auth_service.application.auth.login.LoginUserUseCase;
 import com.twohands.auth_service.common.dto.ApiResponse;
 import com.twohands.auth_service.delivery.http.auth.request.LoginRequest;
+import com.twohands.auth_service.delivery.http.auth.request.LogoutRequest;
 import com.twohands.auth_service.delivery.http.auth.request.RefreshAccessTokenRequest;
 import com.twohands.auth_service.delivery.http.auth.response.LoginResponse;
 import com.twohands.auth_service.delivery.http.auth.response.RefreshAccessTokenResponse;
@@ -27,13 +30,16 @@ public class LoginController {
 
     private final LoginUserUseCase loginUserUseCase;
     private final RefreshAccessTokenUseCase refreshAccessTokenUseCase;
+    private final LogoutUseCase logoutUseCase;
 
     public LoginController(
             LoginUserUseCase loginUserUseCase,
-            RefreshAccessTokenUseCase refreshAccessTokenUseCase
+            RefreshAccessTokenUseCase refreshAccessTokenUseCase,
+            LogoutUseCase logoutUseCase
     ) {
         this.loginUserUseCase = loginUserUseCase;
         this.refreshAccessTokenUseCase = refreshAccessTokenUseCase;
+        this.logoutUseCase = logoutUseCase;
     }
 
     @PostMapping("/login")
@@ -88,6 +94,24 @@ public class LoginController {
                         HttpStatus.OK.value(),
                         refreshAccessTokenUseCase.refreshSuccessMessage(),
                         response
+                ));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @Valid @RequestBody LogoutRequest request,
+            HttpServletRequest httpServletRequest
+    ) {
+        logoutUseCase.execute(new LogoutCommand(
+                request.refreshToken(),
+                httpServletRequest.getRemoteAddr()
+        ));
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        logoutUseCase.logoutSuccessMessage(),
+                        null
                 ));
     }
 }

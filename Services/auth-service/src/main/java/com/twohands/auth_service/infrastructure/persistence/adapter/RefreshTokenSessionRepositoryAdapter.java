@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -84,6 +85,20 @@ public class RefreshTokenSessionRepositoryAdapter implements RefreshTokenSession
 
         jdbcTemplate.update(sql, params);
         return session;
+    }
+
+    @Override
+    public int markLoggedOutIfActive(UUID sessionId, Instant updatedAt) {
+        String sql = """
+                UPDATE refresh_token_sessions
+                SET status = :loggedOutStatus, updated_at = :updatedAt
+                WHERE id = :sessionId AND status = :activeStatus
+                """;
+        return jdbcTemplate.update(sql, new MapSqlParameterSource()
+                .addValue("loggedOutStatus", SessionStatus.LOGGED_OUT.name())
+                .addValue("updatedAt", updatedAt)
+                .addValue("sessionId", sessionId)
+                .addValue("activeStatus", SessionStatus.ACTIVE.name()));
     }
 
     @Override

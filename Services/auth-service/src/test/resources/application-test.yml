@@ -31,6 +31,10 @@ auth:
     rate-limit:
       max-attempts: 10000
       window-seconds: 3600
+  logout:
+    rate-limit:
+      max-attempts: 10000
+      window-seconds: 3600
 
 jwt:
   access-secret: test-access-secret-key-minimum-32-characters-123456
