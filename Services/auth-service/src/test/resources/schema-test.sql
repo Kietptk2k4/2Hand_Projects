@@ -58,3 +58,28 @@ CREATE TABLE IF NOT EXISTS outbox_events (
     published_at TIMESTAMP,
     last_error TEXT
 );
+
+CREATE TABLE IF NOT EXISTS refresh_token_sessions (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE,
+    device_id VARCHAR(255),
+    ip_address VARCHAR(100),
+    user_agent TEXT,
+    expires_at TIMESTAMP NOT NULL,
+    status VARCHAR(30) NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    CONSTRAINT fk_refresh_token_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS login_logs (
+    id UUID PRIMARY KEY,
+    user_id UUID,
+    login_method VARCHAR(50),
+    ip_address VARCHAR(100),
+    user_agent TEXT,
+    success BOOLEAN NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    CONSTRAINT fk_login_logs_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);

@@ -18,4 +18,9 @@ public class BCryptPasswordHashingService implements PasswordHashingService {
     public PasswordHash hash(String rawPassword) {
         return PasswordHash.of(passwordEncoder.encode(rawPassword));
     }
+
+    @Override
+    public boolean matches(String rawPassword, PasswordHash encodedPassword) {
+        return passwordEncoder.matches(rawPassword, encodedPassword.value());
+    }
 }

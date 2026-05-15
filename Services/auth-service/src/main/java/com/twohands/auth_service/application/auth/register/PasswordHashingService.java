@@ -4,4 +4,6 @@ import com.twohands.auth_service.domain.user.PasswordHash;
 
 public interface PasswordHashingService {
     PasswordHash hash(String rawPassword);
+
+    boolean matches(String rawPassword, PasswordHash encodedPassword);
 }
