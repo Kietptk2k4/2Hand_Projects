@@ -18,4 +18,6 @@ public interface UserRepository {
     int countByStatus(UserStatus status);
 
     void updateLastLoginAt(UUID userId, Instant lastLoginAt);
+
+    void updatePassword(UUID userId, PasswordHash passwordHash, Instant passwordChangedAt);
 }

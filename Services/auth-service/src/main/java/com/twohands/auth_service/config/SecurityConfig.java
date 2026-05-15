@@ -1,5 +1,6 @@
 package com.twohands.auth_service.config;
 
+import com.twohands.auth_service.security.RestAuthenticationEntryPoint;
 import com.twohands.auth_service.security.jwt.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,9 +22,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            RestAuthenticationEntryPoint restAuthenticationEntryPoint
+    ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
     }
 
     @Bean
@@ -33,9 +39,13 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/change-password").authenticated()
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(restAuthenticationEntryPoint)
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

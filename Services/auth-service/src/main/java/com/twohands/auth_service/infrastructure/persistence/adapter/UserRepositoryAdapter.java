@@ -1,6 +1,7 @@
 package com.twohands.auth_service.infrastructure.persistence.adapter;
 
 import com.twohands.auth_service.domain.user.User;
+import com.twohands.auth_service.domain.user.PasswordHash;
 import com.twohands.auth_service.domain.user.UserRepository;
 import com.twohands.auth_service.domain.user.UserStatus;
 import com.twohands.auth_service.infrastructure.persistence.mapper.UserJdbcMapper;
@@ -101,5 +102,21 @@ public class UserRepositoryAdapter implements UserRepository {
                 .addValue("id", userId)
                 .addValue("lastLoginAt", lastLoginAt)
                 .addValue("updatedAt", lastLoginAt));
+    }
+
+    @Override
+    public void updatePassword(UUID userId, PasswordHash passwordHash, Instant passwordChangedAt) {
+        String sql = """
+                UPDATE users
+                SET password_hash = :passwordHash,
+                    password_changed_at = :passwordChangedAt,
+                    updated_at = :updatedAt
+                WHERE id = :id
+                """;
+        jdbcTemplate.update(sql, new MapSqlParameterSource()
+                .addValue("id", userId)
+                .addValue("passwordHash", passwordHash.value())
+                .addValue("passwordChangedAt", passwordChangedAt)
+                .addValue("updatedAt", passwordChangedAt));
     }
 }
