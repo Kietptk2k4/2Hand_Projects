@@ -35,6 +35,11 @@ auth:
     rate-limit:
       max-attempts: 10000
       window-seconds: 3600
+  forgot-password:
+    reset-token-ttl-seconds: 900
+    rate-limit:
+      max-attempts: 10000
+      window-seconds: 3600
 
 jwt:
   access-secret: test-access-secret-key-minimum-32-characters-123456

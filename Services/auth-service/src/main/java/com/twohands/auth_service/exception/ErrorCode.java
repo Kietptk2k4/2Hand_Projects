@@ -10,6 +10,8 @@ public enum ErrorCode {
     REGISTER_RATE_LIMITED("AUTH-429-REGISTER", HttpStatus.TOO_MANY_REQUESTS, "Ban thao tac qua nhanh, vui long thu lai sau."),
     LOGIN_RATE_LIMITED("AUTH-429-LOGIN", HttpStatus.TOO_MANY_REQUESTS, "Ban thu dang nhap qua nhieu lan. Vui long thu lai sau."),
     REFRESH_RATE_LIMITED("AUTH-429-REFRESH", HttpStatus.TOO_MANY_REQUESTS, "Ban thao tac qua nhanh, vui long thu lai sau."),
+    FORGOT_PASSWORD_RATE_LIMITED("AUTH-429-FORGOT-PASSWORD", HttpStatus.TOO_MANY_REQUESTS,
+            "Ban thao tac qua nhanh, vui long thu lai sau."),
     INVALID_LOGIN_CREDENTIALS("AUTH-401-INVALID-CREDENTIALS", HttpStatus.UNAUTHORIZED, "Email hoac mat khau khong chinh xac."),
     INVALID_REFRESH_SESSION("AUTH-401-INVALID-REFRESH-SESSION", HttpStatus.UNAUTHORIZED,
             "Phien dang nhap khong hop le hoac da het han. Vui long dang nhap lai."),
