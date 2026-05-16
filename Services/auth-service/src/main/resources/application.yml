@@ -4,13 +4,16 @@ server:
 spring:
   application:
     name: auth-service
+
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: ${DB_URL:jdbc:postgresql://localhost:5432/auth_service}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
+
     hikari:
       pool-name: auth-service-hikari
       minimum-idle: ${DB_HIKARI_MIN_IDLE:5}
@@ -19,21 +22,27 @@ spring:
       max-lifetime: 1800000
       connection-timeout: 30000
       validation-timeout: 5000
+
   jpa:
     hibernate:
       ddl-auto: validate
+
     open-in-view: false
     show-sql: false
+
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: false
+
         jdbc:
           time_zone: UTC
+
   flyway:
     enabled: true
     baseline-on-migrate: true
     locations: classpath:db/migration
+
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -41,32 +50,81 @@ spring:
       password: ${REDIS_PASSWORD:}
       timeout: 3s
 
+  security:
+    oauth2:
+      client:
+
+        registration:
+
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+
+            scope:
+              - openid
+              - profile
+              - email
+
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+
+          facebook:
+            client-id: ${FACEBOOK_CLIENT_ID}
+            client-secret: ${FACEBOOK_CLIENT_SECRET}
+
+            scope:
+              - email
+              - public_profile
+
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+
+        provider:
+
+          facebook:
+            authorization-uri: https://www.facebook.com/v18.0/dialog/oauth
+            token-uri: https://graph.facebook.com/v18.0/oauth/access_token
+            user-info-uri: https://graph.facebook.com/me?fields=id,name,email,picture.width(200).height(200)
+            user-name-attribute: id
+
 jwt:
   access-secret: ${JWT_ACCESS_SECRET:replace-with-at-least-32-characters-access-key}
   refresh-secret: ${JWT_REFRESH_SECRET:replace-with-at-least-32-characters-refresh-key}
+
   access-expiration: ${JWT_ACCESS_EXPIRATION:900000}
   refresh-expiration: ${JWT_REFRESH_EXPIRATION:2592000000}
 
 auth:
+  oauth2:
+    redirect:
+      success-url: ${AUTH_OAUTH2_SUCCESS_REDIRECT_URL:http://localhost:5173/oauth/success}
+      failure-url: ${AUTH_OAUTH2_FAILURE_REDIRECT_URL:http://localhost:5173/oauth/failure}
+    cookie:
+      secure: ${AUTH_OAUTH2_COOKIE_SECURE:true}
+
   register:
     verify-token-ttl-seconds: ${AUTH_REGISTER_VERIFY_TOKEN_TTL_SECONDS:900}
+
     rate-limit:
       max-attempts: ${AUTH_REGISTER_RATE_LIMIT_MAX_ATTEMPTS:5}
       window-seconds: ${AUTH_REGISTER_RATE_LIMIT_WINDOW_SECONDS:3600}
+
   login:
     rate-limit:
       max-attempts: ${AUTH_LOGIN_RATE_LIMIT_MAX_ATTEMPTS:5}
       window-seconds: ${AUTH_LOGIN_RATE_LIMIT_WINDOW_SECONDS:900}
+
   refresh:
     rate-limit:
       max-attempts: ${AUTH_REFRESH_RATE_LIMIT_MAX_ATTEMPTS:20}
       window-seconds: ${AUTH_REFRESH_RATE_LIMIT_WINDOW_SECONDS:60}
+
   logout:
     rate-limit:
       max-attempts: ${AUTH_LOGOUT_RATE_LIMIT_MAX_ATTEMPTS:30}
       window-seconds: ${AUTH_LOGOUT_RATE_LIMIT_WINDOW_SECONDS:60}
+
   forgot-password:
     reset-token-ttl-seconds: ${AUTH_FORGOT_PASSWORD_RESET_TOKEN_TTL_SECONDS:900}
+
     rate-limit:
       max-attempts: ${AUTH_FORGOT_PASSWORD_RATE_LIMIT_MAX_ATTEMPTS:5}
       window-seconds: ${AUTH_FORGOT_PASSWORD_RATE_LIMIT_WINDOW_SECONDS:900}
@@ -81,6 +139,7 @@ logging:
   level:
     root: INFO
     com.twohands.auth_service: INFO
+
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-}] %logger{36} - %msg%n"
 
@@ -89,8 +148,10 @@ spring:
   config:
     activate:
       on-profile: dev
+
   jpa:
     show-sql: true
+
     properties:
       hibernate:
         format_sql: true
@@ -100,6 +161,7 @@ logging:
     root: INFO
     com.twohands.auth_service: DEBUG
     org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
 
 ---
 spring:

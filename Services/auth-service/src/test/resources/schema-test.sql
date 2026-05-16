@@ -83,3 +83,15 @@ CREATE TABLE IF NOT EXISTS login_logs (
     created_at TIMESTAMP NOT NULL,
     CONSTRAINT fk_login_logs_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
+
+CREATE TABLE IF NOT EXISTS oauth_accounts (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL,
+    provider VARCHAR(50) NOT NULL,
+    provider_user_id VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    CONSTRAINT uq_oauth_provider_user UNIQUE (provider, provider_user_id),
+    CONSTRAINT fk_oauth_accounts_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);

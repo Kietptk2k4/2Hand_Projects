@@ -1,30 +1,21 @@
-# Login by Email - API and Behavior Spec
+# Login - API and Behavior Spec
 
 ## 1. Scope
-This document defines backend API contract and frontend behavior for `Login by Email/Password` in Auth Service.
-
-In scope:
-- Validate email/password
-- Authenticate user
-- Issue access token + refresh token
-- Create refresh session
-- Update last login timestamp
-- Write login logs (success/failure)
-
-Out of scope:
-- OAuth login
-- Forgot/reset password
-- 2FA
+This document defines backend API contract and frontend behavior for Login in Auth Service, including:
+- Login by email/password
+- Login by OAuth (Google/Facebook)
 
 ## 2. Source Docs
 - `docs/feature-requirements/auth/FR_Login_Email.md`
+- `docs/feature-requirements/auth/FR_Login_OAuth.md`
 - `docs/use-cases/uc-user-authentication.md`
+- `docs/use-cases/uc-oauth-authentication.md`
 - `docs/business-spec/auth-service-spec.md`
 - `docs/database/auth_schema.md`
 - `docs/engineering-rules/api-standard.md`
 - `docs/engineering-rules/backend-convention.md`
 
-## 3. API Contract
+## 3. API Contract (Email Login)
 ### Endpoint
 - Method: `POST`
 - Path: `/api/v1/auth/login`
@@ -65,93 +56,116 @@ Out of scope:
 
 ### Error Responses
 - `400` invalid request format
-- `401` wrong email/password (use generic message)
+- `401` wrong email/password (generic message)
 - `403` account suspended
 - `429` too many login attempts
 - `500` internal error
 
-Example 401:
-```json
-{
-  "code": 401,
-  "success": false,
-  "message": "Email hoac mat khau khong chinh xac.",
-  "data": null,
-  "errors": null,
-  "timestamp": "2026-05-15T10:00:00Z"
-}
-```
+## 4. API Contract (OAuth Login)
+### OAuth Start Endpoints
+- `GET /oauth2/authorization/google`
+- `GET /oauth2/authorization/facebook`
 
-## 4. Backend Behavior (Authoritative)
-### Main Flow
+### OAuth Callback Endpoints (internal)
+- `GET /login/oauth2/code/google`
+- `GET /login/oauth2/code/facebook`
+
+Notes:
+- FE redirects browser to start endpoint.
+- Callback is handled by Spring Security OAuth2 Client.
+- Backend issues internal JWT access/refresh token then redirects to frontend success route.
+
+## 5. Backend Behavior (Authoritative)
+### Email Login Flow
 1. Validate request.
-2. Normalize email (`email_normalized`) and query `USERS`.
-3. If user not found -> return 401 generic message.
+2. Normalize email and query user.
+3. If user not found -> 401 generic.
 4. Verify password hash.
 5. If mismatch:
-- insert `LOGIN_LOGS` with `success = false`
-- return 401 generic message.
-6. Check user status:
-- `SUSPENDED` -> return 403.
-- `DELETED` -> return 401 generic message (avoid enumeration).
-- `PENDING_VERIFICATION` -> allow login; return tokens + `status = PENDING_VERIFICATION` for FE redirect to verify flow.
-7. Generate access token (short TTL) and refresh token (long TTL).
-8. Persist `REFRESH_TOKEN_SESSION` with:
-- `token_hash`
-- `status = ACTIVE`
-- `device_id`, `ip_address`, `user_agent`
-- `expires_at`
-9. Update `USERS.last_login_at = now()`.
-10. Insert `LOGIN_LOGS` with `success = true`.
-11. Return 200 with token payload.
+- write `LOGIN_LOGS` failure
+- return 401 generic.
+6. Check status:
+- `SUSPENDED` -> 403
+- `DELETED` -> 401 generic
+- `PENDING_VERIFICATION` -> allow login and return status for FE redirect
+7. Issue access + refresh token.
+8. Save `REFRESH_TOKEN_SESSION` ACTIVE.
+9. Update `USERS.last_login_at`.
+10. Save `LOGIN_LOGS` success.
+11. Return 200.
 
-## 5. Database Impact
-- `USERS`: update `last_login_at` on successful login.
-- `LOGIN_LOGS`: insert record for both success and failure cases.
-- `REFRESH_TOKEN_SESSION`: insert active session when login succeeds.
+### OAuth Login Flow
+1. FE redirects to `/oauth2/authorization/{provider}`.
+2. Provider authenticates and redirects to `/login/oauth2/code/{provider}`.
+3. Backend reads provider profile (email, name, avatar).
+4. If email missing -> fail (400/401 by handler strategy).
+5. If user not exists:
+- create `USERS` with `status=ACTIVE`, `email_verified=true`
+- create `USER_PROFILES`, `USER_SETTINGS`
+- write outbox `USER_CREATED`
+6. If user exists:
+- map and login existing account, no duplicate create
+7. If status `SUSPENDED` or `DELETED` -> deny (403).
+8. Issue access + refresh token, save session/logins, redirect FE success route.
 
-## 6. Security Rules
-- Never log plaintext password or raw tokens.
-- Store refresh token as hash (`token_hash`) in DB.
-- Use generic 401 message to reduce account enumeration risk.
-- Apply brute-force protection / rate limit by IP and/or email (e.g. 5 failed attempts per 15 minutes).
-- Use HTTPS-only transport.
+## 6. Database Impact
+- Email login:
+- `USERS.last_login_at`
+- `LOGIN_LOGS`
+- `REFRESH_TOKEN_SESSION`
+- OAuth login:
+- all above plus conditional create:
+- `USERS`, `USER_PROFILES`, `USER_SETTINGS`, `OUTBOX_EVENTS (USER_CREATED)`
 
-## 7. FE Behavior (for Stitch/UI generation)
-### Form
+## 7. Security Rules
+- Never log plaintext password/raw tokens.
+- Use generic 401 for invalid credentials.
+- Apply brute-force protection/rate limit.
+- OAuth flow uses state validation and CSRF protection by Spring Security.
+- HTTPS required.
+
+## 8. FE Behavior (for Stitch/UI generation)
+### Login Form
 - Fields: `email`, `password`
-- Optional checkbox: `remember_me`
-- Optional link: `forgot password`
-- Optional password visibility toggle
+- Optional: remember_me, forgot-password link
+- Social buttons:
+- `Continue with Google`
+- `Continue with Facebook`
 
 ### UX States
-- Inline validation for email format and required password
-- Disable submit while request is in-flight
-- Show loading state on login button
-- On 200:
-- Store tokens securely (prefer HttpOnly cookie strategy if available)
-- If `user.status = PENDING_VERIFICATION`: redirect to Verify Email flow
-- Else redirect to Home or original `redirectUrl`
-- On 401/403/429/500:
-- Show clear error toast/message from API
+- Inline validation for email/password
+- Disable submit while loading
+- On email login success:
+- if `status = PENDING_VERIFICATION` -> redirect Verify Email
+- else -> redirect Home/original redirectUrl
+- On email login errors 401/403/429/500 -> show clear message
 
-## 8. Acceptance Criteria
-- Correct email/password for active user -> 200 + tokens + login log success + last_login_at updated.
-- Wrong credential -> 401 + login log failure.
-- Suspended user -> 403.
-- Login success creates `REFRESH_TOKEN_SESSION` with `ACTIVE` status.
-- No sensitive data leak in logs.
+### OAuth UX
+- On Google click:
+- `window.location.href = "http://localhost:3001/oauth2/authorization/google"`
+- On Facebook click:
+- `window.location.href = "http://localhost:3001/oauth2/authorization/facebook"`
+- Show loading overlay during redirect
+- On oauth success callback route: finalize session and route user
+- On oauth failure callback route: show retry toast
 
-## 9. Prompt for Stitch (UI only)
+## 9. Acceptance Criteria
+- Email login works with correct state handling and logging.
+- Login screen has Google/Facebook buttons.
+- OAuth can create new account if email not exists.
+- OAuth does not create duplicate account if email already exists.
+- Suspended/deleted users are blocked in both email and OAuth login.
+
+## 10. Prompt for Stitch (UI only)
 ```text
-Create a Login screen for 2Hands with:
-- Email + password fields
-- Password show/hide toggle
-- Inline validation
-- Disabled submit while loading
-- Clear error states for 401/403/429/500
-- On login success:
-  - redirect to Verify Email if status is PENDING_VERIFICATION
-  - otherwise redirect to Home
+Create a Login screen for 2Hands:
+- Email + password fields with show/hide password
+- Inline validation and loading states
+- Add social buttons: Continue with Google, Continue with Facebook
+- On social click, redirect browser to auth-service OAuth start endpoints
+- Handle email login success:
+  - PENDING_VERIFICATION -> Verify Email screen
+  - ACTIVE -> Home
+- Handle 401/403/429/500 errors with clear messaging
 - Responsive and accessible layout
 ```

@@ -436,3 +436,13 @@ Tài liệu này định nghĩa chi tiết các nghiệp vụ cốt lõi của A
 7. **Failure Cases:** Lỗi vĩnh viễn cần xử lý tay.
 8. **Events:** Replay các event cũ.
 9. **Ownership:** Auth Service.
+---
+
+## VIII. Object Storage Note (MinIO)
+1. **Pham vi:** Avatar/profile media lien quan Auth Service.
+2. **Nguyen tac:** Auth Service luu `avatar_url` trong `USER_PROFILES`; file vat ly luu tren MinIO.
+3. **Ha tang hien tai:** `Infrastructure/docker-compose.yml` co service `minio` (API `:9000`, Console `:9001`).
+4. **Flow de nghi:**
+   - FE upload file len MinIO (presigned URL hoac upload gateway).
+   - FE goi API cap nhat avatar de luu `avatar_url` vao Auth Service.
+5. **Soft delete account:** khong bat buoc xoa object avatar dong bo trong transaction soft-delete; co the xu ly async boi worker/job.

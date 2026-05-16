@@ -36,3 +36,11 @@ Quản lý thông tin định danh, tùy chỉnh cá nhân, và quyền riêng t
   1. Cập nhật `USERS.status` = `DELETED`, `deleted_at` = now().
   2. Gọi hàm Invalidate All Sessions (Logout All).
   3. Ghi event `USER_DELETED` vào `OUTBOX_EVENTS`.
+
+## 4. MinIO Integration Note (Avatar)
+* Auth Service luu `avatar_url` trong `USER_PROFILES`.
+* Tep avatar duoc luu tren MinIO (xem `Infrastructure/docker-compose.yml`, service `minio`).
+* Luong khuyen nghi:
+  1. FE upload file len MinIO (presigned URL hoac upload gateway).
+  2. FE gui `avatar_url` hop le cho Auth Service de cap nhat profile.
+* Soft delete account khong bat buoc xoa object avatar ngay trong transaction; neu can xoa file thi xu ly async bang event/job.

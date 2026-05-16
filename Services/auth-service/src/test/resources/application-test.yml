@@ -19,6 +19,12 @@ spring:
       schema-locations: classpath:schema-test.sql
 
 auth:
+  oauth2:
+    redirect:
+      success-url: http://localhost:5173/oauth/success
+      failure-url: http://localhost:5173/oauth/failure
+    cookie:
+      secure: false
   register:
     rate-limit:
       max-attempts: 10000
