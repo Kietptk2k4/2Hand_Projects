@@ -4,6 +4,7 @@ import com.twohands.auth_service.application.useraccount.softdelete.SoftDeleteAc
 import com.twohands.auth_service.application.useraccount.softdelete.SoftDeleteAccountUseCase;
 import com.twohands.auth_service.application.useraccount.toggleprivacy.TogglePrivacyCommand;
 import com.twohands.auth_service.application.useraccount.toggleprivacy.TogglePrivacyUseCase;
+import com.twohands.auth_service.application.useraccount.logoutallsesssion.LogoutAllSesssionUseCase;
 import com.twohands.auth_service.application.useraccount.updateavatar.UpdateAvatarCommand;
 import com.twohands.auth_service.application.useraccount.updateavatar.UpdateAvatarUseCase;
 import com.twohands.auth_service.application.useraccount.updateprofile.UpdateProfileCommand;
@@ -51,6 +52,7 @@ public class UserAccountController {
     private final UpdateUserSettingsUseCase updateUserSettingsUseCase;
     private final SoftDeleteAccountUseCase softDeleteAccountUseCase;
     private final ViewLoginSesssionListUseCase viewLoginSesssionListUseCase;
+    private final LogoutAllSesssionUseCase logoutAllSesssionUseCase;
 
     public UserAccountController(
             ViewAccountUseCase viewAccountUseCase,
@@ -59,7 +61,8 @@ public class UserAccountController {
             TogglePrivacyUseCase togglePrivacyUseCase,
             UpdateUserSettingsUseCase updateUserSettingsUseCase,
             SoftDeleteAccountUseCase softDeleteAccountUseCase,
-            ViewLoginSesssionListUseCase viewLoginSesssionListUseCase
+            ViewLoginSesssionListUseCase viewLoginSesssionListUseCase,
+            LogoutAllSesssionUseCase logoutAllSesssionUseCase
     ) {
         this.viewAccountUseCase = viewAccountUseCase;
         this.updateProfileUseCase = updateProfileUseCase;
@@ -68,6 +71,7 @@ public class UserAccountController {
         this.updateUserSettingsUseCase = updateUserSettingsUseCase;
         this.softDeleteAccountUseCase = softDeleteAccountUseCase;
         this.viewLoginSesssionListUseCase = viewLoginSesssionListUseCase;
+        this.logoutAllSesssionUseCase = logoutAllSesssionUseCase;
     }
 
     @GetMapping
@@ -121,6 +125,15 @@ public class UserAccountController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(HttpStatus.OK.value(), viewLoginSesssionListUseCase.successMessage(), response));
+    }
+
+    @PostMapping("/sessions/logout-all")
+    public ResponseEntity<ApiResponse<Void>> logoutAllSessions(Authentication authentication) {
+        UUID userId = extractUserId(authentication);
+        logoutAllSesssionUseCase.execute(userId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(HttpStatus.OK.value(), logoutAllSesssionUseCase.successMessage(), null));
     }
 
     @PutMapping("/profile")

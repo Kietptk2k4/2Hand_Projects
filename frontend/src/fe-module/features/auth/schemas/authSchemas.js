@@ -1,16 +1,25 @@
 export function validateEmail(email) {
-  if (!email) return "Email is required";
+  if (!email) return "Vui long nhap email.";
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) return "Email format is invalid";
-  if (email.length > 255) return "Email max length is 255";
+  if (!emailRegex.test(email)) return "Email khong dung dinh dang.";
+  if (email.length > 255) return "Email toi da 255 ky tu.";
   return "";
 }
 
 export function validatePassword(password) {
-  if (!password) return "Password is required";
-  if (password.length < 8 || password.length > 32) {
-    return "Password must be 8-32 characters";
-  }
+  if (!password?.trim()) return "Vui long nhap mat khau.";
   return "";
+}
+
+export function validateLoginForm(form) {
+  const nextErrors = {
+    email: validateEmail(form.email?.trim() || ""),
+    password: validatePassword(form.password || ""),
+  };
+
+  return {
+    errors: nextErrors,
+    isValid: !nextErrors.email && !nextErrors.password,
+  };
 }
 

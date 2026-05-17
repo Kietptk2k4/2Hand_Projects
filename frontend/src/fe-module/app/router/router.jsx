@@ -6,6 +6,7 @@ import { LoginPage } from "../../features/auth/pages/LoginPage";
 import { RegisterPage } from "../../features/auth/pages/RegisterPage";
 import { ForgotPasswordPage } from "../../features/auth/pages/ForgotPasswordPage";
 import { AccountPage } from "../../features/auth/pages/AccountPage";
+import { VerifyEmailPage } from "../../features/auth/pages/VerifyEmailPage";
 
 function HomePage() {
   return (
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
       { path: APP_ROUTES.login.slice(1), element: <LoginPage /> },
       { path: APP_ROUTES.register.slice(1), element: <RegisterPage /> },
       { path: APP_ROUTES.forgotPassword.slice(1), element: <ForgotPasswordPage /> },
+      { path: APP_ROUTES.verifyEmail.slice(1), element: <VerifyEmailPage /> },
       {
         element: <AuthGuard />,
         children: [{ path: APP_ROUTES.account.slice(1), element: <AccountPage /> }],

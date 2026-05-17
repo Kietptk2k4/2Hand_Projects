@@ -4,9 +4,26 @@ const AuthSessionContext = createContext(null);
 
 export function AuthSessionProvider({ children }) {
   const [accessToken, setAccessToken] = useState(null);
+  const [refreshToken, setRefreshToken] = useState(null);
+  const [user, setUser] = useState(null);
+
+  const setSession = ({ accessToken: nextAccessToken, refreshToken: nextRefreshToken, user: nextUser }) => {
+    setAccessToken(nextAccessToken || null);
+    setRefreshToken(nextRefreshToken || null);
+    setUser(nextUser || null);
+
+    if (nextAccessToken) {
+      localStorage.setItem("twohands_access_token", nextAccessToken);
+    }
+    if (nextRefreshToken) {
+      localStorage.setItem("twohands_refresh_token", nextRefreshToken);
+    }
+  };
 
   const clearSession = () => {
     setAccessToken(null);
+    setRefreshToken(null);
+    setUser(null);
     localStorage.removeItem("twohands_access_token");
     localStorage.removeItem("twohands_refresh_token");
   };
@@ -14,11 +31,14 @@ export function AuthSessionProvider({ children }) {
   const value = useMemo(
     () => ({
       accessToken,
+      refreshToken,
+      user,
+      setSession,
       setAccessToken,
-      isAuthenticated: Boolean(accessToken),
+      isAuthenticated: Boolean(accessToken || localStorage.getItem("twohands_access_token")),
       clearSession,
     }),
-    [accessToken]
+    [accessToken, refreshToken, user]
   );
 
   return <AuthSessionContext.Provider value={value}>{children}</AuthSessionContext.Provider>;

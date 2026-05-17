@@ -107,6 +107,54 @@ class UserAccountIntegrationTest {
     }
 
     @Test
+    void logoutAllSessionsShouldRevokeActiveSessions() throws Exception {
+        TestUser user = insertFullUser("logout_all_active@example.com");
+        insertSession(user.userId(), "device-1", "10.0.1.1", "ACTIVE", Instant.now().minusSeconds(300));
+        insertSession(user.userId(), "device-2", "10.0.1.2", "ACTIVE", Instant.now().minusSeconds(200));
+        insertSession(user.userId(), "device-3", "10.0.1.3", "REVOKED", Instant.now().minusSeconds(100));
+
+        mockMvc.perform(post("/api/v1/users/me/sessions/logout-all")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(user.userId(), user.email())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Dang xuat tat ca phien dang nhap thanh cong."));
+
+        Integer activeSessions = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM refresh_token_sessions WHERE user_id = ? AND status = 'ACTIVE'",
+                Integer.class,
+                user.userId()
+        );
+        Integer revokedSessions = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM refresh_token_sessions WHERE user_id = ? AND status = 'REVOKED'",
+                Integer.class,
+                user.userId()
+        );
+
+        assertEquals(0, activeSessions);
+        assertEquals(3, revokedSessions);
+    }
+
+    @Test
+    void logoutAllSessionsWithoutActiveShouldStillReturn200() throws Exception {
+        TestUser user = insertFullUser("logout_all_no_active@example.com");
+        insertSession(user.userId(), "device-1", "10.0.2.1", "REVOKED", Instant.now().minusSeconds(300));
+        insertSession(user.userId(), "device-2", "10.0.2.2", "LOGGED_OUT", Instant.now().minusSeconds(200));
+
+        mockMvc.perform(post("/api/v1/users/me/sessions/logout-all")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(user.userId(), user.email())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Dang xuat tat ca phien dang nhap thanh cong."));
+
+        Integer activeSessions = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM refresh_token_sessions WHERE user_id = ? AND status = 'ACTIVE'",
+                Integer.class,
+                user.userId()
+        );
+        assertEquals(0, activeSessions);
+    }
+
+    @Test
     void updateProfileShouldPersistAndWriteOutbox() throws Exception {
         TestUser user = insertFullUser("update_profile@example.com");
 
@@ -291,6 +339,14 @@ class UserAccountIntegrationTest {
     @Test
     void missingJwtShouldReturn401() throws Exception {
         mockMvc.perform(get("/api/v1/users/me"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Authentication required"));
+    }
+
+    @Test
+    void logoutAllSessionsMissingJwtShouldReturn401() throws Exception {
+        mockMvc.perform(post("/api/v1/users/me/sessions/logout-all"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.message").value("Authentication required"));
