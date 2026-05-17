@@ -93,3 +93,14 @@ export function validateChangePasswordForm(form) {
   };
 }
 
+export function validateForgotPasswordForm(form) {
+  const nextErrors = {
+    email: validateEmail(form.email?.trim() || ""),
+  };
+
+  return {
+    errors: nextErrors,
+    isValid: !nextErrors.email,
+  };
+}
+

@@ -74,6 +74,15 @@ export async function changePassword(payload, accessToken) {
   }
 }
 
+export async function forgotPassword(payload) {
+  try {
+    const response = await httpClient.post("/api/v1/auth/forgot-password", payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export function getOAuthRedirectUrl(provider) {
   const providers = {
     google: "/oauth2/authorization/google",
