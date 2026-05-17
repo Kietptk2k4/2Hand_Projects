@@ -51,3 +51,45 @@ export function validateRegisterForm(form) {
   };
 }
 
+export function getPasswordChecklistState(password) {
+  return {
+    length: password.length >= 8 && password.length <= 32,
+    uppercase: /[A-Z]/.test(password),
+    lowercase: /[a-z]/.test(password),
+    number: /[0-9]/.test(password),
+  };
+}
+
+export function validateCurrentPassword(password) {
+  if (!password?.trim()) return "Vui long nhap mat khau hien tai.";
+  return "";
+}
+
+export function validateNewPassword(newPassword, currentPassword) {
+  const baseError = validatePassword(newPassword);
+  if (baseError) return baseError;
+  if (newPassword === currentPassword) {
+    return "Mat khau moi phai khac mat khau hien tai.";
+  }
+  return "";
+}
+
+export function validateConfirmNewPassword(newPassword, confirmNewPassword) {
+  if (!confirmNewPassword?.trim()) return "Vui long xac nhan mat khau moi.";
+  if (confirmNewPassword !== newPassword) return "Xac nhan mat khau moi khong khop.";
+  return "";
+}
+
+export function validateChangePasswordForm(form) {
+  const nextErrors = {
+    current_password: validateCurrentPassword(form.current_password || ""),
+    new_password: validateNewPassword(form.new_password || "", form.current_password || ""),
+    confirm_new_password: validateConfirmNewPassword(form.new_password || "", form.confirm_new_password || ""),
+  };
+
+  return {
+    errors: nextErrors,
+    isValid: !nextErrors.current_password && !nextErrors.new_password && !nextErrors.confirm_new_password,
+  };
+}
+

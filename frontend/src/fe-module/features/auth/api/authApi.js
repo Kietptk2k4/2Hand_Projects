@@ -63,6 +63,17 @@ export async function registerWithEmail(payload) {
   }
 }
 
+export async function changePassword(payload, accessToken) {
+  try {
+    const response = await httpClient.post("/api/v1/auth/change-password", payload, {
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+    });
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export function getOAuthRedirectUrl(provider) {
   const providers = {
     google: "/oauth2/authorization/google",

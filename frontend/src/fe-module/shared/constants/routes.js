@@ -7,5 +7,6 @@ export const APP_ROUTES = {
   oauthSuccess: "/oauth/success",
   oauthFailure: "/oauth/failure",
   account: "/account",
+  changePassword: "/account/change-password",
 };
 
