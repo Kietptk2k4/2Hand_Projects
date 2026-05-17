@@ -4,7 +4,9 @@ import { APP_ROUTES } from "../../shared/constants/routes";
 export function AppLayout() {
   const location = useLocation();
   const isAuthImmersiveRoute =
-    location.pathname === APP_ROUTES.login || location.pathname === APP_ROUTES.register;
+    location.pathname === APP_ROUTES.login ||
+    location.pathname === APP_ROUTES.register ||
+    location.pathname === APP_ROUTES.verifyEmail;
 
   if (isAuthImmersiveRoute) {
     return (

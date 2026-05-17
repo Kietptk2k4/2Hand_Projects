@@ -83,6 +83,15 @@ export async function forgotPassword(payload) {
   }
 }
 
+export async function verifyEmail(payload) {
+  try {
+    const response = await httpClient.post("/api/v1/auth/verify-email", payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export function getOAuthRedirectUrl(provider) {
   const providers = {
     google: "/oauth2/authorization/google",

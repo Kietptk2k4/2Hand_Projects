@@ -104,3 +104,21 @@ export function validateForgotPasswordForm(form) {
   };
 }
 
+export function validateVerifyToken(token) {
+  const normalized = token?.trim() || "";
+  if (!normalized) return "Vui long nhap ma xac thuc.";
+  if (normalized.length < 6) return "Ma xac thuc khong hop le.";
+  return "";
+}
+
+export function validateVerifyEmailForm(form) {
+  const nextErrors = {
+    token: validateVerifyToken(form.token),
+  };
+
+  return {
+    errors: nextErrors,
+    isValid: !nextErrors.token,
+  };
+}
+
