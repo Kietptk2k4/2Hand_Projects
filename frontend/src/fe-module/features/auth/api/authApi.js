@@ -54,6 +54,15 @@ export async function loginWithEmail(payload) {
   }
 }
 
+export async function registerWithEmail(payload) {
+  try {
+    const response = await httpClient.post("/api/v1/auth/register", payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export function getOAuthRedirectUrl(provider) {
   const providers = {
     google: "/oauth2/authorization/google",

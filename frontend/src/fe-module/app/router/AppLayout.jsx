@@ -3,9 +3,10 @@ import { APP_ROUTES } from "../../shared/constants/routes";
 
 export function AppLayout() {
   const location = useLocation();
-  const isLoginRoute = location.pathname === APP_ROUTES.login;
+  const isAuthImmersiveRoute =
+    location.pathname === APP_ROUTES.login || location.pathname === APP_ROUTES.register;
 
-  if (isLoginRoute) {
+  if (isAuthImmersiveRoute) {
     return (
       <div className="min-h-screen bg-surface text-on-surface">
         <main className="px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">

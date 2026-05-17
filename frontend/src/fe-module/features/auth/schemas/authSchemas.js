@@ -8,6 +8,15 @@ export function validateEmail(email) {
 
 export function validatePassword(password) {
   if (!password?.trim()) return "Vui long nhap mat khau.";
+  if (password.length < 8 || password.length > 32) {
+    return "Mat khau phai tu 8 den 32 ky tu.";
+  }
+  const hasLower = /[a-z]/.test(password);
+  const hasUpper = /[A-Z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  if (!hasLower || !hasUpper || !hasNumber) {
+    return "Mat khau can it nhat 1 chu hoa, 1 chu thuong va 1 so.";
+  }
   return "";
 }
 
@@ -20,6 +29,25 @@ export function validateLoginForm(form) {
   return {
     errors: nextErrors,
     isValid: !nextErrors.email && !nextErrors.password,
+  };
+}
+
+export function validateConfirmPassword(password, confirmPassword) {
+  if (!confirmPassword?.trim()) return "Vui long xac nhan mat khau.";
+  if (confirmPassword !== password) return "Xac nhan mat khau khong khop.";
+  return "";
+}
+
+export function validateRegisterForm(form) {
+  const nextErrors = {
+    email: validateEmail(form.email?.trim() || ""),
+    password: validatePassword(form.password || ""),
+    confirm_password: validateConfirmPassword(form.password || "", form.confirm_password || ""),
+  };
+
+  return {
+    errors: nextErrors,
+    isValid: !nextErrors.email && !nextErrors.password && !nextErrors.confirm_password,
   };
 }
 
