@@ -727,6 +727,44 @@ class UserAccountIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Authentication required"));
     }
 
+    @Test
+    void viewRoleListShouldReturn200WithRoles() throws Exception {
+        TestUser actor = insertFullUser("view_role_list_actor_success@example.com");
+        UUID adminRoleId = insertRole("ADMIN", "Administrator");
+        insertRole("MODERATOR", "Moderator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(adminRoleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), adminRoleId);
+
+        mockMvc.perform(get("/api/v1/admin/roles")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Lay danh sach role thanh cong."))
+                .andExpect(jsonPath("$.data.roles.length()").value(2))
+                .andExpect(jsonPath("$.data.roles[0].code").value("ADMIN"))
+                .andExpect(jsonPath("$.data.roles[1].code").value("MODERATOR"));
+    }
+
+    @Test
+    void viewRoleListShouldReturn403WhenActorLacksPermission() throws Exception {
+        TestUser actor = insertFullUser("view_role_list_actor_forbidden@example.com");
+
+        mockMvc.perform(get("/api/v1/admin/roles")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Access denied"));
+    }
+
+    @Test
+    void viewRoleListMissingJwtShouldReturn401() throws Exception {
+        mockMvc.perform(get("/api/v1/admin/roles"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Authentication required"));
+    }
+
     private TestUser insertFullUser(String email) {
         UUID userId = UUID.randomUUID();
         Instant now = Instant.now();

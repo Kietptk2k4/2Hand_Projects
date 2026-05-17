@@ -6,10 +6,13 @@ import com.twohands.auth_service.application.rbac.assignrolestousers.AssignRoles
 import com.twohands.auth_service.application.rbac.revokerolefromuser.RevokeRoleFromUserCommand;
 import com.twohands.auth_service.application.rbac.revokerolefromuser.RevokeRoleFromUserResult;
 import com.twohands.auth_service.application.rbac.revokerolefromuser.RevokeRoleFromUserUseCase;
+import com.twohands.auth_service.application.rbac.viewrolelist.ViewRoleListResult;
+import com.twohands.auth_service.application.rbac.viewrolelist.ViewRoleListUseCase;
 import com.twohands.auth_service.common.dto.ApiResponse;
 import com.twohands.auth_service.delivery.http.admin.request.AssignRolesToUsersRequest;
 import com.twohands.auth_service.delivery.http.admin.response.AssignRolesToUsersResponse;
 import com.twohands.auth_service.delivery.http.admin.response.RevokeRoleFromUserResponse;
+import com.twohands.auth_service.delivery.http.admin.response.ViewRoleListResponse;
 import com.twohands.auth_service.exception.AppException;
 import com.twohands.auth_service.exception.ErrorCode;
 import jakarta.validation.Valid;
@@ -17,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,21 +30,45 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/admin/users")
+@RequestMapping("/api/v1/admin")
 public class AdminRoleController {
 
     private final AssignRolesToUsersUseCase assignRolesToUsersUseCase;
     private final RevokeRoleFromUserUseCase revokeRoleFromUserUseCase;
+    private final ViewRoleListUseCase viewRoleListUseCase;
 
     public AdminRoleController(
             AssignRolesToUsersUseCase assignRolesToUsersUseCase,
-            RevokeRoleFromUserUseCase revokeRoleFromUserUseCase
+            RevokeRoleFromUserUseCase revokeRoleFromUserUseCase,
+            ViewRoleListUseCase viewRoleListUseCase
     ) {
         this.assignRolesToUsersUseCase = assignRolesToUsersUseCase;
         this.revokeRoleFromUserUseCase = revokeRoleFromUserUseCase;
+        this.viewRoleListUseCase = viewRoleListUseCase;
     }
 
-    @PostMapping("/{userId}/roles")
+    @GetMapping("/roles")
+    public ResponseEntity<ApiResponse<ViewRoleListResponse>> viewRoleList(Authentication authentication) {
+        UUID actorUserId = extractUserId(authentication);
+        ViewRoleListResult result = viewRoleListUseCase.execute(actorUserId);
+
+        ViewRoleListResponse response = new ViewRoleListResponse(
+                result.roles().stream()
+                        .map(role -> new ViewRoleListResponse.RoleData(
+                                role.id().toString(),
+                                role.code(),
+                                role.name(),
+                                role.createdAt(),
+                                role.updatedAt()
+                        ))
+                        .toList()
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(HttpStatus.OK.value(), viewRoleListUseCase.successMessage(), response));
+    }
+
+    @PostMapping("/users/{userId}/roles")
     public ResponseEntity<ApiResponse<AssignRolesToUsersResponse>> assignRole(
             @PathVariable String userId,
             @Valid @RequestBody AssignRolesToUsersRequest request,
@@ -63,7 +91,7 @@ public class AdminRoleController {
                 .body(ApiResponse.success(HttpStatus.OK.value(), assignRolesToUsersUseCase.successMessage(), response));
     }
 
-    @DeleteMapping("/{userId}/roles/{roleId}")
+    @DeleteMapping("/users/{userId}/roles/{roleId}")
     public ResponseEntity<ApiResponse<RevokeRoleFromUserResponse>> revokeRole(
             @PathVariable String userId,
             @PathVariable String roleId,

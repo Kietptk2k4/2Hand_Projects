@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -65,6 +66,26 @@ public class RoleRepositoryAdapter implements RoleRepository {
                 )
                 .stream()
                 .findFirst();
+    }
+
+    @Override
+    public List<Role> findAll() {
+        String sql = """
+                SELECT id, code, name, created_at, updated_at
+                FROM roles
+                ORDER BY created_at ASC
+                """;
+
+        return jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> toRole(
+                        (UUID) rs.getObject("id"),
+                        rs.getString("code"),
+                        rs.getString("name"),
+                        toInstant(rs.getTimestamp("created_at")),
+                        toInstant(rs.getTimestamp("updated_at"))
+                )
+        );
     }
 
     @Override
