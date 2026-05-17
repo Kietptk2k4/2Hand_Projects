@@ -50,13 +50,59 @@ class UserAccountIntegrationTest {
 
     @BeforeEach
     void cleanTables() {
+        ensureRbacTables();
         jdbcTemplate.execute("DELETE FROM login_logs");
         jdbcTemplate.execute("DELETE FROM refresh_token_sessions");
         jdbcTemplate.execute("DELETE FROM outbox_events");
         jdbcTemplate.execute("DELETE FROM verification_tokens");
+        jdbcTemplate.execute("DELETE FROM user_roles");
+        jdbcTemplate.execute("DELETE FROM role_permissions");
+        jdbcTemplate.execute("DELETE FROM permissions");
+        jdbcTemplate.execute("DELETE FROM roles");
         jdbcTemplate.execute("DELETE FROM user_settings");
         jdbcTemplate.execute("DELETE FROM user_profiles");
         jdbcTemplate.execute("DELETE FROM users");
+    }
+
+    private void ensureRbacTables() {
+        jdbcTemplate.execute("""
+                CREATE TABLE IF NOT EXISTS roles (
+                    id UUID PRIMARY KEY,
+                    code VARCHAR(100) NOT NULL UNIQUE,
+                    name VARCHAR(100) NOT NULL,
+                    created_at TIMESTAMP NOT NULL,
+                    updated_at TIMESTAMP NOT NULL
+                )
+                """);
+
+        jdbcTemplate.execute("""
+                CREATE TABLE IF NOT EXISTS permissions (
+                    id UUID PRIMARY KEY,
+                    code VARCHAR(100) NOT NULL UNIQUE,
+                    description TEXT,
+                    created_at TIMESTAMP NOT NULL,
+                    updated_at TIMESTAMP NOT NULL
+                )
+                """);
+
+        jdbcTemplate.execute("""
+                CREATE TABLE IF NOT EXISTS role_permissions (
+                    role_id UUID NOT NULL,
+                    permission_id UUID NOT NULL,
+                    created_at TIMESTAMP NOT NULL,
+                    updated_at TIMESTAMP NOT NULL,
+                    PRIMARY KEY (role_id, permission_id)
+                )
+                """);
+
+        jdbcTemplate.execute("""
+                CREATE TABLE IF NOT EXISTS user_roles (
+                    user_id UUID NOT NULL,
+                    role_id UUID NOT NULL,
+                    created_at TIMESTAMP NOT NULL,
+                    PRIMARY KEY (user_id, role_id)
+                )
+                """);
     }
 
     @Test
@@ -417,6 +463,140 @@ class UserAccountIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Authentication required"));
     }
 
+    @Test
+    void assignRoleShouldReturn200WhenSuccess() throws Exception {
+        TestUser actor = insertFullUser("assign_role_actor_success@example.com");
+        TestUser target = insertFullUser("assign_role_target_success@example.com");
+        UUID roleId = insertRole("MODERATOR", "Moderator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(roleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), roleId);
+
+        String body = objectMapper.writeValueAsString(Map.of("role_id", roleId.toString()));
+
+        mockMvc.perform(post("/api/v1/admin/users/" + target.userId() + "/roles")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Gan role cho user thanh cong."))
+                .andExpect(jsonPath("$.data.user_id").value(target.userId().toString()))
+                .andExpect(jsonPath("$.data.role_id").value(roleId.toString()));
+    }
+
+    @Test
+    void assignRoleShouldReturn409WhenDuplicateAssignment() throws Exception {
+        TestUser actor = insertFullUser("assign_role_actor_duplicate@example.com");
+        TestUser target = insertFullUser("assign_role_target_duplicate@example.com");
+        UUID roleId = insertRole("ADMIN", "Administrator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(roleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), roleId);
+        insertUserRole(target.userId(), roleId);
+
+        String body = objectMapper.writeValueAsString(Map.of("role_id", roleId.toString()));
+
+        mockMvc.perform(post("/api/v1/admin/users/" + target.userId() + "/roles")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errors[0].field").value("role_id"))
+                .andExpect(jsonPath("$.errors[0].reason").value("ALREADY_ASSIGNED"));
+    }
+
+    @Test
+    void assignRoleShouldReturn403WhenActorLacksPermission() throws Exception {
+        TestUser actor = insertFullUser("assign_role_actor_forbidden@example.com");
+        TestUser target = insertFullUser("assign_role_target_forbidden@example.com");
+        UUID roleId = insertRole("MODERATOR", "Moderator");
+
+        String body = objectMapper.writeValueAsString(Map.of("role_id", roleId.toString()));
+
+        mockMvc.perform(post("/api/v1/admin/users/" + target.userId() + "/roles")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Access denied"));
+    }
+
+    @Test
+    void assignRoleShouldReturn404WhenUserOrRoleNotFound() throws Exception {
+        TestUser actor = insertFullUser("assign_role_actor_not_found@example.com");
+        UUID roleId = insertRole("MODERATOR", "Moderator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(roleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), roleId);
+
+        String bodyWithMissingRole = objectMapper.writeValueAsString(Map.of("role_id", UUID.randomUUID().toString()));
+
+        mockMvc.perform(post("/api/v1/admin/users/" + UUID.randomUUID() + "/roles")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(bodyWithMissingRole))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    void assignRoleShouldReturn403WhenSelfAssign() throws Exception {
+        TestUser actor = insertFullUser("assign_role_actor_self@example.com");
+        UUID roleId = insertRole("MODERATOR", "Moderator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(roleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), roleId);
+
+        String body = objectMapper.writeValueAsString(Map.of("role_id", roleId.toString()));
+
+        mockMvc.perform(post("/api/v1/admin/users/" + actor.userId() + "/roles")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    void assignRoleShouldReturn400WhenInvalidUuidInput() throws Exception {
+        TestUser actor = insertFullUser("assign_role_actor_invalid_uuid@example.com");
+        UUID roleId = insertRole("MODERATOR", "Moderator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(roleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), roleId);
+
+        mockMvc.perform(post("/api/v1/admin/users/not-a-uuid/roles")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("role_id", roleId.toString()))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errors[0].field").value("userId"))
+                .andExpect(jsonPath("$.errors[0].reason").value("INVALID_FORMAT"));
+
+        mockMvc.perform(post("/api/v1/admin/users/" + UUID.randomUUID() + "/roles")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("role_id", "invalid-role-id"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errors[0].field").value("role_id"))
+                .andExpect(jsonPath("$.errors[0].reason").value("INVALID_FORMAT"));
+    }
+
+    @Test
+    void assignRoleMissingJwtShouldReturn401() throws Exception {
+        mockMvc.perform(post("/api/v1/admin/users/" + UUID.randomUUID() + "/roles")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("role_id", UUID.randomUUID().toString()))))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Authentication required"));
+    }
+
     private TestUser insertFullUser(String email) {
         UUID userId = UUID.randomUUID();
         Instant now = Instant.now();
@@ -530,6 +710,66 @@ class UserAccountIntegrationTest {
                 userAgent,
                 success,
                 Timestamp.from(createdAt)
+        );
+    }
+
+    private UUID insertRole(String code, String name) {
+        UUID roleId = UUID.randomUUID();
+        Instant now = Instant.now();
+        jdbcTemplate.update(
+                """
+                        INSERT INTO roles(id, code, name, created_at, updated_at)
+                        VALUES (?, ?, ?, ?, ?)
+                        """,
+                roleId,
+                code,
+                name,
+                Timestamp.from(now),
+                Timestamp.from(now)
+        );
+        return roleId;
+    }
+
+    private UUID insertPermission(String code, String description) {
+        UUID permissionId = UUID.randomUUID();
+        Instant now = Instant.now();
+        jdbcTemplate.update(
+                """
+                        INSERT INTO permissions(id, code, description, created_at, updated_at)
+                        VALUES (?, ?, ?, ?, ?)
+                        """,
+                permissionId,
+                code,
+                description,
+                Timestamp.from(now),
+                Timestamp.from(now)
+        );
+        return permissionId;
+    }
+
+    private void insertRolePermission(UUID roleId, UUID permissionId) {
+        Instant now = Instant.now();
+        jdbcTemplate.update(
+                """
+                        INSERT INTO role_permissions(role_id, permission_id, created_at, updated_at)
+                        VALUES (?, ?, ?, ?)
+                        """,
+                roleId,
+                permissionId,
+                Timestamp.from(now),
+                Timestamp.from(now)
+        );
+    }
+
+    private void insertUserRole(UUID userId, UUID roleId) {
+        jdbcTemplate.update(
+                """
+                        INSERT INTO user_roles(user_id, role_id, created_at)
+                        VALUES (?, ?, ?)
+                        """,
+                userId,
+                roleId,
+                Timestamp.from(Instant.now())
         );
     }
 

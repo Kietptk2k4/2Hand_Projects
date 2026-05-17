@@ -44,12 +44,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/api/v1/auth/**", "/api/v1/users/**", "/api/auth/**", "/actuator/**")
+                        .ignoringRequestMatchers("/api/v1/auth/**", "/api/v1/users/**", "/api/v1/admin/**", "/api/auth/**", "/actuator/**")
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/change-password").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/admin/users/*/roles").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/users/*/public-profile").permitAll()
                         .requestMatchers("/api/v1/users/me/**").authenticated()
                         .requestMatchers("/api/v1/auth/**").permitAll()

@@ -354,4 +354,5 @@ VALUES
 ('USER_READ', 'Read user information'),
 ('USER_UPDATE', 'Update user information'),
 ('USER_DELETE', 'Delete user account'),
+('ASSIGN_ROLE', 'Assign role to user'),
 ('ADMIN_ACCESS', 'Access admin dashboard');
