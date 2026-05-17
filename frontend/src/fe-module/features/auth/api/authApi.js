@@ -1,4 +1,5 @@
 import axios from "axios";
+import { apiClient } from "../../../services/http/apiClient";
 
 const AUTH_BASE_URL = import.meta.env.VITE_AUTH_SERVICE_BASE_URL || "";
 
@@ -101,5 +102,14 @@ export function getOAuthRedirectUrl(provider) {
   const endpoint = providers[provider];
   if (!endpoint) return "";
   return `${AUTH_BASE_URL}${endpoint}`;
+}
+
+export async function getMyProfile() {
+  try {
+    const response = await apiClient.get("/api/v1/users/me");
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
 }
 

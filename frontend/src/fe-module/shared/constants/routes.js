@@ -8,5 +8,6 @@ export const APP_ROUTES = {
   oauthFailure: "/oauth/failure",
   account: "/account",
   changePassword: "/account/change-password",
+  sessionExpired: "/auth/session-expired",
 };
 

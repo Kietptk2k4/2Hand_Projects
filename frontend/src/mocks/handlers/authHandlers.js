@@ -6,6 +6,7 @@ function getUserByToken(req) {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) return null;
   const token = authHeader.replace("Bearer ", "");
+  if (token.includes("expired-access")) return null;
   const user = mockUsers.find((item) => token.includes(item.id));
   return user || null;
 }
@@ -83,6 +84,13 @@ export const authHandlers = [
     await delay(350);
     const body = await request.json();
     const refreshToken = body?.refresh_token;
+
+    if (refreshToken === "mock-refresh-expired") {
+      return HttpResponse.json(
+        apiError(401, "Phien dang nhap khong hop le hoac da het han. Vui long dang nhap lai."),
+        { status: 401 }
+      );
+    }
 
     if (!refreshToken || !refreshToken.startsWith("mock-refresh-")) {
       return HttpResponse.json(

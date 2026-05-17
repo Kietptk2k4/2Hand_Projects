@@ -1,12 +1,33 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { APP_ROUTES } from "../../shared/constants/routes";
+import { useAuthSession } from "../../features/auth/hooks/useAuthSession.jsx";
+import { SessionExpiredModal } from "../../features/auth/components/SessionExpiredModal.jsx";
+import { useNavigate } from "react-router-dom";
 
 export function AppLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { sessionExpiredState, hideSessionExpired } = useAuthSession();
   const isAuthImmersiveRoute =
     location.pathname === APP_ROUTES.login ||
     location.pathname === APP_ROUTES.register ||
     location.pathname === APP_ROUTES.verifyEmail;
+
+  const isSensitiveRoute = location.pathname.startsWith("/account");
+  const allowClose = !isSensitiveRoute;
+
+  const onSignIn = () => {
+    hideSessionExpired();
+    navigate(APP_ROUTES.login, { replace: true });
+  };
+
+  const onClose = () => {
+    if (!allowClose) {
+      onSignIn();
+      return;
+    }
+    hideSessionExpired();
+  };
 
   if (isAuthImmersiveRoute) {
     return (
@@ -14,6 +35,13 @@ export function AppLayout() {
         <main className="px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
           <Outlet />
         </main>
+        <SessionExpiredModal
+          open={sessionExpiredState.isOpen}
+          message={sessionExpiredState.message}
+          allowClose={allowClose}
+          onSignIn={onSignIn}
+          onClose={onClose}
+        />
       </div>
     );
   }
@@ -36,6 +64,13 @@ export function AppLayout() {
       <main className="mx-auto w-full max-w-6xl px-4 py-8">
         <Outlet />
       </main>
+      <SessionExpiredModal
+        open={sessionExpiredState.isOpen}
+        message={sessionExpiredState.message}
+        allowClose={allowClose}
+        onSignIn={onSignIn}
+        onClose={onClose}
+      />
     </div>
   );
 }
