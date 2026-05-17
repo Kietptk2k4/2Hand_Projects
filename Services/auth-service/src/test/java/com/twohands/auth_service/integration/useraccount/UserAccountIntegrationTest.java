@@ -73,6 +73,40 @@ class UserAccountIntegrationTest {
     }
 
     @Test
+    void viewSessionsShouldReturnOnlyActiveSessionsSortedDesc() throws Exception {
+        TestUser user = insertFullUser("view_sessions@example.com");
+
+        Instant older = Instant.now().minusSeconds(300);
+        Instant newer = Instant.now().minusSeconds(120);
+        insertSession(user.userId(), "device-old", "10.0.0.1", "ACTIVE", older);
+        insertSession(user.userId(), "device-new", "10.0.0.2", "ACTIVE", newer);
+        insertSession(user.userId(), "device-revoked", "10.0.0.3", "REVOKED", Instant.now().minusSeconds(30));
+
+        mockMvc.perform(get("/api/v1/users/me/sessions")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(user.userId(), user.email())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Lay danh sach phien dang nhap thanh cong."))
+                .andExpect(jsonPath("$.data.sessions.length()").value(2))
+                .andExpect(jsonPath("$.data.sessions[0].device_id").value("device-new"))
+                .andExpect(jsonPath("$.data.sessions[1].device_id").value("device-old"))
+                .andExpect(jsonPath("$.data.sessions[0].status").value("ACTIVE"))
+                .andExpect(jsonPath("$.data.sessions[0].token_hash").doesNotExist());
+    }
+
+    @Test
+    void viewSessionsShouldReturnEmptyListWhenNoActiveSession() throws Exception {
+        TestUser user = insertFullUser("view_sessions_empty@example.com");
+        insertSession(user.userId(), "device-revoked", "10.10.10.1", "REVOKED", Instant.now().minusSeconds(100));
+
+        mockMvc.perform(get("/api/v1/users/me/sessions")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(user.userId(), user.email())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.sessions.length()").value(0));
+    }
+
+    @Test
     void updateProfileShouldPersistAndWriteOutbox() throws Exception {
         TestUser user = insertFullUser("update_profile@example.com");
 
@@ -335,6 +369,28 @@ class UserAccountIntegrationTest {
                 "ACTIVE",
                 Timestamp.from(now),
                 Timestamp.from(now)
+        );
+    }
+
+    private void insertSession(UUID userId, String deviceId, String ip, String status, Instant createdAt) {
+        UUID sessionId = UUID.randomUUID();
+        jdbcTemplate.update(
+                """
+                        INSERT INTO refresh_token_sessions(
+                            id, user_id, token_hash, device_id, ip_address, user_agent, expires_at, status, created_at, updated_at
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                sessionId,
+                userId,
+                "hash-" + sessionId,
+                deviceId,
+                ip,
+                "JUnit",
+                Timestamp.from(createdAt.plusSeconds(3600)),
+                status,
+                Timestamp.from(createdAt),
+                Timestamp.from(createdAt)
         );
     }
 

@@ -40,3 +40,8 @@ out/
 
 ### environment variables ###
 *.env
+frontend/.env
+
+### dependencies ###
+frontend/node_modules/
+node_modules/

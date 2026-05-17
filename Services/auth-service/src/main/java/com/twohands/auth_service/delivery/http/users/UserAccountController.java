@@ -13,6 +13,8 @@ import com.twohands.auth_service.application.useraccount.updatesettings.UpdateUs
 import com.twohands.auth_service.application.useraccount.updatesettings.UpdateUserSettingsUseCase;
 import com.twohands.auth_service.application.useraccount.viewaccount.ViewAccountResult;
 import com.twohands.auth_service.application.useraccount.viewaccount.ViewAccountUseCase;
+import com.twohands.auth_service.application.useraccount.viewloginsesssionlist.ViewLoginSesssionListResult;
+import com.twohands.auth_service.application.useraccount.viewloginsesssionlist.ViewLoginSesssionListUseCase;
 import com.twohands.auth_service.common.dto.ApiResponse;
 import com.twohands.auth_service.delivery.http.users.request.SoftDeleteAccountRequest;
 import com.twohands.auth_service.delivery.http.users.request.TogglePrivacyRequest;
@@ -21,6 +23,7 @@ import com.twohands.auth_service.delivery.http.users.request.UpdateProfileReques
 import com.twohands.auth_service.delivery.http.users.request.UpdateUserSettingsRequest;
 import com.twohands.auth_service.delivery.http.users.response.UpdateUserSettingsResponse;
 import com.twohands.auth_service.delivery.http.users.response.ViewAccountResponse;
+import com.twohands.auth_service.delivery.http.users.response.ViewLoginSesssionListResponse;
 import com.twohands.auth_service.exception.AppException;
 import com.twohands.auth_service.exception.ErrorCode;
 import jakarta.validation.Valid;
@@ -47,6 +50,7 @@ public class UserAccountController {
     private final TogglePrivacyUseCase togglePrivacyUseCase;
     private final UpdateUserSettingsUseCase updateUserSettingsUseCase;
     private final SoftDeleteAccountUseCase softDeleteAccountUseCase;
+    private final ViewLoginSesssionListUseCase viewLoginSesssionListUseCase;
 
     public UserAccountController(
             ViewAccountUseCase viewAccountUseCase,
@@ -54,7 +58,8 @@ public class UserAccountController {
             UpdateAvatarUseCase updateAvatarUseCase,
             TogglePrivacyUseCase togglePrivacyUseCase,
             UpdateUserSettingsUseCase updateUserSettingsUseCase,
-            SoftDeleteAccountUseCase softDeleteAccountUseCase
+            SoftDeleteAccountUseCase softDeleteAccountUseCase,
+            ViewLoginSesssionListUseCase viewLoginSesssionListUseCase
     ) {
         this.viewAccountUseCase = viewAccountUseCase;
         this.updateProfileUseCase = updateProfileUseCase;
@@ -62,6 +67,7 @@ public class UserAccountController {
         this.togglePrivacyUseCase = togglePrivacyUseCase;
         this.updateUserSettingsUseCase = updateUserSettingsUseCase;
         this.softDeleteAccountUseCase = softDeleteAccountUseCase;
+        this.viewLoginSesssionListUseCase = viewLoginSesssionListUseCase;
     }
 
     @GetMapping
@@ -91,6 +97,30 @@ public class UserAccountController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(HttpStatus.OK.value(), viewAccountUseCase.successMessage(), response));
+    }
+
+    @GetMapping("/sessions")
+    public ResponseEntity<ApiResponse<ViewLoginSesssionListResponse>> getSessionList(Authentication authentication) {
+        UUID userId = extractUserId(authentication);
+        ViewLoginSesssionListResult result = viewLoginSesssionListUseCase.execute(userId);
+
+        ViewLoginSesssionListResponse response = new ViewLoginSesssionListResponse(
+                result.sessions().stream()
+                        .map(session -> new ViewLoginSesssionListResponse.SessionData(
+                                session.id().toString(),
+                                session.deviceId(),
+                                session.ipAddress(),
+                                session.userAgent(),
+                                session.status(),
+                                session.createdAt(),
+                                session.updatedAt(),
+                                session.expiresAt()
+                        ))
+                        .toList()
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(HttpStatus.OK.value(), viewLoginSesssionListUseCase.successMessage(), response));
     }
 
     @PutMapping("/profile")
