@@ -22,6 +22,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -597,6 +598,135 @@ class UserAccountIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Authentication required"));
     }
 
+    @Test
+    void revokeRoleShouldReturn200WhenSuccess() throws Exception {
+        TestUser actor = insertFullUser("revoke_role_actor_success@example.com");
+        TestUser target = insertFullUser("revoke_role_target_success@example.com");
+        UUID roleId = insertRole("MODERATOR", "Moderator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(roleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), roleId);
+        insertUserRole(target.userId(), roleId);
+
+        mockMvc.perform(delete("/api/v1/admin/users/" + target.userId() + "/roles/" + roleId)
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Thu hoi role khoi user thanh cong."))
+                .andExpect(jsonPath("$.data.user_id").value(target.userId().toString()))
+                .andExpect(jsonPath("$.data.role_id").value(roleId.toString()));
+    }
+
+    @Test
+    void revokeRoleShouldReturn409WhenRoleNotAssigned() throws Exception {
+        TestUser actor = insertFullUser("revoke_role_actor_conflict@example.com");
+        TestUser target = insertFullUser("revoke_role_target_conflict@example.com");
+        UUID roleId = insertRole("MODERATOR", "Moderator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(roleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), roleId);
+
+        mockMvc.perform(delete("/api/v1/admin/users/" + target.userId() + "/roles/" + roleId)
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errors[0].field").value("role_id"))
+                .andExpect(jsonPath("$.errors[0].reason").value("ROLE_NOT_ASSIGNED"));
+    }
+
+    @Test
+    void revokeRoleShouldReturn403WhenActorLacksPermission() throws Exception {
+        TestUser actor = insertFullUser("revoke_role_actor_forbidden@example.com");
+        TestUser target = insertFullUser("revoke_role_target_forbidden@example.com");
+        UUID roleId = insertRole("MODERATOR", "Moderator");
+        insertUserRole(target.userId(), roleId);
+
+        mockMvc.perform(delete("/api/v1/admin/users/" + target.userId() + "/roles/" + roleId)
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Access denied"));
+    }
+
+    @Test
+    void revokeRoleShouldReturn404WhenUserOrRoleNotFound() throws Exception {
+        TestUser actor = insertFullUser("revoke_role_actor_not_found@example.com");
+        UUID roleId = insertRole("MODERATOR", "Moderator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(roleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), roleId);
+
+        mockMvc.perform(delete("/api/v1/admin/users/" + UUID.randomUUID() + "/roles/" + UUID.randomUUID())
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    void revokeRoleShouldReturn403WhenSelfRevoke() throws Exception {
+        TestUser actor = insertFullUser("revoke_role_actor_self@example.com");
+        UUID roleId = insertRole("MODERATOR", "Moderator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(roleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), roleId);
+
+        mockMvc.perform(delete("/api/v1/admin/users/" + actor.userId() + "/roles/" + roleId)
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Access denied"));
+    }
+
+    @Test
+    void revokeRoleShouldReturn403ForLastSuperAdminProtection() throws Exception {
+        TestUser actor = insertFullUser("revoke_role_actor_last_admin@example.com");
+        TestUser target = insertFullUser("revoke_role_target_last_admin@example.com");
+        UUID adminRoleId = insertRole("ADMIN", "Administrator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(adminRoleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), adminRoleId);
+        insertUserRole(target.userId(), adminRoleId);
+        // Make target become the last ADMIN holder by removing actor ADMIN role.
+        removeUserRole(actor.userId(), adminRoleId);
+
+        mockMvc.perform(delete("/api/v1/admin/users/" + target.userId() + "/roles/" + adminRoleId)
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Access denied"));
+    }
+
+    @Test
+    void revokeRoleShouldReturn400WhenInvalidUuidInput() throws Exception {
+        TestUser actor = insertFullUser("revoke_role_actor_invalid_uuid@example.com");
+        UUID roleId = insertRole("MODERATOR", "Moderator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(roleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), roleId);
+
+        mockMvc.perform(delete("/api/v1/admin/users/not-a-uuid/roles/" + roleId)
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errors[0].field").value("userId"))
+                .andExpect(jsonPath("$.errors[0].reason").value("INVALID_FORMAT"));
+
+        mockMvc.perform(delete("/api/v1/admin/users/" + UUID.randomUUID() + "/roles/not-a-role-id")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errors[0].field").value("roleId"))
+                .andExpect(jsonPath("$.errors[0].reason").value("INVALID_FORMAT"));
+    }
+
+    @Test
+    void revokeRoleMissingJwtShouldReturn401() throws Exception {
+        mockMvc.perform(delete("/api/v1/admin/users/" + UUID.randomUUID() + "/roles/" + UUID.randomUUID()))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Authentication required"));
+    }
+
     private TestUser insertFullUser(String email) {
         UUID userId = UUID.randomUUID();
         Instant now = Instant.now();
@@ -770,6 +900,14 @@ class UserAccountIntegrationTest {
                 userId,
                 roleId,
                 Timestamp.from(Instant.now())
+        );
+    }
+
+    private void removeUserRole(UUID userId, UUID roleId) {
+        jdbcTemplate.update(
+                "DELETE FROM user_roles WHERE user_id = ? AND role_id = ?",
+                userId,
+                roleId
         );
     }
 
