@@ -5,6 +5,8 @@ import com.twohands.auth_service.application.useraccount.softdelete.SoftDeleteAc
 import com.twohands.auth_service.application.useraccount.toggleprivacy.TogglePrivacyCommand;
 import com.twohands.auth_service.application.useraccount.toggleprivacy.TogglePrivacyUseCase;
 import com.twohands.auth_service.application.useraccount.logoutallsesssion.LogoutAllSesssionUseCase;
+import com.twohands.auth_service.application.useraccount.trackloginhistory.TrackLoginHistoryResult;
+import com.twohands.auth_service.application.useraccount.trackloginhistory.TrackLoginHistoryUseCase;
 import com.twohands.auth_service.application.useraccount.updateavatar.UpdateAvatarCommand;
 import com.twohands.auth_service.application.useraccount.updateavatar.UpdateAvatarUseCase;
 import com.twohands.auth_service.application.useraccount.updateprofile.UpdateProfileCommand;
@@ -22,6 +24,7 @@ import com.twohands.auth_service.delivery.http.users.request.TogglePrivacyReques
 import com.twohands.auth_service.delivery.http.users.request.UpdateAvatarRequest;
 import com.twohands.auth_service.delivery.http.users.request.UpdateProfileRequest;
 import com.twohands.auth_service.delivery.http.users.request.UpdateUserSettingsRequest;
+import com.twohands.auth_service.delivery.http.users.response.TrackLoginHistoryResponse;
 import com.twohands.auth_service.delivery.http.users.response.UpdateUserSettingsResponse;
 import com.twohands.auth_service.delivery.http.users.response.ViewAccountResponse;
 import com.twohands.auth_service.delivery.http.users.response.ViewLoginSesssionListResponse;
@@ -36,6 +39,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -53,6 +57,7 @@ public class UserAccountController {
     private final SoftDeleteAccountUseCase softDeleteAccountUseCase;
     private final ViewLoginSesssionListUseCase viewLoginSesssionListUseCase;
     private final LogoutAllSesssionUseCase logoutAllSesssionUseCase;
+    private final TrackLoginHistoryUseCase trackLoginHistoryUseCase;
 
     public UserAccountController(
             ViewAccountUseCase viewAccountUseCase,
@@ -62,7 +67,8 @@ public class UserAccountController {
             UpdateUserSettingsUseCase updateUserSettingsUseCase,
             SoftDeleteAccountUseCase softDeleteAccountUseCase,
             ViewLoginSesssionListUseCase viewLoginSesssionListUseCase,
-            LogoutAllSesssionUseCase logoutAllSesssionUseCase
+            LogoutAllSesssionUseCase logoutAllSesssionUseCase,
+            TrackLoginHistoryUseCase trackLoginHistoryUseCase
     ) {
         this.viewAccountUseCase = viewAccountUseCase;
         this.updateProfileUseCase = updateProfileUseCase;
@@ -72,6 +78,7 @@ public class UserAccountController {
         this.softDeleteAccountUseCase = softDeleteAccountUseCase;
         this.viewLoginSesssionListUseCase = viewLoginSesssionListUseCase;
         this.logoutAllSesssionUseCase = logoutAllSesssionUseCase;
+        this.trackLoginHistoryUseCase = trackLoginHistoryUseCase;
     }
 
     @GetMapping
@@ -134,6 +141,36 @@ public class UserAccountController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(HttpStatus.OK.value(), logoutAllSesssionUseCase.successMessage(), null));
+    }
+
+    @GetMapping("/login-history")
+    public ResponseEntity<ApiResponse<TrackLoginHistoryResponse>> trackLoginHistory(
+            Authentication authentication,
+            @RequestParam(name = "limit", defaultValue = "20") int limit,
+            @RequestParam(name = "offset", defaultValue = "0") int offset
+    ) {
+        validatePagination(limit, offset);
+
+        UUID userId = extractUserId(authentication);
+        TrackLoginHistoryResult result = trackLoginHistoryUseCase.execute(userId, limit, offset);
+
+        TrackLoginHistoryResponse response = new TrackLoginHistoryResponse(
+                result.items().stream()
+                        .map(item -> new TrackLoginHistoryResponse.Item(
+                                item.id().toString(),
+                                item.loginMethod(),
+                                item.ipAddress(),
+                                item.userAgent(),
+                                item.success(),
+                                item.createdAt()
+                        ))
+                        .toList(),
+                result.limit(),
+                result.offset()
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(HttpStatus.OK.value(), trackLoginHistoryUseCase.successMessage(), response));
     }
 
     @PutMapping("/profile")
@@ -214,6 +251,25 @@ public class UserAccountController {
             return UUID.fromString(authentication.getPrincipal().toString());
         } catch (IllegalArgumentException ex) {
             throw new AppException(ErrorCode.UNAUTHORIZED, ErrorCode.UNAUTHORIZED.defaultMessage());
+        }
+    }
+
+    private void validatePagination(int limit, int offset) {
+        if (limit < 1 || limit > 100) {
+            throw new AppException(
+                    ErrorCode.VALIDATION_ERROR,
+                    "Limit khong hop le.",
+                    "limit",
+                    "INVALID_RANGE"
+            );
+        }
+        if (offset < 0) {
+            throw new AppException(
+                    ErrorCode.VALIDATION_ERROR,
+                    "Offset khong hop le.",
+                    "offset",
+                    "INVALID_RANGE"
+            );
         }
     }
 }

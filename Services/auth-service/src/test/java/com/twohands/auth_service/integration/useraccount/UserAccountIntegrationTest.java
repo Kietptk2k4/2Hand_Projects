@@ -352,6 +352,71 @@ class UserAccountIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Authentication required"));
     }
 
+    @Test
+    void trackLoginHistoryShouldReturnItemsWithLimitOffsetAndBothSuccessStates() throws Exception {
+        TestUser user = insertFullUser("track_history_items@example.com");
+        insertLoginLog(user.userId(), "EMAIL", "1.1.1.1", "Agent A", true, Instant.now().minusSeconds(30));
+        insertLoginLog(user.userId(), "GOOGLE", "1.1.1.2", "Agent B", false, Instant.now().minusSeconds(20));
+        insertLoginLog(user.userId(), "FACEBOOK", "1.1.1.3", "Agent C", true, Instant.now().minusSeconds(10));
+
+        mockMvc.perform(get("/api/v1/users/me/login-history")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(user.userId(), user.email()))
+                        .param("limit", "2")
+                        .param("offset", "0"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Lay lich su dang nhap thanh cong."))
+                .andExpect(jsonPath("$.data.limit").value(2))
+                .andExpect(jsonPath("$.data.offset").value(0))
+                .andExpect(jsonPath("$.data.items.length()").value(2))
+                .andExpect(jsonPath("$.data.items[0].login_method").value("FACEBOOK"))
+                .andExpect(jsonPath("$.data.items[1].login_method").value("GOOGLE"))
+                .andExpect(jsonPath("$.data.items[0].success").value(true))
+                .andExpect(jsonPath("$.data.items[1].success").value(false));
+    }
+
+    @Test
+    void trackLoginHistoryShouldReturnEmptyList() throws Exception {
+        TestUser user = insertFullUser("track_history_empty@example.com");
+
+        mockMvc.perform(get("/api/v1/users/me/login-history")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(user.userId(), user.email())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.items.length()").value(0))
+                .andExpect(jsonPath("$.data.limit").value(20))
+                .andExpect(jsonPath("$.data.offset").value(0));
+    }
+
+    @Test
+    void trackLoginHistoryInvalidPaginationShouldReturn400() throws Exception {
+        TestUser user = insertFullUser("track_history_invalid_pagination@example.com");
+
+        mockMvc.perform(get("/api/v1/users/me/login-history")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(user.userId(), user.email()))
+                        .param("limit", "0"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errors[0].field").value("limit"))
+                .andExpect(jsonPath("$.errors[0].reason").value("INVALID_RANGE"));
+
+        mockMvc.perform(get("/api/v1/users/me/login-history")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(user.userId(), user.email()))
+                        .param("offset", "-1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errors[0].field").value("offset"))
+                .andExpect(jsonPath("$.errors[0].reason").value("INVALID_RANGE"));
+    }
+
+    @Test
+    void trackLoginHistoryMissingJwtShouldReturn401() throws Exception {
+        mockMvc.perform(get("/api/v1/users/me/login-history"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Authentication required"));
+    }
+
     private TestUser insertFullUser(String email) {
         UUID userId = UUID.randomUUID();
         Instant now = Instant.now();
@@ -446,6 +511,24 @@ class UserAccountIntegrationTest {
                 Timestamp.from(createdAt.plusSeconds(3600)),
                 status,
                 Timestamp.from(createdAt),
+                Timestamp.from(createdAt)
+        );
+    }
+
+    private void insertLoginLog(UUID userId, String loginMethod, String ipAddress, String userAgent, boolean success, Instant createdAt) {
+        jdbcTemplate.update(
+                """
+                        INSERT INTO login_logs(
+                            id, user_id, login_method, ip_address, user_agent, success, created_at
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """,
+                UUID.randomUUID(),
+                userId,
+                loginMethod,
+                ipAddress,
+                userAgent,
+                success,
                 Timestamp.from(createdAt)
         );
     }
