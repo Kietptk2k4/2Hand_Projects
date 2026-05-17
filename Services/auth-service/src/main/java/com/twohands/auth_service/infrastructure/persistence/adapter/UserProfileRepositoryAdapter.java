@@ -74,6 +74,48 @@ public class UserProfileRepositoryAdapter implements UserProfileRepository {
     }
 
     @Override
+    public int updateByUserId(UserProfile profile) {
+        String sql = """
+                UPDATE user_profiles
+                SET display_name = :displayName,
+                    avatar_url = :avatarUrl,
+                    bio = :bio,
+                    website = :website,
+                    social_links = CAST(:socialLinks AS jsonb),
+                    is_private = :isPrivate,
+                    updated_at = :updatedAt
+                WHERE user_id = :userId
+                """;
+
+        String socialLinksJson = "{}";
+        if (profile.socialLinks() != null && !profile.socialLinks().isEmpty()) {
+            StringBuilder builder = new StringBuilder("{");
+            boolean first = true;
+            for (var entry : profile.socialLinks().entrySet()) {
+                if (!first) {
+                    builder.append(',');
+                }
+                builder.append('"').append(entry.getKey()).append('"')
+                        .append(':')
+                        .append('"').append(entry.getValue()).append('"');
+                first = false;
+            }
+            builder.append('}');
+            socialLinksJson = builder.toString();
+        }
+
+        return jdbcTemplate.update(sql, new MapSqlParameterSource()
+                .addValue("userId", profile.userId())
+                .addValue("displayName", profile.displayName())
+                .addValue("avatarUrl", profile.avatarUrl())
+                .addValue("bio", profile.bio())
+                .addValue("website", profile.website())
+                .addValue("socialLinks", socialLinksJson)
+                .addValue("isPrivate", profile.isPrivate())
+                .addValue("updatedAt", profile.updatedAt()));
+    }
+
+    @Override
     public void deleteByUserId(UUID userId) {
         jdbcTemplate.update("DELETE FROM user_profiles WHERE user_id = :userId", new MapSqlParameterSource("userId", userId));
     }

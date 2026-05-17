@@ -51,6 +51,21 @@ public class UserSettingsRepositoryAdapter implements UserSettingsRepository {
     }
 
     @Override
+    public int updateByUserId(UserSettings settings) {
+        String sql = """
+                UPDATE user_settings
+                SET appearance_mode = :appearanceMode,
+                    updated_at = :updatedAt
+                WHERE user_id = :userId
+                """;
+
+        return jdbcTemplate.update(sql, new MapSqlParameterSource()
+                .addValue("userId", settings.userId())
+                .addValue("appearanceMode", settings.appearanceMode().name())
+                .addValue("updatedAt", settings.updatedAt()));
+    }
+
+    @Override
     public void deleteByUserId(UUID userId) {
         jdbcTemplate.update("DELETE FROM user_settings WHERE user_id = :userId", new MapSqlParameterSource("userId", userId));
     }

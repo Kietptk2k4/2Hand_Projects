@@ -119,4 +119,20 @@ public class UserRepositoryAdapter implements UserRepository {
                 .addValue("passwordChangedAt", passwordChangedAt)
                 .addValue("updatedAt", passwordChangedAt));
     }
+
+    @Override
+    public void updateStatusDeleted(UUID userId, Instant deletedAt) {
+        String sql = """
+                UPDATE users
+                SET status = :status,
+                    deleted_at = :deletedAt,
+                    updated_at = :updatedAt
+                WHERE id = :id
+                """;
+        jdbcTemplate.update(sql, new MapSqlParameterSource()
+                .addValue("id", userId)
+                .addValue("status", "DELETED")
+                .addValue("deletedAt", deletedAt)
+                .addValue("updatedAt", deletedAt));
+    }
 }

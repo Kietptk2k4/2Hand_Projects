@@ -8,5 +8,7 @@ public interface UserProfileRepository {
 
     UserProfile save(UserProfile profile);
 
+    int updateByUserId(UserProfile profile);
+
     void deleteByUserId(UUID userId);
 }

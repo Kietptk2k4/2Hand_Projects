@@ -8,5 +8,7 @@ public interface UserSettingsRepository {
 
     UserSettings save(UserSettings settings);
 
+    int updateByUserId(UserSettings settings);
+
     void deleteByUserId(UUID userId);
 }

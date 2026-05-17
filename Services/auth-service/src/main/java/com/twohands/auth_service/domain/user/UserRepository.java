@@ -20,4 +20,6 @@ public interface UserRepository {
     void updateLastLoginAt(UUID userId, Instant lastLoginAt);
 
     void updatePassword(UUID userId, PasswordHash passwordHash, Instant passwordChangedAt);
+
+    void updateStatusDeleted(UUID userId, Instant deletedAt);
 }
