@@ -853,6 +853,105 @@ class UserAccountIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Authentication required"));
     }
 
+    @Test
+    void checkUserPermissionShouldReturn200WithPermissions() throws Exception {
+        TestUser actor = insertFullUser("check_user_permission_actor_success@example.com");
+        TestUser target = insertFullUser("check_user_permission_target_success@example.com");
+        UUID adminRoleId = insertRole("ADMIN", "Administrator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        UUID userUpdatePermissionId = insertPermission("USER_UPDATE", "Update user information");
+        insertRolePermission(adminRoleId, assignRolePermissionId);
+        insertRolePermission(adminRoleId, userUpdatePermissionId);
+        insertUserRole(actor.userId(), adminRoleId);
+        insertUserRole(target.userId(), adminRoleId);
+
+        mockMvc.perform(get("/api/v1/admin/users/" + target.userId() + "/permissions")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Lay danh sach permission cua user thanh cong."))
+                .andExpect(jsonPath("$.data.user_id").value(target.userId().toString()))
+                .andExpect(jsonPath("$.data.permissions.length()").value(2))
+                .andExpect(jsonPath("$.data.permissions[0].code").value("ASSIGN_ROLE"))
+                .andExpect(jsonPath("$.data.permissions[1].code").value("USER_UPDATE"));
+    }
+
+    @Test
+    void checkUserPermissionShouldReturn200WithEmptyPermissions() throws Exception {
+        TestUser actor = insertFullUser("check_user_permission_actor_empty@example.com");
+        TestUser target = insertFullUser("check_user_permission_target_empty@example.com");
+        UUID actorRoleId = insertRole("ADMIN", "Administrator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(actorRoleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), actorRoleId);
+
+        mockMvc.perform(get("/api/v1/admin/users/" + target.userId() + "/permissions")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.user_id").value(target.userId().toString()))
+                .andExpect(jsonPath("$.data.permissions.length()").value(0));
+    }
+
+    @Test
+    void checkUserPermissionShouldReturn403WhenActorLacksPermission() throws Exception {
+        TestUser actor = insertFullUser("check_user_permission_actor_forbidden@example.com");
+        TestUser target = insertFullUser("check_user_permission_target_forbidden@example.com");
+
+        mockMvc.perform(get("/api/v1/admin/users/" + target.userId() + "/permissions")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Access denied"));
+    }
+
+    @Test
+    void checkUserPermissionShouldReturn404WhenTargetUserMissingOrDeleted() throws Exception {
+        TestUser actor = insertFullUser("check_user_permission_actor_not_found@example.com");
+        TestUser targetDeleted = insertFullUser("check_user_permission_target_deleted@example.com");
+        UUID adminRoleId = insertRole("ADMIN", "Administrator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(adminRoleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), adminRoleId);
+
+        mockMvc.perform(get("/api/v1/admin/users/" + UUID.randomUUID() + "/permissions")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false));
+
+        jdbcTemplate.update("UPDATE users SET status = 'DELETED', deleted_at = ? WHERE id = ?",
+                Timestamp.from(Instant.now()), targetDeleted.userId());
+
+        mockMvc.perform(get("/api/v1/admin/users/" + targetDeleted.userId() + "/permissions")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    void checkUserPermissionShouldReturn400WhenUserIdInvalidFormat() throws Exception {
+        TestUser actor = insertFullUser("check_user_permission_actor_invalid_user_id@example.com");
+        UUID adminRoleId = insertRole("ADMIN", "Administrator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(adminRoleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), adminRoleId);
+
+        mockMvc.perform(get("/api/v1/admin/users/not-a-uuid/permissions")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errors[0].field").value("userId"))
+                .andExpect(jsonPath("$.errors[0].reason").value("INVALID_FORMAT"));
+    }
+
+    @Test
+    void checkUserPermissionMissingJwtShouldReturn401() throws Exception {
+        mockMvc.perform(get("/api/v1/admin/users/" + UUID.randomUUID() + "/permissions"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Authentication required"));
+    }
+
     private TestUser insertFullUser(String email) {
         UUID userId = UUID.randomUUID();
         Instant now = Instant.now();

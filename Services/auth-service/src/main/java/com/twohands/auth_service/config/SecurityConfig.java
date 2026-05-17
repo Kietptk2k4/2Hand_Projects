@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/change-password").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/admin/roles").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/admin/roles/*/permissions").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/admin/users/*/permissions").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/v1/admin/users/*/roles").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/admin/users/*/roles/*").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/users/*/public-profile").permitAll()

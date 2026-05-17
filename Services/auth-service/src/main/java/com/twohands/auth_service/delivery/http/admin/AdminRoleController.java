@@ -3,6 +3,8 @@ package com.twohands.auth_service.delivery.http.admin;
 import com.twohands.auth_service.application.rbac.assignrolestousers.AssignRolesToUsersCommand;
 import com.twohands.auth_service.application.rbac.assignrolestousers.AssignRolesToUsersResult;
 import com.twohands.auth_service.application.rbac.assignrolestousers.AssignRolesToUsersUseCase;
+import com.twohands.auth_service.application.rbac.checkuserpermission.CheckUserPermissionResult;
+import com.twohands.auth_service.application.rbac.checkuserpermission.CheckUserPermissionUseCase;
 import com.twohands.auth_service.application.rbac.revokerolefromuser.RevokeRoleFromUserCommand;
 import com.twohands.auth_service.application.rbac.revokerolefromuser.RevokeRoleFromUserResult;
 import com.twohands.auth_service.application.rbac.revokerolefromuser.RevokeRoleFromUserUseCase;
@@ -13,6 +15,7 @@ import com.twohands.auth_service.application.rbac.viewrolelist.ViewRoleListUseCa
 import com.twohands.auth_service.common.dto.ApiResponse;
 import com.twohands.auth_service.delivery.http.admin.request.AssignRolesToUsersRequest;
 import com.twohands.auth_service.delivery.http.admin.response.AssignRolesToUsersResponse;
+import com.twohands.auth_service.delivery.http.admin.response.CheckUserPermissionResponse;
 import com.twohands.auth_service.delivery.http.admin.response.RevokeRoleFromUserResponse;
 import com.twohands.auth_service.delivery.http.admin.response.ViewPermissionsOfRoleResponse;
 import com.twohands.auth_service.delivery.http.admin.response.ViewRoleListResponse;
@@ -40,17 +43,20 @@ public class AdminRoleController {
     private final RevokeRoleFromUserUseCase revokeRoleFromUserUseCase;
     private final ViewRoleListUseCase viewRoleListUseCase;
     private final ViewPermissionsOfRoleUseCase viewPermissionsOfRoleUseCase;
+    private final CheckUserPermissionUseCase checkUserPermissionUseCase;
 
     public AdminRoleController(
             AssignRolesToUsersUseCase assignRolesToUsersUseCase,
             RevokeRoleFromUserUseCase revokeRoleFromUserUseCase,
             ViewRoleListUseCase viewRoleListUseCase,
-            ViewPermissionsOfRoleUseCase viewPermissionsOfRoleUseCase
+            ViewPermissionsOfRoleUseCase viewPermissionsOfRoleUseCase,
+            CheckUserPermissionUseCase checkUserPermissionUseCase
     ) {
         this.assignRolesToUsersUseCase = assignRolesToUsersUseCase;
         this.revokeRoleFromUserUseCase = revokeRoleFromUserUseCase;
         this.viewRoleListUseCase = viewRoleListUseCase;
         this.viewPermissionsOfRoleUseCase = viewPermissionsOfRoleUseCase;
+        this.checkUserPermissionUseCase = checkUserPermissionUseCase;
     }
 
     @GetMapping("/roles")
@@ -99,6 +105,26 @@ public class AdminRoleController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(HttpStatus.OK.value(), viewPermissionsOfRoleUseCase.successMessage(), response));
+    }
+
+    @GetMapping("/users/{userId}/permissions")
+    public ResponseEntity<ApiResponse<CheckUserPermissionResponse>> checkUserPermission(
+            @PathVariable String userId,
+            Authentication authentication
+    ) {
+        UUID actorUserId = extractUserId(authentication);
+        UUID targetUserId = parseUuid(userId, "userId");
+        CheckUserPermissionResult result = checkUserPermissionUseCase.execute(actorUserId, targetUserId);
+
+        CheckUserPermissionResponse response = new CheckUserPermissionResponse(
+                result.userId().toString(),
+                result.permissions().stream()
+                        .map(permission -> new CheckUserPermissionResponse.PermissionData(permission.code()))
+                        .toList()
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(HttpStatus.OK.value(), checkUserPermissionUseCase.successMessage(), response));
     }
 
     @PostMapping("/users/{userId}/roles")
