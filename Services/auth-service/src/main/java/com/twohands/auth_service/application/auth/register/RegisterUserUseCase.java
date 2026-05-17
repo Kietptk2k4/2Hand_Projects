@@ -2,6 +2,7 @@ package com.twohands.auth_service.application.auth.register;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.auth_service.application.auth.common.UserCreatedOutboxService;
 import com.twohands.auth_service.domain.outbox.OutboxEvent;
 import com.twohands.auth_service.domain.outbox.OutboxEventRepository;
 import com.twohands.auth_service.domain.outbox.OutboxStatus;
@@ -44,6 +45,7 @@ public class RegisterUserUseCase {
     private final PasswordHashingService passwordHashingService;
     private final RegisterValidationService validationService;
     private final RegisterRateLimitService registerRateLimitService;
+    private final UserCreatedOutboxService userCreatedOutboxService;
     private final ObjectMapper objectMapper;
     private final SecureRandom secureRandom;
     private final long verificationTtlSeconds;
@@ -57,6 +59,7 @@ public class RegisterUserUseCase {
             PasswordHashingService passwordHashingService,
             RegisterValidationService validationService,
             RegisterRateLimitService registerRateLimitService,
+            UserCreatedOutboxService userCreatedOutboxService,
             ObjectMapper objectMapper,
             @Value("${auth.register.verify-token-ttl-seconds:900}") long verificationTtlSeconds
     ) {
@@ -68,6 +71,7 @@ public class RegisterUserUseCase {
         this.passwordHashingService = passwordHashingService;
         this.validationService = validationService;
         this.registerRateLimitService = registerRateLimitService;
+        this.userCreatedOutboxService = userCreatedOutboxService;
         this.objectMapper = objectMapper;
         this.secureRandom = new SecureRandom();
         this.verificationTtlSeconds = verificationTtlSeconds;
@@ -113,6 +117,14 @@ public class RegisterUserUseCase {
             );
             verificationTokenRepository.save(verificationToken);
 
+            outboxEventRepository.save(
+                    userCreatedOutboxService.build(
+                            user.id(),
+                            user.email().normalizedValue(),
+                            user.status().name(),
+                            now
+                    )
+            );
             outboxEventRepository.save(buildVerificationOutboxEvent(user, verificationTokenRaw, now));
 
             log.info("User registered with pending verification. userId={}, email={}", userId, normalizedEmail);

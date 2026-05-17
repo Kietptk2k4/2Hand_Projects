@@ -72,11 +72,21 @@ class RegisterIntegrationTest {
                 Integer.class,
                 email
         );
+        Integer userCreatedOutbox = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM outbox_events WHERE event_type = 'USER_CREATED' AND status = 'PENDING'",
+                Integer.class
+        );
+        Integer verificationOutbox = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM outbox_events WHERE event_type = 'EMAIL_VERIFICATION_REQUESTED' AND status = 'PENDING'",
+                Integer.class
+        );
 
         assertEquals(1, users);
         assertEquals(1, profiles);
         assertEquals(1, settings);
         assertEquals(1, tokens);
+        assertEquals(1, userCreatedOutbox);
+        assertEquals(1, verificationOutbox);
     }
 
     @Test

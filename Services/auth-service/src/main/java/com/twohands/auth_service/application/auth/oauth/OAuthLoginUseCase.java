@@ -1,12 +1,9 @@
 package com.twohands.auth_service.application.auth.oauth;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.auth_service.application.auth.common.UserCreatedOutboxService;
 import com.twohands.auth_service.domain.oauth.OAuthAccount;
 import com.twohands.auth_service.domain.oauth.OAuthAccountRepository;
-import com.twohands.auth_service.domain.outbox.OutboxEvent;
 import com.twohands.auth_service.domain.outbox.OutboxEventRepository;
-import com.twohands.auth_service.domain.outbox.OutboxStatus;
 import com.twohands.auth_service.domain.session.RefreshTokenSession;
 import com.twohands.auth_service.domain.session.RefreshTokenSessionRepository;
 import com.twohands.auth_service.domain.user.EmailAddress;
@@ -27,8 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -46,7 +41,7 @@ public class OAuthLoginUseCase {
     private final RefreshTokenSessionRepository refreshTokenSessionRepository;
     private final JwtTokenIssuer jwtTokenIssuer;
     private final TokenHashingService tokenHashingService;
-    private final ObjectMapper objectMapper;
+    private final UserCreatedOutboxService userCreatedOutboxService;
 
     public OAuthLoginUseCase(
             UserRepository userRepository,
@@ -58,7 +53,7 @@ public class OAuthLoginUseCase {
             RefreshTokenSessionRepository refreshTokenSessionRepository,
             JwtTokenIssuer jwtTokenIssuer,
             TokenHashingService tokenHashingService,
-            ObjectMapper objectMapper
+            UserCreatedOutboxService userCreatedOutboxService
     ) {
         this.userRepository = userRepository;
         this.userProfileRepository = userProfileRepository;
@@ -69,7 +64,7 @@ public class OAuthLoginUseCase {
         this.refreshTokenSessionRepository = refreshTokenSessionRepository;
         this.jwtTokenIssuer = jwtTokenIssuer;
         this.tokenHashingService = tokenHashingService;
-        this.objectMapper = objectMapper;
+        this.userCreatedOutboxService = userCreatedOutboxService;
     }
 
     @Transactional
@@ -100,7 +95,14 @@ public class OAuthLoginUseCase {
                     now
             ));
             userSettingsRepository.save(UserSettings.createDefault(newUserId, now));
-            outboxEventRepository.save(buildUserCreatedOutbox(newUser, now));
+            outboxEventRepository.save(
+                    userCreatedOutboxService.build(
+                            newUser.id(),
+                            newUser.email().normalizedValue(),
+                            newUser.status().name(),
+                            now
+                    )
+            );
             user = newUser;
             firstLogin = true;
         }
@@ -174,32 +176,6 @@ public class OAuthLoginUseCase {
                 normalizedEmail,
                 now
         ));
-    }
-
-    private OutboxEvent buildUserCreatedOutbox(User user, Instant now) {
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("user_id", user.id().toString());
-        payload.put("email", user.email().normalizedValue());
-        payload.put("status", user.status().name());
-
-        String payloadJson;
-        try {
-            payloadJson = objectMapper.writeValueAsString(payload);
-        } catch (JsonProcessingException ex) {
-            throw new AppException(ErrorCode.INTERNAL_ERROR, "Cannot serialize outbox payload", ex);
-        }
-
-        return new OutboxEvent(
-                UUID.randomUUID(),
-                "USER_CREATED",
-                "auth-service",
-                payloadJson,
-                OutboxStatus.PENDING,
-                0,
-                now,
-                null,
-                null
-        );
     }
 
     private String resolveDisplayName(String profileName, String normalizedEmail) {
