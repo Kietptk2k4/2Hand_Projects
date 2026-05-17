@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -53,5 +54,25 @@ public class PermissionQueryRepositoryAdapter implements PermissionQueryReposito
                 new MapSqlParameterSource("userId", userId),
                 (rs, rowNum) -> rs.getString("code")
         ));
+    }
+
+    @Override
+    public List<PermissionData> findPermissionsByRoleId(UUID roleId) {
+        String sql = """
+                SELECT p.code, p.description
+                FROM permissions p
+                JOIN role_permissions rp ON rp.permission_id = p.id
+                WHERE rp.role_id = :roleId
+                ORDER BY p.code ASC
+                """;
+
+        return jdbcTemplate.query(
+                sql,
+                new MapSqlParameterSource("roleId", roleId),
+                (rs, rowNum) -> new PermissionData(
+                        rs.getString("code"),
+                        rs.getString("description")
+                )
+        );
     }
 }

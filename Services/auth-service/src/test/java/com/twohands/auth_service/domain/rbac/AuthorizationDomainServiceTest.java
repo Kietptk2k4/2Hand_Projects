@@ -25,6 +25,11 @@ class AuthorizationDomainServiceTest {
             public Set<String> findPermissionCodesByUserId(UUID userId) {
                 return Set.of();
             }
+
+            @Override
+            public java.util.List<PermissionQueryRepository.PermissionData> findPermissionsByRoleId(UUID roleId) {
+                return java.util.List.of();
+            }
         };
 
         Set<String> permissions = service.aggregatePermissionCodes(repository, Set.of(UUID.randomUUID()));

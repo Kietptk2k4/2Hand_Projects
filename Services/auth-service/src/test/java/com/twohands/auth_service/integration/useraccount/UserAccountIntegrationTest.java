@@ -765,6 +765,94 @@ class UserAccountIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Authentication required"));
     }
 
+    @Test
+    void viewPermissionsOfRoleShouldReturn200WithPermissions() throws Exception {
+        TestUser actor = insertFullUser("view_role_permissions_actor_success@example.com");
+        UUID adminRoleId = insertRole("ADMIN", "Administrator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        UUID userReadPermissionId = insertPermission("USER_READ", "Read user information");
+        insertRolePermission(adminRoleId, assignRolePermissionId);
+        insertRolePermission(adminRoleId, userReadPermissionId);
+        insertUserRole(actor.userId(), adminRoleId);
+
+        mockMvc.perform(get("/api/v1/admin/roles/" + adminRoleId + "/permissions")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Lay danh sach permission cua role thanh cong."))
+                .andExpect(jsonPath("$.data.role.id").value(adminRoleId.toString()))
+                .andExpect(jsonPath("$.data.role.code").value("ADMIN"))
+                .andExpect(jsonPath("$.data.permissions.length()").value(2));
+    }
+
+    @Test
+    void viewPermissionsOfRoleShouldReturn200WithEmptyPermissions() throws Exception {
+        TestUser actor = insertFullUser("view_role_permissions_actor_empty@example.com");
+        UUID adminRoleId = insertRole("ADMIN", "Administrator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(adminRoleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), adminRoleId);
+
+        UUID emptyRoleId = insertRole("MODERATOR", "Moderator");
+
+        mockMvc.perform(get("/api/v1/admin/roles/" + emptyRoleId + "/permissions")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.role.id").value(emptyRoleId.toString()))
+                .andExpect(jsonPath("$.data.permissions.length()").value(0));
+    }
+
+    @Test
+    void viewPermissionsOfRoleShouldReturn404WhenRoleMissing() throws Exception {
+        TestUser actor = insertFullUser("view_role_permissions_actor_not_found@example.com");
+        UUID adminRoleId = insertRole("ADMIN", "Administrator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(adminRoleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), adminRoleId);
+
+        mockMvc.perform(get("/api/v1/admin/roles/" + UUID.randomUUID() + "/permissions")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    void viewPermissionsOfRoleShouldReturn403WhenActorLacksPermission() throws Exception {
+        TestUser actor = insertFullUser("view_role_permissions_actor_forbidden@example.com");
+        UUID roleId = insertRole("ADMIN", "Administrator");
+
+        mockMvc.perform(get("/api/v1/admin/roles/" + roleId + "/permissions")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Access denied"));
+    }
+
+    @Test
+    void viewPermissionsOfRoleShouldReturn400WhenRoleIdInvalidFormat() throws Exception {
+        TestUser actor = insertFullUser("view_role_permissions_actor_invalid_role_id@example.com");
+        UUID adminRoleId = insertRole("ADMIN", "Administrator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(adminRoleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), adminRoleId);
+
+        mockMvc.perform(get("/api/v1/admin/roles/not-a-role-id/permissions")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errors[0].field").value("roleId"))
+                .andExpect(jsonPath("$.errors[0].reason").value("INVALID_FORMAT"));
+    }
+
+    @Test
+    void viewPermissionsOfRoleMissingJwtShouldReturn401() throws Exception {
+        mockMvc.perform(get("/api/v1/admin/roles/" + UUID.randomUUID() + "/permissions"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Authentication required"));
+    }
+
     private TestUser insertFullUser(String email) {
         UUID userId = UUID.randomUUID();
         Instant now = Instant.now();
