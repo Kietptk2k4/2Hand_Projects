@@ -1,6 +1,7 @@
 package com.twohands.social_service.integration.feed;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.social_service.application.feed.viewfollowingfeed.ViewFollowingFeedUseCase;
 import com.twohands.social_service.application.feed.viewglobalfeed.ViewGlobalFeedResult;
 import com.twohands.social_service.application.feed.viewglobalfeed.ViewGlobalFeedUseCase;
 import com.twohands.social_service.config.SecurityConfig;
@@ -58,6 +59,9 @@ class ViewGlobalFeedApiIntegrationTest {
     @MockBean
     private ViewGlobalFeedUseCase viewGlobalFeedUseCase;
 
+    @MockBean
+    private ViewFollowingFeedUseCase viewFollowingFeedUseCase;
+
     @Test
     void shouldReturnUnauthorizedWithoutToken() throws Exception {
         mockMvc.perform(get("/api/v1/social/feed/global")
@@ -102,6 +106,41 @@ class ViewGlobalFeedApiIntegrationTest {
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.data.items[0].visibility").value("PUBLIC"))
                 .andExpect(jsonPath("$.data.meta.totalElements").value(1));
+    }
+
+    @Test
+    void shouldReturnFollowingFeedWhenAuthenticated() throws Exception {
+        UUID userId = UUID.randomUUID();
+        String token = buildAccessToken(userId);
+        ViewGlobalFeedResult result = new ViewGlobalFeedResult(
+                List.of(new ViewGlobalFeedResult.FeedPostItem(
+                        "507f1f77bcf86cd799439012",
+                        UUID.randomUUID().toString(),
+                        "following post",
+                        List.of(new ViewGlobalFeedResult.MediaItemData("https://cdn/2.jpg", "IMAGE")),
+                        "FOLLOWERS",
+                        4,
+                        1,
+                        List.of("social"),
+                        true,
+                        Instant.parse("2026-05-18T10:16:30Z").toString(),
+                        Instant.parse("2026-05-18T10:20:40Z").toString()
+                )),
+                new ViewGlobalFeedResult.PageResultMeta(0, 20, 1, 1, false)
+        );
+        when(viewFollowingFeedUseCase.execute(eq(userId), eq(0), eq(20))).thenReturn(result);
+        when(viewFollowingFeedUseCase.successMessage()).thenReturn("Lay following feed thanh cong.");
+
+        mockMvc.perform(get("/api/v1/social/feed/following")
+                        .param("page", "0")
+                        .param("size", "20")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.message").value("Lay following feed thanh cong."))
+                .andExpect(jsonPath("$.data.items[0].visibility").value("FOLLOWERS"));
     }
 
     private String buildAccessToken(UUID userId) {

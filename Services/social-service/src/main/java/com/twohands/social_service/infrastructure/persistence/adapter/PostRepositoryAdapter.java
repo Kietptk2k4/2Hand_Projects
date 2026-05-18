@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class PostRepositoryAdapter implements PostRepository {
@@ -35,6 +36,34 @@ public class PostRepositoryAdapter implements PostRepository {
 
         List<Post> items = page.getContent().stream()
                 .map(this::toDomain)
+                .toList();
+
+        return new PageResult<>(
+                items,
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.hasNext()
+        );
+    }
+
+    @Override
+    public PageResult<Post> findFollowingFeed(FeedQuery query, List<String> followeeIds) {
+        if (followeeIds == null || followeeIds.isEmpty()) {
+            return new PageResult<>(List.of(), query.page(), query.size(), 0, 0, false);
+        }
+        PageRequest pageRequest = PageRequest.of(query.page(), query.size());
+        Page<PostDocument> page = mongoPostRepository.findByStatusAndAuthorIdInAndVisibilityInOrderByCreatedAtDesc(
+                PostStatus.ACTIVE.name(),
+                followeeIds,
+                List.of(PostVisibility.PUBLIC.name(), PostVisibility.FOLLOWERS.name()),
+                pageRequest
+        );
+
+        List<Post> items = page.getContent().stream()
+                .map(this::toDomain)
+                .filter(Objects::nonNull)
                 .toList();
 
         return new PageResult<>(

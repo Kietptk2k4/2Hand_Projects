@@ -1,5 +1,6 @@
 package com.twohands.social_service.delivery.http.feed;
 
+import com.twohands.social_service.application.feed.viewfollowingfeed.ViewFollowingFeedUseCase;
 import com.twohands.social_service.application.feed.viewglobalfeed.ViewGlobalFeedResult;
 import com.twohands.social_service.application.feed.viewglobalfeed.ViewGlobalFeedUseCase;
 import com.twohands.social_service.common.dto.ApiResponse;
@@ -24,13 +25,16 @@ public class FeedController {
     private static final int DEFAULT_SIZE = 20;
 
     private final ViewGlobalFeedUseCase viewGlobalFeedUseCase;
+    private final ViewFollowingFeedUseCase viewFollowingFeedUseCase;
     private final ViewGlobalFeedHttpMapper viewGlobalFeedHttpMapper;
 
     public FeedController(
             ViewGlobalFeedUseCase viewGlobalFeedUseCase,
+            ViewFollowingFeedUseCase viewFollowingFeedUseCase,
             ViewGlobalFeedHttpMapper viewGlobalFeedHttpMapper
     ) {
         this.viewGlobalFeedUseCase = viewGlobalFeedUseCase;
+        this.viewFollowingFeedUseCase = viewFollowingFeedUseCase;
         this.viewGlobalFeedHttpMapper = viewGlobalFeedHttpMapper;
     }
 
@@ -48,6 +52,24 @@ public class FeedController {
                 .body(ApiResponse.success(
                         HttpStatus.OK.value(),
                         viewGlobalFeedUseCase.successMessage(),
+                        response
+                ));
+    }
+
+    @GetMapping("/following")
+    public ResponseEntity<ApiResponse<ViewGlobalFeedResponse>> viewFollowingFeed(
+            @RequestParam(name = "page", defaultValue = "" + DEFAULT_PAGE) int page,
+            @RequestParam(name = "size", defaultValue = "" + DEFAULT_SIZE) int size,
+            Authentication authentication
+    ) {
+        UUID userId = resolveUserId(authentication);
+        ViewGlobalFeedResult result = viewFollowingFeedUseCase.execute(userId, page, size);
+        ViewGlobalFeedResponse response = viewGlobalFeedHttpMapper.toResponse(result);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        viewFollowingFeedUseCase.successMessage(),
                         response
                 ));
     }
