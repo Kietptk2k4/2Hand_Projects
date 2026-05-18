@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -76,12 +78,11 @@ class RegisterRollbackIntegrationTest {
         @Bean
         @Primary
         OutboxEventRepository outboxEventRepository() {
-            return new OutboxEventRepository() {
-                @Override
-                public OutboxEvent save(OutboxEvent event) {
-                    throw new RuntimeException("Forced outbox failure for rollback test");
-                }
-            };
+            OutboxEventRepository mockRepository = mock(OutboxEventRepository.class);
+            doAnswer(invocation -> {
+                throw new RuntimeException("Forced outbox failure for rollback test");
+            }).when(mockRepository).save(org.mockito.ArgumentMatchers.any(OutboxEvent.class));
+            return mockRepository;
         }
     }
 }

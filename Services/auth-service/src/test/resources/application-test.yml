@@ -46,6 +46,13 @@ auth:
     rate-limit:
       max-attempts: 10000
       window-seconds: 3600
+  outbox:
+    retry:
+      enabled: false
+      cron: "0 */5 * * * *"
+      max-retries: 5
+      pending-timeout-seconds: 300
+      batch-size: 50
 
 jwt:
   access-secret: test-access-secret-key-minimum-32-characters-123456
