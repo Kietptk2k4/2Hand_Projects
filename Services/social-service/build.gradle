@@ -19,6 +19,7 @@ repositories {
 
 dependencies {
 	implementation 'jakarta.annotation:jakarta.annotation-api'
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.7'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -31,6 +32,8 @@ dependencies {
     implementation 'org.flywaydb:flyway-database-postgresql'
 	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.7'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.7'
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
