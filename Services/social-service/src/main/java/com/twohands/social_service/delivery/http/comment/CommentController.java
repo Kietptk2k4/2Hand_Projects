@@ -3,12 +3,16 @@ package com.twohands.social_service.delivery.http.comment;
 import com.twohands.social_service.application.comment.deleteowncomment.DeleteOwnCommentCommand;
 import com.twohands.social_service.application.comment.deleteowncomment.DeleteOwnCommentResult;
 import com.twohands.social_service.application.comment.deleteowncomment.DeleteOwnCommentUseCase;
+import com.twohands.social_service.application.comment.likecomment.LikeCommentCommand;
+import com.twohands.social_service.application.comment.likecomment.LikeCommentResult;
+import com.twohands.social_service.application.comment.likecomment.LikeCommentUseCase;
 import com.twohands.social_service.application.comment.replycomment.ReplyCommentCommand;
 import com.twohands.social_service.application.comment.replycomment.ReplyCommentResult;
 import com.twohands.social_service.application.comment.replycomment.ReplyCommentUseCase;
 import com.twohands.social_service.common.dto.ApiResponse;
 import com.twohands.social_service.delivery.http.comment.request.ReplyCommentRequest;
 import com.twohands.social_service.delivery.http.comment.response.DeleteOwnCommentResponse;
+import com.twohands.social_service.delivery.http.comment.response.LikeCommentResponse;
 import com.twohands.social_service.delivery.http.comment.response.ReplyCommentResponse;
 import com.twohands.social_service.domain.comment.CommentMediaItem;
 import com.twohands.social_service.security.AuthenticatedUser;
@@ -32,13 +36,16 @@ public class CommentController {
 
     private final ReplyCommentUseCase replyCommentUseCase;
     private final DeleteOwnCommentUseCase deleteOwnCommentUseCase;
+    private final LikeCommentUseCase likeCommentUseCase;
 
     public CommentController(
             ReplyCommentUseCase replyCommentUseCase,
-            DeleteOwnCommentUseCase deleteOwnCommentUseCase
+            DeleteOwnCommentUseCase deleteOwnCommentUseCase,
+            LikeCommentUseCase likeCommentUseCase
     ) {
         this.replyCommentUseCase = replyCommentUseCase;
         this.deleteOwnCommentUseCase = deleteOwnCommentUseCase;
+        this.likeCommentUseCase = likeCommentUseCase;
     }
 
     @PostMapping("/{commentId}/replies")
@@ -76,6 +83,21 @@ public class CommentController {
                 HttpStatus.OK.value(),
                 deleteOwnCommentUseCase.successMessage(),
                 toDeleteResponse(result)
+        ));
+    }
+
+    @PostMapping("/{commentId}/like")
+    public ResponseEntity<ApiResponse<LikeCommentResponse>> likeComment(
+            @PathVariable String commentId,
+            Authentication authentication
+    ) {
+        UUID userId = resolveUserId(authentication);
+        LikeCommentResult result = likeCommentUseCase.execute(new LikeCommentCommand(userId, commentId));
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                likeCommentUseCase.successMessage(result.liked()),
+                toLikeResponse(result)
         ));
     }
 
@@ -124,6 +146,14 @@ public class CommentController {
                 result.status(),
                 result.deletedAt(),
                 result.updatedAt()
+        );
+    }
+
+    private LikeCommentResponse toLikeResponse(LikeCommentResult result) {
+        return new LikeCommentResponse(
+                result.commentId(),
+                result.liked(),
+                result.likeCount()
         );
     }
 }

@@ -6,4 +6,8 @@ public interface CommentRepository {
     Comment save(Comment comment);
 
     Optional<Comment> findById(String commentId);
+
+    void incrementLikeCount(String commentId);
+
+    void decrementLikeCount(String commentId);
 }

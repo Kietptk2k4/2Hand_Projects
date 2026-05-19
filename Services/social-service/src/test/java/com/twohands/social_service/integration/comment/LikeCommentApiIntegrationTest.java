@@ -1,7 +1,7 @@
 package com.twohands.social_service.integration.comment;
 
-import com.twohands.social_service.application.comment.deleteowncomment.DeleteOwnCommentResult;
 import com.twohands.social_service.application.comment.deleteowncomment.DeleteOwnCommentUseCase;
+import com.twohands.social_service.application.comment.likecomment.LikeCommentResult;
 import com.twohands.social_service.application.comment.likecomment.LikeCommentUseCase;
 import com.twohands.social_service.application.comment.replycomment.ReplyCommentUseCase;
 import com.twohands.social_service.config.SecurityConfig;
@@ -25,13 +25,12 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -47,7 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "jwt.access-secret=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
         "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration"
 })
-class DeleteOwnCommentApiIntegrationTest {
+class LikeCommentApiIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -63,51 +62,47 @@ class DeleteOwnCommentApiIntegrationTest {
 
     @Test
     void shouldReturnUnauthorizedWithoutToken() throws Exception {
-        mockMvc.perform(delete("/api/v1/social/comments/comment-id"))
+        mockMvc.perform(post("/api/v1/social/comments/comment-id/like"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(401));
     }
 
     @Test
-    void shouldReturn200WhenCommentIsDeletedSuccessfully() throws Exception {
+    void shouldReturn200WhenCommentIsLiked() throws Exception {
         UUID userId = UUID.randomUUID();
         String token = buildAccessToken(userId);
-        Instant now = Instant.now();
 
-        DeleteOwnCommentResult result = new DeleteOwnCommentResult(
-                "comment-id",
-                "507f1f77bcf86cd799439011",
-                "DELETED",
-                now.toString(),
-                now.toString()
-        );
-        when(deleteOwnCommentUseCase.execute(any())).thenReturn(result);
-        when(deleteOwnCommentUseCase.successMessage()).thenReturn("Xoa comment thanh cong.");
+        LikeCommentResult result = new LikeCommentResult("comment-id", true, 5L);
+        when(likeCommentUseCase.execute(any())).thenReturn(result);
+        when(likeCommentUseCase.successMessage(true)).thenReturn("Like comment thanh cong.");
 
-        mockMvc.perform(delete("/api/v1/social/comments/comment-id")
+        mockMvc.perform(post("/api/v1/social/comments/comment-id/like")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.code").value(200))
-                .andExpect(jsonPath("$.message").value("Xoa comment thanh cong."))
+                .andExpect(jsonPath("$.message").value("Like comment thanh cong."))
                 .andExpect(jsonPath("$.data.commentId").value("comment-id"))
-                .andExpect(jsonPath("$.data.status").value("DELETED"));
+                .andExpect(jsonPath("$.data.liked").value(true))
+                .andExpect(jsonPath("$.data.likeCount").value(5));
     }
 
     @Test
-    void shouldReturn403WhenUserHasNoPermission() throws Exception {
+    void shouldReturn200WhenCommentIsUnliked() throws Exception {
         UUID userId = UUID.randomUUID();
         String token = buildAccessToken(userId);
 
-        when(deleteOwnCommentUseCase.execute(any()))
-                .thenThrow(new AppException(ErrorCode.FORBIDDEN, "Ban khong co quyen xoa comment nay."));
+        LikeCommentResult result = new LikeCommentResult("comment-id", false, 4L);
+        when(likeCommentUseCase.execute(any())).thenReturn(result);
+        when(likeCommentUseCase.successMessage(false)).thenReturn("Unlike comment thanh cong.");
 
-        mockMvc.perform(delete("/api/v1/social/comments/comment-id")
+        mockMvc.perform(post("/api/v1/social/comments/comment-id/like")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value(403));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Unlike comment thanh cong."))
+                .andExpect(jsonPath("$.data.liked").value(false));
     }
 
     @Test
@@ -115,10 +110,10 @@ class DeleteOwnCommentApiIntegrationTest {
         UUID userId = UUID.randomUUID();
         String token = buildAccessToken(userId);
 
-        when(deleteOwnCommentUseCase.execute(any()))
+        when(likeCommentUseCase.execute(any()))
                 .thenThrow(new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Comment khong ton tai."));
 
-        mockMvc.perform(delete("/api/v1/social/comments/missing-id")
+        mockMvc.perform(post("/api/v1/social/comments/missing/like")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success").value(false))

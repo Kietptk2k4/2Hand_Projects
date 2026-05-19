@@ -31,6 +31,22 @@ public class CommentRepositoryAdapter implements CommentRepository {
         return mongoCommentRepository.findById(commentId).map(this::toDomain);
     }
 
+    @Override
+    public void incrementLikeCount(String commentId) {
+        mongoCommentRepository.findById(commentId).ifPresent(document -> {
+            document.setLikeCount(document.getLikeCount() + 1);
+            mongoCommentRepository.save(document);
+        });
+    }
+
+    @Override
+    public void decrementLikeCount(String commentId) {
+        mongoCommentRepository.findById(commentId).ifPresent(document -> {
+            document.setLikeCount(Math.max(0, document.getLikeCount() - 1));
+            mongoCommentRepository.save(document);
+        });
+    }
+
     private CommentDocument toDocument(Comment comment) {
         CommentDocument doc = new CommentDocument();
         if (comment.id() != null) {

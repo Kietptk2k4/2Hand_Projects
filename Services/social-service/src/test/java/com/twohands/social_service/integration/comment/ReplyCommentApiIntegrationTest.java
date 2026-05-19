@@ -1,6 +1,7 @@
 package com.twohands.social_service.integration.comment;
 
 import com.twohands.social_service.application.comment.deleteowncomment.DeleteOwnCommentUseCase;
+import com.twohands.social_service.application.comment.likecomment.LikeCommentUseCase;
 import com.twohands.social_service.application.comment.replycomment.ReplyCommentResult;
 import com.twohands.social_service.application.comment.replycomment.ReplyCommentUseCase;
 import com.twohands.social_service.config.SecurityConfig;
@@ -57,6 +58,9 @@ class ReplyCommentApiIntegrationTest {
 
     @MockBean
     private DeleteOwnCommentUseCase deleteOwnCommentUseCase;
+
+    @MockBean
+    private LikeCommentUseCase likeCommentUseCase;
 
     @Test
     void shouldReturnUnauthorizedWithoutToken() throws Exception {
