@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Component
 public class PostRepositoryAdapter implements PostRepository {
@@ -31,6 +32,11 @@ public class PostRepositoryAdapter implements PostRepository {
         PostDocument document = toDocument(post);
         PostDocument saved = mongoPostRepository.save(document);
         return toDomain(saved);
+    }
+
+    @Override
+    public Optional<Post> findById(String postId) {
+        return mongoPostRepository.findById(postId).map(this::toDomain);
     }
 
     @Override
@@ -86,6 +92,9 @@ public class PostRepositoryAdapter implements PostRepository {
 
     private PostDocument toDocument(Post post) {
         PostDocument doc = new PostDocument();
+        if (post.id() != null) {
+            doc.setId(post.id());
+        }
         doc.setAuthorId(post.authorId());
         doc.setCaption(post.caption());
         doc.setMedia(post.media().stream().map(m -> new PostDocument.MediaDocument(m.url(), m.type())).toList());
@@ -94,6 +103,8 @@ public class PostRepositoryAdapter implements PostRepository {
                 .toList());
         doc.setStatus(post.status().name());
         doc.setVisibility(post.visibility().name());
+        doc.setLikeCount(post.likeCount());
+        doc.setReplyCount(post.replyCount());
         doc.setHashtags(post.hashtags());
         doc.setAllowComments(post.allowComments());
         doc.setCreatedAt(post.createdAt());

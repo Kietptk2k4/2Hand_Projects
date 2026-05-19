@@ -3,15 +3,22 @@ package com.twohands.social_service.delivery.http.post;
 import com.twohands.social_service.application.post.createpost.CreatePostCommand;
 import com.twohands.social_service.application.post.createpost.CreatePostResult;
 import com.twohands.social_service.application.post.createpost.CreatePostUseCase;
+import com.twohands.social_service.application.post.editpost.EditPostCommand;
+import com.twohands.social_service.application.post.editpost.EditPostResult;
+import com.twohands.social_service.application.post.editpost.EditPostUseCase;
 import com.twohands.social_service.common.dto.ApiResponse;
 import com.twohands.social_service.delivery.http.post.request.CreatePostRequest;
+import com.twohands.social_service.delivery.http.post.request.EditPostRequest;
 import com.twohands.social_service.delivery.http.post.response.CreatePostResponse;
+import com.twohands.social_service.delivery.http.post.response.EditPostResponse;
 import com.twohands.social_service.security.AuthenticatedUser;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,9 +31,11 @@ import java.util.UUID;
 public class PostController {
 
     private final CreatePostUseCase createPostUseCase;
+    private final EditPostUseCase editPostUseCase;
 
-    public PostController(CreatePostUseCase createPostUseCase) {
+    public PostController(CreatePostUseCase createPostUseCase, EditPostUseCase editPostUseCase) {
         this.createPostUseCase = createPostUseCase;
+        this.editPostUseCase = editPostUseCase;
     }
 
     @PostMapping
@@ -45,6 +54,24 @@ public class PostController {
                         createPostUseCase.successMessage(),
                         response
                 ));
+    }
+
+    @PutMapping("/{postId}")
+    public ResponseEntity<ApiResponse<EditPostResponse>> editPost(
+            @PathVariable String postId,
+            @RequestBody @Valid EditPostRequest request,
+            Authentication authentication
+    ) {
+        UUID editorId = resolveUserId(authentication);
+        EditPostCommand command = toEditCommand(request, editorId, postId);
+        EditPostResult result = editPostUseCase.execute(command);
+        EditPostResponse response = toEditResponse(result);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                editPostUseCase.successMessage(),
+                response
+        ));
     }
 
     private UUID resolveUserId(Authentication authentication) {
@@ -85,6 +112,49 @@ public class PostController {
                 .map(pt -> new CreatePostResponse.ProductTagResponse(pt.productId(), pt.price()))
                 .toList();
         return new CreatePostResponse(
+                result.postId(),
+                result.authorId(),
+                result.caption(),
+                media,
+                productTags,
+                result.status(),
+                result.visibility(),
+                result.allowComments(),
+                result.hashtags(),
+                result.createdAt(),
+                result.updatedAt()
+        );
+    }
+
+    private EditPostCommand toEditCommand(EditPostRequest request, UUID editorId, String postId) {
+        var media = request.media()
+                .map(items -> items.stream()
+                        .map(m -> new EditPostCommand.MediaItemCommand(m.url(), m.type()))
+                        .toList());
+        var productTags = request.productTags()
+                .map(items -> items.stream()
+                        .map(pt -> new EditPostCommand.ProductTagCommand(pt.productId(), pt.price()))
+                        .toList());
+        return new EditPostCommand(
+                editorId,
+                postId,
+                request.caption(),
+                media,
+                productTags,
+                request.visibility(),
+                request.allowComments(),
+                request.hashtags()
+        );
+    }
+
+    private EditPostResponse toEditResponse(EditPostResult result) {
+        List<EditPostResponse.MediaItemResponse> media = result.media().stream()
+                .map(m -> new EditPostResponse.MediaItemResponse(m.url(), m.type()))
+                .toList();
+        List<EditPostResponse.ProductTagResponse> productTags = result.productTags().stream()
+                .map(pt -> new EditPostResponse.ProductTagResponse(pt.productId(), pt.price()))
+                .toList();
+        return new EditPostResponse(
                 result.postId(),
                 result.authorId(),
                 result.caption(),

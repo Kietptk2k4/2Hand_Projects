@@ -1,8 +1,7 @@
 package com.twohands.social_service.integration.post;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.twohands.social_service.application.post.createpost.CreatePostResult;
 import com.twohands.social_service.application.post.createpost.CreatePostUseCase;
+import com.twohands.social_service.application.post.editpost.EditPostResult;
 import com.twohands.social_service.application.post.editpost.EditPostUseCase;
 import com.twohands.social_service.config.SecurityConfig;
 import com.twohands.social_service.delivery.http.post.PostController;
@@ -32,7 +31,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -48,13 +47,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "jwt.access-secret=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
         "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration"
 })
-class CreatePostApiIntegrationTest {
+class EditPostApiIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @MockBean
     private CreatePostUseCase createPostUseCase;
@@ -64,25 +60,25 @@ class CreatePostApiIntegrationTest {
 
     @Test
     void shouldReturnUnauthorizedWithoutToken() throws Exception {
-        mockMvc.perform(post("/api/v1/social/posts")
+        mockMvc.perform(put("/api/v1/social/posts/507f1f77bcf86cd799439011")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"visibility\":\"PUBLIC\",\"allowComments\":true,\"publish\":true}"))
+                        .content("{\"caption\":\"Updated\"}"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(401));
     }
 
     @Test
-    void shouldReturn201WhenPostIsCreatedSuccessfully() throws Exception {
+    void shouldReturn200WhenPostIsUpdatedSuccessfully() throws Exception {
         UUID userId = UUID.randomUUID();
         String token = buildAccessToken(userId);
         Instant now = Instant.now();
 
-        CreatePostResult result = new CreatePostResult(
+        EditPostResult result = new EditPostResult(
                 "507f1f77bcf86cd799439011",
                 userId.toString(),
-                "Hello world",
-                List.of(new CreatePostResult.MediaItemData("https://cdn/1.jpg", "IMAGE")),
+                "Updated caption",
+                List.of(new EditPostResult.MediaItemData("https://cdn/1.jpg", "IMAGE")),
                 List.of(),
                 "ACTIVE",
                 "PUBLIC",
@@ -91,80 +87,60 @@ class CreatePostApiIntegrationTest {
                 now.toString(),
                 now.toString()
         );
-        when(createPostUseCase.execute(any())).thenReturn(result);
-        when(createPostUseCase.successMessage()).thenReturn("Tao bai viet thanh cong.");
+        when(editPostUseCase.execute(any())).thenReturn(result);
+        when(editPostUseCase.successMessage()).thenReturn("Cap nhat bai viet thanh cong.");
 
         String body = """
                 {
-                    "caption": "Hello world",
-                    "media": [{"url": "https://cdn/1.jpg", "type": "IMAGE"}],
-                    "productTags": [],
-                    "visibility": "PUBLIC",
-                    "allowComments": true,
-                    "hashtags": ["spring"],
-                    "publish": true
+                    "caption": "Updated caption",
+                    "hashtags": ["spring"]
                 }
                 """;
 
-        mockMvc.perform(post("/api/v1/social/posts")
+        mockMvc.perform(put("/api/v1/social/posts/507f1f77bcf86cd799439011")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.code").value(201))
-                .andExpect(jsonPath("$.message").value("Tao bai viet thanh cong."))
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.message").value("Cap nhat bai viet thanh cong."))
                 .andExpect(jsonPath("$.data.postId").value("507f1f77bcf86cd799439011"))
-                .andExpect(jsonPath("$.data.status").value("ACTIVE"))
-                .andExpect(jsonPath("$.data.visibility").value("PUBLIC"));
+                .andExpect(jsonPath("$.data.caption").value("Updated caption"));
     }
 
     @Test
-    void shouldReturn400WhenVisibilityIsMissing() throws Exception {
+    void shouldReturn403WhenUserIsNotAuthor() throws Exception {
         UUID userId = UUID.randomUUID();
         String token = buildAccessToken(userId);
 
-        String body = """
-                {
-                    "caption": "Missing visibility",
-                    "allowComments": true,
-                    "publish": true
-                }
-                """;
+        when(editPostUseCase.execute(any()))
+                .thenThrow(new AppException(ErrorCode.FORBIDDEN, "Ban khong co quyen chinh sua bai viet nay."));
 
-        mockMvc.perform(post("/api/v1/social/posts")
+        mockMvc.perform(put("/api/v1/social/posts/507f1f77bcf86cd799439011")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success").value(false));
-    }
-
-    @Test
-    void shouldReturn403WhenUserIsSuspended() throws Exception {
-        UUID userId = UUID.randomUUID();
-        String token = buildAccessToken(userId);
-
-        when(createPostUseCase.execute(any()))
-                .thenThrow(new AppException(ErrorCode.ACCOUNT_SUSPENDED,
-                        ErrorCode.ACCOUNT_SUSPENDED.defaultMessage()));
-
-        String body = """
-                {
-                    "caption": "Suspended user",
-                    "visibility": "PUBLIC",
-                    "allowComments": true,
-                    "publish": true
-                }
-                """;
-
-        mockMvc.perform(post("/api/v1/social/posts")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                        .content("{\"caption\":\"Updated\"}"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(403));
+    }
+
+    @Test
+    void shouldReturn404WhenPostNotFound() throws Exception {
+        UUID userId = UUID.randomUUID();
+        String token = buildAccessToken(userId);
+
+        when(editPostUseCase.execute(any()))
+                .thenThrow(new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Bai viet khong ton tai."));
+
+        mockMvc.perform(put("/api/v1/social/posts/missing-id")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"caption\":\"Updated\"}"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(404));
     }
 
     private String buildAccessToken(UUID userId) {

@@ -58,6 +58,10 @@ public class PostDocument {
         return id;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public String getAuthorId() {
         return authorId;
     }
@@ -110,8 +114,16 @@ public class PostDocument {
         return likeCount;
     }
 
+    public void setLikeCount(long likeCount) {
+        this.likeCount = likeCount;
+    }
+
     public long getReplyCount() {
         return replyCount;
+    }
+
+    public void setReplyCount(long replyCount) {
+        this.replyCount = replyCount;
     }
 
     public List<String> getHashtags() {
