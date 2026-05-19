@@ -92,6 +92,7 @@ CREATE TABLE outbox_events (
     status outbox_status NOT NULL DEFAULT 'PENDING',
     retry_count INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    last_error TEXT,
     published_at TIMESTAMP
 );
 

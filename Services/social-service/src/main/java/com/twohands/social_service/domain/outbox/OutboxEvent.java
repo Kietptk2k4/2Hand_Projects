@@ -11,6 +11,7 @@ public record OutboxEvent(
         OutboxStatus status,
         int retryCount,
         Instant createdAt,
-        Instant publishedAt
+        Instant publishedAt,
+        String lastError
 ) {
 }

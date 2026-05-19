@@ -46,6 +46,7 @@ public class UserFollowedOutboxService {
                 OutboxStatus.PENDING,
                 0,
                 now,
+                null,
                 null
         );
     }

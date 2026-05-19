@@ -49,6 +49,7 @@ public class CommentCreatedOutboxService {
                 OutboxStatus.PENDING,
                 0,
                 now,
+                null,
                 null
         );
     }

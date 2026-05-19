@@ -47,3 +47,11 @@ jwt:
 
   access-expiration: 900000
   refresh-expiration: 2592000000
+
+social:
+  outbox:
+    publish:
+      enabled: ${SOCIAL_OUTBOX_PUBLISH_ENABLED:false}
+      cron: ${SOCIAL_OUTBOX_PUBLISH_CRON:0/10 * * * * *}
+      max-retries: ${SOCIAL_OUTBOX_PUBLISH_MAX_RETRIES:5}
+      batch-size: ${SOCIAL_OUTBOX_PUBLISH_BATCH_SIZE:50}

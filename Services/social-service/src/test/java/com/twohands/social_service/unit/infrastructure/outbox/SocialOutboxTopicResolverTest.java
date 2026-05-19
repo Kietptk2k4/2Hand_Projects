@@ -1,0 +1,26 @@
+package com.twohands.social_service.unit.infrastructure.outbox;
+
+import com.twohands.social_service.exception.AppException;
+import com.twohands.social_service.infrastructure.outbox.SocialOutboxTopicResolver;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+class SocialOutboxTopicResolverTest {
+
+    private final SocialOutboxTopicResolver resolver = new SocialOutboxTopicResolver();
+
+    @Test
+    void shouldResolveMvpEventTopics() {
+        assertThat(resolver.resolve("POST_LIKED")).isEqualTo("social.post.liked");
+        assertThat(resolver.resolve("COMMENT_CREATED")).isEqualTo("social.comment.created");
+        assertThat(resolver.resolve("USER_FOLLOWED")).isEqualTo("social.user.followed");
+    }
+
+    @Test
+    void shouldRejectUnknownEventType() {
+        assertThatThrownBy(() -> resolver.resolve("POST_CREATED"))
+                .isInstanceOf(AppException.class);
+    }
+}
