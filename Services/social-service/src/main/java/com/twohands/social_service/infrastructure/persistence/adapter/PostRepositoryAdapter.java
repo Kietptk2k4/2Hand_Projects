@@ -56,6 +56,22 @@ public class PostRepositoryAdapter implements PostRepository {
     }
 
     @Override
+    public void incrementLikeCount(String postId) {
+        mongoPostRepository.findById(postId).ifPresent(document -> {
+            document.setLikeCount(document.getLikeCount() + 1);
+            mongoPostRepository.save(document);
+        });
+    }
+
+    @Override
+    public void decrementLikeCount(String postId) {
+        mongoPostRepository.findById(postId).ifPresent(document -> {
+            document.setLikeCount(Math.max(0, document.getLikeCount() - 1));
+            mongoPostRepository.save(document);
+        });
+    }
+
+    @Override
     public PageResult<Post> findGlobalFeed(FeedQuery query) {
         PageRequest pageRequest = PageRequest.of(query.page(), query.size());
         Page<PostDocument> page = mongoPostRepository.findByStatusAndVisibilityOrderByCreatedAtDesc(

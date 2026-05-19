@@ -124,7 +124,7 @@ class CreatePostUseCaseTest {
     void shouldThrowForbiddenWhenUserIsSuspended() {
         UUID authorId = UUID.randomUUID();
         when(userProjectionRepository.findByUserId(authorId))
-                .thenReturn(Optional.of(new UserProjection(authorId.toString(), "SUSPENDED", "User", null)));
+                .thenReturn(Optional.of(new UserProjection(authorId.toString(), "SUSPENDED", "User", null, false)));
 
         CreatePostCommand command = new CreatePostCommand(
                 authorId, "caption", List.of(), List.of(), "PUBLIC", true, List.of(), true

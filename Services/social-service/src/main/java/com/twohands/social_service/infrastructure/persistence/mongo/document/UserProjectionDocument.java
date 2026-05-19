@@ -22,6 +22,9 @@ public class UserProjectionDocument {
     @Field("avatar_url")
     private String avatarUrl;
 
+    @Field("is_private")
+    private Boolean isPrivate;
+
     public String getId() {
         return id;
     }
@@ -40,5 +43,9 @@ public class UserProjectionDocument {
 
     public String getAvatarUrl() {
         return avatarUrl;
+    }
+
+    public Boolean getIsPrivate() {
+        return isPrivate;
     }
 }

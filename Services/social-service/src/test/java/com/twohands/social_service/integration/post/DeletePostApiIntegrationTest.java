@@ -4,6 +4,8 @@ import com.twohands.social_service.application.post.createpost.CreatePostUseCase
 import com.twohands.social_service.application.post.deletepost.DeletePostResult;
 import com.twohands.social_service.application.post.deletepost.DeletePostUseCase;
 import com.twohands.social_service.application.post.editpost.EditPostUseCase;
+import com.twohands.social_service.application.post.likeunlikepost.LikeUnlikePostUseCase;
+import com.twohands.social_service.application.post.saveunsavepost.SaveUnsavePostUseCase;
 import com.twohands.social_service.config.SecurityConfig;
 import com.twohands.social_service.delivery.http.post.PostController;
 import com.twohands.social_service.exception.AppException;
@@ -60,6 +62,12 @@ class DeletePostApiIntegrationTest {
 
     @MockBean
     private DeletePostUseCase deletePostUseCase;
+
+    @MockBean
+    private LikeUnlikePostUseCase likeUnlikePostUseCase;
+
+    @MockBean
+    private SaveUnsavePostUseCase saveUnsavePostUseCase;
 
     @Test
     void shouldReturnUnauthorizedWithoutToken() throws Exception {

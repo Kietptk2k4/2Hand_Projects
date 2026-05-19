@@ -25,7 +25,8 @@ public class UserProjectionRepositoryAdapter implements UserProjectionRepository
                         doc.getUserId(),
                         doc.getStatus(),
                         doc.getDisplayName(),
-                        doc.getAvatarUrl()
+                        doc.getAvatarUrl(),
+                        doc.getIsPrivate()
                 ));
     }
 }

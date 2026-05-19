@@ -147,7 +147,7 @@ class DeleteOwnCommentUseCaseTest {
     void shouldThrowForbiddenWhenUserIsSuspended() {
         UUID authorId = UUID.randomUUID();
         when(userProjectionRepository.findByUserId(authorId))
-                .thenReturn(Optional.of(new UserProjection(authorId.toString(), "SUSPENDED", "User", null)));
+                .thenReturn(Optional.of(new UserProjection(authorId.toString(), "SUSPENDED", "User", null, false)));
 
         assertThatThrownBy(() -> useCase.execute(
                 new DeleteOwnCommentCommand(authorId, List.of(), "comment-id")))

@@ -9,12 +9,20 @@ import com.twohands.social_service.application.post.deletepost.DeletePostUseCase
 import com.twohands.social_service.application.post.editpost.EditPostCommand;
 import com.twohands.social_service.application.post.editpost.EditPostResult;
 import com.twohands.social_service.application.post.editpost.EditPostUseCase;
+import com.twohands.social_service.application.post.likeunlikepost.LikeUnlikePostCommand;
+import com.twohands.social_service.application.post.likeunlikepost.LikeUnlikePostResult;
+import com.twohands.social_service.application.post.likeunlikepost.LikeUnlikePostUseCase;
+import com.twohands.social_service.application.post.saveunsavepost.SaveUnsavePostCommand;
+import com.twohands.social_service.application.post.saveunsavepost.SaveUnsavePostResult;
+import com.twohands.social_service.application.post.saveunsavepost.SaveUnsavePostUseCase;
 import com.twohands.social_service.common.dto.ApiResponse;
 import com.twohands.social_service.delivery.http.post.request.CreatePostRequest;
 import com.twohands.social_service.delivery.http.post.request.EditPostRequest;
 import com.twohands.social_service.delivery.http.post.response.CreatePostResponse;
 import com.twohands.social_service.delivery.http.post.response.DeletePostResponse;
 import com.twohands.social_service.delivery.http.post.response.EditPostResponse;
+import com.twohands.social_service.delivery.http.post.response.LikeUnlikePostResponse;
+import com.twohands.social_service.delivery.http.post.response.SaveUnsavePostResponse;
 import com.twohands.social_service.security.AuthenticatedUser;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -38,15 +46,21 @@ public class PostController {
     private final CreatePostUseCase createPostUseCase;
     private final EditPostUseCase editPostUseCase;
     private final DeletePostUseCase deletePostUseCase;
+    private final LikeUnlikePostUseCase likeUnlikePostUseCase;
+    private final SaveUnsavePostUseCase saveUnsavePostUseCase;
 
     public PostController(
             CreatePostUseCase createPostUseCase,
             EditPostUseCase editPostUseCase,
-            DeletePostUseCase deletePostUseCase
+            DeletePostUseCase deletePostUseCase,
+            LikeUnlikePostUseCase likeUnlikePostUseCase,
+            SaveUnsavePostUseCase saveUnsavePostUseCase
     ) {
         this.createPostUseCase = createPostUseCase;
         this.editPostUseCase = editPostUseCase;
         this.deletePostUseCase = deletePostUseCase;
+        this.likeUnlikePostUseCase = likeUnlikePostUseCase;
+        this.saveUnsavePostUseCase = saveUnsavePostUseCase;
     }
 
     @PostMapping
@@ -82,6 +96,36 @@ public class PostController {
                 HttpStatus.OK.value(),
                 editPostUseCase.successMessage(),
                 response
+        ));
+    }
+
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<ApiResponse<LikeUnlikePostResponse>> likeUnlikePost(
+            @PathVariable String postId,
+            Authentication authentication
+    ) {
+        UUID userId = resolveUserId(authentication);
+        LikeUnlikePostResult result = likeUnlikePostUseCase.execute(new LikeUnlikePostCommand(userId, postId));
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                likeUnlikePostUseCase.successMessage(result.liked()),
+                toLikeUnlikeResponse(result)
+        ));
+    }
+
+    @PostMapping("/{postId}/save")
+    public ResponseEntity<ApiResponse<SaveUnsavePostResponse>> saveUnsavePost(
+            @PathVariable String postId,
+            Authentication authentication
+    ) {
+        UUID userId = resolveUserId(authentication);
+        SaveUnsavePostResult result = saveUnsavePostUseCase.execute(new SaveUnsavePostCommand(userId, postId));
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                saveUnsavePostUseCase.successMessage(result.saved()),
+                toSaveUnsaveResponse(result)
         ));
     }
 
@@ -211,6 +255,21 @@ public class PostController {
                 result.status(),
                 result.deletedAt(),
                 result.updatedAt()
+        );
+    }
+
+    private LikeUnlikePostResponse toLikeUnlikeResponse(LikeUnlikePostResult result) {
+        return new LikeUnlikePostResponse(
+                result.postId(),
+                result.liked(),
+                result.likeCount()
+        );
+    }
+
+    private SaveUnsavePostResponse toSaveUnsaveResponse(SaveUnsavePostResult result) {
+        return new SaveUnsavePostResponse(
+                result.postId(),
+                result.saved()
         );
     }
 }

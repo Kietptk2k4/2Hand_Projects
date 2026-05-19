@@ -13,6 +13,9 @@ socialDb.createCollection("posts");
 // COMMENTS collection
 socialDb.createCollection("comments");
 
+// USER_PROJECTIONS collection (synced from Auth Service)
+socialDb.createCollection("user_projections");
+
 // ---------------------------------------------------------------------
 // POSTS indexes (from docs/business-spec/social-service-spec.md)
 // ---------------------------------------------------------------------

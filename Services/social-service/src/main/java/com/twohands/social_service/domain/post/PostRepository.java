@@ -12,6 +12,10 @@ public interface PostRepository {
 
     void decrementReplyCount(String postId);
 
+    void incrementLikeCount(String postId);
+
+    void decrementLikeCount(String postId);
+
     PageResult<Post> findGlobalFeed(FeedQuery query);
 
     PageResult<Post> findFollowingFeed(FeedQuery query, List<String> followeeIds);

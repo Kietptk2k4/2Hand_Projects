@@ -177,7 +177,7 @@ class EditPostUseCaseTest {
     void shouldThrowForbiddenWhenUserIsSuspended() {
         UUID authorId = UUID.randomUUID();
         when(userProjectionRepository.findByUserId(authorId))
-                .thenReturn(Optional.of(new UserProjection(authorId.toString(), "SUSPENDED", "User", null)));
+                .thenReturn(Optional.of(new UserProjection(authorId.toString(), "SUSPENDED", "User", null, false)));
 
         EditPostCommand command = new EditPostCommand(
                 authorId, "post-id", Optional.of("caption"),

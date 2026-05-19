@@ -140,7 +140,7 @@ class DeletePostUseCaseTest {
     void shouldThrowForbiddenWhenUserIsSuspended() {
         UUID authorId = UUID.randomUUID();
         when(userProjectionRepository.findByUserId(authorId))
-                .thenReturn(Optional.of(new UserProjection(authorId.toString(), "SUSPENDED", "User", null)));
+                .thenReturn(Optional.of(new UserProjection(authorId.toString(), "SUSPENDED", "User", null, false)));
 
         assertThatThrownBy(() -> useCase.execute(new DeletePostCommand(authorId, List.of(), "post-id")))
                 .isInstanceOf(AppException.class)

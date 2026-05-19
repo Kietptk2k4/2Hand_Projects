@@ -4,8 +4,12 @@ public record UserProjection(
         String userId,
         String status,
         String displayName,
-        String avatarUrl
+        String avatarUrl,
+        Boolean isPrivate
 ) {
+    public boolean isPrivateProfile() {
+        return Boolean.TRUE.equals(isPrivate);
+    }
     public boolean isSuspended() {
         return "SUSPENDED".equalsIgnoreCase(status);
     }

@@ -42,4 +42,24 @@ public class FollowEntity {
     public FollowStatusDb getStatus() {
         return status;
     }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setFollowerId(UUID followerId) {
+        this.followerId = followerId;
+    }
+
+    public void setFolloweeId(UUID followeeId) {
+        this.followeeId = followeeId;
+    }
+
+    public void setStatus(FollowStatusDb status) {
+        this.status = status;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
 }

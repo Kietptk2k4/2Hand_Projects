@@ -3,6 +3,8 @@ package com.twohands.social_service.integration.post;
 import com.twohands.social_service.application.post.createpost.CreatePostUseCase;
 import com.twohands.social_service.application.post.deletepost.DeletePostUseCase;
 import com.twohands.social_service.application.post.editpost.EditPostResult;
+import com.twohands.social_service.application.post.likeunlikepost.LikeUnlikePostUseCase;
+import com.twohands.social_service.application.post.saveunsavepost.SaveUnsavePostUseCase;
 import com.twohands.social_service.application.post.editpost.EditPostUseCase;
 import com.twohands.social_service.config.SecurityConfig;
 import com.twohands.social_service.delivery.http.post.PostController;
@@ -61,6 +63,12 @@ class EditPostApiIntegrationTest {
 
     @MockBean
     private DeletePostUseCase deletePostUseCase;
+
+    @MockBean
+    private LikeUnlikePostUseCase likeUnlikePostUseCase;
+
+    @MockBean
+    private SaveUnsavePostUseCase saveUnsavePostUseCase;
 
     @Test
     void shouldReturnUnauthorizedWithoutToken() throws Exception {
