@@ -1,8 +1,8 @@
 package com.twohands.social_service.integration.user;
 
 import com.twohands.social_service.application.user.followuser.FollowUserUseCase;
-import com.twohands.social_service.application.user.unfollowuser.UnfollowUserResult;
 import com.twohands.social_service.application.user.unfollowuser.UnfollowUserUseCase;
+import com.twohands.social_service.application.user.viewsocialprofile.ViewSocialProfileResult;
 import com.twohands.social_service.application.user.viewsocialprofile.ViewSocialProfileUseCase;
 import com.twohands.social_service.config.SecurityConfig;
 import com.twohands.social_service.delivery.http.user.UserController;
@@ -30,7 +30,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -46,7 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "jwt.access-secret=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
         "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration"
 })
-class UnfollowUserApiIntegrationTest {
+class ViewSocialProfileApiIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -62,62 +62,58 @@ class UnfollowUserApiIntegrationTest {
 
     @Test
     void shouldReturnUnauthorizedWithoutToken() throws Exception {
-        UUID followeeId = UUID.randomUUID();
-        mockMvc.perform(delete("/api/v1/social/users/{userId}/follow", followeeId))
+        UUID targetId = UUID.randomUUID();
+        mockMvc.perform(get("/api/v1/social/users/{userId}/profile", targetId))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(401));
     }
 
     @Test
-    void shouldReturn200WhenUnfollowSucceeds() throws Exception {
-        UUID followerId = UUID.randomUUID();
-        UUID followeeId = UUID.randomUUID();
-        String token = buildAccessToken(followerId);
+    void shouldReturn200WithSocialProfile() throws Exception {
+        UUID viewerId = UUID.randomUUID();
+        UUID targetId = UUID.randomUUID();
+        String token = buildAccessToken(viewerId);
 
-        UnfollowUserResult result = new UnfollowUserResult(followeeId, true);
-        when(unfollowUserUseCase.execute(any())).thenReturn(result);
-        when(unfollowUserUseCase.successMessage()).thenReturn("Huy theo doi nguoi dung thanh cong.");
+        ViewSocialProfileResult result = new ViewSocialProfileResult(
+                targetId.toString(),
+                "User B",
+                "https://avatar",
+                false,
+                10L,
+                5L,
+                "NONE",
+                true
+        );
+        when(viewSocialProfileUseCase.execute(any())).thenReturn(result);
+        when(viewSocialProfileUseCase.successMessage()).thenReturn("Lay social profile thanh cong.");
 
-        mockMvc.perform(delete("/api/v1/social/users/{userId}/follow", followeeId)
+        mockMvc.perform(get("/api/v1/social/users/{userId}/profile", targetId)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.code").value(200))
-                .andExpect(jsonPath("$.message").value("Huy theo doi nguoi dung thanh cong."))
-                .andExpect(jsonPath("$.data.followeeId").value(followeeId.toString()))
-                .andExpect(jsonPath("$.data.wasFollowing").value(true));
+                .andExpect(jsonPath("$.message").value("Lay social profile thanh cong."))
+                .andExpect(jsonPath("$.data.userId").value(targetId.toString()))
+                .andExpect(jsonPath("$.data.followerCount").value(10))
+                .andExpect(jsonPath("$.data.followingCount").value(5))
+                .andExpect(jsonPath("$.data.canViewFullProfile").value(true));
     }
 
     @Test
-    void shouldReturn200WhenRelationDidNotExist() throws Exception {
-        UUID followerId = UUID.randomUUID();
-        UUID followeeId = UUID.randomUUID();
-        String token = buildAccessToken(followerId);
+    void shouldReturn404WhenUserNotFound() throws Exception {
+        UUID viewerId = UUID.randomUUID();
+        UUID targetId = UUID.randomUUID();
+        String token = buildAccessToken(viewerId);
 
-        UnfollowUserResult result = new UnfollowUserResult(followeeId, false);
-        when(unfollowUserUseCase.execute(any())).thenReturn(result);
-        when(unfollowUserUseCase.successMessage()).thenReturn("Huy theo doi nguoi dung thanh cong.");
+        when(viewSocialProfileUseCase.execute(any()))
+                .thenThrow(new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Nguoi dung khong ton tai."));
 
-        mockMvc.perform(delete("/api/v1/social/users/{userId}/follow", followeeId)
+        mockMvc.perform(get("/api/v1/social/users/{userId}/profile", targetId)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.wasFollowing").value(false));
-    }
-
-    @Test
-    void shouldReturn403WhenFollowerIsSuspended() throws Exception {
-        UUID followerId = UUID.randomUUID();
-        UUID followeeId = UUID.randomUUID();
-        String token = buildAccessToken(followerId);
-
-        when(unfollowUserUseCase.execute(any()))
-                .thenThrow(new AppException(ErrorCode.ACCOUNT_SUSPENDED, ErrorCode.ACCOUNT_SUSPENDED.defaultMessage()));
-
-        mockMvc.perform(delete("/api/v1/social/users/{userId}/follow", followeeId)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(404));
     }
 
     private String buildAccessToken(UUID userId) {

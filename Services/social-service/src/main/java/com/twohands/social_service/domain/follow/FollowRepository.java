@@ -12,4 +12,8 @@ public interface FollowRepository {
     void save(Follow follow);
 
     void deleteByFollowerIdAndFolloweeId(UUID followerId, UUID followeeId);
+
+    long countAcceptedFollowers(UUID followeeId);
+
+    long countAcceptedFollowing(UUID followerId);
 }

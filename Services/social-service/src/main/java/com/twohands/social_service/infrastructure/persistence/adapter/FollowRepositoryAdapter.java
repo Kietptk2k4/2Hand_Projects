@@ -47,6 +47,16 @@ public class FollowRepositoryAdapter implements FollowRepository {
         jpaFollowRepository.deleteByFollowerIdAndFolloweeId(followerId, followeeId);
     }
 
+    @Override
+    public long countAcceptedFollowers(UUID followeeId) {
+        return jpaFollowRepository.countByFolloweeIdAndStatus(followeeId, FollowStatusDb.ACCEPTED);
+    }
+
+    @Override
+    public long countAcceptedFollowing(UUID followerId) {
+        return jpaFollowRepository.countByFollowerIdAndStatus(followerId, FollowStatusDb.ACCEPTED);
+    }
+
     private Follow toDomain(FollowEntity entity) {
         return new Follow(
                 entity.getFollowerId(),

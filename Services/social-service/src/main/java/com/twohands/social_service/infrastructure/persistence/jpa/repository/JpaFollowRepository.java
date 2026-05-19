@@ -18,4 +18,8 @@ public interface JpaFollowRepository extends JpaRepository<FollowEntity, FollowE
     Optional<FollowEntity> findByFollowerIdAndFolloweeId(UUID followerId, UUID followeeId);
 
     void deleteByFollowerIdAndFolloweeId(UUID followerId, UUID followeeId);
+
+    long countByFolloweeIdAndStatus(UUID followeeId, FollowStatusDb status);
+
+    long countByFollowerIdAndStatus(UUID followerId, FollowStatusDb status);
 }
