@@ -88,6 +88,58 @@ public class OutboxEventRepositoryAdapter implements OutboxEventRepository {
     }
 
     @Override
+    public List<OutboxEvent> claimRetryCandidates(int batchSize, int maxRetries, Instant pendingTimeoutBefore) {
+        String selectSql = """
+                SELECT id, event_type, aggregate_id, payload, status, retry_count, created_at, published_at, last_error
+                FROM outbox_events
+                WHERE (
+                    status = :failedStatus
+                    AND retry_count < :maxRetries
+                ) OR (
+                    status = :pendingStatus
+                    AND created_at <= :pendingTimeoutBefore
+                    AND retry_count < :maxRetries
+                )
+                ORDER BY created_at ASC
+                LIMIT :batchSize
+                FOR UPDATE SKIP LOCKED
+                """;
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("failedStatus", OutboxStatus.FAILED.name())
+                .addValue("pendingStatus", OutboxStatus.PENDING.name())
+                .addValue("maxRetries", maxRetries)
+                .addValue("pendingTimeoutBefore", pendingTimeoutBefore)
+                .addValue("batchSize", batchSize);
+        List<OutboxEvent> candidates = jdbcTemplate.query(selectSql, params, (rs, rowNum) -> mapOutboxEvent(rs));
+        if (candidates.isEmpty()) {
+            return candidates;
+        }
+
+        String markProcessingSql = """
+                UPDATE outbox_events
+                SET status = :processingStatus
+                WHERE id IN (:ids)
+                """;
+        jdbcTemplate.update(markProcessingSql, new MapSqlParameterSource()
+                .addValue("processingStatus", OutboxStatus.PROCESSING.name())
+                .addValue("ids", candidates.stream().map(OutboxEvent::id).toList()));
+
+        return candidates.stream()
+                .map(event -> new OutboxEvent(
+                        event.id(),
+                        event.eventType(),
+                        event.aggregateId(),
+                        event.payload(),
+                        OutboxStatus.PROCESSING,
+                        event.retryCount(),
+                        event.createdAt(),
+                        event.publishedAt(),
+                        event.lastError()
+                ))
+                .toList();
+    }
+
+    @Override
     public int markPublished(UUID eventId, Instant publishedAt) {
         String sql = """
                 UPDATE outbox_events

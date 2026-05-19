@@ -9,6 +9,8 @@ public interface OutboxEventRepository {
 
     List<OutboxEvent> claimPublishCandidates(int batchSize, int maxRetries);
 
+    List<OutboxEvent> claimRetryCandidates(int batchSize, int maxRetries, Instant pendingTimeoutBefore);
+
     int markPublished(UUID eventId, Instant publishedAt);
 
     int markFailed(UUID eventId, String lastError);

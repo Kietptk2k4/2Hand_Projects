@@ -55,3 +55,9 @@ social:
       cron: ${SOCIAL_OUTBOX_PUBLISH_CRON:0/10 * * * * *}
       max-retries: ${SOCIAL_OUTBOX_PUBLISH_MAX_RETRIES:5}
       batch-size: ${SOCIAL_OUTBOX_PUBLISH_BATCH_SIZE:50}
+    retry:
+      enabled: ${SOCIAL_OUTBOX_RETRY_ENABLED:false}
+      cron: ${SOCIAL_OUTBOX_RETRY_CRON:0 */1 * * * *}
+      max-retries: ${SOCIAL_OUTBOX_RETRY_MAX_RETRIES:5}
+      pending-timeout-seconds: ${SOCIAL_OUTBOX_RETRY_PENDING_TIMEOUT_SECONDS:300}
+      batch-size: ${SOCIAL_OUTBOX_RETRY_BATCH_SIZE:50}
