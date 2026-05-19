@@ -66,7 +66,8 @@ public class EditPostUseCase {
                 resolveHashtags(command, existing),
                 resolveAllowComments(command, existing),
                 existing.createdAt(),
-                now
+                now,
+                existing.deletedAt()
         );
 
         Post saved = postRepository.save(updated);

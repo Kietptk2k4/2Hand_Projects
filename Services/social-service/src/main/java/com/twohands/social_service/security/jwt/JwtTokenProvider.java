@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -26,6 +28,14 @@ public class JwtTokenProvider {
             return null;
         }
         return UUID.fromString(subject);
+    }
+
+    public List<String> getRoles(String token) {
+        Object rawRoles = parseClaims(token).get("roles");
+        if (!(rawRoles instanceof List<?> roles)) {
+            return Collections.emptyList();
+        }
+        return roles.stream().map(String::valueOf).toList();
     }
 
     public boolean isValid(String token) {

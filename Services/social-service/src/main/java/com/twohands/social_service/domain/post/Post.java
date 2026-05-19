@@ -16,6 +16,7 @@ public record Post(
         List<String> hashtags,
         boolean allowComments,
         Instant createdAt,
-        Instant updatedAt
+        Instant updatedAt,
+        Instant deletedAt
 ) {
 }

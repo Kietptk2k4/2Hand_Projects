@@ -46,7 +46,8 @@ class ViewGlobalFeedUseCaseTest {
                 List.of("java", "spring"),
                 true,
                 Instant.parse("2026-05-18T10:15:30Z"),
-                Instant.parse("2026-05-18T10:20:30Z")
+                Instant.parse("2026-05-18T10:20:30Z"),
+                null
         );
         when(postRepository.findGlobalFeed(any(FeedQuery.class)))
                 .thenReturn(new PageResult<>(List.of(post), 0, 20, 1, 1, false));

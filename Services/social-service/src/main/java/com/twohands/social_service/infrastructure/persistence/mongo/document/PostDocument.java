@@ -162,6 +162,10 @@ public class PostDocument {
         return deletedAt;
     }
 
+    public void setDeletedAt(Instant deletedAt) {
+        this.deletedAt = deletedAt;
+    }
+
     public static class MediaDocument {
         @Field("url")
         private String url;

@@ -109,6 +109,7 @@ public class PostRepositoryAdapter implements PostRepository {
         doc.setAllowComments(post.allowComments());
         doc.setCreatedAt(post.createdAt());
         doc.setUpdatedAt(post.updatedAt());
+        doc.setDeletedAt(post.deletedAt());
         return doc;
     }
 
@@ -132,7 +133,8 @@ public class PostRepositoryAdapter implements PostRepository {
                 postDocument.getHashtags(),
                 postDocument.isAllowComments(),
                 postDocument.getCreatedAt(),
-                postDocument.getUpdatedAt()
+                postDocument.getUpdatedAt(),
+                postDocument.getDeletedAt()
         );
     }
 

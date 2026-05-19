@@ -3,6 +3,9 @@ package com.twohands.social_service.delivery.http.post;
 import com.twohands.social_service.application.post.createpost.CreatePostCommand;
 import com.twohands.social_service.application.post.createpost.CreatePostResult;
 import com.twohands.social_service.application.post.createpost.CreatePostUseCase;
+import com.twohands.social_service.application.post.deletepost.DeletePostCommand;
+import com.twohands.social_service.application.post.deletepost.DeletePostResult;
+import com.twohands.social_service.application.post.deletepost.DeletePostUseCase;
 import com.twohands.social_service.application.post.editpost.EditPostCommand;
 import com.twohands.social_service.application.post.editpost.EditPostResult;
 import com.twohands.social_service.application.post.editpost.EditPostUseCase;
@@ -10,12 +13,14 @@ import com.twohands.social_service.common.dto.ApiResponse;
 import com.twohands.social_service.delivery.http.post.request.CreatePostRequest;
 import com.twohands.social_service.delivery.http.post.request.EditPostRequest;
 import com.twohands.social_service.delivery.http.post.response.CreatePostResponse;
+import com.twohands.social_service.delivery.http.post.response.DeletePostResponse;
 import com.twohands.social_service.delivery.http.post.response.EditPostResponse;
 import com.twohands.social_service.security.AuthenticatedUser;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -32,10 +37,16 @@ public class PostController {
 
     private final CreatePostUseCase createPostUseCase;
     private final EditPostUseCase editPostUseCase;
+    private final DeletePostUseCase deletePostUseCase;
 
-    public PostController(CreatePostUseCase createPostUseCase, EditPostUseCase editPostUseCase) {
+    public PostController(
+            CreatePostUseCase createPostUseCase,
+            EditPostUseCase editPostUseCase,
+            DeletePostUseCase deletePostUseCase
+    ) {
         this.createPostUseCase = createPostUseCase;
         this.editPostUseCase = editPostUseCase;
+        this.deletePostUseCase = deletePostUseCase;
     }
 
     @PostMapping
@@ -74,11 +85,36 @@ public class PostController {
         ));
     }
 
-    private UUID resolveUserId(Authentication authentication) {
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<ApiResponse<DeletePostResponse>> deletePost(
+            @PathVariable String postId,
+            Authentication authentication
+    ) {
+        AuthenticatedUser actor = resolveActor(authentication);
+        DeletePostCommand command = new DeletePostCommand(
+                actor != null ? actor.userId() : null,
+                actor != null ? actor.roles() : List.of(),
+                postId
+        );
+        DeletePostResult result = deletePostUseCase.execute(command);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                deletePostUseCase.successMessage(),
+                toDeleteResponse(result)
+        ));
+    }
+
+    private AuthenticatedUser resolveActor(Authentication authentication) {
         if (authentication == null || !(authentication.getPrincipal() instanceof AuthenticatedUser principal)) {
             return null;
         }
-        return principal.userId();
+        return principal;
+    }
+
+    private UUID resolveUserId(Authentication authentication) {
+        AuthenticatedUser actor = resolveActor(authentication);
+        return actor != null ? actor.userId() : null;
     }
 
     private CreatePostCommand toCommand(CreatePostRequest request, UUID authorId) {
@@ -165,6 +201,15 @@ public class PostController {
                 result.allowComments(),
                 result.hashtags(),
                 result.createdAt(),
+                result.updatedAt()
+        );
+    }
+
+    private DeletePostResponse toDeleteResponse(DeletePostResult result) {
+        return new DeletePostResponse(
+                result.postId(),
+                result.status(),
+                result.deletedAt(),
                 result.updatedAt()
         );
     }

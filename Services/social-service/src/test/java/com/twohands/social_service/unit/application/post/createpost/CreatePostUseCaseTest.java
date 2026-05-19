@@ -47,7 +47,8 @@ class CreatePostUseCaseTest {
                 List.of("spring"),
                 true,
                 Instant.now(),
-                Instant.now()
+                Instant.now(),
+                null
         );
     }
 

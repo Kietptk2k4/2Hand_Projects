@@ -49,7 +49,8 @@ class ViewFollowingFeedUseCaseTest {
                 List.of("java"),
                 true,
                 Instant.parse("2026-05-18T10:15:30Z"),
-                Instant.parse("2026-05-18T10:20:30Z")
+                Instant.parse("2026-05-18T10:20:30Z"),
+                null
         );
         when(followRepository.findAcceptedFolloweeIds(userId)).thenReturn(List.of(followeeId));
         when(postRepository.findFollowingFeed(any(FeedQuery.class), any()))

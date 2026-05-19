@@ -57,7 +57,8 @@ public class CreatePostUseCase {
                 command.hashtags() != null ? command.hashtags() : List.of(),
                 command.allowComments(),
                 now,
-                now
+                now,
+                null
         );
 
         Post saved = postRepository.save(post);

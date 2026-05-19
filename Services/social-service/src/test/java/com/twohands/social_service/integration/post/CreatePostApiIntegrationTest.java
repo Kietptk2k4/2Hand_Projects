@@ -3,6 +3,7 @@ package com.twohands.social_service.integration.post;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.twohands.social_service.application.post.createpost.CreatePostResult;
 import com.twohands.social_service.application.post.createpost.CreatePostUseCase;
+import com.twohands.social_service.application.post.deletepost.DeletePostUseCase;
 import com.twohands.social_service.application.post.editpost.EditPostUseCase;
 import com.twohands.social_service.config.SecurityConfig;
 import com.twohands.social_service.delivery.http.post.PostController;
@@ -61,6 +62,9 @@ class CreatePostApiIntegrationTest {
 
     @MockBean
     private EditPostUseCase editPostUseCase;
+
+    @MockBean
+    private DeletePostUseCase deletePostUseCase;
 
     @Test
     void shouldReturnUnauthorizedWithoutToken() throws Exception {
