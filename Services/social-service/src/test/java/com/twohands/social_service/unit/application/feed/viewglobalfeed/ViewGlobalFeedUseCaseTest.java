@@ -38,6 +38,7 @@ class ViewGlobalFeedUseCaseTest {
                 UUID.randomUUID().toString(),
                 "caption",
                 List.of(new MediaItem("https://cdn/1.jpg", "IMAGE")),
+                List.of(),
                 PostStatus.ACTIVE,
                 PostVisibility.PUBLIC,
                 10,

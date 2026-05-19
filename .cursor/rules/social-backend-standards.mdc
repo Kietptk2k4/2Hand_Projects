@@ -1,0 +1,66 @@
+---
+description: Architecture, backend convention và API standard bắt buộc cho toàn bộ 2Hands backend
+alwaysApply: true
+---
+
+# 2Hands Backend Standards
+
+Trước khi code bất kỳ thứ gì trong project này, bắt buộc hiểu và tuân thủ toàn bộ quy tắc dưới đây.
+
+## Architecture
+- Kiến trúc: Microservices + Clean Architecture (DDD-lite) + Event-Driven.
+- Dependency flow: `delivery → application → domain → infrastructure`. Không đảo chiều.
+- Tham chiếu đầy đủ: `docs/architecture/system-architecture.md`, `docs/architecture/database-strategy.md`, `docs/architecture/event-driven-architecture.md`.
+
+## Package Structure (mỗi service)
+```
+src/main/java/com/twohands/{service-name}/
+├── application   # use case, orchestration, transaction boundary
+├── delivery      # controller, request/response DTO, mapper
+├── domain        # entity, value object, business rule, repository interface
+├── infrastructure# JPA, Redis, Kafka, JWT, external API
+├── common / config / constant / exception / env
+```
+
+## Forbidden
+- Controller gọi repository trực tiếp.
+- Domain phụ thuộc Spring/Kafka/Redis/HTTP.
+- Business logic trong DTO hoặc Controller.
+- Expose entity trực tiếp ra ngoài API.
+- RuntimeException chung chung không có meaning business.
+- Không service nào truy cập trực tiếp DB của service khác.
+
+## Naming
+- Class/Interface: `PascalCase` | Method/Variable: `camelCase` | Constant: `UPPER_SNAKE_CASE` | Package: `lowercase`
+- Use case class: `ViewGlobalFeedUseCase`, `CreatePostUseCase` (không dùng GenericService/BaseService)
+- Request DTO: `XxxRequest` | Response DTO: `XxxResponse`
+- DB table: `snake_case` số nhiều | Column: `snake_case` | PK: `id` (UUID ưu tiên) | FK: `table_singular_id`
+- Kafka topic: `service.domain.action` (vd: `social.post.liked`) | Event type: `UPPER_SNAKE_CASE`
+- Redis key: `{service}:{domain}:{purpose}:{id}`
+
+## API Standard
+- Base URL: `https://api.2hands.vn/{service-name}/api/v1/{resource}`
+- Response envelope bắt buộc:
+```json
+{ "code": 200, "success": true, "message": "...", "data": {}, "errors": null, "timestamp": "..." }
+```
+- Error response: `"success": false`, `"code": "SOCIAL_POST_NOT_FOUND"`, `"message": "..."`, `"timestamp": "..."`
+- DELETE mặc định là soft delete.
+- Tham chiếu đầy đủ: `docs/engineering_rules/api-standard.md`, `docs/engineering_rules/backend-convention.md`, `docs/engineering_rules/naming-convention.md`.
+
+## Transaction & Outbox
+- `@Transactional` bắt buộc ở application layer cho mọi use case có write.
+- Event publish phải đi qua Outbox Pattern: ghi `OUTBOX_EVENTS` cùng transaction với domain operation; worker poll và publish lên broker.
+
+## Security
+- Mọi protected API bắt buộc JWT authentication.
+- Validate ownership + role + permission trước khi thực hiện action.
+- Không log password/token/OTP/secret.
+
+## Logging
+- Dùng SLF4J: INFO cho business flow, WARN cho bất thường, ERROR cho exception, DEBUG cho dev.
+
+## Testing
+- Unit test cho business logic quan trọng ở application/domain layer.
+- Integration test cho DB và message broker.
+- Structure: `src/test/{unit,integration,e2e}`.

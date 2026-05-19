@@ -8,6 +8,7 @@ public record Post(
         String authorId,
         String caption,
         List<MediaItem> media,
+        List<ProductTag> productTags,
         PostStatus status,
         PostVisibility visibility,
         long likeCount,

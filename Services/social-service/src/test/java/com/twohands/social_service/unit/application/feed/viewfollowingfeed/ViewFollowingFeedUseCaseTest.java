@@ -41,6 +41,7 @@ class ViewFollowingFeedUseCaseTest {
                 followeeId.toString(),
                 "caption",
                 List.of(new MediaItem("https://cdn/1.jpg", "IMAGE")),
+                List.of(),
                 PostStatus.ACTIVE,
                 PostVisibility.FOLLOWERS,
                 10,

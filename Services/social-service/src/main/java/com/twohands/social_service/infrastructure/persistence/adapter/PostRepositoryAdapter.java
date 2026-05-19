@@ -7,6 +7,7 @@ import com.twohands.social_service.domain.post.Post;
 import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
+import com.twohands.social_service.domain.post.ProductTag;
 import com.twohands.social_service.infrastructure.persistence.mongo.document.PostDocument;
 import com.twohands.social_service.infrastructure.persistence.mongo.repository.MongoPostRepository;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,13 @@ public class PostRepositoryAdapter implements PostRepository {
 
     public PostRepositoryAdapter(MongoPostRepository mongoPostRepository) {
         this.mongoPostRepository = mongoPostRepository;
+    }
+
+    @Override
+    public Post save(Post post) {
+        PostDocument document = toDocument(post);
+        PostDocument saved = mongoPostRepository.save(document);
+        return toDomain(saved);
     }
 
     @Override
@@ -76,15 +84,36 @@ public class PostRepositoryAdapter implements PostRepository {
         );
     }
 
+    private PostDocument toDocument(Post post) {
+        PostDocument doc = new PostDocument();
+        doc.setAuthorId(post.authorId());
+        doc.setCaption(post.caption());
+        doc.setMedia(post.media().stream().map(m -> new PostDocument.MediaDocument(m.url(), m.type())).toList());
+        doc.setProductTags(post.productTags().stream()
+                .map(pt -> new PostDocument.ProductTagDocument(pt.productId(), pt.price()))
+                .toList());
+        doc.setStatus(post.status().name());
+        doc.setVisibility(post.visibility().name());
+        doc.setHashtags(post.hashtags());
+        doc.setAllowComments(post.allowComments());
+        doc.setCreatedAt(post.createdAt());
+        doc.setUpdatedAt(post.updatedAt());
+        return doc;
+    }
+
     private Post toDomain(PostDocument postDocument) {
         List<MediaItem> media = postDocument.getMedia().stream()
                 .map(this::toMedia)
                 .toList();
+        List<ProductTag> productTags = postDocument.getProductTags() != null
+                ? postDocument.getProductTags().stream().map(this::toProductTag).toList()
+                : List.of();
         return new Post(
                 postDocument.getId(),
                 postDocument.getAuthorId(),
                 postDocument.getCaption(),
                 media,
+                productTags,
                 PostStatus.valueOf(postDocument.getStatus()),
                 PostVisibility.valueOf(postDocument.getVisibility()),
                 postDocument.getLikeCount(),
@@ -98,5 +127,9 @@ public class PostRepositoryAdapter implements PostRepository {
 
     private MediaItem toMedia(PostDocument.MediaDocument mediaDocument) {
         return new MediaItem(mediaDocument.getUrl(), mediaDocument.getType());
+    }
+
+    private ProductTag toProductTag(PostDocument.ProductTagDocument pt) {
+        return new ProductTag(pt.getProductId(), pt.getPrice());
     }
 }

@@ -1,0 +1,79 @@
+---
+description: Tài liệu tham chiếu bắt buộc khi implement bất kỳ feature nào trong social-service
+globs: Services/social-service/**
+alwaysApply: false
+---
+
+# Social Service – Implementation Reference
+
+Khi implement bất kỳ feature nào cho `social-service`, bắt buộc đọc và tuân thủ các tài liệu sau trước khi viết code.
+
+## Tài liệu bắt buộc đọc
+
+### Business Spec
+- `docs/business-spec/social-service-spec.md` — spec nghiệp vụ toàn bộ social service (đọc section liên quan đến feature đang làm).
+
+### Architecture
+- `docs/architecture/system-architecture.md`
+- `docs/architecture/database-strategy.md`
+- `docs/architecture/event-driven-architecture.md`
+
+### Business Flows (Social)
+- `docs/business_flow/social_business_flow/feed-delivery-flow.md`
+- `docs/business_flow/social_business_flow/post-lifecycle-flow.md`
+- `docs/business_flow/social_business_flow/social-graph-flow.md`
+- `docs/business_flow/social_business_flow/engagement-flow.md`
+- `docs/business_flow/social_business_flow/discovery-flow.md`
+- `docs/business_flow/social_business_flow/outbox-event-flow.md`
+
+### Database Schema
+- `docs/database/social-schema.md` — schema chính của social service.
+- `docs/database/auth_schema.md` — tham chiếu cross-service (user data sync).
+- `Services/social-service/src/main/resources/db/migration/V1__init_social_tables.sql` — PostgreSQL migration hiện tại.
+- `Services/social-service/src/main/resources/db/migration/V1__init_social_mongo.js` — MongoDB migration hiện tại.
+
+### Use Cases (Social)
+- `docs/use_cases/social_use_cases/uc-feed-management.md`
+- `docs/use_cases/social_use_cases/uc-post-management.md`
+- `docs/use_cases/social_use_cases/uc-social-graph.md`
+- `docs/use_cases/social_use_cases/uc-engagement.md`
+- `docs/use_cases/social_use_cases/uc-discovery.md`
+- `docs/use_cases/social_use_cases/uc-event-publishing.md`
+
+### Feature Requirements (đọc FR của feature đang làm + các FR liên quan)
+- Feed: `docs/feature_requirements/social/FR_ViewGlobalFeed.md`, `docs/feature_requirements/social/FR_ViewFollowingFeed.md`
+- Post: `docs/feature_requirements/social/FR_CreatePost.md`, `FR_EditPost.md`, `FR_DeletePost.md`
+- Comment: `docs/feature_requirements/social/FR_CommentPost.md`, `FR_ReplyComment.md`, `FR_DeleteOwnComment.md`
+- Engagement: `docs/feature_requirements/social/FR_LikeUnlikePost.md`, `FR_SaveUnsavePost.md`, `FR_ViewSavedPosts.md`, `FR_LikeComment.md`
+- Social Graph: `docs/feature_requirements/social/FR_FollowUser.md`, `FR_UnfollowUser.md`, `FR_ViewFollowersFollowingList.md`, `FR_ViewSocialProfile.md`
+- Discovery: `docs/feature_requirements/social/FR_SearchPost.md`, `FR_SearchHashtag.md`, `FR_TagProductInPost.md`
+- Events: `docs/feature_requirements/social/FR_PublishSocialEvents.md`, `FR_RetryFailedOutboxEvents.md`
+
+## Polyglot Persistence Rules
+- **MongoDB**: lưu `POSTS`, `COMMENTS` (content-heavy, read-many).
+- **PostgreSQL**: lưu `FOLLOWS`, `POST_LIKES`, `POST_SAVES`, `COMMENT_REACTION`, `OUTBOX_EVENTS`, `SEARCH_HISTORY`, user projection.
+- Không join cross-database; dùng application-level aggregation.
+
+## Social-specific Business Rules
+- Post visibility: `PUBLIC` (ai cũng xem), `FOLLOWERS` (chỉ follower với status `ACCEPTED`).
+- Không hiển thị post có `status = DRAFT` hoặc `status = DELETED`.
+- User `SUSPENDED/DELETED` không được tạo social action mới.
+- Follow relation: unique `(follower_id, followee_id)`, không được tự follow.
+- Like/Save: idempotent, unique `(post_id, user_id)`.
+- Comment reaction: unique `(comment_id, user_id)`.
+
+## Outbox Events MVP
+- Publish: `POST_LIKED`, `COMMENT_CREATED`, `USER_FOLLOWED`.
+- Consume from Auth: `USER_CREATED`, `USER_UPDATED`, `USER_DELETED`.
+- Mọi event publish ra broker phải đi qua `OUTBOX_EVENTS`.
+
+## Key MongoDB Indexes (MVP)
+- `POSTS(status, visibility, created_at desc)`
+- `POSTS(author_id, status, created_at desc)`
+- `POSTS(hashtags)`
+- `COMMENTS(post_id, status, created_at)`
+
+## Key PostgreSQL Indexes (MVP)
+- `FOLLOWS(follower_id, created_at desc)`
+- `FOLLOWS(followee_id)`
+- `SEARCH_HISTORY(user_id, created_at desc)`

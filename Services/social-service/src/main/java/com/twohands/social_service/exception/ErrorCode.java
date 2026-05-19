@@ -9,7 +9,8 @@ public enum ErrorCode {
     UNAUTHORIZED("SOCIAL-401", HttpStatus.UNAUTHORIZED, "Authentication required"),
     FORBIDDEN("SOCIAL-403", HttpStatus.FORBIDDEN, "Access denied"),
     RESOURCE_NOT_FOUND("SOCIAL-404", HttpStatus.NOT_FOUND, "Resource not found"),
-    INVALID_PAGINATION("SOCIAL-400-PAGINATION", HttpStatus.BAD_REQUEST, "Invalid pagination parameters");
+    INVALID_PAGINATION("SOCIAL-400-PAGINATION", HttpStatus.BAD_REQUEST, "Invalid pagination parameters"),
+    ACCOUNT_SUSPENDED("SOCIAL-403-SUSPENDED", HttpStatus.FORBIDDEN, "Tai khoan bi dinh chi, khong the thuc hien hanh dong nay.");
 
     private final String code;
     private final HttpStatus status;

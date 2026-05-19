@@ -1,0 +1,67 @@
+---
+description: Bắt buộc tạo file API behavior doc sau khi implement xong bất kỳ feature nào của social-service
+globs: Services/social-service/**
+alwaysApply: false
+---
+
+# API Behavior Doc – Definition of Done
+
+Sau khi implement xong một feature trong `social-service`, **bắt buộc** tạo file API behavior doc tại:
+
+```
+docs/api_fe_behavior/social_api_fe_behavior/<FeatureName>-api-and-behavior.md
+```
+
+Ví dụ:
+- `ViewGlobalFeed-api-and-behavior.md`
+- `ViewFollowingFeed-api-and-behavior.md`
+- `CreatePost-api-and-behavior.md`
+
+## Nội dung bắt buộc của file
+
+```markdown
+# <Feature Name> – API & Behavior
+
+## 1. Business Goal
+Mô tả ngắn mục tiêu nghiệp vụ.
+
+## 2. API Contract
+- Method: GET/POST/PUT/PATCH/DELETE
+- URL: /social/api/v1/...
+- Auth: Bearer JWT (required/optional)
+- Query/Path/Body params (tên, kiểu, required/optional, mô tả)
+
+## 3. Response – Success
+HTTP status + response envelope đầy đủ với ví dụ JSON thực tế.
+
+## 4. Response – Error
+| HTTP | code string | Mô tả |
+|------|-------------|-------|
+| 400  | SOCIAL_XXX  | ...   |
+
+## 5. Business Rules
+- Visibility rules, soft-delete filter, ownership check, pagination rules...
+
+## 6. Edge Cases
+- Danh sách edge case quan trọng FE cần handle.
+
+## 7. Data Dependencies
+- MongoDB collection(s) và PostgreSQL table(s) được sử dụng.
+
+## 8. FE Integration Notes
+- Pagination strategy (cursor/offset).
+- Cách handle token refresh nếu 401.
+- Field cần map từ snake_case sang camelCase.
+- Tham chiếu: `docs/engineering_rules/frontend-api-integration.md`.
+```
+
+## Definition of Done checklist
+
+Một feature chỉ được coi là **done** khi:
+- [ ] Code implement đúng architecture (delivery → application → domain → infrastructure).
+- [ ] API response đúng envelope chuẩn (xem `docs/engineering_rules/api-standard.md`).
+- [ ] Validation + error handling đầy đủ với error code dạng `SOCIAL_XXX`.
+- [ ] Unit test cover business logic chính.
+- [ ] File `docs/api_fe_behavior/social_api_fe_behavior/<Feature>-api-and-behavior.md` đã được tạo đầy đủ.
+- [ ] Không hardcode magic values.
+- [ ] Không business logic trong Controller hay DTO.
