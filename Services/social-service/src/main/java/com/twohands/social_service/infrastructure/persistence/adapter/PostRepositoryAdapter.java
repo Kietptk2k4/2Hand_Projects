@@ -40,6 +40,14 @@ public class PostRepositoryAdapter implements PostRepository {
     }
 
     @Override
+    public void incrementReplyCount(String postId) {
+        mongoPostRepository.findById(postId).ifPresent(document -> {
+            document.setReplyCount(document.getReplyCount() + 1);
+            mongoPostRepository.save(document);
+        });
+    }
+
+    @Override
     public PageResult<Post> findGlobalFeed(FeedQuery query) {
         PageRequest pageRequest = PageRequest.of(query.page(), query.size());
         Page<PostDocument> page = mongoPostRepository.findByStatusAndVisibilityOrderByCreatedAtDesc(
