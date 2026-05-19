@@ -1,7 +1,7 @@
 package com.twohands.social_service.integration.comment;
 
+import com.twohands.social_service.application.comment.deleteowncomment.DeleteOwnCommentResult;
 import com.twohands.social_service.application.comment.deleteowncomment.DeleteOwnCommentUseCase;
-import com.twohands.social_service.application.comment.replycomment.ReplyCommentResult;
 import com.twohands.social_service.application.comment.replycomment.ReplyCommentUseCase;
 import com.twohands.social_service.config.SecurityConfig;
 import com.twohands.social_service.delivery.http.comment.CommentController;
@@ -19,7 +19,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -31,7 +30,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -47,7 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "jwt.access-secret=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
         "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration"
 })
-class ReplyCommentApiIntegrationTest {
+class DeleteOwnCommentApiIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -60,74 +59,66 @@ class ReplyCommentApiIntegrationTest {
 
     @Test
     void shouldReturnUnauthorizedWithoutToken() throws Exception {
-        mockMvc.perform(post("/api/v1/social/comments/parent-id/replies")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"contentText\":\"Thanks!\"}"))
+        mockMvc.perform(delete("/api/v1/social/comments/comment-id"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(401));
     }
 
     @Test
-    void shouldReturn201WhenReplyIsCreatedSuccessfully() throws Exception {
+    void shouldReturn200WhenCommentIsDeletedSuccessfully() throws Exception {
         UUID userId = UUID.randomUUID();
         String token = buildAccessToken(userId);
         Instant now = Instant.now();
 
-        ReplyCommentResult result = new ReplyCommentResult(
-                "reply-id",
+        DeleteOwnCommentResult result = new DeleteOwnCommentResult(
+                "comment-id",
                 "507f1f77bcf86cd799439011",
-                "parent-id",
-                userId.toString(),
-                "Thanks!",
-                List.of(),
-                "ACTIVE",
+                "DELETED",
                 now.toString(),
                 now.toString()
         );
-        when(replyCommentUseCase.execute(any())).thenReturn(result);
-        when(replyCommentUseCase.successMessage()).thenReturn("Tra loi comment thanh cong.");
+        when(deleteOwnCommentUseCase.execute(any())).thenReturn(result);
+        when(deleteOwnCommentUseCase.successMessage()).thenReturn("Xoa comment thanh cong.");
 
-        mockMvc.perform(post("/api/v1/social/comments/parent-id/replies")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"contentText\":\"Thanks!\"}"))
-                .andExpect(status().isCreated())
+        mockMvc.perform(delete("/api/v1/social/comments/comment-id")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.code").value(201))
-                .andExpect(jsonPath("$.message").value("Tra loi comment thanh cong."))
-                .andExpect(jsonPath("$.data.commentId").value("reply-id"))
-                .andExpect(jsonPath("$.data.parentCommentId").value("parent-id"));
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.message").value("Xoa comment thanh cong."))
+                .andExpect(jsonPath("$.data.commentId").value("comment-id"))
+                .andExpect(jsonPath("$.data.status").value("DELETED"));
     }
 
     @Test
-    void shouldReturn404WhenParentCommentNotFound() throws Exception {
+    void shouldReturn403WhenUserHasNoPermission() throws Exception {
         UUID userId = UUID.randomUUID();
         String token = buildAccessToken(userId);
 
-        when(replyCommentUseCase.execute(any()))
-                .thenThrow(new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Comment cha khong ton tai."));
+        when(deleteOwnCommentUseCase.execute(any()))
+                .thenThrow(new AppException(ErrorCode.FORBIDDEN, "Ban khong co quyen xoa comment nay."));
 
-        mockMvc.perform(post("/api/v1/social/comments/missing/replies")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"contentText\":\"Thanks!\"}"))
+        mockMvc.perform(delete("/api/v1/social/comments/comment-id")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(403));
+    }
+
+    @Test
+    void shouldReturn404WhenCommentNotFound() throws Exception {
+        UUID userId = UUID.randomUUID();
+        String token = buildAccessToken(userId);
+
+        when(deleteOwnCommentUseCase.execute(any()))
+                .thenThrow(new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Comment khong ton tai."));
+
+        mockMvc.perform(delete("/api/v1/social/comments/missing-id")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(404));
-    }
-
-    @Test
-    void shouldReturn400WhenContentTextIsMissing() throws Exception {
-        UUID userId = UUID.randomUUID();
-        String token = buildAccessToken(userId);
-
-        mockMvc.perform(post("/api/v1/social/comments/parent-id/replies")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success").value(false));
     }
 
     private String buildAccessToken(UUID userId) {

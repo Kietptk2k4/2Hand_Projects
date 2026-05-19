@@ -64,7 +64,8 @@ class ReplyCommentUseCaseTest {
                 CommentStatus.ACTIVE,
                 0L,
                 Instant.parse("2026-05-19T00:00:00Z"),
-                Instant.parse("2026-05-19T00:00:00Z")
+                Instant.parse("2026-05-19T00:00:00Z"),
+                null
         );
     }
 
@@ -102,7 +103,7 @@ class ReplyCommentUseCaseTest {
             Comment c = inv.getArgument(0);
             return new Comment(
                     "reply-id", c.postId(), c.authorId(), c.parentCommentId(), c.contentText(),
-                    c.media(), c.status(), c.likeCount(), c.createdAt(), c.updatedAt()
+                    c.media(), c.status(), c.likeCount(), c.createdAt(), c.updatedAt(), c.deletedAt()
             );
         });
         when(outboxEventRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -143,7 +144,7 @@ class ReplyCommentUseCaseTest {
         String parentId = "deleted-parent";
         Comment deletedParent = new Comment(
                 parentId, "post-id", authorId.toString(), null, "text", List.of(),
-                CommentStatus.DELETED, 0L, Instant.now(), Instant.now()
+                CommentStatus.DELETED, 0L, Instant.now(), Instant.now(), Instant.now()
         );
 
         when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
@@ -160,7 +161,7 @@ class ReplyCommentUseCaseTest {
         String parentId = "nested-parent";
         Comment nestedParent = new Comment(
                 parentId, "post-id", authorId.toString(), "grandparent-id", "text", List.of(),
-                CommentStatus.ACTIVE, 0L, Instant.now(), Instant.now()
+                CommentStatus.ACTIVE, 0L, Instant.now(), Instant.now(), null
         );
 
         when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());

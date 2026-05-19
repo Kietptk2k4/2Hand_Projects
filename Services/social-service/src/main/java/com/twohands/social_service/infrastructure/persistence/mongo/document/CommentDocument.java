@@ -41,6 +41,9 @@ public class CommentDocument {
     @Field("updated_at")
     private Instant updatedAt;
 
+    @Field("deleted_at")
+    private Instant deletedAt;
+
     public String getId() {
         return id;
     }
@@ -119,6 +122,14 @@ public class CommentDocument {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Instant getDeletedAt() {
+        return deletedAt;
+    }
+
+    public void setDeletedAt(Instant deletedAt) {
+        this.deletedAt = deletedAt;
     }
 
     public static class MediaDocument {

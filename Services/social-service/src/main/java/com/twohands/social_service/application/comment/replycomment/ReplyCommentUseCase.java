@@ -80,7 +80,8 @@ public class ReplyCommentUseCase {
                 CommentStatus.ACTIVE,
                 0L,
                 now,
-                now
+                now,
+                null
         );
 
         Comment saved = commentRepository.save(reply);

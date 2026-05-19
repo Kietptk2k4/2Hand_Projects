@@ -13,6 +13,7 @@ public record Comment(
         CommentStatus status,
         long likeCount,
         Instant createdAt,
-        Instant updatedAt
+        Instant updatedAt,
+        Instant deletedAt
 ) {
 }

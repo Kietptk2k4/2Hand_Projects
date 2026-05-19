@@ -47,6 +47,7 @@ public class CommentRepositoryAdapter implements CommentRepository {
         doc.setLikeCount(comment.likeCount());
         doc.setCreatedAt(comment.createdAt());
         doc.setUpdatedAt(comment.updatedAt());
+        doc.setDeletedAt(comment.deletedAt());
         return doc;
     }
 
@@ -66,7 +67,8 @@ public class CommentRepositoryAdapter implements CommentRepository {
                 CommentStatus.valueOf(document.getStatus()),
                 document.getLikeCount(),
                 document.getCreatedAt(),
-                document.getUpdatedAt()
+                document.getUpdatedAt(),
+                document.getDeletedAt()
         );
     }
 }
