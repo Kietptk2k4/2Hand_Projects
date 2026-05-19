@@ -6,13 +6,18 @@ import com.twohands.social_service.application.user.followuser.FollowUserUseCase
 import com.twohands.social_service.application.user.unfollowuser.UnfollowUserCommand;
 import com.twohands.social_service.application.user.unfollowuser.UnfollowUserResult;
 import com.twohands.social_service.application.user.unfollowuser.UnfollowUserUseCase;
+import com.twohands.social_service.application.user.viewfollowersfollowinglist.ViewFollowersFollowingListCommand;
+import com.twohands.social_service.application.user.viewfollowersfollowinglist.ViewFollowersFollowingListResult;
+import com.twohands.social_service.application.user.viewfollowersfollowinglist.ViewFollowersFollowingListUseCase;
 import com.twohands.social_service.application.user.viewsocialprofile.ViewSocialProfileCommand;
 import com.twohands.social_service.application.user.viewsocialprofile.ViewSocialProfileResult;
 import com.twohands.social_service.application.user.viewsocialprofile.ViewSocialProfileUseCase;
 import com.twohands.social_service.common.dto.ApiResponse;
 import com.twohands.social_service.delivery.http.user.response.FollowUserResponse;
 import com.twohands.social_service.delivery.http.user.response.UnfollowUserResponse;
+import com.twohands.social_service.delivery.http.user.response.ViewFollowersFollowingListResponse;
 import com.twohands.social_service.delivery.http.user.response.ViewSocialProfileResponse;
+import com.twohands.social_service.domain.follow.RelationListType;
 import com.twohands.social_service.security.AuthenticatedUser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,26 +27,56 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/social/users")
 public class UserController {
 
+    private static final int DEFAULT_PAGE = 0;
+    private static final int DEFAULT_SIZE = 20;
+
     private final FollowUserUseCase followUserUseCase;
     private final UnfollowUserUseCase unfollowUserUseCase;
     private final ViewSocialProfileUseCase viewSocialProfileUseCase;
+    private final ViewFollowersFollowingListUseCase viewFollowersFollowingListUseCase;
 
     public UserController(
             FollowUserUseCase followUserUseCase,
             UnfollowUserUseCase unfollowUserUseCase,
-            ViewSocialProfileUseCase viewSocialProfileUseCase
+            ViewSocialProfileUseCase viewSocialProfileUseCase,
+            ViewFollowersFollowingListUseCase viewFollowersFollowingListUseCase
     ) {
         this.followUserUseCase = followUserUseCase;
         this.unfollowUserUseCase = unfollowUserUseCase;
         this.viewSocialProfileUseCase = viewSocialProfileUseCase;
+        this.viewFollowersFollowingListUseCase = viewFollowersFollowingListUseCase;
+    }
+
+    @GetMapping("/{userId}/relations")
+    public ResponseEntity<ApiResponse<ViewFollowersFollowingListResponse>> viewFollowersFollowingList(
+            @PathVariable UUID userId,
+            @RequestParam String type,
+            @RequestParam(name = "page", defaultValue = "" + DEFAULT_PAGE) int page,
+            @RequestParam(name = "size", defaultValue = "" + DEFAULT_SIZE) int size,
+            Authentication authentication
+    ) {
+        UUID viewerId = resolveUserId(authentication);
+        RelationListType relationType = RelationListType.fromQuery(type);
+        ViewFollowersFollowingListResult result = viewFollowersFollowingListUseCase.execute(
+                new ViewFollowersFollowingListCommand(viewerId, userId, relationType, page, size)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewFollowersFollowingListUseCase.successMessage(),
+                toRelationsResponse(result)
+        ));
     }
 
     @GetMapping("/{userId}/profile")
@@ -125,6 +160,29 @@ public class UserController {
                 result.followingCount(),
                 result.followStatus(),
                 result.canViewFullProfile()
+        );
+    }
+
+    private ViewFollowersFollowingListResponse toRelationsResponse(ViewFollowersFollowingListResult result) {
+        List<ViewFollowersFollowingListResponse.RelationUserItemResponse> items = result.users().items().stream()
+                .map(item -> new ViewFollowersFollowingListResponse.RelationUserItemResponse(
+                        item.userId(),
+                        item.displayName(),
+                        item.avatarUrl(),
+                        item.followedAt() != null ? DateTimeFormatter.ISO_INSTANT.format(item.followedAt()) : null
+                ))
+                .toList();
+        return new ViewFollowersFollowingListResponse(
+                result.targetUserId(),
+                result.type().queryValue(),
+                items,
+                new ViewFollowersFollowingListResponse.PageMetaResponse(
+                        result.users().page(),
+                        result.users().size(),
+                        result.users().totalElements(),
+                        result.users().totalPages(),
+                        result.users().hasNext()
+                )
         );
     }
 }

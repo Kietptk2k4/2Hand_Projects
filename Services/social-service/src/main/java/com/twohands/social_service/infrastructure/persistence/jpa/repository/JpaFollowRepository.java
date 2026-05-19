@@ -3,6 +3,8 @@ package com.twohands.social_service.infrastructure.persistence.jpa.repository;
 import com.twohands.social_service.infrastructure.persistence.jpa.entity.FollowEntity;
 import com.twohands.social_service.infrastructure.persistence.jpa.entity.FollowEntityId;
 import com.twohands.social_service.infrastructure.persistence.jpa.entity.FollowStatusDb;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -22,4 +24,16 @@ public interface JpaFollowRepository extends JpaRepository<FollowEntity, FollowE
     long countByFolloweeIdAndStatus(UUID followeeId, FollowStatusDb status);
 
     long countByFollowerIdAndStatus(UUID followerId, FollowStatusDb status);
+
+    Page<FollowEntity> findByFolloweeIdAndStatusOrderByCreatedAtDesc(
+            UUID followeeId,
+            FollowStatusDb status,
+            Pageable pageable
+    );
+
+    Page<FollowEntity> findByFollowerIdAndStatusOrderByCreatedAtDesc(
+            UUID followerId,
+            FollowStatusDb status,
+            Pageable pageable
+    );
 }

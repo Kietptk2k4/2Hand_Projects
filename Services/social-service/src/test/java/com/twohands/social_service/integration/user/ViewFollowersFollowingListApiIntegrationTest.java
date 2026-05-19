@@ -2,11 +2,13 @@ package com.twohands.social_service.integration.user;
 
 import com.twohands.social_service.application.user.followuser.FollowUserUseCase;
 import com.twohands.social_service.application.user.unfollowuser.UnfollowUserUseCase;
-import com.twohands.social_service.application.user.viewsocialprofile.ViewSocialProfileResult;
+import com.twohands.social_service.application.user.viewfollowersfollowinglist.ViewFollowersFollowingListResult;
 import com.twohands.social_service.application.user.viewfollowersfollowinglist.ViewFollowersFollowingListUseCase;
 import com.twohands.social_service.application.user.viewsocialprofile.ViewSocialProfileUseCase;
 import com.twohands.social_service.config.SecurityConfig;
 import com.twohands.social_service.delivery.http.user.UserController;
+import com.twohands.social_service.domain.follow.RelationListType;
+import com.twohands.social_service.domain.post.PageResult;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import com.twohands.social_service.exception.GlobalExceptionHandler;
@@ -26,6 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,7 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "jwt.access-secret=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
         "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration"
 })
-class ViewSocialProfileApiIntegrationTest {
+class ViewFollowersFollowingListApiIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -67,57 +70,78 @@ class ViewSocialProfileApiIntegrationTest {
     @Test
     void shouldReturnUnauthorizedWithoutToken() throws Exception {
         UUID targetId = UUID.randomUUID();
-        mockMvc.perform(get("/api/v1/social/users/{userId}/profile", targetId))
+        mockMvc.perform(get("/api/v1/social/users/{userId}/relations", targetId)
+                        .param("type", "followers"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(401));
     }
 
     @Test
-    void shouldReturn200WithSocialProfile() throws Exception {
+    void shouldReturn200WithFollowersList() throws Exception {
         UUID viewerId = UUID.randomUUID();
         UUID targetId = UUID.randomUUID();
         String token = buildAccessToken(viewerId);
 
-        ViewSocialProfileResult result = new ViewSocialProfileResult(
+        ViewFollowersFollowingListResult result = new ViewFollowersFollowingListResult(
                 targetId.toString(),
-                "User B",
-                "https://avatar",
-                false,
-                10L,
-                5L,
-                "NONE",
-                true
+                RelationListType.FOLLOWERS,
+                new PageResult<>(
+                        List.of(new ViewFollowersFollowingListResult.RelationUserItem(
+                                UUID.randomUUID().toString(),
+                                "Follower",
+                                "https://avatar",
+                                Instant.now()
+                        )),
+                        0,
+                        20,
+                        1,
+                        1,
+                        false
+                )
         );
-        when(viewSocialProfileUseCase.execute(any())).thenReturn(result);
-        when(viewSocialProfileUseCase.successMessage()).thenReturn("Lay social profile thanh cong.");
+        when(viewFollowersFollowingListUseCase.execute(any())).thenReturn(result);
+        when(viewFollowersFollowingListUseCase.successMessage()).thenReturn("Lay danh sach quan he thanh cong.");
 
-        mockMvc.perform(get("/api/v1/social/users/{userId}/profile", targetId)
+        mockMvc.perform(get("/api/v1/social/users/{userId}/relations", targetId)
+                        .param("type", "followers")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.code").value(200))
-                .andExpect(jsonPath("$.message").value("Lay social profile thanh cong."))
-                .andExpect(jsonPath("$.data.userId").value(targetId.toString()))
-                .andExpect(jsonPath("$.data.followerCount").value(10))
-                .andExpect(jsonPath("$.data.followingCount").value(5))
-                .andExpect(jsonPath("$.data.canViewFullProfile").value(true));
+                .andExpect(jsonPath("$.data.type").value("followers"))
+                .andExpect(jsonPath("$.data.items[0].displayName").value("Follower"))
+                .andExpect(jsonPath("$.data.meta.totalElements").value(1));
     }
 
     @Test
-    void shouldReturn404WhenUserNotFound() throws Exception {
+    void shouldReturn400ForInvalidType() throws Exception {
         UUID viewerId = UUID.randomUUID();
         UUID targetId = UUID.randomUUID();
         String token = buildAccessToken(viewerId);
 
-        when(viewSocialProfileUseCase.execute(any()))
-                .thenThrow(new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Nguoi dung khong ton tai."));
-
-        mockMvc.perform(get("/api/v1/social/users/{userId}/profile", targetId)
+        mockMvc.perform(get("/api/v1/social/users/{userId}/relations", targetId)
+                        .param("type", "invalid")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-                .andExpect(status().isNotFound())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value(404));
+                .andExpect(jsonPath("$.code").value(400));
+    }
+
+    @Test
+    void shouldReturn403ForPrivateProfile() throws Exception {
+        UUID viewerId = UUID.randomUUID();
+        UUID targetId = UUID.randomUUID();
+        String token = buildAccessToken(viewerId);
+
+        when(viewFollowersFollowingListUseCase.execute(any()))
+                .thenThrow(new AppException(ErrorCode.FORBIDDEN, "Khong co quyen xem danh sach quan he cua tai khoan rieng tu."));
+
+        mockMvc.perform(get("/api/v1/social/users/{userId}/relations", targetId)
+                        .param("type", "following")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false));
     }
 
     private String buildAccessToken(UUID userId) {

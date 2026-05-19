@@ -3,6 +3,7 @@ package com.twohands.social_service.integration.user;
 import com.twohands.social_service.application.user.followuser.FollowUserUseCase;
 import com.twohands.social_service.application.user.unfollowuser.UnfollowUserResult;
 import com.twohands.social_service.application.user.unfollowuser.UnfollowUserUseCase;
+import com.twohands.social_service.application.user.viewfollowersfollowinglist.ViewFollowersFollowingListUseCase;
 import com.twohands.social_service.application.user.viewsocialprofile.ViewSocialProfileUseCase;
 import com.twohands.social_service.config.SecurityConfig;
 import com.twohands.social_service.delivery.http.user.UserController;
@@ -59,6 +60,9 @@ class UnfollowUserApiIntegrationTest {
 
     @MockBean
     private ViewSocialProfileUseCase viewSocialProfileUseCase;
+
+    @MockBean
+    private ViewFollowersFollowingListUseCase viewFollowersFollowingListUseCase;
 
     @Test
     void shouldReturnUnauthorizedWithoutToken() throws Exception {
