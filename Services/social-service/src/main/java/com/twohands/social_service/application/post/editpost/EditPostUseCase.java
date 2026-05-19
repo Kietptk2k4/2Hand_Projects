@@ -1,5 +1,7 @@
 package com.twohands.social_service.application.post.editpost;
 
+import com.twohands.social_service.application.post.common.ProductTagValidationItem;
+import com.twohands.social_service.application.post.common.ProductTagValidator;
 import com.twohands.social_service.domain.post.MediaItem;
 import com.twohands.social_service.domain.post.Post;
 import com.twohands.social_service.domain.post.PostRepository;
@@ -24,17 +26,21 @@ public class EditPostUseCase {
     private static final int MAX_MEDIA_ITEMS = 10;
     private static final int MAX_HASHTAGS = 30;
     private static final int MAX_HASHTAG_LENGTH = 100;
-    private static final int MAX_PRODUCT_TAGS = 10;
     private static final Pattern UNSAFE_CAPTION_PATTERN = Pattern.compile(
             "(?i)<\\s*script|javascript\\s*:|on\\w+\\s*="
     );
 
     private final PostRepository postRepository;
     private final UserProjectionRepository userProjectionRepository;
+    private final ProductTagValidator productTagValidator;
 
-    public EditPostUseCase(PostRepository postRepository, UserProjectionRepository userProjectionRepository) {
+    public EditPostUseCase(
+            PostRepository postRepository,
+            UserProjectionRepository userProjectionRepository,
+            ProductTagValidator productTagValidator) {
         this.postRepository = postRepository;
         this.userProjectionRepository = userProjectionRepository;
+        this.productTagValidator = productTagValidator;
     }
 
     @Transactional
@@ -141,32 +147,9 @@ public class EditPostUseCase {
                 }
             }
         });
-        command.productTags().ifPresent(productTags -> {
-            if (productTags.size() > MAX_PRODUCT_TAGS) {
-                throw new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed",
-                        "productTags", "Khong duoc tag qua " + MAX_PRODUCT_TAGS + " san pham.");
-            }
-            for (EditPostCommand.ProductTagCommand pt : productTags) {
-                validateProductId(pt.productId());
-                if (pt.price() != null && pt.price().signum() < 0) {
-                    throw new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed",
-                            "productTags[].price", "Gia san pham phai >= 0.");
-                }
-            }
-        });
-    }
-
-    private void validateProductId(String productId) {
-        if (productId == null || productId.isBlank()) {
-            throw new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed",
-                    "productTags[].product_id", "product_id khong duoc de trong.");
-        }
-        try {
-            java.util.UUID.fromString(productId);
-        } catch (IllegalArgumentException e) {
-            throw new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed",
-                    "productTags[].product_id", "product_id phai la dinh dang UUID hop le.");
-        }
+        command.productTags().ifPresent(productTags -> productTagValidator.validate(productTags.stream()
+                .map(pt -> new ProductTagValidationItem(pt.productId(), pt.price()))
+                .toList()));
     }
 
     private String resolveCaption(EditPostCommand command, Post existing) {

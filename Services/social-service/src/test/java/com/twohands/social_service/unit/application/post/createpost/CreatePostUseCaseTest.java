@@ -1,8 +1,10 @@
 package com.twohands.social_service.unit.application.post.createpost;
 
+import com.twohands.social_service.application.post.common.ProductTagValidator;
 import com.twohands.social_service.application.post.createpost.CreatePostCommand;
 import com.twohands.social_service.application.post.createpost.CreatePostResult;
 import com.twohands.social_service.application.post.createpost.CreatePostUseCase;
+import com.twohands.social_service.domain.post.ProductTag;
 import com.twohands.social_service.domain.post.MediaItem;
 import com.twohands.social_service.domain.post.Post;
 import com.twohands.social_service.domain.post.PostRepository;
@@ -15,6 +17,7 @@ import com.twohands.social_service.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +34,8 @@ class CreatePostUseCaseTest {
 
     private final PostRepository postRepository = mock(PostRepository.class);
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
-    private final CreatePostUseCase useCase = new CreatePostUseCase(postRepository, userProjectionRepository);
+    private final CreatePostUseCase useCase = new CreatePostUseCase(
+            postRepository, userProjectionRepository, new ProductTagValidator());
 
     private Post buildSavedPost(UUID authorId, String postId, PostStatus status, PostVisibility visibility) {
         return new Post(
@@ -193,6 +197,53 @@ class CreatePostUseCaseTest {
                     assertThat(appEx.getErrorCode()).isEqualTo(ErrorCode.VALIDATION_ERROR);
                     assertThat(appEx.getField()).isEqualTo("media[].type");
                 });
+    }
+
+    @Test
+    void shouldPersistProductTagsWhenProvided() {
+        UUID authorId = UUID.randomUUID();
+        String productId = UUID.randomUUID().toString();
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(postRepository.save(any())).thenAnswer(inv -> {
+            Post p = inv.getArgument(0);
+            return new Post(
+                    "507f1f77bcf86cd799439011",
+                    p.authorId(),
+                    p.caption(),
+                    p.media(),
+                    p.productTags(),
+                    p.status(),
+                    p.visibility(),
+                    0L,
+                    0L,
+                    p.hashtags(),
+                    p.allowComments(),
+                    p.createdAt(),
+                    p.updatedAt(),
+                    null
+            );
+        });
+
+        CreatePostCommand command = new CreatePostCommand(
+                authorId,
+                "Selling item",
+                List.of(),
+                List.of(new CreatePostCommand.ProductTagCommand(productId, new BigDecimal("150000"))),
+                "PUBLIC",
+                true,
+                List.of(),
+                true
+        );
+
+        CreatePostResult result = useCase.execute(command);
+
+        ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
+        verify(postRepository).save(postCaptor.capture());
+        assertThat(postCaptor.getValue().productTags())
+                .containsExactly(new ProductTag(productId, new BigDecimal("150000")));
+        assertThat(result.productTags()).hasSize(1);
+        assertThat(result.productTags().getFirst().productId()).isEqualTo(productId);
+        assertThat(result.productTags().getFirst().price()).isEqualByComparingTo("150000");
     }
 
     @Test

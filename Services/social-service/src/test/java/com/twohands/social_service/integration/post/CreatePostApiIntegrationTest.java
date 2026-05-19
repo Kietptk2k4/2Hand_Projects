@@ -29,6 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -129,6 +130,50 @@ class CreatePostApiIntegrationTest {
                 .andExpect(jsonPath("$.data.postId").value("507f1f77bcf86cd799439011"))
                 .andExpect(jsonPath("$.data.status").value("ACTIVE"))
                 .andExpect(jsonPath("$.data.visibility").value("PUBLIC"));
+    }
+
+    @Test
+    void shouldReturn201WithProductTagsInResponse() throws Exception {
+        UUID userId = UUID.randomUUID();
+        String productId = UUID.randomUUID().toString();
+        String token = buildAccessToken(userId);
+        Instant now = Instant.now();
+
+        CreatePostResult result = new CreatePostResult(
+                "507f1f77bcf86cd799439011",
+                userId.toString(),
+                "Selling item",
+                List.of(),
+                List.of(new CreatePostResult.ProductTagData(productId, new BigDecimal("150000"))),
+                "ACTIVE",
+                "PUBLIC",
+                true,
+                List.of(),
+                now.toString(),
+                now.toString()
+        );
+        when(createPostUseCase.execute(any())).thenReturn(result);
+        when(createPostUseCase.successMessage()).thenReturn("Tao bai viet thanh cong.");
+
+        String body = """
+                {
+                    "caption": "Selling item",
+                    "productTags": [
+                        { "productId": "%s", "price": 150000 }
+                    ],
+                    "visibility": "PUBLIC",
+                    "allowComments": true,
+                    "publish": true
+                }
+                """.formatted(productId);
+
+        mockMvc.perform(post("/api/v1/social/posts")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.productTags[0].productId").value(productId))
+                .andExpect(jsonPath("$.data.productTags[0].price").value(150000));
     }
 
     @Test

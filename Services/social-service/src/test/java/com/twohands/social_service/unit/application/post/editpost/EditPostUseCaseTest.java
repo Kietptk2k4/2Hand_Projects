@@ -1,8 +1,10 @@
 package com.twohands.social_service.unit.application.post.editpost;
 
+import com.twohands.social_service.application.post.common.ProductTagValidator;
 import com.twohands.social_service.application.post.editpost.EditPostCommand;
 import com.twohands.social_service.application.post.editpost.EditPostResult;
 import com.twohands.social_service.application.post.editpost.EditPostUseCase;
+import com.twohands.social_service.domain.post.ProductTag;
 import com.twohands.social_service.domain.post.MediaItem;
 import com.twohands.social_service.domain.post.Post;
 import com.twohands.social_service.domain.post.PostRepository;
@@ -15,6 +17,7 @@ import com.twohands.social_service.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +34,8 @@ class EditPostUseCaseTest {
 
     private final PostRepository postRepository = mock(PostRepository.class);
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
-    private final EditPostUseCase useCase = new EditPostUseCase(postRepository, userProjectionRepository);
+    private final EditPostUseCase useCase = new EditPostUseCase(
+            postRepository, userProjectionRepository, new ProductTagValidator());
 
     private Post buildExistingPost(UUID authorId, String postId, PostStatus status) {
         return new Post(
@@ -210,6 +214,38 @@ class EditPostUseCaseTest {
                     assertThat(appEx.getErrorCode()).isEqualTo(ErrorCode.VALIDATION_ERROR);
                     assertThat(appEx.getField()).isEqualTo("caption");
                 });
+    }
+
+    @Test
+    void shouldReplaceProductTagsWhenProvided() {
+        UUID authorId = UUID.randomUUID();
+        String postId = "507f1f77bcf86cd799439011";
+        String productId = UUID.randomUUID().toString();
+        Post existing = buildExistingPost(authorId, postId, PostStatus.ACTIVE);
+
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(postRepository.findById(postId)).thenReturn(Optional.of(existing));
+        when(postRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        EditPostCommand command = new EditPostCommand(
+                authorId,
+                postId,
+                Optional.empty(),
+                Optional.empty(),
+                Optional.of(List.of(new EditPostCommand.ProductTagCommand(productId, new BigDecimal("99000")))),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty()
+        );
+
+        EditPostResult result = useCase.execute(command);
+
+        ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
+        verify(postRepository).save(postCaptor.capture());
+        assertThat(postCaptor.getValue().productTags())
+                .containsExactly(new ProductTag(productId, new BigDecimal("99000")));
+        assertThat(result.productTags()).hasSize(1);
+        assertThat(result.productTags().getFirst().productId()).isEqualTo(productId);
     }
 
     @Test
