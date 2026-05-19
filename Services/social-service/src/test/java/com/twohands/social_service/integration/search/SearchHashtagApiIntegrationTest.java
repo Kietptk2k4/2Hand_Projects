@@ -1,7 +1,7 @@
 package com.twohands.social_service.integration.search;
 
+import com.twohands.social_service.application.search.searchhashtag.SearchHashtagResult;
 import com.twohands.social_service.application.search.searchhashtag.SearchHashtagUseCase;
-import com.twohands.social_service.application.search.searchpost.SearchPostResult;
 import com.twohands.social_service.application.search.searchpost.SearchPostUseCase;
 import com.twohands.social_service.config.SecurityConfig;
 import com.twohands.social_service.delivery.http.search.SearchController;
@@ -45,7 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "jwt.access-secret=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
         "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration"
 })
-class SearchPostApiIntegrationTest {
+class SearchHashtagApiIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -58,28 +58,28 @@ class SearchPostApiIntegrationTest {
 
     @Test
     void shouldReturnUnauthorizedWithoutToken() throws Exception {
-        mockMvc.perform(get("/api/v1/social/search/posts").param("q", "travel"))
+        mockMvc.perform(get("/api/v1/social/search/hashtags/travel"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(401));
     }
 
     @Test
-    void shouldReturn200WithSearchResults() throws Exception {
+    void shouldReturn200WithHashtagSearchResults() throws Exception {
         UUID userId = UUID.randomUUID();
         String token = buildAccessToken(userId);
 
-        SearchPostResult result = SearchPostResult.from(
+        SearchHashtagResult result = SearchHashtagResult.from(
                 "travel",
                 new com.twohands.social_service.domain.post.PageResult<>(
-                        List.of(new SearchPostResult.SearchPostItem(
+                        List.of(new SearchHashtagResult.SearchHashtagPostItem(
                                 "507f1f77bcf86cd799439011",
                                 UUID.randomUUID().toString(),
-                                "My travel post",
+                                "Trip",
                                 List.of(),
                                 "PUBLIC",
-                                5L,
-                                1L,
+                                2L,
+                                0L,
                                 List.of("travel"),
                                 true,
                                 "2026-05-19T10:00:00Z",
@@ -92,35 +92,30 @@ class SearchPostApiIntegrationTest {
                         false
                 )
         );
-        when(searchPostUseCase.execute(any())).thenReturn(result);
-        when(searchPostUseCase.successMessage()).thenReturn("Tim kiem bai viet thanh cong.");
+        when(searchHashtagUseCase.execute(any())).thenReturn(result);
+        when(searchHashtagUseCase.successMessage()).thenReturn("Tim kiem hashtag thanh cong.");
 
-        mockMvc.perform(get("/api/v1/social/search/posts")
-                        .param("q", "travel")
+        mockMvc.perform(get("/api/v1/social/search/hashtags/{hashtag}", "travel")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.code").value(200))
-                .andExpect(jsonPath("$.message").value("Tim kiem bai viet thanh cong."))
-                .andExpect(jsonPath("$.data.keyword").value("travel"))
-                .andExpect(jsonPath("$.data.items[0].caption").value("My travel post"))
-                .andExpect(jsonPath("$.data.meta.totalElements").value(1));
+                .andExpect(jsonPath("$.message").value("Tim kiem hashtag thanh cong."))
+                .andExpect(jsonPath("$.data.hashtag").value("travel"))
+                .andExpect(jsonPath("$.data.items[0].caption").value("Trip"));
     }
 
     @Test
-    void shouldReturn400WhenKeywordIsBlank() throws Exception {
+    void shouldReturn400WhenHashtagIsInvalid() throws Exception {
         UUID userId = UUID.randomUUID();
         String token = buildAccessToken(userId);
 
-        when(searchPostUseCase.execute(any()))
-                .thenThrow(new AppException(ErrorCode.BAD_REQUEST, "Tu khoa tim kiem khong hop le."));
+        when(searchHashtagUseCase.execute(any()))
+                .thenThrow(new AppException(ErrorCode.BAD_REQUEST, "Hashtag khong hop le."));
 
-        mockMvc.perform(get("/api/v1/social/search/posts")
-                        .param("q", "   ")
+        mockMvc.perform(get("/api/v1/social/search/hashtags/{hashtag}", " ")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value(400));
+                .andExpect(jsonPath("$.success").value(false));
     }
 
     private String buildAccessToken(UUID userId) {

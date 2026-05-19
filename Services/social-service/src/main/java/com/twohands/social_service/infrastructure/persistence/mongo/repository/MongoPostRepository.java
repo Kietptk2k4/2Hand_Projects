@@ -49,4 +49,23 @@ public interface MongoPostRepository extends MongoRepository<PostDocument, Strin
             String followersVisibility,
             Pageable pageable
     );
+
+    @Query("""
+            {
+              'status': ?2,
+              'hashtags': { '$in': ?0 },
+              '$or': [
+                { 'visibility': ?3 },
+                { 'visibility': ?4, 'author_id': { '$in': ?1 } }
+              ]
+            }
+            """)
+    Page<PostDocument> searchActivePostsByHashtag(
+            List<String> hashtagVariants,
+            List<String> followeeAuthorIds,
+            String status,
+            String publicVisibility,
+            String followersVisibility,
+            Pageable pageable
+    );
 }

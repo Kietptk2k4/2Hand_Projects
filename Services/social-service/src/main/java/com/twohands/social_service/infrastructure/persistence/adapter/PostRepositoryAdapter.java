@@ -5,6 +5,7 @@ import com.twohands.social_service.domain.post.MediaItem;
 import com.twohands.social_service.domain.post.PageResult;
 import com.twohands.social_service.domain.post.Post;
 import com.twohands.social_service.domain.post.PostRepository;
+import com.twohands.social_service.domain.post.PostHashtagSearchQuery;
 import com.twohands.social_service.domain.post.PostSearchQuery;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
@@ -129,6 +130,33 @@ public class PostRepositoryAdapter implements PostRepository {
         List<String> followeeIds = acceptedFolloweeAuthorIds != null ? acceptedFolloweeAuthorIds : List.of();
         Page<PostDocument> page = mongoPostRepository.searchActivePostsByKeyword(
                 query.keyword(),
+                followeeIds,
+                PostStatus.ACTIVE.name(),
+                PostVisibility.PUBLIC.name(),
+                PostVisibility.FOLLOWERS.name(),
+                pageRequest
+        );
+
+        List<Post> items = page.getContent().stream()
+                .map(this::toDomain)
+                .toList();
+
+        return new PageResult<>(
+                items,
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.hasNext()
+        );
+    }
+
+    @Override
+    public PageResult<Post> searchPostsByHashtag(PostHashtagSearchQuery query, List<String> acceptedFolloweeAuthorIds) {
+        PageRequest pageRequest = PageRequest.of(query.page(), query.size());
+        List<String> followeeIds = acceptedFolloweeAuthorIds != null ? acceptedFolloweeAuthorIds : List.of();
+        Page<PostDocument> page = mongoPostRepository.searchActivePostsByHashtag(
+                query.hashtagVariants(),
                 followeeIds,
                 PostStatus.ACTIVE.name(),
                 PostVisibility.PUBLIC.name(),

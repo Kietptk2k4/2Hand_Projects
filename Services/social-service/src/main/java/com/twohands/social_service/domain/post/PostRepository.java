@@ -21,4 +21,6 @@ public interface PostRepository {
     PageResult<Post> findFollowingFeed(FeedQuery query, List<String> followeeIds);
 
     PageResult<Post> searchPosts(PostSearchQuery query, List<String> acceptedFolloweeAuthorIds);
+
+    PageResult<Post> searchPostsByHashtag(PostHashtagSearchQuery query, List<String> acceptedFolloweeAuthorIds);
 }
