@@ -1,10 +1,9 @@
 package com.twohands.commerce_service.infrastructure.persistence.checkout;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.twohands.commerce_service.application.order.common.InventoryReservedOutboxService;
-import com.twohands.commerce_service.application.order.common.OrderCreatedOutboxService;
 import com.twohands.commerce_service.application.shipping.ShippingFeeQuoteService;
+import com.twohands.commerce_service.domain.checkout.CheckoutPrepareOutcome;
+import com.twohands.commerce_service.domain.checkout.CheckoutPreparedData;
+import com.twohands.commerce_service.domain.order.CreateOrderLineRequest;
 import com.twohands.commerce_service.domain.address.UserAddress;
 import com.twohands.commerce_service.domain.address.UserAddressRepository;
 import com.twohands.commerce_service.domain.cart.Cart;
@@ -19,7 +18,6 @@ import com.twohands.commerce_service.domain.checkout.CheckoutFromCartResult;
 import com.twohands.commerce_service.domain.checkout.ShippingFeeAllocator;
 import com.twohands.commerce_service.domain.order.OrderItemQuantity;
 import com.twohands.commerce_service.domain.order.OrderStatus;
-import com.twohands.commerce_service.domain.outbox.OutboxEventRepository;
 import com.twohands.commerce_service.domain.payment.PaymentMethod;
 import com.twohands.commerce_service.domain.payment.PaymentStatus;
 import com.twohands.commerce_service.domain.product.ProductStatus;
@@ -32,7 +30,6 @@ import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -53,33 +50,19 @@ import java.util.UUID;
 public class CheckoutFromCartRepositoryAdapter implements CheckoutFromCartRepository {
 
     private static final Logger log = LoggerFactory.getLogger(CheckoutFromCartRepositoryAdapter.class);
-    private static final String CHANGED_BY = "BUYER";
-    private static final String CHECKOUT_NOTE = "CHECKOUT_FROM_CART";
-
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final UserAddressRepository userAddressRepository;
     private final SellerShippingProfileRepository sellerShippingProfileRepository;
     private final ShippingFeeQuoteService shippingFeeQuoteService;
-    private final OutboxEventRepository outboxEventRepository;
-    private final OrderCreatedOutboxService orderCreatedOutboxService;
-    private final InventoryReservedOutboxService inventoryReservedOutboxService;
-    private final ObjectMapper objectMapper;
-    private final int paymentTtlMinutes;
-
     public CheckoutFromCartRepositoryAdapter(
             NamedParameterJdbcTemplate jdbcTemplate,
             CartRepository cartRepository,
             CartItemRepository cartItemRepository,
             UserAddressRepository userAddressRepository,
             SellerShippingProfileRepository sellerShippingProfileRepository,
-            ShippingFeeQuoteService shippingFeeQuoteService,
-            OutboxEventRepository outboxEventRepository,
-            OrderCreatedOutboxService orderCreatedOutboxService,
-            InventoryReservedOutboxService inventoryReservedOutboxService,
-            ObjectMapper objectMapper,
-            @Value("${commerce.jobs.auto-cancel-unpaid-order.order-ttl-minutes:30}") int paymentTtlMinutes
+            ShippingFeeQuoteService shippingFeeQuoteService
     ) {
         this.jdbcTemplate = jdbcTemplate;
         this.cartRepository = cartRepository;
@@ -87,22 +70,17 @@ public class CheckoutFromCartRepositoryAdapter implements CheckoutFromCartReposi
         this.userAddressRepository = userAddressRepository;
         this.sellerShippingProfileRepository = sellerShippingProfileRepository;
         this.shippingFeeQuoteService = shippingFeeQuoteService;
-        this.outboxEventRepository = outboxEventRepository;
-        this.orderCreatedOutboxService = orderCreatedOutboxService;
-        this.inventoryReservedOutboxService = inventoryReservedOutboxService;
-        this.objectMapper = objectMapper;
-        this.paymentTtlMinutes = paymentTtlMinutes;
     }
 
     @Override
     @Transactional
-    public CheckoutFromCartResult checkout(CheckoutFromCartRequest request) {
+    public CheckoutPrepareOutcome prepareCheckout(CheckoutFromCartRequest request) {
         Instant now = Instant.now();
 
         if (request.idempotencyKey() != null && !request.idempotencyKey().isBlank()) {
             CheckoutFromCartResult existing = findByIdempotencyKey(request.buyerId(), request.idempotencyKey().trim());
             if (existing != null) {
-                return existing;
+                return CheckoutPrepareOutcome.idempotent(existing);
             }
         }
 
@@ -124,50 +102,20 @@ public class CheckoutFromCartRepositoryAdapter implements CheckoutFromCartReposi
         lockInventories(quantityByProduct.keySet().stream().sorted().toList());
         reserveInventoryOrThrow(quantityByProduct, now);
 
-        UUID orderId = UUID.randomUUID();
-        UUID paymentId = UUID.randomUUID();
-        OrderStatus orderStatus = resolveOrderStatus(request.paymentMethod());
-        PaymentStatus paymentStatus = PaymentStatus.PENDING;
-
-        insertOrder(orderId, request.buyerId(), totalAmount, finalAmount, request.paymentMethod(), orderStatus, now);
-        insertOrderItems(orderId, lines, now);
-        insertPayment(
-                paymentId,
-                orderId,
-                request.buyerId(),
-                finalAmount,
-                request.paymentMethod(),
-                request.idempotencyKey(),
-                now
-        );
-        insertOrderStatusHistory(orderId, null, orderStatus.name(), now);
-        insertPaymentStatusHistory(paymentId, null, paymentStatus.name(), now);
-
         List<OrderItemQuantity> reservedItems = quantityByProduct.entrySet().stream()
                 .map(entry -> new OrderItemQuantity(entry.getKey(), entry.getKey(), entry.getValue()))
                 .toList();
 
-        outboxEventRepository.save(orderCreatedOutboxService.build(
-                orderId,
+        return CheckoutPrepareOutcome.prepared(new CheckoutPreparedData(
                 request.buyerId(),
+                totalAmount,
                 finalAmount,
-                request.paymentMethod().name(),
+                request.paymentMethod(),
+                request.idempotencyKey(),
+                lines.stream().map(this::toCreateOrderLine).toList(),
+                reservedItems,
                 now
         ));
-        outboxEventRepository.save(inventoryReservedOutboxService.build(orderId, reservedItems, now));
-
-        String payosCheckoutUrl = resolvePayosCheckoutUrl(request.paymentMethod());
-
-        return new CheckoutFromCartResult(
-                orderId,
-                paymentId,
-                request.paymentMethod(),
-                paymentStatus,
-                orderStatus,
-                finalAmount,
-                payosCheckoutUrl,
-                false
-        );
     }
 
     private CheckoutFromCartResult findByIdempotencyKey(UUID buyerId, String idempotencyKey) {
@@ -457,161 +405,20 @@ public class CheckoutFromCartRepositoryAdapter implements CheckoutFromCartReposi
         }
     }
 
-    private OrderStatus resolveOrderStatus(PaymentMethod paymentMethod) {
-        return paymentMethod == PaymentMethod.PAYOS ? OrderStatus.AWAITING_PAYMENT : OrderStatus.PROCESSING;
-    }
-
-    private void insertOrder(
-            UUID orderId,
-            UUID buyerId,
-            BigDecimal totalAmount,
-            BigDecimal finalAmount,
-            PaymentMethod paymentMethod,
-            OrderStatus orderStatus,
-            Instant now
-    ) {
-        String sql = """
-                INSERT INTO orders(
-                    id, buyer_id, total_amount, final_amount, payment_method,
-                    status, payment_status, created_at, updated_at
-                ) VALUES (
-                    :orderId, :buyerId, :totalAmount, :finalAmount, CAST(:paymentMethod AS payment_method),
-                    CAST(:status AS order_status), 'PENDING', :now, :now
-                )
-                """;
-        jdbcTemplate.update(sql, new MapSqlParameterSource()
-                .addValue("orderId", orderId)
-                .addValue("buyerId", buyerId)
-                .addValue("totalAmount", totalAmount)
-                .addValue("finalAmount", finalAmount)
-                .addValue("paymentMethod", paymentMethod.name())
-                .addValue("status", orderStatus.name())
-                .addValue("now", Timestamp.from(now)));
-    }
-
-    private void insertOrderItems(UUID orderId, List<PreparedLine> lines, Instant now) {
-        String sql = """
-                INSERT INTO order_items(
-                    id, order_id, product_id, seller_id, quantity,
-                    unit_price_snapshot, final_price, sku_snapshot, product_name_snapshot,
-                    image_snapshot, attributes_snapshot, shipping_fee_allocated, shop_name_snapshot,
-                    status, created_at, updated_at
-                ) VALUES (
-                    :id, :orderId, :productId, :sellerId, :quantity,
-                    :unitPrice, :finalPrice, :sku, :productName,
-                    :imageUrl, CAST(:attributesJson AS jsonb), :shippingFeeAllocated, :shopName,
-                    'PENDING', :now, :now
-                )
-                """;
-        for (PreparedLine line : lines) {
-            jdbcTemplate.update(sql, new MapSqlParameterSource()
-                    .addValue("id", UUID.randomUUID())
-                    .addValue("orderId", orderId)
-                    .addValue("productId", line.productId())
-                    .addValue("sellerId", line.sellerId())
-                    .addValue("quantity", line.quantity())
-                    .addValue("unitPrice", line.unitPrice())
-                    .addValue("finalPrice", line.itemTotal())
-                    .addValue("sku", line.sku())
-                    .addValue("productName", line.productName())
-                    .addValue("imageUrl", line.imageUrl())
-                    .addValue("attributesJson", line.attributesJson() == null ? "{}" : line.attributesJson())
-                    .addValue("shippingFeeAllocated", line.shippingFeeAllocated())
-                    .addValue("shopName", line.shopName())
-                    .addValue("now", Timestamp.from(now)));
-        }
-    }
-
-    private void insertPayment(
-            UUID paymentId,
-            UUID orderId,
-            UUID payerId,
-            BigDecimal amount,
-            PaymentMethod paymentMethod,
-            String idempotencyKey,
-            Instant now
-    ) {
-        Instant expiredAt = paymentMethod == PaymentMethod.PAYOS
-                ? now.plusSeconds(paymentTtlMinutes * 60L)
-                : null;
-
-        String sql = """
-                INSERT INTO payments(
-                    id, order_id, payer_id, amount, currency, payment_method, status,
-                    idempotency_key, expired_at, checkout_url_expired_at, created_at, updated_at
-                ) VALUES (
-                    :paymentId, :orderId, :payerId, :amount, 'VND', CAST(:paymentMethod AS payment_method), 'PENDING',
-                    :idempotencyKey, :expiredAt, :checkoutUrlExpiredAt, :now, :now
-                )
-                """;
-        jdbcTemplate.update(sql, new MapSqlParameterSource()
-                .addValue("paymentId", paymentId)
-                .addValue("orderId", orderId)
-                .addValue("payerId", payerId)
-                .addValue("amount", amount)
-                .addValue("paymentMethod", paymentMethod.name())
-                .addValue("idempotencyKey", idempotencyKey)
-                .addValue("expiredAt", expiredAt == null ? null : Timestamp.from(expiredAt))
-                .addValue("checkoutUrlExpiredAt", expiredAt == null ? null : Timestamp.from(expiredAt))
-                .addValue("now", Timestamp.from(now)));
-    }
-
-    private void insertOrderStatusHistory(UUID orderId, String oldStatus, String newStatus, Instant now) {
-        String sql = """
-                INSERT INTO order_status_history(id, order_id, old_status, new_status, changed_by, note, created_at)
-                VALUES (
-                    :id, :orderId,
-                    CAST(:oldStatus AS order_status),
-                    CAST(:newStatus AS order_status),
-                    :changedBy, :note, :createdAt
-                )
-                """;
-        jdbcTemplate.update(sql, new MapSqlParameterSource()
-                .addValue("id", UUID.randomUUID())
-                .addValue("orderId", orderId)
-                .addValue("oldStatus", oldStatus)
-                .addValue("newStatus", newStatus)
-                .addValue("changedBy", CHANGED_BY)
-                .addValue("note", CHECKOUT_NOTE)
-                .addValue("createdAt", Timestamp.from(now)));
-    }
-
-    private void insertPaymentStatusHistory(UUID paymentId, String oldStatus, String newStatus, Instant now) {
-        String sql = """
-                INSERT INTO payment_status_history(id, payment_id, old_status, new_status, payload, created_at)
-                VALUES (
-                    :id, :paymentId,
-                    CAST(:oldStatus AS payment_status),
-                    CAST(:newStatus AS payment_status),
-                    CAST(:payload AS jsonb),
-                    :createdAt
-                )
-                """;
-        jdbcTemplate.update(sql, new MapSqlParameterSource()
-                .addValue("id", UUID.randomUUID())
-                .addValue("paymentId", paymentId)
-                .addValue("oldStatus", oldStatus)
-                .addValue("newStatus", newStatus)
-                .addValue("payload", buildPaymentHistoryPayload(now))
-                .addValue("createdAt", Timestamp.from(now)));
-    }
-
-    private String buildPaymentHistoryPayload(Instant now) {
-        Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("reason", CHECKOUT_NOTE);
-        payload.put("processed_at", now.toString());
-        try {
-            return objectMapper.writeValueAsString(payload);
-        } catch (JsonProcessingException ex) {
-            throw new AppException(ErrorCode.INTERNAL_ERROR, "Cannot serialize payment history payload", ex);
-        }
-    }
-
-    private String resolvePayosCheckoutUrl(PaymentMethod paymentMethod) {
-        if (paymentMethod != PaymentMethod.PAYOS) {
-            return null;
-        }
-        return null;
+    private CreateOrderLineRequest toCreateOrderLine(PreparedLine line) {
+        return new CreateOrderLineRequest(
+                line.productId(),
+                line.sellerId(),
+                line.quantity(),
+                line.unitPrice(),
+                line.itemTotal(),
+                line.productName(),
+                line.shopName(),
+                line.sku(),
+                line.imageUrl(),
+                line.attributesJson(),
+                line.shippingFeeAllocated()
+        );
     }
 
     private ProductCheckoutRow mapProductCheckoutRow(ResultSet rs) throws SQLException {

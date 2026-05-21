@@ -2,9 +2,15 @@ package com.twohands.commerce_service.unit.application.checkout;
 
 import com.twohands.commerce_service.application.checkout.checkoutfromcart.CheckoutFromCartCommand;
 import com.twohands.commerce_service.application.checkout.checkoutfromcart.CheckoutFromCartUseCase;
+import com.twohands.commerce_service.application.order.common.InventoryReservedOutboxService;
+import com.twohands.commerce_service.application.order.createorder.CreateOrderUseCase;
 import com.twohands.commerce_service.domain.checkout.CheckoutFromCartRepository;
 import com.twohands.commerce_service.domain.checkout.CheckoutFromCartResult;
+import com.twohands.commerce_service.domain.checkout.CheckoutPrepareOutcome;
+import com.twohands.commerce_service.domain.checkout.CheckoutPreparedData;
+import com.twohands.commerce_service.domain.order.CreateOrderResult;
 import com.twohands.commerce_service.domain.order.OrderStatus;
+import com.twohands.commerce_service.domain.outbox.OutboxEventRepository;
 import com.twohands.commerce_service.domain.payment.PaymentMethod;
 import com.twohands.commerce_service.domain.payment.PaymentStatus;
 import com.twohands.commerce_service.exception.AppException;
@@ -16,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,6 +37,15 @@ class CheckoutFromCartUseCaseTest {
     @Mock
     private CheckoutFromCartRepository checkoutFromCartRepository;
 
+    @Mock
+    private CreateOrderUseCase createOrderUseCase;
+
+    @Mock
+    private OutboxEventRepository outboxEventRepository;
+
+    @Mock
+    private InventoryReservedOutboxService inventoryReservedOutboxService;
+
     @InjectMocks
     private CheckoutFromCartUseCase useCase;
 
@@ -39,15 +55,27 @@ class CheckoutFromCartUseCaseTest {
 
     @Test
     void shouldCheckoutWithPayos() {
-        when(checkoutFromCartRepository.checkout(any())).thenReturn(new CheckoutFromCartResult(
+        when(checkoutFromCartRepository.prepareCheckout(any())).thenReturn(CheckoutPrepareOutcome.prepared(
+                new CheckoutPreparedData(
+                        buyerId,
+                        BigDecimal.valueOf(900_000),
+                        BigDecimal.valueOf(1_000_000),
+                        PaymentMethod.PAYOS,
+                        "idem-key",
+                        List.of(),
+                        List.of(),
+                        Instant.now()
+                )
+        ));
+        when(createOrderUseCase.execute(any())).thenReturn(new CreateOrderResult(
                 orderId,
                 paymentId,
-                PaymentMethod.PAYOS,
-                PaymentStatus.PENDING,
                 OrderStatus.AWAITING_PAYMENT,
+                PaymentStatus.PENDING,
+                PaymentMethod.PAYOS,
+                BigDecimal.valueOf(900_000),
                 BigDecimal.valueOf(1_000_000),
-                null,
-                false
+                List.of()
         ));
 
         CheckoutFromCartResult result = useCase.execute(new CheckoutFromCartCommand(
