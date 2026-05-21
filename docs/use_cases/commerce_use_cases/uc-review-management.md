@@ -30,6 +30,7 @@ Use case nay mo ta nghiep vu review san pham/shop trong Commerce Service. Buyer 
 - Seller chi reply review cua shop minh.
 - Public review list chi hien `VISIBLE`.
 - Hidden review khong tinh vao rating summary neu policy rating chi tinh visible reviews.
+- Review media: file tren MinIO bucket `2hands-commerce-review`; DB `review_media.url`. Xem `docs/engineering_rules/commerce-object-storage.md`.
 
 ## 5. Sub-Use Cases
 

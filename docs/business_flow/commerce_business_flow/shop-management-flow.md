@@ -22,6 +22,11 @@ Out of scope:
 - Multi-shop per user.
 - Shop analytics nang cao.
 
+### Object Storage (MinIO)
+
+- `avatar_url` va `cover_url` tro object tren bucket **`2hands-commerce-shop`** (MinIO shared, khong instance rieng commerce-service).
+- Upload: FE presigned → MinIO → API luu URL (giong Auth avatar). Xem `docs/engineering_rules/commerce-object-storage.md`.
+
 ## 2. Actors
 
 - Seller: tao va quan ly shop cua minh.

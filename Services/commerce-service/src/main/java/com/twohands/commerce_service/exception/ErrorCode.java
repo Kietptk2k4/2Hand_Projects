@@ -9,6 +9,10 @@ public enum ErrorCode {
     UNAUTHORIZED("COMMERCE-401", HttpStatus.UNAUTHORIZED, "Authentication required"),
     FORBIDDEN("COMMERCE-403", HttpStatus.FORBIDDEN, "Access denied"),
     RESOURCE_NOT_FOUND("COMMERCE-404", HttpStatus.NOT_FOUND, "Resource not found"),
+    PRODUCT_NOT_FOUND("COMMERCE-404-PRODUCT", HttpStatus.NOT_FOUND, "Product not found"),
+    NOT_PURCHASABLE("COMMERCE-409-NOT-PURCHASABLE", HttpStatus.CONFLICT, "Product is not purchasable"),
+    ACTIVE_PRICE_MISSING("COMMERCE-409-PRICE", HttpStatus.CONFLICT, "Active price is missing"),
+    OUT_OF_STOCK("COMMERCE-409-STOCK", HttpStatus.CONFLICT, "Product is out of stock"),
     INVALID_PAGINATION("COMMERCE-400-PAGINATION", HttpStatus.BAD_REQUEST, "Invalid pagination parameters");
 
     private final String code;

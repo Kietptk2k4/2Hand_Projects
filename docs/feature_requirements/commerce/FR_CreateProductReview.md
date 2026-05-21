@@ -44,6 +44,10 @@ Cho phep buyer tao review cho product sau khi order item da `COMPLETED`. Review 
 - `seller_id` derived from order item, not client body.
 - Review starts as `VISIBLE`.
 
+## 5.1 MinIO
+
+- Optional `review_media`: URL bucket **`2hands-commerce-review`**. Co the upload sau qua `FR_UploadReviewMedia`.
+
 ## 6. Database Impact
 
 - Read `order_items`, `orders`.

@@ -58,6 +58,7 @@ Cho phep buyer xem chi tiet mot san pham buyer-visible, bao gom thong tin produc
 - Product `PAUSED/ARCHIVED/REMOVED/DRAFT` nen tra 404 cho buyer.
 - Active price missing -> product unavailable hoac 409 theo API policy.
 - Checkout van phai revalidate product/price/stock.
+- `product_media.media_url` trong response tro object MinIO bucket **`2hands-commerce-product`**.
 
 ## 6. Database Impact
 

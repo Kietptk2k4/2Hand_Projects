@@ -41,6 +41,10 @@ Cho phep seller cap nhat thong tin public profile cua shop minh.
 - Suspended shop may be allowed to edit profile but remains not sellable.
 - Seller cannot change `status`, `rating_avg`, or `rating_count`.
 
+## 5.1 MinIO
+
+- `avatar_url` / `cover_url` tro bucket **`2hands-commerce-shop`** (MinIO shared). Validate URL prefix/domain khi cap nhat.
+
 ## 6. Database Impact
 
 - Read/update `seller_shops`.

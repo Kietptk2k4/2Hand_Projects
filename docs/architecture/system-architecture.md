@@ -26,7 +26,8 @@ Hệ thống kết hợp giữa giao tiếp đồng bộ (Synchronous - RESTful 
 * **Payment Gateway:** Tích hợp **payOS** để tạo link thanh toán, xử lý Webhook trả về và tự động cập nhật trạng thái đơn hàng.
 * **Logistics:** Tích hợp **GHN (Giao Hàng Nhanh)** để tạo mã vận đơn và theo dõi trạng thái giao hàng.
 * **Identity Providers:** Google, Facebook cho tính năng đăng nhập OAuth.
-* **Cloud Storage:** Amazon S3 hoặc Cloudinary để lưu trữ media (Avatar, Post Images, Product Images).
+* **Object Storage (MVP local):** **MinIO** shared (`Infrastructure/docker-compose.yml`, `:9000`). Auth avatar → bucket `2hands-avatar`; Commerce product/shop/review → `2hands-commerce-product`, `2hands-commerce-shop`, `2hands-commerce-review` (PostgreSQL chỉ lưu URL). Chi tiết: `docs/engineering_rules/commerce-object-storage.md`, `docs/business-spec/commerce-service-spec.md` § 1.1.
+* **Cloud Storage (production option):** Amazon S3 hoặc CDN S3-compatible (cùng contract URL với MinIO dev); Social post images có thể dùng MongoDB + URL object storage tùy triển khai.
 
 ---
 

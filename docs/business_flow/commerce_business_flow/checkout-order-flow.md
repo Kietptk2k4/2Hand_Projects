@@ -59,7 +59,7 @@ Out of scope:
 - Checkout must revalidate everything server-side.
 - Inventory reservation happens only during checkout/order creation.
 - Cart does not reserve stock.
-- Order item must snapshot product/shop/price data at purchase time.
+- Order item must snapshot product/shop/price data at purchase time (image URL snapshot from MinIO product media, immutable after order).
 - Payment is one-to-one with order.
 - Order completed iff all order items are `COMPLETED` and order payment status is `PAID`.
 - Shipment cannot be created unless order is `PROCESSING`.
@@ -137,7 +137,7 @@ Recommended implementation:
     - `stock_quantity -= quantity`
     - `reserved_quantity += quantity`
 11. Create `orders`.
-12. Create `order_items` with snapshots.
+12. Create `order_items` with snapshots (including `image_snapshot` = main `product_media.media_url` from MinIO `2hands-commerce-product` at checkout time).
 13. Create `payments`.
 14. Insert status history.
 15. Insert outbox event(s).

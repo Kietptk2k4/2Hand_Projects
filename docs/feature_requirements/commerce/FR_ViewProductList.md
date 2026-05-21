@@ -67,6 +67,10 @@ Cho phep buyer xem danh sach san pham buyer-visible trong Commerce Service. Feat
 - Active price phai ton tai de hien product list.
 - Khong expose `reserved_quantity`.
 
+## 5.1 MinIO
+
+- Product card `media` / thumbnail URL tro MinIO bucket **`2hands-commerce-product`**.
+
 ## 6. Database Impact
 
 - Read `products`.

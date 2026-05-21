@@ -146,14 +146,14 @@ sequenceDiagram
     actor Buyer
     participant CommerceAPI
     participant ReviewRepo
-    participant MediaStore
+    participant MinIO as MinIO (2hands-commerce-review)
     participant ReviewMediaRepo
 
     Buyer->>CommerceAPI: Upload review media
     CommerceAPI->>ReviewRepo: Validate review belongs to buyer
-    CommerceAPI->>MediaStore: Store media file
-    MediaStore-->>CommerceAPI: Media URL
-    CommerceAPI->>ReviewMediaRepo: Insert review media
+    CommerceAPI->>MinIO: Presigned upload (FE) or multipart proxy (FR_UploadReviewMedia)
+    MinIO-->>CommerceAPI: Media URL
+    CommerceAPI->>ReviewMediaRepo: Insert review_media
     CommerceAPI-->>Buyer: Media attached
 ```
 
@@ -162,8 +162,8 @@ Rules:
 - Buyer can upload media only to own review.
 - Media type must be allowed.
 - Limit media count per review according to API policy.
-- `review_media.url` stores final accessible URL.
-- If media store succeeds but DB insert fails, cleanup orphan media if possible.
+- `review_media.url` stores MinIO public URL (`2hands-commerce-review`).
+- If MinIO upload succeeds but DB insert fails, cleanup orphan object when possible.
 
 ## 9. View Product Reviews Flow
 

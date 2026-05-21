@@ -12,6 +12,7 @@ In scope:
 - Loc san pham theo category.
 - Xem san pham theo shop.
 - Xem gia active, sale price, ton kho kha dung, attributes, media va review summary.
+- Media URL trong response tro object **MinIO** bucket `2hands-commerce-product` (FE render truc tiep hoac qua CDN).
 
 Out of scope:
 

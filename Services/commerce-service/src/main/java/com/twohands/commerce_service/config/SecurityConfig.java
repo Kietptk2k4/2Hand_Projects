@@ -34,8 +34,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/health").permitAll()
-                        .requestMatchers("/api/v1/commerce/payments/webhooks/**").permitAll()
-                        .requestMatchers("/api/v1/commerce/shipments/webhooks/**").permitAll()
+                        .requestMatchers("/commerce/api/v1/payments/webhooks/**").permitAll()
+                        .requestMatchers("/commerce/api/v1/shipments/webhooks/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(restAuthenticationEntryPoint))

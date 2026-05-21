@@ -40,6 +40,11 @@ Cho phep seller publish product sau khi product du dieu kien ban hang. Publish c
 - Inventory record must exist.
 - If `stock_quantity > 0`, status becomes `ACTIVE`.
 - If `stock_quantity = 0`, status becomes `OUT_OF_STOCK`.
+- Neu policy yeu cau media: it nhat mot `product_media` voi URL hop le tren MinIO `2hands-commerce-product`.
+
+## 5.1 MinIO
+
+- Publish precondition co the yeu cau media URL tu bucket **`2hands-commerce-product`**.
 
 ## 6. Database Impact
 

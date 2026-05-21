@@ -46,6 +46,10 @@ Cho phep seller tao product draft trong shop cua minh. Product moi mac dinh `DRA
 - `seller_id` and `shop_id` derived from authenticated seller/shop.
 - `weight_gram > 0`.
 
+## 5.1 MinIO
+
+- Media optional: `product_media.media_url` tro bucket **`2hands-commerce-product`** sau khi upload MinIO (presigned hoac URL payload).
+
 ## 6. Database Impact
 
 - Read `seller_shops`.

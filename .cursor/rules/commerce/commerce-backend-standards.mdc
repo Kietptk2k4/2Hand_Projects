@@ -1,0 +1,222 @@
+---
+description: Chuẩn backend bắt buộc cho commerce-service — architecture, domain, API, data, events, integrations (tổng hợp từ docs/)
+globs: Services/commerce-service/**,docs/feature_requirements/commerce/**,docs/business_flow/commerce_business_flow/**,docs/use_cases/commerce_use_cases/**,docs/business-spec/commerce-service-spec.md,docs/database/commerce-schema.md
+alwaysApply: false
+---
+
+# Commerce Backend Standards
+
+Trước khi code hoặc review bất kỳ thứ gì liên quan **Commerce Service**, bắt buộc tuân thủ chuẩn backend chung (`.cursor/rules/social/social-backend-standards.mdc`) **và** toàn bộ quy tắc dưới đây. Source-of-truth nghiệp vụ: `docs/business-spec/commerce-service-spec.md`.
+
+## 1. Service Boundary
+
+- **Own:** shop, product, inventory, cart, address, order, payment, shipment, review, `outbox_events`.
+- **PostgreSQL only** cho MVP (`commerce_db`, port local **5434**). Không MongoDB trong commerce-service.
+- **Không** truy cập DB Auth/Social/Admin. Chỉ lưu `user_id` / `buyer_id` / `seller_id` / `payer_id` (UUID). User/profile/role lấy từ **JWT claims** hoặc contract API/event — không cross-DB FK.
+- Mỗi user tối đa **1 cart**, **1 seller shop** (MVP).
+- Cart **không** reserve stock; chỉ **checkout** reserve (`stock_quantity` ↓, `reserved_quantity` ↑).
+
+## 2. Architecture & Package
+
+Dependency flow: `delivery → application → domain → infrastructure` (không đảo chiều).
+
+```
+src/main/java/com/twohands/commerce_service/
+├── application    # UseCase, @Transactional write boundary
+├── delivery       # Controller, XxxRequest/XxxResponse, mapper
+├── domain         # Entity, rule, repository interface (no Spring/HTTP/Kafka)
+├── infrastructure # JPA, Redis, PayOS/GHN client, outbox adapter
+├── config / common / exception / security
+```
+
+**Use case naming:** `CheckoutFromCartUseCase`, `ProcessPayOSWebhookUseCase` — không `XxxService` generic.
+
+**Forbidden (Commerce):**
+- Controller → repository trực tiếp.
+- Business logic trong DTO/Controller.
+- Expose JPA entity ra API.
+- Publish broker trong transaction trước commit (phải outbox).
+- Gọi PayOS/GHN trong DB transaction dài.
+- Tin giá/stock/status từ client khi checkout — **revalidate server-side**.
+- Order/shipment tham chiếu mutable `user_addresses` — phải dùng `shipping_address_snapshots`.
+
+## 3. API Contract
+
+| Mục | Quy tắc |
+|-----|---------|
+| Base path (FR + api-standard) | `/commerce/api/v1/{resource}` |
+| Local | `http://localhost:3003` |
+| Envelope | `docs/engineering_rules/api-standard.md` — `code`, `success`, `message`, `data`, `errors`, `timestamp` |
+| Error prefix | `COMMERCE-*` (vd: `COMMERCE-404`, `COMMERCE-400-VALIDATION`) — mở rộng trong `ErrorCode` theo domain |
+| DELETE | Soft delete / status transition (`ARCHIVED`, `REMOVED`, `HIDDEN`) — không hard delete mặc định |
+| Webhook | `POST /commerce/api/v1/payments/webhooks/payos`, `POST /commerce/api/v1/shipments/webhooks/ghn` — `permitAll`, verify signature, idempotent |
+
+Khi implement controller, **ưu tiên path trong `docs/feature_requirements/commerce/FR_*.md`**. Nếu `SecurityConfig` lệch prefix, sửa cho khớp FR.
+
+**Auth:** Bearer JWT mọi API protected. Buyer/Seller/Admin: validate ownership + role/permission từ JWT (admin từ Auth).
+
+## 4. Domain State Machines (tóm tắt bắt buộc)
+
+### Product
+`DRAFT → ACTIVE → OUT_OF_STOCK`; `ACTIVE ↔ PAUSED`; `→ ARCHIVED | REMOVED` (admin remove).
+
+### Order
+`CREATED → AWAITING_PAYMENT → PROCESSING → COMPLETED`; cancel từ `CREATED`/`AWAITING_PAYMENT` (và `PROCESSING` chỉ khi policy + shipment còn `PENDING`).
+
+### Order item
+`PENDING → PROCESSING → SHIPPED → DELIVERED → COMPLETED`; cancel trước fulfillment; `FAILED`/`RETURNED` khi giao lỗi.
+
+### Payment (1:1 order)
+Methods: `COD`, `PAYOS`. Status: `PENDING → PAID | FAILED | CANCELLED | EXPIRED`.
+- **PAYOS:** paid **chỉ** từ webhook hợp lệ; redirect không đánh dấu paid.
+- **COD:** `cod_amount` trên shipment; paid khi buyer confirm / settlement rule.
+
+### Shipment
+Chỉ tạo khi order **`PROCESSING`** và payment đã đủ điều kiện (PayOS: `PAID`). Carrier: `GHN`, `MANUAL`, `SELF_DELIVERY`.
+`PENDING → PICKING_UP → READY_TO_SHIP → SHIPPED → DELIVERED` — **DELIVERED không auto-complete order** (confirm buyer hoặc job 7 ngày).
+
+### Review
+`UNIQUE(order_item_id)`; chỉ khi `order_items.status = COMPLETED`; rating 1–5; `VISIBLE | HIDDEN`.
+
+### Outbox
+`PENDING → PROCESSING → PUBLISHED`; fail → `FAILED` → retry. Ghi cùng transaction domain change.
+
+## 5. Inventory Invariants
+
+```text
+Checkout:     stock_quantity -= q; reserved_quantity += q
+Pay success:  reserved_quantity -= q   (stock đã trừ lúc reserve)
+Pay fail/exp: reserved_quantity -= q; stock_quantity += q
+```
+
+- `stock_quantity >= 0`, `reserved_quantity >= 0`.
+- Checkout fail nếu `stock_quantity < quantity`.
+- Cập nhật stock: optimistic/pessimistic lock — tránh oversell.
+- `available_stock` (nghiệp vụ) = `stock_quantity` trong schema MVP.
+
+## 6. Data & Schema
+
+- Schema doc: `docs/database/commerce-schema.md`
+- Migration: `Services/commerce-service/src/main/resources/db/migration/V1__init_commerce_tables.sql`
+- PK UUID; money `numeric`; timestamps TZ-aware; JSON → JSONB.
+- **Snapshots bắt buộc** trên `order_items` (price, SKU, name, image, attributes, shop name, `shipping_fee_allocated`) và `shipping_address_snapshots` cho shipment.
+- Status history: `order_status_history`, `payment_status_history`, `shipment_status_history` khi đổi state quan trọng.
+- Webhook logs: `payment_webhook_logs` (unique `provider + payos_order_code + event_type`), `ghn_webhook_logs`.
+
+## 7. Outbox & Kafka Topics
+
+- Không publish trực tiếp từ use case; insert `outbox_events` trong transaction.
+- `event_type`: `COMMERCE_*` UPPER_SNAKE; `event_key` deterministic (vd: `order:{id}:created`).
+- `source`: `commerce` | `payment` | `shipment`.
+- Topic map (đã có `CommerceOutboxTopicResolver`): `commerce.order.created`, `commerce.payment.paid`, `commerce.shipment.status_changed`, … — thêm entry khi thêm `event_type` mới.
+- Worker: `PublishCommerceEventsUseCase`, `RetryCommerceOutboxEventsUseCase` (schedulers tắt mặc định).
+
+Event candidates (spec §8): `COMMERCE_ORDER_CREATED`, `COMMERCE_PAYMENT_PAID`, `COMMERCE_INVENTORY_RESERVED`, `COMMERCE_PRODUCT_PUBLISHED`, `COMMERCE_REVIEW_CREATED`, …
+
+## 8. Media / MinIO (Object Storage)
+
+- **MinIO shared** từ `Infrastructure/docker-compose.yml` — **không** instance MinIO riêng cho commerce-service.
+- **Buckets:** `2hands-commerce-product`, `2hands-commerce-review`, `2hands-commerce-shop` (auth: `2hands-avatar` riêng).
+- **DB:** chỉ URL + metadata; binary trên MinIO. Checkout: `image_snapshot` từ product media URL.
+- **Upload MVP:** FE presigned → MinIO → API lưu URL (giống Auth avatar). Review: thêm multipart proxy (`FR_UploadReviewMedia`).
+- **Chi tiết:** `docs/engineering_rules/commerce-object-storage.md`, `docs/business-spec/commerce-service-spec.md` § 1.1.
+- **Env gợi ý:** `COMMERCE_MINIO_ENDPOINT`, `COMMERCE_MINIO_PUBLIC_URL`, `COMMERCE_MINIO_BUCKET_*` (xem `.env.example`).
+
+## 9. External Integrations
+
+| Provider | Bật khi | Env chính |
+|----------|---------|------------|
+| PayOS | `COMMERCE_PAYOS_ENABLED=true` | `COMMERCE_PAYOS_WEBHOOK_SECRET`, `COMMERCE_PAYOS_BASE_URL` (+ API credentials khi implement client) |
+| GHN | `COMMERCE_GHN_ENABLED=true` | `COMMERCE_GHN_TOKEN`, `COMMERCE_GHN_WEBHOOK_SECRET`, `COMMERCE_GHN_BASE_URL` |
+
+- Webhook: verify signature → log raw → idempotent process → update payment/shipment/order/inventory.
+- Không log secret, token, signature key, full PAN.
+- GHN status map (MVP): picking→`PICKING_UP`, delivering→`SHIPPED`, delivered→`DELIVERED`, failure→`FAILED`/`RETURNED`.
+
+## 10. Background Jobs
+
+Theo `docs/business_flow/commerce_business_flow/background-jobs-flow.md` + `uc-background-jobs.md`:
+
+- Sync cart item (`OUT_OF_STOCK`, `INVALID_PRODUCT`) khi product/shop/stock đổi.
+- Expire PayOS payment / auto-cancel unpaid order.
+- Auto-complete delivered order (~7 ngày).
+- Outbox publish/retry.
+
+Job bật qua config scheduler; mặc định **false** local.
+
+## 11. Local Development
+
+```bash
+cd Infrastructure && docker compose up -d postgres-commerce redis minio
+```
+
+Copy `Services/commerce-service/.env.example` → `.env`:
+
+- `DB_URL=jdbc:postgresql://localhost:5434/commerce_db`
+- `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` (≥32 chars, **cùng auth-service** khi test JWT)
+- Outbox/PayOS/GHN: để `false` / secret trống cho dev thuần CRUD
+
+Chạy: `./gradlew bootRun` (port **3003**). Health: `/actuator/health`.
+
+## 12. Implement Feature — Doc Workflow
+
+Khi **Implement FR_XXX** hoặc feature Commerce:
+
+1. `docs/feature_requirements/commerce/FR_XXX.md`
+2. Section tương ứng `docs/business-spec/commerce-service-spec.md`
+3. Business flow (bảng map):
+
+| Nhóm FR | Flow |
+|---------|------|
+| Outbox | `outbox-event-flow.md` |
+| Cart | `cart-lifecycle-flow.md` |
+| Product/Shop | `product-management-flow.md`, `shop-management-flow.md`, `product-discovery-flow.md` |
+| Checkout/Order | `checkout-order-flow.md`, `inventory-reservation-flow.md` |
+| Payment | `payment-lifecycle-flow.md` |
+| Shipment | `shipping-lifecycle-flow.md` |
+| Seller orders | `seller-order-management-flow.md` |
+| Review | `review-lifecycle-flow.md` |
+| Address | `address-management-flow.md` |
+| Jobs | `background-jobs-flow.md` |
+| Admin mod | `admin-moderation-flow.md` |
+
+4. Use case: `docs/use_cases/commerce_use_cases/uc-*.md` (14 files)
+5. Pattern có sẵn: JWT, `ApiResponse`, `GlobalExceptionHandler`, outbox adapter — tham chiếu `auth-service` / `social-service` cùng pattern.
+6. Sau implement: API behavior doc theo `commerce-api-behavior-doc-required.mdc`
+
+**FR index:** 65 files trong `docs/feature_requirements/commerce/`.
+
+## 13. Testing
+
+- Unit: business logic application/domain (inventory, state transition, idempotency webhook).
+- Integration: Flyway/DB, repository, API critical path.
+- Cấu trúc: `src/test/java/.../unit/`, `.../integration/`
+- Test profile: `application-test.yml` (H2 + schema-test; Flyway off).
+
+## 14. Definition of Done (Commerce Feature)
+
+- [ ] Clean Architecture đúng layer
+- [ ] API envelope + `COMMERCE-*` errors
+- [ ] State machine & invariants (inventory, payment, shipment) đúng spec
+- [ ] Snapshot / status history / webhook idempotency nếu áp dụng
+- [ ] Outbox event (nếu FR yêu cầu publish) trong cùng transaction
+- [ ] Unit test logic chính; integration test khi đụng DB/API
+- [ ] `docs/api_fe_behavior/commerce_api_fe_behavior/<Feature>-api-and-behavior.md`
+
+## 15. Tài liệu tham chiếu đầy đủ
+
+| Loại | Path |
+|------|------|
+| Business spec | `docs/business-spec/commerce-service-spec.md` |
+| DB schema | `docs/database/commerce-schema.md` |
+| Architecture | `docs/architecture/system-architecture.md`, `database-strategy.md`, `event-driven-architecture.md` |
+| Engineering | `docs/engineering_rules/api-standard.md`, `backend-convention.md`, `naming-convention.md`, `commerce-object-storage.md` |
+| Business flows | `docs/business_flow/commerce_business_flow/*.md` (13 files) |
+| Use cases | `docs/use_cases/commerce_use_cases/*.md` |
+| Feature reqs | `docs/feature_requirements/commerce/*.md` |
+| API FE behavior | `docs/api_fe_behavior/commerce_api_fe_behavior/` |
+| Implementation checklist | `.cursor/rules/commerce/commerce-service-implementation.mdc` |
+
+## 16. MVP Out of Scope (không implement trừ khi FR mới)
+
+Refund/dispute đầy đủ, seller payout, voucher/promotion, multi-warehouse, search engine riêng, return workflow phức tạp, full GHN/PayOS reconciliation ngoài log/status MVP.

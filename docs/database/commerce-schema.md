@@ -13,6 +13,17 @@ Commerce Service su dung PostgreSQL lam source-of-truth cho shop, product, inven
 - Timestamps dung timezone-aware timestamp neu DB convention cho phep.
 - JSON fields dung JSONB.
 
+## 1.1 Object Storage (MinIO) — URL Columns
+
+Commerce **khong** luu binary media trong PostgreSQL. Cac cot URL/text duoi day tro toi object tren **MinIO shared** (bucket theo entity). Chi tiet upload/validation: `docs/engineering_rules/commerce-object-storage.md`.
+
+| Column | Bucket (MVP) |
+|--------|----------------|
+| `product_media.media_url` | `2hands-commerce-product` |
+| `review_media.url` | `2hands-commerce-review` |
+| `seller_shops.avatar_url`, `cover_url` | `2hands-commerce-shop` |
+| `order_items.image_snapshot` | Snapshot URL (copy tu product media tai checkout) |
+
 ## 2. Core Enums
 
 ### `cart_item_status`
@@ -229,7 +240,7 @@ Snapshot tung product trong order, gan voi seller va optional shipment.
 | `final_price` | numeric | NOT NULL, CHECK `final_price >= 0` |
 | `sku_snapshot` | varchar | NULLABLE |
 | `product_name_snapshot` | varchar | NOT NULL |
-| `image_snapshot` | text | NULLABLE |
+| `image_snapshot` | text | NULLABLE, snapshot URL tu MinIO `2hands-commerce-product` tai checkout |
 | `attributes_snapshot` | jsonb | NULLABLE |
 | `completed_at` | timestamp | NULLABLE |
 | `shipping_fee_allocated` | numeric | NOT NULL, CHECK `shipping_fee_allocated >= 0` |
@@ -343,7 +354,7 @@ San pham seller dang ban.
 
 ### 3.12 `product_media`
 
-Media cua product.
+Media cua product. File tren MinIO bucket `2hands-commerce-product`; DB luu `media_url`.
 
 | Column | Type | Constraint / Meaning |
 |---|---|---|
@@ -422,8 +433,8 @@ Shop cua seller.
 | `seller_id` | UUID | NOT NULL, UNIQUE, logical reference to Auth user |
 | `shop_name` | varchar | NOT NULL |
 | `description` | text | NULLABLE |
-| `avatar_url` | text | NULLABLE |
-| `cover_url` | text | NULLABLE |
+| `avatar_url` | text | NULLABLE, URL object MinIO `2hands-commerce-shop` |
+| `cover_url` | text | NULLABLE, URL object MinIO `2hands-commerce-shop` |
 | `status` | shop_status | NOT NULL |
 | `rating_avg` | numeric | NOT NULL, default 0 |
 | `rating_count` | integer | NOT NULL, default 0 |
@@ -480,7 +491,7 @@ Recommended constraint:
 
 ### 3.20 `review_media`
 
-Media dinh kem review.
+Media dinh kem review. File tren MinIO bucket `2hands-commerce-review`; DB luu `url`.
 
 | Column | Type | Constraint / Meaning |
 |---|---|---|

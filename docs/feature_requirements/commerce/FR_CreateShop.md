@@ -43,6 +43,10 @@ Cho phep user tao seller shop trong Commerce Service. Moi user chi co toi da mot
 - Default `shop_settings.is_vacation = false`.
 - Shop name required.
 
+## 5.1 MinIO
+
+- `avatar_url` / `cover_url` (optional) tro object bucket **`2hands-commerce-shop`** (MinIO shared). FE upload presigned truoc, API chi luu URL.
+
 ## 6. Database Impact
 
 - Insert `seller_shops`.

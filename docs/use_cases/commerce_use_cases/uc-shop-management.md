@@ -38,8 +38,8 @@ Use case nay mo ta nghiep vu seller tao va quan ly shop. Shop la root cho seller
 
 **Main Flow:**
 
-1. Seller submit shop name, description, avatar/cover optional.
-2. System validate seller has no shop.
+1. Seller submit shop name, description; `avatar_url`/`cover_url` optional (URL MinIO bucket `2hands-commerce-shop` sau khi FE upload).
+2. System validate seller has no shop va URL bucket/domain neu co.
 3. System create `seller_shops` status `ACTIVE`.
 4. System create default `shop_settings`.
 5. System create pickup profile neu payload co.
@@ -53,8 +53,8 @@ Use case nay mo ta nghiep vu seller tao va quan ly shop. Shop la root cho seller
 
 **Main Flow:**
 
-1. Seller update shop name, description, avatar, cover.
-2. System validate ownership.
+1. Seller update shop name, description, avatar, cover (URL tro MinIO `2hands-commerce-shop`).
+2. System validate ownership va URL hop le.
 3. System update shop fields.
 4. System ghi event neu can.
 

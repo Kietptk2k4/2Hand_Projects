@@ -59,14 +59,16 @@ Use case nay mo ta nghiep vu seller quan ly product catalog: tao draft, cap nhat
 
 ### 5.3. Manage Product Media
 
+**Object Storage (MinIO):** Bucket `2hands-commerce-product` (MinIO shared). MVP: FE presigned upload → MinIO → API luu `product_media.media_url`. Chi tiet: `docs/engineering_rules/commerce-object-storage.md`.
+
 **Main Flow:**
 
-1. Seller uploads/adds media.
-2. System validates product ownership.
-3. System stores media and inserts `product_media`.
+1. Seller uploads file len MinIO (presigned) hoac gui `media_url` da upload.
+2. System validates product ownership va URL bucket/domain.
+3. System inserts/updates `product_media` (URL + `media_type` + `sort_order`).
 4. System orders media by `sort_order`.
 
-**Exception Flow:** Invalid media type -> 400; media store failure -> 503.
+**Exception Flow:** Invalid media type -> 400; invalid URL -> 400; MinIO/storage failure -> 503; DB fail after upload -> cleanup orphan object khi co the.
 
 ### 5.4. Manage Product Price
 

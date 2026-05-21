@@ -162,13 +162,14 @@ sequenceDiagram
     actor Seller
     participant CommerceAPI
     participant ProductRepo
-    participant MediaStore
+    participant MinIO as MinIO (2hands-commerce-product)
     participant MediaRepo
 
     Seller->>CommerceAPI: Upload/update product media
     CommerceAPI->>ProductRepo: Validate product ownership
-    CommerceAPI->>MediaStore: Store media
-    MediaStore-->>CommerceAPI: Media URL
+    Note over CommerceAPI,MinIO: MVP: FE presigned upload to MinIO, then API saves media_url
+    CommerceAPI->>MinIO: Optional proxy upload or validate URL prefix
+    MinIO-->>CommerceAPI: Media URL (http://localhost:9000/2hands-commerce-product/...)
     CommerceAPI->>MediaRepo: Insert or update product_media
     CommerceAPI-->>Seller: Media updated
 ```
@@ -179,7 +180,8 @@ Rules:
 - Media type must be allowed.
 - `sort_order` controls display order.
 - Buyer discovery uses first/main media by sort order.
-- If media storage succeeds but DB fails, cleanup orphan object if possible.
+- If MinIO upload succeeds but DB fails, cleanup orphan object in `2hands-commerce-product` when possible.
+- See `docs/engineering_rules/commerce-object-storage.md`.
 
 ## 9. Price Management Flow
 

@@ -62,6 +62,7 @@ Cho phep buyer xem cart hien tai voi danh sach cart items, gia hien tai, stock s
 - Product invalid -> item unavailable.
 - Stock insufficient -> item `OUT_OF_STOCK`.
 - Checkout van phai revalidate lai.
+- `image_url` trong item enrich tu `product_media` — URL MinIO bucket **`2hands-commerce-product`**.
 
 ## 6. Database Impact
 

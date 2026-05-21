@@ -19,6 +19,42 @@ Commerce Service own cac aggregate va data sau:
 
 Commerce Service khong duoc truy cap truc tiep database cua service khac. Neu can thong tin user/profile/permission thi lay tu JWT claim, local projection, internal API hoac event integration theo contract rieng.
 
+## 1.1 Object Storage (MinIO)
+
+Commerce media (product, shop, review) dung **MinIO shared** — khong tao instance MinIO rieng cho `commerce-service`. Chi tiet: `docs/engineering_rules/commerce-object-storage.md`.
+
+### Infrastructure
+
+- MinIO trong `Infrastructure/docker-compose.yml` (API `:9000`, Console `:9001`).
+- Production: endpoint S3-compatible, cung mo hinh URL.
+
+### Commerce buckets (MVP)
+
+| Bucket | Entity |
+|--------|--------|
+| `2hands-commerce-product` | `product_media` |
+| `2hands-commerce-review` | `review_media` |
+| `2hands-commerce-shop` | `seller_shops.avatar_url`, `cover_url` |
+
+Auth avatar dung bucket riêng `2hands-avatar` — khong gop voi commerce.
+
+### Persistence
+
+- PostgreSQL chi luu URL + metadata; file binary tren MinIO.
+- Checkout: `order_items.image_snapshot` copy URL media chinh tu `product_media` tai thoi diem mua.
+
+### Upload flows
+
+1. **Luong chinh (uu tien MVP, giong Auth):** FE lay presigned URL (Commerce API hoac gateway) → upload truc tiep MinIO → goi Commerce API voi `media_url` / `avatar_url` / `cover_url` → validate URL + ghi DB.
+2. **Luong phu:** `FR_UploadReviewMedia` — multipart qua Commerce, proxy len bucket `2hands-commerce-review`, insert `review_media`.
+
+### Rules
+
+- Validate URL thuoc bucket/domain cho phep; gioi han type/size/count.
+- Khong log presigned secret.
+- Storage OK + DB fail → cleanup orphan object khi co the.
+- Out of scope: quan ly bucket policy IaC chi tiet; khong doi schema Postgres (giu cot URL hien tai).
+
 ## 2. Actors
 
 ### Buyer
@@ -685,7 +721,7 @@ Authorization rules:
 - Buyer chi review order item cua order minh.
 - Seller chi quan ly shop/product/order item/shipment/review reply cua shop minh.
 - Admin action can role/permission tu Auth Service.
-- Khong log token, secret, webhook signature secret, provider credential.
+- Khong log token, secret, webhook signature secret, provider credential, MinIO presigned secret.
 
 ## 10. Transaction And Consistency Rules
 

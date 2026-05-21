@@ -16,6 +16,12 @@ Khi user yêu cầu **Implement FR_XXX** (hoặc implement feature Commerce), b�
 6. Copy pattern từ `social-service` / `auth-service` nếu cùng loại (outbox, webhook, scheduler).
 7. Tạo API behavior doc theo rule `commerce-api-behavior-doc-required.mdc`.
 
+## Object Storage (MinIO)
+
+- Doc chinh: `docs/business-spec/commerce-service-spec.md` § 1.1
+- Chi tiet: `docs/engineering_rules/commerce-object-storage.md`
+- Buckets: `2hands-commerce-product`, `2hands-commerce-review`, `2hands-commerce-shop` (MinIO shared, khong instance rieng)
+
 ## Architecture & Schema
 
 - `docs/architecture/system-architecture.md`
@@ -80,6 +86,7 @@ Khi user yêu cầu **Implement FR_XXX** (hoặc implement feature Commerce), b�
 - Outbox: `event_key` unique, `source` (`commerce`|`payment`|`shipment`); publish qua `outbox_events` cùng transaction.
 - Webhook PayOS/GHN: `permitAll` path, idempotent processing.
 - Soft delete product: `status = REMOVED` / `ARCHIVED` theo FR.
+- Media: MinIO shared + bucket commerce; PostgreSQL chi luu URL (`commerce-object-storage.md`).
 
 ## Shared Infra đã có sẵn
 
