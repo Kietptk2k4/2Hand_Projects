@@ -9,12 +9,15 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface CartItemJpaRepository extends JpaRepository<CartItemEntity, UUID> {
 
     Optional<CartItemEntity> findByCartIdAndProductId(UUID cartId, UUID productId);
+
+    List<CartItemEntity> findByCartIdAndIdIn(UUID cartId, Collection<UUID> ids);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""

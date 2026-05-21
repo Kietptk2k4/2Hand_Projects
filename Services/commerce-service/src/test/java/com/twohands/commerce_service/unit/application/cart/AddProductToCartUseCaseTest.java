@@ -154,7 +154,7 @@ class AddProductToCartUseCaseTest {
         stubCart();
         ProductPurchaseContext context = new ProductPurchaseContext(
                 productId, sellerId, shopId, "Phone", ProductStatus.PAUSED, ShopStatus.ACTIVE,
-                true, 5, activePrice(), null
+                true, 500, 5, activePrice(), null
         );
         when(productPurchaseReadRepository.findByProductId(productId)).thenReturn(Optional.of(context));
 
@@ -190,7 +190,7 @@ class AddProductToCartUseCaseTest {
         stubCart();
         ProductPurchaseContext context = new ProductPurchaseContext(
                 productId, sellerId, shopId, "Phone", ProductStatus.ACTIVE, ShopStatus.ACTIVE,
-                true, 5, null, null
+                true, 500, 5, null, null
         );
         when(productPurchaseReadRepository.findByProductId(productId)).thenReturn(Optional.of(context));
 
@@ -215,6 +215,7 @@ class AddProductToCartUseCaseTest {
                 ProductStatus.ACTIVE,
                 ShopStatus.ACTIVE,
                 true,
+                500,
                 stockQuantity,
                 activePrice(),
                 "https://cdn.example.com/product.jpg"

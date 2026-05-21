@@ -9,7 +9,9 @@ import com.twohands.commerce_service.infrastructure.persistence.jpa.enums.CartIt
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,6 +27,16 @@ public class CartItemRepositoryAdapter implements CartItemRepository {
     @Override
     public Optional<CartItem> findByCartIdAndProductId(UUID cartId, UUID productId) {
         return cartItemJpaRepository.findByCartIdAndProductId(cartId, productId).map(this::toDomain);
+    }
+
+    @Override
+    public List<CartItem> findByCartIdAndIds(UUID cartId, Collection<UUID> cartItemIds) {
+        if (cartItemIds == null || cartItemIds.isEmpty()) {
+            return List.of();
+        }
+        return cartItemJpaRepository.findByCartIdAndIdIn(cartId, cartItemIds).stream()
+                .map(this::toDomain)
+                .toList();
     }
 
     @Override

@@ -76,6 +76,7 @@ commerce:
       webhook-secret: ${COMMERCE_PAYOS_WEBHOOK_SECRET:}
     ghn:
       enabled: ${COMMERCE_GHN_ENABLED:false}
+      mock-fallback-enabled: ${COMMERCE_GHN_MOCK_FALLBACK_ENABLED:true}
       base-url: ${COMMERCE_GHN_BASE_URL:https://dev-online-gateway.ghn.vn}
       token: ${COMMERCE_GHN_TOKEN:}
       webhook-secret: ${COMMERCE_GHN_WEBHOOK_SECRET:}

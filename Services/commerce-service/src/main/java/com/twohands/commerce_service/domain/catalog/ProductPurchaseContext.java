@@ -13,6 +13,7 @@ public record ProductPurchaseContext(
         ProductStatus productStatus,
         ShopStatus shopStatus,
         boolean categoryActive,
+        int weightGram,
         int stockQuantity,
         ActiveProductPrice activePrice,
         String primaryImageUrl

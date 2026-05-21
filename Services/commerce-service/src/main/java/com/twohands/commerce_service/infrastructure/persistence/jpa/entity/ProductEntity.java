@@ -33,6 +33,9 @@ public class ProductEntity {
     @Column(name = "title", nullable = false)
     private String title;
 
+    @Column(name = "weight_gram", nullable = false)
+    private int weightGram;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "status", nullable = false, columnDefinition = "product_status")
@@ -59,6 +62,10 @@ public class ProductEntity {
 
     public String getTitle() {
         return title;
+    }
+
+    public int getWeightGram() {
+        return weightGram;
     }
 
     public ProductStatusType getStatus() {

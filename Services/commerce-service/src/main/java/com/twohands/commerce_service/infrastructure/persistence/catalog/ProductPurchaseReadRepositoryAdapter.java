@@ -17,6 +17,9 @@ import com.twohands.commerce_service.infrastructure.persistence.jpa.repository.S
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -52,6 +55,18 @@ public class ProductPurchaseReadRepositoryAdapter implements ProductPurchaseRead
                 .flatMap(this::toContext);
     }
 
+    @Override
+    public Map<UUID, ProductPurchaseContext> findByProductIds(Collection<UUID> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<UUID, ProductPurchaseContext> result = new HashMap<>();
+        for (ProductEntity product : productJpaRepository.findAllById(productIds)) {
+            toContext(product).ifPresent(context -> result.put(product.getId(), context));
+        }
+        return result;
+    }
+
     private Optional<ProductPurchaseContext> toContext(ProductEntity product) {
         return sellerShopJpaRepository.findById(product.getShopId())
                 .flatMap(shop -> productCategoryJpaRepository.findById(product.getCategoryId())
@@ -76,6 +91,7 @@ public class ProductPurchaseReadRepositoryAdapter implements ProductPurchaseRead
                                     PersistenceEnumMapper.toDomain(product.getStatus()),
                                     PersistenceEnumMapper.toDomain(shop.getStatus()),
                                     category.isActive(),
+                                    product.getWeightGram(),
                                     stockQuantity,
                                     activePrice,
                                     imageUrl
