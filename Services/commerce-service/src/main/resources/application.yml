@@ -58,6 +58,12 @@ commerce:
       max-retries: ${COMMERCE_OUTBOX_RETRY_MAX_RETRIES:5}
       pending-timeout-seconds: ${COMMERCE_OUTBOX_RETRY_PENDING_TIMEOUT_SECONDS:300}
       batch-size: ${COMMERCE_OUTBOX_RETRY_BATCH_SIZE:50}
+  jobs:
+    auto-cancel-unpaid-order:
+      enabled: ${COMMERCE_AUTO_CANCEL_UNPAID_ORDER_ENABLED:false}
+      cron: ${COMMERCE_AUTO_CANCEL_UNPAID_ORDER_CRON:0 */10 * * * *}
+      batch-size: ${COMMERCE_AUTO_CANCEL_UNPAID_ORDER_BATCH_SIZE:50}
+      order-ttl-minutes: ${COMMERCE_AUTO_CANCEL_UNPAID_ORDER_TTL_MINUTES:30}
   integrations:
     payos:
       enabled: ${COMMERCE_PAYOS_ENABLED:false}
