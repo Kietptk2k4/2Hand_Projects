@@ -182,7 +182,7 @@ class AddProductToCartUseCaseTest {
                 .extracting(ex -> ((AppException) ex).getErrorCode())
                 .isEqualTo(ErrorCode.VALIDATION_ERROR);
 
-        verify(cartRepository, never()).findByUserId(any());
+        verify(cartRepository, never()).getOrCreateByUserId(any());
     }
 
     @Test
@@ -202,8 +202,8 @@ class AddProductToCartUseCaseTest {
 
     private void stubCart() {
         Instant now = Instant.now();
-        when(cartRepository.findByUserId(userId))
-                .thenReturn(Optional.of(new Cart(cartId, userId, now, now)));
+        when(cartRepository.getOrCreateByUserId(userId))
+                .thenReturn(new Cart(cartId, userId, now, now));
     }
 
     private ProductPurchaseContext purchasableContext(int stockQuantity) {

@@ -26,6 +26,15 @@ public class CartRepositoryAdapter implements CartRepository {
     }
 
     @Override
+    public Cart getOrCreateByUserId(UUID userId) {
+        return findByUserId(userId)
+                .orElseGet(() -> {
+                    Instant now = Instant.now();
+                    return save(new Cart(null, userId, now, now));
+                });
+    }
+
+    @Override
     public Cart save(Cart cart) {
         CartEntity entity = new CartEntity();
         entity.setId(cart.id() != null ? cart.id() : UUID.randomUUID());

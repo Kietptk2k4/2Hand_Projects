@@ -38,7 +38,7 @@ public class AddProductToCartUseCase {
     public AddProductToCartResult execute(AddProductToCartCommand command) {
         validateQuantity(command.quantity());
 
-        Cart cart = getOrCreateCart(command.userId());
+        Cart cart = cartRepository.getOrCreateByUserId(command.userId());
         ProductPurchaseContext context = productPurchaseReadRepository.findByProductId(command.productId())
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
@@ -80,14 +80,6 @@ public class AddProductToCartUseCase {
                     "must be greater than 0"
             );
         }
-    }
-
-    private Cart getOrCreateCart(UUID userId) {
-        return cartRepository.findByUserId(userId)
-                .orElseGet(() -> {
-                    Instant now = Instant.now();
-                    return cartRepository.save(new Cart(null, userId, now, now));
-                });
     }
 
     private void validatePurchasable(ProductPurchaseContext context) {

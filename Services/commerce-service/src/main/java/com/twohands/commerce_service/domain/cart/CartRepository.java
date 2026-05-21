@@ -8,6 +8,8 @@ public interface CartRepository {
 
     Optional<Cart> findByUserId(UUID userId);
 
+    Cart getOrCreateByUserId(UUID userId);
+
     Cart save(Cart cart);
 
     void updateTimestamp(UUID cartId, Instant updatedAt);

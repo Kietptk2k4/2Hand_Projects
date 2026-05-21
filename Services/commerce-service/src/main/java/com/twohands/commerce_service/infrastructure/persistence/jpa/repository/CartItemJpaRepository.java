@@ -17,6 +17,8 @@ public interface CartItemJpaRepository extends JpaRepository<CartItemEntity, UUI
 
     Optional<CartItemEntity> findByCartIdAndProductId(UUID cartId, UUID productId);
 
+    List<CartItemEntity> findByCartIdAndStatusNot(UUID cartId, CartItemStatusType status);
+
     List<CartItemEntity> findByCartIdAndIdIn(UUID cartId, Collection<UUID> ids);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)

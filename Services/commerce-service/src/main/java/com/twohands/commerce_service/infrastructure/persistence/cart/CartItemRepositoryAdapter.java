@@ -30,6 +30,13 @@ public class CartItemRepositoryAdapter implements CartItemRepository {
     }
 
     @Override
+    public List<CartItem> findByCartIdExcludingRemoved(UUID cartId) {
+        return cartItemJpaRepository.findByCartIdAndStatusNot(cartId, CartItemStatusType.REMOVED).stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<CartItem> findByCartIdAndIds(UUID cartId, Collection<UUID> cartItemIds) {
         if (cartItemIds == null || cartItemIds.isEmpty()) {
             return List.of();

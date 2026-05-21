@@ -4,6 +4,10 @@ import com.twohands.commerce_service.application.cart.addproducttocart.AddProduc
 import com.twohands.commerce_service.application.cart.addproducttocart.AddProductToCartResult;
 import com.twohands.commerce_service.application.cart.addproducttocart.AddProductToCartUseCase;
 import com.twohands.commerce_service.application.cart.addproducttocart.ProductSummaryResult;
+import com.twohands.commerce_service.application.cart.createcart.CreateCartCommand;
+import com.twohands.commerce_service.application.cart.createcart.CreateCartItemResult;
+import com.twohands.commerce_service.application.cart.createcart.CreateCartResult;
+import com.twohands.commerce_service.application.cart.createcart.CreateCartUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
@@ -23,10 +27,23 @@ import java.util.UUID;
 @RequestMapping("/commerce/api/v1/cart")
 public class CartController {
 
+    private final CreateCartUseCase createCartUseCase;
     private final AddProductToCartUseCase addProductToCartUseCase;
 
-    public CartController(AddProductToCartUseCase addProductToCartUseCase) {
+    public CartController(CreateCartUseCase createCartUseCase, AddProductToCartUseCase addProductToCartUseCase) {
+        this.createCartUseCase = createCartUseCase;
         this.addProductToCartUseCase = addProductToCartUseCase;
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<CreateCartResponse>> createCart(Authentication authentication) {
+        UUID userId = resolveUserId(authentication);
+        CreateCartResult result = createCartUseCase.execute(new CreateCartCommand(userId));
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                createCartUseCase.successMessage(result.newlyCreated()),
+                toCreateCartResponse(result)
+        ));
     }
 
     @PostMapping("/items")
@@ -51,6 +68,26 @@ public class CartController {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         return principal.userId();
+    }
+
+    private CreateCartResponse toCreateCartResponse(CreateCartResult result) {
+        return new CreateCartResponse(
+                result.cartId(),
+                result.userId(),
+                result.items().stream().map(this::toCreateCartItemResponse).toList(),
+                result.createdAt(),
+                result.updatedAt()
+        );
+    }
+
+    private CreateCartItemResponse toCreateCartItemResponse(CreateCartItemResult item) {
+        return new CreateCartItemResponse(
+                item.cartItemId(),
+                item.productId(),
+                item.sellerId(),
+                item.quantity(),
+                item.status()
+        );
     }
 
     private AddProductToCartResponse toResponse(AddProductToCartResult result) {
