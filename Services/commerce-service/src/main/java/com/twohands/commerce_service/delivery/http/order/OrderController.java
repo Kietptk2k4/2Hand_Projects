@@ -3,6 +3,9 @@ package com.twohands.commerce_service.delivery.http.order;
 import com.twohands.commerce_service.application.order.cancelorder.CancelOrderCommand;
 import com.twohands.commerce_service.application.order.cancelorder.CancelOrderResult;
 import com.twohands.commerce_service.application.order.cancelorder.CancelOrderUseCase;
+import com.twohands.commerce_service.application.order.completeorder.CompleteOrderCommand;
+import com.twohands.commerce_service.application.order.completeorder.CompleteOrderResponse;
+import com.twohands.commerce_service.application.order.completeorder.CompleteOrderUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
@@ -22,10 +25,47 @@ import java.util.UUID;
 @RequestMapping("/commerce/api/v1/orders")
 public class OrderController {
 
-    private final CancelOrderUseCase cancelOrderUseCase;
+    private static final String ADMIN_ROLE = "ADMIN";
 
-    public OrderController(CancelOrderUseCase cancelOrderUseCase) {
+    private final CancelOrderUseCase cancelOrderUseCase;
+    private final CompleteOrderUseCase completeOrderUseCase;
+
+    public OrderController(
+            CancelOrderUseCase cancelOrderUseCase,
+            CompleteOrderUseCase completeOrderUseCase
+    ) {
         this.cancelOrderUseCase = cancelOrderUseCase;
+        this.completeOrderUseCase = completeOrderUseCase;
+    }
+
+    @PostMapping("/{orderId}/complete")
+    public ResponseEntity<ApiResponse<CompleteOrderHttpResponse>> completeOrder(
+            @PathVariable UUID orderId,
+            @RequestBody(required = false) CompleteOrderRequest request,
+            Authentication authentication
+    ) {
+        AuthenticatedUser principal = resolveAuthenticatedUser(authentication);
+        requireAdminRole(principal);
+
+        String reason = request == null ? null : request.reason();
+        CompleteOrderResponse result = completeOrderUseCase.execute(
+                new CompleteOrderCommand(
+                        orderId,
+                        reason,
+                        "ADMIN:COMPLETE_ORDER",
+                        "ADMIN"
+                )
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                completeOrderUseCase.successMessage(result.alreadyCompleted()),
+                new CompleteOrderHttpResponse(
+                        result.orderId(),
+                        result.orderStatus(),
+                        result.completedAt()
+                )
+        ));
     }
 
     @PostMapping("/{orderId}/cancel")
@@ -49,9 +89,19 @@ public class OrderController {
     }
 
     private UUID resolveUserId(Authentication authentication) {
+        return resolveAuthenticatedUser(authentication).userId();
+    }
+
+    private AuthenticatedUser resolveAuthenticatedUser(Authentication authentication) {
         if (authentication == null || !(authentication.getPrincipal() instanceof AuthenticatedUser principal)) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
-        return principal.userId();
+        return principal;
+    }
+
+    private void requireAdminRole(AuthenticatedUser principal) {
+        if (principal.roles() == null || principal.roles().stream().noneMatch(ADMIN_ROLE::equalsIgnoreCase)) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Admin role is required to complete an order");
+        }
     }
 }

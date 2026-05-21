@@ -2,10 +2,12 @@ package com.twohands.commerce_service.infrastructure.persistence.order;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.twohands.commerce_service.application.order.common.OrderCompletedOutboxService;
 import com.twohands.commerce_service.application.order.common.PaymentPaidOutboxService;
+import com.twohands.commerce_service.domain.order.CompleteOrderOutcome;
+import com.twohands.commerce_service.domain.order.CompleteOrderResult;
 import com.twohands.commerce_service.domain.order.DeliveredOrderCompletionResult;
 import com.twohands.commerce_service.domain.order.DeliveredOrderCompletionRepository;
+import com.twohands.commerce_service.domain.order.OrderCompletionRepository;
 import com.twohands.commerce_service.domain.order.StaleDeliveredOrderItemCandidate;
 import com.twohands.commerce_service.domain.outbox.OutboxEventRepository;
 import com.twohands.commerce_service.exception.AppException;
@@ -36,20 +38,20 @@ public class DeliveredOrderCompletionRepositoryAdapter implements DeliveredOrder
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final OutboxEventRepository outboxEventRepository;
     private final PaymentPaidOutboxService paymentPaidOutboxService;
-    private final OrderCompletedOutboxService orderCompletedOutboxService;
+    private final OrderCompletionRepository orderCompletionRepository;
     private final ObjectMapper objectMapper;
 
     public DeliveredOrderCompletionRepositoryAdapter(
             NamedParameterJdbcTemplate jdbcTemplate,
             OutboxEventRepository outboxEventRepository,
             PaymentPaidOutboxService paymentPaidOutboxService,
-            OrderCompletedOutboxService orderCompletedOutboxService,
+            OrderCompletionRepository orderCompletionRepository,
             ObjectMapper objectMapper
     ) {
         this.jdbcTemplate = jdbcTemplate;
         this.outboxEventRepository = outboxEventRepository;
         this.paymentPaidOutboxService = paymentPaidOutboxService;
-        this.orderCompletedOutboxService = orderCompletedOutboxService;
+        this.orderCompletionRepository = orderCompletionRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -110,13 +112,20 @@ public class DeliveredOrderCompletionRepositoryAdapter implements DeliveredOrder
             }
         }
 
-        boolean orderCompleted = tryCompleteOrder(order, payment, paymentMarkedPaid, now);
+        CompleteOrderResult completion = orderCompletionRepository.completeIfEligible(
+                orderId,
+                AUTO_COMPLETE_REASON,
+                CHANGED_BY,
+                "SYSTEM",
+                now
+        );
+        boolean orderCompleted = completion.outcome() == CompleteOrderOutcome.COMPLETED;
 
         return new DeliveredOrderCompletionResult(
                 itemsCompleted,
                 orderCompleted,
                 paymentMarkedPaid,
-                false
+                completion.outcome() == CompleteOrderOutcome.ALREADY_COMPLETED
         );
     }
 
@@ -200,78 +209,6 @@ public class DeliveredOrderCompletionRepositoryAdapter implements DeliveredOrder
         jdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("orderId", orderId)
                 .addValue("now", Timestamp.from(now)));
-    }
-
-    private boolean tryCompleteOrder(OrderRow order, PaymentRow payment, boolean codJustPaid, Instant now) {
-        if (!allItemsCompleted(order.id)) {
-            return false;
-        }
-
-        String effectivePaymentStatus = codJustPaid ? "PAID" : resolvePaymentStatus(order, payment);
-        if (!"PAID".equals(effectivePaymentStatus)) {
-            log.debug(
-                    "Order {} has all items completed but payment is not PAID (status={})",
-                    order.id,
-                    effectivePaymentStatus
-            );
-            return false;
-        }
-
-        String sql = """
-                UPDATE orders
-                SET status = 'COMPLETED',
-                    payment_status = 'PAID',
-                    completed_at = :now,
-                    updated_at = :now
-                WHERE id = :orderId
-                  AND status = 'PROCESSING'
-                """;
-        int updated = jdbcTemplate.update(sql, new MapSqlParameterSource()
-                .addValue("orderId", order.id)
-                .addValue("now", Timestamp.from(now)));
-        if (updated == 0) {
-            return false;
-        }
-
-        insertOrderStatusHistory(order.id, order.status, now);
-        outboxEventRepository.save(orderCompletedOutboxService.build(order.id, AUTO_COMPLETE_REASON, now));
-        return true;
-    }
-
-    private String resolvePaymentStatus(OrderRow order, PaymentRow payment) {
-        if (payment != null && "PAID".equals(payment.status)) {
-            return "PAID";
-        }
-        return order.paymentStatus;
-    }
-
-    private boolean allItemsCompleted(UUID orderId) {
-        String sql = """
-                SELECT COUNT(*) = 0
-                FROM order_items
-                WHERE order_id = :orderId
-                  AND status NOT IN ('COMPLETED', 'CANCELLED')
-                """;
-        Boolean allCompleted = jdbcTemplate.queryForObject(
-                sql,
-                new MapSqlParameterSource("orderId", orderId),
-                Boolean.class
-        );
-        return Boolean.TRUE.equals(allCompleted);
-    }
-
-    private void insertOrderStatusHistory(UUID orderId, String oldStatus, Instant now) {
-        String sql = """
-                INSERT INTO order_status_history(id, order_id, old_status, new_status, changed_by, note, created_at)
-                VALUES (:id, :orderId, CAST(:oldStatus AS order_status), 'COMPLETED', :changedBy, :note, :createdAt)
-                """;
-        jdbcTemplate.update(sql, new MapSqlParameterSource()
-                .addValue("id", UUID.randomUUID())
-                .addValue("orderId", orderId)
-                .addValue("oldStatus", oldStatus)
-                .addValue("changedBy", CHANGED_BY)
-                .addValue("note", AUTO_COMPLETE_REASON)
-                .addValue("createdAt", Timestamp.from(now)));
     }
 
     private void insertPaymentStatusHistory(UUID paymentId, String oldStatus, Instant now) {

@@ -14,6 +14,7 @@ public enum ErrorCode {
     PRODUCT_NOT_FOUND("COMMERCE-404-PRODUCT", HttpStatus.NOT_FOUND, "Product not found"),
     ORDER_NOT_FOUND("COMMERCE-404-ORDER", HttpStatus.NOT_FOUND, "Order not found"),
     ORDER_NOT_CANCELLABLE("COMMERCE-409-ORDER-NOT-CANCELLABLE", HttpStatus.CONFLICT, "Order cannot be cancelled"),
+    ORDER_NOT_COMPLETABLE("COMMERCE-409-ORDER-NOT-COMPLETABLE", HttpStatus.CONFLICT, "Order cannot be completed yet"),
     INVALID_PAYMENT_METHOD("COMMERCE-400-PAYMENT-METHOD", HttpStatus.BAD_REQUEST, "Invalid payment method"),
     SHOP_VACATION("COMMERCE-409-SHOP-VACATION", HttpStatus.CONFLICT, "Shop is on vacation"),
     INVALID_CART_ITEM("COMMERCE-409-CART-ITEM", HttpStatus.CONFLICT, "Cart item is not available for checkout"),

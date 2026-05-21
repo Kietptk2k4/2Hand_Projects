@@ -26,11 +26,15 @@ public class OrderCompletedOutboxService {
     }
 
     public OutboxEvent build(UUID orderId, String reason, Instant completedAt) {
+        return build(orderId, reason, "SYSTEM", completedAt);
+    }
+
+    public OutboxEvent build(UUID orderId, String reason, String completedBy, Instant completedAt) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("order_id", orderId.toString());
         payload.put("reason", reason);
         payload.put("completed_at", completedAt.toString());
-        payload.put("completed_by", "SYSTEM");
+        payload.put("completed_by", completedBy);
 
         return new OutboxEvent(
                 UUID.randomUUID(),
