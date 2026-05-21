@@ -14,6 +14,8 @@ public enum ErrorCode {
     PRODUCT_NOT_FOUND("COMMERCE-404-PRODUCT", HttpStatus.NOT_FOUND, "Product not found"),
     CATEGORY_NOT_FOUND("COMMERCE-404-CATEGORY", HttpStatus.NOT_FOUND, "Product category not found"),
     SELLER_SHOP_NOT_FOUND("COMMERCE-409-SELLER-SHOP", HttpStatus.CONFLICT, "Seller does not have a shop"),
+    SHOP_ALREADY_EXISTS("COMMERCE-409-SHOP-EXISTS", HttpStatus.CONFLICT, "Seller already has a shop"),
+    INVALID_MEDIA_URL("COMMERCE-400-MEDIA-URL", HttpStatus.BAD_REQUEST, "Media URL is invalid"),
     SHOP_NOT_OPERATING("COMMERCE-409-SHOP-STATUS", HttpStatus.CONFLICT, "Shop is not available for this action"),
     ORDER_NOT_FOUND("COMMERCE-404-ORDER", HttpStatus.NOT_FOUND, "Order not found"),
     ORDER_ITEM_NOT_FOUND("COMMERCE-404-ORDER-ITEM", HttpStatus.NOT_FOUND, "Order item not found"),
