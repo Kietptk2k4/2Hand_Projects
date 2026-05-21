@@ -73,6 +73,12 @@ commerce:
     payos:
       enabled: ${COMMERCE_PAYOS_ENABLED:false}
       base-url: ${COMMERCE_PAYOS_BASE_URL:https://api-merchant.payos.vn}
+      client-id: ${COMMERCE_PAYOS_CLIENT_ID:}
+      api-key: ${COMMERCE_PAYOS_API_KEY:}
+      checksum-key: ${COMMERCE_PAYOS_CHECKSUM_KEY:}
+      return-url: ${COMMERCE_PAYOS_RETURN_URL:}
+      cancel-url: ${COMMERCE_PAYOS_CANCEL_URL:}
+      mock-fallback-enabled: ${COMMERCE_PAYOS_MOCK_FALLBACK_ENABLED:true}
       webhook-secret: ${COMMERCE_PAYOS_WEBHOOK_SECRET:}
     ghn:
       enabled: ${COMMERCE_GHN_ENABLED:false}

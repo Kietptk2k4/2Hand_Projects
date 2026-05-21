@@ -55,7 +55,7 @@ Buyer checkout cac cart items da chon de tao order, order items (snapshots), pay
 
 **COD:** `order_status` = `PROCESSING`, `payment_status` = `PENDING`, `payos_checkout_url` = null.
 
-**PAYOS:** `order_status` = `AWAITING_PAYMENT`; `payos_checkout_url` null cho den khi tich hop PayOS link API.
+**PAYOS:** `order_status` = `AWAITING_PAYMENT`; `payos_checkout_url` thuong `null` sau checkout — goi `POST /commerce/api/v1/payments/{payment_id}/payos-checkout-url` de lay URL (xem `CreatePayOSCheckoutUrl-api-and-behavior.md`).
 
 **Idempotency:** Cung `idempotency_key` + buyer → tra ket qua order/payment da tao, message `Don hang da duoc tao truoc do (idempotency).`
 
