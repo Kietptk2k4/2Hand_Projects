@@ -27,6 +27,8 @@ commerce:
   jobs:
     auto-cancel-unpaid-order:
       enabled: false
+    auto-complete-delivered-order:
+      enabled: false
 
 jwt:
   access-secret: test-access-secret-key-minimum-32-characters-123456

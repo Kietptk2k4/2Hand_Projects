@@ -64,6 +64,11 @@ commerce:
       cron: ${COMMERCE_AUTO_CANCEL_UNPAID_ORDER_CRON:0 */10 * * * *}
       batch-size: ${COMMERCE_AUTO_CANCEL_UNPAID_ORDER_BATCH_SIZE:50}
       order-ttl-minutes: ${COMMERCE_AUTO_CANCEL_UNPAID_ORDER_TTL_MINUTES:30}
+    auto-complete-delivered-order:
+      enabled: ${COMMERCE_AUTO_COMPLETE_DELIVERED_ORDER_ENABLED:false}
+      cron: ${COMMERCE_AUTO_COMPLETE_DELIVERED_ORDER_CRON:0 0 * * * *}
+      batch-size: ${COMMERCE_AUTO_COMPLETE_DELIVERED_ORDER_BATCH_SIZE:50}
+      completion-window-days: ${COMMERCE_AUTO_COMPLETE_DELIVERED_ORDER_WINDOW_DAYS:7}
   integrations:
     payos:
       enabled: ${COMMERCE_PAYOS_ENABLED:false}
