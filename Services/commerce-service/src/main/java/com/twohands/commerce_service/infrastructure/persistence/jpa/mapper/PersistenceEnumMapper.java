@@ -24,6 +24,10 @@ public final class PersistenceEnumMapper {
         return ProductStatus.valueOf(status.name());
     }
 
+    public static ProductStatusType toEntity(ProductStatus status) {
+        return ProductStatusType.valueOf(status.name());
+    }
+
     public static ShopStatus toDomain(ShopStatusType status) {
         return ShopStatus.valueOf(status.name());
     }

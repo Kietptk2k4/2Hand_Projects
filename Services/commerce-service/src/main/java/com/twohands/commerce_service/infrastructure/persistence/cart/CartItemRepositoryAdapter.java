@@ -5,8 +5,11 @@ import com.twohands.commerce_service.domain.cart.CartItemRepository;
 import com.twohands.commerce_service.infrastructure.persistence.jpa.entity.CartItemEntity;
 import com.twohands.commerce_service.infrastructure.persistence.jpa.mapper.PersistenceEnumMapper;
 import com.twohands.commerce_service.infrastructure.persistence.jpa.repository.CartItemJpaRepository;
+import com.twohands.commerce_service.infrastructure.persistence.jpa.enums.CartItemStatusType;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
+import java.util.EnumSet;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,6 +25,16 @@ public class CartItemRepositoryAdapter implements CartItemRepository {
     @Override
     public Optional<CartItem> findByCartIdAndProductId(UUID cartId, UUID productId) {
         return cartItemJpaRepository.findByCartIdAndProductId(cartId, productId).map(this::toDomain);
+    }
+
+    @Override
+    public int markInvalidByProductId(UUID productId, Instant updatedAt) {
+        return cartItemJpaRepository.markInvalidByProductId(
+                productId,
+                CartItemStatusType.INVALID_PRODUCT,
+                EnumSet.of(CartItemStatusType.ACTIVE, CartItemStatusType.OUT_OF_STOCK),
+                updatedAt
+        );
     }
 
     @Override

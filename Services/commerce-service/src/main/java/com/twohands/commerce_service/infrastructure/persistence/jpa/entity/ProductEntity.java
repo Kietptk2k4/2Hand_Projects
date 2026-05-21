@@ -10,6 +10,7 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -37,6 +38,9 @@ public class ProductEntity {
     @Column(name = "status", nullable = false, columnDefinition = "product_status")
     private ProductStatusType status;
 
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
+
     public UUID getId() {
         return id;
     }
@@ -59,5 +63,17 @@ public class ProductEntity {
 
     public ProductStatusType getStatus() {
         return status;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setStatus(ProductStatusType status) {
+        this.status = status;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
