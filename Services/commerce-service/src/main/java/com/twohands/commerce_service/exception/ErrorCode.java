@@ -11,6 +11,8 @@ public enum ErrorCode {
     RESOURCE_NOT_FOUND("COMMERCE-404", HttpStatus.NOT_FOUND, "Resource not found"),
     CART_ITEM_NOT_FOUND("COMMERCE-404-CART-ITEM", HttpStatus.NOT_FOUND, "Cart item not found"),
     ADDRESS_NOT_FOUND("COMMERCE-404-ADDRESS", HttpStatus.NOT_FOUND, "Address not found"),
+    INVALID_PHONE("COMMERCE-400-PHONE", HttpStatus.BAD_REQUEST, "Invalid phone number"),
+    ADDRESS_DEFAULT_CONFLICT("COMMERCE-409-ADDRESS-DEFAULT", HttpStatus.CONFLICT, "Default address conflict"),
     PRODUCT_NOT_FOUND("COMMERCE-404-PRODUCT", HttpStatus.NOT_FOUND, "Product not found"),
     CATEGORY_NOT_FOUND("COMMERCE-404-CATEGORY", HttpStatus.NOT_FOUND, "Product category not found"),
     SELLER_SHOP_NOT_FOUND("COMMERCE-409-SELLER-SHOP", HttpStatus.CONFLICT, "Seller does not have a shop"),
