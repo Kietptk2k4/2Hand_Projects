@@ -51,7 +51,7 @@ Moi line (`CreateOrderLineRequest`):
 
 ## 5. CreatePaymentUseCase
 
-Tao `payments` + `payment_status_history` (PENDING). PAYOS set `expired_at` theo `commerce.jobs.auto-cancel-unpaid-order.order-ttl-minutes`.
+Duoc goi ngay sau khi tao order. Chi tiet: `CreatePayment-internal-and-behavior.md`.
 
 ## 6. Business Rules
 

@@ -18,6 +18,8 @@ public enum ErrorCode {
     ORDER_ITEMS_NOT_DELIVERED("COMMERCE-409-ORDER-ITEMS", HttpStatus.CONFLICT, "No delivered order items to confirm"),
     INVALID_PAYMENT_STATE("COMMERCE-409-PAYMENT-STATE", HttpStatus.CONFLICT, "Payment state does not allow confirmation"),
     INVALID_PAYMENT_METHOD("COMMERCE-400-PAYMENT-METHOD", HttpStatus.BAD_REQUEST, "Invalid payment method"),
+    INVALID_PAYMENT_AMOUNT("COMMERCE-400-PAYMENT-AMOUNT", HttpStatus.BAD_REQUEST, "Invalid payment amount"),
+    PAYMENT_ALREADY_EXISTS("COMMERCE-409-PAYMENT-EXISTS", HttpStatus.CONFLICT, "Payment already exists for this order"),
     SHOP_VACATION("COMMERCE-409-SHOP-VACATION", HttpStatus.CONFLICT, "Shop is on vacation"),
     INVALID_CART_ITEM("COMMERCE-409-CART-ITEM", HttpStatus.CONFLICT, "Cart item is not available for checkout"),
     NOT_PURCHASABLE("COMMERCE-409-NOT-PURCHASABLE", HttpStatus.CONFLICT, "Product is not purchasable"),

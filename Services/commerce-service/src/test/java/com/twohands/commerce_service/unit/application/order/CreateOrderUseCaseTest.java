@@ -68,7 +68,14 @@ class CreateOrderUseCaseTest {
                         orderItemId, productId, sellerId, 1, BigDecimal.valueOf(900_000), BigDecimal.valueOf(900_000)
                 )));
         when(createPaymentUseCase.execute(any()))
-                .thenReturn(new CreatePaymentResult(paymentId, PaymentStatus.PENDING));
+                .thenReturn(new CreatePaymentResult(
+                        paymentId,
+                        UUID.randomUUID(),
+                        PaymentStatus.PENDING,
+                        PaymentMethod.PAYOS,
+                        BigDecimal.valueOf(1_000_000),
+                        "VND"
+                ));
         when(orderCreatedOutboxService.build(any(), any(), any(), any(), any())).thenReturn(new OutboxEvent(
                 UUID.randomUUID(),
                 OrderCreatedOutboxService.EVENT_TYPE,
@@ -104,7 +111,14 @@ class CreateOrderUseCaseTest {
         when(createOrderRepository.createOrder(any(), eq(OrderStatus.PROCESSING)))
                 .thenReturn(List.of());
         when(createPaymentUseCase.execute(any()))
-                .thenReturn(new CreatePaymentResult(paymentId, PaymentStatus.PENDING));
+                .thenReturn(new CreatePaymentResult(
+                        paymentId,
+                        UUID.randomUUID(),
+                        PaymentStatus.PENDING,
+                        PaymentMethod.PAYOS,
+                        BigDecimal.valueOf(1_000_000),
+                        "VND"
+                ));
         when(orderCreatedOutboxService.build(any(), any(), any(), any(), any())).thenReturn(new OutboxEvent(
                 UUID.randomUUID(),
                 OrderCreatedOutboxService.EVENT_TYPE,

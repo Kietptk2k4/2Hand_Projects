@@ -10,6 +10,7 @@ import com.twohands.commerce_service.domain.payment.PaymentStatus;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -23,7 +24,7 @@ import java.util.UUID;
 @Repository
 public class CreatePaymentRepositoryAdapter implements CreatePaymentRepository {
 
-    private static final String CREATE_PAYMENT_NOTE = "CREATE_ORDER";
+    private static final String CREATE_PAYMENT_NOTE = "CREATE_PAYMENT";
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
@@ -40,12 +41,34 @@ public class CreatePaymentRepositoryAdapter implements CreatePaymentRepository {
     }
 
     @Override
+    public boolean existsByOrderId(UUID orderId) {
+        String sql = "SELECT COUNT(1) FROM payments WHERE order_id = :orderId";
+        Integer count = jdbcTemplate.queryForObject(
+                sql,
+                new MapSqlParameterSource("orderId", orderId),
+                Integer.class
+        );
+        return count != null && count > 0;
+    }
+
+    @Override
     public CreatePaymentResult createPayment(CreatePaymentRequest request) {
         Instant now = request.occurredAt();
         PaymentStatus paymentStatus = PaymentStatus.PENDING;
-        insertPayment(request, now);
-        insertPaymentStatusHistory(request.paymentId(), null, paymentStatus.name(), now);
-        return new CreatePaymentResult(request.paymentId(), paymentStatus);
+        try {
+            insertPayment(request, now);
+            insertPaymentStatusHistory(request.paymentId(), null, paymentStatus.name(), now);
+        } catch (DataIntegrityViolationException ex) {
+            throw new AppException(ErrorCode.PAYMENT_ALREADY_EXISTS, "Payment already exists for this order", ex);
+        }
+        return new CreatePaymentResult(
+                request.paymentId(),
+                request.orderId(),
+                paymentStatus,
+                request.paymentMethod(),
+                request.amount(),
+                request.currency()
+        );
     }
 
     private void insertPayment(CreatePaymentRequest request, Instant now) {
@@ -58,7 +81,7 @@ public class CreatePaymentRepositoryAdapter implements CreatePaymentRepository {
                     id, order_id, payer_id, amount, currency, payment_method, status,
                     idempotency_key, expired_at, checkout_url_expired_at, created_at, updated_at
                 ) VALUES (
-                    :paymentId, :orderId, :payerId, :amount, 'VND', CAST(:paymentMethod AS payment_method), 'PENDING',
+                    :paymentId, :orderId, :payerId, :amount, :currency, CAST(:paymentMethod AS payment_method), 'PENDING',
                     :idempotencyKey, :expiredAt, :checkoutUrlExpiredAt, :now, :now
                 )
                 """;
@@ -67,6 +90,7 @@ public class CreatePaymentRepositoryAdapter implements CreatePaymentRepository {
                 .addValue("orderId", request.orderId())
                 .addValue("payerId", request.payerId())
                 .addValue("amount", request.amount())
+                .addValue("currency", request.currency())
                 .addValue("paymentMethod", request.paymentMethod().name())
                 .addValue("idempotencyKey", request.idempotencyKey())
                 .addValue("expiredAt", expiredAt == null ? null : Timestamp.from(expiredAt))

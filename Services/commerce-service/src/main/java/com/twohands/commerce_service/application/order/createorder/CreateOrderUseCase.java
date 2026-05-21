@@ -1,6 +1,7 @@
 package com.twohands.commerce_service.application.order.createorder;
 
 import com.twohands.commerce_service.application.order.common.OrderCreatedOutboxService;
+import com.twohands.commerce_service.application.payment.createpayment.CreatePaymentCommand;
 import com.twohands.commerce_service.application.payment.createpayment.CreatePaymentUseCase;
 import com.twohands.commerce_service.domain.order.CreateOrderItemResult;
 import com.twohands.commerce_service.domain.order.CreateOrderLineRequest;
@@ -9,7 +10,6 @@ import com.twohands.commerce_service.domain.order.CreateOrderRequest;
 import com.twohands.commerce_service.domain.order.CreateOrderResult;
 import com.twohands.commerce_service.domain.order.OrderStatus;
 import com.twohands.commerce_service.domain.outbox.OutboxEventRepository;
-import com.twohands.commerce_service.domain.payment.CreatePaymentRequest;
 import com.twohands.commerce_service.domain.payment.CreatePaymentResult;
 import com.twohands.commerce_service.domain.payment.PaymentMethod;
 import com.twohands.commerce_service.domain.payment.PaymentStatus;
@@ -65,12 +65,16 @@ public class CreateOrderUseCase {
 
         List<CreateOrderItemResult> orderItems = createOrderRepository.createOrder(orderRequest, orderStatus);
 
-        CreatePaymentResult payment = createPaymentUseCase.execute(new CreatePaymentRequest(
+        CreatePaymentResult payment = createPaymentUseCase.execute(new CreatePaymentCommand(
                 paymentId,
                 orderId,
                 command.buyerId(),
+                command.buyerId(),
+                command.finalAmount(),
                 command.finalAmount(),
                 command.paymentMethod(),
+                command.paymentMethod(),
+                "VND",
                 command.idempotencyKey(),
                 command.occurredAt()
         ));

@@ -9,6 +9,7 @@ public record CreatePaymentRequest(
         UUID orderId,
         UUID payerId,
         BigDecimal amount,
+        String currency,
         PaymentMethod paymentMethod,
         String idempotencyKey,
         Instant occurredAt
