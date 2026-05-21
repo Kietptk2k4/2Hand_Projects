@@ -1,0 +1,52 @@
+---
+description: Bắt buộc tạo file API behavior doc sau khi implement xong bất kỳ feature nào của commerce-service
+globs: Services/commerce-service/**
+alwaysApply: false
+---
+
+# API Behavior Doc – Definition of Done (Commerce)
+
+Sau khi implement xong một feature trong `commerce-service`, **bắt buộc** tạo file API behavior doc tại:
+
+```
+docs/api_fe_behavior/commerce_api_fe_behavior/<FeatureName>-api-and-behavior.md
+```
+
+Ví dụ:
+- `AddProductToCart-api-and-behavior.md`
+- `CheckoutFromCart-api-and-behavior.md`
+- `ProcessPayOSWebhook-api-and-behavior.md`
+
+## Nội dung bắt buộc
+
+```markdown
+# <Feature Name> – API & Behavior
+
+## 1. Business Goal
+## 2. API Contract
+- Method, URL: /api/v1/commerce/...
+- Auth: Bearer JWT (required/optional)
+- Params
+
+## 3. Response – Success
+## 4. Response – Error
+| HTTP | code string | Mô tả |
+| 400  | COMMERCE-400-VALIDATION | ... |
+
+## 5. Business Rules
+## 6. Edge Cases
+## 7. Data Dependencies
+- PostgreSQL table(s)
+
+## 8. FE Integration Notes
+```
+
+## Definition of Done
+
+- [ ] Code đúng architecture (delivery → application → domain → infrastructure)
+- [ ] API envelope chuẩn (`docs/engineering_rules/api-standard.md`)
+- [ ] Error code `COMMERCE-*`
+- [ ] Unit test business logic chính
+- [ ] Integration test cho API/DB khi cần
+- [ ] File `docs/api_fe_behavior/commerce_api_fe_behavior/<Feature>-api-and-behavior.md` đầy đủ
+- [ ] Không business logic trong Controller/DTO

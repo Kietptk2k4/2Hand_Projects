@@ -1,0 +1,38 @@
+package com.twohands.commerce_service.infrastructure.outbox;
+
+import com.twohands.commerce_service.exception.AppException;
+import com.twohands.commerce_service.exception.ErrorCode;
+import org.springframework.stereotype.Component;
+
+import java.util.Map;
+
+@Component
+public class CommerceOutboxTopicResolver {
+
+    private static final Map<String, String> EVENT_TYPE_TO_TOPIC = Map.ofEntries(
+            Map.entry("COMMERCE_ORDER_CREATED", "commerce.order.created"),
+            Map.entry("COMMERCE_ORDER_CANCELLED", "commerce.order.cancelled"),
+            Map.entry("COMMERCE_ORDER_COMPLETED", "commerce.order.completed"),
+            Map.entry("COMMERCE_PAYMENT_PAID", "commerce.payment.paid"),
+            Map.entry("COMMERCE_PAYMENT_FAILED", "commerce.payment.failed"),
+            Map.entry("COMMERCE_PAYMENT_EXPIRED", "commerce.payment.expired"),
+            Map.entry("COMMERCE_SHIPMENT_CREATED", "commerce.shipment.created"),
+            Map.entry("COMMERCE_SHIPMENT_STATUS_CHANGED", "commerce.shipment.status_changed"),
+            Map.entry("COMMERCE_INVENTORY_RESERVED", "commerce.inventory.reserved"),
+            Map.entry("COMMERCE_INVENTORY_RELEASED", "commerce.inventory.released"),
+            Map.entry("COMMERCE_PRODUCT_PUBLISHED", "commerce.product.published"),
+            Map.entry("COMMERCE_PRODUCT_REMOVED", "commerce.product.removed"),
+            Map.entry("COMMERCE_REVIEW_CREATED", "commerce.review.created")
+    );
+
+    public String resolve(String eventType) {
+        String topic = EVENT_TYPE_TO_TOPIC.get(eventType);
+        if (topic == null) {
+            throw new AppException(
+                    ErrorCode.INTERNAL_ERROR,
+                    "Unsupported outbox event type for publish: " + eventType
+            );
+        }
+        return topic;
+    }
+}

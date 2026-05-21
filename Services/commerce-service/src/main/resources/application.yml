@@ -1,0 +1,70 @@
+server:
+  port: 3003
+
+spring:
+  application:
+    name: commerce-service
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${DB_URL:jdbc:postgresql://localhost:5434/commerce_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:123456}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  jackson:
+    time-zone: Asia/Ho_Chi_Minh
+
+jwt:
+  access-secret: ${JWT_ACCESS_SECRET}
+  refresh-secret: ${JWT_REFRESH_SECRET}
+  access-expiration: 900000
+  refresh-expiration: 2592000000
+
+commerce:
+  outbox:
+    publish:
+      enabled: ${COMMERCE_OUTBOX_PUBLISH_ENABLED:false}
+      cron: ${COMMERCE_OUTBOX_PUBLISH_CRON:0/10 * * * * *}
+      max-retries: ${COMMERCE_OUTBOX_PUBLISH_MAX_RETRIES:5}
+      batch-size: ${COMMERCE_OUTBOX_PUBLISH_BATCH_SIZE:50}
+    retry:
+      enabled: ${COMMERCE_OUTBOX_RETRY_ENABLED:false}
+      cron: ${COMMERCE_OUTBOX_RETRY_CRON:0 */1 * * * *}
+      max-retries: ${COMMERCE_OUTBOX_RETRY_MAX_RETRIES:5}
+      pending-timeout-seconds: ${COMMERCE_OUTBOX_RETRY_PENDING_TIMEOUT_SECONDS:300}
+      batch-size: ${COMMERCE_OUTBOX_RETRY_BATCH_SIZE:50}
+  integrations:
+    payos:
+      enabled: ${COMMERCE_PAYOS_ENABLED:false}
+      base-url: ${COMMERCE_PAYOS_BASE_URL:https://api-merchant.payos.vn}
+      webhook-secret: ${COMMERCE_PAYOS_WEBHOOK_SECRET:}
+    ghn:
+      enabled: ${COMMERCE_GHN_ENABLED:false}
+      base-url: ${COMMERCE_GHN_BASE_URL:https://dev-online-gateway.ghn.vn}
+      token: ${COMMERCE_GHN_TOKEN:}
+      webhook-secret: ${COMMERCE_GHN_WEBHOOK_SECRET:}

@@ -30,6 +30,51 @@ services:
     volumes:
       - postgres_social_data:/var/lib/postgresql/data
 
+  postgres-commerce:
+    image: postgres:16
+    container_name: postgres-commerce
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: commerce_db
+
+    ports:
+      - "5434:5432"
+
+    volumes:
+      - postgres_commerce_data:/var/lib/postgresql/data
+
+  postgres-notification:
+    image: postgres:16
+    container_name: postgres-notification
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: notification_db
+
+    ports:
+      - "5435:5432"
+
+    volumes:
+      - postgres_notification_data:/var/lib/postgresql/data
+
+  postgres-admin:
+    image: postgres:16
+    container_name: postgres-admin
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: admin_db
+
+    ports:
+      - "5436:5432"
+
+    volumes:
+      - postgres_admin_data:/var/lib/postgresql/data
+
   mongodb:
     image: mongo:7
     container_name: mongodb
@@ -70,5 +115,8 @@ services:
 volumes:
   postgres_auth_data:
   postgres_social_data:
+  postgres_commerce_data:
+  postgres_notification_data:
+  postgres_admin_data:
   mongo_data:
   minio_data:

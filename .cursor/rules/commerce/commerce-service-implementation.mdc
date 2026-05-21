@@ -1,0 +1,92 @@
+---
+description: Tài liệu tham chiếu bắt buộc khi implement bất kỳ feature nào trong commerce-service
+globs: Services/commerce-service/**
+alwaysApply: false
+---
+
+# Commerce Service – Implementation Reference
+
+Khi user yêu cầu **Implement FR_XXX** (hoặc implement feature Commerce), bắt buộc:
+
+1. Đọc `docs/feature_requirements/commerce/FR_XXX.md` (đúng tên file).
+2. Đọc section liên quan trong `docs/business-spec/commerce-service-spec.md`.
+3. Đọc business flow map bên dưới.
+4. Đọc use case tương ứng trong `docs/use_cases/commerce_use_cases/`.
+5. Tuân thủ Clean Architecture: `delivery → application → domain → infrastructure`.
+6. Copy pattern từ `social-service` / `auth-service` nếu cùng loại (outbox, webhook, scheduler).
+7. Tạo API behavior doc theo rule `commerce-api-behavior-doc-required.mdc`.
+
+## Architecture & Schema
+
+- `docs/architecture/system-architecture.md`
+- `docs/architecture/database-strategy.md`
+- `docs/architecture/event-driven-architecture.md`
+- `docs/database/commerce-schema.md`
+- `Services/commerce-service/src/main/resources/db/migration/V1__init_commerce_tables.sql`
+
+## Business Flows
+
+- `docs/business_flow/commerce_business_flow/cart-lifecycle-flow.md`
+- `docs/business_flow/commerce_business_flow/product-discovery-flow.md`
+- `docs/business_flow/commerce_business_flow/product-management-flow.md`
+- `docs/business_flow/commerce_business_flow/shop-management-flow.md`
+- `docs/business_flow/commerce_business_flow/checkout-order-flow.md`
+- `docs/business_flow/commerce_business_flow/payment-lifecycle-flow.md`
+- `docs/business_flow/commerce_business_flow/inventory-reservation-flow.md`
+- `docs/business_flow/commerce_business_flow/shipping-lifecycle-flow.md`
+- `docs/business_flow/commerce_business_flow/seller-order-management-flow.md`
+- `docs/business_flow/commerce_business_flow/review-lifecycle-flow.md`
+- `docs/business_flow/commerce_business_flow/address-management-flow.md`
+- `docs/business_flow/commerce_business_flow/outbox-event-flow.md`
+- `docs/business_flow/commerce_business_flow/background-jobs-flow.md`
+- `docs/business_flow/commerce_business_flow/admin-moderation-flow.md`
+
+## Use Cases
+
+- `docs/use_cases/commerce_use_cases/uc-product-discovery.md`
+- `docs/use_cases/commerce_use_cases/uc-product-management.md`
+- `docs/use_cases/commerce_use_cases/uc-shop-management.md`
+- `docs/use_cases/commerce_use_cases/uc-address-management.md`
+- `docs/use_cases/commerce_use_cases/uc-payment.md`
+- `docs/use_cases/commerce_use_cases/uc-shipping.md`
+- `docs/use_cases/commerce_use_cases/uc-seller-order-management.md`
+- `docs/use_cases/commerce_use_cases/uc-review-management.md`
+- `docs/use_cases/commerce_use_cases/uc-event-publishing.md`
+- `docs/use_cases/commerce_use_cases/uc-background-jobs.md`
+- `docs/use_cases/commerce_use_cases/uc-admin-moderation.md`
+
+## FR → Flow Map (đọc thêm khi implement)
+
+| FR nhóm | Business flow |
+|--------|----------------|
+| Outbox: `FR_PublishCommerceEvents`, `FR_RetryCommerceOutboxEvents` | `outbox-event-flow.md` |
+| Cart: `FR_CreateCart`, `FR_ViewCart`, `FR_AddProductToCart`, … | `cart-lifecycle-flow.md` |
+| Product/Shop: `FR_CreateProduct`, `FR_PublishProduct`, `FR_CreateShop`, … | `product-management-flow.md`, `shop-management-flow.md` |
+| Checkout/Order: `FR_CheckoutFromCart`, `FR_CreateOrder`, `FR_CancelOrder`, … | `checkout-order-flow.md`, `inventory-reservation-flow.md` |
+| Payment: `FR_CreatePayment`, `FR_ProcessPayOSWebhook`, … | `payment-lifecycle-flow.md` |
+| Shipment: `FR_CreateShipment`, `FR_ProcessGHNWebhook`, … | `shipping-lifecycle-flow.md` |
+| Review: `FR_CreateProductReview`, `FR_ModerateReview`, … | `review-lifecycle-flow.md` |
+| Address: `FR_CreateUserAddress`, `FR_ViewUserAddresses`, … | `address-management-flow.md` |
+| Jobs: `FR_AutoCancelUnpaidOrder`, `FR_AutoCompleteDeliveredOrder`, … | `background-jobs-flow.md` |
+| Admin: `FR_RemoveProductByAdmin`, `FR_ModerateShop`, … | `admin-moderation-flow.md` |
+
+## Commerce-specific Rules
+
+- **PostgreSQL only** cho MVP (không MongoDB).
+- Không truy cập DB Auth/Social trực tiếp; chỉ lưu `user_id`/`buyer_id`/`seller_id` UUID.
+- API prefix: `/api/v1/commerce/...`; error code `COMMERCE-*`.
+- Inventory: `stock_quantity`, `reserved_quantity`; checkout/payment trong transaction.
+- Order/Payment/Shipment: tuân state machine trong spec; ghi `*_status_history`.
+- Outbox: `event_key` unique, `source` (`commerce`|`payment`|`shipment`); publish qua `outbox_events` cùng transaction.
+- Webhook PayOS/GHN: `permitAll` path, idempotent processing.
+- Soft delete product: `status = REMOVED` / `ARCHIVED` theo FR.
+
+## Shared Infra đã có sẵn
+
+- `PublishCommerceEventsUseCase`, `RetryCommerceOutboxEventsUseCase`
+- `OutboxEventRepositoryAdapter`, schedulers (disabled mặc định)
+- JWT security, `ApiResponse`, `GlobalExceptionHandler`
+
+## Feature Requirements Index
+
+Tất cả FR trong `docs/feature_requirements/commerce/` (65 files). Ví dụ: `FR_AddProductToCart.md`, `FR_CheckoutFromCart.md`, `FR_RetryCommerceOutboxEvents.md`.

@@ -1,0 +1,126 @@
+server:
+  port: ${SERVER_PORT:3004}
+
+spring:
+  application:
+    name: admin-service
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${DB_URL:jdbc:postgresql://localhost:5436/admin_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:123456}
+
+    hikari:
+      pool-name: admin-service-hikari
+      minimum-idle: ${DB_HIKARI_MIN_IDLE:5}
+      maximum-pool-size: ${DB_HIKARI_MAX_POOL_SIZE:20}
+      idle-timeout: 300000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      validation-timeout: 5000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 3s
+
+  jackson:
+    time-zone: Asia/Ho_Chi_Minh
+
+jwt:
+  access-secret: ${JWT_ACCESS_SECRET:replace-with-at-least-32-characters-access-key}
+  refresh-secret: ${JWT_REFRESH_SECRET:replace-with-at-least-32-characters-refresh-key}
+  access-expiration: ${JWT_ACCESS_EXPIRATION:900000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:2592000000}
+
+admin:
+  outbox:
+    publish:
+      enabled: ${ADMIN_OUTBOX_PUBLISH_ENABLED:false}
+      cron: ${ADMIN_OUTBOX_PUBLISH_CRON:0/10 * * * * *}
+      max-retries: ${ADMIN_OUTBOX_PUBLISH_MAX_RETRIES:5}
+      batch-size: ${ADMIN_OUTBOX_PUBLISH_BATCH_SIZE:50}
+    retry:
+      enabled: ${ADMIN_OUTBOX_RETRY_ENABLED:false}
+      cron: ${ADMIN_OUTBOX_RETRY_CRON:0 */1 * * * *}
+      max-retries: ${ADMIN_OUTBOX_RETRY_MAX_RETRIES:5}
+      pending-timeout-seconds: ${ADMIN_OUTBOX_RETRY_PENDING_TIMEOUT_SECONDS:300}
+      batch-size: ${ADMIN_OUTBOX_RETRY_BATCH_SIZE:50}
+  jobs:
+    enforcement-expiration:
+      enabled: ${ADMIN_ENFORCEMENT_EXPIRATION_ENABLED:false}
+      cron: ${ADMIN_ENFORCEMENT_EXPIRATION_CRON:0 0 * * * *}
+      batch-size: ${ADMIN_ENFORCEMENT_EXPIRATION_BATCH_SIZE:100}
+  integrations:
+    auth:
+      enabled: ${ADMIN_AUTH_INTEGRATION_ENABLED:false}
+      base-url: ${ADMIN_AUTH_BASE_URL:http://localhost:3001}
+    commerce:
+      enabled: ${ADMIN_COMMERCE_INTEGRATION_ENABLED:false}
+      base-url: ${ADMIN_COMMERCE_BASE_URL:http://localhost:3003}
+    social:
+      enabled: ${ADMIN_SOCIAL_INTEGRATION_ENABLED:false}
+      base-url: ${ADMIN_SOCIAL_BASE_URL:http://localhost:3002}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+logging:
+  level:
+    root: INFO
+    com.twohands.admin_service: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-}] %logger{36} - %msg%n"
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    com.twohands.admin_service: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+logging:
+  level:
+    root: WARN
+    com.twohands.admin_service: INFO
