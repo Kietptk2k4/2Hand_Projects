@@ -4,6 +4,7 @@ import com.twohands.commerce_service.security.RestAuthenticationEntryPoint;
 import com.twohands.commerce_service.security.jwt.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -36,6 +37,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/commerce/api/v1/payments/webhooks/**").permitAll()
                         .requestMatchers("/commerce/api/v1/shipments/webhooks/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/commerce/api/v1/categories/*/products").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(restAuthenticationEntryPoint))
