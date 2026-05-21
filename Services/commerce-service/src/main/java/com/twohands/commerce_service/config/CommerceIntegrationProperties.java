@@ -6,9 +6,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class CommerceIntegrationProperties {
 
     private final Ghn ghn = new Ghn();
+    private final Payos payos = new Payos();
 
     public Ghn getGhn() {
         return ghn;
+    }
+
+    public Payos getPayos() {
+        return payos;
     }
 
     public static class Ghn {
@@ -29,6 +34,18 @@ public class CommerceIntegrationProperties {
 
         public void setMockFallbackEnabled(boolean mockFallbackEnabled) {
             this.mockFallbackEnabled = mockFallbackEnabled;
+        }
+    }
+
+    public static class Payos {
+        private boolean enabled;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
     }
 }
