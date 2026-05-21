@@ -6,6 +6,9 @@ import com.twohands.commerce_service.application.order.cancelorder.CancelOrderUs
 import com.twohands.commerce_service.application.order.completeorder.CompleteOrderCommand;
 import com.twohands.commerce_service.application.order.completeorder.CompleteOrderResponse;
 import com.twohands.commerce_service.application.order.completeorder.CompleteOrderUseCase;
+import com.twohands.commerce_service.application.order.confirmorderreceived.ConfirmOrderReceivedCommand;
+import com.twohands.commerce_service.application.order.confirmorderreceived.ConfirmOrderReceivedUseCase;
+import com.twohands.commerce_service.domain.order.ConfirmOrderReceivedResult;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
@@ -29,13 +32,33 @@ public class OrderController {
 
     private final CancelOrderUseCase cancelOrderUseCase;
     private final CompleteOrderUseCase completeOrderUseCase;
+    private final ConfirmOrderReceivedUseCase confirmOrderReceivedUseCase;
 
     public OrderController(
             CancelOrderUseCase cancelOrderUseCase,
-            CompleteOrderUseCase completeOrderUseCase
+            CompleteOrderUseCase completeOrderUseCase,
+            ConfirmOrderReceivedUseCase confirmOrderReceivedUseCase
     ) {
         this.cancelOrderUseCase = cancelOrderUseCase;
         this.completeOrderUseCase = completeOrderUseCase;
+        this.confirmOrderReceivedUseCase = confirmOrderReceivedUseCase;
+    }
+
+    @PostMapping("/{orderId}/confirm-received")
+    public ResponseEntity<ApiResponse<ConfirmOrderReceivedResponse>> confirmOrderReceived(
+            @PathVariable UUID orderId,
+            Authentication authentication
+    ) {
+        UUID buyerId = resolveUserId(authentication);
+        ConfirmOrderReceivedResult result = confirmOrderReceivedUseCase.execute(
+                new ConfirmOrderReceivedCommand(buyerId, orderId)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                confirmOrderReceivedUseCase.successMessage(result.alreadyCompleted()),
+                toConfirmResponse(result)
+        ));
     }
 
     @PostMapping("/{orderId}/complete")
@@ -103,5 +126,16 @@ public class OrderController {
         if (principal.roles() == null || principal.roles().stream().noneMatch(ADMIN_ROLE::equalsIgnoreCase)) {
             throw new AppException(ErrorCode.FORBIDDEN, "Admin role is required to complete an order");
         }
+    }
+
+    private ConfirmOrderReceivedResponse toConfirmResponse(ConfirmOrderReceivedResult result) {
+        return new ConfirmOrderReceivedResponse(
+                result.orderId(),
+                result.orderStatus(),
+                result.paymentStatus(),
+                result.itemsCompleted(),
+                result.paymentMarkedPaid(),
+                result.orderCompleted()
+        );
     }
 }
