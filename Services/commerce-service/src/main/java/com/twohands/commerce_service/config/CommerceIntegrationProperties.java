@@ -19,6 +19,9 @@ public class CommerceIntegrationProperties {
     public static class Ghn {
         private boolean enabled;
         private boolean mockFallbackEnabled = true;
+        private String baseUrl = "https://dev-online-gateway.ghn.vn";
+        private String token;
+        private String shopId;
 
         public boolean isEnabled() {
             return enabled;
@@ -34,6 +37,37 @@ public class CommerceIntegrationProperties {
 
         public void setMockFallbackEnabled(boolean mockFallbackEnabled) {
             this.mockFallbackEnabled = mockFallbackEnabled;
+        }
+
+        public String getBaseUrl() {
+            return baseUrl;
+        }
+
+        public void setBaseUrl(String baseUrl) {
+            this.baseUrl = baseUrl;
+        }
+
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
+
+        public String getShopId() {
+            return shopId;
+        }
+
+        public void setShopId(String shopId) {
+            this.shopId = shopId;
+        }
+
+        public boolean isLiveClientConfigured() {
+            return enabled
+                    && token != null && !token.isBlank()
+                    && shopId != null && !shopId.isBlank()
+                    && baseUrl != null && !baseUrl.isBlank();
         }
     }
 

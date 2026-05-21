@@ -85,4 +85,5 @@ commerce:
       mock-fallback-enabled: ${COMMERCE_GHN_MOCK_FALLBACK_ENABLED:true}
       base-url: ${COMMERCE_GHN_BASE_URL:https://dev-online-gateway.ghn.vn}
       token: ${COMMERCE_GHN_TOKEN:}
+      shop-id: ${COMMERCE_GHN_SHOP_ID:}
       webhook-secret: ${COMMERCE_GHN_WEBHOOK_SECRET:}

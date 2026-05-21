@@ -40,7 +40,14 @@ public enum ErrorCode {
     INVALID_PAGINATION("COMMERCE-400-PAGINATION", HttpStatus.BAD_REQUEST, "Invalid pagination parameters"),
     INVALID_RATING("COMMERCE-400-RATING", HttpStatus.BAD_REQUEST, "Invalid rating"),
     ORDER_ITEM_NOT_REVIEWABLE("COMMERCE-409-ORDER-ITEM-REVIEW", HttpStatus.CONFLICT, "Order item is not reviewable"),
-    REVIEW_ALREADY_EXISTS("COMMERCE-409-REVIEW-EXISTS", HttpStatus.CONFLICT, "Review already exists for this order item");
+    REVIEW_ALREADY_EXISTS("COMMERCE-409-REVIEW-EXISTS", HttpStatus.CONFLICT, "Review already exists for this order item"),
+    ORDER_NOT_PROCESSING("COMMERCE-409-ORDER-PROCESSING", HttpStatus.CONFLICT, "Order is not in PROCESSING status"),
+    ORDER_ITEM_ALREADY_SHIPPED("COMMERCE-409-ORDER-ITEM-SHIPPED", HttpStatus.CONFLICT, "Order item already has a shipment"),
+    ORDER_ITEM_NOT_OWNED("COMMERCE-403-ORDER-ITEM", HttpStatus.FORBIDDEN, "Order item does not belong to seller"),
+    BUYER_ADDRESS_NOT_FOUND("COMMERCE-404-BUYER-ADDRESS", HttpStatus.NOT_FOUND, "Buyer delivery address not found"),
+    INVALID_SHIPMENT_CARRIER("COMMERCE-400-SHIPMENT-CARRIER", HttpStatus.BAD_REQUEST, "Invalid shipment carrier"),
+    INVALID_SHIPMENT_TYPE("COMMERCE-400-SHIPMENT-TYPE", HttpStatus.BAD_REQUEST, "Invalid shipment type"),
+    GHN_PROVIDER_UNAVAILABLE("COMMERCE-503-GHN", HttpStatus.SERVICE_UNAVAILABLE, "GHN provider unavailable");
 
     private final String code;
     private final HttpStatus status;
