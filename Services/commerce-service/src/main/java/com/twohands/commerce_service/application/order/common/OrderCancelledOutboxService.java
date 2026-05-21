@@ -26,11 +26,15 @@ public class OrderCancelledOutboxService {
     }
 
     public OutboxEvent build(UUID orderId, String reason, Instant cancelledAt) {
+        return build(orderId, reason, "SYSTEM", cancelledAt);
+    }
+
+    public OutboxEvent build(UUID orderId, String reason, String cancelledBy, Instant cancelledAt) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("order_id", orderId.toString());
         payload.put("reason", reason);
         payload.put("cancelled_at", cancelledAt.toString());
-        payload.put("cancelled_by", "SYSTEM");
+        payload.put("cancelled_by", cancelledBy);
 
         return new OutboxEvent(
                 UUID.randomUUID(),
