@@ -2,8 +2,12 @@ package com.twohands.commerce_service.delivery.http.seller;
 
 import com.twohands.commerce_service.application.shipment.createshipment.CreateShipmentCommand;
 import com.twohands.commerce_service.application.shipment.createshipment.CreateShipmentUseCase;
+import com.twohands.commerce_service.application.shipment.updatesellershipment.UpdateSellerShipmentCommand;
+import com.twohands.commerce_service.application.shipment.updatesellershipment.UpdateSellerShipmentUseCase;
+import com.twohands.commerce_service.application.shipment.viewsellershipment.ViewSellerShipmentUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.shipment.CreateShipmentResult;
+import com.twohands.commerce_service.domain.shipment.SellerShipmentDetail;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
 import com.twohands.commerce_service.security.AuthenticatedUser;
@@ -11,6 +15,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,9 +30,17 @@ import java.util.UUID;
 public class SellerShipmentController {
 
     private final CreateShipmentUseCase createShipmentUseCase;
+    private final UpdateSellerShipmentUseCase updateSellerShipmentUseCase;
+    private final ViewSellerShipmentUseCase viewSellerShipmentUseCase;
 
-    public SellerShipmentController(CreateShipmentUseCase createShipmentUseCase) {
+    public SellerShipmentController(
+            CreateShipmentUseCase createShipmentUseCase,
+            UpdateSellerShipmentUseCase updateSellerShipmentUseCase,
+            ViewSellerShipmentUseCase viewSellerShipmentUseCase
+    ) {
         this.createShipmentUseCase = createShipmentUseCase;
+        this.updateSellerShipmentUseCase = updateSellerShipmentUseCase;
+        this.viewSellerShipmentUseCase = viewSellerShipmentUseCase;
     }
 
     @PostMapping
@@ -47,7 +62,41 @@ public class SellerShipmentController {
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK.value(),
                 createShipmentUseCase.successMessage(),
-                toResponse(result)
+                toCreateResponse(result)
+        ));
+    }
+
+    @GetMapping("/{shipmentId}")
+    public ResponseEntity<ApiResponse<SellerShipmentDetailResponse>> viewShipment(
+            @PathVariable UUID shipmentId,
+            Authentication authentication
+    ) {
+        UUID sellerId = resolveUserId(authentication);
+        SellerShipmentDetail detail = viewSellerShipmentUseCase.execute(sellerId, shipmentId);
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                "Lay thong tin shipment thanh cong.",
+                SellerShipmentMapper.toDetailResponse(detail)
+        ));
+    }
+
+    @PatchMapping("/{shipmentId}")
+    public ResponseEntity<ApiResponse<SellerShipmentDetailResponse>> updateShipment(
+            @PathVariable UUID shipmentId,
+            @RequestBody UpdateSellerShipmentRequest request,
+            Authentication authentication
+    ) {
+        UUID sellerId = resolveUserId(authentication);
+        SellerShipmentDetail detail = updateSellerShipmentUseCase.execute(new UpdateSellerShipmentCommand(
+                sellerId,
+                shipmentId,
+                request.status(),
+                request.trackingNumber()
+        ));
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                updateSellerShipmentUseCase.successMessage(),
+                SellerShipmentMapper.toDetailResponse(detail)
         ));
     }
 
@@ -58,7 +107,7 @@ public class SellerShipmentController {
         return principal.userId();
     }
 
-    private CreateShipmentResponse toResponse(CreateShipmentResult result) {
+    private CreateShipmentResponse toCreateResponse(CreateShipmentResult result) {
         return new CreateShipmentResponse(
                 result.shipmentId(),
                 result.orderId(),

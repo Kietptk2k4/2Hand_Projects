@@ -51,7 +51,11 @@ public enum ErrorCode {
     BUYER_ADDRESS_NOT_FOUND("COMMERCE-404-BUYER-ADDRESS", HttpStatus.NOT_FOUND, "Buyer delivery address not found"),
     INVALID_SHIPMENT_CARRIER("COMMERCE-400-SHIPMENT-CARRIER", HttpStatus.BAD_REQUEST, "Invalid shipment carrier"),
     INVALID_SHIPMENT_TYPE("COMMERCE-400-SHIPMENT-TYPE", HttpStatus.BAD_REQUEST, "Invalid shipment type"),
-    GHN_PROVIDER_UNAVAILABLE("COMMERCE-503-GHN", HttpStatus.SERVICE_UNAVAILABLE, "GHN provider unavailable");
+    GHN_PROVIDER_UNAVAILABLE("COMMERCE-503-GHN", HttpStatus.SERVICE_UNAVAILABLE, "GHN provider unavailable"),
+    SHIPMENT_NOT_FOUND("COMMERCE-404-SHIPMENT", HttpStatus.NOT_FOUND, "Shipment not found"),
+    INVALID_SHIPMENT_STATUS("COMMERCE-409-SHIPMENT-STATUS", HttpStatus.CONFLICT, "Invalid shipment status"),
+    SHIPMENT_CARRIER_NOT_EDITABLE("COMMERCE-409-SHIPMENT-CARRIER", HttpStatus.CONFLICT, "Shipment carrier cannot be updated by seller"),
+    DUPLICATE_TRACKING_NUMBER("COMMERCE-409-TRACKING", HttpStatus.CONFLICT, "Tracking number already exists");
 
     private final String code;
     private final HttpStatus status;
