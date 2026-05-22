@@ -11,8 +11,11 @@ import com.twohands.commerce_service.application.product.publishproduct.PublishP
 import com.twohands.commerce_service.application.product.publishproduct.PublishProductUseCase;
 import com.twohands.commerce_service.application.product.createproduct.CreateProductCommand;
 import com.twohands.commerce_service.application.product.createproduct.CreateProductUseCase;
+import com.twohands.commerce_service.application.product.updateproduct.UpdateProductCommand;
+import com.twohands.commerce_service.application.product.updateproduct.UpdateProductUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.product.CreateProductResult;
+import com.twohands.commerce_service.domain.product.UpdateProductResult;
 import jakarta.validation.Valid;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
@@ -20,6 +23,7 @@ import com.twohands.commerce_service.security.AuthenticatedUser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,17 +40,20 @@ public class SellerProductController {
     private final PublishProductUseCase publishProductUseCase;
     private final PauseProductUseCase pauseProductUseCase;
     private final ArchiveProductUseCase archiveProductUseCase;
+    private final UpdateProductUseCase updateProductUseCase;
 
     public SellerProductController(
             CreateProductUseCase createProductUseCase,
             PublishProductUseCase publishProductUseCase,
             PauseProductUseCase pauseProductUseCase,
-            ArchiveProductUseCase archiveProductUseCase
+            ArchiveProductUseCase archiveProductUseCase,
+            UpdateProductUseCase updateProductUseCase
     ) {
         this.createProductUseCase = createProductUseCase;
         this.publishProductUseCase = publishProductUseCase;
         this.pauseProductUseCase = pauseProductUseCase;
         this.archiveProductUseCase = archiveProductUseCase;
+        this.updateProductUseCase = updateProductUseCase;
     }
 
     @PostMapping
@@ -70,6 +77,32 @@ public class SellerProductController {
                 HttpStatus.OK.value(),
                 createProductUseCase.successMessage(),
                 toCreateResponse(result)
+        ));
+    }
+
+    @PatchMapping("/{productId}")
+    public ResponseEntity<ApiResponse<UpdateProductResponse>> updateProduct(
+            @PathVariable UUID productId,
+            @RequestBody @Valid UpdateProductRequest request,
+            Authentication authentication
+    ) {
+        UUID sellerId = resolveUserId(authentication);
+        UpdateProductResult result = updateProductUseCase.execute(new UpdateProductCommand(
+                sellerId,
+                productId,
+                request.productType(),
+                request.categoryId(),
+                request.brandId(),
+                request.condition(),
+                request.title(),
+                request.description(),
+                request.weightGram()
+        ));
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                updateProductUseCase.successMessage(),
+                toUpdateResponse(result)
         ));
     }
 
@@ -123,6 +156,24 @@ public class SellerProductController {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         return principal.userId();
+    }
+
+    private UpdateProductResponse toUpdateResponse(UpdateProductResult result) {
+        return new UpdateProductResponse(
+                result.productId(),
+                result.sellerId(),
+                result.shopId(),
+                result.status(),
+                result.productType(),
+                result.categoryId(),
+                result.brandId(),
+                result.condition(),
+                result.title(),
+                result.description(),
+                result.weightGram(),
+                result.createdAt(),
+                result.updatedAt()
+        );
     }
 
     private CreateProductResponse toCreateResponse(CreateProductResult result) {

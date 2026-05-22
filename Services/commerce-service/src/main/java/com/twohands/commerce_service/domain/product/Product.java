@@ -49,6 +49,10 @@ public record Product(
         return PAUSABLE_STATUSES.contains(status);
     }
 
+    public boolean canUpdateBySeller() {
+        return !isRemoved() && !isArchived();
+    }
+
     public Product withStatus(ProductStatus newStatus, Instant updatedAt) {
         return new Product(id, sellerId, shopId, title, newStatus, updatedAt);
     }
