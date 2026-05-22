@@ -42,6 +42,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/commerce/api/v1/products/search").permitAll()
                         .requestMatchers(HttpMethod.GET, "/commerce/api/v1/products/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/commerce/api/v1/products/*/reviews").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/commerce/api/v1/shops/*/products").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(restAuthenticationEntryPoint))

@@ -33,4 +33,13 @@ public interface ProductDiscoveryRepository {
             PageQuery pageQuery,
             Instant now
     );
+
+    long countVisibleProductsByShop(UUID shopId, Instant now);
+
+    List<ProductCardSummary> findVisibleProductsByShop(
+            UUID shopId,
+            ProductDiscoverySort sort,
+            PageQuery pageQuery,
+            Instant now
+    );
 }
