@@ -11,6 +11,7 @@ public class CommerceOutboxTopicResolver {
 
     private static final Map<String, String> EVENT_TYPE_TO_TOPIC = Map.ofEntries(
             Map.entry("COMMERCE_ORDER_CREATED", "commerce.order.created"),
+            Map.entry("COMMERCE_SELLER_ORDER_ITEM_PROCESSING", "commerce.seller_order_item.processing"),
             Map.entry("COMMERCE_ORDER_CANCELLED", "commerce.order.cancelled"),
             Map.entry("COMMERCE_ORDER_COMPLETED", "commerce.order.completed"),
             Map.entry("COMMERCE_PAYMENT_PAID", "commerce.payment.paid"),

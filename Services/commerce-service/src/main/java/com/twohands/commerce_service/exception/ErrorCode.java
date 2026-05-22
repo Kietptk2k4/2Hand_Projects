@@ -47,6 +47,7 @@ public enum ErrorCode {
     REVIEW_ALREADY_EXISTS("COMMERCE-409-REVIEW-EXISTS", HttpStatus.CONFLICT, "Review already exists for this order item"),
     ORDER_NOT_PROCESSING("COMMERCE-409-ORDER-PROCESSING", HttpStatus.CONFLICT, "Order is not in PROCESSING status"),
     ORDER_ITEM_ALREADY_SHIPPED("COMMERCE-409-ORDER-ITEM-SHIPPED", HttpStatus.CONFLICT, "Order item already has a shipment"),
+    ORDER_ITEM_NOT_PROCESSABLE("COMMERCE-409-ORDER-ITEM-PROCESS", HttpStatus.CONFLICT, "Order item cannot be processed"),
     ORDER_ITEM_NOT_OWNED("COMMERCE-403-ORDER-ITEM", HttpStatus.FORBIDDEN, "Order item does not belong to seller"),
     BUYER_ADDRESS_NOT_FOUND("COMMERCE-404-BUYER-ADDRESS", HttpStatus.NOT_FOUND, "Buyer delivery address not found"),
     INVALID_SHIPMENT_CARRIER("COMMERCE-400-SHIPMENT-CARRIER", HttpStatus.BAD_REQUEST, "Invalid shipment carrier"),
