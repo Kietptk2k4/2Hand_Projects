@@ -6,10 +6,13 @@ import com.twohands.commerce_service.application.address.deleteuseraddress.Delet
 import com.twohands.commerce_service.application.address.deleteuseraddress.DeleteUserAddressUseCase;
 import com.twohands.commerce_service.application.address.setdefaultuseraddress.SetDefaultUserAddressCommand;
 import com.twohands.commerce_service.application.address.setdefaultuseraddress.SetDefaultUserAddressUseCase;
+import com.twohands.commerce_service.application.address.updateuseraddress.UpdateUserAddressCommand;
+import com.twohands.commerce_service.application.address.updateuseraddress.UpdateUserAddressUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.address.CreateUserAddressResult;
 import com.twohands.commerce_service.domain.address.DeleteUserAddressResult;
 import com.twohands.commerce_service.domain.address.SetDefaultUserAddressResult;
+import com.twohands.commerce_service.domain.address.UpdateUserAddressResult;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
 import com.twohands.commerce_service.security.AuthenticatedUser;
@@ -35,15 +38,18 @@ public class AddressController {
     private final CreateUserAddressUseCase createUserAddressUseCase;
     private final DeleteUserAddressUseCase deleteUserAddressUseCase;
     private final SetDefaultUserAddressUseCase setDefaultUserAddressUseCase;
+    private final UpdateUserAddressUseCase updateUserAddressUseCase;
 
     public AddressController(
             CreateUserAddressUseCase createUserAddressUseCase,
             DeleteUserAddressUseCase deleteUserAddressUseCase,
-            SetDefaultUserAddressUseCase setDefaultUserAddressUseCase
+            SetDefaultUserAddressUseCase setDefaultUserAddressUseCase,
+            UpdateUserAddressUseCase updateUserAddressUseCase
     ) {
         this.createUserAddressUseCase = createUserAddressUseCase;
         this.deleteUserAddressUseCase = deleteUserAddressUseCase;
         this.setDefaultUserAddressUseCase = setDefaultUserAddressUseCase;
+        this.updateUserAddressUseCase = updateUserAddressUseCase;
     }
 
     @PostMapping
@@ -75,6 +81,32 @@ public class AddressController {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         return principal.userId();
+    }
+
+    @PatchMapping("/{addressId}")
+    public ResponseEntity<ApiResponse<CreateUserAddressResponse>> updateAddress(
+            @PathVariable UUID addressId,
+            @RequestBody @Valid UpdateUserAddressRequest request,
+            Authentication authentication
+    ) {
+        UUID userId = resolveUserId(authentication);
+        UpdateUserAddressResult result = updateUserAddressUseCase.execute(new UpdateUserAddressCommand(
+                userId,
+                addressId,
+                request.receiverName(),
+                request.phone(),
+                request.provinceCode(),
+                request.districtCode(),
+                request.wardCode(),
+                request.addressDetail(),
+                request.isDefault()
+        ));
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                updateUserAddressUseCase.successMessage(),
+                toResponse(result)
+        ));
     }
 
     @PatchMapping("/{addressId}/default")
@@ -138,6 +170,22 @@ public class AddressController {
     }
 
     private CreateUserAddressResponse toResponse(SetDefaultUserAddressResult result) {
+        return toAddressResponse(
+                result.addressId(),
+                result.userId(),
+                result.receiverName(),
+                result.phone(),
+                result.provinceCode(),
+                result.districtCode(),
+                result.wardCode(),
+                result.addressDetail(),
+                result.isDefault(),
+                result.createdAt(),
+                result.updatedAt()
+        );
+    }
+
+    private CreateUserAddressResponse toResponse(UpdateUserAddressResult result) {
         return toAddressResponse(
                 result.addressId(),
                 result.userId(),
