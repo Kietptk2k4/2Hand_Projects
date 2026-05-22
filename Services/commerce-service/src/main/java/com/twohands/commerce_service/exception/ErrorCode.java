@@ -35,6 +35,7 @@ public enum ErrorCode {
     INVALID_CART_ITEM("COMMERCE-409-CART-ITEM", HttpStatus.CONFLICT, "Cart item is not available for checkout"),
     NOT_PURCHASABLE("COMMERCE-409-NOT-PURCHASABLE", HttpStatus.CONFLICT, "Product is not purchasable"),
     ACTIVE_PRICE_MISSING("COMMERCE-409-PRICE", HttpStatus.CONFLICT, "Active price is missing"),
+    PRICE_WINDOW_OVERLAP("COMMERCE-409-PRICE-WINDOW", HttpStatus.CONFLICT, "Product price window overlaps an existing price"),
     ORDER_SNAPSHOT_INCOMPLETE("COMMERCE-409-ORDER-SNAPSHOT", HttpStatus.CONFLICT, "Order snapshot data is incomplete"),
     SHIPPING_PROFILE_MISSING("COMMERCE-409-SHIPPING-PROFILE", HttpStatus.CONFLICT, "Seller shipping profile is missing"),
     SHIPPING_PROVIDER_UNAVAILABLE("COMMERCE-503-SHIPPING", HttpStatus.SERVICE_UNAVAILABLE, "Shipping provider unavailable"),

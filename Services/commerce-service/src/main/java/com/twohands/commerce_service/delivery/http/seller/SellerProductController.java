@@ -17,11 +17,14 @@ import com.twohands.commerce_service.application.product.updateproductattributes
 import com.twohands.commerce_service.application.product.updateproductattributes.UpdateProductAttributesUseCase;
 import com.twohands.commerce_service.application.product.updateproductinventory.UpdateProductInventoryCommand;
 import com.twohands.commerce_service.application.product.updateproductinventory.UpdateProductInventoryUseCase;
+import com.twohands.commerce_service.application.product.updateproductprice.UpdateProductPriceCommand;
+import com.twohands.commerce_service.application.product.updateproductprice.UpdateProductPriceUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.product.CreateProductResult;
 import com.twohands.commerce_service.domain.product.ProductAttributeItem;
 import com.twohands.commerce_service.domain.product.UpdateProductAttributesResult;
 import com.twohands.commerce_service.domain.product.UpdateProductInventoryResult;
+import com.twohands.commerce_service.domain.product.UpdateProductPriceResult;
 import com.twohands.commerce_service.domain.product.UpdateProductResult;
 import jakarta.validation.Valid;
 import com.twohands.commerce_service.exception.AppException;
@@ -51,6 +54,7 @@ public class SellerProductController {
     private final UpdateProductUseCase updateProductUseCase;
     private final UpdateProductAttributesUseCase updateProductAttributesUseCase;
     private final UpdateProductInventoryUseCase updateProductInventoryUseCase;
+    private final UpdateProductPriceUseCase updateProductPriceUseCase;
 
     public SellerProductController(
             CreateProductUseCase createProductUseCase,
@@ -59,7 +63,8 @@ public class SellerProductController {
             ArchiveProductUseCase archiveProductUseCase,
             UpdateProductUseCase updateProductUseCase,
             UpdateProductAttributesUseCase updateProductAttributesUseCase,
-            UpdateProductInventoryUseCase updateProductInventoryUseCase
+            UpdateProductInventoryUseCase updateProductInventoryUseCase,
+            UpdateProductPriceUseCase updateProductPriceUseCase
     ) {
         this.createProductUseCase = createProductUseCase;
         this.publishProductUseCase = publishProductUseCase;
@@ -68,6 +73,7 @@ public class SellerProductController {
         this.updateProductUseCase = updateProductUseCase;
         this.updateProductAttributesUseCase = updateProductAttributesUseCase;
         this.updateProductInventoryUseCase = updateProductInventoryUseCase;
+        this.updateProductPriceUseCase = updateProductPriceUseCase;
     }
 
     @PostMapping
@@ -118,6 +124,31 @@ public class SellerProductController {
                 HttpStatus.OK.value(),
                 updateProductAttributesUseCase.successMessage(),
                 toAttributesResponse(result)
+        ));
+    }
+
+    @PostMapping("/{productId}/prices")
+    public ResponseEntity<ApiResponse<UpdateProductPriceResponse>> updateProductPrice(
+            @PathVariable UUID productId,
+            @RequestBody @Valid UpdateProductPriceRequest request,
+            Authentication authentication
+    ) {
+        UUID sellerId = resolveUserId(authentication);
+        UpdateProductPriceResult result = updateProductPriceUseCase.execute(
+                new UpdateProductPriceCommand(
+                        sellerId,
+                        productId,
+                        request.price(),
+                        request.salePrice(),
+                        request.startAt(),
+                        request.endAt()
+                )
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                updateProductPriceUseCase.successMessage(),
+                toPriceResponse(result)
         ));
     }
 
@@ -220,6 +251,23 @@ public class SellerProductController {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         return principal.userId();
+    }
+
+    private UpdateProductPriceResponse toPriceResponse(UpdateProductPriceResult result) {
+        return new UpdateProductPriceResponse(
+                result.productId(),
+                result.sellerId(),
+                result.shopId(),
+                result.status(),
+                result.price().priceId(),
+                result.price().price(),
+                result.price().salePrice(),
+                result.price().effectivePrice(),
+                result.price().startAt(),
+                result.price().endAt(),
+                result.price().createdAt(),
+                result.previousActivePriceClosed()
+        );
     }
 
     private UpdateProductInventoryResponse toInventoryResponse(UpdateProductInventoryResult result) {
