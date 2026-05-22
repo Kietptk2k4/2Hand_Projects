@@ -16,9 +16,13 @@ import com.twohands.commerce_service.application.cart.updatecartitemquantity.Upd
 import com.twohands.commerce_service.application.cart.updatecartitemquantity.UpdateCartItemQuantityUseCase;
 import com.twohands.commerce_service.application.cart.validatecartitems.ValidateCartItemsCommand;
 import com.twohands.commerce_service.application.cart.validatecartitems.ValidateCartItemsUseCase;
+import com.twohands.commerce_service.application.cart.viewcart.ViewCartCommand;
+import com.twohands.commerce_service.application.cart.viewcart.ViewCartUseCase;
 import com.twohands.commerce_service.domain.cart.InvalidCartItem;
 import com.twohands.commerce_service.domain.cart.ValidateCartItemsResult;
 import com.twohands.commerce_service.domain.cart.ValidCartItem;
+import com.twohands.commerce_service.domain.cart.ViewCartItem;
+import com.twohands.commerce_service.domain.cart.ViewCartResult;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
@@ -28,6 +32,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,19 +51,34 @@ public class CartController {
     private final RemoveCartItemUseCase removeCartItemUseCase;
     private final UpdateCartItemQuantityUseCase updateCartItemQuantityUseCase;
     private final ValidateCartItemsUseCase validateCartItemsUseCase;
+    private final ViewCartUseCase viewCartUseCase;
 
     public CartController(
             CreateCartUseCase createCartUseCase,
             AddProductToCartUseCase addProductToCartUseCase,
             RemoveCartItemUseCase removeCartItemUseCase,
             UpdateCartItemQuantityUseCase updateCartItemQuantityUseCase,
-            ValidateCartItemsUseCase validateCartItemsUseCase
+            ValidateCartItemsUseCase validateCartItemsUseCase,
+            ViewCartUseCase viewCartUseCase
     ) {
         this.createCartUseCase = createCartUseCase;
         this.addProductToCartUseCase = addProductToCartUseCase;
         this.removeCartItemUseCase = removeCartItemUseCase;
         this.updateCartItemQuantityUseCase = updateCartItemQuantityUseCase;
         this.validateCartItemsUseCase = validateCartItemsUseCase;
+        this.viewCartUseCase = viewCartUseCase;
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<ViewCartResponse>> viewCart(Authentication authentication) {
+        UUID userId = resolveUserId(authentication);
+        ViewCartResult result = viewCartUseCase.execute(new ViewCartCommand(userId));
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewCartUseCase.successMessage(),
+                toViewCartResponse(result)
+        ));
     }
 
     @PostMapping
@@ -202,6 +222,39 @@ public class CartController {
                         product.availableQuantity()
                 ),
                 new CartSummaryResponse(result.activeItemCount())
+        );
+    }
+
+    private ViewCartResponse toViewCartResponse(ViewCartResult result) {
+        return new ViewCartResponse(
+                result.cartId(),
+                result.items().stream().map(this::toViewCartItemResponse).toList(),
+                new ViewCartSummaryResponse(
+                        result.summary().activeItemCount(),
+                        result.summary().invalidItemCount(),
+                        result.summary().subtotal(),
+                        result.summary().canCheckout(),
+                        result.summary().warnings()
+                ),
+                result.createdAt(),
+                result.updatedAt()
+        );
+    }
+
+    private ViewCartItemResponse toViewCartItemResponse(ViewCartItem item) {
+        return new ViewCartItemResponse(
+                item.cartItemId(),
+                item.productId(),
+                item.sellerId(),
+                item.shopId(),
+                item.productName(),
+                item.imageUrl(),
+                item.quantity(),
+                item.status().name(),
+                item.effectivePrice(),
+                item.inStock(),
+                item.availableQuantity(),
+                item.unavailableReason()
         );
     }
 
