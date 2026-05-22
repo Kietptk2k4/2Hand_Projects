@@ -4,10 +4,13 @@ import com.twohands.commerce_service.application.shop.createshop.CreateShopComma
 import com.twohands.commerce_service.application.shop.createshop.CreateShopUseCase;
 import com.twohands.commerce_service.application.shop.updateshopprofile.UpdateShopProfileCommand;
 import com.twohands.commerce_service.application.shop.updateshopprofile.UpdateShopProfileUseCase;
+import com.twohands.commerce_service.application.shop.updateshopvacation.UpdateShopVacationCommand;
+import com.twohands.commerce_service.application.shop.updateshopvacation.UpdateShopVacationUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.shop.CreateShopPickupDraft;
 import com.twohands.commerce_service.domain.shop.CreateShopResult;
 import com.twohands.commerce_service.domain.shop.UpdateShopProfileResult;
+import com.twohands.commerce_service.domain.shop.UpdateShopVacationResult;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
 import com.twohands.commerce_service.security.AuthenticatedUser;
@@ -29,13 +32,37 @@ public class SellerShopController {
 
     private final CreateShopUseCase createShopUseCase;
     private final UpdateShopProfileUseCase updateShopProfileUseCase;
+    private final UpdateShopVacationUseCase updateShopVacationUseCase;
 
     public SellerShopController(
             CreateShopUseCase createShopUseCase,
-            UpdateShopProfileUseCase updateShopProfileUseCase
+            UpdateShopProfileUseCase updateShopProfileUseCase,
+            UpdateShopVacationUseCase updateShopVacationUseCase
     ) {
         this.createShopUseCase = createShopUseCase;
         this.updateShopProfileUseCase = updateShopProfileUseCase;
+        this.updateShopVacationUseCase = updateShopVacationUseCase;
+    }
+
+    @PatchMapping("/vacation")
+    public ResponseEntity<ApiResponse<UpdateShopVacationResponse>> updateShopVacation(
+            @RequestBody @Valid UpdateShopVacationRequest request,
+            Authentication authentication
+    ) {
+        UUID sellerId = resolveUserId(authentication);
+        UpdateShopVacationResult result = updateShopVacationUseCase.execute(
+                new UpdateShopVacationCommand(
+                        sellerId,
+                        request.isVacation(),
+                        request.vacationMessage()
+                )
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                updateShopVacationUseCase.successMessage(result.isVacation()),
+                toVacationResponse(result)
+        ));
     }
 
     @PatchMapping
@@ -101,6 +128,17 @@ public class SellerShopController {
                 pickup.districtCode(),
                 pickup.wardCode(),
                 pickup.addressDetail()
+        );
+    }
+
+    private UpdateShopVacationResponse toVacationResponse(UpdateShopVacationResult result) {
+        return new UpdateShopVacationResponse(
+                result.shopId(),
+                result.sellerId(),
+                result.status(),
+                result.isVacation(),
+                result.vacationMessage(),
+                result.updatedAt()
         );
     }
 
