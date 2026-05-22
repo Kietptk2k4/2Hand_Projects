@@ -12,23 +12,30 @@ public class LoggingOutboxEventPublisher implements OutboxEventPublisher {
     private static final Logger log = LoggerFactory.getLogger(LoggingOutboxEventPublisher.class);
 
     private final CommerceOutboxTopicResolver topicResolver;
+    private final CommerceOutboxMessageBuilder messageBuilder;
 
-    public LoggingOutboxEventPublisher(CommerceOutboxTopicResolver topicResolver) {
+    public LoggingOutboxEventPublisher(
+            CommerceOutboxTopicResolver topicResolver,
+            CommerceOutboxMessageBuilder messageBuilder
+    ) {
         this.topicResolver = topicResolver;
+        this.messageBuilder = messageBuilder;
     }
 
     @Override
     public void publish(OutboxEvent event) {
         String topic = topicResolver.resolve(event.eventType());
+        String envelopeJson = messageBuilder.buildEnvelopeJson(event);
         log.info(
-                "Outbox publish stub invoked. outboxEventId={}, eventType={}, eventKey={}, topic={}, aggregateId={}, source={}, payloadBytes={}",
+                "Outbox publish stub invoked. outboxEventId={}, eventType={}, eventKey={}, topic={}, aggregateId={}, source={}, envelopeBytes={}",
                 event.id(),
                 event.eventType(),
                 event.eventKey(),
                 topic,
                 event.aggregateId(),
                 event.source(),
-                event.payload() != null ? event.payload().length() : 0
+                envelopeJson.length()
         );
+        log.debug("Outbox publish envelope. topic={}, envelope={}", topic, envelopeJson);
     }
 }
