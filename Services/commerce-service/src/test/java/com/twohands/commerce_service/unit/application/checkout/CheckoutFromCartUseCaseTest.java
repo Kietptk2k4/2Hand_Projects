@@ -2,7 +2,11 @@ package com.twohands.commerce_service.unit.application.checkout;
 
 import com.twohands.commerce_service.application.checkout.checkoutfromcart.CheckoutFromCartCommand;
 import com.twohands.commerce_service.application.checkout.checkoutfromcart.CheckoutFromCartUseCase;
+import com.twohands.commerce_service.application.inventory.reserveinventory.ReserveInventoryUseCase;
 import com.twohands.commerce_service.application.order.common.InventoryReservedOutboxService;
+import com.twohands.commerce_service.domain.inventory.InventoryReservationLine;
+import com.twohands.commerce_service.domain.order.OrderItemQuantity;
+import com.twohands.commerce_service.application.inventory.reserveinventory.ReserveInventoryResult;
 import com.twohands.commerce_service.application.order.createorder.CreateOrderUseCase;
 import com.twohands.commerce_service.domain.checkout.CheckoutFromCartRepository;
 import com.twohands.commerce_service.domain.checkout.CheckoutFromCartResult;
@@ -38,6 +42,9 @@ class CheckoutFromCartUseCaseTest {
     private CheckoutFromCartRepository checkoutFromCartRepository;
 
     @Mock
+    private ReserveInventoryUseCase reserveInventoryUseCase;
+
+    @Mock
     private CreateOrderUseCase createOrderUseCase;
 
     @Mock
@@ -55,6 +62,8 @@ class CheckoutFromCartUseCaseTest {
 
     @Test
     void shouldCheckoutWithPayos() {
+        Instant now = Instant.now();
+        UUID productId = UUID.randomUUID();
         when(checkoutFromCartRepository.prepareCheckout(any())).thenReturn(CheckoutPrepareOutcome.prepared(
                 new CheckoutPreparedData(
                         buyerId,
@@ -63,9 +72,13 @@ class CheckoutFromCartUseCaseTest {
                         PaymentMethod.PAYOS,
                         "idem-key",
                         List.of(),
-                        List.of(),
-                        Instant.now()
+                        List.of(new InventoryReservationLine(productId, 1)),
+                        now
                 )
+        ));
+        when(reserveInventoryUseCase.execute(any())).thenReturn(new ReserveInventoryResult(
+                List.of(new OrderItemQuantity(productId, productId, 1)),
+                now
         ));
         when(createOrderUseCase.execute(any())).thenReturn(new CreateOrderResult(
                 orderId,

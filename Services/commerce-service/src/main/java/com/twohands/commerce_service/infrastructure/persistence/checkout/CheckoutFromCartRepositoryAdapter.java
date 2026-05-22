@@ -16,7 +16,7 @@ import com.twohands.commerce_service.domain.checkout.CheckoutFromCartRepository;
 import com.twohands.commerce_service.domain.checkout.CheckoutFromCartRequest;
 import com.twohands.commerce_service.domain.checkout.CheckoutFromCartResult;
 import com.twohands.commerce_service.domain.checkout.ShippingFeeAllocator;
-import com.twohands.commerce_service.domain.order.OrderItemQuantity;
+import com.twohands.commerce_service.domain.inventory.InventoryReservationLine;
 import com.twohands.commerce_service.domain.order.OrderStatus;
 import com.twohands.commerce_service.domain.payment.PaymentMethod;
 import com.twohands.commerce_service.domain.payment.PaymentStatus;
@@ -98,13 +98,7 @@ public class CheckoutFromCartRepositoryAdapter implements CheckoutFromCartReposi
         allocateShippingFees(lines, shippingFee);
         BigDecimal finalAmount = totalAmount.add(shippingFee);
 
-        Map<UUID, Integer> quantityByProduct = aggregateQuantityByProduct(lines);
-        lockInventories(quantityByProduct.keySet().stream().sorted().toList());
-        reserveInventoryOrThrow(quantityByProduct, now);
-
-        List<OrderItemQuantity> reservedItems = quantityByProduct.entrySet().stream()
-                .map(entry -> new OrderItemQuantity(entry.getKey(), entry.getKey(), entry.getValue()))
-                .toList();
+        List<InventoryReservationLine> reservationLines = aggregateReservationLines(lines);
 
         return CheckoutPrepareOutcome.prepared(new CheckoutPreparedData(
                 request.buyerId(),
@@ -113,7 +107,7 @@ public class CheckoutFromCartRepositoryAdapter implements CheckoutFromCartReposi
                 request.paymentMethod(),
                 request.idempotencyKey(),
                 lines.stream().map(this::toCreateOrderLine).toList(),
-                reservedItems,
+                reservationLines,
                 now
         ));
     }
@@ -358,51 +352,15 @@ public class CheckoutFromCartRepositoryAdapter implements CheckoutFromCartReposi
         return groups;
     }
 
-    private Map<UUID, Integer> aggregateQuantityByProduct(List<PreparedLine> lines) {
+    private List<InventoryReservationLine> aggregateReservationLines(List<PreparedLine> lines) {
         Map<UUID, Integer> quantityByProduct = new LinkedHashMap<>();
         for (PreparedLine line : lines) {
             quantityByProduct.merge(line.productId(), line.quantity(), Integer::sum);
         }
-        return quantityByProduct;
-    }
-
-    private void lockInventories(List<UUID> productIds) {
-        if (productIds.isEmpty()) {
-            return;
-        }
-        String sql = """
-                SELECT product_id
-                FROM product_inventories
-                WHERE product_id IN (:productIds)
-                ORDER BY product_id
-                FOR UPDATE
-                """;
-        jdbcTemplate.query(
-                sql,
-                new MapSqlParameterSource("productIds", productIds),
-                (rs, rowNum) -> rs.getString("product_id")
-        );
-    }
-
-    private void reserveInventoryOrThrow(Map<UUID, Integer> quantityByProduct, Instant now) {
-        String sql = """
-                UPDATE product_inventories
-                SET stock_quantity = stock_quantity - :quantity,
-                    reserved_quantity = reserved_quantity + :quantity,
-                    updated_at = :now
-                WHERE product_id = :productId
-                  AND stock_quantity >= :quantity
-                """;
-        for (Map.Entry<UUID, Integer> entry : quantityByProduct.entrySet()) {
-            int updated = jdbcTemplate.update(sql, new MapSqlParameterSource()
-                    .addValue("productId", entry.getKey())
-                    .addValue("quantity", entry.getValue())
-                    .addValue("now", Timestamp.from(now)));
-            if (updated == 0) {
-                log.warn("Stock conflict during checkout for product {}", entry.getKey());
-                throw new AppException(ErrorCode.OUT_OF_STOCK, "Insufficient stock for checkout");
-            }
-        }
+        return quantityByProduct.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> new InventoryReservationLine(entry.getKey(), entry.getValue()))
+                .toList();
     }
 
     private CreateOrderLineRequest toCreateOrderLine(PreparedLine line) {

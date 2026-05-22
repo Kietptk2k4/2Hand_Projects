@@ -1,7 +1,7 @@
 package com.twohands.commerce_service.domain.checkout;
 
+import com.twohands.commerce_service.domain.inventory.InventoryReservationLine;
 import com.twohands.commerce_service.domain.order.CreateOrderLineRequest;
-import com.twohands.commerce_service.domain.order.OrderItemQuantity;
 import com.twohands.commerce_service.domain.payment.PaymentMethod;
 
 import java.math.BigDecimal;
@@ -16,7 +16,7 @@ public record CheckoutPreparedData(
         PaymentMethod paymentMethod,
         String idempotencyKey,
         List<CreateOrderLineRequest> lines,
-        List<OrderItemQuantity> reservedItems,
+        List<InventoryReservationLine> reservationLines,
         Instant occurredAt
 ) {
 }

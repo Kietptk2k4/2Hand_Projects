@@ -83,7 +83,7 @@ Buyer checkout cac cart items da chon de tao order, order items (snapshots), pay
 - Cart item khong duoc `REMOVED` / `INVALID_PRODUCT`.
 - Product `ACTIVE`, shop `ACTIVE`, category active, khong vacation.
 - `stock_quantity >= quantity` (gom gop theo product neu trung).
-- Reserve: `stock_quantity -= q`, `reserved_quantity += q`.
+- Reserve (internal `ReserveInventoryUseCase`): `stock_quantity -= q`, `reserved_quantity += q` — xem `ReserveInventory-api-and-behavior.md`.
 - Snapshots tren `order_items`: ten SP, shop, SKU, image, attributes JSON, gia, phi ship allocated.
 - **PAYOS:** order `AWAITING_PAYMENT`, payment `PENDING`, `expired_at` theo TTL job (~30 phut).
 - **COD:** order `PROCESSING`, payment `PENDING`.

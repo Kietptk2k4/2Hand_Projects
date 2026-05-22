@@ -39,6 +39,7 @@ public enum ErrorCode {
     SHIPPING_PROFILE_MISSING("COMMERCE-409-SHIPPING-PROFILE", HttpStatus.CONFLICT, "Seller shipping profile is missing"),
     SHIPPING_PROVIDER_UNAVAILABLE("COMMERCE-503-SHIPPING", HttpStatus.SERVICE_UNAVAILABLE, "Shipping provider unavailable"),
     OUT_OF_STOCK("COMMERCE-409-STOCK", HttpStatus.CONFLICT, "Product is out of stock"),
+    INVENTORY_NOT_FOUND("COMMERCE-409-INVENTORY", HttpStatus.CONFLICT, "Product inventory record not found"),
     PRODUCT_REMOVED("COMMERCE-409-PRODUCT-REMOVED", HttpStatus.CONFLICT, "Product has been removed"),
     INVALID_PRODUCT_STATUS("COMMERCE-409-PRODUCT-STATUS", HttpStatus.CONFLICT, "Product status does not allow this action"),
     INVALID_PAGINATION("COMMERCE-400-PAGINATION", HttpStatus.BAD_REQUEST, "Invalid pagination parameters"),

@@ -1,5 +1,8 @@
 package com.twohands.commerce_service.application.checkout.checkoutfromcart;
 
+import com.twohands.commerce_service.application.inventory.reserveinventory.ReserveInventoryCommand;
+import com.twohands.commerce_service.application.inventory.reserveinventory.ReserveInventoryResult;
+import com.twohands.commerce_service.application.inventory.reserveinventory.ReserveInventoryUseCase;
 import com.twohands.commerce_service.application.order.common.InventoryReservedOutboxService;
 import com.twohands.commerce_service.application.order.createorder.CreateOrderCommand;
 import com.twohands.commerce_service.application.order.createorder.CreateOrderUseCase;
@@ -20,17 +23,20 @@ import org.springframework.transaction.annotation.Transactional;
 public class CheckoutFromCartUseCase {
 
     private final CheckoutFromCartRepository checkoutFromCartRepository;
+    private final ReserveInventoryUseCase reserveInventoryUseCase;
     private final CreateOrderUseCase createOrderUseCase;
     private final OutboxEventRepository outboxEventRepository;
     private final InventoryReservedOutboxService inventoryReservedOutboxService;
 
     public CheckoutFromCartUseCase(
             CheckoutFromCartRepository checkoutFromCartRepository,
+            ReserveInventoryUseCase reserveInventoryUseCase,
             CreateOrderUseCase createOrderUseCase,
             OutboxEventRepository outboxEventRepository,
             InventoryReservedOutboxService inventoryReservedOutboxService
     ) {
         this.checkoutFromCartRepository = checkoutFromCartRepository;
+        this.reserveInventoryUseCase = reserveInventoryUseCase;
         this.createOrderUseCase = createOrderUseCase;
         this.outboxEventRepository = outboxEventRepository;
         this.inventoryReservedOutboxService = inventoryReservedOutboxService;
@@ -56,6 +62,11 @@ public class CheckoutFromCartUseCase {
         CheckoutPreparedData prepared = outcome.preparedData()
                 .orElseThrow(() -> new AppException(ErrorCode.INTERNAL_ERROR, "Checkout preparation did not return data"));
 
+        ReserveInventoryResult reservation = reserveInventoryUseCase.execute(new ReserveInventoryCommand(
+                prepared.reservationLines(),
+                prepared.occurredAt()
+        ));
+
         CreateOrderResult orderResult = createOrderUseCase.execute(new CreateOrderCommand(
                 prepared.buyerId(),
                 prepared.totalAmount(),
@@ -68,8 +79,8 @@ public class CheckoutFromCartUseCase {
 
         outboxEventRepository.save(inventoryReservedOutboxService.build(
                 orderResult.orderId(),
-                prepared.reservedItems(),
-                prepared.occurredAt()
+                reservation.reservedItems(),
+                reservation.reservedAt()
         ));
 
         return new CheckoutFromCartResult(
