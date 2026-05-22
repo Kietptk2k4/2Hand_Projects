@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 public class CommerceAdminAuthorization {
 
     public static final String PERMISSION_REVIEW_HIDE = "COMMERCE_REVIEW_HIDE";
+    public static final String PERMISSION_SHOP_SUSPEND = "COMMERCE_SHOP_SUSPEND";
+    public static final String PERMISSION_SHOP_CLOSE = "COMMERCE_SHOP_CLOSE";
     private static final String ADMIN_ROLE = "ADMIN";
 
     public void requirePermission(AuthenticatedUser user, String permission) {
@@ -15,6 +17,15 @@ public class CommerceAdminAuthorization {
             return;
         }
         throw new AppException(ErrorCode.FORBIDDEN, "Missing permission: " + permission);
+    }
+
+    public void requireAnyPermission(AuthenticatedUser user, String... permissions) {
+        for (String permission : permissions) {
+            if (hasPermission(user, permission)) {
+                return;
+            }
+        }
+        throw new AppException(ErrorCode.FORBIDDEN, "Missing required admin permission");
     }
 
     private boolean hasPermission(AuthenticatedUser user, String permission) {

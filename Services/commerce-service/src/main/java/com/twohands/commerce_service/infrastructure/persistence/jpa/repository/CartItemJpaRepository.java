@@ -34,4 +34,18 @@ public interface CartItemJpaRepository extends JpaRepository<CartItemEntity, UUI
             @Param("statuses") Collection<CartItemStatusType> statuses,
             @Param("updatedAt") Instant updatedAt
     );
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            UPDATE CartItemEntity ci
+            SET ci.status = :invalidStatus, ci.updatedAt = :updatedAt
+            WHERE ci.sellerId = :sellerId
+              AND ci.status IN :statuses
+            """)
+    int markInvalidBySellerId(
+            @Param("sellerId") UUID sellerId,
+            @Param("invalidStatus") CartItemStatusType invalidStatus,
+            @Param("statuses") Collection<CartItemStatusType> statuses,
+            @Param("updatedAt") Instant updatedAt
+    );
 }

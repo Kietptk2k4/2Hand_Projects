@@ -57,7 +57,10 @@ public enum ErrorCode {
     SHIPMENT_CARRIER_NOT_EDITABLE("COMMERCE-409-SHIPMENT-CARRIER", HttpStatus.CONFLICT, "Shipment carrier cannot be updated by seller"),
     DUPLICATE_TRACKING_NUMBER("COMMERCE-409-TRACKING", HttpStatus.CONFLICT, "Tracking number already exists"),
     REVIEW_NOT_FOUND("COMMERCE-404-REVIEW", HttpStatus.NOT_FOUND, "Review not found"),
-    INVALID_REVIEW_MODERATION("COMMERCE-400-REVIEW-MODERATION", HttpStatus.BAD_REQUEST, "Invalid review moderation action");
+    INVALID_REVIEW_MODERATION("COMMERCE-400-REVIEW-MODERATION", HttpStatus.BAD_REQUEST, "Invalid review moderation action"),
+    SHOP_NOT_FOUND("COMMERCE-404-SHOP", HttpStatus.NOT_FOUND, "Shop not found"),
+    INVALID_SHOP_MODERATION("COMMERCE-400-SHOP-MODERATION", HttpStatus.BAD_REQUEST, "Invalid shop moderation action"),
+    INVALID_SHOP_STATUS("COMMERCE-409-SHOP-STATUS", HttpStatus.CONFLICT, "Invalid shop status transition");
 
     private final String code;
     private final HttpStatus status;

@@ -48,10 +48,31 @@ public class CartItemRepositoryAdapter implements CartItemRepository {
 
     @Override
     public int markInvalidByProductId(UUID productId, Instant updatedAt) {
-        return cartItemJpaRepository.markInvalidByProductId(
-                productId,
+        return markInvalid(productId, null, updatedAt);
+    }
+
+    @Override
+    public int markInvalidBySellerId(UUID sellerId, Instant updatedAt) {
+        return markInvalid(null, sellerId, updatedAt);
+    }
+
+    private int markInvalid(UUID productId, UUID sellerId, Instant updatedAt) {
+        EnumSet<CartItemStatusType> eligible = EnumSet.of(
+                CartItemStatusType.ACTIVE,
+                CartItemStatusType.OUT_OF_STOCK
+        );
+        if (productId != null) {
+            return cartItemJpaRepository.markInvalidByProductId(
+                    productId,
+                    CartItemStatusType.INVALID_PRODUCT,
+                    eligible,
+                    updatedAt
+            );
+        }
+        return cartItemJpaRepository.markInvalidBySellerId(
+                sellerId,
                 CartItemStatusType.INVALID_PRODUCT,
-                EnumSet.of(CartItemStatusType.ACTIVE, CartItemStatusType.OUT_OF_STOCK),
+                eligible,
                 updatedAt
         );
     }

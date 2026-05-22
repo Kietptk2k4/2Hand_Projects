@@ -17,4 +17,6 @@ public interface CartItemRepository {
     CartItem save(CartItem cartItem);
 
     int markInvalidByProductId(UUID productId, Instant updatedAt);
+
+    int markInvalidBySellerId(UUID sellerId, Instant updatedAt);
 }
