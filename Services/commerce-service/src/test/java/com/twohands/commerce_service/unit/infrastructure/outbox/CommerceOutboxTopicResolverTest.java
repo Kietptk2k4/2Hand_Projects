@@ -13,6 +13,7 @@ import com.twohands.commerce_service.application.payment.common.PaymentFailedOut
 import com.twohands.commerce_service.application.product.common.ProductArchivedOutboxService;
 import com.twohands.commerce_service.application.product.common.ProductCreatedOutboxService;
 import com.twohands.commerce_service.application.product.common.ProductPausedOutboxService;
+import com.twohands.commerce_service.application.product.common.ProductPublishedOutboxService;
 import com.twohands.commerce_service.application.review.common.ReviewCreatedOutboxService;
 import com.twohands.commerce_service.application.review.common.ReviewHiddenOutboxService;
 import com.twohands.commerce_service.application.review.common.ReviewRestoredOutboxService;
@@ -59,6 +60,8 @@ class CommerceOutboxTopicResolverTest {
                 .isEqualTo("commerce.inventory.released");
         assertThat(resolver.resolve(ProductCreatedOutboxService.EVENT_TYPE))
                 .isEqualTo("commerce.product.created");
+        assertThat(resolver.resolve(ProductPublishedOutboxService.EVENT_TYPE))
+                .isEqualTo("commerce.product.published");
         assertThat(resolver.resolve(ProductPausedOutboxService.EVENT_TYPE))
                 .isEqualTo("commerce.product.paused");
         assertThat(resolver.resolve(ProductArchivedOutboxService.EVENT_TYPE))

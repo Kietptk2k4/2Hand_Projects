@@ -50,6 +50,7 @@ commerce:
     enabled: ${COMMERCE_MINIO_ENABLED:false}
     public-url: ${COMMERCE_MINIO_PUBLIC_URL:http://localhost:9000}
     shop-bucket: ${COMMERCE_MINIO_BUCKET_SHOP:2hands-commerce-shop}
+    product-bucket: ${COMMERCE_MINIO_BUCKET_PRODUCT:2hands-commerce-product}
   outbox:
     publish:
       enabled: ${COMMERCE_OUTBOX_PUBLISH_ENABLED:false}

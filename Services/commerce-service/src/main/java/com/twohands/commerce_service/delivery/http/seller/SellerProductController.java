@@ -6,6 +6,9 @@ import com.twohands.commerce_service.application.product.archiveproduct.ArchiveP
 import com.twohands.commerce_service.application.product.pauseproduct.PauseProductCommand;
 import com.twohands.commerce_service.application.product.pauseproduct.PauseProductResult;
 import com.twohands.commerce_service.application.product.pauseproduct.PauseProductUseCase;
+import com.twohands.commerce_service.application.product.publishproduct.PublishProductCommand;
+import com.twohands.commerce_service.application.product.publishproduct.PublishProductResult;
+import com.twohands.commerce_service.application.product.publishproduct.PublishProductUseCase;
 import com.twohands.commerce_service.application.product.createproduct.CreateProductCommand;
 import com.twohands.commerce_service.application.product.createproduct.CreateProductUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
@@ -30,15 +33,18 @@ import java.util.UUID;
 public class SellerProductController {
 
     private final CreateProductUseCase createProductUseCase;
+    private final PublishProductUseCase publishProductUseCase;
     private final PauseProductUseCase pauseProductUseCase;
     private final ArchiveProductUseCase archiveProductUseCase;
 
     public SellerProductController(
             CreateProductUseCase createProductUseCase,
+            PublishProductUseCase publishProductUseCase,
             PauseProductUseCase pauseProductUseCase,
             ArchiveProductUseCase archiveProductUseCase
     ) {
         this.createProductUseCase = createProductUseCase;
+        this.publishProductUseCase = publishProductUseCase;
         this.pauseProductUseCase = pauseProductUseCase;
         this.archiveProductUseCase = archiveProductUseCase;
     }
@@ -64,6 +70,21 @@ public class SellerProductController {
                 HttpStatus.OK.value(),
                 createProductUseCase.successMessage(),
                 toCreateResponse(result)
+        ));
+    }
+
+    @PostMapping("/{productId}/publish")
+    public ResponseEntity<ApiResponse<PublishProductResponse>> publishProduct(
+            @PathVariable UUID productId,
+            Authentication authentication
+    ) {
+        UUID sellerId = resolveUserId(authentication);
+        PublishProductResult result = publishProductUseCase.execute(new PublishProductCommand(sellerId, productId));
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                publishProductUseCase.successMessage(result.alreadyPublished()),
+                toPublishResponse(result)
         ));
     }
 
@@ -119,6 +140,16 @@ public class SellerProductController {
                 result.weightGram(),
                 result.createdAt(),
                 result.updatedAt()
+        );
+    }
+
+    private PublishProductResponse toPublishResponse(PublishProductResult result) {
+        return new PublishProductResponse(
+                result.productId(),
+                result.shopId(),
+                result.status(),
+                result.publishedAt(),
+                result.alreadyPublished()
         );
     }
 

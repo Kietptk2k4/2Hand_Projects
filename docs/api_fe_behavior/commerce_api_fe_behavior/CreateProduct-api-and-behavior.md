@@ -84,6 +84,6 @@ Seller tao san pham **DRAFT** trong shop cua minh. San pham chua hien buyer disc
 
 ## 7. Related
 
-- Publish: FR_PublishProduct (chua implement)
+- Publish: `POST /commerce/api/v1/seller/products/{productId}/publish` — xem `PublishProduct-api-and-behavior.md`
 - Media: bucket `2hands-commerce-product`
 - FR: `docs/feature_requirements/commerce/FR_CreateProduct.md`

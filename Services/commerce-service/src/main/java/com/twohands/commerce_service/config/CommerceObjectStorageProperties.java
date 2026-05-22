@@ -8,6 +8,7 @@ public class CommerceObjectStorageProperties {
     private boolean enabled;
     private String publicUrl = "http://localhost:9000";
     private String shopBucket = "2hands-commerce-shop";
+    private String productBucket = "2hands-commerce-product";
 
     public boolean isEnabled() {
         return enabled;
@@ -31,5 +32,13 @@ public class CommerceObjectStorageProperties {
 
     public void setShopBucket(String shopBucket) {
         this.shopBucket = shopBucket;
+    }
+
+    public String getProductBucket() {
+        return productBucket;
+    }
+
+    public void setProductBucket(String productBucket) {
+        this.productBucket = productBucket;
     }
 }
