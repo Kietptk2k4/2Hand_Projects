@@ -10,10 +10,17 @@ import com.twohands.commerce_service.application.order.confirmorderreceived.Conf
 import com.twohands.commerce_service.application.order.confirmorderreceived.ConfirmOrderReceivedUseCase;
 import com.twohands.commerce_service.application.order.trackorderstatus.TrackOrderStatusCommand;
 import com.twohands.commerce_service.application.order.trackorderstatus.TrackOrderStatusUseCase;
+import com.twohands.commerce_service.application.order.vieworderdetail.ViewOrderDetailCommand;
+import com.twohands.commerce_service.application.order.vieworderdetail.ViewOrderDetailUseCase;
 import com.twohands.commerce_service.domain.order.ConfirmOrderReceivedResult;
 import com.twohands.commerce_service.domain.order.OrderItemTrackingLine;
 import com.twohands.commerce_service.domain.order.OrderStatusHistoryEntry;
+import com.twohands.commerce_service.domain.order.ShippingAddressSnapshot;
 import com.twohands.commerce_service.domain.order.TrackOrderStatusResult;
+import com.twohands.commerce_service.domain.order.ViewOrderDetailItem;
+import com.twohands.commerce_service.domain.order.ViewOrderDetailPaymentSummary;
+import com.twohands.commerce_service.domain.order.ViewOrderDetailResult;
+import com.twohands.commerce_service.domain.order.ViewOrderDetailShipment;
 import com.twohands.commerce_service.domain.payment.OrderPaymentTracking;
 import com.twohands.commerce_service.domain.payment.PaymentStatusHistoryEntry;
 import com.twohands.commerce_service.domain.shipment.ShipmentStatusHistoryEntry;
@@ -44,17 +51,37 @@ public class OrderController {
     private final CompleteOrderUseCase completeOrderUseCase;
     private final ConfirmOrderReceivedUseCase confirmOrderReceivedUseCase;
     private final TrackOrderStatusUseCase trackOrderStatusUseCase;
+    private final ViewOrderDetailUseCase viewOrderDetailUseCase;
 
     public OrderController(
             CancelOrderUseCase cancelOrderUseCase,
             CompleteOrderUseCase completeOrderUseCase,
             ConfirmOrderReceivedUseCase confirmOrderReceivedUseCase,
-            TrackOrderStatusUseCase trackOrderStatusUseCase
+            TrackOrderStatusUseCase trackOrderStatusUseCase,
+            ViewOrderDetailUseCase viewOrderDetailUseCase
     ) {
         this.cancelOrderUseCase = cancelOrderUseCase;
         this.completeOrderUseCase = completeOrderUseCase;
         this.confirmOrderReceivedUseCase = confirmOrderReceivedUseCase;
         this.trackOrderStatusUseCase = trackOrderStatusUseCase;
+        this.viewOrderDetailUseCase = viewOrderDetailUseCase;
+    }
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<ApiResponse<ViewOrderDetailResponse>> viewOrderDetail(
+            @PathVariable UUID orderId,
+            Authentication authentication
+    ) {
+        UUID buyerId = resolveUserId(authentication);
+        ViewOrderDetailResult result = viewOrderDetailUseCase.execute(
+                new ViewOrderDetailCommand(buyerId, orderId)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewOrderDetailUseCase.successMessage(),
+                toViewOrderDetailResponse(result)
+        ));
     }
 
     @GetMapping("/{orderId}/status")
@@ -166,6 +193,123 @@ public class OrderController {
                 result.itemsCompleted(),
                 result.paymentMarkedPaid(),
                 result.orderCompleted()
+        );
+    }
+
+    private ViewOrderDetailResponse toViewOrderDetailResponse(ViewOrderDetailResult result) {
+        return new ViewOrderDetailResponse(
+                result.orderId(),
+                result.buyerId(),
+                result.orderStatus(),
+                result.orderPaymentStatus(),
+                result.paymentMethod(),
+                result.totalAmount(),
+                result.finalAmount(),
+                result.createdAt(),
+                result.updatedAt(),
+                result.completedAt(),
+                toPaymentSummaryResponse(result.payment()),
+                result.items().stream().map(this::toOrderItemDetailResponse).toList(),
+                result.shipments().stream().map(this::toShipmentDetailResponse).toList(),
+                result.orderTimeline().stream().map(this::toOrderDetailTimelineEntry).toList()
+        );
+    }
+
+    private ViewOrderDetailResponse.PaymentSummaryResponse toPaymentSummaryResponse(
+            ViewOrderDetailPaymentSummary payment
+    ) {
+        if (payment == null) {
+            return null;
+        }
+        return new ViewOrderDetailResponse.PaymentSummaryResponse(
+                payment.paymentId(),
+                payment.status(),
+                payment.paymentMethod(),
+                payment.amount(),
+                payment.currency(),
+                payment.paidAt(),
+                payment.expiredAt(),
+                payment.checkoutUrlExpiredAt(),
+                payment.timeline().stream()
+                        .map(entry -> new ViewOrderDetailResponse.PaymentStatusTimelineEntryResponse(
+                                entry.oldStatus(),
+                                entry.newStatus(),
+                                entry.occurredAt()
+                        ))
+                        .toList()
+        );
+    }
+
+    private ViewOrderDetailResponse.OrderItemDetailResponse toOrderItemDetailResponse(ViewOrderDetailItem item) {
+        return new ViewOrderDetailResponse.OrderItemDetailResponse(
+                item.orderItemId(),
+                item.productId(),
+                item.sellerId(),
+                item.shipmentId(),
+                item.quantity(),
+                item.status(),
+                item.unitPriceSnapshot(),
+                item.finalPrice(),
+                item.skuSnapshot(),
+                item.productNameSnapshot(),
+                item.imageSnapshot(),
+                item.attributesSnapshot(),
+                item.shopNameSnapshot(),
+                item.shippingFeeAllocated(),
+                item.completedAt()
+        );
+    }
+
+    private ViewOrderDetailResponse.ShipmentDetailResponse toShipmentDetailResponse(ViewOrderDetailShipment shipment) {
+        return new ViewOrderDetailResponse.ShipmentDetailResponse(
+                shipment.shipmentId(),
+                shipment.sellerId(),
+                shipment.status(),
+                shipment.carrier(),
+                shipment.trackingNumber(),
+                shipment.shippingFee(),
+                shipment.shipmentType(),
+                shipment.estimatedDeliveryDate(),
+                shipment.shippedAt(),
+                shipment.deliveredAt(),
+                toShippingAddressResponse(shipment.shippingAddress()),
+                shipment.timeline().stream()
+                        .map(entry -> new ViewOrderDetailResponse.ShipmentStatusTimelineEntryResponse(
+                                entry.oldStatus(),
+                                entry.newStatus(),
+                                entry.rawStatus(),
+                                entry.occurredAt()
+                        ))
+                        .toList()
+        );
+    }
+
+    private ViewOrderDetailResponse.ShippingAddressSnapshotResponse toShippingAddressResponse(
+            ShippingAddressSnapshot address
+    ) {
+        if (address == null) {
+            return null;
+        }
+        return new ViewOrderDetailResponse.ShippingAddressSnapshotResponse(
+                address.receiverName(),
+                address.phone(),
+                address.provinceCode(),
+                address.districtCode(),
+                address.wardCode(),
+                address.addressDetail(),
+                address.fullAddress()
+        );
+    }
+
+    private ViewOrderDetailResponse.OrderStatusTimelineEntryResponse toOrderDetailTimelineEntry(
+            OrderStatusHistoryEntry entry
+    ) {
+        return new ViewOrderDetailResponse.OrderStatusTimelineEntryResponse(
+                entry.oldStatus(),
+                entry.newStatus(),
+                entry.changedBy(),
+                entry.note(),
+                entry.occurredAt()
         );
     }
 
