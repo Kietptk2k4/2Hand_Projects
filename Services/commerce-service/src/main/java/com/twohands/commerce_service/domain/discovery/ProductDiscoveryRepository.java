@@ -16,4 +16,13 @@ public interface ProductDiscoveryRepository {
             PageQuery pageQuery,
             Instant now
     );
+
+    long countVisibleProductsByKeyword(String likePattern, Instant now);
+
+    List<ProductCardSummary> findVisibleProductsByKeyword(
+            String likePattern,
+            ProductDiscoverySort sort,
+            PageQuery pageQuery,
+            Instant now
+    );
 }

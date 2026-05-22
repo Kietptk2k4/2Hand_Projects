@@ -43,6 +43,7 @@ public enum ErrorCode {
     PRODUCT_REMOVED("COMMERCE-409-PRODUCT-REMOVED", HttpStatus.CONFLICT, "Product has been removed"),
     INVALID_PRODUCT_STATUS("COMMERCE-409-PRODUCT-STATUS", HttpStatus.CONFLICT, "Product status does not allow this action"),
     INVALID_PAGINATION("COMMERCE-400-PAGINATION", HttpStatus.BAD_REQUEST, "Invalid pagination parameters"),
+    INVALID_SEARCH_KEYWORD("COMMERCE-400-SEARCH-KEYWORD", HttpStatus.BAD_REQUEST, "Invalid search keyword"),
     INVALID_RATING("COMMERCE-400-RATING", HttpStatus.BAD_REQUEST, "Invalid rating"),
     ORDER_ITEM_NOT_REVIEWABLE("COMMERCE-409-ORDER-ITEM-REVIEW", HttpStatus.CONFLICT, "Order item is not reviewable"),
     REVIEW_ALREADY_EXISTS("COMMERCE-409-REVIEW-EXISTS", HttpStatus.CONFLICT, "Review already exists for this order item"),

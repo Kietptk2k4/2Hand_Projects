@@ -21,7 +21,27 @@ import java.util.UUID;
 @Repository
 public class ProductDiscoveryRepositoryAdapter implements ProductDiscoveryRepository {
 
-    private static final String VISIBLE_PRODUCT_BASE = """
+    private static final String VISIBLE_PRODUCT_SELECT = """
+            SELECT p.id AS product_id,
+                   p.title,
+                   thumbnail.media_url AS thumbnail_url,
+                   p.shop_id,
+                   s.shop_name,
+                   p.category_id,
+                   p.condition,
+                   p.status::text AS product_status,
+                   active_price.price,
+                   active_price.sale_price,
+                   COALESCE(active_price.sale_price, active_price.price) AS effective_price,
+                   COALESCE(pi.stock_quantity, 0) AS stock_quantity,
+                   COALESCE(pi.low_stock_threshold, 0) AS low_stock_threshold,
+                   s.rating_avg,
+                   s.rating_count,
+                   COALESCE(ss.is_vacation, FALSE) AS shop_vacation,
+                   ss.vacation_message
+            """;
+
+    private static final String VISIBLE_PRODUCT_FROM = """
             FROM products p
             INNER JOIN seller_shops s ON s.id = p.shop_id AND s.status = 'ACTIVE'
             INNER JOIN product_categories pc ON pc.id = p.category_id AND pc.is_active = TRUE
@@ -44,7 +64,15 @@ public class ProductDiscoveryRepositoryAdapter implements ProductDiscoveryReposi
                 LIMIT 1
             ) thumbnail ON TRUE
             WHERE p.status IN ('ACTIVE', 'OUT_OF_STOCK')
-              AND p.category_id IN (:categoryIds)
+            """;
+
+    private static final String SEARCH_KEYWORD_PREDICATE = """
+              AND (
+                  p.title ILIKE :pattern ESCAPE '\\'
+                  OR COALESCE(p.description, '') ILIKE :pattern ESCAPE '\\'
+                  OR s.shop_name ILIKE :pattern ESCAPE '\\'
+                  OR pc.name ILIKE :pattern ESCAPE '\\'
+              )
             """;
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
@@ -58,10 +86,10 @@ public class ProductDiscoveryRepositoryAdapter implements ProductDiscoveryReposi
         if (categoryIds == null || categoryIds.isEmpty()) {
             return 0;
         }
-        String sql = "SELECT COUNT(DISTINCT p.id) " + VISIBLE_PRODUCT_BASE;
+        String sql = "SELECT COUNT(DISTINCT p.id) " + VISIBLE_PRODUCT_FROM + " AND p.category_id IN (:categoryIds)";
         Long count = jdbcTemplate.queryForObject(
                 sql,
-                baseParams(categoryIds, now),
+                baseParams(now).addValue("categoryIds", categoryIds),
                 Long.class
         );
         return count == null ? 0 : count;
@@ -78,40 +106,54 @@ public class ProductDiscoveryRepositoryAdapter implements ProductDiscoveryReposi
             return List.of();
         }
 
-        String sql = """
-                SELECT p.id AS product_id,
-                       p.title,
-                       thumbnail.media_url AS thumbnail_url,
-                       p.shop_id,
-                       s.shop_name,
-                       p.category_id,
-                       p.condition,
-                       p.status::text AS product_status,
-                       active_price.price,
-                       active_price.sale_price,
-                       COALESCE(active_price.sale_price, active_price.price) AS effective_price,
-                       COALESCE(pi.stock_quantity, 0) AS stock_quantity,
-                       COALESCE(pi.low_stock_threshold, 0) AS low_stock_threshold,
-                       s.rating_avg,
-                       s.rating_count,
-                       COALESCE(ss.is_vacation, FALSE) AS shop_vacation,
-                       ss.vacation_message
-                """
-                + VISIBLE_PRODUCT_BASE
+        String sql = VISIBLE_PRODUCT_SELECT
+                + VISIBLE_PRODUCT_FROM
+                + " AND p.category_id IN (:categoryIds)"
                 + " ORDER BY " + orderByClause(sort)
                 + " LIMIT :limit OFFSET :offset";
 
-        MapSqlParameterSource params = baseParams(categoryIds, now)
+        MapSqlParameterSource params = baseParams(now)
+                .addValue("categoryIds", categoryIds)
                 .addValue("limit", pageQuery.limit())
                 .addValue("offset", pageQuery.offset());
 
         return jdbcTemplate.query(sql, params, this::mapProductCard);
     }
 
-    private MapSqlParameterSource baseParams(List<UUID> categoryIds, Instant now) {
-        return new MapSqlParameterSource()
-                .addValue("categoryIds", categoryIds)
-                .addValue("now", Timestamp.from(now));
+    @Override
+    public long countVisibleProductsByKeyword(String likePattern, Instant now) {
+        String sql = "SELECT COUNT(DISTINCT p.id) " + VISIBLE_PRODUCT_FROM + SEARCH_KEYWORD_PREDICATE;
+        Long count = jdbcTemplate.queryForObject(
+                sql,
+                baseParams(now).addValue("pattern", likePattern),
+                Long.class
+        );
+        return count == null ? 0 : count;
+    }
+
+    @Override
+    public List<ProductCardSummary> findVisibleProductsByKeyword(
+            String likePattern,
+            ProductDiscoverySort sort,
+            PageQuery pageQuery,
+            Instant now
+    ) {
+        String sql = VISIBLE_PRODUCT_SELECT
+                + VISIBLE_PRODUCT_FROM
+                + SEARCH_KEYWORD_PREDICATE
+                + " ORDER BY " + orderByClause(sort)
+                + " LIMIT :limit OFFSET :offset";
+
+        MapSqlParameterSource params = baseParams(now)
+                .addValue("pattern", likePattern)
+                .addValue("limit", pageQuery.limit())
+                .addValue("offset", pageQuery.offset());
+
+        return jdbcTemplate.query(sql, params, this::mapProductCard);
+    }
+
+    private MapSqlParameterSource baseParams(Instant now) {
+        return new MapSqlParameterSource().addValue("now", Timestamp.from(now));
     }
 
     private String orderByClause(ProductDiscoverySort sort) {
