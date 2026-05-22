@@ -13,8 +13,12 @@ import com.twohands.commerce_service.application.product.createproduct.CreatePro
 import com.twohands.commerce_service.application.product.createproduct.CreateProductUseCase;
 import com.twohands.commerce_service.application.product.updateproduct.UpdateProductCommand;
 import com.twohands.commerce_service.application.product.updateproduct.UpdateProductUseCase;
+import com.twohands.commerce_service.application.product.updateproductattributes.UpdateProductAttributesCommand;
+import com.twohands.commerce_service.application.product.updateproductattributes.UpdateProductAttributesUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.product.CreateProductResult;
+import com.twohands.commerce_service.domain.product.ProductAttributeItem;
+import com.twohands.commerce_service.domain.product.UpdateProductAttributesResult;
 import com.twohands.commerce_service.domain.product.UpdateProductResult;
 import jakarta.validation.Valid;
 import com.twohands.commerce_service.exception.AppException;
@@ -26,6 +30,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,19 +46,22 @@ public class SellerProductController {
     private final PauseProductUseCase pauseProductUseCase;
     private final ArchiveProductUseCase archiveProductUseCase;
     private final UpdateProductUseCase updateProductUseCase;
+    private final UpdateProductAttributesUseCase updateProductAttributesUseCase;
 
     public SellerProductController(
             CreateProductUseCase createProductUseCase,
             PublishProductUseCase publishProductUseCase,
             PauseProductUseCase pauseProductUseCase,
             ArchiveProductUseCase archiveProductUseCase,
-            UpdateProductUseCase updateProductUseCase
+            UpdateProductUseCase updateProductUseCase,
+            UpdateProductAttributesUseCase updateProductAttributesUseCase
     ) {
         this.createProductUseCase = createProductUseCase;
         this.publishProductUseCase = publishProductUseCase;
         this.pauseProductUseCase = pauseProductUseCase;
         this.archiveProductUseCase = archiveProductUseCase;
         this.updateProductUseCase = updateProductUseCase;
+        this.updateProductAttributesUseCase = updateProductAttributesUseCase;
     }
 
     @PostMapping
@@ -77,6 +85,33 @@ public class SellerProductController {
                 HttpStatus.OK.value(),
                 createProductUseCase.successMessage(),
                 toCreateResponse(result)
+        ));
+    }
+
+    @PutMapping("/{productId}/attributes")
+    public ResponseEntity<ApiResponse<UpdateProductAttributesResponse>> updateProductAttributes(
+            @PathVariable UUID productId,
+            @RequestBody @Valid UpdateProductAttributesRequest request,
+            Authentication authentication
+    ) {
+        UUID sellerId = resolveUserId(authentication);
+        UpdateProductAttributesResult result = updateProductAttributesUseCase.execute(
+                new UpdateProductAttributesCommand(
+                        sellerId,
+                        productId,
+                        request.attributes().stream()
+                                .map(item -> new ProductAttributeItem(
+                                        item.attributeName(),
+                                        item.attributeValue()
+                                ))
+                                .toList()
+                )
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                updateProductAttributesUseCase.successMessage(),
+                toAttributesResponse(result)
         ));
     }
 
@@ -156,6 +191,21 @@ public class SellerProductController {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         return principal.userId();
+    }
+
+    private UpdateProductAttributesResponse toAttributesResponse(UpdateProductAttributesResult result) {
+        return new UpdateProductAttributesResponse(
+                result.productId(),
+                result.sellerId(),
+                result.shopId(),
+                result.status(),
+                result.attributes().stream()
+                        .map(item -> new UpdateProductAttributesResponse.AttributeItemResponse(
+                                item.attributeName(),
+                                item.attributeValue()
+                        ))
+                        .toList()
+        );
     }
 
     private UpdateProductResponse toUpdateResponse(UpdateProductResult result) {
