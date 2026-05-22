@@ -8,6 +8,9 @@ import com.twohands.commerce_service.application.cart.createcart.CreateCartComma
 import com.twohands.commerce_service.application.cart.createcart.CreateCartItemResult;
 import com.twohands.commerce_service.application.cart.createcart.CreateCartResult;
 import com.twohands.commerce_service.application.cart.createcart.CreateCartUseCase;
+import com.twohands.commerce_service.application.cart.removecartitem.RemoveCartItemCommand;
+import com.twohands.commerce_service.application.cart.removecartitem.RemoveCartItemResult;
+import com.twohands.commerce_service.application.cart.removecartitem.RemoveCartItemUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
@@ -16,6 +19,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,10 +34,16 @@ public class CartController {
 
     private final CreateCartUseCase createCartUseCase;
     private final AddProductToCartUseCase addProductToCartUseCase;
+    private final RemoveCartItemUseCase removeCartItemUseCase;
 
-    public CartController(CreateCartUseCase createCartUseCase, AddProductToCartUseCase addProductToCartUseCase) {
+    public CartController(
+            CreateCartUseCase createCartUseCase,
+            AddProductToCartUseCase addProductToCartUseCase,
+            RemoveCartItemUseCase removeCartItemUseCase
+    ) {
         this.createCartUseCase = createCartUseCase;
         this.addProductToCartUseCase = addProductToCartUseCase;
+        this.removeCartItemUseCase = removeCartItemUseCase;
     }
 
     @PostMapping
@@ -43,6 +54,21 @@ public class CartController {
                 HttpStatus.OK.value(),
                 createCartUseCase.successMessage(result.newlyCreated()),
                 toCreateCartResponse(result)
+        ));
+    }
+
+    @DeleteMapping("/items/{cartItemId}")
+    public ResponseEntity<ApiResponse<RemoveCartItemResponse>> removeCartItem(
+            @PathVariable UUID cartItemId,
+            Authentication authentication
+    ) {
+        UUID userId = resolveUserId(authentication);
+        RemoveCartItemResult result = removeCartItemUseCase.execute(new RemoveCartItemCommand(userId, cartItemId));
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                removeCartItemUseCase.successMessage(result.alreadyRemoved()),
+                toRemoveResponse(result)
         ));
     }
 
@@ -87,6 +113,18 @@ public class CartController {
                 item.sellerId(),
                 item.quantity(),
                 item.status()
+        );
+    }
+
+    private RemoveCartItemResponse toRemoveResponse(RemoveCartItemResult result) {
+        return new RemoveCartItemResponse(
+                result.cartId(),
+                result.cartItemId(),
+                result.productId(),
+                result.status(),
+                result.removedAt(),
+                new CartSummaryResponse(result.activeItemCount()),
+                result.alreadyRemoved()
         );
     }
 

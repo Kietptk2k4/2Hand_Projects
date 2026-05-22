@@ -25,4 +25,12 @@ public record CartItem(
     ) {
         return new CartItem(id, cartId, productId, sellerId, quantity, status, createdAt, updatedAt);
     }
+
+    public CartItem withStatus(CartItemStatus status, Instant updatedAt) {
+        return new CartItem(id, cartId, productId, sellerId, quantity, status, createdAt, updatedAt);
+    }
+
+    public boolean isRemoved() {
+        return status == CartItemStatus.REMOVED;
+    }
 }

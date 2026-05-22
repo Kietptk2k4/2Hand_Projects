@@ -10,6 +10,8 @@ public interface CartItemRepository {
 
     Optional<CartItem> findByCartIdAndProductId(UUID cartId, UUID productId);
 
+    Optional<CartItem> findByIdAndCartId(UUID cartItemId, UUID cartId);
+
     List<CartItem> findByCartIdExcludingRemoved(UUID cartId);
 
     List<CartItem> findByCartIdAndIds(UUID cartId, Collection<UUID> cartItemIds);
