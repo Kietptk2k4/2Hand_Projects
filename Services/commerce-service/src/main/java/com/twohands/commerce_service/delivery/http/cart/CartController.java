@@ -11,6 +11,9 @@ import com.twohands.commerce_service.application.cart.createcart.CreateCartUseCa
 import com.twohands.commerce_service.application.cart.removecartitem.RemoveCartItemCommand;
 import com.twohands.commerce_service.application.cart.removecartitem.RemoveCartItemResult;
 import com.twohands.commerce_service.application.cart.removecartitem.RemoveCartItemUseCase;
+import com.twohands.commerce_service.application.cart.updatecartitemquantity.UpdateCartItemQuantityCommand;
+import com.twohands.commerce_service.application.cart.updatecartitemquantity.UpdateCartItemQuantityResult;
+import com.twohands.commerce_service.application.cart.updatecartitemquantity.UpdateCartItemQuantityUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
@@ -20,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,15 +39,18 @@ public class CartController {
     private final CreateCartUseCase createCartUseCase;
     private final AddProductToCartUseCase addProductToCartUseCase;
     private final RemoveCartItemUseCase removeCartItemUseCase;
+    private final UpdateCartItemQuantityUseCase updateCartItemQuantityUseCase;
 
     public CartController(
             CreateCartUseCase createCartUseCase,
             AddProductToCartUseCase addProductToCartUseCase,
-            RemoveCartItemUseCase removeCartItemUseCase
+            RemoveCartItemUseCase removeCartItemUseCase,
+            UpdateCartItemQuantityUseCase updateCartItemQuantityUseCase
     ) {
         this.createCartUseCase = createCartUseCase;
         this.addProductToCartUseCase = addProductToCartUseCase;
         this.removeCartItemUseCase = removeCartItemUseCase;
+        this.updateCartItemQuantityUseCase = updateCartItemQuantityUseCase;
     }
 
     @PostMapping
@@ -54,6 +61,24 @@ public class CartController {
                 HttpStatus.OK.value(),
                 createCartUseCase.successMessage(result.newlyCreated()),
                 toCreateCartResponse(result)
+        ));
+    }
+
+    @PatchMapping("/items/{cartItemId}")
+    public ResponseEntity<ApiResponse<UpdateCartItemQuantityResponse>> updateCartItemQuantity(
+            @PathVariable UUID cartItemId,
+            @RequestBody @Valid UpdateCartItemQuantityRequest request,
+            Authentication authentication
+    ) {
+        UUID userId = resolveUserId(authentication);
+        UpdateCartItemQuantityResult result = updateCartItemQuantityUseCase.execute(
+                new UpdateCartItemQuantityCommand(userId, cartItemId, request.quantity())
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                updateCartItemQuantityUseCase.successMessage(),
+                toUpdateQuantityResponse(result)
         ));
     }
 
@@ -125,6 +150,30 @@ public class CartController {
                 result.removedAt(),
                 new CartSummaryResponse(result.activeItemCount()),
                 result.alreadyRemoved()
+        );
+    }
+
+    private UpdateCartItemQuantityResponse toUpdateQuantityResponse(UpdateCartItemQuantityResult result) {
+        ProductSummaryResult product = result.product();
+        return new UpdateCartItemQuantityResponse(
+                result.cartId(),
+                result.cartItemId(),
+                result.productId(),
+                result.quantity(),
+                result.status(),
+                new ProductSummaryResponse(
+                        product.productId(),
+                        product.sellerId(),
+                        product.shopId(),
+                        product.productName(),
+                        product.imageUrl(),
+                        product.price(),
+                        product.salePrice(),
+                        product.effectivePrice(),
+                        product.inStock(),
+                        product.availableQuantity()
+                ),
+                new CartSummaryResponse(result.activeItemCount())
         );
     }
 

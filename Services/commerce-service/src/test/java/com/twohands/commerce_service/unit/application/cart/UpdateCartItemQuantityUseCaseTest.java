@@ -1,0 +1,159 @@
+package com.twohands.commerce_service.unit.application.cart;
+
+import com.twohands.commerce_service.application.cart.updatecartitemquantity.UpdateCartItemQuantityCommand;
+import com.twohands.commerce_service.application.cart.updatecartitemquantity.UpdateCartItemQuantityResult;
+import com.twohands.commerce_service.application.cart.updatecartitemquantity.UpdateCartItemQuantityUseCase;
+import com.twohands.commerce_service.domain.cart.Cart;
+import com.twohands.commerce_service.domain.cart.CartItem;
+import com.twohands.commerce_service.domain.cart.CartItemRepository;
+import com.twohands.commerce_service.domain.cart.CartItemStatus;
+import com.twohands.commerce_service.domain.cart.CartRepository;
+import com.twohands.commerce_service.domain.catalog.ActiveProductPrice;
+import com.twohands.commerce_service.domain.catalog.ProductPurchaseContext;
+import com.twohands.commerce_service.domain.catalog.ProductPurchaseReadRepository;
+import com.twohands.commerce_service.domain.product.ProductStatus;
+import com.twohands.commerce_service.domain.shop.ShopStatus;
+import com.twohands.commerce_service.exception.AppException;
+import com.twohands.commerce_service.exception.ErrorCode;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class UpdateCartItemQuantityUseCaseTest {
+
+    @Mock
+    private CartRepository cartRepository;
+
+    @Mock
+    private CartItemRepository cartItemRepository;
+
+    @Mock
+    private ProductPurchaseReadRepository productPurchaseReadRepository;
+
+    private UpdateCartItemQuantityUseCase useCase;
+
+    private final UUID userId = UUID.randomUUID();
+    private final UUID cartId = UUID.randomUUID();
+    private final UUID cartItemId = UUID.randomUUID();
+    private final UUID productId = UUID.randomUUID();
+    private final UUID sellerId = UUID.randomUUID();
+    private final UUID shopId = UUID.randomUUID();
+    private final Instant now = Instant.parse("2026-05-21T16:00:00Z");
+
+    @BeforeEach
+    void setUp() {
+        useCase = new UpdateCartItemQuantityUseCase(
+                cartRepository,
+                cartItemRepository,
+                productPurchaseReadRepository,
+                Clock.fixed(now, ZoneOffset.UTC)
+        );
+    }
+
+    @Test
+    void shouldUpdateQuantityForActiveCartItem() {
+        stubCartAndItem(CartItemStatus.ACTIVE, 2);
+        when(productPurchaseReadRepository.findByProductId(productId)).thenReturn(Optional.of(purchasableContext(5)));
+        when(cartItemRepository.save(any(CartItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(cartItemRepository.findByCartIdExcludingRemoved(cartId)).thenReturn(List.of());
+
+        UpdateCartItemQuantityResult result = useCase.execute(
+                new UpdateCartItemQuantityCommand(userId, cartItemId, 4)
+        );
+
+        assertThat(result.quantity()).isEqualTo(4);
+        assertThat(result.status()).isEqualTo(CartItemStatus.ACTIVE);
+        assertThat(result.product().inStock()).isTrue();
+
+        ArgumentCaptor<CartItem> itemCaptor = ArgumentCaptor.forClass(CartItem.class);
+        verify(cartItemRepository).save(itemCaptor.capture());
+        assertThat(itemCaptor.getValue().quantity()).isEqualTo(4);
+        verify(cartRepository).updateTimestamp(cartId, now);
+    }
+
+    @Test
+    void shouldRejectQuantityAboveStock() {
+        stubCartAndItem(CartItemStatus.ACTIVE, 1);
+        when(productPurchaseReadRepository.findByProductId(productId)).thenReturn(Optional.of(purchasableContext(3)));
+
+        assertThatThrownBy(() -> useCase.execute(new UpdateCartItemQuantityCommand(userId, cartItemId, 5)))
+                .isInstanceOf(AppException.class)
+                .extracting(ex -> ((AppException) ex).getErrorCode())
+                .isEqualTo(ErrorCode.OUT_OF_STOCK);
+    }
+
+    @Test
+    void shouldRejectRemovedCartItem() {
+        stubCartAndItem(CartItemStatus.REMOVED, 1);
+
+        assertThatThrownBy(() -> useCase.execute(new UpdateCartItemQuantityCommand(userId, cartItemId, 2)))
+                .isInstanceOf(AppException.class)
+                .extracting(ex -> ((AppException) ex).getErrorCode())
+                .isEqualTo(ErrorCode.INVALID_CART_ITEM);
+    }
+
+    @Test
+    void shouldRejectInvalidQuantity() {
+        assertThatThrownBy(() -> useCase.execute(new UpdateCartItemQuantityCommand(userId, cartItemId, 0)))
+                .isInstanceOf(AppException.class)
+                .extracting(ex -> ((AppException) ex).getErrorCode())
+                .isEqualTo(ErrorCode.VALIDATION_ERROR);
+    }
+
+    @Test
+    void shouldRejectWhenCartItemNotOwned() {
+        when(cartRepository.findByUserId(userId)).thenReturn(Optional.of(new Cart(cartId, userId, now, now)));
+        when(cartItemRepository.findByIdAndCartId(cartItemId, cartId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> useCase.execute(new UpdateCartItemQuantityCommand(userId, cartItemId, 2)))
+                .isInstanceOf(AppException.class)
+                .extracting(ex -> ((AppException) ex).getErrorCode())
+                .isEqualTo(ErrorCode.CART_ITEM_NOT_FOUND);
+    }
+
+    private void stubCartAndItem(CartItemStatus status, int quantity) {
+        when(cartRepository.findByUserId(userId)).thenReturn(Optional.of(new Cart(cartId, userId, now, now)));
+        when(cartItemRepository.findByIdAndCartId(cartItemId, cartId)).thenReturn(Optional.of(
+                new CartItem(cartItemId, cartId, productId, sellerId, quantity, status, now, now)
+        ));
+    }
+
+    private ProductPurchaseContext purchasableContext(int stockQuantity) {
+        return new ProductPurchaseContext(
+                productId,
+                sellerId,
+                shopId,
+                "Phone",
+                ProductStatus.ACTIVE,
+                ShopStatus.ACTIVE,
+                true,
+                500,
+                stockQuantity,
+                new ActiveProductPrice(
+                        new BigDecimal("1000000"),
+                        new BigDecimal("900000"),
+                        new BigDecimal("900000")
+                ),
+                "https://cdn.example.com/p.jpg"
+        );
+    }
+}
