@@ -12,6 +12,8 @@ import com.twohands.commerce_service.application.order.trackorderstatus.TrackOrd
 import com.twohands.commerce_service.application.order.trackorderstatus.TrackOrderStatusUseCase;
 import com.twohands.commerce_service.application.order.vieworderdetail.ViewOrderDetailCommand;
 import com.twohands.commerce_service.application.order.vieworderdetail.ViewOrderDetailUseCase;
+import com.twohands.commerce_service.application.order.vieworderlist.ViewOrderListCommand;
+import com.twohands.commerce_service.application.order.vieworderlist.ViewOrderListUseCase;
 import com.twohands.commerce_service.domain.order.ConfirmOrderReceivedResult;
 import com.twohands.commerce_service.domain.order.OrderItemTrackingLine;
 import com.twohands.commerce_service.domain.order.OrderStatusHistoryEntry;
@@ -20,7 +22,11 @@ import com.twohands.commerce_service.domain.order.TrackOrderStatusResult;
 import com.twohands.commerce_service.domain.order.ViewOrderDetailItem;
 import com.twohands.commerce_service.domain.order.ViewOrderDetailPaymentSummary;
 import com.twohands.commerce_service.domain.order.ViewOrderDetailResult;
+import com.twohands.commerce_service.domain.order.OrderListEntry;
+import com.twohands.commerce_service.domain.order.OrderListPaymentSummary;
 import com.twohands.commerce_service.domain.order.ViewOrderDetailShipment;
+import com.twohands.commerce_service.domain.order.ViewOrderListResult;
+import com.twohands.commerce_service.delivery.http.catalog.PageMetaResponse;
 import com.twohands.commerce_service.domain.payment.OrderPaymentTracking;
 import com.twohands.commerce_service.domain.payment.PaymentStatusHistoryEntry;
 import com.twohands.commerce_service.domain.shipment.ShipmentStatusHistoryEntry;
@@ -37,6 +43,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -52,19 +59,41 @@ public class OrderController {
     private final ConfirmOrderReceivedUseCase confirmOrderReceivedUseCase;
     private final TrackOrderStatusUseCase trackOrderStatusUseCase;
     private final ViewOrderDetailUseCase viewOrderDetailUseCase;
+    private final ViewOrderListUseCase viewOrderListUseCase;
 
     public OrderController(
             CancelOrderUseCase cancelOrderUseCase,
             CompleteOrderUseCase completeOrderUseCase,
             ConfirmOrderReceivedUseCase confirmOrderReceivedUseCase,
             TrackOrderStatusUseCase trackOrderStatusUseCase,
-            ViewOrderDetailUseCase viewOrderDetailUseCase
+            ViewOrderDetailUseCase viewOrderDetailUseCase,
+            ViewOrderListUseCase viewOrderListUseCase
     ) {
         this.cancelOrderUseCase = cancelOrderUseCase;
         this.completeOrderUseCase = completeOrderUseCase;
         this.confirmOrderReceivedUseCase = confirmOrderReceivedUseCase;
         this.trackOrderStatusUseCase = trackOrderStatusUseCase;
         this.viewOrderDetailUseCase = viewOrderDetailUseCase;
+        this.viewOrderListUseCase = viewOrderListUseCase;
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<ViewOrderListResponse>> viewOrderList(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) String status,
+            Authentication authentication
+    ) {
+        UUID buyerId = resolveUserId(authentication);
+        ViewOrderListResult result = viewOrderListUseCase.execute(
+                new ViewOrderListCommand(buyerId, page, limit, status)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewOrderListUseCase.successMessage(),
+                toViewOrderListResponse(result)
+        ));
     }
 
     @GetMapping("/{orderId}")
@@ -193,6 +222,57 @@ public class OrderController {
                 result.itemsCompleted(),
                 result.paymentMarkedPaid(),
                 result.orderCompleted()
+        );
+    }
+
+    private ViewOrderListResponse toViewOrderListResponse(ViewOrderListResult result) {
+        var pagination = result.pagination();
+        return new ViewOrderListResponse(
+                result.orders().stream().map(this::toOrderListEntryResponse).toList(),
+                new PageMetaResponse(
+                        pagination.page(),
+                        pagination.limit(),
+                        pagination.totalItems(),
+                        pagination.totalPages(),
+                        pagination.hasNext()
+                )
+        );
+    }
+
+    private ViewOrderListResponse.OrderListEntryResponse toOrderListEntryResponse(OrderListEntry entry) {
+        return new ViewOrderListResponse.OrderListEntryResponse(
+                entry.orderId(),
+                entry.orderStatus(),
+                entry.orderPaymentStatus(),
+                entry.paymentMethod(),
+                entry.totalAmount(),
+                entry.finalAmount(),
+                entry.createdAt(),
+                entry.updatedAt(),
+                entry.completedAt(),
+                entry.itemCount(),
+                entry.previewProductName(),
+                entry.previewImageUrl(),
+                toOrderListPaymentResponse(entry.payment()),
+                new ViewOrderListResponse.ShipmentSummaryResponse(
+                        entry.shipmentSummary().shipmentCount(),
+                        entry.shipmentSummary().statuses()
+                )
+        );
+    }
+
+    private ViewOrderListResponse.PaymentSummaryResponse toOrderListPaymentResponse(
+            OrderListPaymentSummary payment
+    ) {
+        if (payment == null) {
+            return null;
+        }
+        return new ViewOrderListResponse.PaymentSummaryResponse(
+                payment.paymentId(),
+                payment.status(),
+                payment.paymentMethod(),
+                payment.amount(),
+                payment.currency()
         );
     }
 
