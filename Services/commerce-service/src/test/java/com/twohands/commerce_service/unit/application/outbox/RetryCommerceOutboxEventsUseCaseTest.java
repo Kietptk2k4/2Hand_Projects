@@ -96,4 +96,57 @@ class RetryCommerceOutboxEventsUseCaseTest {
         assertThat(errorCaptor.getValue()).contains("broker unavailable");
         verify(outboxEventRepository, never()).markPublished(any(), any());
     }
+
+    @Test
+    void shouldRetryStalePendingEvent() {
+        UUID eventId = UUID.randomUUID();
+        UUID aggregateId = UUID.randomUUID();
+        OutboxEvent event = new OutboxEvent(
+                eventId,
+                "COMMERCE_SHIPMENT_CREATED",
+                "shipment:" + aggregateId + ":created",
+                aggregateId,
+                "commerce",
+                "{}",
+                OutboxStatus.PROCESSING,
+                0,
+                Instant.parse("2026-05-19T08:00:00Z"),
+                null,
+                null
+        );
+        when(outboxEventRepository.claimRetryCandidates(eq(50), eq(5), any(Instant.class)))
+                .thenReturn(List.of(event));
+
+        int processed = useCase.execute();
+
+        assertThat(processed).isEqualTo(1);
+        verify(outboxEventPublisher).publish(event);
+        verify(outboxEventRepository).markPublished(eq(eventId), any(Instant.class));
+    }
+
+    @Test
+    void shouldClearLastErrorOnSuccessfulRetry() {
+        UUID eventId = UUID.randomUUID();
+        UUID aggregateId = UUID.randomUUID();
+        OutboxEvent event = new OutboxEvent(
+                eventId,
+                "COMMERCE_REVIEW_CREATED",
+                "review:" + aggregateId + ":created",
+                aggregateId,
+                "commerce",
+                "{}",
+                OutboxStatus.PROCESSING,
+                3,
+                Instant.now().minusSeconds(900),
+                null,
+                "stale broker error"
+        );
+        when(outboxEventRepository.claimRetryCandidates(eq(50), eq(5), any(Instant.class)))
+                .thenReturn(List.of(event));
+
+        useCase.execute();
+
+        verify(outboxEventRepository).markPublished(eq(eventId), any(Instant.class));
+        verify(outboxEventRepository, never()).markFailed(any(), any());
+    }
 }

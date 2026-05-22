@@ -67,7 +67,7 @@ Sau publish thành công, bản ghi `outbox_events` có `status = PUBLISHED`, `p
 ### State machine
 
 `PENDING` → `PROCESSING` → `PUBLISHED` (success)  
-`PENDING` → `PROCESSING` → `FAILED` (error, retry qua `RetryCommerceOutboxEventsUseCase`)
+`PENDING` → `PROCESSING` → `FAILED` (error, retry qua `RetryCommerceOutboxEventsUseCase` — xem `RetryCommerceOutboxEvents-api-and-behavior.md`)
 
 ## 6. Topic mapping (MVP)
 
