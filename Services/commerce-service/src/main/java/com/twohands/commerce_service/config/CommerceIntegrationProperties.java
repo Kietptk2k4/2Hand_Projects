@@ -22,6 +22,7 @@ public class CommerceIntegrationProperties {
         private String baseUrl = "https://dev-online-gateway.ghn.vn";
         private String token;
         private String shopId;
+        private String webhookSecret;
 
         public boolean isEnabled() {
             return enabled;
@@ -61,6 +62,18 @@ public class CommerceIntegrationProperties {
 
         public void setShopId(String shopId) {
             this.shopId = shopId;
+        }
+
+        public String getWebhookSecret() {
+            return webhookSecret;
+        }
+
+        public void setWebhookSecret(String webhookSecret) {
+            this.webhookSecret = webhookSecret;
+        }
+
+        public boolean isWebhookVerificationEnabled() {
+            return webhookSecret != null && !webhookSecret.isBlank();
         }
 
         public boolean isLiveClientConfigured() {
