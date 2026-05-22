@@ -22,6 +22,7 @@ public class CommerceOutboxTopicResolver {
             Map.entry("COMMERCE_INVENTORY_RESERVED", "commerce.inventory.reserved"),
             Map.entry("COMMERCE_INVENTORY_RELEASED", "commerce.inventory.released"),
             Map.entry("COMMERCE_PRODUCT_PUBLISHED", "commerce.product.published"),
+            Map.entry("COMMERCE_PRODUCT_PAUSED", "commerce.product.paused"),
             Map.entry("COMMERCE_PRODUCT_ARCHIVED", "commerce.product.archived"),
             Map.entry("COMMERCE_PRODUCT_REMOVED", "commerce.product.removed"),
             Map.entry("COMMERCE_REVIEW_CREATED", "commerce.review.created"),

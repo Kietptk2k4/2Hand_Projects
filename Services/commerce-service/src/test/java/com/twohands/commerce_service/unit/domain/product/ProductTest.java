@@ -27,6 +27,15 @@ class ProductTest {
         assertThat(productWithStatus(ProductStatus.REMOVED).canArchive()).isFalse();
     }
 
+    @Test
+    void shouldAllowPauseFromActiveAndOutOfStockOnly() {
+        assertThat(productWithStatus(ProductStatus.ACTIVE).canPause()).isTrue();
+        assertThat(productWithStatus(ProductStatus.OUT_OF_STOCK).canPause()).isTrue();
+        assertThat(productWithStatus(ProductStatus.DRAFT).canPause()).isFalse();
+        assertThat(productWithStatus(ProductStatus.PAUSED).canPause()).isFalse();
+        assertThat(productWithStatus(ProductStatus.ARCHIVED).canPause()).isFalse();
+    }
+
     private Product productWithStatus(ProductStatus status) {
         return new Product(
                 UUID.randomUUID(),

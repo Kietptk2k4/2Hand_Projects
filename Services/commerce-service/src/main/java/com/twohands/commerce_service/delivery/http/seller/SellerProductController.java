@@ -3,6 +3,9 @@ package com.twohands.commerce_service.delivery.http.seller;
 import com.twohands.commerce_service.application.product.archiveproduct.ArchiveProductCommand;
 import com.twohands.commerce_service.application.product.archiveproduct.ArchiveProductResult;
 import com.twohands.commerce_service.application.product.archiveproduct.ArchiveProductUseCase;
+import com.twohands.commerce_service.application.product.pauseproduct.PauseProductCommand;
+import com.twohands.commerce_service.application.product.pauseproduct.PauseProductResult;
+import com.twohands.commerce_service.application.product.pauseproduct.PauseProductUseCase;
 import com.twohands.commerce_service.application.product.createproduct.CreateProductCommand;
 import com.twohands.commerce_service.application.product.createproduct.CreateProductUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
@@ -27,13 +30,16 @@ import java.util.UUID;
 public class SellerProductController {
 
     private final CreateProductUseCase createProductUseCase;
+    private final PauseProductUseCase pauseProductUseCase;
     private final ArchiveProductUseCase archiveProductUseCase;
 
     public SellerProductController(
             CreateProductUseCase createProductUseCase,
+            PauseProductUseCase pauseProductUseCase,
             ArchiveProductUseCase archiveProductUseCase
     ) {
         this.createProductUseCase = createProductUseCase;
+        this.pauseProductUseCase = pauseProductUseCase;
         this.archiveProductUseCase = archiveProductUseCase;
     }
 
@@ -58,6 +64,21 @@ public class SellerProductController {
                 HttpStatus.OK.value(),
                 createProductUseCase.successMessage(),
                 toCreateResponse(result)
+        ));
+    }
+
+    @PostMapping("/{productId}/pause")
+    public ResponseEntity<ApiResponse<PauseProductResponse>> pauseProduct(
+            @PathVariable UUID productId,
+            Authentication authentication
+    ) {
+        UUID sellerId = resolveUserId(authentication);
+        PauseProductResult result = pauseProductUseCase.execute(new PauseProductCommand(sellerId, productId));
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                pauseProductUseCase.successMessage(result.alreadyPaused()),
+                toPauseResponse(result)
         ));
     }
 
@@ -98,6 +119,17 @@ public class SellerProductController {
                 result.weightGram(),
                 result.createdAt(),
                 result.updatedAt()
+        );
+    }
+
+    private PauseProductResponse toPauseResponse(PauseProductResult result) {
+        return new PauseProductResponse(
+                result.productId(),
+                result.shopId(),
+                result.status(),
+                result.pausedAt(),
+                result.cartItemsInvalidated(),
+                result.alreadyPaused()
         );
     }
 

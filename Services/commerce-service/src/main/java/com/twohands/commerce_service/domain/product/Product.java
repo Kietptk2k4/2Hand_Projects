@@ -20,6 +20,11 @@ public record Product(
             ProductStatus.OUT_OF_STOCK
     );
 
+    private static final Set<ProductStatus> PAUSABLE_STATUSES = EnumSet.of(
+            ProductStatus.ACTIVE,
+            ProductStatus.OUT_OF_STOCK
+    );
+
     public boolean isOwnedBy(UUID sellerId) {
         return this.sellerId.equals(sellerId);
     }
@@ -28,12 +33,20 @@ public record Product(
         return status == ProductStatus.ARCHIVED;
     }
 
+    public boolean isPaused() {
+        return status == ProductStatus.PAUSED;
+    }
+
     public boolean isRemoved() {
         return status == ProductStatus.REMOVED;
     }
 
     public boolean canArchive() {
         return ARCHIVABLE_STATUSES.contains(status);
+    }
+
+    public boolean canPause() {
+        return PAUSABLE_STATUSES.contains(status);
     }
 
     public Product withStatus(ProductStatus newStatus, Instant updatedAt) {
