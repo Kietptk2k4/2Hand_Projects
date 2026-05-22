@@ -2,25 +2,53 @@ package com.twohands.commerce_service.delivery.http.catalog;
 
 import com.twohands.commerce_service.application.product.searchproduct.SearchProductCommand;
 import com.twohands.commerce_service.application.product.searchproduct.SearchProductUseCase;
+import com.twohands.commerce_service.application.product.viewproductdetail.ViewProductDetailCommand;
+import com.twohands.commerce_service.application.product.viewproductdetail.ViewProductDetailUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.common.pagination.PageMeta;
 import com.twohands.commerce_service.domain.discovery.ProductCardSummary;
 import com.twohands.commerce_service.domain.discovery.SearchProductResult;
+import com.twohands.commerce_service.domain.product.ViewProductDetailAttributeItem;
+import com.twohands.commerce_service.domain.product.ViewProductDetailMediaItem;
+import com.twohands.commerce_service.domain.product.ViewProductDetailResult;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/commerce/api/v1/products")
 public class ProductSearchController {
 
     private final SearchProductUseCase searchProductUseCase;
+    private final ViewProductDetailUseCase viewProductDetailUseCase;
 
-    public ProductSearchController(SearchProductUseCase searchProductUseCase) {
+    public ProductSearchController(
+            SearchProductUseCase searchProductUseCase,
+            ViewProductDetailUseCase viewProductDetailUseCase
+    ) {
         this.searchProductUseCase = searchProductUseCase;
+        this.viewProductDetailUseCase = viewProductDetailUseCase;
+    }
+
+    @GetMapping("/{productId}")
+    public ResponseEntity<ApiResponse<ViewProductDetailResponse>> viewProductDetail(
+            @PathVariable UUID productId
+    ) {
+        ViewProductDetailResult result = viewProductDetailUseCase.execute(
+                new ViewProductDetailCommand(productId)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewProductDetailUseCase.successMessage(),
+                toDetailResponse(result)
+        ));
     }
 
     @GetMapping("/search")
@@ -53,6 +81,59 @@ public class ProductSearchController {
                         pagination.totalPages(),
                         pagination.hasNext()
                 )
+        );
+    }
+
+    private ViewProductDetailResponse toDetailResponse(ViewProductDetailResult result) {
+        return new ViewProductDetailResponse(
+                result.productId(),
+                result.title(),
+                result.description(),
+                result.condition(),
+                result.weightGram(),
+                result.status(),
+                new ViewProductDetailCategoryResponse(
+                        result.category().categoryId(),
+                        result.category().name(),
+                        result.category().slug()
+                ),
+                new ViewProductDetailShopResponse(
+                        result.shop().shopId(),
+                        result.shop().shopName(),
+                        result.shop().avatarUrl(),
+                        result.shop().coverUrl()
+                ),
+                result.media().stream().map(this::toMediaResponse).toList(),
+                result.attributes().stream().map(this::toAttributeResponse).toList(),
+                result.price(),
+                result.salePrice(),
+                result.effectivePrice(),
+                new ViewProductDetailInventorySummaryResponse(
+                        result.inventorySummary().stockQuantity(),
+                        result.inventorySummary().lowStockThreshold(),
+                        result.inventorySummary().inStock(),
+                        result.inventorySummary().lowStock()
+                ),
+                result.ratingAvg(),
+                result.ratingCount(),
+                result.shopVacation(),
+                result.vacationMessage()
+        );
+    }
+
+    private ViewProductDetailMediaResponse toMediaResponse(ViewProductDetailMediaItem item) {
+        return new ViewProductDetailMediaResponse(
+                item.mediaId(),
+                item.mediaUrl(),
+                item.mediaType(),
+                item.sortOrder()
+        );
+    }
+
+    private ViewProductDetailAttributeResponse toAttributeResponse(ViewProductDetailAttributeItem item) {
+        return new ViewProductDetailAttributeResponse(
+                item.attributeName(),
+                item.attributeValue()
         );
     }
 
