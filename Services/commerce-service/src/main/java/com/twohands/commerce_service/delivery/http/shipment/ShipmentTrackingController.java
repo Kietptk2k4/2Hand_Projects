@@ -2,6 +2,12 @@ package com.twohands.commerce_service.delivery.http.shipment;
 
 import com.twohands.commerce_service.application.shipment.trackshipment.TrackShipmentCommand;
 import com.twohands.commerce_service.application.shipment.trackshipment.TrackShipmentUseCase;
+import com.twohands.commerce_service.application.shipment.viewshipment.ViewShipmentCommand;
+import com.twohands.commerce_service.application.shipment.viewshipment.ViewShipmentUseCase;
+import com.twohands.commerce_service.domain.shipment.SellerShipmentRecord;
+import com.twohands.commerce_service.domain.shipment.ViewShipmentResult;
+import com.twohands.commerce_service.delivery.http.seller.ShipmentOrderItemSummaryResponse;
+import com.twohands.commerce_service.delivery.http.seller.ShippingAddressSnapshotResponse;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.shipment.ShipmentStatusHistoryEntry;
 import com.twohands.commerce_service.domain.shipment.TrackShipmentResult;
@@ -22,10 +28,32 @@ import java.util.UUID;
 @RequestMapping("/commerce/api/v1/shipments")
 public class ShipmentTrackingController {
 
+    private final ViewShipmentUseCase viewShipmentUseCase;
     private final TrackShipmentUseCase trackShipmentUseCase;
 
-    public ShipmentTrackingController(TrackShipmentUseCase trackShipmentUseCase) {
+    public ShipmentTrackingController(
+            ViewShipmentUseCase viewShipmentUseCase,
+            TrackShipmentUseCase trackShipmentUseCase
+    ) {
+        this.viewShipmentUseCase = viewShipmentUseCase;
         this.trackShipmentUseCase = trackShipmentUseCase;
+    }
+
+    @GetMapping("/{shipmentId}")
+    public ResponseEntity<ApiResponse<ViewShipmentResponse>> viewShipment(
+            @PathVariable UUID shipmentId,
+            Authentication authentication
+    ) {
+        UUID userId = resolveUserId(authentication);
+        ViewShipmentResult result = viewShipmentUseCase.execute(
+                new ViewShipmentCommand(userId, shipmentId)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewShipmentUseCase.successMessage(),
+                toViewResponse(result)
+        ));
     }
 
     @GetMapping("/{shipmentId}/tracking")
@@ -50,6 +78,49 @@ public class ShipmentTrackingController {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         return principal.userId();
+    }
+
+    private ViewShipmentResponse toViewResponse(ViewShipmentResult result) {
+        SellerShipmentRecord shipment = result.shipment();
+        return new ViewShipmentResponse(
+                shipment.shipmentId(),
+                shipment.orderId(),
+                shipment.sellerId(),
+                result.accessedAs(),
+                shipment.carrier(),
+                shipment.shipmentType(),
+                shipment.status(),
+                shipment.ghnOrderCode(),
+                shipment.trackingNumber(),
+                shipment.shippingFee(),
+                shipment.codAmount(),
+                shipment.weightGram(),
+                shipment.estimatedDeliveryDate(),
+                shipment.shippedAt(),
+                shipment.deliveredAt(),
+                shipment.createdAt(),
+                shipment.updatedAt(),
+                new ShippingAddressSnapshotResponse(
+                        result.addressSnapshot().receiverName(),
+                        result.addressSnapshot().phone(),
+                        result.addressSnapshot().provinceCode(),
+                        result.addressSnapshot().districtCode(),
+                        result.addressSnapshot().wardCode(),
+                        result.addressSnapshot().addressDetail(),
+                        result.addressSnapshot().fullAddress()
+                ),
+                result.orderItems().stream()
+                        .map(item -> new ShipmentOrderItemSummaryResponse(
+                                item.orderItemId(),
+                                item.productNameSnapshot(),
+                                item.quantity(),
+                                item.status()
+                        ))
+                        .toList(),
+                result.statusHistory().stream()
+                        .map(ViewShipmentResponse.ShipmentStatusHistoryEntryResponse::from)
+                        .toList()
+        );
     }
 
     private TrackShipmentResponse toResponse(TrackShipmentResult result) {
