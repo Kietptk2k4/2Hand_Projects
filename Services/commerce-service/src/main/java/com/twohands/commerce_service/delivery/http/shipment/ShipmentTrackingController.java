@@ -2,9 +2,13 @@ package com.twohands.commerce_service.delivery.http.shipment;
 
 import com.twohands.commerce_service.application.shipment.trackshipment.TrackShipmentCommand;
 import com.twohands.commerce_service.application.shipment.trackshipment.TrackShipmentUseCase;
+import com.twohands.commerce_service.application.shipment.viewshippingaddresssnapshot.ViewShippingAddressSnapshotCommand;
+import com.twohands.commerce_service.application.shipment.viewshippingaddresssnapshot.ViewShippingAddressSnapshotUseCase;
 import com.twohands.commerce_service.application.shipment.viewshipment.ViewShipmentCommand;
 import com.twohands.commerce_service.application.shipment.viewshipment.ViewShipmentUseCase;
+import com.twohands.commerce_service.domain.shipment.ViewShippingAddressSnapshotResult;
 import com.twohands.commerce_service.domain.shipment.SellerShipmentRecord;
+import com.twohands.commerce_service.domain.shipment.ShipmentAddressSnapshot;
 import com.twohands.commerce_service.domain.shipment.ViewShipmentResult;
 import com.twohands.commerce_service.delivery.http.seller.ShipmentOrderItemSummaryResponse;
 import com.twohands.commerce_service.delivery.http.seller.ShippingAddressSnapshotResponse;
@@ -28,15 +32,35 @@ import java.util.UUID;
 @RequestMapping("/commerce/api/v1/shipments")
 public class ShipmentTrackingController {
 
+    private final ViewShippingAddressSnapshotUseCase viewShippingAddressSnapshotUseCase;
     private final ViewShipmentUseCase viewShipmentUseCase;
     private final TrackShipmentUseCase trackShipmentUseCase;
 
     public ShipmentTrackingController(
+            ViewShippingAddressSnapshotUseCase viewShippingAddressSnapshotUseCase,
             ViewShipmentUseCase viewShipmentUseCase,
             TrackShipmentUseCase trackShipmentUseCase
     ) {
+        this.viewShippingAddressSnapshotUseCase = viewShippingAddressSnapshotUseCase;
         this.viewShipmentUseCase = viewShipmentUseCase;
         this.trackShipmentUseCase = trackShipmentUseCase;
+    }
+
+    @GetMapping("/{shipmentId}/address-snapshot")
+    public ResponseEntity<ApiResponse<ViewShippingAddressSnapshotResponse>> viewShippingAddressSnapshot(
+            @PathVariable UUID shipmentId,
+            Authentication authentication
+    ) {
+        UUID userId = resolveUserId(authentication);
+        ViewShippingAddressSnapshotResult result = viewShippingAddressSnapshotUseCase.execute(
+                new ViewShippingAddressSnapshotCommand(userId, shipmentId)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewShippingAddressSnapshotUseCase.successMessage(),
+                toAddressSnapshotResponse(result)
+        ));
     }
 
     @GetMapping("/{shipmentId}")
@@ -78,6 +102,27 @@ public class ShipmentTrackingController {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         return principal.userId();
+    }
+
+    private ViewShippingAddressSnapshotResponse toAddressSnapshotResponse(
+            ViewShippingAddressSnapshotResult result
+    ) {
+        ShipmentAddressSnapshot address = result.addressSnapshot();
+        return new ViewShippingAddressSnapshotResponse(
+                result.shipmentId(),
+                result.snapshotId(),
+                result.accessedAs(),
+                result.createdAt(),
+                new ShippingAddressSnapshotResponse(
+                        address.receiverName(),
+                        address.phone(),
+                        address.provinceCode(),
+                        address.districtCode(),
+                        address.wardCode(),
+                        address.addressDetail(),
+                        address.fullAddress()
+                )
+        );
     }
 
     private ViewShipmentResponse toViewResponse(ViewShipmentResult result) {
