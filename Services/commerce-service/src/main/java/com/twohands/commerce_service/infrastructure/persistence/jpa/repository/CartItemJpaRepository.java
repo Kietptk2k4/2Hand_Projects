@@ -2,6 +2,7 @@ package com.twohands.commerce_service.infrastructure.persistence.jpa.repository;
 
 import com.twohands.commerce_service.infrastructure.persistence.jpa.entity.CartItemEntity;
 import com.twohands.commerce_service.infrastructure.persistence.jpa.enums.CartItemStatusType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -49,5 +50,21 @@ public interface CartItemJpaRepository extends JpaRepository<CartItemEntity, UUI
             @Param("invalidStatus") CartItemStatusType invalidStatus,
             @Param("statuses") Collection<CartItemStatusType> statuses,
             @Param("updatedAt") Instant updatedAt
+    );
+
+    List<CartItemEntity> findByCartIdAndStatusIn(UUID cartId, Collection<CartItemStatusType> statuses);
+
+    List<CartItemEntity> findByProductIdAndStatusIn(UUID productId, Collection<CartItemStatusType> statuses);
+
+    List<CartItemEntity> findBySellerIdAndStatusIn(UUID sellerId, Collection<CartItemStatusType> statuses);
+
+    @Query("""
+            SELECT ci FROM CartItemEntity ci
+            WHERE ci.status IN :statuses
+            ORDER BY ci.updatedAt ASC
+            """)
+    List<CartItemEntity> findSyncBatch(
+            @Param("statuses") Collection<CartItemStatusType> statuses,
+            Pageable pageable
     );
 }

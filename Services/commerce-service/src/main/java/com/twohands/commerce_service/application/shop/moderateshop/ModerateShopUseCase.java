@@ -3,7 +3,8 @@ package com.twohands.commerce_service.application.shop.moderateshop;
 import com.twohands.commerce_service.application.shop.common.ShopClosedOutboxService;
 import com.twohands.commerce_service.application.shop.common.ShopRestoredOutboxService;
 import com.twohands.commerce_service.application.shop.common.ShopSuspendedOutboxService;
-import com.twohands.commerce_service.domain.cart.CartItemRepository;
+import com.twohands.commerce_service.application.cart.synccartitemstatus.SyncCartItemStatusUseCase;
+import com.twohands.commerce_service.domain.cart.SyncCartItemStatusResult;
 import com.twohands.commerce_service.domain.outbox.OutboxEvent;
 import com.twohands.commerce_service.domain.outbox.OutboxEventRepository;
 import com.twohands.commerce_service.domain.shop.ModerateShopRepository;
@@ -25,7 +26,7 @@ import java.time.Instant;
 public class ModerateShopUseCase {
 
     private final ModerateShopRepository moderateShopRepository;
-    private final CartItemRepository cartItemRepository;
+    private final SyncCartItemStatusUseCase syncCartItemStatusUseCase;
     private final OutboxEventRepository outboxEventRepository;
     private final ShopSuspendedOutboxService shopSuspendedOutboxService;
     private final ShopClosedOutboxService shopClosedOutboxService;
@@ -34,7 +35,7 @@ public class ModerateShopUseCase {
 
     public ModerateShopUseCase(
             ModerateShopRepository moderateShopRepository,
-            CartItemRepository cartItemRepository,
+            SyncCartItemStatusUseCase syncCartItemStatusUseCase,
             OutboxEventRepository outboxEventRepository,
             ShopSuspendedOutboxService shopSuspendedOutboxService,
             ShopClosedOutboxService shopClosedOutboxService,
@@ -42,7 +43,7 @@ public class ModerateShopUseCase {
             Clock clock
     ) {
         this.moderateShopRepository = moderateShopRepository;
-        this.cartItemRepository = cartItemRepository;
+        this.syncCartItemStatusUseCase = syncCartItemStatusUseCase;
         this.outboxEventRepository = outboxEventRepository;
         this.shopSuspendedOutboxService = shopSuspendedOutboxService;
         this.shopClosedOutboxService = shopClosedOutboxService;
@@ -82,8 +83,10 @@ public class ModerateShopUseCase {
         }
 
         int cartItemsInvalidated = 0;
-        if (ShopModerationPolicy.shouldInvalidateCartItems(command.action(), false)) {
-            cartItemsInvalidated = cartItemRepository.markInvalidBySellerId(shop.sellerId(), occurredAt);
+        if (ShopModerationPolicy.shouldInvalidateCartItems(command.action(), false)
+                || command.action() == ShopModerationAction.RESTORE) {
+            SyncCartItemStatusResult cartSync = syncCartItemStatusUseCase.syncBySellerId(shop.sellerId());
+            cartItemsInvalidated = cartSync.updated();
         }
 
         outboxEventRepository.save(buildModerationEvent(command, shop, targetStatus, occurredAt));

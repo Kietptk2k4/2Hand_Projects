@@ -3,6 +3,8 @@ package com.twohands.commerce_service.unit.application.cart;
 import com.twohands.commerce_service.application.cart.createcart.CreateCartCommand;
 import com.twohands.commerce_service.application.cart.createcart.CreateCartResult;
 import com.twohands.commerce_service.application.cart.createcart.CreateCartUseCase;
+import com.twohands.commerce_service.application.cart.synccartitemstatus.SyncCartItemStatusUseCase;
+import com.twohands.commerce_service.domain.cart.SyncCartItemStatusResult;
 import com.twohands.commerce_service.domain.cart.Cart;
 import com.twohands.commerce_service.domain.cart.CartItem;
 import com.twohands.commerce_service.domain.cart.CartItemRepository;
@@ -33,6 +35,9 @@ class CreateCartUseCaseTest {
     @Mock
     private CartItemRepository cartItemRepository;
 
+    @Mock
+    private SyncCartItemStatusUseCase syncCartItemStatusUseCase;
+
     @InjectMocks
     private CreateCartUseCase useCase;
 
@@ -46,6 +51,7 @@ class CreateCartUseCaseTest {
         when(cartRepository.findByUserId(userId)).thenReturn(Optional.empty());
         when(cartRepository.getOrCreateByUserId(userId)).thenReturn(newCart);
         when(cartItemRepository.findByCartIdExcludingRemoved(cartId)).thenReturn(List.of());
+        when(syncCartItemStatusUseCase.syncForUser(userId)).thenReturn(SyncCartItemStatusResult.empty());
 
         CreateCartResult result = useCase.execute(new CreateCartCommand(userId));
 
@@ -74,6 +80,7 @@ class CreateCartUseCaseTest {
         when(cartRepository.findByUserId(userId)).thenReturn(Optional.of(existing));
         when(cartItemRepository.findByCartIdExcludingRemoved(cartId))
                 .thenReturn(List.of(activeItem));
+        when(syncCartItemStatusUseCase.syncForUser(userId)).thenReturn(SyncCartItemStatusResult.empty());
 
         CreateCartResult result = useCase.execute(new CreateCartCommand(userId));
 

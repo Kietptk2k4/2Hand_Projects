@@ -1,5 +1,6 @@
 package com.twohands.commerce_service.application.cart.createcart;
 
+import com.twohands.commerce_service.application.cart.synccartitemstatus.SyncCartItemStatusUseCase;
 import com.twohands.commerce_service.domain.cart.Cart;
 import com.twohands.commerce_service.domain.cart.CartItem;
 import com.twohands.commerce_service.domain.cart.CartItemRepository;
@@ -16,10 +17,16 @@ public class CreateCartUseCase {
 
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
+    private final SyncCartItemStatusUseCase syncCartItemStatusUseCase;
 
-    public CreateCartUseCase(CartRepository cartRepository, CartItemRepository cartItemRepository) {
+    public CreateCartUseCase(
+            CartRepository cartRepository,
+            CartItemRepository cartItemRepository,
+            SyncCartItemStatusUseCase syncCartItemStatusUseCase
+    ) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
+        this.syncCartItemStatusUseCase = syncCartItemStatusUseCase;
     }
 
     @Transactional
@@ -27,6 +34,7 @@ public class CreateCartUseCase {
         Optional<Cart> existing = cartRepository.findByUserId(command.userId());
         Cart cart = existing.orElseGet(() -> cartRepository.getOrCreateByUserId(command.userId()));
         boolean newlyCreated = existing.isEmpty();
+        syncCartItemStatusUseCase.syncForUser(command.userId());
         List<CreateCartItemResult> items = cartItemRepository.findByCartIdExcludingRemoved(cart.id()).stream()
                 .map(this::toItemResult)
                 .toList();

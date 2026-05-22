@@ -1,7 +1,8 @@
 package com.twohands.commerce_service.application.product.pauseproduct;
 
 import com.twohands.commerce_service.application.product.common.ProductPausedOutboxService;
-import com.twohands.commerce_service.domain.cart.CartItemRepository;
+import com.twohands.commerce_service.application.cart.synccartitemstatus.SyncCartItemStatusUseCase;
+import com.twohands.commerce_service.domain.cart.SyncCartItemStatusResult;
 import com.twohands.commerce_service.domain.outbox.OutboxEventRepository;
 import com.twohands.commerce_service.domain.product.Product;
 import com.twohands.commerce_service.domain.product.ProductRepository;
@@ -17,18 +18,18 @@ import java.time.Instant;
 public class PauseProductUseCase {
 
     private final ProductRepository productRepository;
-    private final CartItemRepository cartItemRepository;
+    private final SyncCartItemStatusUseCase syncCartItemStatusUseCase;
     private final OutboxEventRepository outboxEventRepository;
     private final ProductPausedOutboxService productPausedOutboxService;
 
     public PauseProductUseCase(
             ProductRepository productRepository,
-            CartItemRepository cartItemRepository,
+            SyncCartItemStatusUseCase syncCartItemStatusUseCase,
             OutboxEventRepository outboxEventRepository,
             ProductPausedOutboxService productPausedOutboxService
     ) {
         this.productRepository = productRepository;
-        this.cartItemRepository = cartItemRepository;
+        this.syncCartItemStatusUseCase = syncCartItemStatusUseCase;
         this.outboxEventRepository = outboxEventRepository;
         this.productPausedOutboxService = productPausedOutboxService;
     }
@@ -71,7 +72,8 @@ public class PauseProductUseCase {
         Instant now = Instant.now();
         ProductStatus previousStatus = product.status();
         Product paused = productRepository.save(product.withStatus(ProductStatus.PAUSED, now));
-        int cartItemsInvalidated = cartItemRepository.markInvalidByProductId(product.id(), now);
+        SyncCartItemStatusResult cartSync = syncCartItemStatusUseCase.syncByProductId(product.id());
+        int cartItemsInvalidated = cartSync.updated();
 
         outboxEventRepository.save(productPausedOutboxService.build(
                 paused.id(),

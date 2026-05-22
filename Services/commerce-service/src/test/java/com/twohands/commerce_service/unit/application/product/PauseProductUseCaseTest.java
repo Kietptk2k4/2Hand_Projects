@@ -4,7 +4,8 @@ import com.twohands.commerce_service.application.product.common.ProductPausedOut
 import com.twohands.commerce_service.application.product.pauseproduct.PauseProductCommand;
 import com.twohands.commerce_service.application.product.pauseproduct.PauseProductResult;
 import com.twohands.commerce_service.application.product.pauseproduct.PauseProductUseCase;
-import com.twohands.commerce_service.domain.cart.CartItemRepository;
+import com.twohands.commerce_service.application.cart.synccartitemstatus.SyncCartItemStatusUseCase;
+import com.twohands.commerce_service.domain.cart.SyncCartItemStatusResult;
 import com.twohands.commerce_service.domain.outbox.OutboxEvent;
 import com.twohands.commerce_service.domain.outbox.OutboxEventRepository;
 import com.twohands.commerce_service.domain.product.Product;
@@ -38,7 +39,7 @@ class PauseProductUseCaseTest {
     private ProductRepository productRepository;
 
     @Mock
-    private CartItemRepository cartItemRepository;
+    private SyncCartItemStatusUseCase syncCartItemStatusUseCase;
 
     @Mock
     private OutboxEventRepository outboxEventRepository;
@@ -59,7 +60,8 @@ class PauseProductUseCaseTest {
         Product product = new Product(productId, sellerId, shopId, "Phone", ProductStatus.ACTIVE, now);
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(cartItemRepository.markInvalidByProductId(eq(productId), any(Instant.class))).thenReturn(2);
+        when(syncCartItemStatusUseCase.syncByProductId(productId))
+                .thenReturn(new SyncCartItemStatusResult(2, 2, 0, 0));
         when(productPausedOutboxService.build(
                 eq(productId), eq(shopId), eq(sellerId), eq(ProductStatus.ACTIVE), any(Instant.class)))
                 .thenReturn(sampleOutboxEvent());
@@ -81,7 +83,8 @@ class PauseProductUseCaseTest {
         Product product = new Product(productId, sellerId, shopId, "Phone", ProductStatus.OUT_OF_STOCK, now);
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(cartItemRepository.markInvalidByProductId(eq(productId), any(Instant.class))).thenReturn(0);
+        when(syncCartItemStatusUseCase.syncByProductId(productId))
+                .thenReturn(new SyncCartItemStatusResult(0, 0, 0, 0));
         when(productPausedOutboxService.build(any(), any(), any(), any(), any())).thenReturn(sampleOutboxEvent());
 
         PauseProductResult result = useCase.execute(new PauseProductCommand(sellerId, productId));

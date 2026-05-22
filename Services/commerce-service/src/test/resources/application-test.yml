@@ -29,6 +29,8 @@ commerce:
       enabled: false
     auto-complete-delivered-order:
       enabled: false
+    sync-cart-item-status:
+      enabled: false
 
 jwt:
   access-secret: test-access-secret-key-minimum-32-characters-123456

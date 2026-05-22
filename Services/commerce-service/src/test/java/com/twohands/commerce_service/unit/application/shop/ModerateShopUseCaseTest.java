@@ -5,7 +5,8 @@ import com.twohands.commerce_service.application.shop.common.ShopRestoredOutboxS
 import com.twohands.commerce_service.application.shop.common.ShopSuspendedOutboxService;
 import com.twohands.commerce_service.application.shop.moderateshop.ModerateShopCommand;
 import com.twohands.commerce_service.application.shop.moderateshop.ModerateShopUseCase;
-import com.twohands.commerce_service.domain.cart.CartItemRepository;
+import com.twohands.commerce_service.application.cart.synccartitemstatus.SyncCartItemStatusUseCase;
+import com.twohands.commerce_service.domain.cart.SyncCartItemStatusResult;
 import com.twohands.commerce_service.domain.outbox.OutboxEvent;
 import com.twohands.commerce_service.domain.outbox.OutboxEventRepository;
 import com.twohands.commerce_service.domain.shop.ModerateShopRepository;
@@ -41,7 +42,7 @@ class ModerateShopUseCaseTest {
     private ModerateShopRepository moderateShopRepository;
 
     @Mock
-    private CartItemRepository cartItemRepository;
+    private SyncCartItemStatusUseCase syncCartItemStatusUseCase;
 
     @Mock
     private OutboxEventRepository outboxEventRepository;
@@ -66,7 +67,7 @@ class ModerateShopUseCaseTest {
     void setUp() {
         useCase = new ModerateShopUseCase(
                 moderateShopRepository,
-                cartItemRepository,
+                syncCartItemStatusUseCase,
                 outboxEventRepository,
                 shopSuspendedOutboxService,
                 shopClosedOutboxService,
@@ -81,7 +82,8 @@ class ModerateShopUseCaseTest {
         when(moderateShopRepository.findById(shopId)).thenReturn(Optional.of(shop));
         when(moderateShopRepository.updateStatus(shopId, ShopStatus.ACTIVE, ShopStatus.SUSPENDED, now))
                 .thenReturn(true);
-        when(cartItemRepository.markInvalidBySellerId(sellerId, now)).thenReturn(3);
+        when(syncCartItemStatusUseCase.syncBySellerId(sellerId))
+                .thenReturn(new SyncCartItemStatusResult(3, 3, 0, 0));
         when(shopSuspendedOutboxService.build(any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(sampleOutbox(ShopSuspendedOutboxService.EVENT_TYPE));
 
@@ -95,20 +97,23 @@ class ModerateShopUseCaseTest {
     }
 
     @Test
-    void restoresSuspendedShopWithoutCartInvalidation() {
+    void restoresSuspendedShopAndSyncsCartItems() {
         ShopForModeration shop = new ShopForModeration(shopId, sellerId, "Shop", ShopStatus.SUSPENDED);
         when(moderateShopRepository.findById(shopId)).thenReturn(Optional.of(shop));
         when(moderateShopRepository.updateStatus(shopId, ShopStatus.SUSPENDED, ShopStatus.ACTIVE, now))
                 .thenReturn(true);
         when(shopRestoredOutboxService.build(any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(sampleOutbox(ShopRestoredOutboxService.EVENT_TYPE));
+        when(syncCartItemStatusUseCase.syncBySellerId(sellerId))
+                .thenReturn(new SyncCartItemStatusResult(2, 1, 1, 0));
 
         ModerateShopResult result = useCase.execute(new ModerateShopCommand(
                 adminId, shopId, ShopModerationAction.RESTORE, "Resolved"
         ));
 
         assertThat(result.status()).isEqualTo(ShopStatus.ACTIVE);
-        verify(cartItemRepository, never()).markInvalidBySellerId(any(), any());
+        assertThat(result.cartItemsInvalidated()).isEqualTo(1);
+        verify(syncCartItemStatusUseCase).syncBySellerId(sellerId);
     }
 
     @Test

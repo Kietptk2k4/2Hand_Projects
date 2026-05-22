@@ -74,6 +74,10 @@ commerce:
       cron: ${COMMERCE_AUTO_COMPLETE_DELIVERED_ORDER_CRON:0 0 * * * *}
       batch-size: ${COMMERCE_AUTO_COMPLETE_DELIVERED_ORDER_BATCH_SIZE:50}
       completion-window-days: ${COMMERCE_AUTO_COMPLETE_DELIVERED_ORDER_WINDOW_DAYS:7}
+    sync-cart-item-status:
+      enabled: ${COMMERCE_SYNC_CART_ITEM_STATUS_ENABLED:false}
+      cron: ${COMMERCE_SYNC_CART_ITEM_STATUS_CRON:0 */5 * * * *}
+      batch-size: ${COMMERCE_SYNC_CART_ITEM_STATUS_BATCH_SIZE:100}
   integrations:
     payos:
       enabled: ${COMMERCE_PAYOS_ENABLED:false}
