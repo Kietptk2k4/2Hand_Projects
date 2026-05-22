@@ -152,6 +152,31 @@ public class ProductDiscoveryRepositoryAdapter implements ProductDiscoveryReposi
         return jdbcTemplate.query(sql, params, this::mapProductCard);
     }
 
+    @Override
+    public long countAllVisibleProducts(Instant now) {
+        String sql = "SELECT COUNT(DISTINCT p.id) " + VISIBLE_PRODUCT_FROM;
+        Long count = jdbcTemplate.queryForObject(sql, baseParams(now), Long.class);
+        return count == null ? 0 : count;
+    }
+
+    @Override
+    public List<ProductCardSummary> findAllVisibleProducts(
+            ProductDiscoverySort sort,
+            PageQuery pageQuery,
+            Instant now
+    ) {
+        String sql = VISIBLE_PRODUCT_SELECT
+                + VISIBLE_PRODUCT_FROM
+                + " ORDER BY " + orderByClause(sort)
+                + " LIMIT :limit OFFSET :offset";
+
+        MapSqlParameterSource params = baseParams(now)
+                .addValue("limit", pageQuery.limit())
+                .addValue("offset", pageQuery.offset());
+
+        return jdbcTemplate.query(sql, params, this::mapProductCard);
+    }
+
     private MapSqlParameterSource baseParams(Instant now) {
         return new MapSqlParameterSource().addValue("now", Timestamp.from(now));
     }

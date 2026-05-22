@@ -25,4 +25,12 @@ public interface ProductDiscoveryRepository {
             PageQuery pageQuery,
             Instant now
     );
+
+    long countAllVisibleProducts(Instant now);
+
+    List<ProductCardSummary> findAllVisibleProducts(
+            ProductDiscoverySort sort,
+            PageQuery pageQuery,
+            Instant now
+    );
 }

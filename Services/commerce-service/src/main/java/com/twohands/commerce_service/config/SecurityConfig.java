@@ -38,6 +38,7 @@ public class SecurityConfig {
                         .requestMatchers("/commerce/api/v1/payments/webhooks/**").permitAll()
                         .requestMatchers("/commerce/api/v1/shipments/webhooks/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/commerce/api/v1/categories/*/products").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/commerce/api/v1/products").permitAll()
                         .requestMatchers(HttpMethod.GET, "/commerce/api/v1/products/search").permitAll()
                         .requestMatchers(HttpMethod.GET, "/commerce/api/v1/products/*").permitAll()
                         .anyRequest().authenticated()

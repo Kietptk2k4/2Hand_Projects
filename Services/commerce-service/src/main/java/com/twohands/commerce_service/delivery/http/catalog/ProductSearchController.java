@@ -4,10 +4,13 @@ import com.twohands.commerce_service.application.product.searchproduct.SearchPro
 import com.twohands.commerce_service.application.product.searchproduct.SearchProductUseCase;
 import com.twohands.commerce_service.application.product.viewproductdetail.ViewProductDetailCommand;
 import com.twohands.commerce_service.application.product.viewproductdetail.ViewProductDetailUseCase;
+import com.twohands.commerce_service.application.product.viewproductlist.ViewProductListCommand;
+import com.twohands.commerce_service.application.product.viewproductlist.ViewProductListUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.common.pagination.PageMeta;
 import com.twohands.commerce_service.domain.discovery.ProductCardSummary;
 import com.twohands.commerce_service.domain.discovery.SearchProductResult;
+import com.twohands.commerce_service.domain.discovery.ViewProductListResult;
 import com.twohands.commerce_service.domain.product.ViewProductDetailAttributeItem;
 import com.twohands.commerce_service.domain.product.ViewProductDetailMediaItem;
 import com.twohands.commerce_service.domain.product.ViewProductDetailResult;
@@ -25,15 +28,35 @@ import java.util.UUID;
 @RequestMapping("/commerce/api/v1/products")
 public class ProductSearchController {
 
+    private final ViewProductListUseCase viewProductListUseCase;
     private final SearchProductUseCase searchProductUseCase;
     private final ViewProductDetailUseCase viewProductDetailUseCase;
 
     public ProductSearchController(
+            ViewProductListUseCase viewProductListUseCase,
             SearchProductUseCase searchProductUseCase,
             ViewProductDetailUseCase viewProductDetailUseCase
     ) {
+        this.viewProductListUseCase = viewProductListUseCase;
         this.searchProductUseCase = searchProductUseCase;
         this.viewProductDetailUseCase = viewProductDetailUseCase;
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<ViewProductListResponse>> listProducts(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) String sort
+    ) {
+        ViewProductListResult result = viewProductListUseCase.execute(
+                new ViewProductListCommand(page, limit, sort)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewProductListUseCase.successMessage(),
+                toListResponse(result)
+        ));
     }
 
     @GetMapping("/{productId}")
@@ -67,6 +90,20 @@ public class ProductSearchController {
                 searchProductUseCase.successMessage(),
                 toResponse(result)
         ));
+    }
+
+    private ViewProductListResponse toListResponse(ViewProductListResult result) {
+        PageMeta pagination = result.pagination();
+        return new ViewProductListResponse(
+                result.items().stream().map(this::toProductCard).toList(),
+                new PageMetaResponse(
+                        pagination.page(),
+                        pagination.limit(),
+                        pagination.totalItems(),
+                        pagination.totalPages(),
+                        pagination.hasNext()
+                )
+        );
     }
 
     private SearchProductResponse toResponse(SearchProductResult result) {
