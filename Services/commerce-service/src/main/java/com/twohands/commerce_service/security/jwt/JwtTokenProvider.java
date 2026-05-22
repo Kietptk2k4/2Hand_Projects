@@ -31,11 +31,18 @@ public class JwtTokenProvider {
     }
 
     public List<String> getRoles(String token) {
-        Object rawRoles = parseClaims(token).get("roles");
-        if (!(rawRoles instanceof List<?> roles)) {
+        return readStringListClaim(parseClaims(token).get("roles"));
+    }
+
+    public List<String> getPermissions(String token) {
+        return readStringListClaim(parseClaims(token).get("permissions"));
+    }
+
+    private List<String> readStringListClaim(Object raw) {
+        if (!(raw instanceof List<?> values)) {
             return Collections.emptyList();
         }
-        return roles.stream().map(String::valueOf).toList();
+        return values.stream().map(String::valueOf).toList();
     }
 
     public boolean isValid(String token) {

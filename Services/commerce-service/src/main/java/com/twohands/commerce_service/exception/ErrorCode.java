@@ -55,7 +55,9 @@ public enum ErrorCode {
     SHIPMENT_NOT_FOUND("COMMERCE-404-SHIPMENT", HttpStatus.NOT_FOUND, "Shipment not found"),
     INVALID_SHIPMENT_STATUS("COMMERCE-409-SHIPMENT-STATUS", HttpStatus.CONFLICT, "Invalid shipment status"),
     SHIPMENT_CARRIER_NOT_EDITABLE("COMMERCE-409-SHIPMENT-CARRIER", HttpStatus.CONFLICT, "Shipment carrier cannot be updated by seller"),
-    DUPLICATE_TRACKING_NUMBER("COMMERCE-409-TRACKING", HttpStatus.CONFLICT, "Tracking number already exists");
+    DUPLICATE_TRACKING_NUMBER("COMMERCE-409-TRACKING", HttpStatus.CONFLICT, "Tracking number already exists"),
+    REVIEW_NOT_FOUND("COMMERCE-404-REVIEW", HttpStatus.NOT_FOUND, "Review not found"),
+    INVALID_REVIEW_MODERATION("COMMERCE-400-REVIEW-MODERATION", HttpStatus.BAD_REQUEST, "Invalid review moderation action");
 
     private final String code;
     private final HttpStatus status;

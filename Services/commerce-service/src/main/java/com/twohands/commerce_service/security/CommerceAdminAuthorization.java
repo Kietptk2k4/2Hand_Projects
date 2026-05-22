@@ -1,0 +1,28 @@
+package com.twohands.commerce_service.security;
+
+import com.twohands.commerce_service.exception.AppException;
+import com.twohands.commerce_service.exception.ErrorCode;
+import org.springframework.stereotype.Component;
+
+@Component
+public class CommerceAdminAuthorization {
+
+    public static final String PERMISSION_REVIEW_HIDE = "COMMERCE_REVIEW_HIDE";
+    private static final String ADMIN_ROLE = "ADMIN";
+
+    public void requirePermission(AuthenticatedUser user, String permission) {
+        if (hasPermission(user, permission)) {
+            return;
+        }
+        throw new AppException(ErrorCode.FORBIDDEN, "Missing permission: " + permission);
+    }
+
+    private boolean hasPermission(AuthenticatedUser user, String permission) {
+        if (user.permissions() != null
+                && user.permissions().stream().anyMatch(permission::equals)) {
+            return true;
+        }
+        return user.roles() != null
+                && user.roles().stream().anyMatch(role -> ADMIN_ROLE.equalsIgnoreCase(role));
+    }
+}
