@@ -1,7 +1,10 @@
 package com.twohands.commerce_service.delivery.http.payment;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.twohands.commerce_service.application.payment.createpayoscheckouturl.CreatePayosCheckoutUrlCommand;
 import com.twohands.commerce_service.application.payment.createpayoscheckouturl.CreatePayosCheckoutUrlUseCase;
+import com.twohands.commerce_service.application.payment.processpayoswebhook.ProcessPayosWebhookResult;
+import com.twohands.commerce_service.application.payment.processpayoswebhook.ProcessPayosWebhookUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.payment.CreatePayosCheckoutUrlResult;
 import com.twohands.commerce_service.exception.AppException;
@@ -12,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,9 +26,34 @@ import java.util.UUID;
 public class PaymentController {
 
     private final CreatePayosCheckoutUrlUseCase createPayosCheckoutUrlUseCase;
+    private final ProcessPayosWebhookUseCase processPayosWebhookUseCase;
 
-    public PaymentController(CreatePayosCheckoutUrlUseCase createPayosCheckoutUrlUseCase) {
+    public PaymentController(
+            CreatePayosCheckoutUrlUseCase createPayosCheckoutUrlUseCase,
+            ProcessPayosWebhookUseCase processPayosWebhookUseCase
+    ) {
         this.createPayosCheckoutUrlUseCase = createPayosCheckoutUrlUseCase;
+        this.processPayosWebhookUseCase = processPayosWebhookUseCase;
+    }
+
+    @PostMapping("/webhooks/payos")
+    public ResponseEntity<ApiResponse<PayosWebhookResponse>> processPayosWebhook(
+            @RequestBody JsonNode webhookBody
+    ) {
+        ProcessPayosWebhookResult result = processPayosWebhookUseCase.execute(webhookBody);
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                "Da nhan PayOS webhook.",
+                new PayosWebhookResponse(
+                        result.eventType(),
+                        result.payosOrderCode(),
+                        result.signatureValid(),
+                        result.processed(),
+                        result.terminalStatus() != null ? result.terminalStatus().name() : null,
+                        result.failureOutcome() != null ? result.failureOutcome().name() : null,
+                        result.successWebhook()
+                )
+        ));
     }
 
     @PostMapping("/{paymentId}/payos-checkout-url")
