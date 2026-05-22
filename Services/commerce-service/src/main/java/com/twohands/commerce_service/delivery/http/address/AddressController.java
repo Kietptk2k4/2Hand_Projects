@@ -4,9 +4,12 @@ import com.twohands.commerce_service.application.address.createuseraddress.Creat
 import com.twohands.commerce_service.application.address.createuseraddress.CreateUserAddressUseCase;
 import com.twohands.commerce_service.application.address.deleteuseraddress.DeleteUserAddressCommand;
 import com.twohands.commerce_service.application.address.deleteuseraddress.DeleteUserAddressUseCase;
+import com.twohands.commerce_service.application.address.setdefaultuseraddress.SetDefaultUserAddressCommand;
+import com.twohands.commerce_service.application.address.setdefaultuseraddress.SetDefaultUserAddressUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.address.CreateUserAddressResult;
 import com.twohands.commerce_service.domain.address.DeleteUserAddressResult;
+import com.twohands.commerce_service.domain.address.SetDefaultUserAddressResult;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
 import com.twohands.commerce_service.security.AuthenticatedUser;
@@ -15,12 +18,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @RestController
@@ -29,13 +34,16 @@ public class AddressController {
 
     private final CreateUserAddressUseCase createUserAddressUseCase;
     private final DeleteUserAddressUseCase deleteUserAddressUseCase;
+    private final SetDefaultUserAddressUseCase setDefaultUserAddressUseCase;
 
     public AddressController(
             CreateUserAddressUseCase createUserAddressUseCase,
-            DeleteUserAddressUseCase deleteUserAddressUseCase
+            DeleteUserAddressUseCase deleteUserAddressUseCase,
+            SetDefaultUserAddressUseCase setDefaultUserAddressUseCase
     ) {
         this.createUserAddressUseCase = createUserAddressUseCase;
         this.deleteUserAddressUseCase = deleteUserAddressUseCase;
+        this.setDefaultUserAddressUseCase = setDefaultUserAddressUseCase;
     }
 
     @PostMapping
@@ -69,6 +77,23 @@ public class AddressController {
         return principal.userId();
     }
 
+    @PatchMapping("/{addressId}/default")
+    public ResponseEntity<ApiResponse<CreateUserAddressResponse>> setDefaultAddress(
+            @PathVariable UUID addressId,
+            Authentication authentication
+    ) {
+        UUID userId = resolveUserId(authentication);
+        SetDefaultUserAddressResult result = setDefaultUserAddressUseCase.execute(
+                new SetDefaultUserAddressCommand(userId, addressId)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                setDefaultUserAddressUseCase.successMessage(),
+                toResponse(result)
+        ));
+    }
+
     @DeleteMapping("/{addressId}")
     public ResponseEntity<ApiResponse<DeleteUserAddressResponse>> deleteAddress(
             @PathVariable UUID addressId,
@@ -97,7 +122,7 @@ public class AddressController {
     }
 
     private CreateUserAddressResponse toResponse(CreateUserAddressResult result) {
-        return new CreateUserAddressResponse(
+        return toAddressResponse(
                 result.addressId(),
                 result.userId(),
                 result.receiverName(),
@@ -109,6 +134,50 @@ public class AddressController {
                 result.isDefault(),
                 result.createdAt(),
                 result.updatedAt()
+        );
+    }
+
+    private CreateUserAddressResponse toResponse(SetDefaultUserAddressResult result) {
+        return toAddressResponse(
+                result.addressId(),
+                result.userId(),
+                result.receiverName(),
+                result.phone(),
+                result.provinceCode(),
+                result.districtCode(),
+                result.wardCode(),
+                result.addressDetail(),
+                result.isDefault(),
+                result.createdAt(),
+                result.updatedAt()
+        );
+    }
+
+    private CreateUserAddressResponse toAddressResponse(
+            UUID addressId,
+            UUID userId,
+            String receiverName,
+            String phone,
+            String provinceCode,
+            String districtCode,
+            String wardCode,
+            String addressDetail,
+            boolean isDefault,
+            Instant createdAt,
+            Instant updatedAt
+    ) {
+        return new CreateUserAddressResponse(
+                addressId,
+                userId,
+                receiverName,
+                phone,
+                provinceCode,
+                districtCode,
+                wardCode,
+                addressDetail,
+                isDefault,
+                createdAt,
+                updatedAt
         );
     }
 }
