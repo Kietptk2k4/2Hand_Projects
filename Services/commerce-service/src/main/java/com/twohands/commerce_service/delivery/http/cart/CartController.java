@@ -14,6 +14,11 @@ import com.twohands.commerce_service.application.cart.removecartitem.RemoveCartI
 import com.twohands.commerce_service.application.cart.updatecartitemquantity.UpdateCartItemQuantityCommand;
 import com.twohands.commerce_service.application.cart.updatecartitemquantity.UpdateCartItemQuantityResult;
 import com.twohands.commerce_service.application.cart.updatecartitemquantity.UpdateCartItemQuantityUseCase;
+import com.twohands.commerce_service.application.cart.validatecartitems.ValidateCartItemsCommand;
+import com.twohands.commerce_service.application.cart.validatecartitems.ValidateCartItemsUseCase;
+import com.twohands.commerce_service.domain.cart.InvalidCartItem;
+import com.twohands.commerce_service.domain.cart.ValidateCartItemsResult;
+import com.twohands.commerce_service.domain.cart.ValidCartItem;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
@@ -40,17 +45,20 @@ public class CartController {
     private final AddProductToCartUseCase addProductToCartUseCase;
     private final RemoveCartItemUseCase removeCartItemUseCase;
     private final UpdateCartItemQuantityUseCase updateCartItemQuantityUseCase;
+    private final ValidateCartItemsUseCase validateCartItemsUseCase;
 
     public CartController(
             CreateCartUseCase createCartUseCase,
             AddProductToCartUseCase addProductToCartUseCase,
             RemoveCartItemUseCase removeCartItemUseCase,
-            UpdateCartItemQuantityUseCase updateCartItemQuantityUseCase
+            UpdateCartItemQuantityUseCase updateCartItemQuantityUseCase,
+            ValidateCartItemsUseCase validateCartItemsUseCase
     ) {
         this.createCartUseCase = createCartUseCase;
         this.addProductToCartUseCase = addProductToCartUseCase;
         this.removeCartItemUseCase = removeCartItemUseCase;
         this.updateCartItemQuantityUseCase = updateCartItemQuantityUseCase;
+        this.validateCartItemsUseCase = validateCartItemsUseCase;
     }
 
     @PostMapping
@@ -94,6 +102,26 @@ public class CartController {
                 HttpStatus.OK.value(),
                 removeCartItemUseCase.successMessage(result.alreadyRemoved()),
                 toRemoveResponse(result)
+        ));
+    }
+
+    @PostMapping("/validate")
+    public ResponseEntity<ApiResponse<ValidateCartItemsResponse>> validateCartItems(
+            @RequestBody(required = false) ValidateCartItemsRequest request,
+            Authentication authentication
+    ) {
+        UUID userId = resolveUserId(authentication);
+        ValidateCartItemsResult result = validateCartItemsUseCase.execute(
+                new ValidateCartItemsCommand(
+                        userId,
+                        request == null ? null : request.cartItemIds()
+                )
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                validateCartItemsUseCase.successMessage(),
+                toValidateResponse(result)
         ));
     }
 
@@ -175,6 +203,22 @@ public class CartController {
                 ),
                 new CartSummaryResponse(result.activeItemCount())
         );
+    }
+
+    private ValidateCartItemsResponse toValidateResponse(ValidateCartItemsResult result) {
+        return new ValidateCartItemsResponse(
+                result.validItems().stream().map(this::toValidItemResponse).toList(),
+                result.invalidItems().stream().map(this::toInvalidItemResponse).toList(),
+                result.canCheckout()
+        );
+    }
+
+    private ValidCartItemResponse toValidItemResponse(ValidCartItem item) {
+        return new ValidCartItemResponse(item.cartItemId(), item.currentStatus().name());
+    }
+
+    private InvalidCartItemResponse toInvalidItemResponse(InvalidCartItem item) {
+        return new InvalidCartItemResponse(item.cartItemId(), item.reason(), item.currentStatus().name());
     }
 
     private AddProductToCartResponse toResponse(AddProductToCartResult result) {
