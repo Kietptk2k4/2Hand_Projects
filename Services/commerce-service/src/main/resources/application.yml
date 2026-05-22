@@ -39,6 +39,11 @@ spring:
   jackson:
     time-zone: Asia/Ho_Chi_Minh
 
+  servlet:
+    multipart:
+      max-file-size: ${COMMERCE_REVIEW_MEDIA_MAX_FILE_SIZE:50MB}
+      max-request-size: ${COMMERCE_REVIEW_MEDIA_MAX_REQUEST_SIZE:520MB}
+
 jwt:
   access-secret: ${JWT_ACCESS_SECRET}
   refresh-secret: ${JWT_REFRESH_SECRET}
@@ -48,9 +53,13 @@ jwt:
 commerce:
   object-storage:
     enabled: ${COMMERCE_MINIO_ENABLED:false}
+    endpoint: ${COMMERCE_MINIO_ENDPOINT:http://localhost:9000}
     public-url: ${COMMERCE_MINIO_PUBLIC_URL:http://localhost:9000}
+    access-key: ${COMMERCE_MINIO_ACCESS_KEY:admin}
+    secret-key: ${COMMERCE_MINIO_SECRET_KEY:password123}
     shop-bucket: ${COMMERCE_MINIO_BUCKET_SHOP:2hands-commerce-shop}
     product-bucket: ${COMMERCE_MINIO_BUCKET_PRODUCT:2hands-commerce-product}
+    review-bucket: ${COMMERCE_MINIO_BUCKET_REVIEW:2hands-commerce-review}
   outbox:
     publish:
       enabled: ${COMMERCE_OUTBOX_PUBLISH_ENABLED:false}
