@@ -2,9 +2,12 @@ package com.twohands.commerce_service.delivery.http.seller;
 
 import com.twohands.commerce_service.application.shop.createshop.CreateShopCommand;
 import com.twohands.commerce_service.application.shop.createshop.CreateShopUseCase;
+import com.twohands.commerce_service.application.shop.updateshopprofile.UpdateShopProfileCommand;
+import com.twohands.commerce_service.application.shop.updateshopprofile.UpdateShopProfileUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.shop.CreateShopPickupDraft;
 import com.twohands.commerce_service.domain.shop.CreateShopResult;
+import com.twohands.commerce_service.domain.shop.UpdateShopProfileResult;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
 import com.twohands.commerce_service.security.AuthenticatedUser;
@@ -12,6 +15,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,9 +28,37 @@ import java.util.UUID;
 public class SellerShopController {
 
     private final CreateShopUseCase createShopUseCase;
+    private final UpdateShopProfileUseCase updateShopProfileUseCase;
 
-    public SellerShopController(CreateShopUseCase createShopUseCase) {
+    public SellerShopController(
+            CreateShopUseCase createShopUseCase,
+            UpdateShopProfileUseCase updateShopProfileUseCase
+    ) {
         this.createShopUseCase = createShopUseCase;
+        this.updateShopProfileUseCase = updateShopProfileUseCase;
+    }
+
+    @PatchMapping
+    public ResponseEntity<ApiResponse<UpdateShopProfileResponse>> updateShopProfile(
+            @RequestBody @Valid UpdateShopProfileRequest request,
+            Authentication authentication
+    ) {
+        UUID sellerId = resolveUserId(authentication);
+        UpdateShopProfileResult result = updateShopProfileUseCase.execute(
+                new UpdateShopProfileCommand(
+                        sellerId,
+                        request.shopName(),
+                        request.description(),
+                        request.avatarUrl(),
+                        request.coverUrl()
+                )
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                updateShopProfileUseCase.successMessage(),
+                toUpdateResponse(result)
+        ));
     }
 
     @PostMapping
@@ -69,6 +101,23 @@ public class SellerShopController {
                 pickup.districtCode(),
                 pickup.wardCode(),
                 pickup.addressDetail()
+        );
+    }
+
+    private UpdateShopProfileResponse toUpdateResponse(UpdateShopProfileResult result) {
+        return new UpdateShopProfileResponse(
+                result.shopId(),
+                result.sellerId(),
+                result.shopName(),
+                result.description(),
+                result.avatarUrl(),
+                result.coverUrl(),
+                result.status(),
+                result.ratingAvg(),
+                result.ratingCount(),
+                result.vacationMode(),
+                result.createdAt(),
+                result.updatedAt()
         );
     }
 

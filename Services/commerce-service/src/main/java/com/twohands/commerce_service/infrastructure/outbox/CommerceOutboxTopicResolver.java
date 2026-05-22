@@ -38,6 +38,7 @@ public class CommerceOutboxTopicResolver {
             Map.entry("COMMERCE_REVIEW_HIDDEN", "commerce.review.hidden"),
             Map.entry("COMMERCE_REVIEW_RESTORED", "commerce.review.restored"),
             Map.entry("COMMERCE_SHOP_CREATED", "commerce.shop.created"),
+            Map.entry("COMMERCE_SHOP_UPDATED", "commerce.shop.updated"),
             Map.entry("COMMERCE_SHOP_SUSPENDED", "commerce.shop.suspended"),
             Map.entry("COMMERCE_SHOP_CLOSED", "commerce.shop.closed"),
             Map.entry("COMMERCE_SHOP_RESTORED", "commerce.shop.restored")

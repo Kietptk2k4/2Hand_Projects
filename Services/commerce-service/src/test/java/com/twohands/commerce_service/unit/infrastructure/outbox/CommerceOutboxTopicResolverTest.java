@@ -28,6 +28,7 @@ import com.twohands.commerce_service.application.shipment.common.ShipmentCreated
 import com.twohands.commerce_service.application.shipment.common.ShipmentStatusChangedOutboxService;
 import com.twohands.commerce_service.application.shop.common.ShopClosedOutboxService;
 import com.twohands.commerce_service.application.shop.common.ShopCreatedOutboxService;
+import com.twohands.commerce_service.application.shop.common.ShopUpdatedOutboxService;
 import com.twohands.commerce_service.application.shop.common.ShopRestoredOutboxService;
 import com.twohands.commerce_service.application.shop.common.ShopSuspendedOutboxService;
 import com.twohands.commerce_service.infrastructure.outbox.CommerceOutboxTopicResolver;
@@ -95,6 +96,8 @@ class CommerceOutboxTopicResolverTest {
                 .isEqualTo("commerce.review.restored");
         assertThat(resolver.resolve(ShopCreatedOutboxService.EVENT_TYPE))
                 .isEqualTo("commerce.shop.created");
+        assertThat(resolver.resolve(ShopUpdatedOutboxService.EVENT_TYPE))
+                .isEqualTo("commerce.shop.updated");
         assertThat(resolver.resolve(ShopSuspendedOutboxService.EVENT_TYPE))
                 .isEqualTo("commerce.shop.suspended");
         assertThat(resolver.resolve(ShopClosedOutboxService.EVENT_TYPE))
