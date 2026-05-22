@@ -8,11 +8,15 @@ import com.twohands.commerce_service.application.address.setdefaultuseraddress.S
 import com.twohands.commerce_service.application.address.setdefaultuseraddress.SetDefaultUserAddressUseCase;
 import com.twohands.commerce_service.application.address.updateuseraddress.UpdateUserAddressCommand;
 import com.twohands.commerce_service.application.address.updateuseraddress.UpdateUserAddressUseCase;
+import com.twohands.commerce_service.application.address.viewuseraddresses.ViewUserAddressesCommand;
+import com.twohands.commerce_service.application.address.viewuseraddresses.ViewUserAddressesUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.address.CreateUserAddressResult;
 import com.twohands.commerce_service.domain.address.DeleteUserAddressResult;
 import com.twohands.commerce_service.domain.address.SetDefaultUserAddressResult;
 import com.twohands.commerce_service.domain.address.UpdateUserAddressResult;
+import com.twohands.commerce_service.domain.address.UserAddressListItem;
+import com.twohands.commerce_service.domain.address.ViewUserAddressesResult;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
 import com.twohands.commerce_service.security.AuthenticatedUser;
@@ -21,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,17 +44,36 @@ public class AddressController {
     private final DeleteUserAddressUseCase deleteUserAddressUseCase;
     private final SetDefaultUserAddressUseCase setDefaultUserAddressUseCase;
     private final UpdateUserAddressUseCase updateUserAddressUseCase;
+    private final ViewUserAddressesUseCase viewUserAddressesUseCase;
 
     public AddressController(
             CreateUserAddressUseCase createUserAddressUseCase,
             DeleteUserAddressUseCase deleteUserAddressUseCase,
             SetDefaultUserAddressUseCase setDefaultUserAddressUseCase,
-            UpdateUserAddressUseCase updateUserAddressUseCase
+            UpdateUserAddressUseCase updateUserAddressUseCase,
+            ViewUserAddressesUseCase viewUserAddressesUseCase
     ) {
         this.createUserAddressUseCase = createUserAddressUseCase;
         this.deleteUserAddressUseCase = deleteUserAddressUseCase;
         this.setDefaultUserAddressUseCase = setDefaultUserAddressUseCase;
         this.updateUserAddressUseCase = updateUserAddressUseCase;
+        this.viewUserAddressesUseCase = viewUserAddressesUseCase;
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<ViewUserAddressesResponse>> viewUserAddresses(
+            Authentication authentication
+    ) {
+        UUID userId = resolveUserId(authentication);
+        ViewUserAddressesResult result = viewUserAddressesUseCase.execute(
+                new ViewUserAddressesCommand(userId)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewUserAddressesUseCase.successMessage(),
+                toListResponse(result)
+        ));
     }
 
     @PostMapping
@@ -198,6 +222,27 @@ public class AddressController {
                 result.isDefault(),
                 result.createdAt(),
                 result.updatedAt()
+        );
+    }
+
+    private ViewUserAddressesResponse toListResponse(ViewUserAddressesResult result) {
+        return new ViewUserAddressesResponse(
+                result.addresses().stream().map(this::toAddressItemResponse).toList()
+        );
+    }
+
+    private UserAddressItemResponse toAddressItemResponse(UserAddressListItem item) {
+        return new UserAddressItemResponse(
+                item.id(),
+                item.receiverName(),
+                item.phone(),
+                item.provinceCode(),
+                item.districtCode(),
+                item.wardCode(),
+                item.addressDetail(),
+                item.isDefault(),
+                item.createdAt(),
+                item.updatedAt()
         );
     }
 
