@@ -15,6 +15,7 @@ import com.twohands.commerce_service.application.product.common.ProductCreatedOu
 import com.twohands.commerce_service.application.product.common.ProductPausedOutboxService;
 import com.twohands.commerce_service.application.product.common.ProductPublishedOutboxService;
 import com.twohands.commerce_service.application.product.common.ProductAttributesUpdatedOutboxService;
+import com.twohands.commerce_service.application.product.common.ProductInventoryUpdatedOutboxService;
 import com.twohands.commerce_service.application.product.common.ProductRemovedOutboxService;
 import com.twohands.commerce_service.application.product.common.ProductUpdatedOutboxService;
 import com.twohands.commerce_service.application.review.common.ReviewCreatedOutboxService;
@@ -68,6 +69,8 @@ class CommerceOutboxTopicResolverTest {
                 .isEqualTo("commerce.product.updated");
         assertThat(resolver.resolve(ProductAttributesUpdatedOutboxService.EVENT_TYPE))
                 .isEqualTo("commerce.product.attributes.updated");
+        assertThat(resolver.resolve(ProductInventoryUpdatedOutboxService.EVENT_TYPE))
+                .isEqualTo("commerce.product.inventory.updated");
         assertThat(resolver.resolve(ProductPublishedOutboxService.EVENT_TYPE))
                 .isEqualTo("commerce.product.published");
         assertThat(resolver.resolve(ProductPausedOutboxService.EVENT_TYPE))

@@ -15,10 +15,13 @@ import com.twohands.commerce_service.application.product.updateproduct.UpdatePro
 import com.twohands.commerce_service.application.product.updateproduct.UpdateProductUseCase;
 import com.twohands.commerce_service.application.product.updateproductattributes.UpdateProductAttributesCommand;
 import com.twohands.commerce_service.application.product.updateproductattributes.UpdateProductAttributesUseCase;
+import com.twohands.commerce_service.application.product.updateproductinventory.UpdateProductInventoryCommand;
+import com.twohands.commerce_service.application.product.updateproductinventory.UpdateProductInventoryUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.product.CreateProductResult;
 import com.twohands.commerce_service.domain.product.ProductAttributeItem;
 import com.twohands.commerce_service.domain.product.UpdateProductAttributesResult;
+import com.twohands.commerce_service.domain.product.UpdateProductInventoryResult;
 import com.twohands.commerce_service.domain.product.UpdateProductResult;
 import jakarta.validation.Valid;
 import com.twohands.commerce_service.exception.AppException;
@@ -47,6 +50,7 @@ public class SellerProductController {
     private final ArchiveProductUseCase archiveProductUseCase;
     private final UpdateProductUseCase updateProductUseCase;
     private final UpdateProductAttributesUseCase updateProductAttributesUseCase;
+    private final UpdateProductInventoryUseCase updateProductInventoryUseCase;
 
     public SellerProductController(
             CreateProductUseCase createProductUseCase,
@@ -54,7 +58,8 @@ public class SellerProductController {
             PauseProductUseCase pauseProductUseCase,
             ArchiveProductUseCase archiveProductUseCase,
             UpdateProductUseCase updateProductUseCase,
-            UpdateProductAttributesUseCase updateProductAttributesUseCase
+            UpdateProductAttributesUseCase updateProductAttributesUseCase,
+            UpdateProductInventoryUseCase updateProductInventoryUseCase
     ) {
         this.createProductUseCase = createProductUseCase;
         this.publishProductUseCase = publishProductUseCase;
@@ -62,6 +67,7 @@ public class SellerProductController {
         this.archiveProductUseCase = archiveProductUseCase;
         this.updateProductUseCase = updateProductUseCase;
         this.updateProductAttributesUseCase = updateProductAttributesUseCase;
+        this.updateProductInventoryUseCase = updateProductInventoryUseCase;
     }
 
     @PostMapping
@@ -112,6 +118,29 @@ public class SellerProductController {
                 HttpStatus.OK.value(),
                 updateProductAttributesUseCase.successMessage(),
                 toAttributesResponse(result)
+        ));
+    }
+
+    @PatchMapping("/{productId}/inventory")
+    public ResponseEntity<ApiResponse<UpdateProductInventoryResponse>> updateProductInventory(
+            @PathVariable UUID productId,
+            @RequestBody @Valid UpdateProductInventoryRequest request,
+            Authentication authentication
+    ) {
+        UUID sellerId = resolveUserId(authentication);
+        UpdateProductInventoryResult result = updateProductInventoryUseCase.execute(
+                new UpdateProductInventoryCommand(
+                        sellerId,
+                        productId,
+                        request.stockQuantity(),
+                        request.lowStockThreshold()
+                )
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                updateProductInventoryUseCase.successMessage(),
+                toInventoryResponse(result)
         ));
     }
 
@@ -191,6 +220,22 @@ public class SellerProductController {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         return principal.userId();
+    }
+
+    private UpdateProductInventoryResponse toInventoryResponse(UpdateProductInventoryResult result) {
+        return new UpdateProductInventoryResponse(
+                result.productId(),
+                result.sellerId(),
+                result.shopId(),
+                result.status(),
+                result.previousStatus(),
+                result.statusChanged(),
+                result.stockQuantity(),
+                result.lowStockThreshold(),
+                result.reservedQuantity(),
+                result.cartItemsSynced(),
+                result.updatedAt()
+        );
     }
 
     private UpdateProductAttributesResponse toAttributesResponse(UpdateProductAttributesResult result) {
