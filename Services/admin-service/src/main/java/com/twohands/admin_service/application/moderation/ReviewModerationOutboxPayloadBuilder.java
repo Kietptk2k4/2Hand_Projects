@@ -21,13 +21,29 @@ public class ReviewModerationOutboxPayloadBuilder {
 	}
 
 	public String buildReviewHiddenPayload(ContentModerationLog moderationLog, UUID reviewId) {
+		Map<String, Object> payload = baseReviewModerationPayload(moderationLog, reviewId);
+		payload.put("hidden_by", moderationLog.adminId().toString());
+		payload.put("hidden_at", moderationLog.createdAt().toString());
+		return serialize(payload);
+	}
+
+	public String buildReviewRemovedPayload(ContentModerationLog moderationLog, UUID reviewId) {
+		Map<String, Object> payload = baseReviewModerationPayload(moderationLog, reviewId);
+		payload.put("removed_by", moderationLog.adminId().toString());
+		payload.put("removed_at", moderationLog.createdAt().toString());
+		return serialize(payload);
+	}
+
+	private Map<String, Object> baseReviewModerationPayload(ContentModerationLog moderationLog, UUID reviewId) {
 		Map<String, Object> payload = new LinkedHashMap<>();
 		payload.put("review_id", reviewId.toString());
 		payload.put("moderation_log_id", moderationLog.id().toString());
 		payload.put("action", moderationLog.action().name());
 		payload.put("reason", moderationLog.reason());
-		payload.put("hidden_by", moderationLog.adminId().toString());
-		payload.put("hidden_at", moderationLog.createdAt().toString());
+		return payload;
+	}
+
+	private String serialize(Map<String, Object> payload) {
 		try {
 			return objectMapper.writeValueAsString(payload);
 		} catch (JsonProcessingException ex) {

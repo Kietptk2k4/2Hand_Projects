@@ -3,6 +3,9 @@ package com.twohands.admin_service.delivery.http.moderation;
 import com.twohands.admin_service.application.moderation.hidereview.HideReviewCommand;
 import com.twohands.admin_service.application.moderation.hidereview.HideReviewResult;
 import com.twohands.admin_service.application.moderation.hidereview.HideReviewUseCase;
+import com.twohands.admin_service.application.moderation.removereview.RemoveReviewCommand;
+import com.twohands.admin_service.application.moderation.removereview.RemoveReviewResult;
+import com.twohands.admin_service.application.moderation.removereview.RemoveReviewUseCase;
 import com.twohands.admin_service.common.dto.ApiResponse;
 import com.twohands.admin_service.constant.AdminPermission;
 import com.twohands.admin_service.security.annotation.RequireAdminPermission;
@@ -22,9 +25,14 @@ import java.util.UUID;
 public class ReviewModerationController {
 
 	private final HideReviewUseCase hideReviewUseCase;
+	private final RemoveReviewUseCase removeReviewUseCase;
 
-	public ReviewModerationController(HideReviewUseCase hideReviewUseCase) {
+	public ReviewModerationController(
+			HideReviewUseCase hideReviewUseCase,
+			RemoveReviewUseCase removeReviewUseCase
+	) {
 		this.hideReviewUseCase = hideReviewUseCase;
+		this.removeReviewUseCase = removeReviewUseCase;
 	}
 
 	@PostMapping("/{reviewId}/hide")
@@ -51,5 +59,31 @@ public class ReviewModerationController {
 
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(ApiResponse.success(HttpStatus.OK.value(), hideReviewUseCase.successMessage(), data));
+	}
+
+	@PostMapping("/{reviewId}/remove")
+	@RequireAdminPermission({AdminPermission.REVIEW_REMOVE, AdminPermission.REVIEW_HIDE})
+	public ResponseEntity<ApiResponse<RemoveReviewResponse>> remove(
+			@PathVariable UUID reviewId,
+			@Valid @RequestBody RemoveReviewRequest request
+	) {
+		RemoveReviewResult result = removeReviewUseCase.execute(new RemoveReviewCommand(
+				reviewId,
+				request.reason(),
+				request.note()
+		));
+
+		RemoveReviewResponse data = new RemoveReviewResponse(
+				result.reviewId(),
+				result.moderationLogId(),
+				result.reason(),
+				result.note(),
+				result.removedBy(),
+				result.removedAt(),
+				result.outboxEventId()
+		);
+
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(ApiResponse.success(HttpStatus.OK.value(), removeReviewUseCase.successMessage(), data));
 	}
 }

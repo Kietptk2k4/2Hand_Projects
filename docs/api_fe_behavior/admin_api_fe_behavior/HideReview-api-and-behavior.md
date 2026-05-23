@@ -75,6 +75,7 @@ Cho phép admin **hide** review vi phạm: ghi moderation log, audit và publish
 
 | API | Mục đích |
 |-----|----------|
+| [RemoveReview](./RemoveReview-api-and-behavior.md) | Soft remove review |
 | Commerce `POST /commerce/api/v1/admin/reviews/{reviewId}/moderate` | Commerce-side moderate (`action=HIDE`) |
 
 ## 8. Permission

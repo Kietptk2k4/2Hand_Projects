@@ -18,6 +18,7 @@ public class AdminOutboxTopicResolver {
 			Map.entry("PRODUCT_REMOVED", "admin.product.removed"),
 			Map.entry("PRODUCT_RESTORED", "admin.product.restored"),
 			Map.entry("REVIEW_HIDDEN", "admin.review.hidden"),
+			Map.entry("REVIEW_REMOVED", "admin.review.removed"),
 			Map.entry("REVIEW_RESTORED", "admin.review.restored"),
 			Map.entry("SHOP_SUSPENDED", "admin.shop.suspended"),
 			Map.entry("SHOP_RESTORED", "admin.shop.restored"),
