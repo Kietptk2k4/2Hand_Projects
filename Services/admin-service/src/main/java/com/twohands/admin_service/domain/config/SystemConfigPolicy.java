@@ -37,6 +37,25 @@ public final class SystemConfigPolicy {
 		validateConfigValue(configValue, valueType);
 	}
 
+	public static void validateUpdateRequest(
+			String configValue,
+			SystemConfigValueType valueType,
+			String description,
+			String reason
+	) {
+		validateReason(reason);
+		validateDescription(description);
+		validateConfigValue(configValue, valueType);
+	}
+
+	public static String normalizeConfigValue(String configValue, SystemConfigValueType valueType) {
+		String trimmed = configValue.trim();
+		if (valueType == SystemConfigValueType.BOOLEAN) {
+			return trimmed.toLowerCase();
+		}
+		return trimmed;
+	}
+
 	public static SystemConfigValueType parseValueType(String rawValueType) {
 		if (rawValueType == null || rawValueType.isBlank()) {
 			throw validationError("value_type", "value_type is required");
