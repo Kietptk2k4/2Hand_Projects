@@ -14,7 +14,7 @@ Khi xac thuc thanh cong, tai khoan chuyen tu `PENDING_VERIFICATION` sang `ACTIVE
   - Cap nhat trang thai user va danh dau token da dung.
   - Ghi outbox event de cac service khac dong bo user da kich hoat.
 - **Out of Scope:**
-  - Resend OTP (API rieng).
+  - Resend OTP — xem `FR_ResendEmailVerification.md`.
   - Dang ky (API rieng).
   - Login (API rieng).
 

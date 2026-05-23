@@ -13,7 +13,7 @@ Chức năng cho phép người dùng (khách) tạo mới một tài khoản tr
   * Khởi tạo profile và settings mặc định.
   * Ghi nhận event vào bảng Outbox để yêu cầu gửi email xác thực.
 * **Out of Scope:** * Đăng ký bằng số điện thoại (chưa làm trong MVP).
-  * Gửi lại email xác thực (Resend OTP - là một API/chức năng riêng).
+  * Gửi lại email xác thực — xem `FR_ResendEmailVerification.md`.
   * Luồng xác thực email (Verify OTP - là một chức năng riêng).
 
 ## 4. Validation Rule

@@ -1,5 +1,8 @@
 package com.twohands.social_service.delivery.http.post;
 
+import com.twohands.social_service.application.comment.commentpost.CommentPostCommand;
+import com.twohands.social_service.application.comment.commentpost.CommentPostResult;
+import com.twohands.social_service.application.comment.commentpost.CommentPostUseCase;
 import com.twohands.social_service.application.post.createpost.CreatePostCommand;
 import com.twohands.social_service.application.post.createpost.CreatePostResult;
 import com.twohands.social_service.application.post.createpost.CreatePostUseCase;
@@ -16,6 +19,9 @@ import com.twohands.social_service.application.post.saveunsavepost.SaveUnsavePos
 import com.twohands.social_service.application.post.saveunsavepost.SaveUnsavePostResult;
 import com.twohands.social_service.application.post.saveunsavepost.SaveUnsavePostUseCase;
 import com.twohands.social_service.common.dto.ApiResponse;
+import com.twohands.social_service.domain.comment.CommentMediaItem;
+import com.twohands.social_service.delivery.http.comment.request.CommentPostRequest;
+import com.twohands.social_service.delivery.http.comment.response.CommentPostResponse;
 import com.twohands.social_service.delivery.http.post.request.CreatePostRequest;
 import com.twohands.social_service.delivery.http.post.request.EditPostRequest;
 import com.twohands.social_service.delivery.http.post.response.CreatePostResponse;
@@ -48,19 +54,22 @@ public class PostController {
     private final DeletePostUseCase deletePostUseCase;
     private final LikeUnlikePostUseCase likeUnlikePostUseCase;
     private final SaveUnsavePostUseCase saveUnsavePostUseCase;
+    private final CommentPostUseCase commentPostUseCase;
 
     public PostController(
             CreatePostUseCase createPostUseCase,
             EditPostUseCase editPostUseCase,
             DeletePostUseCase deletePostUseCase,
             LikeUnlikePostUseCase likeUnlikePostUseCase,
-            SaveUnsavePostUseCase saveUnsavePostUseCase
+            SaveUnsavePostUseCase saveUnsavePostUseCase,
+            CommentPostUseCase commentPostUseCase
     ) {
         this.createPostUseCase = createPostUseCase;
         this.editPostUseCase = editPostUseCase;
         this.deletePostUseCase = deletePostUseCase;
         this.likeUnlikePostUseCase = likeUnlikePostUseCase;
         this.saveUnsavePostUseCase = saveUnsavePostUseCase;
+        this.commentPostUseCase = commentPostUseCase;
     }
 
     @PostMapping
@@ -97,6 +106,24 @@ public class PostController {
                 editPostUseCase.successMessage(),
                 response
         ));
+    }
+
+    @PostMapping("/{postId}/comments")
+    public ResponseEntity<ApiResponse<CommentPostResponse>> commentPost(
+            @PathVariable String postId,
+            @RequestBody @Valid CommentPostRequest request,
+            Authentication authentication
+    ) {
+        UUID authorId = resolveUserId(authentication);
+        CommentPostCommand command = toCommentPostCommand(request, authorId, postId);
+        CommentPostResult result = commentPostUseCase.execute(command);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(
+                        HttpStatus.CREATED.value(),
+                        commentPostUseCase.successMessage(),
+                        toCommentPostResponse(result)
+                ));
     }
 
     @PostMapping("/{postId}/like")
@@ -270,6 +297,32 @@ public class PostController {
         return new SaveUnsavePostResponse(
                 result.postId(),
                 result.saved()
+        );
+    }
+
+    private CommentPostCommand toCommentPostCommand(CommentPostRequest request, UUID authorId, String postId) {
+        List<CommentMediaItem> media = request.media() != null
+                ? request.media().stream()
+                        .map(m -> new CommentMediaItem(m.url(), m.type()))
+                        .toList()
+                : List.of();
+        return new CommentPostCommand(authorId, postId, request.contentText(), media);
+    }
+
+    private CommentPostResponse toCommentPostResponse(CommentPostResult result) {
+        List<CommentPostResponse.MediaItemResponse> media = result.media().stream()
+                .map(m -> new CommentPostResponse.MediaItemResponse(m.url(), m.type()))
+                .toList();
+        return new CommentPostResponse(
+                result.commentId(),
+                result.postId(),
+                result.parentCommentId(),
+                result.authorId(),
+                result.contentText(),
+                media,
+                result.status(),
+                result.createdAt(),
+                result.updatedAt()
         );
     }
 }

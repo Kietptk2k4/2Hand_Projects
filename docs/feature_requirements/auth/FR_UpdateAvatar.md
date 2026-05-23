@@ -51,7 +51,8 @@ Cho phep user cap nhat anh dai dien (`avatar_url`) cho profile. He thong su dung
 - Khong log token dang upload hoac signed URL.
 
 ## 10. FE Behavior
-- FE upload file len MinIO (qua presigned URL hoac upload gateway), sau do goi API nay de luu `avatar_url`.
+- Buoc 1: lay presigned URL — `FR_AvatarUpload.md`.
+- Buoc 2: FE upload file len MinIO, sau do goi API nay de luu `avatar_url`.
 
 ## 11. Acceptance Criteria
 - Avatar duoc cap nhat thanh cong va hien thi lai tren profile.

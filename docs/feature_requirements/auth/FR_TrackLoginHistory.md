@@ -19,7 +19,7 @@ Muc tieu:
 - **Out of Scope:**
   - Lich su session refresh/logout.
   - Phan tich rui ro/geoIP nang cao.
-  - Dashboard admin xem lich su cua user khac.
+  - Dashboard admin xem lich su cua user khac — xem `FR_ViewLoginHistoryForAdmin.md`.
 
 ## 4. Preconditions
 - User da dang nhap hop le (co JWT access token).

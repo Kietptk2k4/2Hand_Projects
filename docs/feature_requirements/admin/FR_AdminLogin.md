@@ -26,7 +26,9 @@ Cho phep admin dang nhap vao admin portal thong qua Auth Service. Admin Service 
 
 ## 4. API Contract
 
-**Endpoint:** Auth Service endpoint, e.g. `POST /auth/api/v1/admin/login`
+**Source-of-truth spec:** `docs/feature_requirements/auth/FR_AdminLogin.md`
+
+**Endpoint:** Auth Service `POST /api/v1/auth/admin/login` (local: `http://localhost:{auth-port}/api/v1/auth/admin/login`)
 
 **Admin Service Endpoint:** None required unless acting as gateway.
 

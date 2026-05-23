@@ -1,0 +1,161 @@
+package com.twohands.social_service.application.comment.commentpost;
+
+import com.twohands.social_service.application.comment.common.CommentCreatedOutboxService;
+import com.twohands.social_service.domain.comment.Comment;
+import com.twohands.social_service.domain.comment.CommentMediaItem;
+import com.twohands.social_service.domain.comment.CommentRepository;
+import com.twohands.social_service.domain.comment.CommentStatus;
+import com.twohands.social_service.domain.outbox.OutboxEventRepository;
+import com.twohands.social_service.domain.post.Post;
+import com.twohands.social_service.domain.post.PostRepository;
+import com.twohands.social_service.domain.post.PostStatus;
+import com.twohands.social_service.domain.user.UserProjectionRepository;
+import com.twohands.social_service.exception.AppException;
+import com.twohands.social_service.exception.ErrorCode;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.regex.Pattern;
+
+@Service
+public class CommentPostUseCase {
+
+    private static final int MAX_CONTENT_LENGTH = 2000;
+    private static final int MAX_MEDIA_ITEMS = 5;
+    private static final Pattern UNSAFE_CONTENT_PATTERN = Pattern.compile(
+            "(?i)<\\s*script|javascript\\s*:|on\\w+\\s*="
+    );
+
+    private final CommentRepository commentRepository;
+    private final PostRepository postRepository;
+    private final OutboxEventRepository outboxEventRepository;
+    private final CommentCreatedOutboxService commentCreatedOutboxService;
+    private final UserProjectionRepository userProjectionRepository;
+
+    public CommentPostUseCase(
+            CommentRepository commentRepository,
+            PostRepository postRepository,
+            OutboxEventRepository outboxEventRepository,
+            CommentCreatedOutboxService commentCreatedOutboxService,
+            UserProjectionRepository userProjectionRepository
+    ) {
+        this.commentRepository = commentRepository;
+        this.postRepository = postRepository;
+        this.outboxEventRepository = outboxEventRepository;
+        this.commentCreatedOutboxService = commentCreatedOutboxService;
+        this.userProjectionRepository = userProjectionRepository;
+    }
+
+    @Transactional
+    public CommentPostResult execute(CommentPostCommand command) {
+        validateAuthor(command);
+        validatePayload(command);
+
+        Post post = postRepository.findById(command.postId())
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Bai viet khong ton tai."));
+
+        validatePostAllowsComment(post);
+
+        Instant now = Instant.now();
+        List<CommentMediaItem> media = command.media() != null ? command.media() : List.of();
+
+        Comment comment = new Comment(
+                null,
+                command.postId(),
+                command.authorId().toString(),
+                null,
+                command.contentText(),
+                media,
+                CommentStatus.ACTIVE,
+                0L,
+                now,
+                now,
+                null
+        );
+
+        Comment saved = commentRepository.save(comment);
+        postRepository.incrementReplyCount(command.postId());
+        outboxEventRepository.save(commentCreatedOutboxService.build(saved, now));
+
+        return toResult(saved);
+    }
+
+    public String successMessage() {
+        return "Tao binh luan thanh cong.";
+    }
+
+    private void validateAuthor(CommentPostCommand command) {
+        if (command.authorId() == null) {
+            throw new AppException(ErrorCode.UNAUTHORIZED, "Authentication required");
+        }
+        userProjectionRepository.findByUserId(command.authorId()).ifPresent(user -> {
+            if (user.isActionForbidden()) {
+                throw new AppException(ErrorCode.ACCOUNT_SUSPENDED,
+                        ErrorCode.ACCOUNT_SUSPENDED.defaultMessage());
+            }
+        });
+    }
+
+    private void validatePayload(CommentPostCommand command) {
+        if (command.postId() == null || command.postId().isBlank()) {
+            throw new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed",
+                    "postId", "Post ID khong hop le.");
+        }
+        if (command.contentText() == null || command.contentText().isBlank()) {
+            throw new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed",
+                    "contentText", "Noi dung binh luan khong duoc de trong.");
+        }
+        if (command.contentText().length() > MAX_CONTENT_LENGTH) {
+            throw new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed",
+                    "contentText", "Noi dung binh luan khong duoc vuot qua " + MAX_CONTENT_LENGTH + " ky tu.");
+        }
+        if (UNSAFE_CONTENT_PATTERN.matcher(command.contentText()).find()) {
+            throw new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed",
+                    "contentText", "Noi dung binh luan chua noi dung khong hop le.");
+        }
+        if (command.media() != null) {
+            if (command.media().size() > MAX_MEDIA_ITEMS) {
+                throw new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed",
+                        "media", "Khong duoc dinh kem qua " + MAX_MEDIA_ITEMS + " media items.");
+            }
+            for (CommentMediaItem item : command.media()) {
+                if (item.url() == null || item.url().isBlank()) {
+                    throw new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed",
+                            "media[].url", "URL media khong duoc de trong.");
+                }
+                if (!"IMAGE".equals(item.type()) && !"VIDEO".equals(item.type())) {
+                    throw new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed",
+                            "media[].type", "Media type chi chap nhan IMAGE hoac VIDEO.");
+                }
+            }
+        }
+    }
+
+    private void validatePostAllowsComment(Post post) {
+        if (post.status() == PostStatus.DELETED) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Bai viet khong ton tai.");
+        }
+        if (post.status() != PostStatus.ACTIVE) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Bai viet chua duoc xuat ban, khong the binh luan.");
+        }
+        if (!post.allowComments()) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Bai viet da tat binh luan.");
+        }
+    }
+
+    private CommentPostResult toResult(Comment comment) {
+        return new CommentPostResult(
+                comment.id(),
+                comment.postId(),
+                comment.parentCommentId(),
+                comment.authorId(),
+                comment.contentText(),
+                comment.media(),
+                comment.status().name(),
+                comment.createdAt() != null ? comment.createdAt().toString() : null,
+                comment.updatedAt() != null ? comment.updatedAt().toString() : null
+        );
+    }
+}
