@@ -29,6 +29,9 @@ notification:
       enabled: false
     retry-delivery:
       enabled: false
+  kafka:
+    consumer:
+      enabled: false
 
 jwt:
   access-secret: test-access-secret-key-minimum-32-characters-123456

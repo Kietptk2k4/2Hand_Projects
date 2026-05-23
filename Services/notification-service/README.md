@@ -29,6 +29,7 @@ flowchart LR
 | **PostgreSQL** | Notification events, deliveries, user notifications (theo migration) |
 | **Redis** | Hỗ trợ cache / rate limit (nếu bật) |
 | **Internal ingest** | Nhận event JSON từ service khác hoặc curl dev (`X-Internal-Api-Key`) |
+| **Kafka consumer** | Consume domain events từ Auth/Social/Commerce/Admin (`NOTIFICATION_KAFKA_CONSUMER_ENABLED`, tắt mặc định) |
 | **Workers** | `ProcessPendingNotificationEvents`, retry event/delivery (cron, tắt mặc định) |
 
 ---
@@ -102,7 +103,7 @@ Notification là **consumer trung tâm** cho các event từ Auth, Social, Comme
 | Commerce | `COMMERCE_ORDER_CREATED`, `COMMERCE_PAYMENT_PAID` | Thông báo đơn hàng |
 | Admin | `SYSTEM_ANNOUNCEMENT_PUBLISHED` | Broadcast |
 
-Luồng Kafka consumer đầy đủ sẽ bật khi có broker + cấu hình consumer (chưa trong `Infrastructure/docker-compose.yml`).
+Luồng Kafka consumer: bật `NOTIFICATION_KAFKA_CONSUMER_ENABLED=true` khi có broker. Dev-only vẫn có thể dùng `POST /internal/events`.
 
 ---
 
@@ -162,7 +163,7 @@ cd Services/notification-service
 ./gradlew test
 ```
 
-Use cases hiện có: `StoreNotificationEventUseCase`, `EnsureNotificationEventIdempotencyUseCase`, `CreateIdempotentUserNotificationUseCase`, `RecoverStaleProcessingNotificationEventsUseCase`, `IngestNotificationEventUseCase`, `ProcessPendingNotificationEventsUseCase`, `RetryFailedNotificationEventsUseCase`, `RetryFailedNotificationDeliveryUseCase`.
+Use cases hiện có: `ConsumeDomainEventUseCase`, `StoreNotificationEventUseCase`, `EnsureNotificationEventIdempotencyUseCase`, `CreateIdempotentUserNotificationUseCase`, `RecoverStaleProcessingNotificationEventsUseCase`, `IngestNotificationEventUseCase`, `ProcessPendingNotificationEventsUseCase`, `RetryFailedNotificationEventsUseCase`, `RetryFailedNotificationDeliveryUseCase`.
 
 ---
 
@@ -170,6 +171,7 @@ Use cases hiện có: `StoreNotificationEventUseCase`, `EnsureNotificationEventI
 
 ```
 src/main/java/com/twohands/notification_service/
+├── application/consume/    # ConsumeDomainEventUseCase, envelope parser
 ├── application/ingest/       # Store, Ingest
 ├── application/idempotency/  # Ensure event/user idempotency, stale recovery
 ├── application/worker/       # Process / retry use cases

@@ -72,3 +72,8 @@ notification:
       enabled: ${NOTIFICATION_FCM_ENABLED:false}
     email:
       enabled: ${NOTIFICATION_EMAIL_ENABLED:false}
+  kafka:
+    consumer:
+      enabled: ${NOTIFICATION_KAFKA_CONSUMER_ENABLED:false}
+      bootstrap-servers: ${NOTIFICATION_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+      group-id: ${NOTIFICATION_KAFKA_CONSUMER_GROUP_ID:notification-domain-events}

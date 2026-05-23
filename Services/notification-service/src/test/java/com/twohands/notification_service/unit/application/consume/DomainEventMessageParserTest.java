@@ -1,0 +1,81 @@
+package com.twohands.notification_service.unit.application.consume;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.notification_service.application.consume.DomainEventMessageParser;
+import com.twohands.notification_service.application.consume.DomainEventTopicResolver;
+import com.twohands.notification_service.application.consume.InvalidDomainEventException;
+import com.twohands.notification_service.domain.notificationevent.NotificationEventTypeAliasResolver;
+import com.twohands.notification_service.domain.notificationevent.NotificationSourceService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class DomainEventMessageParserTest {
+
+    private DomainEventMessageParser parser;
+
+    @BeforeEach
+    void setUp() {
+        parser = new DomainEventMessageParser(
+                new ObjectMapper(),
+                new DomainEventTopicResolver(),
+                new NotificationEventTypeAliasResolver()
+        );
+    }
+
+    @Test
+    void parse_validEnvelopeFromSocialTopic() {
+        UUID eventId = UUID.randomUUID();
+        UUID actorId = UUID.randomUUID();
+        UUID recipientId = UUID.randomUUID();
+
+        String json = """
+                {
+                  "event_id": "%s",
+                  "event_type": "POST_LIKED",
+                  "source_service": "SOCIAL",
+                  "event_key": "social.post.post-id.liked",
+                  "aggregate_type": "POST",
+                  "aggregate_id": "post-id",
+                  "actor_id": "%s",
+                  "recipient_user_ids": ["%s"],
+                  "occurred_at": "2026-05-20T16:00:00Z",
+                  "payload": {"post_id":"post-id","actor_name":"Alice"}
+                }
+                """.formatted(eventId, actorId, recipientId);
+
+        var command = parser.parse(json, "social.post.liked");
+
+        assertEquals(eventId, command.eventId());
+        assertEquals("POST_LIKED", command.eventType());
+        assertEquals(NotificationSourceService.SOCIAL, command.sourceService());
+        assertEquals(recipientId, command.recipientUserId());
+        assertEquals(actorId, command.actorId());
+    }
+
+    @Test
+    void parse_resolvesCommerceAliasFromTopicFallback() {
+        UUID eventId = UUID.randomUUID();
+
+        String json = """
+                {
+                  "event_id": "%s",
+                  "payload": {"order_id":"order-1","buyer_id":"%s"}
+                }
+                """.formatted(eventId, UUID.randomUUID());
+
+        var command = parser.parse(json, "commerce.payment.paid");
+
+        assertEquals("PAYMENT_SUCCESS", command.eventType());
+        assertEquals(NotificationSourceService.COMMERCE, command.sourceService());
+    }
+
+    @Test
+    void parse_rejectsMissingEventId() {
+        assertThrows(InvalidDomainEventException.class, () -> parser.parse("{}", "social.post.liked"));
+    }
+}
