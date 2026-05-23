@@ -77,6 +77,7 @@ Cho phép admin **suspend** shop seller trên Commerce: ghi moderation log, audi
 | API | Mục đích |
 |-----|----------|
 | [CloseShop](./CloseShop-api-and-behavior.md) | Close shop (vĩnh viễn) |
+| [ReopenShop](./ReopenShop-api-and-behavior.md) | Reopen shop sau suspend/close |
 | Commerce `POST /commerce/api/v1/admin/shops/{shopId}/moderate` | Commerce-side moderate (`action=SUSPEND`) |
 
 ## 8. Permission

@@ -31,6 +31,10 @@ public final class ProductModerationPolicy {
 		validateModerationRequest(reason, note);
 	}
 
+	public static void validateReopenRequest(String reason, String note) {
+		validateModerationRequest(reason, note);
+	}
+
 	public static String normalizeOptionalNote(String note) {
 		if (note == null) {
 			return null;
