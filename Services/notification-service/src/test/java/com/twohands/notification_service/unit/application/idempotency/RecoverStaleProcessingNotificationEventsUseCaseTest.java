@@ -1,7 +1,10 @@
 package com.twohands.notification_service.unit.application.idempotency;
 
-import com.twohands.notification_service.application.idempotency.BoundedNotificationErrorSanitizer;
 import com.twohands.notification_service.application.idempotency.RecoverStaleProcessingNotificationEventsUseCase;
+import com.twohands.notification_service.application.worker.MarkNotificationEventFailedCommand;
+import com.twohands.notification_service.application.worker.MarkNotificationEventFailedResult;
+import com.twohands.notification_service.application.worker.MarkNotificationEventFailedUseCase;
+import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventRepository;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventStatus;
@@ -9,7 +12,6 @@ import com.twohands.notification_service.domain.notificationevent.NotificationSo
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -18,7 +20,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -30,33 +31,35 @@ class RecoverStaleProcessingNotificationEventsUseCaseTest {
     @Mock
     private NotificationEventRepository notificationEventRepository;
 
+    @Mock
+    private MarkNotificationEventFailedUseCase markNotificationEventFailedUseCase;
+
     private RecoverStaleProcessingNotificationEventsUseCase useCase;
 
     @BeforeEach
     void setUp() {
         useCase = new RecoverStaleProcessingNotificationEventsUseCase(
                 notificationEventRepository,
-                new BoundedNotificationErrorSanitizer()
+                markNotificationEventFailedUseCase
         );
     }
 
     @Test
-    void execute_marksStaleProcessingEventsAsFailedRetryable() {
+    void execute_delegatesStaleEventsToMarkFailedUseCase() {
         NotificationEvent stale = staleEvent();
         when(notificationEventRepository.findStaleProcessingEvents(any(Instant.class), eq(10)))
                 .thenReturn(List.of(stale));
+        when(markNotificationEventFailedUseCase.execute(any(MarkNotificationEventFailedCommand.class)))
+                .thenReturn(new MarkNotificationEventFailedResult(stale.id(), 1, 5, false, true));
 
         int recovered = useCase.execute(10, 300);
 
         assertEquals(1, recovered);
-        ArgumentCaptor<NotificationEvent> captor = ArgumentCaptor.forClass(NotificationEvent.class);
-        verify(notificationEventRepository).save(captor.capture());
-        NotificationEvent saved = captor.getValue();
-        assertEquals(NotificationEventStatus.FAILED, saved.status());
-        assertEquals(1, saved.retryCount());
-        assertEquals(RecoverStaleProcessingNotificationEventsUseCase.STALE_PROCESSING_ERROR, saved.lastError());
-        assertNull(saved.lockedAt());
-        assertNull(saved.lockedBy());
+        verify(markNotificationEventFailedUseCase).execute(new MarkNotificationEventFailedCommand(
+                stale.id(),
+                RecoverStaleProcessingNotificationEventsUseCase.STALE_PROCESSING_ERROR,
+                NotificationFailurePolicy.RETRYABLE
+        ));
     }
 
     private NotificationEvent staleEvent() {

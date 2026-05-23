@@ -9,6 +9,8 @@ public interface NotificationEventRepository {
 
     NotificationEvent save(NotificationEvent event);
 
+    Optional<NotificationEvent> findById(UUID id);
+
     Optional<NotificationEvent> findBySourceServiceAndSourceEventId(
             NotificationSourceService sourceService,
             UUID sourceEventId

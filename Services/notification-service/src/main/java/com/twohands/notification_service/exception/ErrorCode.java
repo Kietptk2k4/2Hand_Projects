@@ -9,6 +9,7 @@ public enum ErrorCode {
     UNAUTHORIZED("NOTIFICATION-401", HttpStatus.UNAUTHORIZED, "Authentication required"),
     FORBIDDEN("NOTIFICATION-403", HttpStatus.FORBIDDEN, "Access denied"),
     RESOURCE_NOT_FOUND("NOTIFICATION-404", HttpStatus.NOT_FOUND, "Resource not found"),
+    NOTIFICATION_EVENT_NOT_FOUND("NOTIFICATION-404-EVENT", HttpStatus.NOT_FOUND, "Notification event not found"),
     DUPLICATE_EVENT("NOTIFICATION-409-DUPLICATE-EVENT", HttpStatus.CONFLICT, "Event already ingested"),
     MISSING_IDEMPOTENCY_KEY(
             "NOTIFICATION-400-MISSING-IDEMPOTENCY-KEY",

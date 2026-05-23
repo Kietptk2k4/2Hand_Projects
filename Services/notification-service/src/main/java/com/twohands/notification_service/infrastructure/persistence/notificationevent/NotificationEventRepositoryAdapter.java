@@ -22,6 +22,11 @@ public class NotificationEventRepositoryAdapter implements NotificationEventRepo
     }
 
     @Override
+    public Optional<NotificationEvent> findById(UUID id) {
+        return jpaRepository.findById(id).map(NotificationEventMapper::toDomain);
+    }
+
+    @Override
     public NotificationEvent save(NotificationEvent event) {
         NotificationEventEntity saved = jpaRepository.save(NotificationEventMapper.toEntity(event));
         return NotificationEventMapper.toDomain(saved);
