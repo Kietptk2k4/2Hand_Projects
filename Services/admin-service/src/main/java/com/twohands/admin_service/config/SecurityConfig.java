@@ -38,7 +38,7 @@ public class SecurityConfig {
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/actuator/health", "/actuator/info").permitAll()
-						.requestMatchers("/admin/api/v1/auth/login").permitAll()
+						.requestMatchers("/admin/api/v1/auth/login", "/admin/api/v1/auth/token/refresh").permitAll()
 						.requestMatchers("/admin/api/v1/**").authenticated()
 						.anyRequest().denyAll()
 				)

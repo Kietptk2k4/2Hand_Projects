@@ -75,6 +75,28 @@ public class JwtTokenIssuer {
         return new TokenPair(accessToken, refreshToken, accessExpiresAt, refreshExpiresAt, accessExpirationMillis / 1000);
     }
 
+    public AccessTokenOnly issueAdminAccessOnly(
+            UUID userId,
+            String email,
+            String status,
+            List<String> roles,
+            List<String> permissions,
+            Instant now
+    ) {
+        Instant accessExpiresAt = now.plusMillis(accessExpirationMillis);
+        String accessToken = Jwts.builder()
+                .subject(userId.toString())
+                .claim("email", email)
+                .claim("status", status)
+                .claim("roles", roles == null || roles.isEmpty() ? List.of() : roles)
+                .claim("permissions", permissions == null || permissions.isEmpty() ? List.of() : permissions)
+                .issuedAt(java.util.Date.from(now))
+                .expiration(java.util.Date.from(accessExpiresAt))
+                .signWith(accessSecretKey)
+                .compact();
+        return new AccessTokenOnly(accessToken, accessExpiresAt, accessExpirationMillis / 1000);
+    }
+
     public AccessTokenOnly issueAccessToken(UUID userId, String email, String status, Instant now) {
         Instant accessExpiresAt = now.plusMillis(accessExpirationMillis);
         String accessToken = Jwts.builder()
