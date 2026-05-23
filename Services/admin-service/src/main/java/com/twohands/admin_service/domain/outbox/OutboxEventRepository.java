@@ -14,4 +14,6 @@ public interface OutboxEventRepository {
 	int markPublished(UUID eventId, Instant publishedAt);
 
 	int markFailed(UUID eventId, String lastError);
+
+	int revertProcessingToFailed(UUID eventId);
 }

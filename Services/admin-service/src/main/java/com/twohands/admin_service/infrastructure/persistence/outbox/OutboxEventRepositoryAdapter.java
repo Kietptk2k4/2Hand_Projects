@@ -140,6 +140,20 @@ public class OutboxEventRepositoryAdapter implements OutboxEventRepository {
 				.addValue("eventId", eventId));
 	}
 
+	@Override
+	public int revertProcessingToFailed(UUID eventId) {
+		String sql = """
+				UPDATE outbox_events
+				SET status = :failedStatus
+				WHERE id = :eventId
+				  AND status = :processingStatus
+				""";
+		return jdbcTemplate.update(sql, new MapSqlParameterSource()
+				.addValue("failedStatus", OutboxStatus.FAILED.name())
+				.addValue("processingStatus", OutboxStatus.PROCESSING.name())
+				.addValue("eventId", eventId));
+	}
+
 	private void markProcessing(List<OutboxEvent> candidates) {
 		String markProcessingSql = """
 				UPDATE outbox_events

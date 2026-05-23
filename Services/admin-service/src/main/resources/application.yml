@@ -69,6 +69,7 @@ admin:
       max-retries: ${ADMIN_OUTBOX_RETRY_MAX_RETRIES:5}
       pending-timeout-seconds: ${ADMIN_OUTBOX_RETRY_PENDING_TIMEOUT_SECONDS:300}
       batch-size: ${ADMIN_OUTBOX_RETRY_BATCH_SIZE:50}
+      backoff-seconds-per-attempt: ${ADMIN_OUTBOX_RETRY_BACKOFF_SECONDS_PER_ATTEMPT:60}
   jobs:
     enforcement-expiration:
       enabled: ${ADMIN_ENFORCEMENT_EXPIRATION_ENABLED:false}
