@@ -9,6 +9,7 @@ public enum ErrorCode {
 	UNAUTHORIZED("ADMIN-401", HttpStatus.UNAUTHORIZED, "Authentication required"),
 	FORBIDDEN("ADMIN-403", HttpStatus.FORBIDDEN, "Access denied"),
 	RESOURCE_NOT_FOUND("ADMIN-404", HttpStatus.NOT_FOUND, "Resource not found"),
+	ENFORCEMENT_CONFLICT("ADMIN-409-ENFORCEMENT", HttpStatus.CONFLICT, "User already has an active enforcement of this type"),
 	INVALID_PAGINATION("ADMIN-400-PAGINATION", HttpStatus.BAD_REQUEST, "Invalid pagination parameters"),
 	SERVICE_UNAVAILABLE("ADMIN-503", HttpStatus.SERVICE_UNAVAILABLE, "Authorization service unavailable"),
 	AUDIT_PAYLOAD_ERROR("ADMIN-400-AUDIT", HttpStatus.BAD_REQUEST, "Critical audit payload could not be stored");
