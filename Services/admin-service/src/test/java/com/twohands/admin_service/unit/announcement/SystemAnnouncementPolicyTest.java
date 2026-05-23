@@ -45,6 +45,24 @@ class SystemAnnouncementPolicyTest {
 	}
 
 	@Test
+	void shouldRejectDismissWhenNotDismissible() {
+		assertThatThrownBy(() -> SystemAnnouncementPolicy.assertDismissible(false))
+				.isInstanceOf(AppException.class)
+				.extracting(ex -> ((AppException) ex).getErrorCode())
+				.isEqualTo(ErrorCode.SYSTEM_ANNOUNCEMENT_CONFLICT);
+	}
+
+	@Test
+	void shouldRejectDismissWhenDraft() {
+		assertThatThrownBy(() -> SystemAnnouncementPolicy.assertActiveForDismiss(
+				com.twohands.admin_service.domain.announcement.SystemAnnouncementStatus.DRAFT
+		))
+				.isInstanceOf(AppException.class)
+				.extracting(ex -> ((AppException) ex).getErrorCode())
+				.isEqualTo(ErrorCode.SYSTEM_ANNOUNCEMENT_CONFLICT);
+	}
+
+	@Test
 	void shouldRejectPinWhenCancelled() {
 		assertThatThrownBy(() -> SystemAnnouncementPolicy.assertPinAllowed(
 				com.twohands.admin_service.domain.announcement.SystemAnnouncementStatus.CANCELLED

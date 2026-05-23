@@ -75,6 +75,31 @@ public final class SystemAnnouncementPolicy {
 		return status == SystemAnnouncementStatus.DRAFT || status == SystemAnnouncementStatus.SENT;
 	}
 
+	public static void assertDismissible(boolean dismissible) {
+		if (!dismissible) {
+			throw new AppException(
+					ErrorCode.SYSTEM_ANNOUNCEMENT_CONFLICT,
+					"Announcement is not dismissible"
+			);
+		}
+	}
+
+	public static void assertActiveForDismiss(SystemAnnouncementStatus status) {
+		if (status == SystemAnnouncementStatus.SENT) {
+			return;
+		}
+		if (status == SystemAnnouncementStatus.CANCELLED) {
+			throw new AppException(
+					ErrorCode.SYSTEM_ANNOUNCEMENT_CONFLICT,
+					"Cancelled announcements cannot be dismissed"
+			);
+		}
+		throw new AppException(
+				ErrorCode.SYSTEM_ANNOUNCEMENT_CONFLICT,
+				"Only sent announcements can be dismissed"
+		);
+	}
+
 	private static void validateTitle(String title) {
 		String normalized = normalizeTitle(title);
 		if (normalized.isEmpty()) {

@@ -1,5 +1,8 @@
 package com.twohands.admin_service.delivery.http.announcement;
 
+import com.twohands.admin_service.application.announcement.dismisssystemannouncement.DismissSystemAnnouncementCommand;
+import com.twohands.admin_service.application.announcement.dismisssystemannouncement.DismissSystemAnnouncementResult;
+import com.twohands.admin_service.application.announcement.dismisssystemannouncement.DismissSystemAnnouncementUseCase;
 import com.twohands.admin_service.application.announcement.cancelsystemannouncement.CancelSystemAnnouncementCommand;
 import com.twohands.admin_service.application.announcement.cancelsystemannouncement.CancelSystemAnnouncementResult;
 import com.twohands.admin_service.application.announcement.cancelsystemannouncement.CancelSystemAnnouncementUseCase;
@@ -35,17 +38,20 @@ public class SystemAnnouncementController {
 	private final PublishSystemAnnouncementUseCase publishSystemAnnouncementUseCase;
 	private final PinSystemAnnouncementUseCase pinSystemAnnouncementUseCase;
 	private final CancelSystemAnnouncementUseCase cancelSystemAnnouncementUseCase;
+	private final DismissSystemAnnouncementUseCase dismissSystemAnnouncementUseCase;
 
 	public SystemAnnouncementController(
 			CreateSystemAnnouncementUseCase createSystemAnnouncementUseCase,
 			PublishSystemAnnouncementUseCase publishSystemAnnouncementUseCase,
 			PinSystemAnnouncementUseCase pinSystemAnnouncementUseCase,
-			CancelSystemAnnouncementUseCase cancelSystemAnnouncementUseCase
+			CancelSystemAnnouncementUseCase cancelSystemAnnouncementUseCase,
+			DismissSystemAnnouncementUseCase dismissSystemAnnouncementUseCase
 	) {
 		this.createSystemAnnouncementUseCase = createSystemAnnouncementUseCase;
 		this.publishSystemAnnouncementUseCase = publishSystemAnnouncementUseCase;
 		this.pinSystemAnnouncementUseCase = pinSystemAnnouncementUseCase;
 		this.cancelSystemAnnouncementUseCase = cancelSystemAnnouncementUseCase;
+		this.dismissSystemAnnouncementUseCase = dismissSystemAnnouncementUseCase;
 	}
 
 	@PostMapping
@@ -157,5 +163,28 @@ public class SystemAnnouncementController {
 				: cancelSystemAnnouncementUseCase.idempotentMessage();
 
 		return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), message, data));
+	}
+
+	@PostMapping("/{announcementId}/dismiss")
+	public ResponseEntity<ApiResponse<DismissSystemAnnouncementResponse>> dismiss(
+			@PathVariable UUID announcementId
+	) {
+		DismissSystemAnnouncementResult result = dismissSystemAnnouncementUseCase.execute(
+				new DismissSystemAnnouncementCommand(announcementId)
+		);
+
+		DismissSystemAnnouncementResponse data = new DismissSystemAnnouncementResponse(
+				result.announcementId(),
+				result.title(),
+				result.status().name(),
+				result.dismissible(),
+				result.clientSidePersistence()
+		);
+
+		return ResponseEntity.ok(ApiResponse.success(
+				HttpStatus.OK.value(),
+				dismissSystemAnnouncementUseCase.successMessage(),
+				data
+		));
 	}
 }
