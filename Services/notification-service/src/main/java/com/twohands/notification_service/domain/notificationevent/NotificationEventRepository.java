@@ -22,4 +22,6 @@ public interface NotificationEventRepository {
     );
 
     List<NotificationEvent> findStaleProcessingEvents(Instant lockedBefore, int limit);
+
+    List<NotificationEvent> claimProcessableEvents(int batchSize, String lockedBy);
 }

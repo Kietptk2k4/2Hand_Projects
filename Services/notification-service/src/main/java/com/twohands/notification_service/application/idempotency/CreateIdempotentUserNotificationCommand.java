@@ -1,5 +1,7 @@
 package com.twohands.notification_service.application.idempotency;
 
+import com.twohands.notification_service.domain.usernotification.NotificationDeliveryStatus;
+
 import java.util.UUID;
 
 public record CreateIdempotentUserNotificationCommand(
@@ -11,6 +13,7 @@ public record CreateIdempotentUserNotificationCommand(
         String content,
         String referenceType,
         String referenceId,
-        String metadata
+        String metadata,
+        NotificationDeliveryStatus deliveryStatus
 ) {
 }

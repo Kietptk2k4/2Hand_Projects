@@ -130,7 +130,8 @@ class CreateIdempotentUserNotificationUseCaseTest {
                 "Alice liked your post",
                 "POST",
                 "post-id",
-                "{}"
+                "{}",
+                NotificationDeliveryStatus.PENDING
         );
     }
 

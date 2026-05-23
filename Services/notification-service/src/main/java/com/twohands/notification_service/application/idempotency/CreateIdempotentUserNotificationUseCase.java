@@ -53,7 +53,7 @@ public class CreateIdempotentUserNotificationUseCase {
                 false,
                 false,
                 normalizeMetadata(command.metadata()),
-                NotificationDeliveryStatus.PENDING,
+                resolveDeliveryStatus(command.deliveryStatus()),
                 Instant.now(),
                 null
         );
@@ -93,6 +93,10 @@ public class CreateIdempotentUserNotificationUseCase {
             return "{}";
         }
         return metadata;
+    }
+
+    private NotificationDeliveryStatus resolveDeliveryStatus(NotificationDeliveryStatus deliveryStatus) {
+        return deliveryStatus == null ? NotificationDeliveryStatus.PENDING : deliveryStatus;
     }
 
     private AppException validationError(String field, String reason) {

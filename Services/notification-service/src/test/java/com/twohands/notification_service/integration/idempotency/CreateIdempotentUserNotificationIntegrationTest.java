@@ -2,6 +2,7 @@ package com.twohands.notification_service.integration.idempotency;
 
 import com.twohands.notification_service.application.idempotency.CreateIdempotentUserNotificationCommand;
 import com.twohands.notification_service.application.idempotency.CreateIdempotentUserNotificationUseCase;
+import com.twohands.notification_service.domain.usernotification.NotificationDeliveryStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +56,8 @@ class CreateIdempotentUserNotificationIntegrationTest {
                 "Alice liked your post",
                 "POST",
                 "post-id",
-                "{}"
+                "{}",
+                NotificationDeliveryStatus.PENDING
         );
     }
 
