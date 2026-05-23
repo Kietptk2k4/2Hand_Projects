@@ -1,0 +1,34 @@
+package com.twohands.admin_service.domain.audit;
+
+import java.util.Set;
+
+/**
+ * Determines when audit payloads are persisted (FR_LogCriticalAdminActionPayload).
+ */
+public final class AdminActionLogPolicy {
+
+	private static final Set<String> CRITICAL_ACTION_TYPES = Set.of(
+			"USER_SUSPEND",
+			"USER_BAN",
+			"USER_RESTRICT",
+			"USER_ENFORCEMENT_REVOKE",
+			"PRODUCT_REMOVE",
+			"REVIEW_HIDE",
+			"SHOP_SUSPEND",
+			"SHOP_CLOSE",
+			"POST_MODERATE",
+			"COMMENT_MODERATE",
+			"SYSTEM_CONFIG_CREATE",
+			"SYSTEM_CONFIG_UPDATE",
+			"SYSTEM_CONFIG_TOGGLE",
+			"SYSTEM_ANNOUNCEMENT_PUBLISH",
+			"REFUND_EXECUTE"
+	);
+
+	private AdminActionLogPolicy() {
+	}
+
+	public static boolean isCriticalAction(String actionType) {
+		return actionType != null && CRITICAL_ACTION_TYPES.contains(actionType);
+	}
+}
