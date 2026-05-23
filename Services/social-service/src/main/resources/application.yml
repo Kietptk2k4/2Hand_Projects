@@ -49,6 +49,20 @@ jwt:
   refresh-expiration: 2592000000
 
 social:
+  kafka:
+    consumer:
+      enabled: ${SOCIAL_KAFKA_CONSUMER_ENABLED:false}
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+      group-id: social-user-projection
+      topics:
+        - auth.user.created
+        - auth.user.updated
+        - auth.user.deleted
+        - admin.user.suspended
+        - admin.user.banned
+        - admin.user.restricted
+        - admin.user.enforcement_revoked
+        - admin.user.enforcement_expired
   outbox:
     publish:
       enabled: ${SOCIAL_OUTBOX_PUBLISH_ENABLED:false}

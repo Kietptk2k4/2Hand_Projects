@@ -5,4 +5,6 @@ import java.util.UUID;
 
 public interface UserProjectionRepository {
     Optional<UserProjection> findByUserId(UUID userId);
+
+    UserProjection upsert(UserProjection projection);
 }

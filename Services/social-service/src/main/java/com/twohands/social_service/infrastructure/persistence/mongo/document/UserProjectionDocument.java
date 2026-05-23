@@ -48,4 +48,24 @@ public class UserProjectionDocument {
     public Boolean getIsPrivate() {
         return isPrivate;
     }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
+
+    public void setIsPrivate(Boolean isPrivate) {
+        this.isPrivate = isPrivate;
+    }
 }

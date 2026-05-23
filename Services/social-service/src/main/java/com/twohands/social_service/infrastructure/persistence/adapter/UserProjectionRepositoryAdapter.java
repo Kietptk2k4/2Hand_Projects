@@ -21,12 +21,41 @@ public class UserProjectionRepositoryAdapter implements UserProjectionRepository
     @Override
     public Optional<UserProjection> findByUserId(UUID userId) {
         return mongoUserProjectionRepository.findByUserId(userId.toString())
-                .map(doc -> new UserProjection(
-                        doc.getUserId(),
-                        doc.getStatus(),
-                        doc.getDisplayName(),
-                        doc.getAvatarUrl(),
-                        doc.getIsPrivate()
-                ));
+                .map(this::toDomain);
+    }
+
+    @Override
+    public UserProjection upsert(UserProjection projection) {
+        UserProjectionDocument document = mongoUserProjectionRepository.findByUserId(projection.userId())
+                .orElseGet(UserProjectionDocument::new);
+
+        if (document.getId() == null) {
+            document.setUserId(projection.userId());
+        }
+        if (projection.status() != null) {
+            document.setStatus(projection.status());
+        }
+        if (projection.displayName() != null) {
+            document.setDisplayName(projection.displayName());
+        }
+        if (projection.avatarUrl() != null) {
+            document.setAvatarUrl(projection.avatarUrl());
+        }
+        if (projection.isPrivate() != null) {
+            document.setIsPrivate(projection.isPrivate());
+        }
+
+        UserProjectionDocument saved = mongoUserProjectionRepository.save(document);
+        return toDomain(saved);
+    }
+
+    private UserProjection toDomain(UserProjectionDocument doc) {
+        return new UserProjection(
+                doc.getUserId(),
+                doc.getStatus(),
+                doc.getDisplayName(),
+                doc.getAvatarUrl(),
+                doc.getIsPrivate()
+        );
     }
 }
