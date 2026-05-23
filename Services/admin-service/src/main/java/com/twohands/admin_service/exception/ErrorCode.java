@@ -9,7 +9,8 @@ public enum ErrorCode {
 	UNAUTHORIZED("ADMIN-401", HttpStatus.UNAUTHORIZED, "Authentication required"),
 	FORBIDDEN("ADMIN-403", HttpStatus.FORBIDDEN, "Access denied"),
 	RESOURCE_NOT_FOUND("ADMIN-404", HttpStatus.NOT_FOUND, "Resource not found"),
-	INVALID_PAGINATION("ADMIN-400-PAGINATION", HttpStatus.BAD_REQUEST, "Invalid pagination parameters");
+	INVALID_PAGINATION("ADMIN-400-PAGINATION", HttpStatus.BAD_REQUEST, "Invalid pagination parameters"),
+	SERVICE_UNAVAILABLE("ADMIN-503", HttpStatus.SERVICE_UNAVAILABLE, "Authorization service unavailable");
 
 	private final String code;
 	private final HttpStatus status;

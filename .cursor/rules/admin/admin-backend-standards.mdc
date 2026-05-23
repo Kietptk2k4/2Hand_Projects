@@ -1,0 +1,252 @@
+---
+description: Chuẩn backend bắt buộc cho admin-service — architecture, auth boundary, moderation, audit, outbox, integrations (tổng hợp từ docs/)
+globs: Services/admin-service/**,docs/feature_requirements/admin/**,docs/business_flow/admin_business_flow/**,docs/use_cases/admin_use_cases/**,docs/business-spec/admin-service-spec.md,docs/database/admin-schema.md
+alwaysApply: false
+---
+
+# Admin Backend Standards
+
+Trước khi code hoặc review bất kỳ thứ gì liên quan **Admin Service**, bắt buộc tuân thủ chuẩn backend chung (`.cursor/rules/social/social-backend-standards.mdc`) **và** toàn bộ quy tắc dưới đây. Source-of-truth nghiệp vụ: `docs/business-spec/admin-service-spec.md`.
+
+## 1. Service Boundary
+
+- **Own:** system configs + history, system announcements, admin action logs, user enforcements + logs, content moderation logs, `outbox_events`.
+- **PostgreSQL only** cho MVP (`admin_db`, port local **5436**). Không MongoDB trong admin-service.
+- **Không** truy cập DB Auth/Commerce/Social/Notification. Chỉ lưu `user_id` / `admin_id` (UUID logical reference). Profile/session/role/permission source-of-truth: **Auth Service**.
+- **Không** lưu password, refresh token, admin session, OAuth credential trong Admin DB.
+- Product/shop/review/order/post/comment state: **owner service** apply; Admin ghi quyết định + audit + publish event / gọi internal API khi cần đồng bộ.
+
+## 2. Architecture & Package
+
+Dependency flow: `delivery → application → domain → infrastructure` (không đảo chiều).
+
+```
+src/main/java/com/twohands/admin_service/
+├── application    # UseCase, @Transactional write boundary, AdminAuthorizationService usage
+├── delivery       # Controller, XxxRequest/XxxResponse, @PreAuthorize / permission guard
+├── domain         # Entity, rule, repository interface, AdminAuthorizationService (interface)
+├── infrastructure # JPA, Redis, outbox, Auth/Commerce/Social HTTP client (khi bật)
+├── config / common / exception / security
+```
+
+**Use case naming:** `SuspendUserUseCase`, `RemoveProductUseCase`, `PublishAdminEventsUseCase` — không `XxxService` generic.
+
+**Forbidden (Admin):**
+- Controller → repository trực tiếp.
+- Business logic trong DTO/Controller.
+- Expose JPA entity ra API.
+- Publish broker trong transaction trước commit (phải outbox).
+- Nhận `admin_id` từ request body — **chỉ** từ JWT (`AuthenticatedUser`).
+- Mutate trực tiếp bảng Commerce/Social/Auth.
+- Login credential/session trong Admin Service (delegate Auth).
+
+## 3. Authentication & Authorization
+
+| Mục | Quy tắc |
+|-----|---------|
+| Auth source | Auth Service — login/refresh/logout/revoke session |
+| Admin API path | `/admin/api/v1/**` (protected: `authenticated`) |
+| JWT | Cùng secret với auth-service khi test local (`JWT_ACCESS_SECRET` ≥32 chars) |
+| Authorization | `FR_AuthorizeAdminApi`: validate JWT → check permission **trước** `@Transactional` use case |
+| MVP claims | `JwtClaimsAdminAuthorizationService` — permissions/roles trong JWT |
+| Auth HTTP | `ADMIN_AUTH_INTEGRATION_ENABLED=true` khi cần introspection/check ngoài claims |
+| Fail closed | 401 missing/invalid token; 403 missing permission; không chạy domain mutation khi deny |
+
+**Roles (ví dụ):** `MODERATOR`, `SUPPORT`, `SUPER_ADMIN`.
+
+**Permissions (ví dụ):** `USER_SUSPEND`, `USER_RESTRICT`, `PRODUCT_REMOVE`, `REVIEW_HIDE`, `SHOP_SUSPEND`, `POST_MODERATE`, `COMMENT_MODERATE`, `SYSTEM_CONFIG_UPDATE`, `SYSTEM_ANNOUNCEMENT_PUBLISH`, `ADMIN_AUDIT_READ`, `ORDER_SUPPORT_READ`.
+
+**Endpoint matrix (tóm tắt — chi tiết trong FR từng action):**
+
+| Nhóm | Permission gợi ý |
+|------|------------------|
+| User enforcement | `USER_SUSPEND` / `USER_RESTRICT` |
+| Product moderation | `PRODUCT_REMOVE` |
+| Review moderation | `REVIEW_HIDE` |
+| Shop moderation | `SHOP_SUSPEND` |
+| Social moderation | `POST_MODERATE` / `COMMENT_MODERATE` |
+| System config | `SYSTEM_CONFIG_UPDATE` |
+| Announcement publish | `SYSTEM_ANNOUNCEMENT_PUBLISH` |
+| Audit read | `ADMIN_AUDIT_READ` |
+| Order/payment/shipment support | `ORDER_SUPPORT_READ` |
+
+Destructive actions: bắt buộc explicit permission (không chỉ role), **reason** bắt buộc (FR enforcement/moderation).
+
+## 4. API Contract
+
+| Mục | Quy tắc |
+|-----|---------|
+| Base path | `/admin/api/v1/{resource}` |
+| Production | `https://api.2hands.vn/admin/api/v1/{resource}` |
+| Local | `http://localhost:3004` |
+| Envelope | `docs/engineering_rules/api-standard.md` |
+| Error prefix | `ADMIN-*` (`ADMIN-401`, `ADMIN-403`, `ADMIN-404`, `ADMIN-400-VALIDATION`, …) |
+| DELETE | Soft delete / status transition — không hard delete mặc định |
+| Health | `/actuator/health` — `permitAll` |
+
+Khi implement controller, **ưu tiên path trong `docs/feature_requirements/admin/FR_*.md`**.
+
+**Login/refresh/logout:** gọi Auth (`POST /auth/api/v1/...`) — Admin Service không bắt buộc endpoint gateway trừ khi FR yêu cầu proxy.
+
+## 5. Domain State Machines (tóm tắt)
+
+### User enforcement
+```text
+ACTIVE -> REVOKED
+ACTIVE -> EXPIRED   (job: expires_at < now)
+```
+Types: `SUSPEND`, `BAN`, `RESTRICT` — mỗi transition ghi `user_enforcement_logs`.
+
+- `SUSPEND`/`BAN`: Auth suspend + revoke sessions (event/API).
+- `RESTRICT`: user login được; Social/Commerce chặn write theo policy (event).
+
+### System announcement
+```text
+DRAFT -> SENT
+DRAFT -> CANCELLED
+SENT -> CANCELLED
+```
+`sent_at` set khi `SENT`. Severity: `INFO`, `WARNING`, `CRITICAL`.
+
+### System config
+- `config_key` immutable sau create.
+- `value_type`: `INTEGER`, `DECIMAL`, `STRING`, `BOOLEAN`, `JSON`.
+- Mọi create/update/toggle → `system_config_history` + `admin_action_logs` + outbox `SYSTEM_CONFIG_UPDATED`.
+
+### Content moderation log
+- `target_type`: `POST`, `COMMENT`, `PRODUCT`, `REVIEW`.
+- `action`: `HIDE`, `REMOVE`, `RESTORE`.
+- Owner service apply state; Admin chỉ log + event/API.
+
+### Outbox
+`PENDING -> PROCESSING -> PUBLISHED`; fail → `FAILED` → retry. Ghi **cùng transaction** với enforcement/moderation/config/announcement.
+
+## 6. Audit Logging (bắt buộc)
+
+Mọi moderation/enforcement/config destructive/critical phải ghi `admin_action_logs`:
+
+- `admin_id`, `action_type`, `target_type`, `target_id`
+- `ip_address`, `user_agent` khi có (critical)
+- `request_payload` / `response_payload`: chỉ critical — **redact** token/password/secret
+- `FR_LogAdminAction`, `FR_LogCriticalAdminActionPayload` — không log full token
+
+`content_moderation_logs` cho mọi content/product/review moderation action.
+
+## 7. Data & Schema
+
+- Schema doc: `docs/database/admin-schema.md`
+- Migration: `Services/admin-service/src/main/resources/db/migration/V1__init_admin_tables.sql`
+- PK UUID; JSONB cho payload; timestamps TZ-aware.
+- Không physical FK sang Auth DB.
+- Indexes bắt buộc: `idx_admin_logs_admin_created`, `idx_enforcement_user`, `idx_moderation_target`, `idx_outbox_pending`.
+
+## 8. Outbox & Kafka Topics
+
+- Không publish trực tiếp từ use case; insert `outbox_events` trong transaction.
+- `event_type`: `USER_SUSPENDED`, `PRODUCT_REMOVED`, `SYSTEM_CONFIG_UPDATED`, … (UPPER_SNAKE)
+- Topic map (`AdminOutboxTopicResolver`): `admin.user.suspended`, `admin.product.removed`, `admin.config.updated`, … — thêm entry khi thêm `event_type`.
+- Worker: `PublishAdminEventsUseCase`, `RetryAdminOutboxEventsUseCase` (schedulers tắt mặc định).
+
+Catalog đầy đủ: spec §14 + `admin-schema.md` §6.
+
+## 9. Cross-Service Integrations
+
+| Service | Khi nào | Env |
+|---------|---------|-----|
+| Auth | Investigation (profile, sessions, login history, roles), enforcement sync | `ADMIN_AUTH_INTEGRATION_ENABLED`, `ADMIN_AUTH_BASE_URL` |
+| Commerce | Product/review/shop moderation, order/payment/shipment support read | `ADMIN_COMMERCE_INTEGRATION_ENABLED`, `ADMIN_COMMERCE_BASE_URL` |
+| Social | Post/comment moderation, restrict writes | `ADMIN_SOCIAL_INTEGRATION_ENABLED`, `ADMIN_SOCIAL_BASE_URL` |
+
+- **Ưu tiên:** outbox event cho eventually consistent; HTTP internal API khi FR cần synchronous result.
+- Consumer idempotent ở phía owner service.
+- Không gọi integration trong DB transaction dài — tách read/commit local rồi publish outbox.
+
+## 10. Background Jobs
+
+Theo `enforcement-expiration-flow.md`, `uc-background-jobs.md`, `outbox-event-flow.md`:
+
+- **Enforcement expiration:** `ACTIVE` + `expires_at < now` → `EXPIRED` + logs + outbox `USER_ENFORCEMENT_EXPIRED`
+- **Outbox publish/retry:** `ADMIN_OUTBOX_PUBLISH_ENABLED`, `ADMIN_OUTBOX_RETRY_ENABLED`
+
+Job bật qua config; mặc định **false** local.
+
+## 11. Local Development
+
+```bash
+cd Infrastructure && docker compose up -d postgres-admin redis
+```
+
+Copy `Services/admin-service/.env.example` → `.env`:
+
+- `DB_URL=jdbc:postgresql://localhost:5436/admin_db`
+- `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` (≥32 chars, **cùng auth-service**)
+- Integrations + outbox + jobs: `false` cho dev thuần CRUD/authorization
+
+Chạy: `./gradlew bootRun` (port **3004**). Health: `/actuator/health`.
+
+## 12. Implement Feature — Doc Workflow
+
+Khi **Implement FR_XXX** hoặc feature Admin:
+
+1. `docs/feature_requirements/admin/FR_XXX.md`
+2. Section tương ứng `docs/business-spec/admin-service-spec.md`
+3. Business flow (bảng map):
+
+| Nhóm FR | Flow |
+|---------|------|
+| Auth: `FR_AdminLogin`, `FR_AuthorizeAdminApi`, `FR_CheckAdminRole`, `FR_CheckAdminPermission`, `FR_RefreshAdminToken`, `FR_AdminLogout`, `FR_RevokeAdminSession` | `admin-auth-authorization-flow.md` |
+| Outbox: `FR_PublishAdminEvents`, `FR_RetryAdminOutboxEvents` | `outbox-event-flow.md` |
+| Audit: `FR_LogAdminAction`, `FR_LogCriticalAdminActionPayload`, `FR_ViewAdminActionLogs` | `admin-audit-logging-flow.md` |
+| Enforcement: `FR_SuspendUser`, `FR_BanUser`, `FR_RestrictUser`, `FR_RevokeUserEnforcement`, `FR_ExpireUserEnforcements`, … | `user-enforcement-flow.md`, `enforcement-expiration-flow.md` |
+| Investigation: `FR_ViewUserProfileForInvestigation`, `FR_ViewUserLoginHistory`, … | `user-investigation-flow.md` |
+| Product: `FR_RemoveProduct`, `FR_RestoreProduct`, `FR_ViewProductModerationHistory` | `product-moderation-flow.md` |
+| Review: `FR_HideReview`, `FR_RemoveReview`, `FR_RestoreReview` | `review-moderation-flow.md` |
+| Shop: `FR_SuspendShop`, `FR_ReopenShop`, `FR_CloseShop` | `shop-moderation-flow.md` |
+| Social: `FR_ModeratePost`, `FR_ModerateComment`, `FR_RestorePost`, … | `social-content-moderation-flow.md` |
+| Config: `FR_CreateSystemConfig`, `FR_UpdateSystemConfig`, `FR_ToggleSystemConfig`, … | `system-config-management-flow.md` |
+| Announcement: `FR_CreateSystemAnnouncement`, `FR_PublishSystemAnnouncement`, … | `system-announcement-flow.md` |
+| Support: `FR_ViewOrderSupportDetail`, `FR_ViewPaymentSupportDetail`, `FR_ViewWebhookLogsForSupport`, … | `order-support-flow.md` |
+| Cross-service | `cross-service-integration-flow.md` |
+
+4. Use case: `docs/use_cases/admin_use_cases/uc-*.md` (14 files)
+5. Pattern có sẵn: `SecurityConfig`, `JwtAuthenticationFilter`, `AdminAuthorizationService`, `ApiResponse`, `GlobalExceptionHandler`, outbox adapter — tham chiếu `commerce-service` / `social-service`.
+6. Sau implement: API behavior doc theo `admin-api-behavior-doc-required.mdc`
+
+**FR index:** 50 files trong `docs/feature_requirements/admin/`.
+
+## 13. Testing
+
+- Unit: authorization, enforcement rules, config validation, outbox topic resolve.
+- Integration: Flyway/DB, repository, API critical path (401/403 trước mutation).
+- Cấu trúc: `src/test/java/.../unit/`, `.../integration/`
+- Test profile: `application-test.yml`
+
+## 14. Definition of Done (Admin Feature)
+
+- [ ] Clean Architecture đúng layer
+- [ ] API envelope + `ADMIN-*` errors
+- [ ] JWT + permission trước use case write (`FR_AuthorizeAdminApi`)
+- [ ] `admin_id` từ JWT; reason cho destructive action
+- [ ] Audit log + moderation/enforcement logs theo FR
+- [ ] Outbox event (nếu cross-service) trong cùng transaction
+- [ ] Không mutate DB service khác
+- [ ] Unit test logic chính; integration test khi đụng DB/API
+- [ ] `docs/api_fe_behavior/admin_api_fe_behavior/<Feature>-api-and-behavior.md`
+
+## 15. MVP Out of Scope
+
+Refund/dispute thực thi, payout reversal, admin case management, ML moderation, admin credential DB riêng, notification dismissal tracking trong Admin DB.
+
+## 16. Tài liệu tham chiếu đầy đủ
+
+| Loại | Path |
+|------|------|
+| Business spec | `docs/business-spec/admin-service-spec.md` |
+| DB schema | `docs/database/admin-schema.md` |
+| Architecture | `docs/architecture/system-architecture.md`, `database-strategy.md`, `event-driven-architecture.md` |
+| Engineering | `docs/engineering_rules/api-standard.md`, `backend-convention.md`, `naming-convention.md` |
+| Business flows | `docs/business_flow/admin_business_flow/*.md` (14 files) |
+| Use cases | `docs/use_cases/admin_use_cases/*.md` (14 files) |
+| Feature reqs | `docs/feature_requirements/admin/*.md` (50 files) |
+| API FE behavior | `docs/api_fe_behavior/admin_api_fe_behavior/` |
+| Implementation checklist | `.cursor/rules/admin/admin-service-implementation.mdc` |

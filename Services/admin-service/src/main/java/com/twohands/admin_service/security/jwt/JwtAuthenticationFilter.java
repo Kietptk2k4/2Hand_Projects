@@ -1,6 +1,7 @@
 package com.twohands.admin_service.security.jwt;
 
 import com.twohands.admin_service.security.AuthenticatedUser;
+import com.twohands.admin_service.security.BearerTokenDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,8 +33,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			throws ServletException, IOException {
 		String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 		if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
-			String token = authHeader.substring(BEARER_PREFIX.length());
-			if (jwtTokenProvider.isValid(token) && SecurityContextHolder.getContext().getAuthentication() == null) {
+			String token = authHeader.substring(BEARER_PREFIX.length()).trim();
+			if (!token.isEmpty()
+					&& jwtTokenProvider.isValid(token)
+					&& SecurityContextHolder.getContext().getAuthentication() == null) {
 				UUID userId = jwtTokenProvider.getUserId(token);
 				if (userId != null) {
 					List<String> roles = jwtTokenProvider.getRoles(token);
@@ -43,7 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 							null,
 							List.of()
 					);
-					authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+					authentication.setDetails(new BearerTokenDetails(token));
 					SecurityContextHolder.getContext().setAuthentication(authentication);
 				}
 			}

@@ -1,0 +1,119 @@
+---
+description: Tài liệu tham chiếu bắt buộc khi implement bất kỳ feature nào trong admin-service
+globs: Services/admin-service/**
+alwaysApply: false
+---
+
+# Admin Service – Implementation Reference
+
+Khi user yêu cầu **Implement FR_XXX** (hoặc implement feature Admin), bắt buộc:
+
+1. Đọc `docs/feature_requirements/admin/FR_XXX.md` (đúng tên file).
+2. Đọc section liên quan trong `docs/business-spec/admin-service-spec.md`.
+3. Đọc business flow map bên dưới.
+4. Đọc use case tương ứng trong `docs/use_cases/admin_use_cases/`.
+5. Tuân thủ Clean Architecture: `delivery → application → domain → infrastructure`.
+6. Bảo vệ API: `FR_AuthorizeAdminApi` — permission check trước mutation.
+7. Tạo API behavior doc theo rule `admin-api-behavior-doc-required.mdc`.
+
+## Auth Boundary (quan trọng)
+
+- Login/refresh/logout/revoke: **Auth Service** (`docs/feature_requirements/admin/FR_AdminLogin.md`, …).
+- Admin Service: consume JWT, `AdminAuthorizationService`, optional Auth HTTP client.
+- Không tạo bảng credential/session admin trong admin_db.
+
+## Architecture & Schema
+
+- `docs/architecture/system-architecture.md`
+- `docs/architecture/database-strategy.md`
+- `docs/architecture/event-driven-architecture.md`
+- `docs/database/admin-schema.md`
+- `Services/admin-service/src/main/resources/db/migration/V1__init_admin_tables.sql`
+
+## Business Flows (14)
+
+- `docs/business_flow/admin_business_flow/admin-auth-authorization-flow.md`
+- `docs/business_flow/admin_business_flow/user-enforcement-flow.md`
+- `docs/business_flow/admin_business_flow/enforcement-expiration-flow.md`
+- `docs/business_flow/admin_business_flow/user-investigation-flow.md`
+- `docs/business_flow/admin_business_flow/product-moderation-flow.md`
+- `docs/business_flow/admin_business_flow/review-moderation-flow.md`
+- `docs/business_flow/admin_business_flow/shop-moderation-flow.md`
+- `docs/business_flow/admin_business_flow/social-content-moderation-flow.md`
+- `docs/business_flow/admin_business_flow/system-config-management-flow.md`
+- `docs/business_flow/admin_business_flow/system-announcement-flow.md`
+- `docs/business_flow/admin_business_flow/admin-audit-logging-flow.md`
+- `docs/business_flow/admin_business_flow/order-support-flow.md`
+- `docs/business_flow/admin_business_flow/outbox-event-flow.md`
+- `docs/business_flow/admin_business_flow/cross-service-integration-flow.md`
+
+## Use Cases (14)
+
+- `docs/use_cases/admin_use_cases/uc-admin-auth-authorization.md`
+- `docs/use_cases/admin_use_cases/uc-user-enforcement.md`
+- `docs/use_cases/admin_use_cases/uc-user-investigation.md`
+- `docs/use_cases/admin_use_cases/uc-product-moderation.md`
+- `docs/use_cases/admin_use_cases/uc-review-moderation.md`
+- `docs/use_cases/admin_use_cases/uc-shop-moderation.md`
+- `docs/use_cases/admin_use_cases/uc-social-content-moderation.md`
+- `docs/use_cases/admin_use_cases/uc-system-config-management.md`
+- `docs/use_cases/admin_use_cases/uc-system-announcement.md`
+- `docs/use_cases/admin_use_cases/uc-admin-audit-logging.md`
+- `docs/use_cases/admin_use_cases/uc-order-support.md`
+- `docs/use_cases/admin_use_cases/uc-cross-service-integration.md`
+- `docs/use_cases/admin_use_cases/uc-event-publishing.md`
+- `docs/use_cases/admin_use_cases/uc-background-jobs.md`
+
+## FR → Flow Map
+
+| FR nhóm | Business flow |
+|--------|----------------|
+| Auth: `FR_AdminLogin`, `FR_AuthorizeAdminApi`, `FR_CheckAdminRole`, `FR_CheckAdminPermission`, `FR_RefreshAdminToken`, `FR_AdminLogout`, `FR_RevokeAdminSession` | `admin-auth-authorization-flow.md` |
+| Outbox: `FR_PublishAdminEvents`, `FR_RetryAdminOutboxEvents` | `outbox-event-flow.md` |
+| Audit: `FR_LogAdminAction`, `FR_LogCriticalAdminActionPayload`, `FR_ViewAdminActionLogs` | `admin-audit-logging-flow.md` |
+| Enforcement: `FR_SuspendUser`, `FR_BanUser`, `FR_RestrictUser`, `FR_RevokeUserEnforcement`, `FR_ExpireUserEnforcements`, `FR_ViewCurrentUserEnforcement`, `FR_ViewUserEnforcementHistory` | `user-enforcement-flow.md`, `enforcement-expiration-flow.md` |
+| Investigation: `FR_ViewUserProfileForInvestigation`, `FR_ViewUserLoginHistory`, `FR_ViewUserActiveSessions`, `FR_ViewUserOAuthAccounts`, `FR_ViewUserRolesForInvestigation` | `user-investigation-flow.md` |
+| Product: `FR_RemoveProduct`, `FR_RestoreProduct`, `FR_ViewProductModerationHistory` | `product-moderation-flow.md` |
+| Review: `FR_HideReview`, `FR_RemoveReview`, `FR_RestoreReview` | `review-moderation-flow.md` |
+| Shop: `FR_SuspendShop`, `FR_ReopenShop`, `FR_CloseShop` | `shop-moderation-flow.md` |
+| Social: `FR_ModeratePost`, `FR_ModerateComment`, `FR_RestorePost`, `FR_RestoreComment` | `social-content-moderation-flow.md` |
+| Config: `FR_CreateSystemConfig`, `FR_UpdateSystemConfig`, `FR_ToggleSystemConfig`, `FR_ViewSystemConfigHistory` | `system-config-management-flow.md` |
+| Announcement: `FR_CreateSystemAnnouncement`, `FR_PublishSystemAnnouncement`, `FR_PinSystemAnnouncement`, `FR_DismissSystemAnnouncement`, `FR_CancelSystemAnnouncement` | `system-announcement-flow.md` |
+| Support: `FR_ViewOrderSupportDetail`, `FR_ViewPaymentSupportDetail`, `FR_ViewShipmentSupportDetail`, `FR_ViewWebhookLogsForSupport` | `order-support-flow.md` |
+
+## Admin-specific Rules
+
+- **PostgreSQL only**; port **3004**; DB **5436** (`postgres-admin`).
+- Không cross-DB; `admin_id`/`user_id` chỉ UUID reference.
+- API prefix: `/admin/api/v1/...`; error code `ADMIN-*`.
+- Owner service apply state; Admin: decision + `content_moderation_logs` + `admin_action_logs` + outbox.
+- Enforcement: mỗi status change → `user_enforcement_logs`; job expire → `USER_ENFORCEMENT_EXPIRED`.
+- Config: validate `value_type`; history bắt buộc.
+- Outbox: map trong `AdminOutboxTopicResolver`; publish qua `outbox_events` cùng transaction.
+- Integrations tắt mặc định (`ADMIN_*_INTEGRATION_ENABLED=false`).
+
+## Shared Infra đã có sẵn
+
+- `SecurityConfig` — `/admin/api/v1/**` authenticated
+- `JwtAuthenticationFilter`, `JwtTokenProvider`, `AuthenticatedUser`
+- `AdminAuthorizationService` / `JwtClaimsAdminAuthorizationService`
+- `PublishAdminEventsUseCase`, `RetryAdminOutboxEventsUseCase`
+- `OutboxEventRepositoryAdapter`, `AdminOutboxTopicResolver`, schedulers (disabled mặc định)
+- `ApiResponse`, `GlobalExceptionHandler`, `ErrorCode`
+
+## Implement Checklist (mỗi FR có API)
+
+1. Permission constant khớp FR + `admin-auth-authorization-flow.md` matrix.
+2. Use case: `@Transactional` cho write; authorize đầu method.
+3. Ghi audit/moderation/enforcement logs theo FR.
+4. Outbox + `event_type` nếu cross-service.
+5. Controller mỏng → map DTO; không entity leak.
+6. Test 401/403 + happy path mutation.
+7. API behavior doc.
+
+## Feature Requirements Index
+
+Tất cả FR trong `docs/feature_requirements/admin/` (50 files). Ví dụ:
+
+- `FR_AuthorizeAdminApi.md`, `FR_SuspendUser.md`, `FR_RemoveProduct.md`
+- `FR_PublishAdminEvents.md`, `FR_CreateSystemConfig.md`, `FR_ViewOrderSupportDetail.md`

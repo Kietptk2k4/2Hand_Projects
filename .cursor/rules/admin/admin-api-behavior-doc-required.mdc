@@ -1,0 +1,71 @@
+---
+description: Bắt buộc tạo file API behavior doc sau khi implement xong bất kỳ feature nào của admin-service
+globs: Services/admin-service/**
+alwaysApply: false
+---
+
+# API Behavior Doc – Definition of Done (Admin)
+
+Sau khi implement xong một feature trong `admin-service`, **bắt buộc** tạo file API behavior doc tại:
+
+```
+docs/api_fe_behavior/admin_api_fe_behavior/<FeatureName>-api-and-behavior.md
+```
+
+Ví dụ:
+
+- `AuthorizeAdminApi-api-and-behavior.md`
+- `SuspendUser-api-and-behavior.md`
+- `RemoveProduct-api-and-behavior.md`
+- `PublishAdminEvents-api-and-behavior.md`
+
+**Lưu ý:** Feature chỉ delegate Auth (vd. `FR_AdminLogin`) vẫn nên có doc mô tả contract Auth + cách Admin FE dùng JWT — không bỏ qua vì Admin Service không có endpoint.
+
+## Nội dung bắt buộc
+
+```markdown
+# <Feature Name> – API & Behavior
+
+## 1. Business Goal
+## 2. API Contract
+- Method, URL: /admin/api/v1/... (hoặc Auth URL nếu delegate)
+- Auth: Bearer JWT (required/optional)
+- Required permission (nếu có)
+- Params / body
+
+## 3. Response – Success
+## 4. Response – Error
+| HTTP | code string | Mô tả |
+| 401  | ADMIN-401 | ... |
+| 403  | ADMIN-403 | ... |
+
+## 5. Business Rules
+- admin_id từ JWT
+- reason bắt buộc (nếu destructive)
+- audit / moderation logs
+- outbox event (nếu có)
+
+## 6. Edge Cases
+## 7. Data Dependencies
+- PostgreSQL table(s) trong admin_db
+- Owner service / event (Auth, Commerce, Social)
+
+## 8. FE Integration Notes
+- Admin portal gọi Auth vs Admin
+- Permission/role hiển thị trên UI
+```
+
+Tham chiếu format mẫu: `docs/api_fe_behavior/commerce_api_fe_behavior/RemoveProductByAdmin-api-and-behavior.md`.
+
+## Definition of Done
+
+- [ ] Code đúng architecture (delivery → application → domain → infrastructure)
+- [ ] API envelope chuẩn (`docs/engineering_rules/api-standard.md`)
+- [ ] Error code `ADMIN-*`
+- [ ] `FR_AuthorizeAdminApi`: unauthorized không chạy mutation
+- [ ] Audit/enforcement/moderation logs + outbox theo FR
+- [ ] Unit test business logic chính (authorization, validation)
+- [ ] Integration test cho API/DB khi cần
+- [ ] File `docs/api_fe_behavior/admin_api_fe_behavior/<Feature>-api-and-behavior.md` đầy đủ
+- [ ] Không business logic trong Controller/DTO
+- [ ] Không log token/password/secret trong payload audit

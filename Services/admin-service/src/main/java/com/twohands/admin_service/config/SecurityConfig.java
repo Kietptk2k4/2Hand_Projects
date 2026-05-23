@@ -1,5 +1,6 @@
 package com.twohands.admin_service.config;
 
+import com.twohands.admin_service.security.RestAccessDeniedHandler;
 import com.twohands.admin_service.security.RestAuthenticationEntryPoint;
 import com.twohands.admin_service.security.jwt.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
@@ -18,13 +19,16 @@ public class SecurityConfig {
 
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 	private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+	private final RestAccessDeniedHandler restAccessDeniedHandler;
 
 	public SecurityConfig(
 			JwtAuthenticationFilter jwtAuthenticationFilter,
-			RestAuthenticationEntryPoint restAuthenticationEntryPoint
+			RestAuthenticationEntryPoint restAuthenticationEntryPoint,
+			RestAccessDeniedHandler restAccessDeniedHandler
 	) {
 		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
 		this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
+		this.restAccessDeniedHandler = restAccessDeniedHandler;
 	}
 
 	@Bean
@@ -37,7 +41,10 @@ public class SecurityConfig {
 						.requestMatchers("/admin/api/v1/**").authenticated()
 						.anyRequest().denyAll()
 				)
-				.exceptionHandling(ex -> ex.authenticationEntryPoint(restAuthenticationEntryPoint))
+				.exceptionHandling(ex -> ex
+						.authenticationEntryPoint(restAuthenticationEntryPoint)
+						.accessDeniedHandler(restAccessDeniedHandler)
+				)
 				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();

@@ -1,11 +1,23 @@
 package com.twohands.admin_service.domain.auth;
 
+import com.twohands.admin_service.security.AuthenticatedUser;
+
 import java.util.UUID;
 
 /**
- * Permission checks for admin actions. MVP uses JWT claims; replace with Auth HTTP client when available.
+ * Authentication and permission checks for admin APIs (FR_AuthorizeAdminApi).
  */
 public interface AdminAuthorizationService {
+
+	AuthenticatedUser requireCurrentAdmin();
+
+	UUID requireCurrentAdminId();
+
+	void requirePermission(String permissionCode);
+
+	void requireAnyPermission(String... permissionCodes);
+
+	void requireAnyRole(String... roleCodes);
 
 	boolean hasPermission(UUID adminId, String permissionCode);
 
