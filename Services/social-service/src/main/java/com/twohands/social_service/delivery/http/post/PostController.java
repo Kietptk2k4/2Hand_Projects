@@ -3,6 +3,8 @@ package com.twohands.social_service.delivery.http.post;
 import com.twohands.social_service.application.comment.commentpost.CommentPostCommand;
 import com.twohands.social_service.application.comment.commentpost.CommentPostResult;
 import com.twohands.social_service.application.comment.commentpost.CommentPostUseCase;
+import com.twohands.social_service.application.comment.listpostcomments.ListPostCommentsResult;
+import com.twohands.social_service.application.comment.listpostcomments.ListPostCommentsUseCase;
 import com.twohands.social_service.application.post.createpost.CreatePostCommand;
 import com.twohands.social_service.application.post.createpost.CreatePostResult;
 import com.twohands.social_service.application.post.createpost.CreatePostUseCase;
@@ -27,8 +29,10 @@ import com.twohands.social_service.application.post.viewsavedposts.ViewSavedPost
 import com.twohands.social_service.application.post.viewsavedposts.ViewSavedPostsUseCase;
 import com.twohands.social_service.common.dto.ApiResponse;
 import com.twohands.social_service.domain.comment.CommentMediaItem;
+import com.twohands.social_service.delivery.http.comment.mapper.ListPostCommentsHttpMapper;
 import com.twohands.social_service.delivery.http.comment.request.CommentPostRequest;
 import com.twohands.social_service.delivery.http.comment.response.CommentPostResponse;
+import com.twohands.social_service.delivery.http.comment.response.ListPostCommentsResponse;
 import com.twohands.social_service.delivery.http.post.request.CreatePostRequest;
 import com.twohands.social_service.delivery.http.post.request.EditPostRequest;
 import com.twohands.social_service.delivery.http.post.request.UploadPostMediaRequest;
@@ -66,6 +70,7 @@ public class PostController {
 
     private static final int DEFAULT_PAGE = 0;
     private static final int DEFAULT_SIZE = 20;
+    private static final String DEFAULT_SORT = "created_at_asc";
 
     private final CreatePostUseCase createPostUseCase;
     private final EditPostUseCase editPostUseCase;
@@ -73,6 +78,8 @@ public class PostController {
     private final LikeUnlikePostUseCase likeUnlikePostUseCase;
     private final SaveUnsavePostUseCase saveUnsavePostUseCase;
     private final CommentPostUseCase commentPostUseCase;
+    private final ListPostCommentsUseCase listPostCommentsUseCase;
+    private final ListPostCommentsHttpMapper listPostCommentsHttpMapper;
     private final ViewSavedPostsUseCase viewSavedPostsUseCase;
     private final ViewSavedPostsHttpMapper viewSavedPostsHttpMapper;
     private final ViewPostDetailUseCase viewPostDetailUseCase;
@@ -86,6 +93,8 @@ public class PostController {
             LikeUnlikePostUseCase likeUnlikePostUseCase,
             SaveUnsavePostUseCase saveUnsavePostUseCase,
             CommentPostUseCase commentPostUseCase,
+            ListPostCommentsUseCase listPostCommentsUseCase,
+            ListPostCommentsHttpMapper listPostCommentsHttpMapper,
             ViewSavedPostsUseCase viewSavedPostsUseCase,
             ViewSavedPostsHttpMapper viewSavedPostsHttpMapper,
             ViewPostDetailUseCase viewPostDetailUseCase,
@@ -98,6 +107,8 @@ public class PostController {
         this.likeUnlikePostUseCase = likeUnlikePostUseCase;
         this.saveUnsavePostUseCase = saveUnsavePostUseCase;
         this.commentPostUseCase = commentPostUseCase;
+        this.listPostCommentsUseCase = listPostCommentsUseCase;
+        this.listPostCommentsHttpMapper = listPostCommentsHttpMapper;
         this.viewSavedPostsUseCase = viewSavedPostsUseCase;
         this.viewSavedPostsHttpMapper = viewSavedPostsHttpMapper;
         this.viewPostDetailUseCase = viewPostDetailUseCase;
@@ -203,6 +214,32 @@ public class PostController {
                 HttpStatus.OK.value(),
                 editPostUseCase.successMessage(),
                 response
+        ));
+    }
+
+    @GetMapping("/{postId}/comments")
+    public ResponseEntity<ApiResponse<ListPostCommentsResponse>> listPostComments(
+            @PathVariable String postId,
+            @RequestParam(name = "page", defaultValue = "" + DEFAULT_PAGE) int page,
+            @RequestParam(name = "size", defaultValue = "" + DEFAULT_SIZE) int size,
+            @RequestParam(name = "parent_comment_id", required = false) String parentCommentId,
+            @RequestParam(name = "sort", defaultValue = DEFAULT_SORT) String sort,
+            Authentication authentication
+    ) {
+        UUID viewerId = resolveUserId(authentication);
+        ListPostCommentsResult result = listPostCommentsUseCase.execute(
+                viewerId,
+                postId,
+                page,
+                size,
+                parentCommentId,
+                sort
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                listPostCommentsUseCase.successMessage(),
+                listPostCommentsHttpMapper.toResponse(result)
         ));
     }
 

@@ -83,6 +83,9 @@ class DeletePostApiIntegrationTest {
     private CommentPostUseCase commentPostUseCase;
 
     @MockBean
+    private com.twohands.social_service.application.comment.listpostcomments.ListPostCommentsUseCase listPostCommentsUseCase;
+
+    @MockBean
     private ViewSavedPostsUseCase viewSavedPostsUseCase;
 
     @MockBean

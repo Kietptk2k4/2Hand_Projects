@@ -66,6 +66,9 @@ class CommentPostApiIntegrationTest {
     private CommentPostUseCase commentPostUseCase;
 
     @MockBean
+    private com.twohands.social_service.application.comment.listpostcomments.ListPostCommentsUseCase listPostCommentsUseCase;
+
+    @MockBean
     private CreatePostUseCase createPostUseCase;
 
     @MockBean

@@ -17,4 +17,12 @@ public final class UserProjectionTestFixtures {
     public static Optional<UserProjection> activeOptional(UUID userId) {
         return Optional.of(active(userId));
     }
+
+    public static UserProjection deleted(UUID userId) {
+        return new UserProjection(userId.toString(), "DELETED", "User", null, false);
+    }
+
+    public static Optional<UserProjection> deletedOptional(UUID userId) {
+        return Optional.of(deleted(userId));
+    }
 }

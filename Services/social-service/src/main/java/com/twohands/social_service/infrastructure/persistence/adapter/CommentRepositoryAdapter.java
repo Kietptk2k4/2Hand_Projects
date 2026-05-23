@@ -1,11 +1,18 @@
 package com.twohands.social_service.infrastructure.persistence.adapter;
 
 import com.twohands.social_service.domain.comment.Comment;
+import com.twohands.social_service.domain.comment.CommentListQuery;
 import com.twohands.social_service.domain.comment.CommentMediaItem;
 import com.twohands.social_service.domain.comment.CommentRepository;
+import com.twohands.social_service.domain.comment.CommentSortOrder;
 import com.twohands.social_service.domain.comment.CommentStatus;
+import com.twohands.social_service.domain.post.PageResult;
 import com.twohands.social_service.infrastructure.persistence.mongo.document.CommentDocument;
 import com.twohands.social_service.infrastructure.persistence.mongo.repository.MongoCommentRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -29,6 +36,58 @@ public class CommentRepositoryAdapter implements CommentRepository {
     @Override
     public Optional<Comment> findById(String commentId) {
         return mongoCommentRepository.findById(commentId).map(this::toDomain);
+    }
+
+    @Override
+    public Optional<Comment> findActiveByIdAndPostId(String commentId, String postId) {
+        return mongoCommentRepository.findByIdAndPostIdAndStatus(
+                commentId,
+                postId,
+                CommentStatus.ACTIVE.name()
+        ).map(this::toDomain);
+    }
+
+    @Override
+    public PageResult<Comment> findActiveByPost(CommentListQuery query) {
+        Pageable pageable = PageRequest.of(
+                query.page(),
+                query.size(),
+                toSort(query.sort())
+        );
+        Page<CommentDocument> page = query.parentCommentId() == null
+                ? mongoCommentRepository.findByPostIdAndStatusAndParentCommentIdIsNull(
+                        query.postId(),
+                        CommentStatus.ACTIVE.name(),
+                        pageable
+                )
+                : mongoCommentRepository.findByPostIdAndStatusAndParentCommentId(
+                        query.postId(),
+                        CommentStatus.ACTIVE.name(),
+                        query.parentCommentId(),
+                        pageable
+                );
+
+        List<Comment> items = page.getContent().stream()
+                .map(this::toDomain)
+                .toList();
+
+        return new PageResult<>(
+                items,
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.hasNext()
+        );
+    }
+
+    @Override
+    public long countActiveReplies(String postId, String parentCommentId) {
+        return mongoCommentRepository.countByPostIdAndStatusAndParentCommentId(
+                postId,
+                CommentStatus.ACTIVE.name(),
+                parentCommentId
+        );
     }
 
     @Override
@@ -65,6 +124,13 @@ public class CommentRepositoryAdapter implements CommentRepository {
         doc.setUpdatedAt(comment.updatedAt());
         doc.setDeletedAt(comment.deletedAt());
         return doc;
+    }
+
+    private Sort toSort(CommentSortOrder sort) {
+        if (sort == CommentSortOrder.CREATED_AT_DESC) {
+            return Sort.by(Sort.Direction.DESC, "createdAt");
+        }
+        return Sort.by(Sort.Direction.ASC, "createdAt");
     }
 
     private Comment toDomain(CommentDocument document) {
