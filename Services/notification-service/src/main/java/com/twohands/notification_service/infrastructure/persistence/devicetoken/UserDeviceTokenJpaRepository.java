@@ -8,4 +8,6 @@ import java.util.UUID;
 public interface UserDeviceTokenJpaRepository extends JpaRepository<UserDeviceTokenEntity, UUID> {
 
     Optional<UserDeviceTokenEntity> findByDeviceToken(String deviceToken);
+
+    boolean existsByUserIdAndActiveTrue(UUID userId);
 }

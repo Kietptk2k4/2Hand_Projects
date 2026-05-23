@@ -5,6 +5,7 @@ import com.twohands.notification_service.domain.devicetoken.UserDeviceTokenRepos
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public class UserDeviceTokenRepositoryAdapter implements UserDeviceTokenRepository {
@@ -32,6 +33,11 @@ public class UserDeviceTokenRepositoryAdapter implements UserDeviceTokenReposito
     @Override
     public Optional<UserDeviceToken> findByDeviceToken(String deviceToken) {
         return jpaRepository.findByDeviceToken(deviceToken).map(this::toDomain);
+    }
+
+    @Override
+    public boolean existsActiveByUserId(UUID userId) {
+        return jpaRepository.existsByUserIdAndActiveTrue(userId);
     }
 
     private UserDeviceToken toDomain(UserDeviceTokenEntity entity) {

@@ -1,10 +1,14 @@
 package com.twohands.notification_service.application.handler;
 
+import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesCommand;
+import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesUseCase;
 import com.twohands.notification_service.application.idempotency.CreateIdempotentUserNotificationCommand;
 import com.twohands.notification_service.application.idempotency.CreateIdempotentUserNotificationUseCase;
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
+import com.twohands.notification_service.domain.delivery.NotificationDeliveryDecision;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import com.twohands.notification_service.domain.usernotification.NotificationDeliveryStatus;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,6 +21,7 @@ public class InAppSocialNotificationEventHandler implements NotificationEventHan
     private final NotificationRecipientResolver recipientResolver;
     private final SkipSelfNotificationPolicy skipSelfNotificationPolicy;
     private final NotificationContentTemplateService contentTemplateService;
+    private final ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase;
     private final CreateIdempotentUserNotificationUseCase createIdempotentUserNotificationUseCase;
 
     public InAppSocialNotificationEventHandler(
@@ -24,12 +29,14 @@ public class InAppSocialNotificationEventHandler implements NotificationEventHan
             NotificationRecipientResolver recipientResolver,
             SkipSelfNotificationPolicy skipSelfNotificationPolicy,
             NotificationContentTemplateService contentTemplateService,
+            ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase,
             CreateIdempotentUserNotificationUseCase createIdempotentUserNotificationUseCase
     ) {
         this.deliveryChannelPolicy = deliveryChannelPolicy;
         this.recipientResolver = recipientResolver;
         this.skipSelfNotificationPolicy = skipSelfNotificationPolicy;
         this.contentTemplateService = contentTemplateService;
+        this.applyNotificationDeliveryRulesUseCase = applyNotificationDeliveryRulesUseCase;
         this.createIdempotentUserNotificationUseCase = createIdempotentUserNotificationUseCase;
     }
 
@@ -61,6 +68,22 @@ public class InAppSocialNotificationEventHandler implements NotificationEventHan
                     event.actorId(),
                     recipientId
             )) {
+                continue;
+            }
+
+            NotificationDeliveryDecision deliveryDecision;
+            try {
+                deliveryDecision = applyNotificationDeliveryRulesUseCase.execute(
+                        new ApplyNotificationDeliveryRulesCommand(recipientId, event.eventType())
+                );
+            } catch (DataAccessException ex) {
+                return NotificationEventHandlerResult.failure(
+                        "Failed to load notification delivery settings",
+                        NotificationFailurePolicy.RETRYABLE
+                );
+            }
+
+            if (!deliveryDecision.inApp()) {
                 continue;
             }
 

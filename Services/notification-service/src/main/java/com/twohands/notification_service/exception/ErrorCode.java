@@ -17,6 +17,7 @@ public enum ErrorCode {
             "Missing idempotency key"
     ),
     INVALID_EVENT_PAYLOAD("NOTIFICATION-400-INVALID-PAYLOAD", HttpStatus.BAD_REQUEST, "Invalid event payload"),
+    UNKNOWN_EVENT_TYPE("NOTIFICATION-400-UNKNOWN-EVENT-TYPE", HttpStatus.BAD_REQUEST, "Unknown event type"),
     INTERNAL_API_DISABLED("NOTIFICATION-403-INTERNAL", HttpStatus.FORBIDDEN, "Internal ingest is disabled"),
     INVALID_INTERNAL_API_KEY("NOTIFICATION-401-INTERNAL", HttpStatus.UNAUTHORIZED, "Invalid internal API key");
 

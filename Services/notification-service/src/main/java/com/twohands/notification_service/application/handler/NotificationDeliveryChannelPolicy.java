@@ -1,21 +1,18 @@
 package com.twohands.notification_service.application.handler;
 
+import com.twohands.notification_service.domain.delivery.NotificationDefaultChannelPolicy;
 import org.springframework.stereotype.Component;
-
-import java.util.Set;
 
 @Component
 public class NotificationDeliveryChannelPolicy {
 
-    private static final Set<String> IN_APP_SOCIAL_EVENTS = Set.of(
-            "POST_LIKED",
-            "USER_FOLLOWED",
-            "COMMENT_CREATED",
-            "COMMENT_REPLIED",
-            "COMMENT_LIKED"
-    );
-
     public boolean allowsInApp(String eventType) {
-        return IN_APP_SOCIAL_EVENTS.contains(eventType);
+        return NotificationDefaultChannelPolicy.resolve(eventType)
+                .map(flags -> flags.inApp())
+                .orElse(false);
+    }
+
+    public boolean isKnownEventType(String eventType) {
+        return NotificationDefaultChannelPolicy.isKnownEventType(eventType);
     }
 }

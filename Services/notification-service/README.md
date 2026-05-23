@@ -163,7 +163,7 @@ cd Services/notification-service
 ./gradlew test
 ```
 
-Use cases hiện có: `ConsumeDomainEventUseCase`, `StoreNotificationEventUseCase`, `ProcessNotificationEventUseCase`, `MarkNotificationEventCompletedUseCase`, `MarkNotificationEventFailedUseCase`, `EnsureNotificationEventIdempotencyUseCase`, `CreateIdempotentUserNotificationUseCase`, `RecoverStaleProcessingNotificationEventsUseCase`, `IngestNotificationEventUseCase`, `ProcessPendingNotificationEventsUseCase`, `RetryFailedNotificationEventsUseCase`, `RetryFailedNotificationDeliveryUseCase`.
+Use cases hiện có: `ConsumeDomainEventUseCase`, `StoreNotificationEventUseCase`, `ProcessNotificationEventUseCase`, `ApplyNotificationDeliveryRulesUseCase`, `MarkNotificationEventCompletedUseCase`, `MarkNotificationEventFailedUseCase`, `EnsureNotificationEventIdempotencyUseCase`, `CreateIdempotentUserNotificationUseCase`, `RecoverStaleProcessingNotificationEventsUseCase`, `IngestNotificationEventUseCase`, `ProcessPendingNotificationEventsUseCase`, `RetryFailedNotificationEventsUseCase`, `RetryFailedNotificationDeliveryUseCase`.
 
 ---
 
@@ -174,7 +174,8 @@ src/main/java/com/twohands/notification_service/
 ├── application/consume/    # ConsumeDomainEventUseCase, envelope parser
 ├── application/ingest/       # Store, Ingest
 ├── application/idempotency/  # Ensure event/user idempotency, stale recovery
-├── application/handler/      # Event handlers + channel/recipient policies
+├── application/delivery/     # ApplyNotificationDeliveryRulesUseCase
+├── application/handler/      # Event handlers + recipient/skip policies
 ├── application/worker/       # Process / retry use cases
 ├── delivery/http/       # Health, InternalEventController
 ├── domain/
