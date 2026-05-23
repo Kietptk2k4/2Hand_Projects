@@ -2,22 +2,31 @@ package com.twohands.admin_service.application.auth;
 
 import com.twohands.admin_service.domain.auth.AdminAuthorizationService;
 import com.twohands.admin_service.domain.auth.AuthPermissionGateway;
+import com.twohands.admin_service.domain.auth.AuthRoleGateway;
 import com.twohands.admin_service.exception.AppException;
 import com.twohands.admin_service.exception.ErrorCode;
 import com.twohands.admin_service.security.AdminSecuritySupport;
 import com.twohands.admin_service.security.AuthenticatedUser;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 public class JwtClaimsAdminAuthorizationService implements AdminAuthorizationService {
 
 	private final AuthPermissionGateway authPermissionGateway;
+	private final AuthRoleGateway authRoleGateway;
 
-	public JwtClaimsAdminAuthorizationService(AuthPermissionGateway authPermissionGateway) {
+	public JwtClaimsAdminAuthorizationService(
+			AuthPermissionGateway authPermissionGateway,
+			AuthRoleGateway authRoleGateway
+	) {
 		this.authPermissionGateway = authPermissionGateway;
+		this.authRoleGateway = authRoleGateway;
 	}
 
 	@Override
@@ -67,9 +76,47 @@ public class JwtClaimsAdminAuthorizationService implements AdminAuthorizationSer
 	}
 
 	@Override
+	public boolean hasRole(UUID adminId, String roleCode) {
+		return hasAnyRole(adminId, roleCode);
+	}
+
+	@Override
 	public boolean hasAnyRole(UUID adminId, String... roleCodes) {
 		AuthenticatedUser admin = requireMatchingAdmin(adminId);
-		return Arrays.stream(roleCodes).anyMatch(code -> contains(admin.roles(), code));
+		List<String> roles = resolveAllRoles(admin);
+		return Arrays.stream(roleCodes).anyMatch(code -> contains(roles, code));
+	}
+
+	@Override
+	public List<String> getRoles(UUID adminId) {
+		AuthenticatedUser admin = requireMatchingAdmin(adminId);
+		return List.copyOf(resolveAllRoles(admin));
+	}
+
+	private List<String> resolveAllRoles(AuthenticatedUser admin) {
+		LinkedHashSet<String> merged = new LinkedHashSet<>();
+		if (admin.roles() != null) {
+			merged.addAll(admin.roles());
+		}
+		merged.addAll(resolveRolesFromAuth(admin.userId()));
+		return new ArrayList<>(merged);
+	}
+
+	private List<String> resolveRolesFromAuth(UUID adminId) {
+		if (!authRoleGateway.isEnabled()) {
+			return List.of();
+		}
+		if (!authRoleGateway.isAvailable()) {
+			throw new AppException(
+					ErrorCode.SERVICE_UNAVAILABLE,
+					"Cannot verify admin role; authorization service unavailable"
+			);
+		}
+		String bearerToken = AdminSecuritySupport.resolveBearerToken();
+		if (bearerToken == null) {
+			return List.of();
+		}
+		return authRoleGateway.resolveRoles(adminId, bearerToken);
 	}
 
 	private boolean resolvePermissionFromAuth(UUID adminId, String permissionCode) {
