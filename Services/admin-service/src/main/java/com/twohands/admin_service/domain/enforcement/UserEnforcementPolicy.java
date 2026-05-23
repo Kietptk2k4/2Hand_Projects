@@ -18,6 +18,10 @@ public final class UserEnforcementPolicy {
 		validateEnforcementRequest(reasonCode, description, expiresAt, now, "temporary ban");
 	}
 
+	public static void validateRestrictRequest(String reasonCode, String description, Instant expiresAt, Instant now) {
+		validateEnforcementRequest(reasonCode, description, expiresAt, now, "temporary restrict");
+	}
+
 	private static void validateEnforcementRequest(
 			String reasonCode,
 			String description,

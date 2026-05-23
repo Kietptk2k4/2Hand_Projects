@@ -3,6 +3,9 @@ package com.twohands.auth_service.delivery.http.admin;
 import com.twohands.auth_service.application.admin.banuser.BanUserByAdminCommand;
 import com.twohands.auth_service.application.admin.banuser.BanUserByAdminResult;
 import com.twohands.auth_service.application.admin.banuser.BanUserByAdminUseCase;
+import com.twohands.auth_service.application.admin.restrictuser.RestrictUserByAdminCommand;
+import com.twohands.auth_service.application.admin.restrictuser.RestrictUserByAdminResult;
+import com.twohands.auth_service.application.admin.restrictuser.RestrictUserByAdminUseCase;
 import com.twohands.auth_service.application.admin.suspenduser.SuspendUserByAdminCommand;
 import com.twohands.auth_service.application.admin.suspenduser.SuspendUserByAdminResult;
 import com.twohands.auth_service.application.admin.suspenduser.SuspendUserByAdminUseCase;
@@ -27,13 +30,16 @@ public class AdminUserEnforcementController {
 
     private final SuspendUserByAdminUseCase suspendUserByAdminUseCase;
     private final BanUserByAdminUseCase banUserByAdminUseCase;
+    private final RestrictUserByAdminUseCase restrictUserByAdminUseCase;
 
     public AdminUserEnforcementController(
             SuspendUserByAdminUseCase suspendUserByAdminUseCase,
-            BanUserByAdminUseCase banUserByAdminUseCase
+            BanUserByAdminUseCase banUserByAdminUseCase,
+            RestrictUserByAdminUseCase restrictUserByAdminUseCase
     ) {
         this.suspendUserByAdminUseCase = suspendUserByAdminUseCase;
         this.banUserByAdminUseCase = banUserByAdminUseCase;
+        this.restrictUserByAdminUseCase = restrictUserByAdminUseCase;
     }
 
     @PostMapping("/{userId}/suspend")
@@ -88,6 +94,34 @@ public class AdminUserEnforcementController {
                 .body(ApiResponse.success(
                         HttpStatus.OK.value(),
                         banUserByAdminUseCase.successMessage(),
+                        response
+                ));
+    }
+
+    @PostMapping("/{userId}/restrict")
+    public ResponseEntity<ApiResponse<SuspendUserByAdminResponse>> restrict(
+            @PathVariable UUID userId,
+            @RequestBody SuspendUserByAdminRequest request
+    ) {
+        RestrictUserByAdminResult result = restrictUserByAdminUseCase.execute(new RestrictUserByAdminCommand(
+                resolveAuthenticatedUserId(),
+                userId,
+                request.enforcementId(),
+                request.reasonCode(),
+                request.description(),
+                request.expiresAt()
+        ));
+
+        SuspendUserByAdminResponse response = new SuspendUserByAdminResponse(
+                result.userId(),
+                result.status(),
+                result.revokedSessionCount()
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        restrictUserByAdminUseCase.successMessage(),
                         response
                 ));
     }

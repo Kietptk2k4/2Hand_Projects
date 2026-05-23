@@ -11,6 +11,8 @@ public interface AuthUserEnforcementGateway {
 
 	void banUser(AuthBanUserRequest request);
 
+	void restrictUser(AuthRestrictUserRequest request);
+
 	record AuthSuspendUserRequest(
 			UUID userId,
 			UUID enforcementId,
@@ -22,6 +24,16 @@ public interface AuthUserEnforcementGateway {
 	}
 
 	record AuthBanUserRequest(
+			UUID userId,
+			UUID enforcementId,
+			String reasonCode,
+			String description,
+			Instant expiresAt,
+			String bearerToken
+	) {
+	}
+
+	record AuthRestrictUserRequest(
 			UUID userId,
 			UUID enforcementId,
 			String reasonCode,

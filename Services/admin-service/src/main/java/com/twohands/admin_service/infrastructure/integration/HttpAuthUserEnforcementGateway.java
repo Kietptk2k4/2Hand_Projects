@@ -65,6 +65,20 @@ public class HttpAuthUserEnforcementGateway implements AuthUserEnforcementGatewa
 		);
 	}
 
+	@Override
+	public void restrictUser(AuthRestrictUserRequest request) {
+		postEnforcement(
+				"/api/v1/admin/users/{userId}/restrict",
+				request.userId(),
+				request.enforcementId(),
+				request.reasonCode(),
+				request.description(),
+				request.expiresAt(),
+				request.bearerToken(),
+				"restrict"
+		);
+	}
+
 	private void postEnforcement(
 			String uri,
 			java.util.UUID userId,

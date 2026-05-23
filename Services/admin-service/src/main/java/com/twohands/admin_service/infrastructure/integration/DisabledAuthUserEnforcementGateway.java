@@ -22,4 +22,9 @@ public class DisabledAuthUserEnforcementGateway implements AuthUserEnforcementGa
 	public void banUser(AuthBanUserRequest request) {
 		// Outbox event USER_BANNED applies Auth effect asynchronously.
 	}
+
+	@Override
+	public void restrictUser(AuthRestrictUserRequest request) {
+		// Outbox event USER_RESTRICTED is consumed by Social/Commerce; Auth login unchanged.
+	}
 }
