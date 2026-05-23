@@ -83,7 +83,7 @@ Admin Service **không** log password, access token, refresh token.
 - User thường (chỉ role `USER`) → 403.
 - Admin Service không persist credential/session.
 - `admin_id` cho API sau login = JWT `sub` (UUID user).
-- Refresh/logout: Auth Service — xem `RefreshAdminToken-api-and-behavior.md`, `FR_AdminLogout` — không qua admin_db.
+- Refresh/logout: Auth Service — xem `RefreshAdminToken-api-and-behavior.md`, `AdminLogout-api-and-behavior.md` — không qua admin_db.
 
 ## 5. FE Integration
 

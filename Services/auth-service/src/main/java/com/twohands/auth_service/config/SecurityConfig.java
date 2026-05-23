@@ -57,6 +57,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/admin/users/*/roles/*").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/users/*/public-profile").permitAll()
                         .requestMatchers("/api/v1/users/me/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/admin/logout").authenticated()
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
