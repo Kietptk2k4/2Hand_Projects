@@ -14,6 +14,7 @@ import com.twohands.social_service.domain.post.PageResult;
 import com.twohands.social_service.domain.post.Post;
 import com.twohands.social_service.domain.post.ProductTag;
 import com.twohands.social_service.domain.post.PostRepository;
+import com.twohands.social_service.domain.post.PostModerationStatus;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
 import com.twohands.social_service.domain.user.UserProjectionRepository;
@@ -225,6 +226,9 @@ class ListPostCommentsUseCaseTest {
                 0L,
                 List.of(),
                 true,
+                PostModerationStatus.NONE,
+                null,
+                null,
                 now,
                 now,
                 status == PostStatus.DELETED ? Instant.parse("2026-05-19T10:00:00Z") : null

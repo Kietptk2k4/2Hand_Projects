@@ -75,6 +75,9 @@ social:
       enabled: ${SOCIAL_KAFKA_CONSUMER_ENABLED:false}
       bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
       group-id: social-user-projection
+      post-moderated-group-id: social-post-moderated
+      post-moderated-topics:
+        - admin.post.moderated
       topics:
         - auth.user.created
         - auth.user.updated

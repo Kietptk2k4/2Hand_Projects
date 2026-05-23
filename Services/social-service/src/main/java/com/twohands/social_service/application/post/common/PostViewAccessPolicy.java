@@ -1,6 +1,7 @@
 package com.twohands.social_service.application.post.common;
 
 import com.twohands.social_service.domain.post.Post;
+import com.twohands.social_service.domain.post.PostModerationStatus;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
 import org.springframework.stereotype.Component;
@@ -29,6 +30,10 @@ public class PostViewAccessPolicy {
             return PostViewAccessOutcome.NOT_FOUND;
         }
         if (post.status() == PostStatus.DELETED) {
+            return PostViewAccessOutcome.NOT_FOUND;
+        }
+        if (post.moderationStatusOrDefault() == PostModerationStatus.HIDDEN
+                && !post.authorId().equals(viewerId.toString())) {
             return PostViewAccessOutcome.NOT_FOUND;
         }
         if (post.status() == PostStatus.DRAFT) {

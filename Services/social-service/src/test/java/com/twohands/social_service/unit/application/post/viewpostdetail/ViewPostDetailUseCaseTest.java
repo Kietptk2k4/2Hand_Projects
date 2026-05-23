@@ -7,6 +7,7 @@ import com.twohands.social_service.application.post.viewpostdetail.ViewPostDetai
 import com.twohands.social_service.domain.follow.FollowRepository;
 import com.twohands.social_service.domain.post.MediaItem;
 import com.twohands.social_service.domain.post.Post;
+import com.twohands.social_service.domain.post.PostModerationStatus;
 import com.twohands.social_service.domain.post.PostLikeRepository;
 import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostSaveRepository;
@@ -205,6 +206,9 @@ class ViewPostDetailUseCaseTest {
                 2,
                 List.of("tag"),
                 true,
+                PostModerationStatus.NONE,
+                null,
+                null,
                 Instant.parse("2026-05-18T10:15:30Z"),
                 Instant.parse("2026-05-18T10:20:30Z"),
                 status == PostStatus.DELETED ? Instant.parse("2026-05-19T10:00:00Z") : null

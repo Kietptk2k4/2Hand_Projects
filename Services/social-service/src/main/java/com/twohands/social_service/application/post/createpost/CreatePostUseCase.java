@@ -6,6 +6,7 @@ import com.twohands.social_service.application.post.common.ProductTagValidator;
 import com.twohands.social_service.domain.post.MediaItem;
 import com.twohands.social_service.domain.post.Post;
 import com.twohands.social_service.domain.post.PostRepository;
+import com.twohands.social_service.domain.post.PostModerationStatus;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
 import com.twohands.social_service.domain.post.ProductTag;
@@ -67,6 +68,9 @@ public class CreatePostUseCase {
                 0L,
                 command.hashtags() != null ? command.hashtags() : List.of(),
                 command.allowComments(),
+                PostModerationStatus.NONE,
+                null,
+                null,
                 now,
                 now,
                 null

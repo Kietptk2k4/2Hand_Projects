@@ -8,6 +8,7 @@ import com.twohands.social_service.application.post.createpost.CreatePostUseCase
 import com.twohands.social_service.domain.post.ProductTag;
 import com.twohands.social_service.domain.post.MediaItem;
 import com.twohands.social_service.domain.post.Post;
+import com.twohands.social_service.domain.post.PostModerationStatus;
 import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
@@ -55,6 +56,9 @@ class CreatePostUseCaseTest {
                 0L,
                 List.of("spring"),
                 true,
+                PostModerationStatus.NONE,
+                null,
+                null,
                 Instant.now(),
                 Instant.now(),
                 null
@@ -237,6 +241,9 @@ class CreatePostUseCaseTest {
                     0L,
                     p.hashtags(),
                     p.allowComments(),
+                    p.moderationStatusOrDefault(),
+                    p.moderationReason(),
+                    p.lastModerationLogId(),
                     p.createdAt(),
                     p.updatedAt(),
                     null

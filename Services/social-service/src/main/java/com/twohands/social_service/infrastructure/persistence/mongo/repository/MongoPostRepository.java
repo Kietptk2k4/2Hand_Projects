@@ -12,8 +12,29 @@ import java.util.List;
 public interface MongoPostRepository extends MongoRepository<PostDocument, String> {
     List<PostDocument> findByIdIn(Collection<String> ids);
 
+    @Query("""
+            {
+              'status': ?0,
+              'visibility': ?1,
+              '$or': [
+                { 'moderation_status': { '$exists': false } },
+                { 'moderation_status': 'NONE' }
+              ]
+            }
+            """)
     Page<PostDocument> findByStatusAndVisibilityOrderByCreatedAtDesc(String status, String visibility, Pageable pageable);
 
+    @Query("""
+            {
+              'status': ?0,
+              'author_id': { '$in': ?1 },
+              'visibility': { '$in': ?2 },
+              '$or': [
+                { 'moderation_status': { '$exists': false } },
+                { 'moderation_status': 'NONE' }
+              ]
+            }
+            """)
     Page<PostDocument> findByStatusAndAuthorIdInAndVisibilityInOrderByCreatedAtDesc(
             String status,
             Collection<String> authorIds,
@@ -24,20 +45,30 @@ public interface MongoPostRepository extends MongoRepository<PostDocument, Strin
     @Query("""
             {
               'status': ?2,
-              '$or': [
+              '$and': [
                 {
-                  'visibility': ?3,
                   '$or': [
-                    { 'caption': { '$regex': ?0, '$options': 'i' } },
-                    { 'hashtags': { '$regex': ?0, '$options': 'i' } }
+                    { 'moderation_status': { '$exists': false } },
+                    { 'moderation_status': 'NONE' }
                   ]
                 },
                 {
-                  'visibility': ?4,
-                  'author_id': { '$in': ?1 },
                   '$or': [
-                    { 'caption': { '$regex': ?0, '$options': 'i' } },
-                    { 'hashtags': { '$regex': ?0, '$options': 'i' } }
+                    {
+                      'visibility': ?3,
+                      '$or': [
+                        { 'caption': { '$regex': ?0, '$options': 'i' } },
+                        { 'hashtags': { '$regex': ?0, '$options': 'i' } }
+                      ]
+                    },
+                    {
+                      'visibility': ?4,
+                      'author_id': { '$in': ?1 },
+                      '$or': [
+                        { 'caption': { '$regex': ?0, '$options': 'i' } },
+                        { 'hashtags': { '$regex': ?0, '$options': 'i' } }
+                      ]
+                    }
                   ]
                 }
               ]
@@ -56,9 +87,19 @@ public interface MongoPostRepository extends MongoRepository<PostDocument, Strin
             {
               'status': ?2,
               'hashtags': { '$in': ?0 },
-              '$or': [
-                { 'visibility': ?3 },
-                { 'visibility': ?4, 'author_id': { '$in': ?1 } }
+              '$and': [
+                {
+                  '$or': [
+                    { 'moderation_status': { '$exists': false } },
+                    { 'moderation_status': 'NONE' }
+                  ]
+                },
+                {
+                  '$or': [
+                    { 'visibility': ?3 },
+                    { 'visibility': ?4, 'author_id': { '$in': ?1 } }
+                  ]
+                }
               ]
             }
             """)
@@ -83,6 +124,17 @@ public interface MongoPostRepository extends MongoRepository<PostDocument, Strin
             Pageable pageable
     );
 
+    @Query("""
+            {
+              'author_id': ?0,
+              'status': ?1,
+              'visibility': ?2,
+              '$or': [
+                { 'moderation_status': { '$exists': false } },
+                { 'moderation_status': 'NONE' }
+              ]
+            }
+            """)
     Page<PostDocument> findByAuthorIdAndStatusAndVisibilityOrderByCreatedAtDesc(
             String authorId,
             String status,
@@ -94,7 +146,11 @@ public interface MongoPostRepository extends MongoRepository<PostDocument, Strin
             {
               'author_id': ?0,
               'status': ?1,
-              'visibility': { '$in': [?2, ?3] }
+              'visibility': { '$in': [?2, ?3] },
+              '$or': [
+                { 'moderation_status': { '$exists': false } },
+                { 'moderation_status': 'NONE' }
+              ]
             }
             """)
     Page<PostDocument> findByAuthorIdAndStatusAndVisibilityInOrderByCreatedAtDesc(

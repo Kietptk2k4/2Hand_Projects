@@ -27,6 +27,11 @@ public class SocialKafkaConsumerConfig {
     }
 
     @Bean
+    public String[] postModeratedEventTopics(SocialKafkaConsumerProperties properties) {
+        return properties.getPostModeratedTopics().toArray(String[]::new);
+    }
+
+    @Bean
     public ConsumerFactory<String, String> authUserEventConsumerFactory(SocialKafkaConsumerProperties properties) {
         Map<String, Object> config = new HashMap<>();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getBootstrapServers());

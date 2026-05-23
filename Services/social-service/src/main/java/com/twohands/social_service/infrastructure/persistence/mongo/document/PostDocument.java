@@ -45,6 +45,15 @@ public class PostDocument {
     @Field("allow_comments")
     private boolean allowComments;
 
+    @Field("moderation_status")
+    private String moderationStatus;
+
+    @Field("moderation_reason")
+    private String moderationReason;
+
+    @Field("last_moderation_log_id")
+    private String lastModerationLogId;
+
     @Field("created_at")
     private Instant createdAt;
 
@@ -140,6 +149,30 @@ public class PostDocument {
 
     public void setAllowComments(boolean allowComments) {
         this.allowComments = allowComments;
+    }
+
+    public String getModerationStatus() {
+        return moderationStatus;
+    }
+
+    public void setModerationStatus(String moderationStatus) {
+        this.moderationStatus = moderationStatus;
+    }
+
+    public String getModerationReason() {
+        return moderationReason;
+    }
+
+    public void setModerationReason(String moderationReason) {
+        this.moderationReason = moderationReason;
+    }
+
+    public String getLastModerationLogId() {
+        return lastModerationLogId;
+    }
+
+    public void setLastModerationLogId(String lastModerationLogId) {
+        this.lastModerationLogId = lastModerationLogId;
     }
 
     public Instant getCreatedAt() {

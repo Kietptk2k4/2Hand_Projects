@@ -5,6 +5,7 @@ import com.twohands.social_service.application.post.deletepost.DeletePostResult;
 import com.twohands.social_service.application.post.deletepost.DeletePostUseCase;
 import com.twohands.social_service.domain.post.MediaItem;
 import com.twohands.social_service.domain.post.Post;
+import com.twohands.social_service.domain.post.PostModerationStatus;
 import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
@@ -50,6 +51,9 @@ class DeletePostUseCaseTest {
                 1L,
                 List.of("tag"),
                 true,
+                PostModerationStatus.NONE,
+                null,
+                null,
                 Instant.parse("2026-05-19T00:00:00Z"),
                 Instant.parse("2026-05-19T00:00:00Z"),
                 deletedAt

@@ -10,6 +10,7 @@ import com.twohands.social_service.domain.follow.FollowRepository;
 import com.twohands.social_service.domain.post.MediaItem;
 import com.twohands.social_service.domain.post.PageResult;
 import com.twohands.social_service.domain.post.Post;
+import com.twohands.social_service.domain.post.PostModerationStatus;
 import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostSearchQuery;
 import com.twohands.social_service.domain.post.PostStatus;
@@ -62,6 +63,9 @@ class SearchPostUseCaseTest {
                 0L,
                 List.of("travel"),
                 true,
+                PostModerationStatus.NONE,
+                null,
+                null,
                 Instant.now(),
                 Instant.now(),
                 null

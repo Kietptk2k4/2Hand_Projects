@@ -15,8 +15,14 @@ public record Post(
         long replyCount,
         List<String> hashtags,
         boolean allowComments,
+        PostModerationStatus moderationStatus,
+        String moderationReason,
+        String lastModerationLogId,
         Instant createdAt,
         Instant updatedAt,
         Instant deletedAt
 ) {
+    public PostModerationStatus moderationStatusOrDefault() {
+        return moderationStatus != null ? moderationStatus : PostModerationStatus.NONE;
+    }
 }

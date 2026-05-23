@@ -20,6 +20,8 @@ public class SocialKafkaConsumerProperties {
             "admin.user.enforcement_revoked",
             "admin.user.enforcement_expired"
     );
+    private String postModeratedGroupId = "social-post-moderated";
+    private List<String> postModeratedTopics = List.of("admin.post.moderated");
 
     public boolean isEnabled() {
         return enabled;
@@ -51,5 +53,21 @@ public class SocialKafkaConsumerProperties {
 
     public void setTopics(List<String> topics) {
         this.topics = topics;
+    }
+
+    public String getPostModeratedGroupId() {
+        return postModeratedGroupId;
+    }
+
+    public void setPostModeratedGroupId(String postModeratedGroupId) {
+        this.postModeratedGroupId = postModeratedGroupId;
+    }
+
+    public List<String> getPostModeratedTopics() {
+        return postModeratedTopics;
+    }
+
+    public void setPostModeratedTopics(List<String> postModeratedTopics) {
+        this.postModeratedTopics = postModeratedTopics;
     }
 }

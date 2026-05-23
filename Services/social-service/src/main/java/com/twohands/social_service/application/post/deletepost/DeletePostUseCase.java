@@ -2,6 +2,7 @@ package com.twohands.social_service.application.post.deletepost;
 
 import com.twohands.social_service.domain.post.Post;
 import com.twohands.social_service.domain.post.PostRepository;
+import com.twohands.social_service.domain.post.PostModerationStatus;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.exception.AppException;
@@ -55,6 +56,9 @@ public class DeletePostUseCase {
                 existing.replyCount(),
                 existing.hashtags(),
                 existing.allowComments(),
+                PostModerationStatus.REMOVED,
+                existing.moderationReason(),
+                existing.lastModerationLogId(),
                 existing.createdAt(),
                 now,
                 now

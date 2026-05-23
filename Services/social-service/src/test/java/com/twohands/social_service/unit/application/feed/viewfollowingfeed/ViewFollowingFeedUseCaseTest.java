@@ -7,6 +7,7 @@ import com.twohands.social_service.domain.post.FeedQuery;
 import com.twohands.social_service.domain.post.MediaItem;
 import com.twohands.social_service.domain.post.PageResult;
 import com.twohands.social_service.domain.post.Post;
+import com.twohands.social_service.domain.post.PostModerationStatus;
 import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
@@ -48,6 +49,9 @@ class ViewFollowingFeedUseCaseTest {
                 2,
                 List.of("java"),
                 true,
+                PostModerationStatus.NONE,
+                null,
+                null,
                 Instant.parse("2026-05-18T10:15:30Z"),
                 Instant.parse("2026-05-18T10:20:30Z"),
                 null

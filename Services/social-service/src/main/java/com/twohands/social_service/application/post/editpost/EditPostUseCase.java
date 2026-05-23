@@ -76,6 +76,9 @@ public class EditPostUseCase {
                 existing.replyCount(),
                 resolveHashtags(command, existing),
                 resolveAllowComments(command, existing),
+                existing.moderationStatusOrDefault(),
+                existing.moderationReason(),
+                existing.lastModerationLogId(),
                 existing.createdAt(),
                 now,
                 existing.deletedAt()
