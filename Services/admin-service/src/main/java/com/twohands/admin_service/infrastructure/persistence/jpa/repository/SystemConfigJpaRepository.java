@@ -8,4 +8,6 @@ import java.util.UUID;
 
 public interface SystemConfigJpaRepository extends JpaRepository<SystemConfigEntity, UUID> {
 	Optional<SystemConfigEntity> findByConfigKey(String configKey);
+
+	boolean existsByConfigKey(String configKey);
 }
