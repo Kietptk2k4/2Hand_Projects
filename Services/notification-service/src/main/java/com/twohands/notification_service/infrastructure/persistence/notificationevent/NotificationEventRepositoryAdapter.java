@@ -2,6 +2,7 @@ package com.twohands.notification_service.infrastructure.persistence.notificatio
 
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventRepository;
+import com.twohands.notification_service.domain.notificationevent.NotificationEventRetryBackoffPolicy;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventStatus;
 import com.twohands.notification_service.domain.notificationevent.NotificationSourceService;
 import org.springframework.data.domain.PageRequest;
@@ -75,33 +76,80 @@ public class NotificationEventRepositoryAdapter implements NotificationEventRepo
 
     @Override
     @Transactional
-    public List<NotificationEvent> claimProcessableEvents(int batchSize, String lockedBy) {
+    public List<NotificationEvent> claimPendingEvents(int batchSize, String lockedBy) {
+        return claimEventsByStatus(batchSize, lockedBy, NotificationEventStatus.PENDING);
+    }
+
+    @Override
+    @Transactional
+    public List<NotificationEvent> claimRetryableFailedEvents(
+            int batchSize,
+            String lockedBy,
+            Instant now,
+            int baseBackoffSeconds,
+            int maxBackoffSeconds
+    ) {
         String selectSql = """
                 SELECT id, source_event_id, event_key, event_type, source_service, aggregate_type, aggregate_id,
                        actor_id, recipient_user_id, payload, status, retry_count, max_retry_count, last_error,
                        locked_at, locked_by, created_at, processed_at
                 FROM notification_events
-                WHERE (
-                    status = :pendingStatus
-                ) OR (
-                    status = :failedStatus
-                    AND retry_count < max_retry_count
-                )
+                WHERE status = :status
+                  AND retry_count < max_retry_count
                 ORDER BY created_at ASC
                 LIMIT :batchSize
                 FOR UPDATE SKIP LOCKED
                 """;
 
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("pendingStatus", NotificationEventStatus.PENDING.name())
-                .addValue("failedStatus", NotificationEventStatus.FAILED.name())
+                .addValue("status", NotificationEventStatus.FAILED.name())
+                .addValue("batchSize", batchSize);
+
+        List<NotificationEvent> candidates = jdbcTemplate.query(selectSql, params, (rs, rowNum) -> mapNotificationEvent(rs));
+        List<NotificationEvent> eligible = candidates.stream()
+                .filter(event -> NotificationEventRetryBackoffPolicy.isEligibleForRetry(
+                        event,
+                        now,
+                        baseBackoffSeconds,
+                        maxBackoffSeconds
+                ))
+                .toList();
+        if (eligible.isEmpty()) {
+            return List.of();
+        }
+
+        return markClaimedAsProcessing(eligible, lockedBy);
+    }
+
+    private List<NotificationEvent> claimEventsByStatus(
+            int batchSize,
+            String lockedBy,
+            NotificationEventStatus status
+    ) {
+        String selectSql = """
+                SELECT id, source_event_id, event_key, event_type, source_service, aggregate_type, aggregate_id,
+                       actor_id, recipient_user_id, payload, status, retry_count, max_retry_count, last_error,
+                       locked_at, locked_by, created_at, processed_at
+                FROM notification_events
+                WHERE status = :status
+                ORDER BY created_at ASC
+                LIMIT :batchSize
+                FOR UPDATE SKIP LOCKED
+                """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("status", status.name())
                 .addValue("batchSize", batchSize);
 
         List<NotificationEvent> candidates = jdbcTemplate.query(selectSql, params, (rs, rowNum) -> mapNotificationEvent(rs));
         if (candidates.isEmpty()) {
-            return candidates;
+            return List.of();
         }
 
+        return markClaimedAsProcessing(candidates, lockedBy);
+    }
+
+    private List<NotificationEvent> markClaimedAsProcessing(List<NotificationEvent> candidates, String lockedBy) {
         Instant lockedAt = Instant.now();
         String markProcessingSql = """
                 UPDATE notification_events

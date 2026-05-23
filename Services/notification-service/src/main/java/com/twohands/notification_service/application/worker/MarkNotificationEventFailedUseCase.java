@@ -10,6 +10,8 @@ import com.twohands.notification_service.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+
 @Service
 public class MarkNotificationEventFailedUseCase {
 
@@ -46,6 +48,7 @@ public class MarkNotificationEventFailedUseCase {
 
         int retryCount = resolveRetryCount(event, command.failurePolicy());
         String sanitizedError = errorSanitizer.sanitize(command.errorMessage());
+        Instant failedAt = Instant.now();
         NotificationEvent failedEvent = new NotificationEvent(
                 event.id(),
                 event.sourceEventId(),
@@ -61,7 +64,7 @@ public class MarkNotificationEventFailedUseCase {
                 retryCount,
                 event.maxRetryCount(),
                 sanitizedError,
-                null,
+                failedAt,
                 null,
                 event.createdAt(),
                 null

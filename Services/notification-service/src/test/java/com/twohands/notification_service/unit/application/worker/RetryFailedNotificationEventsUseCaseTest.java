@@ -4,7 +4,7 @@ import com.twohands.notification_service.application.worker.ProcessNotificationE
 import com.twohands.notification_service.application.worker.ProcessNotificationEventOutcome;
 import com.twohands.notification_service.application.worker.ProcessNotificationEventResult;
 import com.twohands.notification_service.application.worker.ProcessNotificationEventUseCase;
-import com.twohands.notification_service.application.worker.ProcessPendingNotificationEventsUseCase;
+import com.twohands.notification_service.application.worker.RetryFailedNotificationEventsUseCase;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventRepository;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventStatus;
@@ -23,12 +23,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ProcessPendingNotificationEventsUseCaseTest {
+class RetryFailedNotificationEventsUseCaseTest {
 
     @Mock
     private NotificationEventRepository notificationEventRepository;
@@ -36,68 +37,81 @@ class ProcessPendingNotificationEventsUseCaseTest {
     @Mock
     private ProcessNotificationEventUseCase processNotificationEventUseCase;
 
-    private ProcessPendingNotificationEventsUseCase useCase;
+    private RetryFailedNotificationEventsUseCase useCase;
 
     @BeforeEach
     void setUp() {
-        useCase = new ProcessPendingNotificationEventsUseCase(
+        useCase = new RetryFailedNotificationEventsUseCase(
                 notificationEventRepository,
-                processNotificationEventUseCase
+                processNotificationEventUseCase,
+                30,
+                3600
         );
     }
 
     @Test
     void execute_returnsZeroWhenBatchSizeInvalid() {
         assertEquals(0, useCase.execute(0));
-        verify(notificationEventRepository, never()).claimPendingEvents(anyInt(), anyString());
+        verify(notificationEventRepository, never()).claimRetryableFailedEvents(
+                anyInt(),
+                anyString(),
+                any(Instant.class),
+                anyInt(),
+                anyInt()
+        );
     }
 
     @Test
-    void execute_returnsZeroWhenNoEventsClaimed() {
-        when(notificationEventRepository.claimPendingEvents(10, "notification-processor"))
-                .thenReturn(List.of());
+    void execute_returnsZeroWhenNoEligibleEventsClaimed() {
+        when(notificationEventRepository.claimRetryableFailedEvents(
+                eq(10),
+                eq("notification-retry-processor"),
+                any(Instant.class),
+                eq(30),
+                eq(3600)
+        )).thenReturn(List.of());
 
         assertEquals(0, useCase.execute(10));
         verify(processNotificationEventUseCase, never()).execute(any());
     }
 
     @Test
-    void execute_processesClaimedEvents() {
-        UUID firstId = UUID.randomUUID();
-        UUID secondId = UUID.randomUUID();
-        NotificationEvent first = sampleEvent(firstId);
-        NotificationEvent second = sampleEvent(secondId);
+    void execute_reprocessesClaimedFailedEvents() {
+        UUID eventId = UUID.randomUUID();
+        NotificationEvent claimed = sampleFailedEvent(eventId);
 
-        when(notificationEventRepository.claimPendingEvents(2, "notification-processor"))
-                .thenReturn(List.of(first, second));
-        when(processNotificationEventUseCase.execute(new ProcessNotificationEventCommand(firstId)))
-                .thenReturn(new ProcessNotificationEventResult(firstId, ProcessNotificationEventOutcome.COMPLETED));
-        when(processNotificationEventUseCase.execute(new ProcessNotificationEventCommand(secondId)))
-                .thenReturn(new ProcessNotificationEventResult(secondId, ProcessNotificationEventOutcome.FAILED));
+        when(notificationEventRepository.claimRetryableFailedEvents(
+                eq(1),
+                eq("notification-retry-processor"),
+                any(Instant.class),
+                eq(30),
+                eq(3600)
+        )).thenReturn(List.of(claimed));
+        when(processNotificationEventUseCase.execute(new ProcessNotificationEventCommand(eventId)))
+                .thenReturn(new ProcessNotificationEventResult(eventId, ProcessNotificationEventOutcome.COMPLETED));
 
-        assertEquals(2, useCase.execute(2));
-        verify(processNotificationEventUseCase).execute(new ProcessNotificationEventCommand(firstId));
-        verify(processNotificationEventUseCase).execute(new ProcessNotificationEventCommand(secondId));
+        assertEquals(1, useCase.execute(1));
+        verify(processNotificationEventUseCase).execute(new ProcessNotificationEventCommand(eventId));
     }
 
-    private NotificationEvent sampleEvent(UUID eventId) {
+    private NotificationEvent sampleFailedEvent(UUID eventId) {
         return new NotificationEvent(
                 eventId,
                 UUID.randomUUID(),
                 null,
                 "POST_LIKED",
                 NotificationSourceService.SOCIAL,
-                null,
-                null,
-                null,
+                "POST",
+                "post-id",
+                UUID.randomUUID(),
                 UUID.randomUUID(),
                 "{}",
                 NotificationEventStatus.PROCESSING,
-                0,
+                1,
                 5,
-                null,
-                Instant.now(),
-                "notification-processor",
+                "Recipient missing",
+                Instant.now().minusSeconds(60),
+                "notification-retry-processor",
                 Instant.now(),
                 null
         );

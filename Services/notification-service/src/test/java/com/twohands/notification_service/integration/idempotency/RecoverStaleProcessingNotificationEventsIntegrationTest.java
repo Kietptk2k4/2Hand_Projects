@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 @SpringBootTest
@@ -68,7 +69,7 @@ class RecoverStaleProcessingNotificationEventsIntegrationTest {
         assertEquals("FAILED", queryStatus(eventId));
         assertEquals(1, queryRetryCount(eventId));
         assertEquals(RecoverStaleProcessingNotificationEventsUseCase.STALE_PROCESSING_ERROR, queryLastError(eventId));
-        assertNull(queryLockedAt(eventId));
+        assertNotNull(queryLockedAt(eventId));
         assertNull(queryLockedBy(eventId));
     }
 

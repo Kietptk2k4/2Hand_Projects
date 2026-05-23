@@ -23,5 +23,13 @@ public interface NotificationEventRepository {
 
     List<NotificationEvent> findStaleProcessingEvents(Instant lockedBefore, int limit);
 
-    List<NotificationEvent> claimProcessableEvents(int batchSize, String lockedBy);
+    List<NotificationEvent> claimPendingEvents(int batchSize, String lockedBy);
+
+    List<NotificationEvent> claimRetryableFailedEvents(
+            int batchSize,
+            String lockedBy,
+            Instant now,
+            int baseBackoffSeconds,
+            int maxBackoffSeconds
+    );
 }

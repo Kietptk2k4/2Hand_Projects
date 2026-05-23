@@ -30,7 +30,7 @@ public class ProcessPendingNotificationEventsUseCase {
             return 0;
         }
 
-        List<NotificationEvent> claimedEvents = notificationEventRepository.claimProcessableEvents(batchSize, WORKER_ID);
+        List<NotificationEvent> claimedEvents = notificationEventRepository.claimPendingEvents(batchSize, WORKER_ID);
         if (claimedEvents.isEmpty()) {
             return 0;
         }

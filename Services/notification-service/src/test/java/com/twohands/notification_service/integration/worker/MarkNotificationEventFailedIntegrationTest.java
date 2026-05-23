@@ -19,6 +19,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -54,7 +55,7 @@ class MarkNotificationEventFailedIntegrationTest {
         assertEquals("FAILED", queryStatus(eventId));
         assertEquals(1, queryRetryCount(eventId));
         assertEquals("Recipient missing", queryLastError(eventId));
-        assertNull(queryLockedAt(eventId));
+        assertNotNull(queryLockedAt(eventId));
         assertNull(queryLockedBy(eventId));
     }
 
