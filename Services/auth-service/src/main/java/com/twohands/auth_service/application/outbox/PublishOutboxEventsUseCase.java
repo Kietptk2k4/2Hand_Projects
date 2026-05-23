@@ -2,6 +2,7 @@ package com.twohands.auth_service.application.outbox;
 
 import com.twohands.auth_service.domain.outbox.OutboxEvent;
 import com.twohands.auth_service.domain.outbox.OutboxEventRepository;
+import com.twohands.auth_service.infrastructure.outbox.AuthOutboxTopicResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,40 +13,38 @@ import java.time.Instant;
 import java.util.List;
 
 @Service
-public class RetryFailedOutboxEventsUseCase {
+public class PublishOutboxEventsUseCase {
 
-    private static final Logger log = LoggerFactory.getLogger(RetryFailedOutboxEventsUseCase.class);
+    private static final Logger log = LoggerFactory.getLogger(PublishOutboxEventsUseCase.class);
 
     private final OutboxEventRepository outboxEventRepository;
     private final OutboxEventPublisher outboxEventPublisher;
+    private final AuthOutboxTopicResolver topicResolver;
     private final int maxRetries;
-    private final int pendingTimeoutSeconds;
     private final int batchSize;
 
-    public RetryFailedOutboxEventsUseCase(
+    public PublishOutboxEventsUseCase(
             OutboxEventRepository outboxEventRepository,
             OutboxEventPublisher outboxEventPublisher,
-            @Value("${auth.outbox.retry.max-retries:5}") int maxRetries,
-            @Value("${auth.outbox.retry.pending-timeout-seconds:300}") int pendingTimeoutSeconds,
-            @Value("${auth.outbox.retry.batch-size:50}") int batchSize
+            AuthOutboxTopicResolver topicResolver,
+            @Value("${auth.outbox.publish.max-retries:5}") int maxRetries,
+            @Value("${auth.outbox.publish.batch-size:50}") int batchSize
     ) {
         this.outboxEventRepository = outboxEventRepository;
         this.outboxEventPublisher = outboxEventPublisher;
+        this.topicResolver = topicResolver;
         this.maxRetries = maxRetries;
-        this.pendingTimeoutSeconds = pendingTimeoutSeconds;
         this.batchSize = batchSize;
     }
 
     @Transactional
     public int execute() {
-        Instant now = Instant.now();
-        Instant pendingTimeoutBefore = now.minusSeconds(pendingTimeoutSeconds);
-        List<OutboxEvent> candidates = outboxEventRepository.claimRetryCandidates(batchSize, maxRetries, pendingTimeoutBefore);
-
+        List<OutboxEvent> candidates = outboxEventRepository.claimPublishCandidates(batchSize, maxRetries);
         if (candidates.isEmpty()) {
             return 0;
         }
 
+        Instant now = Instant.now();
         for (OutboxEvent event : candidates) {
             processSingleEvent(event, now);
         }
@@ -53,28 +52,32 @@ public class RetryFailedOutboxEventsUseCase {
     }
 
     private void processSingleEvent(OutboxEvent event, Instant now) {
+        String topic = resolveTopicSafely(event);
         try {
             outboxEventPublisher.publish(event);
             outboxEventRepository.markPublished(event.id(), now);
             log.info(
-                    "Outbox retry publish success. outboxEventId={}, eventType={}, retryCount={}, newStatus=PUBLISHED",
+                    "Outbox publish success. outboxEventId={}, eventType={}, topic={}, source={}, newStatus=PUBLISHED",
                     event.id(),
                     event.eventType(),
-                    event.retryCount()
+                    topic,
+                    event.source()
             );
         } catch (Exception ex) {
             outboxEventRepository.markFailed(event.id(), OutboxPublishErrorSanitizer.sanitize(ex.getMessage()));
             int nextRetryCount = event.retryCount() + 1;
             log.warn(
-                    "Outbox retry publish failed. outboxEventId={}, eventType={}, retryCount={}, newStatus=FAILED, error={}",
+                    "Outbox publish failed. outboxEventId={}, eventType={}, topic={}, source={}, retryCount={}, newStatus=FAILED, error={}",
                     event.id(),
                     event.eventType(),
+                    topic,
+                    event.source(),
                     nextRetryCount,
                     OutboxPublishErrorSanitizer.sanitize(ex.getMessage())
             );
             if (nextRetryCount >= maxRetries) {
                 log.error(
-                        "Outbox retry reached max retries. outboxEventId={}, eventType={}, retryCount={}, maxRetries={}",
+                        "Outbox publish reached max retries. outboxEventId={}, eventType={}, retryCount={}, maxRetries={}",
                         event.id(),
                         event.eventType(),
                         nextRetryCount,
@@ -84,4 +87,11 @@ public class RetryFailedOutboxEventsUseCase {
         }
     }
 
+    private String resolveTopicSafely(OutboxEvent event) {
+        try {
+            return topicResolver.resolve(event.eventType());
+        } catch (Exception ex) {
+            return "unknown";
+        }
+    }
 }

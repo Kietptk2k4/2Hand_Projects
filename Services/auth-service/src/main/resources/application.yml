@@ -130,6 +130,11 @@ auth:
       window-seconds: ${AUTH_FORGOT_PASSWORD_RATE_LIMIT_WINDOW_SECONDS:900}
 
   outbox:
+    publish:
+      enabled: ${AUTH_OUTBOX_PUBLISH_ENABLED:false}
+      cron: ${AUTH_OUTBOX_PUBLISH_CRON:0/10 * * * * *}
+      max-retries: ${AUTH_OUTBOX_PUBLISH_MAX_RETRIES:5}
+      batch-size: ${AUTH_OUTBOX_PUBLISH_BATCH_SIZE:50}
     retry:
       enabled: ${AUTH_OUTBOX_RETRY_ENABLED:false}
       cron: ${AUTH_OUTBOX_RETRY_CRON:0 */1 * * * *}

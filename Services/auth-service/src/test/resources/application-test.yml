@@ -47,6 +47,11 @@ auth:
       max-attempts: 10000
       window-seconds: 3600
   outbox:
+    publish:
+      enabled: false
+      cron: "0 */5 * * * *"
+      max-retries: 5
+      batch-size: 50
     retry:
       enabled: false
       cron: "0 */5 * * * *"

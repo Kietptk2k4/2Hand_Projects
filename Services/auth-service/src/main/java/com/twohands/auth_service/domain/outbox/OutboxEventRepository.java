@@ -7,6 +7,8 @@ import java.util.UUID;
 public interface OutboxEventRepository {
     OutboxEvent save(OutboxEvent event);
 
+    List<OutboxEvent> claimPublishCandidates(int batchSize, int maxRetries);
+
     List<OutboxEvent> claimRetryCandidates(int batchSize, int maxRetries, Instant pendingTimeoutBefore);
 
     int markPublished(UUID eventId, Instant publishedAt);

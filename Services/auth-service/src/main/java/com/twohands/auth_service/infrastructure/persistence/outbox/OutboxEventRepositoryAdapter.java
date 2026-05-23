@@ -44,6 +44,25 @@ public class OutboxEventRepositoryAdapter implements OutboxEventRepository {
     }
 
     @Override
+    public List<OutboxEvent> claimPublishCandidates(int batchSize, int maxRetries) {
+        String selectSql = """
+                SELECT id, event_type, source, payload, status, retry_count, created_at, published_at, last_error
+                FROM outbox_events
+                WHERE status = :pendingStatus
+                  AND retry_count < :maxRetries
+                ORDER BY created_at ASC
+                LIMIT :batchSize
+                FOR UPDATE SKIP LOCKED
+                """;
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("pendingStatus", OutboxStatus.PENDING.name())
+                .addValue("maxRetries", maxRetries)
+                .addValue("batchSize", batchSize);
+        List<OutboxEvent> candidates = jdbcTemplate.query(selectSql, params, (rs, rowNum) -> mapOutboxEvent(rs));
+        return markClaimedAsProcessing(candidates);
+    }
+
+    @Override
     public List<OutboxEvent> claimRetryCandidates(int batchSize, int maxRetries, Instant pendingTimeoutBefore) {
         String selectSql = """
                 SELECT id, event_type, source, payload, status, retry_count, created_at, published_at, last_error
@@ -55,6 +74,10 @@ public class OutboxEventRepositoryAdapter implements OutboxEventRepository {
                     status = :pendingStatus
                     AND created_at <= :pendingTimeoutBefore
                     AND retry_count < :maxRetries
+                ) OR (
+                    status = :processingStatus
+                    AND created_at <= :pendingTimeoutBefore
+                    AND retry_count < :maxRetries
                 )
                 ORDER BY created_at ASC
                 LIMIT :batchSize
@@ -63,10 +86,15 @@ public class OutboxEventRepositoryAdapter implements OutboxEventRepository {
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("failedStatus", OutboxStatus.FAILED.name())
                 .addValue("pendingStatus", OutboxStatus.PENDING.name())
+                .addValue("processingStatus", OutboxStatus.PROCESSING.name())
                 .addValue("maxRetries", maxRetries)
                 .addValue("pendingTimeoutBefore", pendingTimeoutBefore)
                 .addValue("batchSize", batchSize);
         List<OutboxEvent> candidates = jdbcTemplate.query(selectSql, params, (rs, rowNum) -> mapOutboxEvent(rs));
+        return markClaimedAsProcessing(candidates);
+    }
+
+    private List<OutboxEvent> markClaimedAsProcessing(List<OutboxEvent> candidates) {
         if (candidates.isEmpty()) {
             return candidates;
         }
