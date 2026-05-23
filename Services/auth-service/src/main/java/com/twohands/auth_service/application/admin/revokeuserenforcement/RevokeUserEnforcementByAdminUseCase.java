@@ -1,16 +1,16 @@
 package com.twohands.auth_service.application.admin.revokeuserenforcement;
 
+import com.twohands.auth_service.application.admin.applyuserenforcement.ApplyUserEnforcementCommand;
+import com.twohands.auth_service.application.admin.applyuserenforcement.ApplyUserEnforcementResult;
+import com.twohands.auth_service.application.admin.applyuserenforcement.ApplyUserEnforcementUseCase;
+import com.twohands.auth_service.domain.enforcement.UserEnforcementActionType;
 import com.twohands.auth_service.domain.rbac.AuthorizationDomainService;
 import com.twohands.auth_service.domain.rbac.PermissionQueryRepository;
-import com.twohands.auth_service.domain.user.User;
-import com.twohands.auth_service.domain.user.UserRepository;
-import com.twohands.auth_service.domain.user.UserStatus;
 import com.twohands.auth_service.exception.AppException;
 import com.twohands.auth_service.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -21,15 +21,15 @@ public class RevokeUserEnforcementByAdminUseCase {
     private static final String USER_ENFORCEMENT_REVOKE_PERMISSION = "USER_ENFORCEMENT_REVOKE";
     private static final String SUCCESS_MESSAGE = "Revoke user enforcement thanh cong.";
 
-    private final UserRepository userRepository;
+    private final ApplyUserEnforcementUseCase applyUserEnforcementUseCase;
     private final PermissionQueryRepository permissionQueryRepository;
     private final AuthorizationDomainService authorizationDomainService;
 
     public RevokeUserEnforcementByAdminUseCase(
-            UserRepository userRepository,
+            ApplyUserEnforcementUseCase applyUserEnforcementUseCase,
             PermissionQueryRepository permissionQueryRepository
     ) {
-        this.userRepository = userRepository;
+        this.applyUserEnforcementUseCase = applyUserEnforcementUseCase;
         this.permissionQueryRepository = permissionQueryRepository;
         this.authorizationDomainService = new AuthorizationDomainService();
     }
@@ -39,27 +39,21 @@ public class RevokeUserEnforcementByAdminUseCase {
         UUID actorAdminId = requireActor(command.actorAdminId());
         ensureActorCanRevokeEnforcement(actorAdminId);
 
-        User user = userRepository.findById(command.userId())
-                .orElseThrow(() -> new AppException(
-                        ErrorCode.RESOURCE_NOT_FOUND,
-                        ErrorCode.RESOURCE_NOT_FOUND.defaultMessage()
-                ));
-        if (user.status() == UserStatus.DELETED) {
-            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND.defaultMessage());
-        }
-
-        boolean reactivated = false;
-        if (command.reactivateUser() && user.status() == UserStatus.SUSPENDED) {
-            Instant now = Instant.now();
-            user.reactivate(now);
-            userRepository.updateStatus(user.id(), user.status(), user.updatedAt());
-            reactivated = true;
-        }
+        ApplyUserEnforcementResult applied = applyUserEnforcementUseCase.execute(
+                ApplyUserEnforcementCommand.forSyncRevoke(
+                        command.enforcementId(),
+                        command.userId(),
+                        UserEnforcementActionType.REVOKE,
+                        command.reason(),
+                        command.note(),
+                        command.reactivateUser()
+                )
+        );
 
         return new RevokeUserEnforcementByAdminResult(
-                user.id(),
-                user.status().name(),
-                reactivated
+                applied.userId(),
+                applied.status(),
+                applied.reactivated()
         );
     }
 

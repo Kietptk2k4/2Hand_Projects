@@ -84,6 +84,21 @@ CREATE TABLE IF NOT EXISTS login_logs (
     CONSTRAINT fk_login_logs_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
+CREATE TABLE IF NOT EXISTS user_enforcement_snapshots (
+    enforcement_id UUID PRIMARY KEY,
+    user_id UUID NOT NULL,
+    action_type VARCHAR(30) NOT NULL,
+    status VARCHAR(30) NOT NULL,
+    reason_code VARCHAR(100),
+    description TEXT,
+    expires_at TIMESTAMP,
+    event_id UUID,
+    applied_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    CONSTRAINT fk_user_enforcement_snapshots_user FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
 CREATE TABLE IF NOT EXISTS oauth_accounts (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL,
