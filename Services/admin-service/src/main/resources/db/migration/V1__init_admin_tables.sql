@@ -58,7 +58,8 @@ CREATE TYPE admin_action_type AS ENUM (
     'REVIEW_RESTORE',
     'SHOP_RESTORE',
     'POST_RESTORE',
-    'COMMENT_RESTORE'
+    'COMMENT_RESTORE',
+    'WEBHOOK_SUPPORT_VIEW'
 );
 
 CREATE TYPE user_enforcement_action_type AS ENUM (

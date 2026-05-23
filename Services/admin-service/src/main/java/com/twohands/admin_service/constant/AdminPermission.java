@@ -39,6 +39,7 @@ public final class AdminPermission {
 	public static final String ORDER_SUPPORT_READ = "ORDER_SUPPORT_READ";
 	public static final String PAYMENT_SUPPORT_READ = "PAYMENT_SUPPORT_READ";
 	public static final String SHIPMENT_SUPPORT_READ = "SHIPMENT_SUPPORT_READ";
+	public static final String WEBHOOK_SUPPORT_READ = "WEBHOOK_SUPPORT_READ";
 
 	private static final Set<String> KNOWN_CODES = Set.of(
 			USER_SUSPEND,
@@ -71,7 +72,8 @@ public final class AdminPermission {
 			ADMIN_SESSION_REVOKE,
 			ORDER_SUPPORT_READ,
 			PAYMENT_SUPPORT_READ,
-			SHIPMENT_SUPPORT_READ
+			SHIPMENT_SUPPORT_READ,
+			WEBHOOK_SUPPORT_READ
 	);
 
 	private AdminPermission() {
