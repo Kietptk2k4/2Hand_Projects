@@ -1,11 +1,16 @@
 package com.twohands.admin_service.infrastructure.persistence.moderation;
 
+import com.twohands.admin_service.domain.common.PageRequest;
+import com.twohands.admin_service.domain.common.PagedResult;
 import com.twohands.admin_service.domain.moderation.ContentModerationAction;
 import com.twohands.admin_service.domain.moderation.ContentModerationLog;
 import com.twohands.admin_service.domain.moderation.ContentModerationLogRepository;
 import com.twohands.admin_service.domain.moderation.ContentModerationTargetType;
 import com.twohands.admin_service.infrastructure.persistence.jpa.entity.ContentModerationLogEntity;
 import com.twohands.admin_service.infrastructure.persistence.jpa.repository.ContentModerationLogJpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -31,6 +36,33 @@ public class ContentModerationLogRepositoryAdapter implements ContentModerationL
 		entity.setCreatedAt(log.createdAt());
 		entity.setNote(log.note());
 		return toDomain(jpaRepository.save(entity));
+	}
+
+	@Override
+	public PagedResult<ContentModerationLog> findByTargetTypeAndTargetIdOrderByCreatedAtDesc(
+			ContentModerationTargetType targetType,
+			String targetId,
+			PageRequest pageRequest
+	) {
+		Pageable pageable = org.springframework.data.domain.PageRequest.of(
+				pageRequest.page() - 1,
+				pageRequest.size(),
+				Sort.by(Sort.Direction.DESC, "createdAt")
+		);
+		var jpaTargetType = com.twohands.admin_service.infrastructure.persistence.jpa.enums.ContentModerationTargetType.valueOf(
+				targetType.name());
+		Page<ContentModerationLogEntity> page = jpaRepository.findByTargetTypeAndTargetIdOrderByCreatedAtDesc(
+				jpaTargetType,
+				targetId,
+				pageable
+		);
+		return new PagedResult<>(
+				page.getContent().stream().map(this::toDomain).toList(),
+				pageRequest.page(),
+				pageRequest.size(),
+				page.getTotalElements(),
+				page.getTotalPages()
+		);
 	}
 
 	private ContentModerationLog toDomain(ContentModerationLogEntity entity) {

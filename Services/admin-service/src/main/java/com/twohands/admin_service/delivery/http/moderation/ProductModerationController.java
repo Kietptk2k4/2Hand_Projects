@@ -6,16 +6,21 @@ import com.twohands.admin_service.application.moderation.removeproduct.RemovePro
 import com.twohands.admin_service.application.moderation.restoreproduct.RestoreProductCommand;
 import com.twohands.admin_service.application.moderation.restoreproduct.RestoreProductResult;
 import com.twohands.admin_service.application.moderation.restoreproduct.RestoreProductUseCase;
+import com.twohands.admin_service.application.moderation.viewproducthistory.ViewProductModerationHistoryQuery;
+import com.twohands.admin_service.application.moderation.viewproducthistory.ViewProductModerationHistoryResult;
+import com.twohands.admin_service.application.moderation.viewproducthistory.ViewProductModerationHistoryUseCase;
 import com.twohands.admin_service.common.dto.ApiResponse;
 import com.twohands.admin_service.constant.AdminPermission;
 import com.twohands.admin_service.security.annotation.RequireAdminPermission;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -26,13 +31,34 @@ public class ProductModerationController {
 
 	private final RemoveProductUseCase removeProductUseCase;
 	private final RestoreProductUseCase restoreProductUseCase;
+	private final ViewProductModerationHistoryUseCase viewProductModerationHistoryUseCase;
 
 	public ProductModerationController(
 			RemoveProductUseCase removeProductUseCase,
-			RestoreProductUseCase restoreProductUseCase
+			RestoreProductUseCase restoreProductUseCase,
+			ViewProductModerationHistoryUseCase viewProductModerationHistoryUseCase
 	) {
 		this.removeProductUseCase = removeProductUseCase;
 		this.restoreProductUseCase = restoreProductUseCase;
+		this.viewProductModerationHistoryUseCase = viewProductModerationHistoryUseCase;
+	}
+
+	@GetMapping("/{productId}/moderation-history")
+	@RequireAdminPermission(AdminPermission.PRODUCT_MODERATION_READ)
+	public ResponseEntity<ApiResponse<ViewProductModerationHistoryResponse>> viewModerationHistory(
+			@PathVariable UUID productId,
+			@RequestParam(required = false) Integer page,
+			@RequestParam(required = false) Integer size
+	) {
+		ViewProductModerationHistoryResult result = viewProductModerationHistoryUseCase.execute(
+				new ViewProductModerationHistoryQuery(productId, page, size)
+		);
+
+		return ResponseEntity.ok(ApiResponse.success(
+				HttpStatus.OK.value(),
+				viewProductModerationHistoryUseCase.successMessage(),
+				toHistoryResponse(result)
+		));
 	}
 
 	@PostMapping("/{productId}/remove")
@@ -85,5 +111,25 @@ public class ProductModerationController {
 
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(ApiResponse.success(HttpStatus.OK.value(), restoreProductUseCase.successMessage(), data));
+	}
+
+	private ViewProductModerationHistoryResponse toHistoryResponse(ViewProductModerationHistoryResult result) {
+		return new ViewProductModerationHistoryResponse(
+				result.productId(),
+				result.page(),
+				result.size(),
+				result.totalElements(),
+				result.totalPages(),
+				result.history().stream()
+						.map(item -> new ProductModerationHistoryEntryResponse(
+								item.moderationLogId(),
+								item.action().name(),
+								item.reason(),
+								item.note(),
+								item.adminId(),
+								item.createdAt()
+						))
+						.toList()
+		);
 	}
 }

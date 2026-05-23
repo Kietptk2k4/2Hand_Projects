@@ -76,6 +76,7 @@ Cho phép admin **restore** sản phẩm đã bị moderation remove/hide: ghi m
 | API | Mục đích |
 |-----|----------|
 | [RemoveProduct](./RemoveProduct-api-and-behavior.md) | Remove sản phẩm |
+| [ViewProductModerationHistory](./ViewProductModerationHistory-api-and-behavior.md) | Xem lịch sử moderation |
 
 ## 8. Permission
 

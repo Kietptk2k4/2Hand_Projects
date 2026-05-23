@@ -77,6 +77,7 @@ Cho phép admin **remove** sản phẩm vi phạm: ghi moderation log, audit và
 | API | Mục đích |
 |-----|----------|
 | [RestoreProduct](./RestoreProduct-api-and-behavior.md) | Restore sản phẩm |
+| [ViewProductModerationHistory](./ViewProductModerationHistory-api-and-behavior.md) | Xem lịch sử moderation |
 | Commerce `POST /commerce/api/v1/admin/products/{productId}/remove` | Commerce-side remove (DB + cart invalidation) |
 
 ## 8. Permission
