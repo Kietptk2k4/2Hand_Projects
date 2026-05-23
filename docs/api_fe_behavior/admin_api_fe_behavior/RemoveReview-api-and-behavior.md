@@ -77,6 +77,7 @@ Cho phép admin **soft remove** review vi phạm nặng: ghi moderation log, aud
 | API | Mục đích |
 |-----|----------|
 | [HideReview](./HideReview-api-and-behavior.md) | Hide review (mức độ nhẹ hơn) |
+| [RestoreReview](./RestoreReview-api-and-behavior.md) | Restore review |
 | Commerce `POST /commerce/api/v1/admin/reviews/{reviewId}/moderate` | Commerce-side moderate |
 
 ## 8. Permission

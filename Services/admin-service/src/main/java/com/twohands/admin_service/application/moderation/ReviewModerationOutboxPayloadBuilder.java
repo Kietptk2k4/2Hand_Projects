@@ -34,6 +34,13 @@ public class ReviewModerationOutboxPayloadBuilder {
 		return serialize(payload);
 	}
 
+	public String buildReviewRestoredPayload(ContentModerationLog moderationLog, UUID reviewId) {
+		Map<String, Object> payload = baseReviewModerationPayload(moderationLog, reviewId);
+		payload.put("restored_by", moderationLog.adminId().toString());
+		payload.put("restored_at", moderationLog.createdAt().toString());
+		return serialize(payload);
+	}
+
 	private Map<String, Object> baseReviewModerationPayload(ContentModerationLog moderationLog, UUID reviewId) {
 		Map<String, Object> payload = new LinkedHashMap<>();
 		payload.put("review_id", reviewId.toString());

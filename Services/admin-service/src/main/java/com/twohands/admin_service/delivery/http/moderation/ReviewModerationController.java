@@ -6,6 +6,9 @@ import com.twohands.admin_service.application.moderation.hidereview.HideReviewUs
 import com.twohands.admin_service.application.moderation.removereview.RemoveReviewCommand;
 import com.twohands.admin_service.application.moderation.removereview.RemoveReviewResult;
 import com.twohands.admin_service.application.moderation.removereview.RemoveReviewUseCase;
+import com.twohands.admin_service.application.moderation.restorereview.RestoreReviewCommand;
+import com.twohands.admin_service.application.moderation.restorereview.RestoreReviewResult;
+import com.twohands.admin_service.application.moderation.restorereview.RestoreReviewUseCase;
 import com.twohands.admin_service.common.dto.ApiResponse;
 import com.twohands.admin_service.constant.AdminPermission;
 import com.twohands.admin_service.security.annotation.RequireAdminPermission;
@@ -26,13 +29,16 @@ public class ReviewModerationController {
 
 	private final HideReviewUseCase hideReviewUseCase;
 	private final RemoveReviewUseCase removeReviewUseCase;
+	private final RestoreReviewUseCase restoreReviewUseCase;
 
 	public ReviewModerationController(
 			HideReviewUseCase hideReviewUseCase,
-			RemoveReviewUseCase removeReviewUseCase
+			RemoveReviewUseCase removeReviewUseCase,
+			RestoreReviewUseCase restoreReviewUseCase
 	) {
 		this.hideReviewUseCase = hideReviewUseCase;
 		this.removeReviewUseCase = removeReviewUseCase;
+		this.restoreReviewUseCase = restoreReviewUseCase;
 	}
 
 	@PostMapping("/{reviewId}/hide")
@@ -85,5 +91,31 @@ public class ReviewModerationController {
 
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(ApiResponse.success(HttpStatus.OK.value(), removeReviewUseCase.successMessage(), data));
+	}
+
+	@PostMapping("/{reviewId}/restore")
+	@RequireAdminPermission({AdminPermission.REVIEW_RESTORE, AdminPermission.REVIEW_HIDE})
+	public ResponseEntity<ApiResponse<RestoreReviewResponse>> restore(
+			@PathVariable UUID reviewId,
+			@Valid @RequestBody RestoreReviewRequest request
+	) {
+		RestoreReviewResult result = restoreReviewUseCase.execute(new RestoreReviewCommand(
+				reviewId,
+				request.reason(),
+				request.note()
+		));
+
+		RestoreReviewResponse data = new RestoreReviewResponse(
+				result.reviewId(),
+				result.moderationLogId(),
+				result.reason(),
+				result.note(),
+				result.restoredBy(),
+				result.restoredAt(),
+				result.outboxEventId()
+		);
+
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(ApiResponse.success(HttpStatus.OK.value(), restoreReviewUseCase.successMessage(), data));
 	}
 }

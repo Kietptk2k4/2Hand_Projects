@@ -54,7 +54,8 @@ CREATE TYPE admin_action_type AS ENUM (
     'SYSTEM_ANNOUNCEMENT_PIN',
     'SYSTEM_ANNOUNCEMENT_CANCEL',
     'PRODUCT_RESTORE',
-    'REVIEW_REMOVE'
+    'REVIEW_REMOVE',
+    'REVIEW_RESTORE'
 );
 
 CREATE TYPE user_enforcement_action_type AS ENUM (

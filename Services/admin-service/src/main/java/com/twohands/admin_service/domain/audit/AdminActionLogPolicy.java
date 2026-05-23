@@ -16,6 +16,7 @@ public final class AdminActionLogPolicy {
 			"PRODUCT_RESTORE",
 			"REVIEW_HIDE",
 			"REVIEW_REMOVE",
+			"REVIEW_RESTORE",
 			"SHOP_SUSPEND",
 			"SHOP_CLOSE",
 			"POST_MODERATE",
