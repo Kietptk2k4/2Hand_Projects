@@ -12,6 +12,7 @@ public class CommerceAdminAuthorization {
     public static final String PERMISSION_SHOP_CLOSE = "COMMERCE_SHOP_CLOSE";
     public static final String PERMISSION_PRODUCT_REMOVE = "COMMERCE_PRODUCT_REMOVE";
     public static final String PERMISSION_ORDER_SUPPORT_READ = "ORDER_SUPPORT_READ";
+    public static final String PERMISSION_PAYMENT_SUPPORT_READ = "PAYMENT_SUPPORT_READ";
     private static final String ADMIN_ROLE = "ADMIN";
 
     public void requirePermission(AuthenticatedUser user, String permission) {

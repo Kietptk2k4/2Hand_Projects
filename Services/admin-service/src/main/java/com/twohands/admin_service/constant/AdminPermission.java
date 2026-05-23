@@ -37,6 +37,7 @@ public final class AdminPermission {
 	public static final String ADMIN_AUDIT_VIEW = "ADMIN_AUDIT_VIEW";
 	public static final String ADMIN_SESSION_REVOKE = "ADMIN_SESSION_REVOKE";
 	public static final String ORDER_SUPPORT_READ = "ORDER_SUPPORT_READ";
+	public static final String PAYMENT_SUPPORT_READ = "PAYMENT_SUPPORT_READ";
 
 	private static final Set<String> KNOWN_CODES = Set.of(
 			USER_SUSPEND,
@@ -67,7 +68,8 @@ public final class AdminPermission {
 			ADMIN_AUDIT_READ,
 			ADMIN_AUDIT_VIEW,
 			ADMIN_SESSION_REVOKE,
-			ORDER_SUPPORT_READ
+			ORDER_SUPPORT_READ,
+			PAYMENT_SUPPORT_READ
 	);
 
 	private AdminPermission() {
