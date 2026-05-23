@@ -50,6 +50,16 @@ auth:
     rate-limit:
       max-attempts: 10000
       window-seconds: 3600
+  object-storage:
+    enabled: true
+    public-url: https://minio.local
+    avatar-bucket: 2hands-avatar
+    avatar-max-file-size-bytes: 5242880
+    presigned-url-ttl-seconds: 900
+    avatar-upload:
+      rate-limit:
+        max-attempts: 10000
+        window-seconds: 3600
   outbox:
     publish:
       enabled: false

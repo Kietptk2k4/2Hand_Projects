@@ -7,6 +7,9 @@ import com.twohands.auth_service.application.useraccount.toggleprivacy.TogglePri
 import com.twohands.auth_service.application.useraccount.logoutallsesssion.LogoutAllSesssionUseCase;
 import com.twohands.auth_service.application.useraccount.trackloginhistory.TrackLoginHistoryResult;
 import com.twohands.auth_service.application.useraccount.trackloginhistory.TrackLoginHistoryUseCase;
+import com.twohands.auth_service.application.useraccount.avatarupload.CreateAvatarUploadUrlCommand;
+import com.twohands.auth_service.application.useraccount.avatarupload.CreateAvatarUploadUrlResult;
+import com.twohands.auth_service.application.useraccount.avatarupload.CreateAvatarUploadUrlUseCase;
 import com.twohands.auth_service.application.useraccount.updateavatar.UpdateAvatarCommand;
 import com.twohands.auth_service.application.useraccount.updateavatar.UpdateAvatarUseCase;
 import com.twohands.auth_service.application.useraccount.updateprofile.UpdateProfileCommand;
@@ -21,7 +24,9 @@ import com.twohands.auth_service.application.useraccount.viewloginsesssionlist.V
 import com.twohands.auth_service.common.dto.ApiResponse;
 import com.twohands.auth_service.delivery.http.users.request.SoftDeleteAccountRequest;
 import com.twohands.auth_service.delivery.http.users.request.TogglePrivacyRequest;
+import com.twohands.auth_service.delivery.http.users.request.CreateAvatarUploadUrlRequest;
 import com.twohands.auth_service.delivery.http.users.request.UpdateAvatarRequest;
+import com.twohands.auth_service.delivery.http.users.response.CreateAvatarUploadUrlResponse;
 import com.twohands.auth_service.delivery.http.users.request.UpdateProfileRequest;
 import com.twohands.auth_service.delivery.http.users.request.UpdateUserSettingsRequest;
 import com.twohands.auth_service.delivery.http.users.response.TrackLoginHistoryResponse;
@@ -52,6 +57,7 @@ public class UserAccountController {
     private final ViewAccountUseCase viewAccountUseCase;
     private final UpdateProfileUseCase updateProfileUseCase;
     private final UpdateAvatarUseCase updateAvatarUseCase;
+    private final CreateAvatarUploadUrlUseCase createAvatarUploadUrlUseCase;
     private final TogglePrivacyUseCase togglePrivacyUseCase;
     private final UpdateUserSettingsUseCase updateUserSettingsUseCase;
     private final SoftDeleteAccountUseCase softDeleteAccountUseCase;
@@ -63,6 +69,7 @@ public class UserAccountController {
             ViewAccountUseCase viewAccountUseCase,
             UpdateProfileUseCase updateProfileUseCase,
             UpdateAvatarUseCase updateAvatarUseCase,
+            CreateAvatarUploadUrlUseCase createAvatarUploadUrlUseCase,
             TogglePrivacyUseCase togglePrivacyUseCase,
             UpdateUserSettingsUseCase updateUserSettingsUseCase,
             SoftDeleteAccountUseCase softDeleteAccountUseCase,
@@ -73,6 +80,7 @@ public class UserAccountController {
         this.viewAccountUseCase = viewAccountUseCase;
         this.updateProfileUseCase = updateProfileUseCase;
         this.updateAvatarUseCase = updateAvatarUseCase;
+        this.createAvatarUploadUrlUseCase = createAvatarUploadUrlUseCase;
         this.togglePrivacyUseCase = togglePrivacyUseCase;
         this.updateUserSettingsUseCase = updateUserSettingsUseCase;
         this.softDeleteAccountUseCase = softDeleteAccountUseCase;
@@ -189,6 +197,33 @@ public class UserAccountController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(HttpStatus.OK.value(), updateProfileUseCase.successMessage(), null));
+    }
+
+    @PostMapping("/avatar/upload-url")
+    public ResponseEntity<ApiResponse<CreateAvatarUploadUrlResponse>> createAvatarUploadUrl(
+            @Valid @RequestBody CreateAvatarUploadUrlRequest request,
+            Authentication authentication
+    ) {
+        UUID userId = extractUserId(authentication);
+        CreateAvatarUploadUrlResult result = createAvatarUploadUrlUseCase.execute(
+                new CreateAvatarUploadUrlCommand(userId, request.contentType(), request.fileSizeBytes())
+        );
+
+        CreateAvatarUploadUrlResponse response = new CreateAvatarUploadUrlResponse(
+                result.uploadUrl(),
+                result.objectKey(),
+                result.avatarUrl(),
+                result.expiresAt().toString(),
+                result.maxFileSizeBytes(),
+                result.allowedContentTypes()
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        createAvatarUploadUrlUseCase.successMessage(),
+                        response
+                ));
     }
 
     @PatchMapping("/avatar")

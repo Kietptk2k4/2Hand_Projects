@@ -134,6 +134,24 @@ auth:
       max-attempts: ${AUTH_RESEND_EMAIL_VERIFICATION_RATE_LIMIT_MAX_ATTEMPTS:3}
       window-seconds: ${AUTH_RESEND_EMAIL_VERIFICATION_RATE_LIMIT_WINDOW_SECONDS:900}
 
+  object-storage:
+    enabled: ${AUTH_MINIO_ENABLED:false}
+    endpoint: ${AUTH_MINIO_ENDPOINT:http://localhost:9000}
+    public-url: ${AUTH_MINIO_PUBLIC_URL:https://cdn.2hands.vn}
+    access-key: ${AUTH_MINIO_ACCESS_KEY:admin}
+    secret-key: ${AUTH_MINIO_SECRET_KEY:password123}
+    avatar-bucket: ${MINIO_AVATAR_BUCKET:2hands-avatar}
+    avatar-max-file-size-bytes: ${AUTH_AVATAR_MAX_FILE_SIZE_BYTES:5242880}
+    presigned-url-ttl-seconds: ${AUTH_AVATAR_PRESIGNED_URL_TTL_SECONDS:900}
+    allowed-avatar-content-types:
+      - image/jpeg
+      - image/png
+      - image/webp
+    avatar-upload:
+      rate-limit:
+        max-attempts: ${AUTH_AVATAR_UPLOAD_RATE_LIMIT_MAX_ATTEMPTS:30}
+        window-seconds: ${AUTH_AVATAR_UPLOAD_RATE_LIMIT_WINDOW_SECONDS:3600}
+
   outbox:
     publish:
       enabled: ${AUTH_OUTBOX_PUBLISH_ENABLED:false}
