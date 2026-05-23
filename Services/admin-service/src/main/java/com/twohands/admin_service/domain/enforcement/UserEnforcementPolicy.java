@@ -11,6 +11,20 @@ public final class UserEnforcementPolicy {
 	}
 
 	public static void validateSuspendRequest(String reasonCode, String description, Instant expiresAt, Instant now) {
+		validateEnforcementRequest(reasonCode, description, expiresAt, now, "temporary suspend");
+	}
+
+	public static void validateBanRequest(String reasonCode, String description, Instant expiresAt, Instant now) {
+		validateEnforcementRequest(reasonCode, description, expiresAt, now, "temporary ban");
+	}
+
+	private static void validateEnforcementRequest(
+			String reasonCode,
+			String description,
+			Instant expiresAt,
+			Instant now,
+			String temporaryLabel
+	) {
 		if (reasonCode == null || reasonCode.isBlank()) {
 			throw validationError("reason_code", "Reason code is required");
 		}
@@ -21,7 +35,7 @@ public final class UserEnforcementPolicy {
 			throw validationError("description", "Description is required");
 		}
 		if (expiresAt != null && !expiresAt.isAfter(now)) {
-			throw validationError("expires_at", "expires_at must be in the future for temporary suspend");
+			throw validationError("expires_at", "expires_at must be in the future for " + temporaryLabel);
 		}
 	}
 

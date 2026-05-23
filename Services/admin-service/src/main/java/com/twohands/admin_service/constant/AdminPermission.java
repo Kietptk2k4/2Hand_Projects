@@ -9,6 +9,7 @@ import java.util.Set;
 public final class AdminPermission {
 
 	public static final String USER_SUSPEND = "USER_SUSPEND";
+	public static final String USER_BAN = "USER_BAN";
 	public static final String USER_RESTRICT = "USER_RESTRICT";
 	public static final String PRODUCT_REMOVE = "PRODUCT_REMOVE";
 	public static final String REVIEW_HIDE = "REVIEW_HIDE";
@@ -23,6 +24,7 @@ public final class AdminPermission {
 
 	private static final Set<String> KNOWN_CODES = Set.of(
 			USER_SUSPEND,
+			USER_BAN,
 			USER_RESTRICT,
 			PRODUCT_REMOVE,
 			REVIEW_HIDE,

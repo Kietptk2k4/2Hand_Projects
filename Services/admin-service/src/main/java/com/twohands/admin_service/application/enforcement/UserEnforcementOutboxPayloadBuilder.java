@@ -20,6 +20,14 @@ public class UserEnforcementOutboxPayloadBuilder {
 	}
 
 	public String buildUserSuspendedPayload(UserEnforcement enforcement) {
+		return buildEnforcementPayload(enforcement);
+	}
+
+	public String buildUserBannedPayload(UserEnforcement enforcement) {
+		return buildEnforcementPayload(enforcement);
+	}
+
+	private String buildEnforcementPayload(UserEnforcement enforcement) {
 		Map<String, Object> payload = new LinkedHashMap<>();
 		payload.put("user_id", enforcement.userId().toString());
 		payload.put("enforcement_id", enforcement.id().toString());

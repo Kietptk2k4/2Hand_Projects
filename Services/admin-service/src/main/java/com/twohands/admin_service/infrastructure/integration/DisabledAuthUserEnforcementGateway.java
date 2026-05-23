@@ -17,4 +17,9 @@ public class DisabledAuthUserEnforcementGateway implements AuthUserEnforcementGa
 	public void suspendUser(AuthSuspendUserRequest request) {
 		// Outbox event USER_SUSPENDED applies Auth effect asynchronously.
 	}
+
+	@Override
+	public void banUser(AuthBanUserRequest request) {
+		// Outbox event USER_BANNED applies Auth effect asynchronously.
+	}
 }

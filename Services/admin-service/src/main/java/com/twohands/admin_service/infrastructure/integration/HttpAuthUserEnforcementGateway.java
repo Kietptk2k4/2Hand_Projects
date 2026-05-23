@@ -39,17 +39,48 @@ public class HttpAuthUserEnforcementGateway implements AuthUserEnforcementGatewa
 
 	@Override
 	public void suspendUser(AuthSuspendUserRequest request) {
+		postEnforcement(
+				"/api/v1/admin/users/{userId}/suspend",
+				request.userId(),
+				request.enforcementId(),
+				request.reasonCode(),
+				request.description(),
+				request.expiresAt(),
+				request.bearerToken(),
+				"suspend"
+		);
+	}
+
+	@Override
+	public void banUser(AuthBanUserRequest request) {
+		postEnforcement(
+				"/api/v1/admin/users/{userId}/ban",
+				request.userId(),
+				request.enforcementId(),
+				request.reasonCode(),
+				request.description(),
+				request.expiresAt(),
+				request.bearerToken(),
+				"ban"
+		);
+	}
+
+	private void postEnforcement(
+			String uri,
+			java.util.UUID userId,
+			java.util.UUID enforcementId,
+			String reasonCode,
+			String description,
+			Instant expiresAt,
+			String bearerToken,
+			String actionLabel
+	) {
 		try {
 			restClient.post()
-					.uri("/api/v1/admin/users/{userId}/suspend", request.userId())
+					.uri(uri, userId)
 					.contentType(MediaType.APPLICATION_JSON)
-					.header(HttpHeaders.AUTHORIZATION, "Bearer " + request.bearerToken())
-					.body(new AuthSuspendBody(
-							request.enforcementId(),
-							request.reasonCode(),
-							request.description(),
-							request.expiresAt()
-					))
+					.header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken)
+					.body(new AuthEnforcementBody(enforcementId, reasonCode, description, expiresAt))
 					.retrieve()
 					.toBodilessEntity();
 		} catch (RestClientResponseException ex) {
@@ -57,10 +88,10 @@ public class HttpAuthUserEnforcementGateway implements AuthUserEnforcementGatewa
 				JsonNode body = ex.getResponseBodyAs(JsonNode.class);
 				throw mapClientError(ex.getStatusCode().value(), body);
 			}
-			log.warn("Auth suspend user failed: status={}, message={}", ex.getStatusCode(), ex.getMessage());
+			log.warn("Auth {} user failed: status={}, message={}", actionLabel, ex.getStatusCode(), ex.getMessage());
 			throw new AppException(ErrorCode.SERVICE_UNAVAILABLE, "Auth Service is unavailable");
 		} catch (RestClientException ex) {
-			log.warn("Auth suspend user failed: {}", ex.getMessage());
+			log.warn("Auth {} user failed: {}", actionLabel, ex.getMessage());
 			throw new AppException(ErrorCode.SERVICE_UNAVAILABLE, "Auth Service is unavailable");
 		}
 	}
@@ -85,7 +116,7 @@ public class HttpAuthUserEnforcementGateway implements AuthUserEnforcementGatewa
 		return baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
 	}
 
-	private record AuthSuspendBody(
+	private record AuthEnforcementBody(
 			@JsonProperty("enforcement_id")
 			java.util.UUID enforcementId,
 			@JsonProperty("reason_code")

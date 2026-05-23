@@ -1,5 +1,8 @@
 package com.twohands.admin_service.delivery.http.enforcement;
 
+import com.twohands.admin_service.application.enforcement.banuser.BanUserCommand;
+import com.twohands.admin_service.application.enforcement.banuser.BanUserResult;
+import com.twohands.admin_service.application.enforcement.banuser.BanUserUseCase;
 import com.twohands.admin_service.application.enforcement.suspenduser.SuspendUserCommand;
 import com.twohands.admin_service.application.enforcement.suspenduser.SuspendUserResult;
 import com.twohands.admin_service.application.enforcement.suspenduser.SuspendUserUseCase;
@@ -23,9 +26,11 @@ import java.util.UUID;
 public class UserEnforcementController {
 
 	private final SuspendUserUseCase suspendUserUseCase;
+	private final BanUserUseCase banUserUseCase;
 
-	public UserEnforcementController(SuspendUserUseCase suspendUserUseCase) {
+	public UserEnforcementController(SuspendUserUseCase suspendUserUseCase, BanUserUseCase banUserUseCase) {
 		this.suspendUserUseCase = suspendUserUseCase;
+		this.banUserUseCase = banUserUseCase;
 	}
 
 	@PostMapping("/{userId}/suspend")
@@ -56,6 +61,36 @@ public class UserEnforcementController {
 
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(ApiResponse.success(HttpStatus.OK.value(), suspendUserUseCase.successMessage(), data));
+	}
+
+	@PostMapping("/{userId}/ban")
+	@RequireAdminPermission({AdminPermission.USER_BAN, AdminPermission.USER_SUSPEND})
+	public ResponseEntity<ApiResponse<SuspendUserResponse>> ban(
+			@PathVariable UUID userId,
+			@Valid @RequestBody SuspendUserRequest request,
+			HttpServletRequest httpServletRequest
+	) {
+		BanUserResult result = banUserUseCase.execute(new BanUserCommand(
+				userId,
+				request.reasonCode(),
+				request.description(),
+				request.expiresAt(),
+				resolveBearerToken(httpServletRequest)
+		));
+
+		SuspendUserResponse data = new SuspendUserResponse(
+				result.enforcementId(),
+				result.userId(),
+				result.reasonCode(),
+				result.status().name(),
+				result.expiresAt(),
+				result.enforcedBy(),
+				result.createdAt(),
+				result.outboxEventId()
+		);
+
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(ApiResponse.success(HttpStatus.OK.value(), banUserUseCase.successMessage(), data));
 	}
 
 	private String resolveBearerToken(HttpServletRequest request) {
