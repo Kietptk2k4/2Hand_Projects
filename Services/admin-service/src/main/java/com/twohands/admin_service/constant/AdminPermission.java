@@ -26,6 +26,7 @@ public final class AdminPermission {
 	public static final String SYSTEM_ANNOUNCEMENT_PUBLISH = "SYSTEM_ANNOUNCEMENT_PUBLISH";
 	public static final String SYSTEM_ANNOUNCEMENT_CANCEL = "SYSTEM_ANNOUNCEMENT_CANCEL";
 	public static final String ADMIN_AUDIT_READ = "ADMIN_AUDIT_READ";
+	public static final String ADMIN_AUDIT_VIEW = "ADMIN_AUDIT_VIEW";
 	public static final String ADMIN_SESSION_REVOKE = "ADMIN_SESSION_REVOKE";
 	public static final String ORDER_SUPPORT_READ = "ORDER_SUPPORT_READ";
 
@@ -48,6 +49,7 @@ public final class AdminPermission {
 			SYSTEM_ANNOUNCEMENT_PUBLISH,
 			SYSTEM_ANNOUNCEMENT_CANCEL,
 			ADMIN_AUDIT_READ,
+			ADMIN_AUDIT_VIEW,
 			ADMIN_SESSION_REVOKE,
 			ORDER_SUPPORT_READ
 	);

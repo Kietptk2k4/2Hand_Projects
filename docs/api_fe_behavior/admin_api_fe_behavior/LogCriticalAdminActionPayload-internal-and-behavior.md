@@ -53,7 +53,7 @@ Giống `AdminActionLogPolicy`: `USER_SUSPEND`, `USER_BAN`, `USER_RESTRICT`, `US
 - Payload rỗng (không summary/before/after/context) → reject.
 - `ORDER_SUPPORT_VIEW` qua critical API → validation error.
 - Nested object quá sâu → `[MAX_DEPTH]`.
-- Đọc payload: cần `ADMIN_AUDIT_READ` (FR `ViewAdminActionLogs` — future).
+- Đọc payload: [ViewAdminActionLogs](./ViewAdminActionLogs-api-and-behavior.md) với `ADMIN_AUDIT_VIEW`.
 
 ## 7. Usage Example
 

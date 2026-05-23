@@ -57,7 +57,7 @@ Không expose REST endpoint. Các use case moderation/enforcement/config gọi:
 ## 8. FE Integration Notes
 
 - FE không gọi API log trực tiếp.
-- Đọc logs qua FR `ViewAdminActionLogs` (future) với permission `ADMIN_AUDIT_READ`.
+- Đọc logs: [ViewAdminActionLogs](./ViewAdminActionLogs-api-and-behavior.md) với permission `ADMIN_AUDIT_VIEW`.
 
 ## 9. Usage Example (backend)
 
