@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -66,5 +67,20 @@ public class VerificationTokenRepositoryAdapter implements VerificationTokenRepo
     @Override
     public void deleteById(UUID tokenId) {
         jdbcTemplate.update("DELETE FROM verification_tokens WHERE id = :id", new MapSqlParameterSource("id", tokenId));
+    }
+
+    @Override
+    public int markUnusedAsUsedByUserIdAndType(UUID userId, VerificationTokenType type, Instant usedAt) {
+        String sql = """
+                UPDATE verification_tokens
+                SET used_at = :usedAt
+                WHERE user_id = :userId
+                  AND type = :type
+                  AND used_at IS NULL
+                """;
+        return jdbcTemplate.update(sql, new MapSqlParameterSource()
+                .addValue("usedAt", usedAt)
+                .addValue("userId", userId)
+                .addValue("type", type.name()));
     }
 }

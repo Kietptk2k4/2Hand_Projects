@@ -46,6 +46,10 @@ auth:
     rate-limit:
       max-attempts: 10000
       window-seconds: 3600
+  resend-email-verification:
+    rate-limit:
+      max-attempts: 10000
+      window-seconds: 3600
   outbox:
     publish:
       enabled: false

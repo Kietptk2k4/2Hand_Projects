@@ -1,5 +1,6 @@
 package com.twohands.auth_service.domain.user;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -9,4 +10,6 @@ public interface VerificationTokenRepository {
     VerificationToken save(VerificationToken token);
 
     void deleteById(UUID tokenId);
+
+    int markUnusedAsUsedByUserIdAndType(UUID userId, VerificationTokenType type, Instant usedAt);
 }

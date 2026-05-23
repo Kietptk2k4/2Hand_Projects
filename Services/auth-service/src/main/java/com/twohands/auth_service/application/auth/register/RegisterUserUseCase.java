@@ -1,11 +1,8 @@
 package com.twohands.auth_service.application.auth.register;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.auth_service.application.auth.common.EmailVerificationOutboxService;
 import com.twohands.auth_service.application.auth.common.UserCreatedOutboxService;
-import com.twohands.auth_service.domain.outbox.OutboxEvent;
 import com.twohands.auth_service.domain.outbox.OutboxEventRepository;
-import com.twohands.auth_service.domain.outbox.OutboxStatus;
 import com.twohands.auth_service.domain.user.EmailAddress;
 import com.twohands.auth_service.domain.user.User;
 import com.twohands.auth_service.domain.user.UserProfile;
@@ -28,8 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -46,7 +41,7 @@ public class RegisterUserUseCase {
     private final RegisterValidationService validationService;
     private final RegisterRateLimitService registerRateLimitService;
     private final UserCreatedOutboxService userCreatedOutboxService;
-    private final ObjectMapper objectMapper;
+    private final EmailVerificationOutboxService emailVerificationOutboxService;
     private final SecureRandom secureRandom;
     private final long verificationTtlSeconds;
 
@@ -60,7 +55,7 @@ public class RegisterUserUseCase {
             RegisterValidationService validationService,
             RegisterRateLimitService registerRateLimitService,
             UserCreatedOutboxService userCreatedOutboxService,
-            ObjectMapper objectMapper,
+            EmailVerificationOutboxService emailVerificationOutboxService,
             @Value("${auth.register.verify-token-ttl-seconds:900}") long verificationTtlSeconds
     ) {
         this.userRepository = userRepository;
@@ -72,7 +67,7 @@ public class RegisterUserUseCase {
         this.validationService = validationService;
         this.registerRateLimitService = registerRateLimitService;
         this.userCreatedOutboxService = userCreatedOutboxService;
-        this.objectMapper = objectMapper;
+        this.emailVerificationOutboxService = emailVerificationOutboxService;
         this.secureRandom = new SecureRandom();
         this.verificationTtlSeconds = verificationTtlSeconds;
     }
@@ -125,7 +120,7 @@ public class RegisterUserUseCase {
                             now
                     )
             );
-            outboxEventRepository.save(buildVerificationOutboxEvent(user, verificationTokenRaw, now));
+            outboxEventRepository.save(emailVerificationOutboxService.build(user, verificationTokenRaw, now));
 
             log.info("User registered with pending verification. userId={}, email={}", userId, normalizedEmail);
             return new RegisterUserResult(userId.toString(), normalizedEmail, UserStatus.PENDING_VERIFICATION.name());
@@ -135,33 +130,6 @@ public class RegisterUserUseCase {
             }
             throw new AppException(ErrorCode.INTERNAL_ERROR, ErrorCode.INTERNAL_ERROR.defaultMessage(), ex);
         }
-    }
-
-    private OutboxEvent buildVerificationOutboxEvent(User user, String verificationTokenRaw, Instant now) {
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("user_id", user.id().toString());
-        payload.put("email", user.email().normalizedValue());
-        payload.put("verification_token", verificationTokenRaw);
-        payload.put("verification_token_type", VerificationTokenType.EMAIL_VERIFY.name());
-
-        String payloadJson;
-        try {
-            payloadJson = objectMapper.writeValueAsString(payload);
-        } catch (JsonProcessingException ex) {
-            throw new AppException(ErrorCode.INTERNAL_ERROR, "Cannot serialize outbox payload", ex);
-        }
-
-        return new OutboxEvent(
-                UUID.randomUUID(),
-                "EMAIL_VERIFICATION_REQUESTED",
-                "auth-service",
-                payloadJson,
-                OutboxStatus.PENDING,
-                0,
-                now,
-                null,
-                null
-        );
     }
 
     private String generateVerificationToken() {
