@@ -61,8 +61,9 @@ Cho phép người dùng đã đăng nhập xem danh sách bài viết đã lưu
 |------|-------------------------|--------------------------------------------|
 | 401  | `SOCIAL-401`            | Không có hoặc JWT không hợp lệ.            |
 | 400  | `SOCIAL-400-PAGINATION` | `page` hoặc `size` không hợp lệ.           |
-| 403  | `SOCIAL-403-SUSPENDED`  | Tài khoản bị SUSPENDED/DELETED.            |
 | 500  | `SOCIAL-500`            | Lỗi server.                                |
+
+> **Read-only:** Không áp dụng `FR_EnforceUserStatusOnWrite` — user `SUSPENDED` vẫn được xem danh sách đã lưu (chỉ bị chặn thao tác ghi như save/unsave).
 
 ## 5. Business Rules
 
@@ -87,7 +88,6 @@ Cho phép người dùng đã đăng nhập xem danh sách bài viết đã lưu
 | PostgreSQL | `post_saves`     | Read paginated theo `user_id`.        |
 | MongoDB    | `posts`          | Read batch theo `post_id`.            |
 | MongoDB    | `follows`        | Read accepted followees (visibility). |
-| MongoDB    | `user_projections` | Read-only: kiểm tra status user.  |
 
 ## 8. FE Integration Notes
 

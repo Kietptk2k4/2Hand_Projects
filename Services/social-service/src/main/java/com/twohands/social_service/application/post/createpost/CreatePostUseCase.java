@@ -1,5 +1,6 @@
 package com.twohands.social_service.application.post.createpost;
 
+import com.twohands.social_service.application.post.common.PostMediaUrlValidator;
 import com.twohands.social_service.application.post.common.ProductTagValidationItem;
 import com.twohands.social_service.application.post.common.ProductTagValidator;
 import com.twohands.social_service.domain.post.MediaItem;
@@ -28,20 +29,24 @@ public class CreatePostUseCase {
     private final PostRepository postRepository;
     private final UserWriteGuard userWriteGuard;
     private final ProductTagValidator productTagValidator;
+    private final PostMediaUrlValidator postMediaUrlValidator;
 
     public CreatePostUseCase(
             PostRepository postRepository,
             UserWriteGuard userWriteGuard,
-            ProductTagValidator productTagValidator) {
+            ProductTagValidator productTagValidator,
+            PostMediaUrlValidator postMediaUrlValidator) {
         this.postRepository = postRepository;
         this.userWriteGuard = userWriteGuard;
         this.productTagValidator = productTagValidator;
+        this.postMediaUrlValidator = postMediaUrlValidator;
     }
 
     @Transactional
     public CreatePostResult execute(CreatePostCommand command) {
         userWriteGuard.assertCanWrite(command.authorId());
         validatePayload(command);
+        validateMediaUrls(command);
 
         PostVisibility visibility = parseVisibility(command.visibility());
         PostStatus status = command.publish() ? PostStatus.ACTIVE : PostStatus.DRAFT;
@@ -73,6 +78,16 @@ public class CreatePostUseCase {
 
     public String successMessage() {
         return "Tao bai viet thanh cong.";
+    }
+
+    private void validateMediaUrls(CreatePostCommand command) {
+        if (command.media() == null || command.media().isEmpty()) {
+            return;
+        }
+        postMediaUrlValidator.validateMediaUrls(
+                command.authorId(),
+                command.media().stream().map(CreatePostCommand.MediaItemCommand::url).toList()
+        );
     }
 
     private void validatePayload(CreatePostCommand command) {

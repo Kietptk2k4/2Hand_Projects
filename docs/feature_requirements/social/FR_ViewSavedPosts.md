@@ -29,8 +29,18 @@ Cho phep user xem danh sach bai viet da luu cua chinh minh.
 - Read-only flow.
 
 ## 8. Security
-- Ownership theo `user_id` trong token.
+- Ownership theo `user_id` trong token (JWT), không nhận `user_id` từ query/body.
+- **Read-only:** Không gọi `UserWriteGuard` (`FR_EnforceUserStatusOnWrite`) — user `SUSPENDED` vẫn xem được danh sách đã lưu; thao tác save/unsave vẫn bị chặn ở API ghi.
 
 ## 9. Acceptance Criteria
 - User da save bai -> tra dung danh sach.
 - User chua save bai nao -> tra mang rong.
+- Post `DELETED` hoac khong du quyen xem -> khong co trong `items` (pagination theo `post_saves`).
+
+## 10. Related
+
+| FR / Tai lieu | Muc dich |
+|---------------|----------|
+| `FR_SaveUnsavePost` | Tao/xoa ban ghi `post_saves` |
+| `FR_EnforceUserStatusOnWrite` | Khong ap dung cho endpoint read nay |
+| `docs/api_fe_behavior/social_api_fe_behavior/ViewSavedPosts-api-and-behavior.md` | Contract FE |

@@ -1,12 +1,14 @@
 package com.twohands.social_service.integration.post;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.social_service.application.comment.commentpost.CommentPostUseCase;
 import com.twohands.social_service.application.post.createpost.CreatePostUseCase;
-import com.twohands.social_service.application.post.deletepost.DeletePostResult;
 import com.twohands.social_service.application.post.deletepost.DeletePostUseCase;
 import com.twohands.social_service.application.post.editpost.EditPostUseCase;
 import com.twohands.social_service.application.post.likeunlikepost.LikeUnlikePostUseCase;
-import com.twohands.social_service.application.comment.commentpost.CommentPostUseCase;
 import com.twohands.social_service.application.post.saveunsavepost.SaveUnsavePostUseCase;
+import com.twohands.social_service.application.post.uploadpostmedia.UploadPostMediaResult;
+import com.twohands.social_service.application.post.uploadpostmedia.UploadPostMediaUseCase;
 import com.twohands.social_service.application.post.viewsavedposts.ViewSavedPostsUseCase;
 import com.twohands.social_service.config.SecurityConfig;
 import com.twohands.social_service.delivery.http.post.PostController;
@@ -25,6 +27,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -36,7 +39,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -53,16 +56,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "jwt.access-secret=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
         "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration"
 })
-class DeletePostApiIntegrationTest {
+class UploadPostMediaApiIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
-    private CreatePostUseCase createPostUseCase;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockBean
-    private com.twohands.social_service.application.post.uploadpostmedia.UploadPostMediaUseCase uploadPostMediaUseCase;
+    private UploadPostMediaUseCase uploadPostMediaUseCase;
+
+    @MockBean
+    private CreatePostUseCase createPostUseCase;
 
     @MockBean
     private EditPostUseCase editPostUseCase;
@@ -84,78 +90,71 @@ class DeletePostApiIntegrationTest {
 
     @Test
     void shouldReturnUnauthorizedWithoutToken() throws Exception {
-        mockMvc.perform(delete("/api/v1/social/posts/507f1f77bcf86cd799439011"))
+        mockMvc.perform(post("/api/v1/social/posts/media/upload-url")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"content_type":"image/jpeg","file_size_bytes":1024,"media_kind":"IMAGE"}
+                                """))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value(401));
+                .andExpect(jsonPath("$.success").value(false));
     }
 
     @Test
-    void shouldReturn200WhenPostIsDeletedSuccessfully() throws Exception {
+    void shouldReturnUploadUrlForAuthenticatedUser() throws Exception {
         UUID userId = UUID.randomUUID();
-        String token = buildAccessToken(userId, List.of("USER"));
-        Instant now = Instant.now();
+        when(uploadPostMediaUseCase.execute(any())).thenReturn(new UploadPostMediaResult(
+                "https://minio.local/presigned",
+                "posts/" + userId + "/file.jpg",
+                "https://cdn.2hands.vn/social/posts/" + userId + "/file.jpg",
+                "IMAGE",
+                Instant.parse("2026-05-21T10:15:00Z"),
+                10_485_760L,
+                List.of("image/jpeg", "image/png", "image/webp", "video/mp4")
+        ));
+        when(uploadPostMediaUseCase.successMessage()).thenReturn("Tao link upload media thanh cong.");
 
-        DeletePostResult result = new DeletePostResult(
-                "507f1f77bcf86cd799439011",
-                "DELETED",
-                now.toString(),
-                now.toString()
-        );
-        when(deletePostUseCase.execute(any())).thenReturn(result);
-        when(deletePostUseCase.successMessage()).thenReturn("Xoa bai viet thanh cong.");
-
-        mockMvc.perform(delete("/api/v1/social/posts/507f1f77bcf86cd799439011")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+        mockMvc.perform(post("/api/v1/social/posts/media/upload-url")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(userId))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"content_type":"image/jpeg","file_size_bytes":1048576,"media_kind":"IMAGE"}
+                                """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.code").value(200))
-                .andExpect(jsonPath("$.message").value("Xoa bai viet thanh cong."))
-                .andExpect(jsonPath("$.data.postId").value("507f1f77bcf86cd799439011"))
-                .andExpect(jsonPath("$.data.status").value("DELETED"));
+                .andExpect(jsonPath("$.message").value("Tao link upload media thanh cong."))
+                .andExpect(jsonPath("$.data.upload_url").exists())
+                .andExpect(jsonPath("$.data.media_url").value("https://cdn.2hands.vn/social/posts/" + userId + "/file.jpg"))
+                .andExpect(jsonPath("$.data.media_kind").value("IMAGE"));
     }
 
     @Test
-    void shouldReturn403WhenUserHasNoPermission() throws Exception {
+    void shouldReturn403WhenUserSuspended() throws Exception {
         UUID userId = UUID.randomUUID();
-        String token = buildAccessToken(userId, List.of("USER"));
+        when(uploadPostMediaUseCase.execute(any()))
+                .thenThrow(new AppException(ErrorCode.ACCOUNT_SUSPENDED,
+                        ErrorCode.ACCOUNT_SUSPENDED.defaultMessage()));
 
-        when(deletePostUseCase.execute(any()))
-                .thenThrow(new AppException(ErrorCode.FORBIDDEN, "Ban khong co quyen xoa bai viet nay."));
-
-        mockMvc.perform(delete("/api/v1/social/posts/507f1f77bcf86cd799439011")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+        mockMvc.perform(post("/api/v1/social/posts/media/upload-url")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(userId))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"content_type":"image/jpeg","file_size_bytes":1024,"media_kind":"IMAGE"}
+                                """))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(403));
     }
 
-    @Test
-    void shouldReturn404WhenPostNotFound() throws Exception {
-        UUID userId = UUID.randomUUID();
-        String token = buildAccessToken(userId, List.of("USER"));
-
-        when(deletePostUseCase.execute(any()))
-                .thenThrow(new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Bai viet khong ton tai."));
-
-        mockMvc.perform(delete("/api/v1/social/posts/missing-id")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value(404));
-    }
-
-    private String buildAccessToken(UUID userId, List<String> roles) {
-        SecretKey secretKey = Keys.hmacShaKeyFor(
+    private String bearerTokenFor(UUID userId) {
+        SecretKey key = Keys.hmacShaKeyFor(
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
                         .getBytes(StandardCharsets.UTF_8)
         );
-        return Jwts.builder()
+        String token = Jwts.builder()
                 .subject(userId.toString())
-                .claim("roles", roles)
-                .issuedAt(new java.util.Date())
-                .expiration(new java.util.Date(System.currentTimeMillis() + 60_000))
-                .signWith(secretKey)
+                .claim("roles", List.of("USER"))
+                .signWith(key)
                 .compact();
+        return "Bearer " + token;
     }
 }

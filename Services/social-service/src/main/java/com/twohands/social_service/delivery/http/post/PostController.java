@@ -18,6 +18,9 @@ import com.twohands.social_service.application.post.likeunlikepost.LikeUnlikePos
 import com.twohands.social_service.application.post.saveunsavepost.SaveUnsavePostCommand;
 import com.twohands.social_service.application.post.saveunsavepost.SaveUnsavePostResult;
 import com.twohands.social_service.application.post.saveunsavepost.SaveUnsavePostUseCase;
+import com.twohands.social_service.application.post.uploadpostmedia.UploadPostMediaCommand;
+import com.twohands.social_service.application.post.uploadpostmedia.UploadPostMediaResult;
+import com.twohands.social_service.application.post.uploadpostmedia.UploadPostMediaUseCase;
 import com.twohands.social_service.application.post.viewsavedposts.ViewSavedPostsResult;
 import com.twohands.social_service.application.post.viewsavedposts.ViewSavedPostsUseCase;
 import com.twohands.social_service.common.dto.ApiResponse;
@@ -26,12 +29,14 @@ import com.twohands.social_service.delivery.http.comment.request.CommentPostRequ
 import com.twohands.social_service.delivery.http.comment.response.CommentPostResponse;
 import com.twohands.social_service.delivery.http.post.request.CreatePostRequest;
 import com.twohands.social_service.delivery.http.post.request.EditPostRequest;
+import com.twohands.social_service.delivery.http.post.request.UploadPostMediaRequest;
 import com.twohands.social_service.delivery.http.post.response.CreatePostResponse;
 import com.twohands.social_service.delivery.http.post.response.DeletePostResponse;
 import com.twohands.social_service.delivery.http.post.response.EditPostResponse;
 import com.twohands.social_service.delivery.http.post.response.LikeUnlikePostResponse;
 import com.twohands.social_service.delivery.http.post.mapper.ViewSavedPostsHttpMapper;
 import com.twohands.social_service.delivery.http.post.response.SaveUnsavePostResponse;
+import com.twohands.social_service.delivery.http.post.response.UploadPostMediaResponse;
 import com.twohands.social_service.delivery.http.post.response.ViewSavedPostsResponse;
 import com.twohands.social_service.security.AuthenticatedUser;
 import jakarta.validation.Valid;
@@ -66,6 +71,7 @@ public class PostController {
     private final CommentPostUseCase commentPostUseCase;
     private final ViewSavedPostsUseCase viewSavedPostsUseCase;
     private final ViewSavedPostsHttpMapper viewSavedPostsHttpMapper;
+    private final UploadPostMediaUseCase uploadPostMediaUseCase;
 
     public PostController(
             CreatePostUseCase createPostUseCase,
@@ -75,7 +81,8 @@ public class PostController {
             SaveUnsavePostUseCase saveUnsavePostUseCase,
             CommentPostUseCase commentPostUseCase,
             ViewSavedPostsUseCase viewSavedPostsUseCase,
-            ViewSavedPostsHttpMapper viewSavedPostsHttpMapper
+            ViewSavedPostsHttpMapper viewSavedPostsHttpMapper,
+            UploadPostMediaUseCase uploadPostMediaUseCase
     ) {
         this.createPostUseCase = createPostUseCase;
         this.editPostUseCase = editPostUseCase;
@@ -85,6 +92,7 @@ public class PostController {
         this.commentPostUseCase = commentPostUseCase;
         this.viewSavedPostsUseCase = viewSavedPostsUseCase;
         this.viewSavedPostsHttpMapper = viewSavedPostsHttpMapper;
+        this.uploadPostMediaUseCase = uploadPostMediaUseCase;
     }
 
     @GetMapping("/saved")
@@ -95,11 +103,43 @@ public class PostController {
     ) {
         UUID userId = resolveUserId(authentication);
         ViewSavedPostsResult result = viewSavedPostsUseCase.execute(userId, page, size);
-        ViewSavedPostsResponse response = viewSavedPostsHttpMapper.toResponse(result);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        viewSavedPostsUseCase.successMessage(),
+                        viewSavedPostsHttpMapper.toResponse(result)
+                ));
+    }
+
+    @PostMapping("/media/upload-url")
+    public ResponseEntity<ApiResponse<UploadPostMediaResponse>> createPostMediaUploadUrl(
+            @RequestBody @Valid UploadPostMediaRequest request,
+            Authentication authentication
+    ) {
+        UUID userId = resolveUserId(authentication);
+        UploadPostMediaResult result = uploadPostMediaUseCase.execute(
+                new UploadPostMediaCommand(
+                        userId,
+                        request.contentType(),
+                        request.fileSizeBytes(),
+                        request.mediaKind()
+                )
+        );
+
+        UploadPostMediaResponse response = new UploadPostMediaResponse(
+                result.uploadUrl(),
+                result.objectKey(),
+                result.mediaUrl(),
+                result.mediaKind(),
+                result.expiresAt().toString(),
+                result.maxFileSizeBytes(),
+                result.allowedContentTypes()
+        );
 
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK.value(),
-                viewSavedPostsUseCase.successMessage(),
+                uploadPostMediaUseCase.successMessage(),
                 response
         ));
     }

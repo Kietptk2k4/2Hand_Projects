@@ -61,6 +61,9 @@ class SaveUnsavePostApiIntegrationTest {
     private CreatePostUseCase createPostUseCase;
 
     @MockBean
+    private com.twohands.social_service.application.post.uploadpostmedia.UploadPostMediaUseCase uploadPostMediaUseCase;
+
+    @MockBean
     private EditPostUseCase editPostUseCase;
 
     @MockBean

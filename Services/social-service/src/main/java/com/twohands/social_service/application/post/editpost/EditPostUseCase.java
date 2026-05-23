@@ -1,5 +1,6 @@
 package com.twohands.social_service.application.post.editpost;
 
+import com.twohands.social_service.application.post.common.PostMediaUrlValidator;
 import com.twohands.social_service.application.post.common.ProductTagValidationItem;
 import com.twohands.social_service.application.post.common.ProductTagValidator;
 import com.twohands.social_service.domain.post.MediaItem;
@@ -33,14 +34,17 @@ public class EditPostUseCase {
     private final PostRepository postRepository;
     private final UserWriteGuard userWriteGuard;
     private final ProductTagValidator productTagValidator;
+    private final PostMediaUrlValidator postMediaUrlValidator;
 
     public EditPostUseCase(
             PostRepository postRepository,
             UserWriteGuard userWriteGuard,
-            ProductTagValidator productTagValidator) {
+            ProductTagValidator productTagValidator,
+            PostMediaUrlValidator postMediaUrlValidator) {
         this.postRepository = postRepository;
         this.userWriteGuard = userWriteGuard;
         this.productTagValidator = productTagValidator;
+        this.postMediaUrlValidator = postMediaUrlValidator;
     }
 
     @Transactional
@@ -57,6 +61,7 @@ public class EditPostUseCase {
         }
 
         validatePayload(command);
+        validateMediaUrls(command);
 
         Instant now = Instant.now();
         Post updated = new Post(
@@ -138,6 +143,13 @@ public class EditPostUseCase {
         command.productTags().ifPresent(productTags -> productTagValidator.validate(productTags.stream()
                 .map(pt -> new ProductTagValidationItem(pt.productId(), pt.price()))
                 .toList()));
+    }
+
+    private void validateMediaUrls(EditPostCommand command) {
+        command.media().ifPresent(media -> postMediaUrlValidator.validateMediaUrls(
+                command.editorId(),
+                media.stream().map(EditPostCommand.MediaItemCommand::url).toList()
+        ));
     }
 
     private String resolveCaption(EditPostCommand command, Post existing) {

@@ -1,5 +1,6 @@
 package com.twohands.social_service.unit.application.post.createpost;
 
+import com.twohands.social_service.application.post.common.PostMediaUrlValidator;
 import com.twohands.social_service.application.post.common.ProductTagValidator;
 import com.twohands.social_service.application.post.createpost.CreatePostCommand;
 import com.twohands.social_service.application.post.createpost.CreatePostResult;
@@ -37,8 +38,9 @@ class CreatePostUseCaseTest {
     private final PostRepository postRepository = mock(PostRepository.class);
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
     private final UserWriteGuard userWriteGuard = new UserWriteGuard(userProjectionRepository);
+    private final PostMediaUrlValidator postMediaUrlValidator = mock(PostMediaUrlValidator.class);
     private final CreatePostUseCase useCase = new CreatePostUseCase(
-            postRepository, userWriteGuard, new ProductTagValidator());
+            postRepository, userWriteGuard, new ProductTagValidator(), postMediaUrlValidator);
 
     private Post buildSavedPost(UUID authorId, String postId, PostStatus status, PostVisibility visibility) {
         return new Post(

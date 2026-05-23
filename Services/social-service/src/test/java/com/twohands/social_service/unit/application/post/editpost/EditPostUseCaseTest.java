@@ -1,5 +1,6 @@
 package com.twohands.social_service.unit.application.post.editpost;
 
+import com.twohands.social_service.application.post.common.PostMediaUrlValidator;
 import com.twohands.social_service.application.post.common.ProductTagValidator;
 import com.twohands.social_service.application.post.editpost.EditPostCommand;
 import com.twohands.social_service.application.post.editpost.EditPostResult;
@@ -37,8 +38,9 @@ class EditPostUseCaseTest {
     private final PostRepository postRepository = mock(PostRepository.class);
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
     private final UserWriteGuard userWriteGuard = new UserWriteGuard(userProjectionRepository);
+    private final PostMediaUrlValidator postMediaUrlValidator = mock(PostMediaUrlValidator.class);
     private final EditPostUseCase useCase = new EditPostUseCase(
-            postRepository, userWriteGuard, new ProductTagValidator());
+            postRepository, userWriteGuard, new ProductTagValidator(), postMediaUrlValidator);
 
     private Post buildExistingPost(UUID authorId, String postId, PostStatus status) {
         return new Post(
