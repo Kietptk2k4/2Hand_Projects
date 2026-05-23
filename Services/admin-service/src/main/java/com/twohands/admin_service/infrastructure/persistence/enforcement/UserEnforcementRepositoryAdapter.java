@@ -8,6 +8,8 @@ import com.twohands.admin_service.infrastructure.persistence.jpa.entity.UserEnfo
 import com.twohands.admin_service.infrastructure.persistence.jpa.repository.UserEnforcementJpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,6 +48,17 @@ public class UserEnforcementRepositoryAdapter implements UserEnforcementReposito
 	@Override
 	public Optional<UserEnforcement> findById(UUID enforcementId) {
 		return jpaRepository.findById(enforcementId).map(this::toDomain);
+	}
+
+	@Override
+	public List<UserEnforcement> findAllActiveByUserId(UUID userId) {
+		return jpaRepository.findByUserIdAndStatus(
+				userId,
+				com.twohands.admin_service.infrastructure.persistence.jpa.enums.UserEnforcementStatus.ACTIVE
+		).stream()
+				.map(this::toDomain)
+				.sorted(Comparator.comparing(UserEnforcement::createdAt).reversed())
+				.toList();
 	}
 
 	private UserEnforcementEntity toEntity(UserEnforcement enforcement) {

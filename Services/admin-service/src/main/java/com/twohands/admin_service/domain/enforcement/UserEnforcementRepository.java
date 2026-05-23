@@ -1,5 +1,6 @@
 package com.twohands.admin_service.domain.enforcement;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,4 +13,6 @@ public interface UserEnforcementRepository {
 	Optional<UserEnforcement> findActiveByUserIdAndActionType(UUID userId, UserEnforcementActionType actionType);
 
 	Optional<UserEnforcement> findById(UUID enforcementId);
+
+	List<UserEnforcement> findAllActiveByUserId(UUID userId);
 }
