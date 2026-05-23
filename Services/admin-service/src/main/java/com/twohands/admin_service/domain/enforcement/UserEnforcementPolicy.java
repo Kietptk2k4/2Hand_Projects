@@ -22,6 +22,24 @@ public final class UserEnforcementPolicy {
 		validateEnforcementRequest(reasonCode, description, expiresAt, now, "temporary restrict");
 	}
 
+	public static void validateRevokeRequest(String note, String reason) {
+		if (note != null && note.length() > 4000) {
+			throw validationError("note", "note must be at most 4000 characters");
+		}
+		if (reason != null && reason.length() > 4000) {
+			throw validationError("reason", "reason must be at most 4000 characters");
+		}
+	}
+
+	public static void ensureRevocable(UserEnforcementStatus status) {
+		if (status != UserEnforcementStatus.ACTIVE) {
+			throw new AppException(
+					ErrorCode.ENFORCEMENT_CONFLICT,
+					"Only ACTIVE enforcement can be revoked"
+			);
+		}
+	}
+
 	private static void validateEnforcementRequest(
 			String reasonCode,
 			String description,

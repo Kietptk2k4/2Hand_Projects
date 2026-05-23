@@ -27,4 +27,9 @@ public class DisabledAuthUserEnforcementGateway implements AuthUserEnforcementGa
 	public void restrictUser(AuthRestrictUserRequest request) {
 		// Outbox event USER_RESTRICTED is consumed by Social/Commerce; Auth login unchanged.
 	}
+
+	@Override
+	public void revokeEnforcement(AuthRevokeEnforcementRequest request) {
+		// Outbox event USER_ENFORCEMENT_REVOKED applies consumer effects asynchronously.
+	}
 }

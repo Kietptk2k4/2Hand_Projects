@@ -79,6 +79,35 @@ public class HttpAuthUserEnforcementGateway implements AuthUserEnforcementGatewa
 		);
 	}
 
+	@Override
+	public void revokeEnforcement(AuthRevokeEnforcementRequest request) {
+		try {
+			restClient.post()
+					.uri("/api/v1/admin/user-enforcements/{enforcementId}/revoke", request.enforcementId())
+					.contentType(MediaType.APPLICATION_JSON)
+					.header(HttpHeaders.AUTHORIZATION, "Bearer " + request.bearerToken())
+					.body(new AuthRevokeBody(
+							request.userId(),
+							request.actionType(),
+							request.reactivateUser(),
+							request.note(),
+							request.reason()
+					))
+					.retrieve()
+					.toBodilessEntity();
+		} catch (RestClientResponseException ex) {
+			if (ex.getStatusCode().is4xxClientError()) {
+				JsonNode body = ex.getResponseBodyAs(JsonNode.class);
+				throw mapClientError(ex.getStatusCode().value(), body);
+			}
+			log.warn("Auth revoke enforcement failed: status={}, message={}", ex.getStatusCode(), ex.getMessage());
+			throw new AppException(ErrorCode.SERVICE_UNAVAILABLE, "Auth Service is unavailable");
+		} catch (RestClientException ex) {
+			log.warn("Auth revoke enforcement failed: {}", ex.getMessage());
+			throw new AppException(ErrorCode.SERVICE_UNAVAILABLE, "Auth Service is unavailable");
+		}
+	}
+
 	private void postEnforcement(
 			String uri,
 			java.util.UUID userId,
@@ -138,6 +167,18 @@ public class HttpAuthUserEnforcementGateway implements AuthUserEnforcementGatewa
 			String description,
 			@JsonProperty("expires_at")
 			Instant expiresAt
+	) {
+	}
+
+	private record AuthRevokeBody(
+			@JsonProperty("user_id")
+			java.util.UUID userId,
+			@JsonProperty("action_type")
+			String actionType,
+			@JsonProperty("reactivate_user")
+			boolean reactivateUser,
+			String note,
+			String reason
 	) {
 	}
 }

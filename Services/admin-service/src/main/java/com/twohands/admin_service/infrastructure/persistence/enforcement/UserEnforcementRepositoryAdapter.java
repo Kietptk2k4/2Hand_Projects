@@ -43,6 +43,11 @@ public class UserEnforcementRepositoryAdapter implements UserEnforcementReposito
 		).stream().findFirst().map(this::toDomain);
 	}
 
+	@Override
+	public Optional<UserEnforcement> findById(UUID enforcementId) {
+		return jpaRepository.findById(enforcementId).map(this::toDomain);
+	}
+
 	private UserEnforcementEntity toEntity(UserEnforcement enforcement) {
 		UserEnforcementEntity entity = new UserEnforcementEntity();
 		entity.setId(enforcement.id());

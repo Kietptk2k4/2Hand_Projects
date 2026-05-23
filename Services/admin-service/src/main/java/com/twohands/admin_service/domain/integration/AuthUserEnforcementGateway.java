@@ -13,6 +13,8 @@ public interface AuthUserEnforcementGateway {
 
 	void restrictUser(AuthRestrictUserRequest request);
 
+	void revokeEnforcement(AuthRevokeEnforcementRequest request);
+
 	record AuthSuspendUserRequest(
 			UUID userId,
 			UUID enforcementId,
@@ -39,6 +41,17 @@ public interface AuthUserEnforcementGateway {
 			String reasonCode,
 			String description,
 			Instant expiresAt,
+			String bearerToken
+	) {
+	}
+
+	record AuthRevokeEnforcementRequest(
+			UUID enforcementId,
+			UUID userId,
+			String actionType,
+			boolean reactivateUser,
+			String note,
+			String reason,
 			String bearerToken
 	) {
 	}

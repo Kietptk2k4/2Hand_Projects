@@ -10,4 +10,6 @@ public interface UserEnforcementRepository {
 	boolean existsActiveByUserIdAndActionType(UUID userId, UserEnforcementActionType actionType);
 
 	Optional<UserEnforcement> findActiveByUserIdAndActionType(UUID userId, UserEnforcementActionType actionType);
+
+	Optional<UserEnforcement> findById(UUID enforcementId);
 }
