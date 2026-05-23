@@ -2,6 +2,7 @@ package com.twohands.admin_service.application.outbox;
 
 import com.twohands.admin_service.domain.outbox.OutboxEvent;
 import com.twohands.admin_service.domain.outbox.OutboxEventRepository;
+import com.twohands.admin_service.infrastructure.outbox.AdminOutboxTopicResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,17 +19,20 @@ public class PublishAdminEventsUseCase {
 
 	private final OutboxEventRepository outboxEventRepository;
 	private final OutboxEventPublisher outboxEventPublisher;
+	private final AdminOutboxTopicResolver topicResolver;
 	private final int maxRetries;
 	private final int batchSize;
 
 	public PublishAdminEventsUseCase(
 			OutboxEventRepository outboxEventRepository,
 			OutboxEventPublisher outboxEventPublisher,
+			AdminOutboxTopicResolver topicResolver,
 			@Value("${admin.outbox.publish.max-retries:5}") int maxRetries,
 			@Value("${admin.outbox.publish.batch-size:50}") int batchSize
 	) {
 		this.outboxEventRepository = outboxEventRepository;
 		this.outboxEventPublisher = outboxEventPublisher;
+		this.topicResolver = topicResolver;
 		this.maxRetries = maxRetries;
 		this.batchSize = batchSize;
 	}
@@ -48,26 +52,37 @@ public class PublishAdminEventsUseCase {
 	}
 
 	private void processSingleEvent(OutboxEvent event, Instant now) {
+		String topic = resolveTopicSafely(event);
 		try {
 			outboxEventPublisher.publish(event);
 			outboxEventRepository.markPublished(event.id(), now);
 			log.info(
-					"Outbox publish success. outboxEventId={}, eventType={}, aggregateId={}, newStatus=PUBLISHED",
+					"Outbox publish success. outboxEventId={}, eventType={}, topic={}, aggregateId={}, newStatus=PUBLISHED",
 					event.id(),
 					event.eventType(),
+					topic,
 					event.aggregateId()
 			);
 		} catch (Exception ex) {
 			outboxEventRepository.markFailed(event.id(), ex.getMessage());
 			int nextRetryCount = event.retryCount() + 1;
 			log.warn(
-					"Outbox publish failed. outboxEventId={}, eventType={}, aggregateId={}, retryCount={}, newStatus=FAILED, error={}",
+					"Outbox publish failed. outboxEventId={}, eventType={}, topic={}, aggregateId={}, retryCount={}, newStatus=FAILED, error={}",
 					event.id(),
 					event.eventType(),
+					topic,
 					event.aggregateId(),
 					nextRetryCount,
 					sanitizeError(ex.getMessage())
 			);
+		}
+	}
+
+	private String resolveTopicSafely(OutboxEvent event) {
+		try {
+			return topicResolver.resolve(event.eventType());
+		} catch (Exception ex) {
+			return "unknown";
 		}
 	}
 
