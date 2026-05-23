@@ -11,8 +11,14 @@ import com.twohands.admin_service.infrastructure.persistence.jpa.repository.User
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -22,9 +28,14 @@ import java.util.UUID;
 public class UserEnforcementRepositoryAdapter implements UserEnforcementRepository {
 
 	private final UserEnforcementJpaRepository jpaRepository;
+	private final NamedParameterJdbcTemplate jdbcTemplate;
 
-	public UserEnforcementRepositoryAdapter(UserEnforcementJpaRepository jpaRepository) {
+	public UserEnforcementRepositoryAdapter(
+			UserEnforcementJpaRepository jpaRepository,
+			NamedParameterJdbcTemplate jdbcTemplate
+	) {
 		this.jpaRepository = jpaRepository;
+		this.jdbcTemplate = jdbcTemplate;
 	}
 
 	@Override
@@ -81,6 +92,45 @@ public class UserEnforcementRepositoryAdapter implements UserEnforcementReposito
 				page.getTotalElements(),
 				page.getTotalPages()
 		);
+	}
+
+	@Override
+	public List<UserEnforcement> claimActiveExpiredEnforcements(Instant now, int batchSize) {
+		String sql = """
+				SELECT id, user_id, action_type, reason_code, description, expires_at,
+				       enforced_by, status, created_at, updated_at
+				FROM user_enforcements
+				WHERE status = :activeStatus
+				  AND expires_at IS NOT NULL
+				  AND expires_at <= :now
+				ORDER BY expires_at ASC
+				LIMIT :batchSize
+				FOR UPDATE SKIP LOCKED
+				""";
+		MapSqlParameterSource params = new MapSqlParameterSource()
+				.addValue("activeStatus", UserEnforcementStatus.ACTIVE.name())
+				.addValue("now", Timestamp.from(now))
+				.addValue("batchSize", batchSize);
+		return jdbcTemplate.query(sql, params, (rs, rowNum) -> mapClaimedEnforcement(rs));
+	}
+
+	private UserEnforcement mapClaimedEnforcement(ResultSet rs) throws SQLException {
+		return new UserEnforcement(
+				rs.getObject("id", UUID.class),
+				rs.getObject("user_id", UUID.class),
+				UserEnforcementActionType.valueOf(rs.getString("action_type")),
+				rs.getString("reason_code"),
+				rs.getString("description"),
+				toInstant(rs.getTimestamp("expires_at")),
+				rs.getObject("enforced_by", UUID.class),
+				UserEnforcementStatus.valueOf(rs.getString("status")),
+				toInstant(rs.getTimestamp("created_at")),
+				toInstant(rs.getTimestamp("updated_at"))
+		);
+	}
+
+	private Instant toInstant(Timestamp timestamp) {
+		return timestamp == null ? null : timestamp.toInstant();
 	}
 
 	private UserEnforcementEntity toEntity(UserEnforcement enforcement) {

@@ -7,6 +7,7 @@ import com.twohands.admin_service.exception.AppException;
 import com.twohands.admin_service.exception.ErrorCode;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -30,6 +31,23 @@ public class UserEnforcementOutboxPayloadBuilder {
 
 	public String buildUserRestrictedPayload(UserEnforcement enforcement) {
 		return buildEnforcementPayload(enforcement);
+	}
+
+	public String buildUserEnforcementExpiredPayload(UserEnforcement enforcement, Instant expiredAt) {
+		Map<String, Object> payload = new LinkedHashMap<>();
+		payload.put("user_id", enforcement.userId().toString());
+		payload.put("enforcement_id", enforcement.id().toString());
+		payload.put("action_type", enforcement.actionType().name());
+		payload.put("reason_code", enforcement.reasonCode());
+		payload.put("previous_status", "ACTIVE");
+		payload.put("new_status", enforcement.status().name());
+		payload.put("expires_at", enforcement.expiresAt().toString());
+		payload.put("expired_at", expiredAt.toString());
+		try {
+			return objectMapper.writeValueAsString(payload);
+		} catch (JsonProcessingException ex) {
+			throw new AppException(ErrorCode.INTERNAL_ERROR, "Failed to build outbox payload");
+		}
 	}
 
 	public String buildUserEnforcementRevokedPayload(

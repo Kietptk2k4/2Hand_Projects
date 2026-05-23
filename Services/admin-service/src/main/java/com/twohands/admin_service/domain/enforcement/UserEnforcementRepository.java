@@ -3,6 +3,7 @@ package com.twohands.admin_service.domain.enforcement;
 import com.twohands.admin_service.domain.common.PageRequest;
 import com.twohands.admin_service.domain.common.PagedResult;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,4 +21,6 @@ public interface UserEnforcementRepository {
 	List<UserEnforcement> findAllActiveByUserId(UUID userId);
 
 	PagedResult<UserEnforcement> findAllByUserId(UUID userId, PageRequest pageRequest);
+
+	List<UserEnforcement> claimActiveExpiredEnforcements(Instant now, int batchSize);
 }
