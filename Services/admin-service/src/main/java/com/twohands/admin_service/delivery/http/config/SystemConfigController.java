@@ -9,17 +9,22 @@ import com.twohands.admin_service.application.config.togglesystemconfig.ToggleSy
 import com.twohands.admin_service.application.config.updatesystemconfig.UpdateSystemConfigCommand;
 import com.twohands.admin_service.application.config.updatesystemconfig.UpdateSystemConfigResult;
 import com.twohands.admin_service.application.config.updatesystemconfig.UpdateSystemConfigUseCase;
+import com.twohands.admin_service.application.config.viewhistory.ViewSystemConfigHistoryQuery;
+import com.twohands.admin_service.application.config.viewhistory.ViewSystemConfigHistoryResult;
+import com.twohands.admin_service.application.config.viewhistory.ViewSystemConfigHistoryUseCase;
 import com.twohands.admin_service.common.dto.ApiResponse;
 import com.twohands.admin_service.constant.AdminPermission;
 import com.twohands.admin_service.security.annotation.RequireAdminPermission;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -31,15 +36,18 @@ public class SystemConfigController {
 	private final CreateSystemConfigUseCase createSystemConfigUseCase;
 	private final UpdateSystemConfigUseCase updateSystemConfigUseCase;
 	private final ToggleSystemConfigUseCase toggleSystemConfigUseCase;
+	private final ViewSystemConfigHistoryUseCase viewSystemConfigHistoryUseCase;
 
 	public SystemConfigController(
 			CreateSystemConfigUseCase createSystemConfigUseCase,
 			UpdateSystemConfigUseCase updateSystemConfigUseCase,
-			ToggleSystemConfigUseCase toggleSystemConfigUseCase
+			ToggleSystemConfigUseCase toggleSystemConfigUseCase,
+			ViewSystemConfigHistoryUseCase viewSystemConfigHistoryUseCase
 	) {
 		this.createSystemConfigUseCase = createSystemConfigUseCase;
 		this.updateSystemConfigUseCase = updateSystemConfigUseCase;
 		this.toggleSystemConfigUseCase = toggleSystemConfigUseCase;
+		this.viewSystemConfigHistoryUseCase = viewSystemConfigHistoryUseCase;
 	}
 
 	@PostMapping
@@ -137,5 +145,47 @@ public class SystemConfigController {
 				toggleSystemConfigUseCase.successMessage(result.stateChanged()),
 				data
 		));
+	}
+
+	@GetMapping("/{configId}/history")
+	@RequireAdminPermission(AdminPermission.SYSTEM_CONFIG_VIEW)
+	public ResponseEntity<ApiResponse<ViewSystemConfigHistoryResponse>> viewHistory(
+			@PathVariable UUID configId,
+			@RequestParam(required = false) Integer page,
+			@RequestParam(required = false) Integer size
+	) {
+		ViewSystemConfigHistoryResult result = viewSystemConfigHistoryUseCase.execute(
+				new ViewSystemConfigHistoryQuery(configId, page, size)
+		);
+
+		return ResponseEntity.ok(ApiResponse.success(
+				HttpStatus.OK.value(),
+				viewSystemConfigHistoryUseCase.successMessage(),
+				toHistoryResponse(result)
+		));
+	}
+
+	private ViewSystemConfigHistoryResponse toHistoryResponse(ViewSystemConfigHistoryResult result) {
+		return new ViewSystemConfigHistoryResponse(
+				result.configId(),
+				result.configKey(),
+				result.page(),
+				result.size(),
+				result.totalElements(),
+				result.totalPages(),
+				result.valuesMasked(),
+				result.history().stream()
+						.map(item -> new SystemConfigHistoryEntryResponse(
+								item.historyId(),
+								item.configKey(),
+								item.oldValue(),
+								item.newValue(),
+								item.changedBy(),
+								item.reason(),
+								item.createdAt(),
+								item.valuesMasked()
+						))
+						.toList()
+		);
 	}
 }

@@ -56,6 +56,26 @@ public final class SystemConfigPolicy {
 		return Boolean.toString(active);
 	}
 
+	public static boolean isSecretLikeKey(String configKey) {
+		if (configKey == null || configKey.isBlank()) {
+			return false;
+		}
+		String upper = configKey.trim().toUpperCase();
+		for (String fragment : FORBIDDEN_KEY_FRAGMENTS) {
+			if (upper.contains(fragment)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static String maskValueIfSecret(String configKey, String value) {
+		if (value == null) {
+			return null;
+		}
+		return isSecretLikeKey(configKey) ? "********" : value;
+	}
+
 	public static String normalizeConfigValue(String configValue, SystemConfigValueType valueType) {
 		String trimmed = configValue.trim();
 		if (valueType == SystemConfigValueType.BOOLEAN) {

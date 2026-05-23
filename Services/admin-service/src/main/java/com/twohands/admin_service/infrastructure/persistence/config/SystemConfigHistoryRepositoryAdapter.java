@@ -1,9 +1,14 @@
 package com.twohands.admin_service.infrastructure.persistence.config;
 
+import com.twohands.admin_service.domain.common.PageRequest;
+import com.twohands.admin_service.domain.common.PagedResult;
 import com.twohands.admin_service.domain.config.SystemConfigHistory;
 import com.twohands.admin_service.domain.config.SystemConfigHistoryRepository;
 import com.twohands.admin_service.infrastructure.persistence.jpa.entity.SystemConfigHistoryEntity;
 import com.twohands.admin_service.infrastructure.persistence.jpa.repository.SystemConfigHistoryJpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -13,6 +18,23 @@ public class SystemConfigHistoryRepositoryAdapter implements SystemConfigHistory
 
 	public SystemConfigHistoryRepositoryAdapter(SystemConfigHistoryJpaRepository jpaRepository) {
 		this.jpaRepository = jpaRepository;
+	}
+
+	@Override
+	public PagedResult<SystemConfigHistory> findByConfigKeyOrderByCreatedAtDesc(String configKey, PageRequest pageRequest) {
+		Pageable pageable = org.springframework.data.domain.PageRequest.of(
+				pageRequest.page() - 1,
+				pageRequest.size(),
+				Sort.by(Sort.Direction.DESC, "createdAt")
+		);
+		Page<SystemConfigHistoryEntity> page = jpaRepository.findByConfigKeyOrderByCreatedAtDesc(configKey, pageable);
+		return new PagedResult<>(
+				page.getContent().stream().map(this::toDomain).toList(),
+				pageRequest.page(),
+				pageRequest.size(),
+				page.getTotalElements(),
+				page.getTotalPages()
+		);
 	}
 
 	@Override

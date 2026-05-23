@@ -52,4 +52,12 @@ class SystemConfigPolicyTest {
 	void shouldParseValueType() {
 		assertThat(SystemConfigPolicy.parseValueType("json")).isEqualTo(SystemConfigValueType.JSON);
 	}
+
+	@Test
+	void shouldMaskSecretLikeValues() {
+		assertThat(SystemConfigPolicy.maskValueIfSecret("API_KEY_COMMERCE", "secret"))
+				.isEqualTo("********");
+		assertThat(SystemConfigPolicy.maskValueIfSecret("MAX_CART_ITEMS", "100"))
+				.isEqualTo("100");
+	}
 }
