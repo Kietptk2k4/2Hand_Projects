@@ -1,18 +1,17 @@
 package com.twohands.notification_service.application.ingest;
 
-import com.twohands.notification_service.infrastructure.messaging.NotificationEventConsumer;
 import org.springframework.stereotype.Service;
 
 @Service
 public class IngestNotificationEventUseCase {
 
-    private final NotificationEventConsumer notificationEventConsumer;
+    private final StoreNotificationEventUseCase storeNotificationEventUseCase;
 
-    public IngestNotificationEventUseCase(NotificationEventConsumer notificationEventConsumer) {
-        this.notificationEventConsumer = notificationEventConsumer;
+    public IngestNotificationEventUseCase(StoreNotificationEventUseCase storeNotificationEventUseCase) {
+        this.storeNotificationEventUseCase = storeNotificationEventUseCase;
     }
 
     public IngestNotificationEventResult execute(NotificationEventIngestCommand command) {
-        return notificationEventConsumer.consume(command);
+        return storeNotificationEventUseCase.execute(command);
     }
 }

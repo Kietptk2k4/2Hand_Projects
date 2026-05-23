@@ -1,0 +1,229 @@
+---
+description: Tài liệu tham chiếu bắt buộc khi implement bất kỳ feature nào trong notification-service
+globs: Services/notification-service/**
+alwaysApply: false
+---
+
+# Notification Service – Implementation Reference
+
+Khi user yêu cầu **Implement FR_XXX** (hoặc implement feature Notification), bắt buộc:
+
+1. Đọc `docs/feature_requirements/notification/FR_XXX.md` (đúng tên file).
+2. Đọc section liên quan trong `docs/business-spec/notification-service-spec.md`.
+3. Đọc business flow map bên dưới.
+4. Đọc use case tương ứng trong `docs/use_cases/notification_use_cases/`.
+5. Tuân thủ Clean Architecture: `delivery → application → domain → infrastructure`.
+6. Tuân thủ `notification-backend-standards.mdc`.
+7. Tạo API behavior doc theo `notification-api-behavior-doc-required.mdc` (nếu FR có HTTP API hoặc internal contract quan trọng cho FE/ops).
+
+## Scaffold hiện có (đừng duplicate)
+
+- `IngestNotificationEventUseCase` + `InternalEventController` (`POST /api/v1/notification/internal/events`)
+- `ProcessPendingNotificationEventsUseCase`, `RetryFailedNotificationEventsUseCase`, `RetryFailedNotificationDeliveryUseCase` + schedulers
+- Domain: `NotificationEvent`, `UserNotification`, `UserDeviceToken`, `UserNotificationSetting` + JPA adapters
+- `SecurityConfig`, `InternalApiKeyFilter`, `JwtAuthenticationFilter`, `ErrorCode`, `ApiResponse`
+- Flyway: `V1__init_notification_tables.sql`
+
+Mở rộng scaffold — **không** viết lại từ đầu nếu đã có abstraction phù hợp.
+
+## Architecture & Schema
+
+- `docs/architecture/system-architecture.md`
+- `docs/architecture/database-strategy.md`
+- `docs/architecture/event-driven-architecture.md`
+- `docs/database/notification-schema.md`
+- `Services/notification-service/src/main/resources/db/migration/V1__init_notification_tables.sql`
+
+## Business Flows (đọc flow trước khi code)
+
+| File | Khi nào đọc |
+|------|-------------|
+| `event-ingestion-flow.md` | Ingest, Kafka, dedup |
+| `notification-reliability-idempotency-flow.md` | Idempotency, retry, locking |
+| `in-app-notification-flow.md` | Tạo `user_notifications` |
+| `notification-read-delete-flow.md` | API list/read/delete |
+| `notification-settings-flow.md` | Settings CRUD |
+| `device-token-management-flow.md` | FCM token register/revoke |
+| `push-delivery-flow.md` | FCM send |
+| `email-delivery-flow.md` | Email send |
+| `delivery-retry-flow.md` | Retry push/email |
+| `social-notification-flow.md` | Social handlers |
+| `commerce-notification-flow.md` | Order/payment/shipment handlers |
+| `admin-notification-flow.md` | Enforcement, moderation |
+| `system-announcement-fanout-flow.md` | Broadcast announcement |
+| `background-jobs-flow.md` | Schedulers, cleanup |
+
+Path: `docs/business_flow/notification_business_flow/`
+
+## Use Cases
+
+| File | Chủ đề |
+|------|--------|
+| `uc-event-ingestion.md` | Consume & store events |
+| `uc-notification-reliability-idempotency.md` | Dedup, retry |
+| `uc-in-app-notifications.md` | Create & list in-app |
+| `uc-notification-read-delete.md` | Read, mark read, delete |
+| `uc-notification-settings.md` | View/update settings |
+| `uc-device-token-management.md` | Register/revoke token |
+| `uc-push-delivery.md` | FCM |
+| `uc-email-delivery.md` | Email |
+| `uc-delivery-retry.md` | Retry jobs |
+| `uc-social-notifications.md` | Social event handlers |
+| `uc-commerce-notifications.md` | Commerce event handlers |
+| `uc-admin-notifications.md` | Admin event handlers |
+| `uc-system-announcement-fanout.md` | Fan-out |
+| `uc-background-jobs.md` | Cleanup, reminder |
+
+Path: `docs/use_cases/notification_use_cases/`
+
+## Thứ tự implement FR khuyến nghị (phụ thuộc kỹ thuật)
+
+Làm theo phase — **không** nhảy sang handler Social/Commerce trước khi pipeline ingest + in-app API ổn.
+
+### Phase 1 — Ingest & worker (1–7)
+
+1. `FR_StoreNotificationEvent`
+2. `FR_EnsureNotificationIdempotency`
+3. `FR_ConsumeDomainEvent`
+4. `FR_MarkNotificationEventFailed`
+5. `FR_MarkNotificationEventCompleted`
+6. `FR_ProcessNotificationEvent`
+7. `FR_RetryFailedNotificationEvents`
+
+### Phase 2 — Policy (8–12)
+
+8. `FR_ApplyNotificationDeliveryRules`
+9. `FR_SkipSelfNotification`
+10. `FR_InitializeDefaultNotificationSettings`
+11. `FR_RespectNotificationSettings`
+12. `FR_CreateInAppNotification`
+
+### Phase 3 — User in-app API (13–18)
+
+13. `FR_ViewUserNotifications`
+14. `FR_ViewUnreadNotifications`
+15. `FR_CountUnreadNotifications`
+16. `FR_MarkNotificationAsRead`
+17. `FR_MarkAllNotificationsAsRead`
+18. `FR_DeleteNotification`
+
+### Phase 4 — Settings & device (19–23)
+
+19. `FR_ViewNotificationSettings`
+20. `FR_UpdateNotificationSettings`
+21. `FR_RegisterDeviceToken`
+22. `FR_RevokeDeviceToken`
+23. `FR_ViewUserDeviceTokens`
+
+### Phase 5 — Channels & retry delivery (24–28)
+
+24. `FR_SendEmailNotification`
+25. `FR_SendPushNotification`
+26. `FR_RetryFailedPushNotification`
+27. `FR_RetryFailedEmailNotification`
+28. `FR_CleanupInvalidDeviceToken`
+
+### Phase 6 — Social handlers (29–33) — cần Social outbox
+
+29. `FR_HandlePostLikedNotification`
+30. `FR_HandleUserFollowedNotification`
+31. `FR_HandleCommentCreatedNotification`
+32. `FR_HandleCommentRepliedNotification`
+33. `FR_HandleCommentLikedNotification`
+
+### Phase 7 — Auth email (34–36) — cần Auth outbox
+
+34. `FR_SendEmailVerificationEmail`
+35. `FR_SendPasswordResetEmail`
+36. `FR_SendAccountEnforcementEmail`
+
+### Phase 8 — Commerce (37–45) — cần Commerce outbox + alias `COMMERCE_*`
+
+37. `FR_HandleOrderCreatedNotification`
+38. `FR_SendOrderConfirmationEmail`
+39. `FR_HandlePaymentSuccessNotification`
+40. `FR_SendPaymentSuccessEmail`
+41. `FR_HandlePaymentFailedNotification`
+42. `FR_HandleShipmentCreatedNotification`
+43. `FR_HandleShipmentShippedNotification`
+44. `FR_HandleShipmentDeliveredNotification`
+45. `FR_HandleOrderCompletedNotification`
+
+### Phase 9 — Admin (46–53) — cần Admin outbox
+
+46. `FR_HandleUserSuspendedNotification`
+47. `FR_HandleUserRestrictedNotification`
+48. `FR_HandleProductRemovedNotification`
+49. `FR_HandleReviewHiddenNotification`
+50. `FR_HandleShopSuspendedNotification`
+51. `FR_FanOutSystemAnnouncement`
+52. `FR_PinSystemAnnouncementNotification`
+53. `FR_DismissAnnouncementNotification`
+
+### Phase 10 — Optional (54–55)
+
+54. `FR_SendReviewReminderNotification`
+55. `FR_CleanupOldNotifications`
+
+## FR → Flow Map (đọc thêm khi implement)
+
+| FR nhóm | Business flow / use case |
+|---------|--------------------------|
+| Ingest: `FR_ConsumeDomainEvent`, `FR_StoreNotificationEvent`, `FR_EnsureNotificationIdempotency` | `event-ingestion-flow.md`, `uc-event-ingestion.md` |
+| Process: `FR_ProcessNotificationEvent`, `FR_MarkNotificationEvent*` | `in-app-notification-flow.md`, `notification-reliability-idempotency-flow.md` |
+| In-app API: `FR_ViewUserNotifications`, `FR_MarkNotificationAsRead`, … | `notification-read-delete-flow.md`, `uc-notification-read-delete.md` |
+| Settings: `FR_ViewNotificationSettings`, `FR_UpdateNotificationSettings`, `FR_InitializeDefaultNotificationSettings` | `notification-settings-flow.md`, `uc-notification-settings.md` |
+| Device: `FR_RegisterDeviceToken`, `FR_RevokeDeviceToken` | `device-token-management-flow.md`, `uc-device-token-management.md` |
+| Push/Email: `FR_SendPushNotification`, `FR_SendEmailNotification`, `FR_RetryFailed*` | `push-delivery-flow.md`, `email-delivery-flow.md`, `delivery-retry-flow.md` |
+| Social handlers: `FR_HandlePostLikedNotification`, … | `social-notification-flow.md`, `uc-social-notifications.md` |
+| Commerce handlers: `FR_HandleOrderCreatedNotification`, … | `commerce-notification-flow.md`, `uc-commerce-notifications.md` |
+| Admin: `FR_HandleUserSuspendedNotification`, `FR_FanOutSystemAnnouncement`, … | `admin-notification-flow.md`, `system-announcement-fanout-flow.md` |
+| Jobs: `FR_CleanupOldNotifications`, `FR_SendReviewReminderNotification` | `background-jobs-flow.md`, `uc-background-jobs.md` |
+
+## FR → Flow Map (policy & delivery)
+
+| FR | Ghi chú implement |
+|----|-------------------|
+| `FR_ApplyNotificationDeliveryRules` | Map `event_type` → channels; đọc spec §6 routing table |
+| `FR_RespectNotificationSettings` | `(user_id, event_type)` → allow_in_app/push/email |
+| `FR_SkipSelfNotification` | So sánh `actor_id` vs recipient |
+| `FR_CreateInAppNotification` | Template title/body; `reference_type`, `reference_id`, `metadata` JSONB |
+
+## Handler pattern (khuyến nghị)
+
+```text
+NotificationEventHandler (interface)
+  ├── supports(eventType): boolean
+  └── handle(NotificationEvent event): HandlerResult
+
+ProcessPendingNotificationEventsUseCase
+  → resolve handler registry
+  → transaction: in-app records + mark event
+  → after commit: push/email (tránh long TX)
+```
+
+Mỗi `FR_Handle*Notification` / `FR_Send*Email` thường là **một handler** hoặc **email sender strategy** — không một class God-switch 500 dòng.
+
+## Notification-specific Rules
+
+- **Consumer only** — không thêm `outbox_events` publish từ notification-service.
+- Title/content từ **template** trong code/config, không copy raw từ producer.
+- Fan-out announcement: batch insert, idempotent per `(announcement_id, user_id)` — xem `FR_FanOutSystemAnnouncement`.
+- `SYSTEM_ANNOUNCEMENT_SENT` / `SYSTEM_ANNOUNCEMENT_PUBLISHED` — chấp nhận alias.
+- Commerce events: map `COMMERCE_PAYMENT_PAID` ↔ `PAYMENT_SUCCESS` trong handler registry.
+- Internal ingest dùng cho dev/test khi Kafka chưa có; production ưu tiên `FR_ConsumeDomainEvent`.
+
+## Feature Requirements Index (55 files)
+
+Tất cả trong `docs/feature_requirements/notification/`:
+
+`FR_ApplyNotificationDeliveryRules.md`, `FR_CleanupInvalidDeviceToken.md`, `FR_CleanupOldNotifications.md`, `FR_CommentCreated` → `FR_HandleCommentCreatedNotification.md`, `FR_ConsumeDomainEvent.md`, `FR_CountUnreadNotifications.md`, `FR_CreateInAppNotification.md`, `FR_DeleteNotification.md`, `FR_DismissAnnouncementNotification.md`, `FR_EnsureNotificationIdempotency.md`, `FR_FanOutSystemAnnouncement.md`, `FR_HandleCommentLikedNotification.md`, `FR_HandleCommentRepliedNotification.md`, `FR_HandleOrderCompletedNotification.md`, `FR_HandleOrderCreatedNotification.md`, `FR_HandlePaymentFailedNotification.md`, `FR_HandlePaymentSuccessNotification.md`, `FR_HandlePostLikedNotification.md`, `FR_HandleProductRemovedNotification.md`, `FR_HandleReviewHiddenNotification.md`, `FR_HandleShipmentCreatedNotification.md`, `FR_HandleShipmentDeliveredNotification.md`, `FR_HandleShipmentShippedNotification.md`, `FR_HandleShopSuspendedNotification.md`, `FR_HandleUserFollowedNotification.md`, `FR_HandleUserRestrictedNotification.md`, `FR_HandleUserSuspendedNotification.md`, `FR_InitializeDefaultNotificationSettings.md`, `FR_MarkAllNotificationsAsRead.md`, `FR_MarkNotificationAsRead.md`, `FR_MarkNotificationEventCompleted.md`, `FR_MarkNotificationEventFailed.md`, `FR_PinSystemAnnouncementNotification.md`, `FR_ProcessNotificationEvent.md`, `FR_RegisterDeviceToken.md`, `FR_RespectNotificationSettings.md`, `FR_RetryFailedEmailNotification.md`, `FR_RetryFailedNotificationEvents.md`, `FR_RetryFailedPushNotification.md`, `FR_RevokeDeviceToken.md`, `FR_SendAccountEnforcementEmail.md`, `FR_SendEmailNotification.md`, `FR_SendEmailVerificationEmail.md`, `FR_SendOrderConfirmationEmail.md`, `FR_SendPasswordResetEmail.md`, `FR_SendPaymentSuccessEmail.md`, `FR_SendPushNotification.md`, `FR_SendReviewReminderNotification.md`, `FR_SkipSelfNotification.md`, `FR_StoreNotificationEvent.md`, `FR_UpdateNotificationSettings.md`, `FR_ViewNotificationSettings.md`, `FR_ViewUnreadNotifications.md`, `FR_ViewUserDeviceTokens.md`, `FR_ViewUserNotifications.md`.
+
+## Definition of Done (feature)
+
+- [ ] Đúng phase/phụ thuộc FR (không implement handler khi chưa có ingest idempotent)
+- [ ] Clean Architecture + `NOTIFICATION-*` errors + envelope API
+- [ ] Idempotent theo spec §16
+- [ ] Unit test logic chính; integration test khi đụng DB/API/worker
+- [ ] API behavior doc (nếu có HTTP surface)
+- [ ] Không secrets trong log/payload response

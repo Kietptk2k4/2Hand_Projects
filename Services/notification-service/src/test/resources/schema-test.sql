@@ -22,6 +22,9 @@ CREATE TABLE IF NOT EXISTS notification_events (
 CREATE UNIQUE INDEX IF NOT EXISTS uq_notification_events_source_event
     ON notification_events(source_service, source_event_id);
 
+CREATE UNIQUE INDEX IF NOT EXISTS uq_notification_events_event_key
+    ON notification_events(source_service, event_key);
+
 CREATE TABLE IF NOT EXISTS user_notifications (
     id UUID PRIMARY KEY,
     notification_event_id UUID,

@@ -1,0 +1,226 @@
+---
+description: Chuẩn backend bắt buộc cho notification-service — architecture, ingest, delivery, API, data, events (tổng hợp từ docs/)
+globs: Services/notification-service/**,docs/feature_requirements/notification/**,docs/business_flow/notification_business_flow/**,docs/use_cases/notification_use_cases/**,docs/business-spec/notification-service-spec.md,docs/database/notification-schema.md
+alwaysApply: false
+---
+
+# Notification Backend Standards
+
+Trước khi code hoặc review bất kỳ thứ gì liên quan **Notification Service**, bắt buộc tuân thủ chuẩn backend chung (`.cursor/rules/social/social-backend-standards.mdc`) **và** toàn bộ quy tắc dưới đây. Source-of-truth nghiệp vụ: `docs/business-spec/notification-service-spec.md`.
+
+## 1. Service Boundary
+
+- **Own:** `notification_events`, `user_notifications`, `user_device_tokens`, `user_notification_settings`, delivery orchestration (in-app / push / email), retry workers.
+- **PostgreSQL only** cho MVP (`notification_db`, port local **5435**). Không MongoDB.
+- **Không** truy cập DB Auth/Social/Commerce/Admin. Chỉ lưu `user_id`, `actor_id`, `reference_id` (UUID/string) theo event payload hoặc JWT.
+- **Không publish Outbox** từ Notification Service — service này là **consumer** domain events; producers là Auth/Social/Commerce/Admin.
+- MVP ưu tiên **event payload đủ dữ liệu** để render notification; tránh synchronous lookup cross-service mỗi event.
+
+## 2. Architecture & Package
+
+Dependency flow: `delivery → application → domain → infrastructure` (không đảo chiều).
+
+```
+src/main/java/com/twohands/notification_service/
+├── application/ingest/     # IngestNotificationEventUseCase
+├── application/worker/     # Process, retry events/delivery
+├── application/notification/  # In-app CRUD, settings, device token (khi có)
+├── application/handler/    # Per event_type handlers (khuyến nghị)
+├── delivery/http/          # User API + internal ingest
+├── domain/                 # NotificationEvent, UserNotification, …
+├── infrastructure/         # JPA, Kafka consumer, FCM, email, schedulers
+├── config/ security/ exception/
+```
+
+**Use case naming:** `IngestNotificationEventUseCase`, `ProcessPendingNotificationEventsUseCase`, `ViewUserNotificationsUseCase` — không `NotificationService` generic.
+
+**Forbidden (Notification):**
+- Controller → repository trực tiếp.
+- Business logic trong DTO/Controller.
+- Expose JPA entity ra API.
+- Gọi FCM/email **trong** DB transaction dài.
+- Tin `title`/`content` raw từ producer — **template server-side** từ `event_type` + sanitized payload.
+- Ack Kafka message **trước** khi persist `notification_events` thành công (hoặc dedup an toàn).
+- Log full `device_token`, OTP, password reset token, provider API key.
+
+## 3. API Contract
+
+| Mục | Quy tắc |
+|-----|---------|
+| Base path (FR + spec §18) | `/notification/api/v1/{resource}` qua gateway; **trong service** scaffold hiện tại: `/api/v1/notification/...` — khi implement FR user API, **thống nhất một prefix** (ưu tiên path trong `FR_*.md`, cập nhật `SecurityConfig` cho khớp). |
+| Local | `http://localhost:3004` (hoặc `SERVER_PORT=3005` nếu chạy song song `admin-service`) |
+| Envelope | `docs/engineering_rules/api-standard.md` |
+| Error prefix | `NOTIFICATION-*` (`ErrorCode` hiện có: `NOTIFICATION-400`, `NOTIFICATION-404`, `NOTIFICATION-409-DUPLICATE-EVENT`, …) |
+| User APIs | JWT Bearer — user chỉ truy cập notification/settings/device token **của mình** |
+| Internal ingest | `POST /api/v1/notification/internal/events` + header `X-Internal-Api-Key` (`NOTIFICATION_INTERNAL_API_KEY`); `permitAll` path + filter — **không** dùng user JWT |
+
+**User API surface (MVP — spec §18 / FR):**
+
+- `GET /notifications`, `GET /notifications/unread`, `GET /notifications/unread-count`
+- `PATCH /notifications/{id}/read`, `PATCH /notifications/read-all`
+- `DELETE /notifications/{id}` (soft delete: `is_deleted = true`)
+- `GET /notification-settings`, `PUT /notification-settings/{eventType}`
+- `POST /device-tokens`, `DELETE /device-tokens/{deviceToken}`
+
+## 4. Domain State Machines (bắt buộc)
+
+### notification_events
+
+```text
+PENDING → PROCESSING → COMPLETED
+PENDING → PROCESSING → FAILED
+FAILED → PROCESSING → COMPLETED | FAILED
+```
+
+- `processed_at` chỉ set khi `COMPLETED`.
+- Idempotency: unique `(source_service, source_event_id)` khi `source_event_id` có giá trị; fallback `event_key` theo schema doc.
+
+### user_notifications (in-app)
+
+```text
+CREATED (is_read=false) → READ (is_read=true, read_at set)
+CREATED/READ → DELETED (is_deleted=true) — soft hide
+```
+
+### delivery_status (trên user_notifications — MVP)
+
+```text
+PENDING → SENT
+PENDING → FAILED → SENT (sau retry thành công)
+```
+
+### user_device_tokens
+
+- `device_token` unique; deactivate khi FCM báo invalid (không hard delete MVP trừ policy retention).
+
+## 5. Event Ingestion & Processing Pipeline
+
+```text
+Broker / Internal API → Validate envelope → Dedup → INSERT notification_events (PENDING)
+  → Worker (SKIP LOCKED) → PROCESSING → Handler(event_type)
+    → Apply delivery rules + settings + skip-self
+    → Create user_notifications / send push / send email
+  → COMPLETED | FAILED (+ retry_count, last_error)
+```
+
+**Envelope tối thiểu** (`FR_ConsumeDomainEvent`, `event-ingestion-flow.md`):
+
+- `event_id` (→ `source_event_id`), `event_type`, `source_service`, `payload`, `occurred_at`
+- Optional: `event_key`, `aggregate_type`, `aggregate_id`, `actor_id`, `recipient_user_ids`
+
+**source_service allowlist:** `AUTH`, `SOCIAL`, `COMMERCE`, `ADMIN`, `SYSTEM`.
+
+**Event type:** `UPPER_SNAKE_CASE`. Commerce có thể publish `COMMERCE_*` — handler phải **map alias** về canonical (vd: `COMMERCE_PAYMENT_PAID` → `PAYMENT_SUCCESS`) hoặc đăng ký cả hai.
+
+## 6. Channel Routing Policy (MVP)
+
+Áp dụng qua `FR_ApplyNotificationDeliveryRules` + `FR_RespectNotificationSettings`:
+
+| Event type (canonical) | In-app | Push | Email |
+|------------------------|:------:|:----:|:-----:|
+| `POST_LIKED`, `USER_FOLLOWED`, `COMMENT_CREATED`, `COMMENT_REPLIED`, `COMMENT_LIKED` | yes | yes | no |
+| `ORDER_CREATED`, `PAYMENT_SUCCESS` | yes | yes | yes |
+| `PAYMENT_FAILED`, `SHIPMENT_*`, `ORDER_COMPLETED` | yes | yes | no |
+| `EMAIL_VERIFICATION_REQUESTED`, `PASSWORD_RESET_REQUESTED` | no | no | yes |
+| `USER_SUSPENDED`, `USER_RESTRICTED` | yes | yes | yes |
+| `SYSTEM_ANNOUNCEMENT_SENT` / `PUBLISHED` | yes | optional | no |
+
+**Critical override:** security/enforcement email có thể bypass user `allow_email=false` theo policy spec.
+
+**Skip self** (`FR_SkipSelfNotification`): `actor_id == recipient_user_id` cho social events — không áp dụng payment/order/enforcement.
+
+## 7. Consumed Events (producer → topic tham chiếu)
+
+Notification **consume**, không sở hữu nghiệp vụ gốc:
+
+| Producer | Event types (MVP) | Topic gợi ý (outbox resolver) |
+|----------|-------------------|--------------------------------|
+| Auth | `USER_CREATED`, `USER_UPDATED`, `USER_DELETED`, `EMAIL_VERIFICATION_REQUESTED`, `PASSWORD_RESET_REQUESTED`, `PASSWORD_CHANGED` | `auth.user.*`, `auth.email.*`, `auth.password.*` |
+| Social | `POST_LIKED`, `COMMENT_CREATED`, `USER_FOLLOWED`, `COMMENT_REPLIED`, `COMMENT_LIKED` | `social.post.liked`, `social.comment.created`, `social.user.followed` |
+| Commerce | `COMMERCE_ORDER_CREATED`, `COMMERCE_PAYMENT_PAID`, `COMMERCE_PAYMENT_FAILED`, `COMMERCE_SHIPMENT_*`, `COMMERCE_ORDER_COMPLETED`, … | `commerce.order.*`, `commerce.payment.*`, `commerce.shipment.*` |
+| Admin | `USER_SUSPENDED`, `USER_BANNED`, `USER_RESTRICTED`, `POST_MODERATED`, `PRODUCT_REMOVED`, `REVIEW_HIDDEN`, `SHOP_SUSPENDED`, `SYSTEM_ANNOUNCEMENT_PUBLISHED`, … | `admin.user.*`, `admin.post.moderated`, `admin.announcement.*` |
+
+Ma trận tổng hợp: `docs/architecture/event-driven-architecture.md` §4.
+
+## 8. Data & Schema
+
+- Schema doc: `docs/database/notification-schema.md`
+- Migration: `Services/notification-service/src/main/resources/db/migration/V1__init_notification_tables.sql`
+- PK UUID; timestamps `TIMESTAMPTZ`; payload `JSONB` sanitized.
+- **Không** physical FK sang DB service khác.
+- Unique: `(source_service, source_event_id)`, `(user_id, event_type)` settings, `device_token`.
+- In-app list mặc định: `is_deleted = false`, sort `created_at DESC`, pagination bắt buộc.
+
+## 9. Reliability & Idempotency
+
+- At-least-once delivery → mọi handler **idempotent**.
+- Cùng `source_event_id` → tối đa một `notification_events`.
+- Cùng `(notification_event_id, user_id, type, reference_type, reference_id)` → không duplicate `user_notifications`.
+- Worker: `FOR UPDATE SKIP LOCKED`, `locked_at`/`locked_by`, `max_retry_count`, backoff (`FR_RetryFailedNotificationEvents`).
+- Push/email retry tách biệt (`FR_RetryFailedPushNotification`, `FR_RetryFailedEmailNotification`); invalid FCM token → deactivate, không retry vô hạn.
+
+## 10. External Integrations
+
+| Provider | Env | Ghi chú |
+|----------|-----|---------|
+| FCM | `NOTIFICATION_FCM_ENABLED=false` | Push; không log full token |
+| Email (SMTP/SendGrid/…) | `NOTIFICATION_EMAIL_ENABLED=false` | Critical/system email only MVP |
+| Kafka consumer | Chưa trong docker-compose mặc định | Dev: `POST /internal/events` hoặc bật consumer khi có broker |
+
+## 11. Background Jobs (schedulers — tắt mặc định)
+
+| Job | Env flag |
+|-----|----------|
+| Process pending events | `NOTIFICATION_PROCESS_EVENTS_ENABLED` |
+| Retry failed events | `NOTIFICATION_RETRY_EVENTS_ENABLED` |
+| Retry failed delivery | `NOTIFICATION_RETRY_DELIVERY_ENABLED` |
+| Cleanup invalid device tokens | `FR_CleanupInvalidDeviceToken` |
+| Cleanup old notifications | `FR_CleanupOldNotifications` (optional) |
+| Review reminder | `FR_SendReviewReminderNotification` (optional) |
+
+Cron/batch: `application.yml` → `notification.workers.*`.
+
+## 12. Local Development
+
+```bash
+cd Infrastructure && docker compose up -d postgres-notification redis
+cd Services/notification-service && cp .env.example .env
+```
+
+- `DB_URL=jdbc:postgresql://localhost:5435/notification_db`
+- `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` ≥32 chars, **cùng auth-service**
+- `SERVER_PORT=3005` nếu `admin-service` đang dùng 3004
+- Workers/FCM/Email: để `false` cho dev ingest-only
+
+Chạy: `./gradlew bootRun` · Health: `GET /actuator/health`, `GET /api/v1/notification/health`
+
+## 13. Security & Privacy
+
+- JWT: `user_id` từ token, không tin query/body cho ownership.
+- Internal ingest: API key filter trước JWT filter.
+- Sanitize `payload`/`metadata` trước log và trước trả FE.
+- Notification content không lộ chi tiết private vượt quyền recipient — deep link qua `reference_type` + `reference_id`; resource vẫn authorize ở owner service.
+- Không log: password, OTP, refresh token, full device token, email provider secret.
+
+## 14. Testing
+
+- Unit: idempotency ingest, skip-self, delivery rules, handler routing, template rendering.
+- Integration: ingest API, process worker + DB, user notification API ownership.
+- Cấu trúc: `src/test/java/.../unit/`, `.../integration/`
+
+## 15. MVP Out of Scope
+
+WebSocket realtime, marketing campaigns, per-channel delivery table (trừ khi cần debug), notification analytics, multi-language template engine, websocket cluster — xem spec §22.
+
+## 16. Tài liệu tham chiếu đầy đủ
+
+| Loại | Path |
+|------|------|
+| Business spec | `docs/business-spec/notification-service-spec.md` |
+| DB schema | `docs/database/notification-schema.md` |
+| Architecture | `docs/architecture/system-architecture.md`, `database-strategy.md`, `event-driven-architecture.md` |
+| Engineering | `docs/engineering_rules/api-standard.md`, `backend-convention.md`, `naming-convention.md` |
+| Business flows | `docs/business_flow/notification_business_flow/*.md` (14 files) |
+| Use cases | `docs/use_cases/notification_use_cases/*.md` (14 files) |
+| Feature reqs | `docs/feature_requirements/notification/*.md` (55 FR) |
+| API FE behavior | `docs/api_fe_behavior/notification_api_fe_behavior/` (tạo khi implement) |

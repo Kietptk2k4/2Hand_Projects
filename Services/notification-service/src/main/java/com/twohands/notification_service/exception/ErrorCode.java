@@ -10,6 +10,12 @@ public enum ErrorCode {
     FORBIDDEN("NOTIFICATION-403", HttpStatus.FORBIDDEN, "Access denied"),
     RESOURCE_NOT_FOUND("NOTIFICATION-404", HttpStatus.NOT_FOUND, "Resource not found"),
     DUPLICATE_EVENT("NOTIFICATION-409-DUPLICATE-EVENT", HttpStatus.CONFLICT, "Event already ingested"),
+    MISSING_IDEMPOTENCY_KEY(
+            "NOTIFICATION-400-MISSING-IDEMPOTENCY-KEY",
+            HttpStatus.BAD_REQUEST,
+            "Missing idempotency key"
+    ),
+    INVALID_EVENT_PAYLOAD("NOTIFICATION-400-INVALID-PAYLOAD", HttpStatus.BAD_REQUEST, "Invalid event payload"),
     INTERNAL_API_DISABLED("NOTIFICATION-403-INTERNAL", HttpStatus.FORBIDDEN, "Internal ingest is disabled"),
     INVALID_INTERNAL_API_KEY("NOTIFICATION-401-INTERNAL", HttpStatus.UNAUTHORIZED, "Invalid internal API key");
 

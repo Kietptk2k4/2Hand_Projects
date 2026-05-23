@@ -1,0 +1,106 @@
+---
+description: Bắt buộc tạo file API behavior doc sau khi implement xong bất kỳ feature notification-service có HTTP contract
+globs: Services/notification-service/**
+alwaysApply: false
+---
+
+# API Behavior Doc – Definition of Done (Notification)
+
+Sau khi implement xong một feature trong `notification-service` có **HTTP API** (user-facing hoặc internal ingest documented cho FE/ops), **bắt buộc** tạo file API behavior doc tại:
+
+```
+docs/api_fe_behavior/notification_api_fe_behavior/<FeatureName>-api-and-behavior.md
+```
+
+Tạo thư mục `notification_api_fe_behavior/` nếu chưa tồn tại.
+
+## Khi nào bắt buộc tạo doc
+
+| Có tạo doc | Ví dụ FR |
+|------------|----------|
+| **Có** — endpoint HTTP mới hoặc đổi contract | `FR_ViewUserNotifications`, `FR_RegisterDeviceToken`, `FR_ConsumeDomainEvent` (nếu expose internal ingest cho integration doc), `FR_UpdateNotificationSettings` |
+| **Không bắt buộc** — chỉ worker/handler nội bộ, không API mới | `FR_HandlePostLikedNotification`, `FR_ProcessNotificationEvent`, `FR_RetryFailedNotificationEvents` — **nhưng** nên ghi chú ngắn trong PR/commit hoặc bổ sung section vào doc của pipeline phase nếu thay đổi hành vi user-visible |
+
+Worker-only FR: có thể dùng file `*-internal-and-behavior.md` (theo pattern admin/commerce) khi cần mô tả contract ingest/retry cho team vận hành.
+
+## Ví dụ tên file
+
+- `ViewUserNotifications-api-and-behavior.md`
+- `MarkNotificationAsRead-api-and-behavior.md`
+- `RegisterDeviceToken-api-and-behavior.md`
+- `IngestNotificationEvent-internal-and-behavior.md`
+- `ConsumeDomainEvent-internal-and-behavior.md`
+
+## Nội dung bắt buộc
+
+```markdown
+# <Feature Name> – API & Behavior
+
+## 1. Business Goal
+Mục tiêu nghiệp vụ (notify user, ingest event, …).
+
+## 2. API Contract
+- Method: GET/POST/PATCH/DELETE
+- URL: /notification/api/v1/... HOẶC /api/v1/notification/... (ghi rõ path thực tế trong code)
+- Auth: Bearer JWT | X-Internal-Api-Key | Public (health only)
+- Query/Path/Body params (tên, kiểu, required, validation)
+
+## 3. Response – Success
+HTTP status + envelope đầy đủ + JSON ví dụ.
+
+## 4. Response – Error
+| HTTP | code string | Mô tả |
+|------|-------------|-------|
+| 400  | NOTIFICATION-400-VALIDATION | ... |
+| 401  | NOTIFICATION-401 | ... |
+| 403  | NOTIFICATION-403 | ... |
+| 404  | NOTIFICATION-404 | ... |
+| 409  | NOTIFICATION-409-DUPLICATE-EVENT | ingest trùng event |
+
+## 5. Business Rules
+- Ownership: chỉ `user_id` từ JWT.
+- List filter: `is_deleted = false`, pagination, sort `created_at DESC`.
+- Idempotency (nếu ingest): `(source_service, source_event_id)`.
+- Channel/settings/skip-self (nếu liên quan).
+
+## 6. Edge Cases
+- Duplicate ingest → 409 hoặc 200 idempotent (ghi rõ hành vi thực tế).
+- Empty list, page vượt range, event unsupported, user không có device token, …
+
+## 7. Data Dependencies
+- Tables: `notification_events`, `user_notifications`, `user_device_tokens`, `user_notification_settings`.
+
+## 8. FE Integration Notes
+- Pagination (page/size).
+- Unread badge: dùng `unread-count` endpoint.
+- Deep link: `reference_type`, `reference_id`, `metadata`.
+- 401 → refresh token flow.
+- Internal ingest: không gọi từ mobile client — chỉ backend/dev.
+```
+
+## Đặc thù Notification (bổ sung vào doc khi áp dụng)
+
+- **Không** hiển thị OTP/password reset link raw trong `metadata` response.
+- **Soft delete:** `DELETE /notifications/{id}` set `is_deleted=true`, không xóa vật lý.
+- **Read state:** `is_read` + `read_at` đồng bộ (null `read_at` khi unread).
+- **Settings:** `event_type` là khóa; thiếu row → default policy từ spec.
+- **Device token:** không trả full token trong list API nếu không cần thiết.
+
+## Definition of Done checklist
+
+Một feature chỉ được coi là **done** khi:
+
+- [ ] Code đúng architecture (`delivery → application → domain → infrastructure`)
+- [ ] API envelope chuẩn (`docs/engineering_rules/api-standard.md`)
+- [ ] Error code `NOTIFICATION-*` đầy đủ, có ý nghĩa business
+- [ ] Idempotency / ownership / sanitize payload đúng `notification-service-spec.md`
+- [ ] Unit test logic chính; integration test cho API/ingest/worker khi cần
+- [ ] File `docs/api_fe_behavior/notification_api_fe_behavior/<Feature>-api-and-behavior.md` đầy đủ (nếu có HTTP contract)
+- [ ] Không business logic trong Controller/DTO
+- [ ] Không log device token / secrets
+
+## Tham chiếu FR & spec
+
+- FR tương ứng: `docs/feature_requirements/notification/FR_<Name>.md`
+- Spec API §18: `docs/business-spec/notification-service-spec.md`
+- Flow: `docs/business_flow/notification_business_flow/`
