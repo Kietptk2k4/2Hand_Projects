@@ -4,13 +4,13 @@ import com.twohands.notification_service.application.delivery.ApplySkipSelfNotif
 import com.twohands.notification_service.application.delivery.ApplySkipSelfNotificationUseCase;
 import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesCommand;
 import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesUseCase;
-import com.twohands.notification_service.application.idempotency.CreateIdempotentUserNotificationCommand;
-import com.twohands.notification_service.application.idempotency.CreateIdempotentUserNotificationUseCase;
+import com.twohands.notification_service.application.inapp.CreateInAppNotificationCommand;
+import com.twohands.notification_service.application.inapp.CreateInAppNotificationUseCase;
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
 import com.twohands.notification_service.domain.delivery.NotificationDeliveryDecision;
 import com.twohands.notification_service.domain.delivery.SkipSelfNotificationOutcome;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
-import com.twohands.notification_service.domain.usernotification.NotificationDeliveryStatus;
+import com.twohands.notification_service.exception.AppException;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
@@ -25,24 +25,21 @@ public class InAppSocialNotificationEventHandler implements NotificationEventHan
     private final NotificationDeliveryChannelPolicy deliveryChannelPolicy;
     private final NotificationRecipientResolver recipientResolver;
     private final ApplySkipSelfNotificationUseCase applySkipSelfNotificationUseCase;
-    private final NotificationContentTemplateService contentTemplateService;
     private final ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase;
-    private final CreateIdempotentUserNotificationUseCase createIdempotentUserNotificationUseCase;
+    private final CreateInAppNotificationUseCase createInAppNotificationUseCase;
 
     public InAppSocialNotificationEventHandler(
             NotificationDeliveryChannelPolicy deliveryChannelPolicy,
             NotificationRecipientResolver recipientResolver,
             ApplySkipSelfNotificationUseCase applySkipSelfNotificationUseCase,
-            NotificationContentTemplateService contentTemplateService,
             ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase,
-            CreateIdempotentUserNotificationUseCase createIdempotentUserNotificationUseCase
+            CreateInAppNotificationUseCase createInAppNotificationUseCase
     ) {
         this.deliveryChannelPolicy = deliveryChannelPolicy;
         this.recipientResolver = recipientResolver;
         this.applySkipSelfNotificationUseCase = applySkipSelfNotificationUseCase;
-        this.contentTemplateService = contentTemplateService;
         this.applyNotificationDeliveryRulesUseCase = applyNotificationDeliveryRulesUseCase;
-        this.createIdempotentUserNotificationUseCase = createIdempotentUserNotificationUseCase;
+        this.createInAppNotificationUseCase = createInAppNotificationUseCase;
     }
 
     @Override
@@ -59,11 +56,6 @@ public class InAppSocialNotificationEventHandler implements NotificationEventHan
                     NotificationFailurePolicy.RETRYABLE
             );
         }
-
-        NotificationContentTemplateService.NotificationContentTemplate template =
-                contentTemplateService.render(event.eventType());
-        String referenceType = normalizeReference(event.aggregateType());
-        String referenceId = normalizeReference(event.aggregateId());
 
         int deliveredCount = 0;
         for (UUID recipientId : recipients) {
@@ -101,18 +93,22 @@ public class InAppSocialNotificationEventHandler implements NotificationEventHan
                 continue;
             }
 
-            createIdempotentUserNotificationUseCase.execute(new CreateIdempotentUserNotificationCommand(
-                    event.id(),
-                    recipientId,
-                    event.actorId(),
-                    event.eventType(),
-                    template.title(),
-                    template.content(),
-                    referenceType,
-                    referenceId,
-                    event.payload(),
-                    NotificationDeliveryStatus.SENT
-            ));
+            try {
+                createInAppNotificationUseCase.execute(new CreateInAppNotificationCommand(
+                        event.id(),
+                        recipientId,
+                        event.actorId(),
+                        event.eventType(),
+                        event.aggregateType(),
+                        event.aggregateId(),
+                        event.payload()
+                ));
+            } catch (AppException ex) {
+                return NotificationEventHandlerResult.failure(
+                        ex.getMessage(),
+                        resolveFailurePolicy(ex)
+                );
+            }
             deliveredCount++;
         }
 
@@ -123,7 +119,10 @@ public class InAppSocialNotificationEventHandler implements NotificationEventHan
         return NotificationEventHandlerResult.success();
     }
 
-    private String normalizeReference(String value) {
-        return value == null ? "" : value;
+    private NotificationFailurePolicy resolveFailurePolicy(AppException ex) {
+        return switch (ex.getErrorCode()) {
+            case UNKNOWN_EVENT_TYPE, INVALID_EVENT_PAYLOAD, VALIDATION_ERROR -> NotificationFailurePolicy.PERMANENT;
+            default -> NotificationFailurePolicy.RETRYABLE;
+        };
     }
 }

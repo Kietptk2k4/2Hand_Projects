@@ -7,20 +7,18 @@ import com.twohands.notification_service.application.delivery.ApplySkipSelfNotif
 import com.twohands.notification_service.application.delivery.ApplySkipSelfNotificationUseCase;
 import com.twohands.notification_service.application.handler.HandlerOutcome;
 import com.twohands.notification_service.application.handler.InAppSocialNotificationEventHandler;
-import com.twohands.notification_service.application.handler.NotificationContentTemplateService;
 import com.twohands.notification_service.application.handler.NotificationDeliveryChannelPolicy;
 import com.twohands.notification_service.application.handler.NotificationEventHandlerResult;
 import com.twohands.notification_service.application.handler.NotificationRecipientResolver;
-import com.twohands.notification_service.application.idempotency.CreateIdempotentUserNotificationCommand;
-import com.twohands.notification_service.application.idempotency.CreateIdempotentUserNotificationResult;
-import com.twohands.notification_service.application.idempotency.CreateIdempotentUserNotificationUseCase;
+import com.twohands.notification_service.application.inapp.CreateInAppNotificationCommand;
+import com.twohands.notification_service.application.inapp.CreateInAppNotificationResult;
+import com.twohands.notification_service.application.inapp.CreateInAppNotificationUseCase;
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
 import com.twohands.notification_service.domain.delivery.NotificationDeliveryDecision;
 import com.twohands.notification_service.domain.delivery.SkipSelfNotificationOutcome;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventStatus;
 import com.twohands.notification_service.domain.notificationevent.NotificationSourceService;
-import com.twohands.notification_service.domain.usernotification.NotificationDeliveryStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,7 +45,7 @@ class InAppSocialNotificationEventHandlerTest {
     private ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase;
 
     @Mock
-    private CreateIdempotentUserNotificationUseCase createIdempotentUserNotificationUseCase;
+    private CreateInAppNotificationUseCase createInAppNotificationUseCase;
 
     private InAppSocialNotificationEventHandler handler;
 
@@ -57,14 +55,13 @@ class InAppSocialNotificationEventHandlerTest {
                 new NotificationDeliveryChannelPolicy(),
                 new NotificationRecipientResolver(new ObjectMapper()),
                 applySkipSelfNotificationUseCase,
-                new NotificationContentTemplateService(),
                 applyNotificationDeliveryRulesUseCase,
-                createIdempotentUserNotificationUseCase
+                createInAppNotificationUseCase
         );
     }
 
     @Test
-    void handle_createsInAppNotificationWithSentDeliveryStatus() {
+    void handle_createsInAppNotificationForRecipient() {
         UUID eventId = UUID.randomUUID();
         UUID recipientId = UUID.randomUUID();
         UUID actorId = UUID.randomUUID();
@@ -77,18 +74,18 @@ class InAppSocialNotificationEventHandlerTest {
         when(applyNotificationDeliveryRulesUseCase.execute(
                 new ApplyNotificationDeliveryRulesCommand(recipientId, "POST_LIKED")
         )).thenReturn(new NotificationDeliveryDecision(true, true, false));
-        when(createIdempotentUserNotificationUseCase.execute(any(CreateIdempotentUserNotificationCommand.class)))
-                .thenReturn(new CreateIdempotentUserNotificationResult(UUID.randomUUID(), false));
+        when(createInAppNotificationUseCase.execute(any(CreateInAppNotificationCommand.class)))
+                .thenReturn(new CreateInAppNotificationResult(UUID.randomUUID(), false));
 
         NotificationEventHandlerResult result = handler.handle(event);
 
         assertEquals(HandlerOutcome.SUCCESS, result.outcome());
 
-        ArgumentCaptor<CreateIdempotentUserNotificationCommand> captor =
-                ArgumentCaptor.forClass(CreateIdempotentUserNotificationCommand.class);
-        verify(createIdempotentUserNotificationUseCase).execute(captor.capture());
+        ArgumentCaptor<CreateInAppNotificationCommand> captor =
+                ArgumentCaptor.forClass(CreateInAppNotificationCommand.class);
+        verify(createInAppNotificationUseCase).execute(captor.capture());
         assertEquals(recipientId, captor.getValue().userId());
-        assertEquals(NotificationDeliveryStatus.SENT, captor.getValue().deliveryStatus());
+        assertEquals(eventId, captor.getValue().notificationEventId());
     }
 
     @Test
@@ -104,7 +101,7 @@ class InAppSocialNotificationEventHandlerTest {
 
         assertEquals(HandlerOutcome.NO_OP, result.outcome());
         verify(applyNotificationDeliveryRulesUseCase, never()).execute(any());
-        verify(createIdempotentUserNotificationUseCase, never()).execute(any());
+        verify(createInAppNotificationUseCase, never()).execute(any());
     }
 
     @Test
@@ -120,7 +117,7 @@ class InAppSocialNotificationEventHandlerTest {
 
         assertEquals(HandlerOutcome.FAILURE, result.outcome());
         assertEquals(NotificationFailurePolicy.RETRYABLE, result.failurePolicy());
-        verify(createIdempotentUserNotificationUseCase, never()).execute(any());
+        verify(createInAppNotificationUseCase, never()).execute(any());
     }
 
     @Test
@@ -150,7 +147,7 @@ class InAppSocialNotificationEventHandlerTest {
 
         assertEquals(HandlerOutcome.FAILURE, result.outcome());
         assertEquals(NotificationFailurePolicy.RETRYABLE, result.failurePolicy());
-        verify(createIdempotentUserNotificationUseCase, never()).execute(any());
+        verify(createInAppNotificationUseCase, never()).execute(any());
     }
 
     private NotificationEvent sampleEvent(UUID eventId, UUID actorId, UUID recipientId) {

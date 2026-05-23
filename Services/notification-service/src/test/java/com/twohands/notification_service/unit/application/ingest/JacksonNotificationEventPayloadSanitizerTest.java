@@ -25,6 +25,14 @@ class JacksonNotificationEventPayloadSanitizerTest {
     }
 
     @Test
+    void sanitize_unwrapsJsonEncodedStringPayload() {
+        String result = sanitizer.sanitize("\"{\\\"postId\\\":\\\"post-1\\\"}\"");
+
+        assertTrue(result.contains("postId"));
+        assertTrue(result.contains("post-1"));
+    }
+
+    @Test
     void sanitize_redactsSensitiveFields() {
         String result = sanitizer.sanitize("""
                 {"actorName":"Alice","access_token":"abc","nested":{"otp_code":"123456"}}

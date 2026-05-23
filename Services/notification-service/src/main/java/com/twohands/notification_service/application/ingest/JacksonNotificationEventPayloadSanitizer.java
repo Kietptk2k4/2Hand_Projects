@@ -46,7 +46,7 @@ public class JacksonNotificationEventPayloadSanitizer implements NotificationEve
             return "{}";
         }
         try {
-            JsonNode node = objectMapper.readTree(rawPayload);
+            JsonNode node = unwrapTextualJson(objectMapper.readTree(rawPayload));
             if (!node.isObject() && !node.isArray()) {
                 throw invalidPayload("payload", "Payload must be a JSON object or array.");
             }
@@ -96,6 +96,21 @@ public class JacksonNotificationEventPayloadSanitizer implements NotificationEve
             return sanitized;
         }
         return node;
+    }
+
+    private JsonNode unwrapTextualJson(JsonNode node) {
+        if (!node.isTextual()) {
+            return node;
+        }
+        String text = node.asText();
+        if (text == null || text.isBlank()) {
+            return objectMapper.createObjectNode();
+        }
+        try {
+            return unwrapTextualJson(objectMapper.readTree(text));
+        } catch (JsonProcessingException ex) {
+            throw invalidPayload("payload", "Payload must be valid JSON.");
+        }
     }
 
     private boolean isSensitiveKey(String key) {
