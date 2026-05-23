@@ -3,18 +3,20 @@ package com.twohands.notification_service.unit.application.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesCommand;
 import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesUseCase;
+import com.twohands.notification_service.application.delivery.ApplySkipSelfNotificationCommand;
+import com.twohands.notification_service.application.delivery.ApplySkipSelfNotificationUseCase;
 import com.twohands.notification_service.application.handler.HandlerOutcome;
 import com.twohands.notification_service.application.handler.InAppSocialNotificationEventHandler;
 import com.twohands.notification_service.application.handler.NotificationContentTemplateService;
 import com.twohands.notification_service.application.handler.NotificationDeliveryChannelPolicy;
 import com.twohands.notification_service.application.handler.NotificationEventHandlerResult;
 import com.twohands.notification_service.application.handler.NotificationRecipientResolver;
-import com.twohands.notification_service.application.handler.SkipSelfNotificationPolicy;
 import com.twohands.notification_service.application.idempotency.CreateIdempotentUserNotificationCommand;
 import com.twohands.notification_service.application.idempotency.CreateIdempotentUserNotificationResult;
 import com.twohands.notification_service.application.idempotency.CreateIdempotentUserNotificationUseCase;
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
 import com.twohands.notification_service.domain.delivery.NotificationDeliveryDecision;
+import com.twohands.notification_service.domain.delivery.SkipSelfNotificationOutcome;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventStatus;
 import com.twohands.notification_service.domain.notificationevent.NotificationSourceService;
@@ -39,6 +41,9 @@ import static org.mockito.Mockito.when;
 class InAppSocialNotificationEventHandlerTest {
 
     @Mock
+    private ApplySkipSelfNotificationUseCase applySkipSelfNotificationUseCase;
+
+    @Mock
     private ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase;
 
     @Mock
@@ -51,7 +56,7 @@ class InAppSocialNotificationEventHandlerTest {
         handler = new InAppSocialNotificationEventHandler(
                 new NotificationDeliveryChannelPolicy(),
                 new NotificationRecipientResolver(new ObjectMapper()),
-                new SkipSelfNotificationPolicy(),
+                applySkipSelfNotificationUseCase,
                 new NotificationContentTemplateService(),
                 applyNotificationDeliveryRulesUseCase,
                 createIdempotentUserNotificationUseCase
@@ -66,6 +71,9 @@ class InAppSocialNotificationEventHandlerTest {
 
         NotificationEvent event = sampleEvent(eventId, actorId, recipientId);
 
+        when(applySkipSelfNotificationUseCase.execute(
+                new ApplySkipSelfNotificationCommand("POST_LIKED", NotificationSourceService.SOCIAL, actorId, recipientId)
+        )).thenReturn(SkipSelfNotificationOutcome.PROCEED);
         when(applyNotificationDeliveryRulesUseCase.execute(
                 new ApplyNotificationDeliveryRulesCommand(recipientId, "POST_LIKED")
         )).thenReturn(new NotificationDeliveryDecision(true, true, false));
@@ -84,29 +92,34 @@ class InAppSocialNotificationEventHandlerTest {
     }
 
     @Test
-    void handle_returnsNoOpWhenDeliveryRulesDisableInApp() {
-        UUID recipientId = UUID.randomUUID();
-        NotificationEvent event = sampleEvent(UUID.randomUUID(), UUID.randomUUID(), recipientId);
-
-        when(applyNotificationDeliveryRulesUseCase.execute(
-                new ApplyNotificationDeliveryRulesCommand(recipientId, "POST_LIKED")
-        )).thenReturn(new NotificationDeliveryDecision(false, false, false));
-
-        NotificationEventHandlerResult result = handler.handle(event);
-
-        assertEquals(HandlerOutcome.NO_OP, result.outcome());
-        verify(createIdempotentUserNotificationUseCase, never()).execute(any());
-    }
-
-    @Test
     void handle_returnsNoOpWhenSelfNotificationSkipped() {
         UUID userId = UUID.randomUUID();
         NotificationEvent event = sampleEvent(UUID.randomUUID(), userId, userId);
+
+        when(applySkipSelfNotificationUseCase.execute(
+                new ApplySkipSelfNotificationCommand("POST_LIKED", NotificationSourceService.SOCIAL, userId, userId)
+        )).thenReturn(SkipSelfNotificationOutcome.SKIP);
 
         NotificationEventHandlerResult result = handler.handle(event);
 
         assertEquals(HandlerOutcome.NO_OP, result.outcome());
         verify(applyNotificationDeliveryRulesUseCase, never()).execute(any());
+        verify(createIdempotentUserNotificationUseCase, never()).execute(any());
+    }
+
+    @Test
+    void handle_returnsRetryableFailureWhenActorMissingForSelfSkipEvent() {
+        UUID recipientId = UUID.randomUUID();
+        NotificationEvent event = sampleEvent(UUID.randomUUID(), null, recipientId);
+
+        when(applySkipSelfNotificationUseCase.execute(
+                new ApplySkipSelfNotificationCommand("POST_LIKED", NotificationSourceService.SOCIAL, null, recipientId)
+        )).thenReturn(SkipSelfNotificationOutcome.MISSING_ACTOR);
+
+        NotificationEventHandlerResult result = handler.handle(event);
+
+        assertEquals(HandlerOutcome.FAILURE, result.outcome());
+        assertEquals(NotificationFailurePolicy.RETRYABLE, result.failurePolicy());
         verify(createIdempotentUserNotificationUseCase, never()).execute(any());
     }
 

@@ -163,7 +163,7 @@ cd Services/notification-service
 ./gradlew test
 ```
 
-Use cases hiện có: `ConsumeDomainEventUseCase`, `StoreNotificationEventUseCase`, `ProcessNotificationEventUseCase`, `ApplyNotificationDeliveryRulesUseCase`, `MarkNotificationEventCompletedUseCase`, `MarkNotificationEventFailedUseCase`, `EnsureNotificationEventIdempotencyUseCase`, `CreateIdempotentUserNotificationUseCase`, `RecoverStaleProcessingNotificationEventsUseCase`, `IngestNotificationEventUseCase`, `ProcessPendingNotificationEventsUseCase`, `RetryFailedNotificationEventsUseCase`, `RetryFailedNotificationDeliveryUseCase`.
+Use cases hiện có: `ConsumeDomainEventUseCase`, `StoreNotificationEventUseCase`, `ProcessNotificationEventUseCase`, `ApplyNotificationDeliveryRulesUseCase`, `ApplySkipSelfNotificationUseCase`, `MarkNotificationEventCompletedUseCase`, `MarkNotificationEventFailedUseCase`, `EnsureNotificationEventIdempotencyUseCase`, `CreateIdempotentUserNotificationUseCase`, `RecoverStaleProcessingNotificationEventsUseCase`, `IngestNotificationEventUseCase`, `ProcessPendingNotificationEventsUseCase`, `RetryFailedNotificationEventsUseCase`, `RetryFailedNotificationDeliveryUseCase`.
 
 ---
 

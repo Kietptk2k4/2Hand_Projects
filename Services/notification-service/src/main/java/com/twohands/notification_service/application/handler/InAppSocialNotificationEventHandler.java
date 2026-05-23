@@ -1,11 +1,14 @@
 package com.twohands.notification_service.application.handler;
 
+import com.twohands.notification_service.application.delivery.ApplySkipSelfNotificationCommand;
+import com.twohands.notification_service.application.delivery.ApplySkipSelfNotificationUseCase;
 import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesCommand;
 import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesUseCase;
 import com.twohands.notification_service.application.idempotency.CreateIdempotentUserNotificationCommand;
 import com.twohands.notification_service.application.idempotency.CreateIdempotentUserNotificationUseCase;
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
 import com.twohands.notification_service.domain.delivery.NotificationDeliveryDecision;
+import com.twohands.notification_service.domain.delivery.SkipSelfNotificationOutcome;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import com.twohands.notification_service.domain.usernotification.NotificationDeliveryStatus;
 import org.springframework.dao.DataAccessException;
@@ -19,7 +22,7 @@ public class InAppSocialNotificationEventHandler implements NotificationEventHan
 
     private final NotificationDeliveryChannelPolicy deliveryChannelPolicy;
     private final NotificationRecipientResolver recipientResolver;
-    private final SkipSelfNotificationPolicy skipSelfNotificationPolicy;
+    private final ApplySkipSelfNotificationUseCase applySkipSelfNotificationUseCase;
     private final NotificationContentTemplateService contentTemplateService;
     private final ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase;
     private final CreateIdempotentUserNotificationUseCase createIdempotentUserNotificationUseCase;
@@ -27,14 +30,14 @@ public class InAppSocialNotificationEventHandler implements NotificationEventHan
     public InAppSocialNotificationEventHandler(
             NotificationDeliveryChannelPolicy deliveryChannelPolicy,
             NotificationRecipientResolver recipientResolver,
-            SkipSelfNotificationPolicy skipSelfNotificationPolicy,
+            ApplySkipSelfNotificationUseCase applySkipSelfNotificationUseCase,
             NotificationContentTemplateService contentTemplateService,
             ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase,
             CreateIdempotentUserNotificationUseCase createIdempotentUserNotificationUseCase
     ) {
         this.deliveryChannelPolicy = deliveryChannelPolicy;
         this.recipientResolver = recipientResolver;
-        this.skipSelfNotificationPolicy = skipSelfNotificationPolicy;
+        this.applySkipSelfNotificationUseCase = applySkipSelfNotificationUseCase;
         this.contentTemplateService = contentTemplateService;
         this.applyNotificationDeliveryRulesUseCase = applyNotificationDeliveryRulesUseCase;
         this.createIdempotentUserNotificationUseCase = createIdempotentUserNotificationUseCase;
@@ -62,13 +65,22 @@ public class InAppSocialNotificationEventHandler implements NotificationEventHan
 
         int deliveredCount = 0;
         for (UUID recipientId : recipients) {
-            if (skipSelfNotificationPolicy.shouldSkip(
-                    event.sourceService(),
-                    event.eventType(),
-                    event.actorId(),
-                    recipientId
-            )) {
+            SkipSelfNotificationOutcome skipOutcome = applySkipSelfNotificationUseCase.execute(
+                    new ApplySkipSelfNotificationCommand(
+                            event.eventType(),
+                            event.sourceService(),
+                            event.actorId(),
+                            recipientId
+                    )
+            );
+            if (skipOutcome == SkipSelfNotificationOutcome.SKIP) {
                 continue;
+            }
+            if (skipOutcome == SkipSelfNotificationOutcome.MISSING_ACTOR) {
+                return NotificationEventHandlerResult.failure(
+                        "Actor id is required for self-skip social notification event",
+                        NotificationFailurePolicy.RETRYABLE
+                );
             }
 
             NotificationDeliveryDecision deliveryDecision;
