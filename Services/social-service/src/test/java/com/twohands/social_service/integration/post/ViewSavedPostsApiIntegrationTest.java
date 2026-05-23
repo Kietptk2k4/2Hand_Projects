@@ -1,18 +1,16 @@
 package com.twohands.social_service.integration.post;
 
+import com.twohands.social_service.application.comment.commentpost.CommentPostUseCase;
 import com.twohands.social_service.application.post.createpost.CreatePostUseCase;
-import com.twohands.social_service.application.post.deletepost.DeletePostResult;
 import com.twohands.social_service.application.post.deletepost.DeletePostUseCase;
 import com.twohands.social_service.application.post.editpost.EditPostUseCase;
 import com.twohands.social_service.application.post.likeunlikepost.LikeUnlikePostUseCase;
-import com.twohands.social_service.application.comment.commentpost.CommentPostUseCase;
 import com.twohands.social_service.application.post.saveunsavepost.SaveUnsavePostUseCase;
+import com.twohands.social_service.application.post.viewsavedposts.ViewSavedPostsResult;
 import com.twohands.social_service.application.post.viewsavedposts.ViewSavedPostsUseCase;
 import com.twohands.social_service.config.SecurityConfig;
 import com.twohands.social_service.delivery.http.post.PostController;
 import com.twohands.social_service.delivery.http.post.mapper.ViewSavedPostsHttpMapper;
-import com.twohands.social_service.exception.AppException;
-import com.twohands.social_service.exception.ErrorCode;
 import com.twohands.social_service.exception.GlobalExceptionHandler;
 import com.twohands.social_service.security.RestAuthenticationEntryPoint;
 import com.twohands.social_service.security.jwt.JwtAuthenticationFilter;
@@ -25,18 +23,18 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -46,14 +44,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         JwtAuthenticationFilter.class,
         JwtTokenProvider.class,
         RestAuthenticationEntryPoint.class,
-        GlobalExceptionHandler.class,
-        ViewSavedPostsHttpMapper.class
+        ViewSavedPostsHttpMapper.class,
+        GlobalExceptionHandler.class
 })
 @TestPropertySource(properties = {
         "jwt.access-secret=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
         "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration"
 })
-class DeletePostApiIntegrationTest {
+class ViewSavedPostsApiIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -81,78 +79,82 @@ class DeletePostApiIntegrationTest {
 
     @Test
     void shouldReturnUnauthorizedWithoutToken() throws Exception {
-        mockMvc.perform(delete("/api/v1/social/posts/507f1f77bcf86cd799439011"))
+        mockMvc.perform(get("/api/v1/social/posts/saved")
+                        .param("page", "0")
+                        .param("size", "20")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(401));
     }
 
     @Test
-    void shouldReturn200WhenPostIsDeletedSuccessfully() throws Exception {
+    void shouldReturnSavedPostsWhenAuthenticated() throws Exception {
         UUID userId = UUID.randomUUID();
-        String token = buildAccessToken(userId, List.of("USER"));
-        Instant now = Instant.now();
-
-        DeletePostResult result = new DeletePostResult(
-                "507f1f77bcf86cd799439011",
-                "DELETED",
-                now.toString(),
-                now.toString()
+        String token = buildAccessToken(userId);
+        ViewSavedPostsResult result = new ViewSavedPostsResult(
+                List.of(new ViewSavedPostsResult.SavedPostItem(
+                        "507f1f77bcf86cd799439011",
+                        UUID.randomUUID().toString(),
+                        "saved caption",
+                        List.of(new ViewSavedPostsResult.MediaItemData("https://cdn/1.jpg", "IMAGE")),
+                        "PUBLIC",
+                        10,
+                        2,
+                        List.of("tag1"),
+                        true,
+                        "2026-05-20T08:00:00Z",
+                        "2026-05-18T10:15:30Z",
+                        "2026-05-18T10:20:30Z"
+                )),
+                new ViewSavedPostsResult.PageResultMeta(0, 20, 1, 1, false)
         );
-        when(deletePostUseCase.execute(any())).thenReturn(result);
-        when(deletePostUseCase.successMessage()).thenReturn("Xoa bai viet thanh cong.");
+        when(viewSavedPostsUseCase.execute(eq(userId), eq(0), eq(20))).thenReturn(result);
+        when(viewSavedPostsUseCase.successMessage()).thenReturn("Lay danh sach bai da luu thanh cong.");
 
-        mockMvc.perform(delete("/api/v1/social/posts/507f1f77bcf86cd799439011")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+        mockMvc.perform(get("/api/v1/social/posts/saved")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .param("page", "0")
+                        .param("size", "20")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.code").value(200))
-                .andExpect(jsonPath("$.message").value("Xoa bai viet thanh cong."))
-                .andExpect(jsonPath("$.data.postId").value("507f1f77bcf86cd799439011"))
-                .andExpect(jsonPath("$.data.status").value("DELETED"));
+                .andExpect(jsonPath("$.message").value("Lay danh sach bai da luu thanh cong."))
+                .andExpect(jsonPath("$.data.items[0].postId").value("507f1f77bcf86cd799439011"))
+                .andExpect(jsonPath("$.data.items[0].savedAt").value("2026-05-20T08:00:00Z"))
+                .andExpect(jsonPath("$.data.meta.totalElements").value(1));
     }
 
     @Test
-    void shouldReturn403WhenUserHasNoPermission() throws Exception {
+    void shouldReturnEmptyListWhenNoSaves() throws Exception {
         UUID userId = UUID.randomUUID();
-        String token = buildAccessToken(userId, List.of("USER"));
+        String token = buildAccessToken(userId);
+        ViewSavedPostsResult result = new ViewSavedPostsResult(
+                List.of(),
+                new ViewSavedPostsResult.PageResultMeta(0, 20, 0, 0, false)
+        );
+        when(viewSavedPostsUseCase.execute(eq(userId), eq(0), eq(20))).thenReturn(result);
+        when(viewSavedPostsUseCase.successMessage()).thenReturn("Lay danh sach bai da luu thanh cong.");
 
-        when(deletePostUseCase.execute(any()))
-                .thenThrow(new AppException(ErrorCode.FORBIDDEN, "Ban khong co quyen xoa bai viet nay."));
-
-        mockMvc.perform(delete("/api/v1/social/posts/507f1f77bcf86cd799439011")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value(403));
+        mockMvc.perform(get("/api/v1/social/posts/saved")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .param("page", "0")
+                        .param("size", "20"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.items").isEmpty())
+                .andExpect(jsonPath("$.data.meta.totalElements").value(0));
     }
 
-    @Test
-    void shouldReturn404WhenPostNotFound() throws Exception {
-        UUID userId = UUID.randomUUID();
-        String token = buildAccessToken(userId, List.of("USER"));
-
-        when(deletePostUseCase.execute(any()))
-                .thenThrow(new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Bai viet khong ton tai."));
-
-        mockMvc.perform(delete("/api/v1/social/posts/missing-id")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value(404));
-    }
-
-    private String buildAccessToken(UUID userId, List<String> roles) {
-        SecretKey secretKey = Keys.hmacShaKeyFor(
+    private String buildAccessToken(UUID userId) {
+        SecretKey key = Keys.hmacShaKeyFor(
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
                         .getBytes(StandardCharsets.UTF_8)
         );
         return Jwts.builder()
                 .subject(userId.toString())
-                .claim("roles", roles)
-                .issuedAt(new java.util.Date())
-                .expiration(new java.util.Date(System.currentTimeMillis() + 60_000))
-                .signWith(secretKey)
+                .claim("roles", List.of("USER"))
+                .signWith(key)
                 .compact();
     }
 }

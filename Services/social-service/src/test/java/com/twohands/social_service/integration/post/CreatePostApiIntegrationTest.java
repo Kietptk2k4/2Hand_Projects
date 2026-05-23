@@ -6,7 +6,10 @@ import com.twohands.social_service.application.post.createpost.CreatePostUseCase
 import com.twohands.social_service.application.post.deletepost.DeletePostUseCase;
 import com.twohands.social_service.application.post.editpost.EditPostUseCase;
 import com.twohands.social_service.application.post.likeunlikepost.LikeUnlikePostUseCase;
+import com.twohands.social_service.application.comment.commentpost.CommentPostUseCase;
 import com.twohands.social_service.application.post.saveunsavepost.SaveUnsavePostUseCase;
+import com.twohands.social_service.application.post.viewsavedposts.ViewSavedPostsUseCase;
+import com.twohands.social_service.delivery.http.post.mapper.ViewSavedPostsHttpMapper;
 import com.twohands.social_service.config.SecurityConfig;
 import com.twohands.social_service.delivery.http.post.PostController;
 import com.twohands.social_service.exception.AppException;
@@ -46,7 +49,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         JwtAuthenticationFilter.class,
         JwtTokenProvider.class,
         RestAuthenticationEntryPoint.class,
-        GlobalExceptionHandler.class
+        GlobalExceptionHandler.class,
+        ViewSavedPostsHttpMapper.class
 })
 @TestPropertySource(properties = {
         "jwt.access-secret=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
@@ -74,6 +78,12 @@ class CreatePostApiIntegrationTest {
 
     @MockBean
     private SaveUnsavePostUseCase saveUnsavePostUseCase;
+
+    @MockBean
+    private CommentPostUseCase commentPostUseCase;
+
+    @MockBean
+    private ViewSavedPostsUseCase viewSavedPostsUseCase;
 
     @Test
     void shouldReturnUnauthorizedWithoutToken() throws Exception {

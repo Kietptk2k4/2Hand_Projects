@@ -16,7 +16,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -39,6 +43,25 @@ public class PostRepositoryAdapter implements PostRepository {
     @Override
     public Optional<Post> findById(String postId) {
         return mongoPostRepository.findById(postId).map(this::toDomain);
+    }
+
+    @Override
+    public List<Post> findByIds(Collection<String> postIds) {
+        if (postIds == null || postIds.isEmpty()) {
+            return List.of();
+        }
+        Map<String, Post> byId = new HashMap<>();
+        for (PostDocument document : mongoPostRepository.findByIdIn(postIds)) {
+            byId.put(document.getId(), toDomain(document));
+        }
+        List<Post> ordered = new ArrayList<>();
+        for (String postId : postIds) {
+            Post post = byId.get(postId);
+            if (post != null) {
+                ordered.add(post);
+            }
+        }
+        return ordered;
     }
 
     @Override

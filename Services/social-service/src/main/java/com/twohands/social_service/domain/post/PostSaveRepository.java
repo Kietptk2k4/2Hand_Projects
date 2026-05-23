@@ -8,4 +8,6 @@ public interface PostSaveRepository {
     void save(String postId, UUID userId);
 
     void deleteByPostIdAndUserId(String postId, UUID userId);
+
+    PageResult<PostSaveEntry> findByUserId(UUID userId, int page, int size);
 }

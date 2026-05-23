@@ -18,6 +18,8 @@ import com.twohands.social_service.application.post.likeunlikepost.LikeUnlikePos
 import com.twohands.social_service.application.post.saveunsavepost.SaveUnsavePostCommand;
 import com.twohands.social_service.application.post.saveunsavepost.SaveUnsavePostResult;
 import com.twohands.social_service.application.post.saveunsavepost.SaveUnsavePostUseCase;
+import com.twohands.social_service.application.post.viewsavedposts.ViewSavedPostsResult;
+import com.twohands.social_service.application.post.viewsavedposts.ViewSavedPostsUseCase;
 import com.twohands.social_service.common.dto.ApiResponse;
 import com.twohands.social_service.domain.comment.CommentMediaItem;
 import com.twohands.social_service.delivery.http.comment.request.CommentPostRequest;
@@ -28,18 +30,22 @@ import com.twohands.social_service.delivery.http.post.response.CreatePostRespons
 import com.twohands.social_service.delivery.http.post.response.DeletePostResponse;
 import com.twohands.social_service.delivery.http.post.response.EditPostResponse;
 import com.twohands.social_service.delivery.http.post.response.LikeUnlikePostResponse;
+import com.twohands.social_service.delivery.http.post.mapper.ViewSavedPostsHttpMapper;
 import com.twohands.social_service.delivery.http.post.response.SaveUnsavePostResponse;
+import com.twohands.social_service.delivery.http.post.response.ViewSavedPostsResponse;
 import com.twohands.social_service.security.AuthenticatedUser;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -49,12 +55,17 @@ import java.util.UUID;
 @RequestMapping("/api/v1/social/posts")
 public class PostController {
 
+    private static final int DEFAULT_PAGE = 0;
+    private static final int DEFAULT_SIZE = 20;
+
     private final CreatePostUseCase createPostUseCase;
     private final EditPostUseCase editPostUseCase;
     private final DeletePostUseCase deletePostUseCase;
     private final LikeUnlikePostUseCase likeUnlikePostUseCase;
     private final SaveUnsavePostUseCase saveUnsavePostUseCase;
     private final CommentPostUseCase commentPostUseCase;
+    private final ViewSavedPostsUseCase viewSavedPostsUseCase;
+    private final ViewSavedPostsHttpMapper viewSavedPostsHttpMapper;
 
     public PostController(
             CreatePostUseCase createPostUseCase,
@@ -62,7 +73,9 @@ public class PostController {
             DeletePostUseCase deletePostUseCase,
             LikeUnlikePostUseCase likeUnlikePostUseCase,
             SaveUnsavePostUseCase saveUnsavePostUseCase,
-            CommentPostUseCase commentPostUseCase
+            CommentPostUseCase commentPostUseCase,
+            ViewSavedPostsUseCase viewSavedPostsUseCase,
+            ViewSavedPostsHttpMapper viewSavedPostsHttpMapper
     ) {
         this.createPostUseCase = createPostUseCase;
         this.editPostUseCase = editPostUseCase;
@@ -70,6 +83,25 @@ public class PostController {
         this.likeUnlikePostUseCase = likeUnlikePostUseCase;
         this.saveUnsavePostUseCase = saveUnsavePostUseCase;
         this.commentPostUseCase = commentPostUseCase;
+        this.viewSavedPostsUseCase = viewSavedPostsUseCase;
+        this.viewSavedPostsHttpMapper = viewSavedPostsHttpMapper;
+    }
+
+    @GetMapping("/saved")
+    public ResponseEntity<ApiResponse<ViewSavedPostsResponse>> viewSavedPosts(
+            @RequestParam(name = "page", defaultValue = "" + DEFAULT_PAGE) int page,
+            @RequestParam(name = "size", defaultValue = "" + DEFAULT_SIZE) int size,
+            Authentication authentication
+    ) {
+        UUID userId = resolveUserId(authentication);
+        ViewSavedPostsResult result = viewSavedPostsUseCase.execute(userId, page, size);
+        ViewSavedPostsResponse response = viewSavedPostsHttpMapper.toResponse(result);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewSavedPostsUseCase.successMessage(),
+                response
+        ));
     }
 
     @PostMapping

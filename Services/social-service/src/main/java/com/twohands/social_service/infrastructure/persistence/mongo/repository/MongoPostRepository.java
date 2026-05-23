@@ -10,6 +10,8 @@ import java.util.Collection;
 import java.util.List;
 
 public interface MongoPostRepository extends MongoRepository<PostDocument, String> {
+    List<PostDocument> findByIdIn(Collection<String> ids);
+
     Page<PostDocument> findByStatusAndVisibilityOrderByCreatedAtDesc(String status, String visibility, Pageable pageable);
 
     Page<PostDocument> findByStatusAndAuthorIdInAndVisibilityInOrderByCreatedAtDesc(
