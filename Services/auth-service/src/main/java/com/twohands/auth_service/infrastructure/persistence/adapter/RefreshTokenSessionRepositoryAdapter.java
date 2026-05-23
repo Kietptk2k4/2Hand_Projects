@@ -102,6 +102,20 @@ public class RefreshTokenSessionRepositoryAdapter implements RefreshTokenSession
     }
 
     @Override
+    public int markRevokedIfActive(UUID sessionId, Instant updatedAt) {
+        String sql = """
+                UPDATE refresh_token_sessions
+                SET status = :revokedStatus, updated_at = :updatedAt
+                WHERE id = :sessionId AND status = :activeStatus
+                """;
+        return jdbcTemplate.update(sql, new MapSqlParameterSource()
+                .addValue("revokedStatus", SessionStatus.REVOKED.name())
+                .addValue("updatedAt", updatedAt)
+                .addValue("sessionId", sessionId)
+                .addValue("activeStatus", SessionStatus.ACTIVE.name()));
+    }
+
+    @Override
     public int revokeAllByUserId(UUID userId) {
         String sql = """
                 UPDATE refresh_token_sessions

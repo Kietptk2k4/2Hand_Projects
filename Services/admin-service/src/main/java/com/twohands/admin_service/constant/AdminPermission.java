@@ -18,6 +18,7 @@ public final class AdminPermission {
 	public static final String SYSTEM_CONFIG_UPDATE = "SYSTEM_CONFIG_UPDATE";
 	public static final String SYSTEM_ANNOUNCEMENT_PUBLISH = "SYSTEM_ANNOUNCEMENT_PUBLISH";
 	public static final String ADMIN_AUDIT_READ = "ADMIN_AUDIT_READ";
+	public static final String ADMIN_SESSION_REVOKE = "ADMIN_SESSION_REVOKE";
 	public static final String ORDER_SUPPORT_READ = "ORDER_SUPPORT_READ";
 
 	private static final Set<String> KNOWN_CODES = Set.of(
@@ -31,6 +32,7 @@ public final class AdminPermission {
 			SYSTEM_CONFIG_UPDATE,
 			SYSTEM_ANNOUNCEMENT_PUBLISH,
 			ADMIN_AUDIT_READ,
+			ADMIN_SESSION_REVOKE,
 			ORDER_SUPPORT_READ
 	);
 

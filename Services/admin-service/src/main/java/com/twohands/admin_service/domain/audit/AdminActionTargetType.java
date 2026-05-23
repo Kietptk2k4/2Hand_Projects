@@ -14,6 +14,7 @@ public final class AdminActionTargetType {
 	public static final String PAYMENT = "PAYMENT";
 	public static final String SHIPMENT = "SHIPMENT";
 	public static final String SECURITY = "SECURITY";
+	public static final String ADMIN_SESSION = "ADMIN_SESSION";
 
 	private AdminActionTargetType() {
 	}

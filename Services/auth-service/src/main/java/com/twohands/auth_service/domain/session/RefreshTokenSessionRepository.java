@@ -16,5 +16,7 @@ public interface RefreshTokenSessionRepository {
 
     int markLoggedOutIfActive(UUID sessionId, Instant updatedAt);
 
+    int markRevokedIfActive(UUID sessionId, Instant updatedAt);
+
     int revokeAllByUserId(UUID userId);
 }

@@ -22,7 +22,8 @@ public final class AdminActionLogPolicy {
 			"SYSTEM_CONFIG_UPDATE",
 			"SYSTEM_CONFIG_TOGGLE",
 			"SYSTEM_ANNOUNCEMENT_PUBLISH",
-			"REFUND_EXECUTE"
+			"REFUND_EXECUTE",
+			"ADMIN_SESSION_REVOKE"
 	);
 
 	private AdminActionLogPolicy() {
