@@ -1,70 +1,49 @@
 package com.twohands.notification_service.application.delivery;
 
-import com.twohands.notification_service.domain.delivery.DefaultChannelFlags;
 import com.twohands.notification_service.domain.delivery.NotificationCriticalOverridePolicy;
 import com.twohands.notification_service.domain.delivery.NotificationDefaultChannelPolicy;
 import com.twohands.notification_service.domain.delivery.NotificationDeliveryDecision;
 import com.twohands.notification_service.domain.devicetoken.UserDeviceTokenRepository;
-import com.twohands.notification_service.domain.notificationsetting.UserNotificationSetting;
-import com.twohands.notification_service.domain.notificationsetting.UserNotificationSettingRepository;
-import com.twohands.notification_service.exception.AppException;
-import com.twohands.notification_service.exception.ErrorCode;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class ApplyNotificationDeliveryRulesUseCase {
 
-    private final UserNotificationSettingRepository userNotificationSettingRepository;
+    private final RespectNotificationSettingsUseCase respectNotificationSettingsUseCase;
     private final UserDeviceTokenRepository userDeviceTokenRepository;
 
     public ApplyNotificationDeliveryRulesUseCase(
-            UserNotificationSettingRepository userNotificationSettingRepository,
+            RespectNotificationSettingsUseCase respectNotificationSettingsUseCase,
             UserDeviceTokenRepository userDeviceTokenRepository
     ) {
-        this.userNotificationSettingRepository = userNotificationSettingRepository;
+        this.respectNotificationSettingsUseCase = respectNotificationSettingsUseCase;
         this.userDeviceTokenRepository = userDeviceTokenRepository;
     }
 
     public NotificationDeliveryDecision execute(ApplyNotificationDeliveryRulesCommand command) {
-        validateCommand(command);
-
-        DefaultChannelFlags defaults = NotificationDefaultChannelPolicy.resolve(command.eventType())
-                .orElseThrow(() -> new AppException(
-                        ErrorCode.UNKNOWN_EVENT_TYPE,
-                        "Unknown event type for delivery rules",
-                        "eventType",
-                        "Event type is not configured for delivery."
-                ));
-
-        Optional<UserNotificationSetting> userSetting = userNotificationSettingRepository.findByUserIdAndEventType(
-                command.userId(),
-                command.eventType()
+        RespectNotificationSettingsResult settings = respectNotificationSettingsUseCase.execute(
+                new RespectNotificationSettingsCommand(command.userId(), command.eventType())
         );
 
-        boolean inApp = resolveInApp(userSetting, defaults, command.eventType());
-        boolean email = resolveEmail(userSetting, defaults, command.eventType());
-        boolean push = resolvePush(userSetting, defaults, command.eventType(), command.userId());
+        var defaults = NotificationDefaultChannelPolicy.resolve(command.eventType()).orElseThrow();
+
+        boolean inApp = resolveInApp(settings, command.eventType());
+        boolean email = resolveEmail(settings, defaults, command.eventType());
+        boolean push = resolvePush(settings, defaults, command.eventType(), command.userId());
 
         return new NotificationDeliveryDecision(inApp, push, email);
     }
 
-    private boolean resolveInApp(
-            Optional<UserNotificationSetting> userSetting,
-            DefaultChannelFlags defaults,
-            String eventType
-    ) {
+    private boolean resolveInApp(RespectNotificationSettingsResult settings, String eventType) {
         if (NotificationCriticalOverridePolicy.isMandatoryInApp(eventType)) {
             return true;
         }
-        return userSetting.map(UserNotificationSetting::allowInApp).orElse(defaults.inApp());
+        return settings.allowInApp();
     }
 
     private boolean resolveEmail(
-            Optional<UserNotificationSetting> userSetting,
-            DefaultChannelFlags defaults,
+            RespectNotificationSettingsResult settings,
+            com.twohands.notification_service.domain.delivery.DefaultChannelFlags defaults,
             String eventType
     ) {
         if (!defaults.email()) {
@@ -73,19 +52,19 @@ public class ApplyNotificationDeliveryRulesUseCase {
         if (NotificationCriticalOverridePolicy.forcesEmail(eventType)) {
             return true;
         }
-        return userSetting.map(UserNotificationSetting::allowEmail).orElse(defaults.email());
+        return settings.allowEmail();
     }
 
     private boolean resolvePush(
-            Optional<UserNotificationSetting> userSetting,
-            DefaultChannelFlags defaults,
+            RespectNotificationSettingsResult settings,
+            com.twohands.notification_service.domain.delivery.DefaultChannelFlags defaults,
             String eventType,
-            UUID userId
+            java.util.UUID userId
     ) {
         if (!defaults.push()) {
             return false;
         }
-        boolean allowPush = userSetting.map(UserNotificationSetting::allowPush).orElse(defaults.push());
+        boolean allowPush = settings.allowPush();
         if (NotificationCriticalOverridePolicy.forcesPush(eventType)) {
             allowPush = true;
         }
@@ -93,18 +72,5 @@ public class ApplyNotificationDeliveryRulesUseCase {
             return false;
         }
         return allowPush;
-    }
-
-    private void validateCommand(ApplyNotificationDeliveryRulesCommand command) {
-        if (command.userId() == null) {
-            throw validationError("userId", "User id is required.");
-        }
-        if (command.eventType() == null || command.eventType().isBlank()) {
-            throw validationError("eventType", "Event type must not be blank.");
-        }
-    }
-
-    private AppException validationError(String field, String reason) {
-        return new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed", field, reason);
     }
 }

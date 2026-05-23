@@ -2,6 +2,7 @@ package com.twohands.notification_service.unit.application.delivery;
 
 import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesCommand;
 import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesUseCase;
+import com.twohands.notification_service.application.delivery.RespectNotificationSettingsUseCase;
 import com.twohands.notification_service.domain.devicetoken.UserDeviceTokenRepository;
 import com.twohands.notification_service.domain.notificationsetting.UserNotificationSetting;
 import com.twohands.notification_service.domain.notificationsetting.UserNotificationSettingRepository;
@@ -36,8 +37,10 @@ class ApplyNotificationDeliveryRulesUseCaseTest {
 
     @BeforeEach
     void setUp() {
+        RespectNotificationSettingsUseCase respectNotificationSettingsUseCase =
+                new RespectNotificationSettingsUseCase(userNotificationSettingRepository);
         useCase = new ApplyNotificationDeliveryRulesUseCase(
-                userNotificationSettingRepository,
+                respectNotificationSettingsUseCase,
                 userDeviceTokenRepository
         );
     }
