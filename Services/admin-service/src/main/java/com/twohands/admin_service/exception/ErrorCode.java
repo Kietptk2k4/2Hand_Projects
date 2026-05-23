@@ -10,7 +10,8 @@ public enum ErrorCode {
 	FORBIDDEN("ADMIN-403", HttpStatus.FORBIDDEN, "Access denied"),
 	RESOURCE_NOT_FOUND("ADMIN-404", HttpStatus.NOT_FOUND, "Resource not found"),
 	INVALID_PAGINATION("ADMIN-400-PAGINATION", HttpStatus.BAD_REQUEST, "Invalid pagination parameters"),
-	SERVICE_UNAVAILABLE("ADMIN-503", HttpStatus.SERVICE_UNAVAILABLE, "Authorization service unavailable");
+	SERVICE_UNAVAILABLE("ADMIN-503", HttpStatus.SERVICE_UNAVAILABLE, "Authorization service unavailable"),
+	AUDIT_PAYLOAD_ERROR("ADMIN-400-AUDIT", HttpStatus.BAD_REQUEST, "Critical audit payload could not be stored");
 
 	private final String code;
 	private final HttpStatus status;

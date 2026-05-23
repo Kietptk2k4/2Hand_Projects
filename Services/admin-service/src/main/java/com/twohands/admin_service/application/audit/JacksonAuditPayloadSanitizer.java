@@ -18,15 +18,18 @@ import java.util.Set;
 public class JacksonAuditPayloadSanitizer implements AuditPayloadSanitizer {
 
 	private static final int MAX_JSON_LENGTH = 8_000;
+	private static final int MAX_CRITICAL_DEPTH = 4;
+	private static final int MAX_FIELDS_PER_OBJECT = 40;
+	/** FR_LogCriticalAdminActionPayload strict redaction list. */
 	private static final Set<String> SENSITIVE_KEYS = Set.of(
 			"password",
 			"token",
-			"authorization",
-			"secret",
 			"otp",
+			"secret",
+			"authorization",
+			"cookie",
 			"refresh_token",
 			"access_token",
-			"cookie",
 			"api_key",
 			"credential",
 			"bearer"
@@ -45,7 +48,7 @@ public class JacksonAuditPayloadSanitizer implements AuditPayloadSanitizer {
 		}
 		try {
 			JsonNode node = objectMapper.valueToTree(payload);
-			return truncate(redact(node).toString());
+			return truncate(redact(node, MAX_CRITICAL_DEPTH + 2).toString());
 		} catch (IllegalArgumentException ex) {
 			throw serializationFailure(ex);
 		}
@@ -58,32 +61,70 @@ public class JacksonAuditPayloadSanitizer implements AuditPayloadSanitizer {
 		}
 		try {
 			JsonNode node = objectMapper.readTree(rawJson);
-			return truncate(redact(node).toString());
+			return truncate(redact(node, MAX_CRITICAL_DEPTH + 2).toString());
 		} catch (JsonProcessingException ex) {
 			throw serializationFailure(ex);
 		}
 	}
 
-	private JsonNode redact(JsonNode node) {
+	@Override
+	public String sanitizeCriticalPayload(Map<String, Object> payload) {
+		if (payload == null || payload.isEmpty()) {
+			throw new AppException(
+					ErrorCode.AUDIT_PAYLOAD_ERROR,
+					"Critical audit payload must not be empty",
+					"payload",
+					"must contain audit fields"
+			);
+		}
+		try {
+			JsonNode node = objectMapper.valueToTree(payload);
+			return truncate(redact(node, MAX_CRITICAL_DEPTH).toString());
+		} catch (IllegalArgumentException ex) {
+			throw serializationFailure(ex);
+		}
+	}
+
+	private JsonNode redact(JsonNode node, int maxDepth) {
+		return redact(node, maxDepth, 0);
+	}
+
+	private JsonNode redact(JsonNode node, int maxDepth, int depth) {
 		if (node == null) {
 			return objectMapper.nullNode();
 		}
+		if (depth >= maxDepth) {
+			return objectMapper.getNodeFactory().textNode("[MAX_DEPTH]");
+		}
 		if (node.isObject()) {
 			ObjectNode sanitized = objectMapper.createObjectNode();
+			int fieldCount = 0;
 			Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
-			while (fields.hasNext()) {
+			while (fields.hasNext() && fieldCount < MAX_FIELDS_PER_OBJECT) {
 				Map.Entry<String, JsonNode> field = fields.next();
+				fieldCount++;
 				if (isSensitiveKey(field.getKey())) {
 					sanitized.put(field.getKey(), "***REDACTED***");
 				} else {
-					sanitized.set(field.getKey(), redact(field.getValue()));
+					sanitized.set(field.getKey(), redact(field.getValue(), maxDepth, depth + 1));
 				}
+			}
+			if (fields.hasNext()) {
+				sanitized.put("_truncated_fields", true);
 			}
 			return sanitized;
 		}
 		if (node.isArray()) {
 			ArrayNode sanitized = objectMapper.createArrayNode();
-			node.forEach(child -> sanitized.add(redact(child)));
+			int index = 0;
+			for (JsonNode child : node) {
+				if (index >= MAX_FIELDS_PER_OBJECT) {
+					sanitized.add("[ARRAY_TRUNCATED]");
+					break;
+				}
+				sanitized.add(redact(child, maxDepth, depth + 1));
+				index++;
+			}
 			return sanitized;
 		}
 		return node;
@@ -105,6 +146,9 @@ public class JacksonAuditPayloadSanitizer implements AuditPayloadSanitizer {
 	}
 
 	private AppException serializationFailure(Exception ex) {
-		return new AppException(ErrorCode.BAD_REQUEST, "Failed to serialize audit payload: " + ex.getMessage());
+		return new AppException(
+				ErrorCode.AUDIT_PAYLOAD_ERROR,
+				"Failed to serialize critical audit payload: " + ex.getMessage()
+		);
 	}
 }

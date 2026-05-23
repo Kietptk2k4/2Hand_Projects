@@ -57,8 +57,13 @@ public class LogAdminActionUseCase {
 	private AdminActionLog toDomain(LogAdminActionCommand command) {
 		boolean storePayload = command.storePayloadOverride()
 				|| AdminActionLogPolicy.isCriticalAction(command.actionType());
-		String requestPayload = storePayload ? auditPayloadSanitizer.sanitizeToJson(command.requestData()) : null;
-		String responsePayload = buildResponsePayload(command, storePayload);
+		String requestPayload = null;
+		if (storePayload) {
+			requestPayload = command.storePayloadOverride()
+					? auditPayloadSanitizer.sanitizeCriticalPayload(command.requestData())
+					: auditPayloadSanitizer.sanitizeToJson(command.requestData());
+		}
+		String responsePayload = buildResponsePayload(command, storePayload, command.storePayloadOverride());
 		return new AdminActionLog(
 				UUID.randomUUID(),
 				command.adminId(),
@@ -74,19 +79,21 @@ public class LogAdminActionUseCase {
 		);
 	}
 
-	private String buildResponsePayload(LogAdminActionCommand command, boolean storePayload) {
+	private String buildResponsePayload(LogAdminActionCommand command, boolean storePayload, boolean criticalPayload) {
 		ObjectNode envelope = objectMapper.createObjectNode();
 		envelope.put("status", command.status().name());
 		if (command.message() != null && !command.message().isBlank()) {
 			envelope.put("message", command.message());
 		}
 		if (storePayload && command.responseData() != null && !command.responseData().isEmpty()) {
-			String sanitized = auditPayloadSanitizer.sanitizeToJson(command.responseData());
+			String sanitized = criticalPayload
+					? auditPayloadSanitizer.sanitizeCriticalPayload(command.responseData())
+					: auditPayloadSanitizer.sanitizeToJson(command.responseData());
 			if (sanitized != null) {
 				try {
 					envelope.set("result", objectMapper.readTree(sanitized));
 				} catch (JsonProcessingException ex) {
-					throw new AppException(ErrorCode.BAD_REQUEST, "Failed to build audit response payload");
+					throw new AppException(ErrorCode.AUDIT_PAYLOAD_ERROR, "Failed to build audit response payload");
 				}
 			}
 		}
