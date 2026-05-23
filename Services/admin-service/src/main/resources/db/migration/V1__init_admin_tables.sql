@@ -82,7 +82,8 @@ CREATE TYPE content_moderation_action AS ENUM (
     'HIDE',
     'REMOVE',
     'RESTORE',
-    'SUSPEND'
+    'SUSPEND',
+    'CLOSE'
 );
 
 CREATE TYPE outbox_status AS ENUM (

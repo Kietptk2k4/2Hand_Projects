@@ -27,6 +27,13 @@ public class ShopModerationOutboxPayloadBuilder {
 		return serialize(payload);
 	}
 
+	public String buildShopClosedPayload(ContentModerationLog moderationLog, UUID shopId) {
+		Map<String, Object> payload = baseShopModerationPayload(moderationLog, shopId);
+		payload.put("closed_by", moderationLog.adminId().toString());
+		payload.put("closed_at", moderationLog.createdAt().toString());
+		return serialize(payload);
+	}
+
 	private Map<String, Object> baseShopModerationPayload(ContentModerationLog moderationLog, UUID shopId) {
 		Map<String, Object> payload = new LinkedHashMap<>();
 		payload.put("shop_id", shopId.toString());

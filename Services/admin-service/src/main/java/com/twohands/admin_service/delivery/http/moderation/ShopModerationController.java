@@ -1,5 +1,8 @@
 package com.twohands.admin_service.delivery.http.moderation;
 
+import com.twohands.admin_service.application.moderation.closeshop.CloseShopCommand;
+import com.twohands.admin_service.application.moderation.closeshop.CloseShopResult;
+import com.twohands.admin_service.application.moderation.closeshop.CloseShopUseCase;
 import com.twohands.admin_service.application.moderation.suspendshop.SuspendShopCommand;
 import com.twohands.admin_service.application.moderation.suspendshop.SuspendShopResult;
 import com.twohands.admin_service.application.moderation.suspendshop.SuspendShopUseCase;
@@ -22,9 +25,14 @@ import java.util.UUID;
 public class ShopModerationController {
 
 	private final SuspendShopUseCase suspendShopUseCase;
+	private final CloseShopUseCase closeShopUseCase;
 
-	public ShopModerationController(SuspendShopUseCase suspendShopUseCase) {
+	public ShopModerationController(
+			SuspendShopUseCase suspendShopUseCase,
+			CloseShopUseCase closeShopUseCase
+	) {
 		this.suspendShopUseCase = suspendShopUseCase;
+		this.closeShopUseCase = closeShopUseCase;
 	}
 
 	@PostMapping("/{shopId}/suspend")
@@ -51,5 +59,31 @@ public class ShopModerationController {
 
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(ApiResponse.success(HttpStatus.OK.value(), suspendShopUseCase.successMessage(), data));
+	}
+
+	@PostMapping("/{shopId}/close")
+	@RequireAdminPermission(AdminPermission.SHOP_CLOSE)
+	public ResponseEntity<ApiResponse<CloseShopResponse>> close(
+			@PathVariable UUID shopId,
+			@Valid @RequestBody CloseShopRequest request
+	) {
+		CloseShopResult result = closeShopUseCase.execute(new CloseShopCommand(
+				shopId,
+				request.reason(),
+				request.note()
+		));
+
+		CloseShopResponse data = new CloseShopResponse(
+				result.shopId(),
+				result.moderationLogId(),
+				result.reason(),
+				result.note(),
+				result.closedBy(),
+				result.closedAt(),
+				result.outboxEventId()
+		);
+
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(ApiResponse.success(HttpStatus.OK.value(), closeShopUseCase.successMessage(), data));
 	}
 }

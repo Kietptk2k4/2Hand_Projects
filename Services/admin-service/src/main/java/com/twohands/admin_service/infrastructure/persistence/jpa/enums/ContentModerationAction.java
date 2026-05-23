@@ -4,5 +4,6 @@ public enum ContentModerationAction {
 	HIDE,
 	REMOVE,
 	RESTORE,
-	SUSPEND
+	SUSPEND,
+	CLOSE
 }
