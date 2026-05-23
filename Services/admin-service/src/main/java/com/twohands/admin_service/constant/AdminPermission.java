@@ -15,6 +15,7 @@ public final class AdminPermission {
 	public static final String USER_ENFORCEMENT_READ = "USER_ENFORCEMENT_READ";
 	public static final String USER_INVESTIGATION_READ = "USER_INVESTIGATION_READ";
 	public static final String PRODUCT_REMOVE = "PRODUCT_REMOVE";
+	public static final String PRODUCT_RESTORE = "PRODUCT_RESTORE";
 	public static final String REVIEW_HIDE = "REVIEW_HIDE";
 	public static final String SHOP_SUSPEND = "SHOP_SUSPEND";
 	public static final String POST_MODERATE = "POST_MODERATE";
@@ -38,6 +39,7 @@ public final class AdminPermission {
 			USER_ENFORCEMENT_READ,
 			USER_INVESTIGATION_READ,
 			PRODUCT_REMOVE,
+			PRODUCT_RESTORE,
 			REVIEW_HIDE,
 			SHOP_SUSPEND,
 			POST_MODERATE,

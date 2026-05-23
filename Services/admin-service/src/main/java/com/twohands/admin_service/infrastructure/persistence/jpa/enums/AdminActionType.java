@@ -3,6 +3,7 @@ package com.twohands.admin_service.infrastructure.persistence.jpa.enums;
 public enum AdminActionType {
 	USER_SUSPEND,
 	PRODUCT_REMOVE,
+	PRODUCT_RESTORE,
 	REVIEW_HIDE,
 	REFUND_EXECUTE,
 	USER_BAN,

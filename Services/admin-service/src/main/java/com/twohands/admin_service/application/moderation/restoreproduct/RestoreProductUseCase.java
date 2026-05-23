@@ -1,4 +1,4 @@
-package com.twohands.admin_service.application.moderation.removeproduct;
+package com.twohands.admin_service.application.moderation.restoreproduct;
 
 import com.twohands.admin_service.application.audit.AdminActionAuditLogger;
 import com.twohands.admin_service.application.moderation.ProductModerationOutboxPayloadBuilder;
@@ -8,7 +8,6 @@ import com.twohands.admin_service.constant.AdminPermission;
 import com.twohands.admin_service.domain.audit.AdminActionStatus;
 import com.twohands.admin_service.domain.audit.AdminActionTargetType;
 import com.twohands.admin_service.domain.auth.AdminAuthorizationService;
-import com.twohands.admin_service.domain.integration.CommerceProductGateway;
 import com.twohands.admin_service.domain.moderation.ContentModerationAction;
 import com.twohands.admin_service.domain.moderation.ContentModerationLog;
 import com.twohands.admin_service.domain.moderation.ContentModerationLogRepository;
@@ -27,53 +26,49 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
-public class RemoveProductUseCase {
+public class RestoreProductUseCase {
 
-	private static final Logger log = LoggerFactory.getLogger(RemoveProductUseCase.class);
-	private static final String ACTION_TYPE = "PRODUCT_REMOVE";
-	private static final String OUTBOX_EVENT_TYPE = "PRODUCT_REMOVED";
-	private static final String SUCCESS_MESSAGE = "Product removed successfully";
+	private static final Logger log = LoggerFactory.getLogger(RestoreProductUseCase.class);
+	private static final String ACTION_TYPE = "PRODUCT_RESTORE";
+	private static final String OUTBOX_EVENT_TYPE = "PRODUCT_RESTORED";
+	private static final String SUCCESS_MESSAGE = "Product restored successfully";
 
 	private final AdminAuthorizationService adminAuthorizationService;
 	private final ContentModerationLogRepository contentModerationLogRepository;
-	private final CommerceProductGateway commerceProductGateway;
 	private final InsertAdminOutboxEventUseCase insertAdminOutboxEventUseCase;
 	private final ProductModerationOutboxPayloadBuilder outboxPayloadBuilder;
 	private final AdminActionAuditLogger adminActionAuditLogger;
 
-	public RemoveProductUseCase(
+	public RestoreProductUseCase(
 			AdminAuthorizationService adminAuthorizationService,
 			ContentModerationLogRepository contentModerationLogRepository,
-			CommerceProductGateway commerceProductGateway,
 			InsertAdminOutboxEventUseCase insertAdminOutboxEventUseCase,
 			ProductModerationOutboxPayloadBuilder outboxPayloadBuilder,
 			AdminActionAuditLogger adminActionAuditLogger
 	) {
 		this.adminAuthorizationService = adminAuthorizationService;
 		this.contentModerationLogRepository = contentModerationLogRepository;
-		this.commerceProductGateway = commerceProductGateway;
 		this.insertAdminOutboxEventUseCase = insertAdminOutboxEventUseCase;
 		this.outboxPayloadBuilder = outboxPayloadBuilder;
 		this.adminActionAuditLogger = adminActionAuditLogger;
 	}
 
 	@Transactional
-	public RemoveProductResult execute(RemoveProductCommand command) {
+	public RestoreProductResult execute(RestoreProductCommand command) {
 		UUID adminId = adminAuthorizationService.requireCurrentAdminId();
-		adminAuthorizationService.requirePermission(AdminPermission.PRODUCT_REMOVE);
+		adminAuthorizationService.requireAnyPermission(
+				AdminPermission.PRODUCT_RESTORE,
+				AdminPermission.PRODUCT_REMOVE
+		);
 
 		String reason = command.reason() == null ? null : command.reason().trim();
 		String note = ProductModerationPolicy.normalizeOptionalNote(command.note());
-		ProductModerationPolicy.validateRemoveRequest(reason, note);
+		ProductModerationPolicy.validateRestoreRequest(reason, note);
 
-		if (commerceProductGateway.isEnabled()) {
-			commerceProductGateway.ensureProductExists(command.productId());
-		}
-
-		Instant removedAt = Instant.now();
+		Instant restoredAt = Instant.now();
 		UUID moderationLogId = UUID.randomUUID();
 		log.info(
-				"Removing product. adminId={}, productId={}, moderationLogId={}",
+				"Restoring product. adminId={}, productId={}, moderationLogId={}",
 				adminId,
 				command.productId(),
 				moderationLogId
@@ -84,30 +79,29 @@ public class RemoveProductUseCase {
 					moderationLogId,
 					ContentModerationTargetType.PRODUCT,
 					command.productId().toString(),
-					ContentModerationAction.REMOVE,
+					ContentModerationAction.RESTORE,
 					reason,
 					adminId,
-					removedAt,
+					restoredAt,
 					note
 			));
 
 			OutboxEvent outboxEvent = insertAdminOutboxEventUseCase.execute(new InsertAdminOutboxEventCommand(
 					OUTBOX_EVENT_TYPE,
 					command.productId(),
-					outboxPayloadBuilder.buildProductRemovedPayload(moderationLog, command.productId())
+					outboxPayloadBuilder.buildProductRestoredPayload(moderationLog, command.productId())
 			));
 
 			Map<String, Object> afterSummary = new LinkedHashMap<>();
-			afterSummary.put("action", ContentModerationAction.REMOVE.name());
+			afterSummary.put("action", ContentModerationAction.RESTORE.name());
 			afterSummary.put("moderation_log_id", moderationLog.id().toString());
-			afterSummary.put("removed_at", removedAt.toString());
+			afterSummary.put("restored_at", restoredAt.toString());
 
 			Map<String, Object> requestSummary = new LinkedHashMap<>();
 			requestSummary.put("reason", reason);
 			if (note != null) {
 				requestSummary.put("note", note);
 			}
-			requestSummary.put("commerce_integration", commerceProductGateway.isEnabled());
 
 			adminActionAuditLogger.logCritical(
 					adminId,
@@ -116,14 +110,14 @@ public class RemoveProductUseCase {
 					command.productId().toString(),
 					AdminActionStatus.SUCCESS,
 					SUCCESS_MESSAGE,
-					"Product remove moderation recorded",
+					"Product restore moderation recorded",
 					Map.of(),
 					afterSummary,
 					requestSummary,
 					Map.of("outbox_event_id", outboxEvent.id().toString())
 			);
 
-			return new RemoveProductResult(
+			return new RestoreProductResult(
 					command.productId(),
 					moderationLog.id(),
 					moderationLog.reason(),

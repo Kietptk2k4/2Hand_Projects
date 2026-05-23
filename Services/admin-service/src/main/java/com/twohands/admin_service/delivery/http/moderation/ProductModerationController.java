@@ -3,6 +3,9 @@ package com.twohands.admin_service.delivery.http.moderation;
 import com.twohands.admin_service.application.moderation.removeproduct.RemoveProductCommand;
 import com.twohands.admin_service.application.moderation.removeproduct.RemoveProductResult;
 import com.twohands.admin_service.application.moderation.removeproduct.RemoveProductUseCase;
+import com.twohands.admin_service.application.moderation.restoreproduct.RestoreProductCommand;
+import com.twohands.admin_service.application.moderation.restoreproduct.RestoreProductResult;
+import com.twohands.admin_service.application.moderation.restoreproduct.RestoreProductUseCase;
 import com.twohands.admin_service.common.dto.ApiResponse;
 import com.twohands.admin_service.constant.AdminPermission;
 import com.twohands.admin_service.security.annotation.RequireAdminPermission;
@@ -22,9 +25,14 @@ import java.util.UUID;
 public class ProductModerationController {
 
 	private final RemoveProductUseCase removeProductUseCase;
+	private final RestoreProductUseCase restoreProductUseCase;
 
-	public ProductModerationController(RemoveProductUseCase removeProductUseCase) {
+	public ProductModerationController(
+			RemoveProductUseCase removeProductUseCase,
+			RestoreProductUseCase restoreProductUseCase
+	) {
 		this.removeProductUseCase = removeProductUseCase;
+		this.restoreProductUseCase = restoreProductUseCase;
 	}
 
 	@PostMapping("/{productId}/remove")
@@ -51,5 +59,31 @@ public class ProductModerationController {
 
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(ApiResponse.success(HttpStatus.OK.value(), removeProductUseCase.successMessage(), data));
+	}
+
+	@PostMapping("/{productId}/restore")
+	@RequireAdminPermission({AdminPermission.PRODUCT_RESTORE, AdminPermission.PRODUCT_REMOVE})
+	public ResponseEntity<ApiResponse<RestoreProductResponse>> restore(
+			@PathVariable UUID productId,
+			@Valid @RequestBody RestoreProductRequest request
+	) {
+		RestoreProductResult result = restoreProductUseCase.execute(new RestoreProductCommand(
+				productId,
+				request.reason(),
+				request.note()
+		));
+
+		RestoreProductResponse data = new RestoreProductResponse(
+				result.productId(),
+				result.moderationLogId(),
+				result.reason(),
+				result.note(),
+				result.restoredBy(),
+				result.restoredAt(),
+				result.outboxEventId()
+		);
+
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(ApiResponse.success(HttpStatus.OK.value(), restoreProductUseCase.successMessage(), data));
 	}
 }

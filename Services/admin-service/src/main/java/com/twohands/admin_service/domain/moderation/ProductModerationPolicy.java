@@ -12,6 +12,22 @@ public final class ProductModerationPolicy {
 	}
 
 	public static void validateRemoveRequest(String reason, String note) {
+		validateModerationRequest(reason, note);
+	}
+
+	public static void validateRestoreRequest(String reason, String note) {
+		validateModerationRequest(reason, note);
+	}
+
+	public static String normalizeOptionalNote(String note) {
+		if (note == null) {
+			return null;
+		}
+		String trimmed = note.trim();
+		return trimmed.isEmpty() ? null : trimmed;
+	}
+
+	private static void validateModerationRequest(String reason, String note) {
 		if (reason == null || reason.isBlank()) {
 			throw validationError("reason", "Reason is required");
 		}

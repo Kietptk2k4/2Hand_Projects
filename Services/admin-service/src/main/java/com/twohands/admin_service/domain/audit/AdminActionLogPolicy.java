@@ -13,6 +13,7 @@ public final class AdminActionLogPolicy {
 			"USER_RESTRICT",
 			"USER_ENFORCEMENT_REVOKE",
 			"PRODUCT_REMOVE",
+			"PRODUCT_RESTORE",
 			"REVIEW_HIDE",
 			"SHOP_SUSPEND",
 			"SHOP_CLOSE",
