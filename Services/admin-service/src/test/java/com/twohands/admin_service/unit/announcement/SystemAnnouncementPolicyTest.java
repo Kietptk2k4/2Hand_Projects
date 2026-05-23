@@ -43,4 +43,14 @@ class SystemAnnouncementPolicyTest {
 		assertThat(SystemAnnouncementPolicy.resolveDismissible(null)).isTrue();
 		assertThat(SystemAnnouncementPolicy.resolveDismissible(false)).isFalse();
 	}
+
+	@Test
+	void shouldRejectPublishWhenNotDraft() {
+		assertThatThrownBy(() -> SystemAnnouncementPolicy.assertDraftForPublish(
+				com.twohands.admin_service.domain.announcement.SystemAnnouncementStatus.SENT
+		))
+				.isInstanceOf(AppException.class)
+				.extracting(ex -> ((AppException) ex).getErrorCode())
+				.isEqualTo(ErrorCode.SYSTEM_ANNOUNCEMENT_CONFLICT);
+	}
 }

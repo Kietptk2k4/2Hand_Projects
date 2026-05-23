@@ -53,6 +53,15 @@ public final class SystemAnnouncementPolicy {
 		return dismissible == null || dismissible;
 	}
 
+	public static void assertDraftForPublish(SystemAnnouncementStatus status) {
+		if (status != SystemAnnouncementStatus.DRAFT) {
+			throw new AppException(
+					ErrorCode.SYSTEM_ANNOUNCEMENT_CONFLICT,
+					ErrorCode.SYSTEM_ANNOUNCEMENT_CONFLICT.defaultMessage()
+			);
+		}
+	}
+
 	private static void validateTitle(String title) {
 		String normalized = normalizeTitle(title);
 		if (normalized.isEmpty()) {

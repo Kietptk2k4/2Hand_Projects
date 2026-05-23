@@ -68,7 +68,7 @@ Cho phép admin tạo **announcement toàn hệ thống** ở trạng thái `DRA
 
 | API | Mục đích |
 |-----|----------|
-| `POST .../system-announcements/{id}/publish` | Gửi announcement (`SENT`, outbox) |
+| [PublishSystemAnnouncement](./PublishSystemAnnouncement-api-and-behavior.md) | Gửi announcement (`SENT`, outbox) |
 
 ## 7. Permission
 
