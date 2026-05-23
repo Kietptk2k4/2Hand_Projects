@@ -56,7 +56,8 @@ CREATE TYPE admin_action_type AS ENUM (
     'PRODUCT_RESTORE',
     'REVIEW_REMOVE',
     'REVIEW_RESTORE',
-    'SHOP_RESTORE'
+    'SHOP_RESTORE',
+    'POST_RESTORE'
 );
 
 CREATE TYPE user_enforcement_action_type AS ENUM (

@@ -24,6 +24,14 @@ public final class SocialContentModerationPolicy {
 		validateModerateSocialContentRequest(action, reason, note);
 	}
 
+	public static void validateRestorePostRequest(String reason, String note) {
+		ProductModerationPolicy.validateRestoreRequest(reason, note);
+	}
+
+	public static void validateRestoreCommentRequest(String reason, String note) {
+		ProductModerationPolicy.validateRestoreRequest(reason, note);
+	}
+
 	private static void validateModerateSocialContentRequest(
 			ContentModerationAction action,
 			String reason,

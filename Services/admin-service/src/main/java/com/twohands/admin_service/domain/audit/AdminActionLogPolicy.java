@@ -21,6 +21,7 @@ public final class AdminActionLogPolicy {
 			"SHOP_CLOSE",
 			"SHOP_RESTORE",
 			"POST_MODERATE",
+			"POST_RESTORE",
 			"COMMENT_MODERATE",
 			"SYSTEM_CONFIG_CREATE",
 			"SYSTEM_CONFIG_UPDATE",

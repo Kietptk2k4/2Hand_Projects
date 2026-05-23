@@ -3,6 +3,9 @@ package com.twohands.admin_service.delivery.http.moderation;
 import com.twohands.admin_service.application.moderation.moderatepost.ModeratePostCommand;
 import com.twohands.admin_service.application.moderation.moderatepost.ModeratePostResult;
 import com.twohands.admin_service.application.moderation.moderatepost.ModeratePostUseCase;
+import com.twohands.admin_service.application.moderation.restorepost.RestorePostCommand;
+import com.twohands.admin_service.application.moderation.restorepost.RestorePostResult;
+import com.twohands.admin_service.application.moderation.restorepost.RestorePostUseCase;
 import com.twohands.admin_service.common.dto.ApiResponse;
 import com.twohands.admin_service.constant.AdminPermission;
 import com.twohands.admin_service.domain.moderation.ContentModerationAction;
@@ -23,9 +26,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostModerationController {
 
 	private final ModeratePostUseCase moderatePostUseCase;
+	private final RestorePostUseCase restorePostUseCase;
 
-	public PostModerationController(ModeratePostUseCase moderatePostUseCase) {
+	public PostModerationController(
+			ModeratePostUseCase moderatePostUseCase,
+			RestorePostUseCase restorePostUseCase
+	) {
 		this.moderatePostUseCase = moderatePostUseCase;
+		this.restorePostUseCase = restorePostUseCase;
 	}
 
 	@PostMapping("/{postId}/moderate")
@@ -60,6 +68,32 @@ public class PostModerationController {
 						moderatePostUseCase.successMessage(action),
 						data
 				));
+	}
+
+	@PostMapping("/{postId}/restore")
+	@RequireAdminPermission({AdminPermission.POST_RESTORE, AdminPermission.POST_MODERATE})
+	public ResponseEntity<ApiResponse<RestorePostResponse>> restore(
+			@PathVariable String postId,
+			@Valid @RequestBody RestorePostRequest request
+	) {
+		RestorePostResult result = restorePostUseCase.execute(new RestorePostCommand(
+				postId,
+				request.reason(),
+				request.note()
+		));
+
+		RestorePostResponse data = new RestorePostResponse(
+				result.postId(),
+				result.moderationLogId(),
+				result.reason(),
+				result.note(),
+				result.restoredBy(),
+				result.restoredAt(),
+				result.outboxEventId()
+		);
+
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(ApiResponse.success(HttpStatus.OK.value(), restorePostUseCase.successMessage(), data));
 	}
 
 	private ContentModerationAction parseAction(String action) {

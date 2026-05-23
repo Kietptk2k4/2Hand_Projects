@@ -84,7 +84,7 @@ Message khi `action=REMOVE`: `"Post removed successfully"`.
 | API | Mục đích |
 |-----|----------|
 | [ModerateComment](./ModerateComment-api-and-behavior.md) | Moderate comment |
-| FR_RestorePost (tương lai) | Restore post sau moderation |
+| [RestorePost](./RestorePost-api-and-behavior.md) | Restore post sau moderation |
 
 ## 8. Permission
 
