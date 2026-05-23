@@ -12,11 +12,15 @@ import com.twohands.social_service.application.user.viewfollowersfollowinglist.V
 import com.twohands.social_service.application.user.viewsocialprofile.ViewSocialProfileCommand;
 import com.twohands.social_service.application.user.viewsocialprofile.ViewSocialProfileResult;
 import com.twohands.social_service.application.user.viewsocialprofile.ViewSocialProfileUseCase;
+import com.twohands.social_service.application.user.viewuserposts.ViewUserPostsResult;
+import com.twohands.social_service.application.user.viewuserposts.ViewUserPostsUseCase;
 import com.twohands.social_service.common.dto.ApiResponse;
 import com.twohands.social_service.delivery.http.user.response.FollowUserResponse;
 import com.twohands.social_service.delivery.http.user.response.UnfollowUserResponse;
 import com.twohands.social_service.delivery.http.user.response.ViewFollowersFollowingListResponse;
+import com.twohands.social_service.delivery.http.user.mapper.ViewUserPostsHttpMapper;
 import com.twohands.social_service.delivery.http.user.response.ViewSocialProfileResponse;
+import com.twohands.social_service.delivery.http.user.response.ViewUserPostsResponse;
 import com.twohands.social_service.domain.follow.RelationListType;
 import com.twohands.social_service.security.AuthenticatedUser;
 import org.springframework.http.HttpStatus;
@@ -40,21 +44,28 @@ public class UserController {
 
     private static final int DEFAULT_PAGE = 0;
     private static final int DEFAULT_SIZE = 20;
+    private static final String DEFAULT_STATUS_FILTER = "published";
 
     private final FollowUserUseCase followUserUseCase;
     private final UnfollowUserUseCase unfollowUserUseCase;
     private final ViewSocialProfileUseCase viewSocialProfileUseCase;
+    private final ViewUserPostsUseCase viewUserPostsUseCase;
+    private final ViewUserPostsHttpMapper viewUserPostsHttpMapper;
     private final ViewFollowersFollowingListUseCase viewFollowersFollowingListUseCase;
 
     public UserController(
             FollowUserUseCase followUserUseCase,
             UnfollowUserUseCase unfollowUserUseCase,
             ViewSocialProfileUseCase viewSocialProfileUseCase,
+            ViewUserPostsUseCase viewUserPostsUseCase,
+            ViewUserPostsHttpMapper viewUserPostsHttpMapper,
             ViewFollowersFollowingListUseCase viewFollowersFollowingListUseCase
     ) {
         this.followUserUseCase = followUserUseCase;
         this.unfollowUserUseCase = unfollowUserUseCase;
         this.viewSocialProfileUseCase = viewSocialProfileUseCase;
+        this.viewUserPostsUseCase = viewUserPostsUseCase;
+        this.viewUserPostsHttpMapper = viewUserPostsHttpMapper;
         this.viewFollowersFollowingListUseCase = viewFollowersFollowingListUseCase;
     }
 
@@ -76,6 +87,24 @@ public class UserController {
                 HttpStatus.OK.value(),
                 viewFollowersFollowingListUseCase.successMessage(),
                 toRelationsResponse(result)
+        ));
+    }
+
+    @GetMapping("/{userId}/posts")
+    public ResponseEntity<ApiResponse<ViewUserPostsResponse>> viewUserPosts(
+            @PathVariable UUID userId,
+            @RequestParam(name = "page", defaultValue = "" + DEFAULT_PAGE) int page,
+            @RequestParam(name = "size", defaultValue = "" + DEFAULT_SIZE) int size,
+            @RequestParam(name = "status_filter", defaultValue = DEFAULT_STATUS_FILTER) String statusFilter,
+            Authentication authentication
+    ) {
+        UUID viewerId = resolveUserId(authentication);
+        ViewUserPostsResult result = viewUserPostsUseCase.execute(viewerId, userId, page, size, statusFilter);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewUserPostsUseCase.successMessage(),
+                viewUserPostsHttpMapper.toResponse(result)
         ));
     }
 

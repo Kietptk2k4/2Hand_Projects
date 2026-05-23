@@ -1,5 +1,7 @@
 package com.twohands.social_service.infrastructure.persistence.adapter;
 
+import com.twohands.social_service.domain.post.AuthorPostsQuery;
+import com.twohands.social_service.domain.post.AuthorPostsScope;
 import com.twohands.social_service.domain.post.FeedQuery;
 import com.twohands.social_service.domain.post.MediaItem;
 import com.twohands.social_service.domain.post.PageResult;
@@ -186,6 +188,49 @@ public class PostRepositoryAdapter implements PostRepository {
                 PostVisibility.FOLLOWERS.name(),
                 pageRequest
         );
+
+        List<Post> items = page.getContent().stream()
+                .map(this::toDomain)
+                .toList();
+
+        return new PageResult<>(
+                items,
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.hasNext()
+        );
+    }
+
+    @Override
+    public PageResult<Post> findAuthorPosts(AuthorPostsQuery query) {
+        PageRequest pageRequest = PageRequest.of(query.page(), query.size());
+        Page<PostDocument> page = switch (query.scope()) {
+            case OWNER_PUBLISHED -> mongoPostRepository.findByAuthorIdAndStatusOrderByCreatedAtDesc(
+                    query.authorId(),
+                    PostStatus.ACTIVE.name(),
+                    pageRequest
+            );
+            case OWNER_ALL -> mongoPostRepository.findByAuthorIdAndStatusInOrderByCreatedAtDesc(
+                    query.authorId(),
+                    List.of(PostStatus.ACTIVE.name(), PostStatus.DRAFT.name()),
+                    pageRequest
+            );
+            case VIEWER_PUBLIC_ONLY -> mongoPostRepository.findByAuthorIdAndStatusAndVisibilityOrderByCreatedAtDesc(
+                    query.authorId(),
+                    PostStatus.ACTIVE.name(),
+                    PostVisibility.PUBLIC.name(),
+                    pageRequest
+            );
+            case VIEWER_AS_FOLLOWER -> mongoPostRepository.findByAuthorIdAndStatusAndVisibilityInOrderByCreatedAtDesc(
+                    query.authorId(),
+                    PostStatus.ACTIVE.name(),
+                    PostVisibility.PUBLIC.name(),
+                    PostVisibility.FOLLOWERS.name(),
+                    pageRequest
+            );
+        };
 
         List<Post> items = page.getContent().stream()
                 .map(this::toDomain)

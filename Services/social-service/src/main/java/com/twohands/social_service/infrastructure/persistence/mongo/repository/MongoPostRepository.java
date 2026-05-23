@@ -70,4 +70,38 @@ public interface MongoPostRepository extends MongoRepository<PostDocument, Strin
             String followersVisibility,
             Pageable pageable
     );
+
+    Page<PostDocument> findByAuthorIdAndStatusOrderByCreatedAtDesc(
+            String authorId,
+            String status,
+            Pageable pageable
+    );
+
+    Page<PostDocument> findByAuthorIdAndStatusInOrderByCreatedAtDesc(
+            String authorId,
+            Collection<String> statuses,
+            Pageable pageable
+    );
+
+    Page<PostDocument> findByAuthorIdAndStatusAndVisibilityOrderByCreatedAtDesc(
+            String authorId,
+            String status,
+            String visibility,
+            Pageable pageable
+    );
+
+    @Query("""
+            {
+              'author_id': ?0,
+              'status': ?1,
+              'visibility': { '$in': [?2, ?3] }
+            }
+            """)
+    Page<PostDocument> findByAuthorIdAndStatusAndVisibilityInOrderByCreatedAtDesc(
+            String authorId,
+            String status,
+            String publicVisibility,
+            String followersVisibility,
+            Pageable pageable
+    );
 }

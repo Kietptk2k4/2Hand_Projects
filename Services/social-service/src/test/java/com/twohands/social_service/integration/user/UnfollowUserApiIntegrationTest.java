@@ -62,6 +62,9 @@ class UnfollowUserApiIntegrationTest {
     private ViewSocialProfileUseCase viewSocialProfileUseCase;
 
     @MockBean
+    private com.twohands.social_service.application.user.viewuserposts.ViewUserPostsUseCase viewUserPostsUseCase;
+
+    @MockBean
     private ViewFollowersFollowingListUseCase viewFollowersFollowingListUseCase;
 
     @Test
