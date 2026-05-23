@@ -62,6 +62,15 @@ public final class SystemAnnouncementPolicy {
 		}
 	}
 
+	public static void assertPinAllowed(SystemAnnouncementStatus status) {
+		if (status == SystemAnnouncementStatus.CANCELLED) {
+			throw new AppException(
+					ErrorCode.SYSTEM_ANNOUNCEMENT_CONFLICT,
+					"Cancelled announcements cannot be pinned"
+			);
+		}
+	}
+
 	private static void validateTitle(String title) {
 		String normalized = normalizeTitle(title);
 		if (normalized.isEmpty()) {

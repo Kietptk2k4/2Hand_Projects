@@ -3,6 +3,9 @@ package com.twohands.admin_service.delivery.http.announcement;
 import com.twohands.admin_service.application.announcement.createsystemannouncement.CreateSystemAnnouncementCommand;
 import com.twohands.admin_service.application.announcement.createsystemannouncement.CreateSystemAnnouncementResult;
 import com.twohands.admin_service.application.announcement.createsystemannouncement.CreateSystemAnnouncementUseCase;
+import com.twohands.admin_service.application.announcement.pinsystemannouncement.PinSystemAnnouncementCommand;
+import com.twohands.admin_service.application.announcement.pinsystemannouncement.PinSystemAnnouncementResult;
+import com.twohands.admin_service.application.announcement.pinsystemannouncement.PinSystemAnnouncementUseCase;
 import com.twohands.admin_service.application.announcement.publishsystemannouncement.PublishSystemAnnouncementCommand;
 import com.twohands.admin_service.application.announcement.publishsystemannouncement.PublishSystemAnnouncementResult;
 import com.twohands.admin_service.application.announcement.publishsystemannouncement.PublishSystemAnnouncementUseCase;
@@ -12,6 +15,7 @@ import com.twohands.admin_service.security.annotation.RequireAdminPermission;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,13 +30,16 @@ public class SystemAnnouncementController {
 
 	private final CreateSystemAnnouncementUseCase createSystemAnnouncementUseCase;
 	private final PublishSystemAnnouncementUseCase publishSystemAnnouncementUseCase;
+	private final PinSystemAnnouncementUseCase pinSystemAnnouncementUseCase;
 
 	public SystemAnnouncementController(
 			CreateSystemAnnouncementUseCase createSystemAnnouncementUseCase,
-			PublishSystemAnnouncementUseCase publishSystemAnnouncementUseCase
+			PublishSystemAnnouncementUseCase publishSystemAnnouncementUseCase,
+			PinSystemAnnouncementUseCase pinSystemAnnouncementUseCase
 	) {
 		this.createSystemAnnouncementUseCase = createSystemAnnouncementUseCase;
 		this.publishSystemAnnouncementUseCase = publishSystemAnnouncementUseCase;
+		this.pinSystemAnnouncementUseCase = pinSystemAnnouncementUseCase;
 	}
 
 	@PostMapping
@@ -95,5 +102,30 @@ public class SystemAnnouncementController {
 				publishSystemAnnouncementUseCase.successMessage(),
 				data
 		));
+	}
+
+	@PatchMapping("/{announcementId}/pin")
+	@RequireAdminPermission(AdminPermission.SYSTEM_ANNOUNCEMENT_UPDATE)
+	public ResponseEntity<ApiResponse<PinSystemAnnouncementResponse>> pin(
+			@PathVariable UUID announcementId,
+			@Valid @RequestBody PinSystemAnnouncementRequest request
+	) {
+		PinSystemAnnouncementResult result = pinSystemAnnouncementUseCase.execute(
+				new PinSystemAnnouncementCommand(announcementId, request.pinned())
+		);
+
+		PinSystemAnnouncementResponse data = new PinSystemAnnouncementResponse(
+				result.announcementId(),
+				result.title(),
+				result.status().name(),
+				result.pinned(),
+				result.stateChanged()
+		);
+
+		String message = result.stateChanged()
+				? pinSystemAnnouncementUseCase.successMessage()
+				: pinSystemAnnouncementUseCase.idempotentMessage();
+
+		return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), message, data));
 	}
 }

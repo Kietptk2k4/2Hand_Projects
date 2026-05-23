@@ -45,6 +45,16 @@ class SystemAnnouncementPolicyTest {
 	}
 
 	@Test
+	void shouldRejectPinWhenCancelled() {
+		assertThatThrownBy(() -> SystemAnnouncementPolicy.assertPinAllowed(
+				com.twohands.admin_service.domain.announcement.SystemAnnouncementStatus.CANCELLED
+		))
+				.isInstanceOf(AppException.class)
+				.extracting(ex -> ((AppException) ex).getErrorCode())
+				.isEqualTo(ErrorCode.SYSTEM_ANNOUNCEMENT_CONFLICT);
+	}
+
+	@Test
 	void shouldRejectPublishWhenNotDraft() {
 		assertThatThrownBy(() -> SystemAnnouncementPolicy.assertDraftForPublish(
 				com.twohands.admin_service.domain.announcement.SystemAnnouncementStatus.SENT
