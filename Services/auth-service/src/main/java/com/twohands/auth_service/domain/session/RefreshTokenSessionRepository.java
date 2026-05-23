@@ -12,6 +12,8 @@ public interface RefreshTokenSessionRepository {
 
     List<RefreshTokenSession> findByUserIdAndStatus(UUID userId, SessionStatus status);
 
+    RefreshTokenSessionPage findPageByUserId(UUID userId, SessionStatus statusFilter, int limit, int offset);
+
     RefreshTokenSession save(RefreshTokenSession session);
 
     int markLoggedOutIfActive(UUID sessionId, Instant updatedAt);

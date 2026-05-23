@@ -1,6 +1,7 @@
 package com.twohands.auth_service.infrastructure.persistence.adapter;
 
 import com.twohands.auth_service.domain.session.RefreshTokenSession;
+import com.twohands.auth_service.domain.session.RefreshTokenSessionPage;
 import com.twohands.auth_service.domain.session.RefreshTokenSessionRepository;
 import com.twohands.auth_service.domain.session.SessionStatus;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -59,6 +60,42 @@ public class RefreshTokenSessionRepositoryAdapter implements RefreshTokenSession
                 .addValue("userId", userId)
                 .addValue("status", status.name());
         return jdbcTemplate.query(sql, params, (rs, rowNum) -> mapSession(rs));
+    }
+
+    @Override
+    public RefreshTokenSessionPage findPageByUserId(UUID userId, SessionStatus statusFilter, int limit, int offset) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("userId", userId)
+                .addValue("limit", limit)
+                .addValue("offset", offset);
+
+        String statusClause = statusFilter == null ? "" : " AND status = :status ";
+        if (statusFilter != null) {
+            params.addValue("status", statusFilter.name());
+        }
+
+        String countSql = """
+                SELECT COUNT(*)
+                FROM refresh_token_sessions
+                WHERE user_id = :userId
+                """ + statusClause;
+
+        Long totalItems = jdbcTemplate.queryForObject(countSql, params, Long.class);
+        if (totalItems == null) {
+            totalItems = 0L;
+        }
+
+        String querySql = """
+                SELECT id, user_id, token_hash, device_id, ip_address, user_agent, expires_at, status, created_at, updated_at
+                FROM refresh_token_sessions
+                WHERE user_id = :userId
+                """ + statusClause + """
+                ORDER BY created_at DESC
+                LIMIT :limit OFFSET :offset
+                """;
+
+        List<RefreshTokenSession> sessions = jdbcTemplate.query(querySql, params, (rs, rowNum) -> mapSession(rs));
+        return new RefreshTokenSessionPage(sessions, totalItems);
     }
 
     @Override
