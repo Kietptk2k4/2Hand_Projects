@@ -11,26 +11,51 @@ import java.util.UUID;
 @Component
 public class PostViewAccessPolicy {
 
-    public boolean canView(Post post, UUID viewerId, Collection<String> acceptedFolloweeAuthorIds) {
-        if (post == null || viewerId == null) {
-            return false;
+    public enum PostViewAccessOutcome {
+        ALLOWED,
+        NOT_FOUND,
+        FORBIDDEN
+    }
+
+    public PostViewAccessOutcome evaluateViewAccess(
+            Post post,
+            UUID viewerId,
+            Collection<String> acceptedFolloweeAuthorIds
+    ) {
+        if (viewerId == null) {
+            return PostViewAccessOutcome.NOT_FOUND;
+        }
+        if (post == null) {
+            return PostViewAccessOutcome.NOT_FOUND;
         }
         if (post.status() == PostStatus.DELETED) {
-            return false;
+            return PostViewAccessOutcome.NOT_FOUND;
         }
         if (post.status() == PostStatus.DRAFT) {
-            return post.authorId().equals(viewerId.toString());
+            if (post.authorId().equals(viewerId.toString())) {
+                return PostViewAccessOutcome.ALLOWED;
+            }
+            return PostViewAccessOutcome.NOT_FOUND;
         }
         if (post.status() != PostStatus.ACTIVE) {
-            return false;
+            return PostViewAccessOutcome.NOT_FOUND;
         }
         if (post.visibility() == PostVisibility.PUBLIC) {
-            return true;
+            return PostViewAccessOutcome.ALLOWED;
         }
         if (post.visibility() == PostVisibility.FOLLOWERS) {
-            return post.authorId().equals(viewerId.toString())
-                    || (acceptedFolloweeAuthorIds != null && acceptedFolloweeAuthorIds.contains(post.authorId()));
+            if (post.authorId().equals(viewerId.toString())) {
+                return PostViewAccessOutcome.ALLOWED;
+            }
+            if (acceptedFolloweeAuthorIds != null && acceptedFolloweeAuthorIds.contains(post.authorId())) {
+                return PostViewAccessOutcome.ALLOWED;
+            }
+            return PostViewAccessOutcome.FORBIDDEN;
         }
-        return false;
+        return PostViewAccessOutcome.NOT_FOUND;
+    }
+
+    public boolean canView(Post post, UUID viewerId, Collection<String> acceptedFolloweeAuthorIds) {
+        return evaluateViewAccess(post, viewerId, acceptedFolloweeAuthorIds) == PostViewAccessOutcome.ALLOWED;
     }
 }

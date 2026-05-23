@@ -21,6 +21,8 @@ import com.twohands.social_service.application.post.saveunsavepost.SaveUnsavePos
 import com.twohands.social_service.application.post.uploadpostmedia.UploadPostMediaCommand;
 import com.twohands.social_service.application.post.uploadpostmedia.UploadPostMediaResult;
 import com.twohands.social_service.application.post.uploadpostmedia.UploadPostMediaUseCase;
+import com.twohands.social_service.application.post.viewpostdetail.ViewPostDetailResult;
+import com.twohands.social_service.application.post.viewpostdetail.ViewPostDetailUseCase;
 import com.twohands.social_service.application.post.viewsavedposts.ViewSavedPostsResult;
 import com.twohands.social_service.application.post.viewsavedposts.ViewSavedPostsUseCase;
 import com.twohands.social_service.common.dto.ApiResponse;
@@ -34,9 +36,11 @@ import com.twohands.social_service.delivery.http.post.response.CreatePostRespons
 import com.twohands.social_service.delivery.http.post.response.DeletePostResponse;
 import com.twohands.social_service.delivery.http.post.response.EditPostResponse;
 import com.twohands.social_service.delivery.http.post.response.LikeUnlikePostResponse;
+import com.twohands.social_service.delivery.http.post.mapper.ViewPostDetailHttpMapper;
 import com.twohands.social_service.delivery.http.post.mapper.ViewSavedPostsHttpMapper;
 import com.twohands.social_service.delivery.http.post.response.SaveUnsavePostResponse;
 import com.twohands.social_service.delivery.http.post.response.UploadPostMediaResponse;
+import com.twohands.social_service.delivery.http.post.response.ViewPostDetailResponse;
 import com.twohands.social_service.delivery.http.post.response.ViewSavedPostsResponse;
 import com.twohands.social_service.security.AuthenticatedUser;
 import jakarta.validation.Valid;
@@ -71,6 +75,8 @@ public class PostController {
     private final CommentPostUseCase commentPostUseCase;
     private final ViewSavedPostsUseCase viewSavedPostsUseCase;
     private final ViewSavedPostsHttpMapper viewSavedPostsHttpMapper;
+    private final ViewPostDetailUseCase viewPostDetailUseCase;
+    private final ViewPostDetailHttpMapper viewPostDetailHttpMapper;
     private final UploadPostMediaUseCase uploadPostMediaUseCase;
 
     public PostController(
@@ -82,6 +88,8 @@ public class PostController {
             CommentPostUseCase commentPostUseCase,
             ViewSavedPostsUseCase viewSavedPostsUseCase,
             ViewSavedPostsHttpMapper viewSavedPostsHttpMapper,
+            ViewPostDetailUseCase viewPostDetailUseCase,
+            ViewPostDetailHttpMapper viewPostDetailHttpMapper,
             UploadPostMediaUseCase uploadPostMediaUseCase
     ) {
         this.createPostUseCase = createPostUseCase;
@@ -92,6 +100,8 @@ public class PostController {
         this.commentPostUseCase = commentPostUseCase;
         this.viewSavedPostsUseCase = viewSavedPostsUseCase;
         this.viewSavedPostsHttpMapper = viewSavedPostsHttpMapper;
+        this.viewPostDetailUseCase = viewPostDetailUseCase;
+        this.viewPostDetailHttpMapper = viewPostDetailHttpMapper;
         this.uploadPostMediaUseCase = uploadPostMediaUseCase;
     }
 
@@ -109,6 +119,22 @@ public class PostController {
                         HttpStatus.OK.value(),
                         viewSavedPostsUseCase.successMessage(),
                         viewSavedPostsHttpMapper.toResponse(result)
+                ));
+    }
+
+    @GetMapping("/{postId}")
+    public ResponseEntity<ApiResponse<ViewPostDetailResponse>> viewPostDetail(
+            @PathVariable String postId,
+            Authentication authentication
+    ) {
+        UUID viewerId = resolveUserId(authentication);
+        ViewPostDetailResult result = viewPostDetailUseCase.execute(viewerId, postId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        viewPostDetailUseCase.successMessage(),
+                        viewPostDetailHttpMapper.toResponse(result)
                 ));
     }
 

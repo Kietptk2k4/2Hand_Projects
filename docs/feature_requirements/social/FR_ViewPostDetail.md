@@ -141,7 +141,8 @@ Cho phep user xem chi tiet mot bai viet (caption, media, hashtags, counters, aut
 | `FR_HandlePostModeratedEvent` | An post sau moderation |
 | `docs/business-spec/social-service-spec.md` | Post Management |
 
-## 13. Implementation Notes (hien trang)
+## 13. Implementation Notes
 
-- Endpoint `GET /api/v1/social/posts/{postId}` **chua co** trong `social-service`.
-- Co the reuse mapper field tu `ViewGlobalFeedResponse.PostItemResponse` + bo sung author/flags.
+- Endpoint: `GET /api/v1/social/posts/{postId}` — `ViewPostDetailUseCase`, `PostViewAccessPolicy.evaluateViewAccess`.
+- Read-only: khong `UserWriteGuard` (`FR_EnforceUserStatusOnWrite`).
+- JSON response: camelCase (`postId`, `likedByMe`, `savedByMe`, `isOwner`).
