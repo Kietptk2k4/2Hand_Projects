@@ -23,6 +23,7 @@ public final class AdminActionLogPolicy {
 			"POST_MODERATE",
 			"POST_RESTORE",
 			"COMMENT_MODERATE",
+			"COMMENT_RESTORE",
 			"SYSTEM_CONFIG_CREATE",
 			"SYSTEM_CONFIG_UPDATE",
 			"SYSTEM_CONFIG_TOGGLE",

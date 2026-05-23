@@ -26,6 +26,7 @@ public class AdminOutboxTopicResolver {
 			Map.entry("POST_MODERATED", "admin.post.moderated"),
 			Map.entry("POST_RESTORED", "admin.post.restored"),
 			Map.entry("COMMENT_MODERATED", "admin.comment.moderated"),
+			Map.entry("COMMENT_RESTORED", "admin.comment.restored"),
 			Map.entry("SYSTEM_CONFIG_UPDATED", "admin.config.updated"),
 			Map.entry("SYSTEM_ANNOUNCEMENT_PUBLISHED", "admin.announcement.published"),
 			Map.entry("SYSTEM_ANNOUNCEMENT_CANCELLED", "admin.announcement.cancelled")

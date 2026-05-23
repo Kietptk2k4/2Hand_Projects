@@ -20,14 +20,26 @@ public class CommentModerationOutboxPayloadBuilder {
 	}
 
 	public String buildCommentModeratedPayload(ContentModerationLog moderationLog, String commentId) {
+		Map<String, Object> payload = baseCommentModerationPayload(moderationLog, commentId);
+		payload.put("moderated_by", moderationLog.adminId().toString());
+		payload.put("moderated_at", moderationLog.createdAt().toString());
+		return serialize(payload);
+	}
+
+	public String buildCommentRestoredPayload(ContentModerationLog moderationLog, String commentId) {
+		Map<String, Object> payload = baseCommentModerationPayload(moderationLog, commentId);
+		payload.put("restored_by", moderationLog.adminId().toString());
+		payload.put("restored_at", moderationLog.createdAt().toString());
+		return serialize(payload);
+	}
+
+	private Map<String, Object> baseCommentModerationPayload(ContentModerationLog moderationLog, String commentId) {
 		Map<String, Object> payload = new LinkedHashMap<>();
 		payload.put("comment_id", commentId);
 		payload.put("moderation_log_id", moderationLog.id().toString());
 		payload.put("action", moderationLog.action().name());
 		payload.put("reason", moderationLog.reason());
-		payload.put("moderated_by", moderationLog.adminId().toString());
-		payload.put("moderated_at", moderationLog.createdAt().toString());
-		return serialize(payload);
+		return payload;
 	}
 
 	private String serialize(Map<String, Object> payload) {

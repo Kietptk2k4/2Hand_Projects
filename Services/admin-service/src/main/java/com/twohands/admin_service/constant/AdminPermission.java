@@ -26,6 +26,7 @@ public final class AdminPermission {
 	public static final String POST_MODERATE = "POST_MODERATE";
 	public static final String POST_RESTORE = "POST_RESTORE";
 	public static final String COMMENT_MODERATE = "COMMENT_MODERATE";
+	public static final String COMMENT_RESTORE = "COMMENT_RESTORE";
 	public static final String SYSTEM_CONFIG_UPDATE = "SYSTEM_CONFIG_UPDATE";
 	public static final String SYSTEM_CONFIG_VIEW = "SYSTEM_CONFIG_VIEW";
 	public static final String SYSTEM_ANNOUNCEMENT_CREATE = "SYSTEM_ANNOUNCEMENT_CREATE";
@@ -56,6 +57,7 @@ public final class AdminPermission {
 			POST_MODERATE,
 			POST_RESTORE,
 			COMMENT_MODERATE,
+			COMMENT_RESTORE,
 			SYSTEM_CONFIG_UPDATE,
 			SYSTEM_CONFIG_VIEW,
 			SYSTEM_ANNOUNCEMENT_CREATE,
