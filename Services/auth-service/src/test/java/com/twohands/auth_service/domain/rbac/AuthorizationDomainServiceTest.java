@@ -27,6 +27,11 @@ class AuthorizationDomainServiceTest {
             }
 
             @Override
+            public java.util.List<String> findRoleCodesByUserId(UUID userId) {
+                return java.util.List.of();
+            }
+
+            @Override
             public java.util.List<PermissionQueryRepository.PermissionData> findPermissionsByRoleId(UUID roleId) {
                 return java.util.List.of();
             }

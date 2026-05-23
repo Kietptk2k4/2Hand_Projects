@@ -9,6 +9,8 @@ public interface PermissionQueryRepository {
 
     Set<String> findPermissionCodesByUserId(UUID userId);
 
+    List<String> findRoleCodesByUserId(UUID userId);
+
     List<PermissionData> findPermissionsByRoleId(UUID roleId);
 
     record PermissionData(String code, String description) {

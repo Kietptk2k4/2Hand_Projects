@@ -22,6 +22,8 @@ public enum ErrorCode {
     OAUTH_ACCOUNT_UNAVAILABLE("AUTH-403-OAUTH-ACCOUNT-UNAVAILABLE", HttpStatus.FORBIDDEN,
             "Tai khoan hien khong kha dung."),
     ACCOUNT_SUSPENDED("AUTH-403-ACCOUNT-SUSPENDED", HttpStatus.FORBIDDEN, "Tai khoan cua ban da bi khoa tam thoi."),
+    ADMIN_PORTAL_ACCESS_DENIED("AUTH-403-ADMIN-PORTAL", HttpStatus.FORBIDDEN,
+            "Tai khoan khong co quyen truy cap admin portal."),
     UNAUTHORIZED("AUTH-401", HttpStatus.UNAUTHORIZED, "Authentication required"),
     FORBIDDEN("AUTH-403", HttpStatus.FORBIDDEN, "Access denied"),
     RESOURCE_NOT_FOUND("AUTH-404", HttpStatus.NOT_FOUND, "Resource not found"),

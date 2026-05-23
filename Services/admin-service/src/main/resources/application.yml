@@ -57,6 +57,9 @@ jwt:
   refresh-expiration: ${JWT_REFRESH_EXPIRATION:2592000000}
 
 admin:
+  auth:
+    login:
+      gateway-enabled: ${ADMIN_AUTH_LOGIN_GATEWAY_ENABLED:false}
   outbox:
     publish:
       enabled: ${ADMIN_OUTBOX_PUBLISH_ENABLED:false}

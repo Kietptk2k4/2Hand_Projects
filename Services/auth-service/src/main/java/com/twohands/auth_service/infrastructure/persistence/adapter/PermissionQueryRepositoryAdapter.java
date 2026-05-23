@@ -57,6 +57,23 @@ public class PermissionQueryRepositoryAdapter implements PermissionQueryReposito
     }
 
     @Override
+    public List<String> findRoleCodesByUserId(UUID userId) {
+        String sql = """
+                SELECT DISTINCT r.code
+                FROM roles r
+                JOIN user_roles ur ON ur.role_id = r.id
+                WHERE ur.user_id = :userId
+                ORDER BY r.code ASC
+                """;
+
+        return jdbcTemplate.query(
+                sql,
+                new MapSqlParameterSource("userId", userId),
+                (rs, rowNum) -> rs.getString("code")
+        );
+    }
+
+    @Override
     public List<PermissionData> findPermissionsByRoleId(UUID roleId) {
         String sql = """
                 SELECT p.code, p.description
