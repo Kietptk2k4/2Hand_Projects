@@ -9,6 +9,10 @@ import com.twohands.admin_service.infrastructure.persistence.jpa.repository.User
 import com.twohands.admin_service.infrastructure.persistence.jpa.repository.UserEnforcementLogJpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+
 @Repository
 public class UserEnforcementLogRepositoryAdapter implements UserEnforcementLogRepository {
 
@@ -40,6 +44,16 @@ public class UserEnforcementLogRepositoryAdapter implements UserEnforcementLogRe
 		entity.setNote(log.note());
 		entity.setCreatedAt(log.createdAt());
 		return toDomain(logJpaRepository.save(entity));
+	}
+
+	@Override
+	public List<UserEnforcementLog> findByEnforcementIdsOrderByCreatedAtDesc(Collection<UUID> enforcementIds) {
+		if (enforcementIds == null || enforcementIds.isEmpty()) {
+			return List.of();
+		}
+		return logJpaRepository.findByEnforcementIdsOrderByCreatedAtDesc(enforcementIds).stream()
+				.map(this::toDomain)
+				.toList();
 	}
 
 	private UserEnforcementLog toDomain(UserEnforcementLogEntity entity) {

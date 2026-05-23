@@ -1,11 +1,16 @@
 package com.twohands.admin_service.infrastructure.persistence.enforcement;
 
+import com.twohands.admin_service.domain.common.PageRequest;
+import com.twohands.admin_service.domain.common.PagedResult;
 import com.twohands.admin_service.domain.enforcement.UserEnforcement;
 import com.twohands.admin_service.domain.enforcement.UserEnforcementActionType;
 import com.twohands.admin_service.domain.enforcement.UserEnforcementRepository;
 import com.twohands.admin_service.domain.enforcement.UserEnforcementStatus;
 import com.twohands.admin_service.infrastructure.persistence.jpa.entity.UserEnforcementEntity;
 import com.twohands.admin_service.infrastructure.persistence.jpa.repository.UserEnforcementJpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.util.Comparator;
@@ -59,6 +64,23 @@ public class UserEnforcementRepositoryAdapter implements UserEnforcementReposito
 				.map(this::toDomain)
 				.sorted(Comparator.comparing(UserEnforcement::createdAt).reversed())
 				.toList();
+	}
+
+	@Override
+	public PagedResult<UserEnforcement> findAllByUserId(UUID userId, PageRequest pageRequest) {
+		Pageable pageable = org.springframework.data.domain.PageRequest.of(
+				pageRequest.page() - 1,
+				pageRequest.size(),
+				Sort.by(Sort.Direction.DESC, "createdAt")
+		);
+		Page<UserEnforcementEntity> page = jpaRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
+		return new PagedResult<>(
+				page.getContent().stream().map(this::toDomain).toList(),
+				pageRequest.page(),
+				pageRequest.size(),
+				page.getTotalElements(),
+				page.getTotalPages()
+		);
 	}
 
 	private UserEnforcementEntity toEntity(UserEnforcement enforcement) {
