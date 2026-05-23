@@ -5,6 +5,7 @@ import com.twohands.notification_service.domain.notificationsetting.UserNotifica
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Repository
@@ -32,6 +33,11 @@ public class UserNotificationSettingRepositoryAdapter implements UserNotificatio
     @Override
     public Optional<UserNotificationSetting> findByUserIdAndEventType(UUID userId, String eventType) {
         return jpaRepository.findByUserIdAndEventType(userId, eventType).map(this::toDomain);
+    }
+
+    @Override
+    public Set<String> findEventTypesByUserId(UUID userId) {
+        return jpaRepository.findEventTypesByUserId(userId);
     }
 
     private UserNotificationSetting toDomain(UserNotificationSettingEntity entity) {

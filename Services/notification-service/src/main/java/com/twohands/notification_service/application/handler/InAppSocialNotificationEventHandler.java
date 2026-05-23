@@ -11,6 +11,7 @@ import com.twohands.notification_service.domain.delivery.NotificationDeliveryDec
 import com.twohands.notification_service.domain.delivery.SkipSelfNotificationOutcome;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import com.twohands.notification_service.domain.usernotification.NotificationDeliveryStatus;
+import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Component
+@Order(100)
 public class InAppSocialNotificationEventHandler implements NotificationEventHandler {
 
     private final NotificationDeliveryChannelPolicy deliveryChannelPolicy;
@@ -45,7 +47,7 @@ public class InAppSocialNotificationEventHandler implements NotificationEventHan
 
     @Override
     public boolean supports(String eventType) {
-        return deliveryChannelPolicy.allowsInApp(eventType);
+        return deliveryChannelPolicy.isSocialInAppEvent(eventType);
     }
 
     @Override

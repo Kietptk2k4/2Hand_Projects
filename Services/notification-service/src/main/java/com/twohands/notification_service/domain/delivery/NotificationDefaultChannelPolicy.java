@@ -43,4 +43,8 @@ public final class NotificationDefaultChannelPolicy {
         }
         return Optional.ofNullable(DEFAULTS.get(eventType));
     }
+
+    public static java.util.Set<String> supportedEventTypes() {
+        return DEFAULTS.keySet();
+    }
 }
