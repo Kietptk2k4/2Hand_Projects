@@ -21,6 +21,7 @@ public final class AdminPermission {
 	public static final String COMMENT_MODERATE = "COMMENT_MODERATE";
 	public static final String SYSTEM_CONFIG_UPDATE = "SYSTEM_CONFIG_UPDATE";
 	public static final String SYSTEM_CONFIG_VIEW = "SYSTEM_CONFIG_VIEW";
+	public static final String SYSTEM_ANNOUNCEMENT_CREATE = "SYSTEM_ANNOUNCEMENT_CREATE";
 	public static final String SYSTEM_ANNOUNCEMENT_PUBLISH = "SYSTEM_ANNOUNCEMENT_PUBLISH";
 	public static final String ADMIN_AUDIT_READ = "ADMIN_AUDIT_READ";
 	public static final String ADMIN_SESSION_REVOKE = "ADMIN_SESSION_REVOKE";
@@ -40,6 +41,7 @@ public final class AdminPermission {
 			COMMENT_MODERATE,
 			SYSTEM_CONFIG_UPDATE,
 			SYSTEM_CONFIG_VIEW,
+			SYSTEM_ANNOUNCEMENT_CREATE,
 			SYSTEM_ANNOUNCEMENT_PUBLISH,
 			ADMIN_AUDIT_READ,
 			ADMIN_SESSION_REVOKE,
