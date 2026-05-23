@@ -71,6 +71,10 @@ public final class SystemAnnouncementPolicy {
 		}
 	}
 
+	public static boolean isCancellable(SystemAnnouncementStatus status) {
+		return status == SystemAnnouncementStatus.DRAFT || status == SystemAnnouncementStatus.SENT;
+	}
+
 	private static void validateTitle(String title) {
 		String normalized = normalizeTitle(title);
 		if (normalized.isEmpty()) {

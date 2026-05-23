@@ -54,6 +54,7 @@ Consumer dedupe bằng `event_id` (at-least-once publish).
 | SHOP_SUSPENDED | admin.shop.suspended |
 | SYSTEM_CONFIG_UPDATED | admin.config.updated |
 | SYSTEM_ANNOUNCEMENT_PUBLISHED | admin.announcement.published |
+| SYSTEM_ANNOUNCEMENT_CANCELLED | admin.announcement.cancelled |
 | … | Xem `AdminOutboxTopicResolver` |
 
 ## 6. Business Rules

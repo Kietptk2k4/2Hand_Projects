@@ -1,5 +1,8 @@
 package com.twohands.admin_service.delivery.http.announcement;
 
+import com.twohands.admin_service.application.announcement.cancelsystemannouncement.CancelSystemAnnouncementCommand;
+import com.twohands.admin_service.application.announcement.cancelsystemannouncement.CancelSystemAnnouncementResult;
+import com.twohands.admin_service.application.announcement.cancelsystemannouncement.CancelSystemAnnouncementUseCase;
 import com.twohands.admin_service.application.announcement.createsystemannouncement.CreateSystemAnnouncementCommand;
 import com.twohands.admin_service.application.announcement.createsystemannouncement.CreateSystemAnnouncementResult;
 import com.twohands.admin_service.application.announcement.createsystemannouncement.CreateSystemAnnouncementUseCase;
@@ -31,15 +34,18 @@ public class SystemAnnouncementController {
 	private final CreateSystemAnnouncementUseCase createSystemAnnouncementUseCase;
 	private final PublishSystemAnnouncementUseCase publishSystemAnnouncementUseCase;
 	private final PinSystemAnnouncementUseCase pinSystemAnnouncementUseCase;
+	private final CancelSystemAnnouncementUseCase cancelSystemAnnouncementUseCase;
 
 	public SystemAnnouncementController(
 			CreateSystemAnnouncementUseCase createSystemAnnouncementUseCase,
 			PublishSystemAnnouncementUseCase publishSystemAnnouncementUseCase,
-			PinSystemAnnouncementUseCase pinSystemAnnouncementUseCase
+			PinSystemAnnouncementUseCase pinSystemAnnouncementUseCase,
+			CancelSystemAnnouncementUseCase cancelSystemAnnouncementUseCase
 	) {
 		this.createSystemAnnouncementUseCase = createSystemAnnouncementUseCase;
 		this.publishSystemAnnouncementUseCase = publishSystemAnnouncementUseCase;
 		this.pinSystemAnnouncementUseCase = pinSystemAnnouncementUseCase;
+		this.cancelSystemAnnouncementUseCase = cancelSystemAnnouncementUseCase;
 	}
 
 	@PostMapping
@@ -125,6 +131,30 @@ public class SystemAnnouncementController {
 		String message = result.stateChanged()
 				? pinSystemAnnouncementUseCase.successMessage()
 				: pinSystemAnnouncementUseCase.idempotentMessage();
+
+		return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), message, data));
+	}
+
+	@PostMapping("/{announcementId}/cancel")
+	@RequireAdminPermission(AdminPermission.SYSTEM_ANNOUNCEMENT_CANCEL)
+	public ResponseEntity<ApiResponse<CancelSystemAnnouncementResponse>> cancel(
+			@PathVariable UUID announcementId
+	) {
+		CancelSystemAnnouncementResult result = cancelSystemAnnouncementUseCase.execute(
+				new CancelSystemAnnouncementCommand(announcementId)
+		);
+
+		CancelSystemAnnouncementResponse data = new CancelSystemAnnouncementResponse(
+				result.announcementId(),
+				result.title(),
+				result.status().name(),
+				result.stateChanged(),
+				result.outboxEventId()
+		);
+
+		String message = result.stateChanged()
+				? cancelSystemAnnouncementUseCase.successMessage()
+				: cancelSystemAnnouncementUseCase.idempotentMessage();
 
 		return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), message, data));
 	}

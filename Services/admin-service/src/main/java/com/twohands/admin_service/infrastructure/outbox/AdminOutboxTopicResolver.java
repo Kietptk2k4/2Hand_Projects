@@ -25,7 +25,8 @@ public class AdminOutboxTopicResolver {
 			Map.entry("POST_MODERATED", "admin.post.moderated"),
 			Map.entry("COMMENT_MODERATED", "admin.comment.moderated"),
 			Map.entry("SYSTEM_CONFIG_UPDATED", "admin.config.updated"),
-			Map.entry("SYSTEM_ANNOUNCEMENT_PUBLISHED", "admin.announcement.published")
+			Map.entry("SYSTEM_ANNOUNCEMENT_PUBLISHED", "admin.announcement.published"),
+			Map.entry("SYSTEM_ANNOUNCEMENT_CANCELLED", "admin.announcement.cancelled")
 	);
 
 	public String resolve(String eventType) {
