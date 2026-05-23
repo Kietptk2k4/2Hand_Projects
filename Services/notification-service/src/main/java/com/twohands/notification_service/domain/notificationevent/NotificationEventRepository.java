@@ -1,5 +1,7 @@
 package com.twohands.notification_service.domain.notificationevent;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,4 +18,6 @@ public interface NotificationEventRepository {
             NotificationSourceService sourceService,
             String eventKey
     );
+
+    List<NotificationEvent> findStaleProcessingEvents(Instant lockedBefore, int limit);
 }

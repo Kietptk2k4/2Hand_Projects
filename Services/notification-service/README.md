@@ -162,7 +162,7 @@ cd Services/notification-service
 ./gradlew test
 ```
 
-Use cases hiện có: `StoreNotificationEventUseCase`, `IngestNotificationEventUseCase`, `ProcessPendingNotificationEventsUseCase`, `RetryFailedNotificationEventsUseCase`, `RetryFailedNotificationDeliveryUseCase`.
+Use cases hiện có: `StoreNotificationEventUseCase`, `EnsureNotificationEventIdempotencyUseCase`, `CreateIdempotentUserNotificationUseCase`, `RecoverStaleProcessingNotificationEventsUseCase`, `IngestNotificationEventUseCase`, `ProcessPendingNotificationEventsUseCase`, `RetryFailedNotificationEventsUseCase`, `RetryFailedNotificationDeliveryUseCase`.
 
 ---
 
@@ -170,8 +170,9 @@ Use cases hiện có: `StoreNotificationEventUseCase`, `IngestNotificationEventU
 
 ```
 src/main/java/com/twohands/notification_service/
-├── application/ingest/    # StoreNotificationEventUseCase, IngestNotificationEventUseCase
-├── application/worker/    # Process / retry use cases
+├── application/ingest/       # Store, Ingest
+├── application/idempotency/  # Ensure event/user idempotency, stale recovery
+├── application/worker/       # Process / retry use cases
 ├── delivery/http/       # Health, InternalEventController
 ├── domain/
 ├── infrastructure/

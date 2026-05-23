@@ -58,6 +58,11 @@ notification:
       enabled: ${NOTIFICATION_RETRY_EVENTS_ENABLED:false}
       cron: ${NOTIFICATION_RETRY_EVENTS_CRON:0 */1 * * * *}
       batch-size: ${NOTIFICATION_RETRY_EVENTS_BATCH_SIZE:50}
+    recover-stale-processing:
+      enabled: ${NOTIFICATION_RECOVER_STALE_PROCESSING_ENABLED:false}
+      cron: ${NOTIFICATION_RECOVER_STALE_PROCESSING_CRON:0 */5 * * * *}
+      batch-size: ${NOTIFICATION_RECOVER_STALE_PROCESSING_BATCH_SIZE:50}
+      processing-timeout-seconds: ${NOTIFICATION_RECOVER_STALE_PROCESSING_TIMEOUT_SECONDS:300}
     retry-delivery:
       enabled: ${NOTIFICATION_RETRY_DELIVERY_ENABLED:false}
       cron: ${NOTIFICATION_RETRY_DELIVERY_CRON:0 */2 * * * *}

@@ -1,5 +1,6 @@
 package com.twohands.notification_service.application.ingest;
 
+import com.twohands.notification_service.application.idempotency.EnsureNotificationEventIdempotencyUseCase;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventPayloadSanitizer;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventRepository;
@@ -23,23 +24,26 @@ public class StoreNotificationEventUseCase {
 
     private final NotificationEventRepository notificationEventRepository;
     private final NotificationEventPayloadSanitizer payloadSanitizer;
+    private final EnsureNotificationEventIdempotencyUseCase ensureNotificationEventIdempotencyUseCase;
 
     public StoreNotificationEventUseCase(
             NotificationEventRepository notificationEventRepository,
-            NotificationEventPayloadSanitizer payloadSanitizer
+            NotificationEventPayloadSanitizer payloadSanitizer,
+            EnsureNotificationEventIdempotencyUseCase ensureNotificationEventIdempotencyUseCase
     ) {
         this.notificationEventRepository = notificationEventRepository;
         this.payloadSanitizer = payloadSanitizer;
+        this.ensureNotificationEventIdempotencyUseCase = ensureNotificationEventIdempotencyUseCase;
     }
 
     @Transactional
     public IngestNotificationEventResult execute(NotificationEventIngestCommand command) {
-        validateIdempotencyKey(command);
+        ensureNotificationEventIdempotencyUseCase.validateIdempotencyKeyPresent(command);
         validateEventType(command.eventType());
 
         String sanitizedPayload = payloadSanitizer.sanitize(command.payload());
 
-        Optional<NotificationEvent> existing = findExisting(command);
+        Optional<NotificationEvent> existing = ensureNotificationEventIdempotencyUseCase.findExisting(command);
         if (existing.isPresent()) {
             return new IngestNotificationEventResult(existing.get().id(), true);
         }
@@ -47,7 +51,7 @@ public class StoreNotificationEventUseCase {
         NotificationEvent pendingEvent = new NotificationEvent(
                 UUID.randomUUID(),
                 command.sourceEventId(),
-                normalizeEventKey(command.eventKey()),
+                ensureNotificationEventIdempotencyUseCase.toKey(command).normalizedEventKey(),
                 command.eventType(),
                 command.sourceService(),
                 command.aggregateType(),
@@ -69,24 +73,11 @@ public class StoreNotificationEventUseCase {
             NotificationEvent saved = notificationEventRepository.save(pendingEvent);
             return new IngestNotificationEventResult(saved.id(), false);
         } catch (DataIntegrityViolationException ex) {
-            Optional<NotificationEvent> duplicate = findExisting(command);
+            Optional<NotificationEvent> duplicate = ensureNotificationEventIdempotencyUseCase.findExisting(command);
             if (duplicate.isPresent()) {
                 return new IngestNotificationEventResult(duplicate.get().id(), true);
             }
             throw ex;
-        }
-    }
-
-    private void validateIdempotencyKey(NotificationEventIngestCommand command) {
-        boolean hasSourceEventId = command.sourceEventId() != null;
-        boolean hasEventKey = command.eventKey() != null && !command.eventKey().isBlank();
-        if (!hasSourceEventId && !hasEventKey) {
-            throw new AppException(
-                    ErrorCode.MISSING_IDEMPOTENCY_KEY,
-                    "Validation failed",
-                    "sourceEventId",
-                    "Either sourceEventId or eventKey is required."
-            );
         }
     }
 
@@ -107,27 +98,5 @@ public class StoreNotificationEventUseCase {
                     "Event type must use UPPER_SNAKE_CASE."
             );
         }
-    }
-
-    private Optional<NotificationEvent> findExisting(NotificationEventIngestCommand command) {
-        if (command.sourceEventId() != null) {
-            Optional<NotificationEvent> bySourceEventId = notificationEventRepository
-                    .findBySourceServiceAndSourceEventId(command.sourceService(), command.sourceEventId());
-            if (bySourceEventId.isPresent()) {
-                return bySourceEventId;
-            }
-        }
-        String eventKey = normalizeEventKey(command.eventKey());
-        if (eventKey != null) {
-            return notificationEventRepository.findBySourceServiceAndEventKey(command.sourceService(), eventKey);
-        }
-        return Optional.empty();
-    }
-
-    private String normalizeEventKey(String eventKey) {
-        if (eventKey == null || eventKey.isBlank()) {
-            return null;
-        }
-        return eventKey.trim();
     }
 }

@@ -1,6 +1,7 @@
 package com.twohands.notification_service.unit.application.ingest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.notification_service.application.idempotency.EnsureNotificationEventIdempotencyUseCase;
 import com.twohands.notification_service.application.ingest.JacksonNotificationEventPayloadSanitizer;
 import com.twohands.notification_service.application.ingest.NotificationEventIngestCommand;
 import com.twohands.notification_service.application.ingest.StoreNotificationEventUseCase;
@@ -45,7 +46,13 @@ class StoreNotificationEventUseCaseTest {
     @BeforeEach
     void setUp() {
         payloadSanitizer = new JacksonNotificationEventPayloadSanitizer(new ObjectMapper());
-        useCase = new StoreNotificationEventUseCase(notificationEventRepository, payloadSanitizer);
+        EnsureNotificationEventIdempotencyUseCase ensureIdempotency =
+                new EnsureNotificationEventIdempotencyUseCase(notificationEventRepository);
+        useCase = new StoreNotificationEventUseCase(
+                notificationEventRepository,
+                payloadSanitizer,
+                ensureIdempotency
+        );
     }
 
     @Test

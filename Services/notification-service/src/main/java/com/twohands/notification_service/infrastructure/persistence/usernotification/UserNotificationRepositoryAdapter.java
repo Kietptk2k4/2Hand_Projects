@@ -1,9 +1,11 @@
 package com.twohands.notification_service.infrastructure.persistence.usernotification;
 
+import com.twohands.notification_service.domain.idempotency.UserNotificationIdempotencyKey;
 import com.twohands.notification_service.domain.usernotification.UserNotification;
 import com.twohands.notification_service.domain.usernotification.UserNotificationRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -35,6 +37,18 @@ public class UserNotificationRepositoryAdapter implements UserNotificationReposi
         entity.setReadAt(notification.readAt());
         UserNotificationEntity saved = jpaRepository.save(entity);
         return toDomain(saved);
+    }
+
+    @Override
+    public Optional<UserNotification> findByIdempotencyKey(UserNotificationIdempotencyKey idempotencyKey) {
+        return jpaRepository.findByNotificationEventIdAndUserIdAndTypeAndReferenceTypeAndReferenceId(
+                        idempotencyKey.notificationEventId(),
+                        idempotencyKey.userId(),
+                        idempotencyKey.type(),
+                        idempotencyKey.referenceType(),
+                        idempotencyKey.referenceId()
+                )
+                .map(this::toDomain);
     }
 
     @Override

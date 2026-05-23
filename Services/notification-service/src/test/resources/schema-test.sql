@@ -33,8 +33,8 @@ CREATE TABLE IF NOT EXISTS user_notifications (
     type VARCHAR(100) NOT NULL,
     title VARCHAR(255) NOT NULL,
     content VARCHAR(4000) NOT NULL,
-    reference_type VARCHAR(80),
-    reference_id VARCHAR(100),
+    reference_type VARCHAR(80) NOT NULL DEFAULT '',
+    reference_id VARCHAR(100) NOT NULL DEFAULT '',
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     metadata VARCHAR(4000) NOT NULL DEFAULT '{}',
@@ -42,6 +42,9 @@ CREATE TABLE IF NOT EXISTS user_notifications (
     created_at TIMESTAMP NOT NULL,
     read_at TIMESTAMP
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_user_notifications_event_recipient_reference
+    ON user_notifications(notification_event_id, user_id, type, reference_type, reference_id);
 
 CREATE TABLE IF NOT EXISTS user_device_tokens (
     id UUID PRIMARY KEY,
