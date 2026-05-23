@@ -3,6 +3,9 @@ package com.twohands.admin_service.delivery.http.config;
 import com.twohands.admin_service.application.config.createsystemconfig.CreateSystemConfigCommand;
 import com.twohands.admin_service.application.config.createsystemconfig.CreateSystemConfigResult;
 import com.twohands.admin_service.application.config.createsystemconfig.CreateSystemConfigUseCase;
+import com.twohands.admin_service.application.config.togglesystemconfig.ToggleSystemConfigCommand;
+import com.twohands.admin_service.application.config.togglesystemconfig.ToggleSystemConfigResult;
+import com.twohands.admin_service.application.config.togglesystemconfig.ToggleSystemConfigUseCase;
 import com.twohands.admin_service.application.config.updatesystemconfig.UpdateSystemConfigCommand;
 import com.twohands.admin_service.application.config.updatesystemconfig.UpdateSystemConfigResult;
 import com.twohands.admin_service.application.config.updatesystemconfig.UpdateSystemConfigUseCase;
@@ -27,13 +30,16 @@ public class SystemConfigController {
 
 	private final CreateSystemConfigUseCase createSystemConfigUseCase;
 	private final UpdateSystemConfigUseCase updateSystemConfigUseCase;
+	private final ToggleSystemConfigUseCase toggleSystemConfigUseCase;
 
 	public SystemConfigController(
 			CreateSystemConfigUseCase createSystemConfigUseCase,
-			UpdateSystemConfigUseCase updateSystemConfigUseCase
+			UpdateSystemConfigUseCase updateSystemConfigUseCase,
+			ToggleSystemConfigUseCase toggleSystemConfigUseCase
 	) {
 		this.createSystemConfigUseCase = createSystemConfigUseCase;
 		this.updateSystemConfigUseCase = updateSystemConfigUseCase;
+		this.toggleSystemConfigUseCase = toggleSystemConfigUseCase;
 	}
 
 	@PostMapping
@@ -96,6 +102,39 @@ public class SystemConfigController {
 		return ResponseEntity.ok(ApiResponse.success(
 				HttpStatus.OK.value(),
 				updateSystemConfigUseCase.successMessage(),
+				data
+		));
+	}
+
+	@PatchMapping("/{configId}/toggle")
+	@RequireAdminPermission(AdminPermission.SYSTEM_CONFIG_UPDATE)
+	public ResponseEntity<ApiResponse<ToggleSystemConfigResponse>> toggle(
+			@PathVariable UUID configId,
+			@Valid @RequestBody ToggleSystemConfigRequest request
+	) {
+		ToggleSystemConfigResult result = toggleSystemConfigUseCase.execute(new ToggleSystemConfigCommand(
+				configId,
+				request.active(),
+				request.reason()
+		));
+
+		ToggleSystemConfigResponse data = new ToggleSystemConfigResponse(
+				result.configId(),
+				result.configKey(),
+				result.configValue(),
+				result.valueType().name(),
+				result.description(),
+				result.active(),
+				result.updatedBy(),
+				result.updatedAt(),
+				result.historyId(),
+				result.outboxEventId(),
+				result.stateChanged()
+		);
+
+		return ResponseEntity.ok(ApiResponse.success(
+				HttpStatus.OK.value(),
+				toggleSystemConfigUseCase.successMessage(result.stateChanged()),
 				data
 		));
 	}

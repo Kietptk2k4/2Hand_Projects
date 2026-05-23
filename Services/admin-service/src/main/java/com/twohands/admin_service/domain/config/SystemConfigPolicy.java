@@ -48,6 +48,14 @@ public final class SystemConfigPolicy {
 		validateConfigValue(configValue, valueType);
 	}
 
+	public static void validateToggleRequest(String reason) {
+		validateReason(reason);
+	}
+
+	public static String formatActiveState(boolean active) {
+		return Boolean.toString(active);
+	}
+
 	public static String normalizeConfigValue(String configValue, SystemConfigValueType valueType) {
 		String trimmed = configValue.trim();
 		if (valueType == SystemConfigValueType.BOOLEAN) {
