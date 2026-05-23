@@ -74,13 +74,15 @@ CREATE TYPE content_moderation_target_type AS ENUM (
     'POST',
     'COMMENT',
     'PRODUCT',
-    'REVIEW'
+    'REVIEW',
+    'SHOP'
 );
 
 CREATE TYPE content_moderation_action AS ENUM (
     'HIDE',
     'REMOVE',
-    'RESTORE'
+    'RESTORE',
+    'SUSPEND'
 );
 
 CREATE TYPE outbox_status AS ENUM (

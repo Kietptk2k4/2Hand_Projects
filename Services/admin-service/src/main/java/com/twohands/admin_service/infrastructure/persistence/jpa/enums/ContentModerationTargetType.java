@@ -4,5 +4,6 @@ public enum ContentModerationTargetType {
 	POST,
 	COMMENT,
 	PRODUCT,
-	REVIEW
+	REVIEW,
+	SHOP
 }

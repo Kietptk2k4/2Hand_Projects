@@ -23,6 +23,10 @@ public final class ProductModerationPolicy {
 		validateModerationRequest(reason, note);
 	}
 
+	public static void validateSuspendRequest(String reason, String note) {
+		validateModerationRequest(reason, note);
+	}
+
 	public static String normalizeOptionalNote(String note) {
 		if (note == null) {
 			return null;
