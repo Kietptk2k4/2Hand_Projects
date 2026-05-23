@@ -3,11 +3,16 @@ package com.twohands.auth_service.delivery.http.admin;
 import com.twohands.auth_service.application.admin.viewuserinvestigationprofile.ViewUserInvestigationProfileByAdminCommand;
 import com.twohands.auth_service.application.admin.viewuserinvestigationprofile.ViewUserInvestigationProfileByAdminResult;
 import com.twohands.auth_service.application.admin.viewuserinvestigationprofile.ViewUserInvestigationProfileByAdminUseCase;
+import com.twohands.auth_service.application.admin.viewloginhistoryforadmin.ViewLoginHistoryForAdminCommand;
+import com.twohands.auth_service.application.admin.viewloginhistoryforadmin.ViewLoginHistoryForAdminQueryValidationService;
+import com.twohands.auth_service.application.admin.viewloginhistoryforadmin.ViewLoginHistoryForAdminResult;
+import com.twohands.auth_service.application.admin.viewloginhistoryforadmin.ViewLoginHistoryForAdminUseCase;
 import com.twohands.auth_service.application.admin.viewusersessionsforadmin.ViewUserSessionsForAdminCommand;
 import com.twohands.auth_service.application.admin.viewusersessionsforadmin.ViewUserSessionsForAdminQueryValidationService;
 import com.twohands.auth_service.application.admin.viewusersessionsforadmin.ViewUserSessionsForAdminResult;
 import com.twohands.auth_service.application.admin.viewusersessionsforadmin.ViewUserSessionsForAdminUseCase;
 import com.twohands.auth_service.common.dto.ApiResponse;
+import com.twohands.auth_service.delivery.http.admin.response.ViewLoginHistoryForAdminResponse;
 import com.twohands.auth_service.delivery.http.admin.response.ViewUserInvestigationProfileByAdminResponse;
 import com.twohands.auth_service.delivery.http.admin.response.ViewUserSessionsForAdminResponse;
 import com.twohands.auth_service.exception.AppException;
@@ -30,13 +35,16 @@ public class AdminUserInvestigationController {
 
 	private final ViewUserInvestigationProfileByAdminUseCase viewUserInvestigationProfileByAdminUseCase;
 	private final ViewUserSessionsForAdminUseCase viewUserSessionsForAdminUseCase;
+	private final ViewLoginHistoryForAdminUseCase viewLoginHistoryForAdminUseCase;
 
 	public AdminUserInvestigationController(
 			ViewUserInvestigationProfileByAdminUseCase viewUserInvestigationProfileByAdminUseCase,
-			ViewUserSessionsForAdminUseCase viewUserSessionsForAdminUseCase
+			ViewUserSessionsForAdminUseCase viewUserSessionsForAdminUseCase,
+			ViewLoginHistoryForAdminUseCase viewLoginHistoryForAdminUseCase
 	) {
 		this.viewUserInvestigationProfileByAdminUseCase = viewUserInvestigationProfileByAdminUseCase;
 		this.viewUserSessionsForAdminUseCase = viewUserSessionsForAdminUseCase;
+		this.viewLoginHistoryForAdminUseCase = viewLoginHistoryForAdminUseCase;
 	}
 
 	@GetMapping("/{userId}/investigation-profile")
@@ -110,6 +118,57 @@ public class AdminUserInvestigationController {
 				.body(ApiResponse.success(
 						HttpStatus.OK.value(),
 						viewUserSessionsForAdminUseCase.successMessage(),
+						response
+				));
+	}
+
+	@GetMapping("/{userId}/login-history")
+	public ResponseEntity<ApiResponse<ViewLoginHistoryForAdminResponse>> getLoginHistory(
+			@PathVariable String userId,
+			@RequestParam(defaultValue = "" + ViewLoginHistoryForAdminQueryValidationService.DEFAULT_PAGE) int page,
+			@RequestParam(defaultValue = "" + ViewLoginHistoryForAdminQueryValidationService.DEFAULT_LIMIT) int limit,
+			@RequestParam(required = false) Boolean success,
+			@RequestParam(required = false) String from,
+			@RequestParam(required = false) String to
+	) {
+		UUID targetUserId = parseUserId(userId);
+
+		ViewLoginHistoryForAdminResult result = viewLoginHistoryForAdminUseCase.execute(
+				new ViewLoginHistoryForAdminCommand(
+						resolveAuthenticatedUserId(),
+						targetUserId,
+						page,
+						limit,
+						success,
+						from,
+						to
+				)
+		);
+
+		ViewLoginHistoryForAdminResponse response = new ViewLoginHistoryForAdminResponse(
+				result.userId().toString(),
+				result.items().stream()
+						.map(item -> new ViewLoginHistoryForAdminResponse.ItemData(
+								item.loginMethod(),
+								item.ipAddress(),
+								item.userAgent(),
+								item.success(),
+								item.createdAt()
+						))
+						.toList(),
+				new ViewLoginHistoryForAdminResponse.PaginationData(
+						result.pagination().page(),
+						result.pagination().limit(),
+						result.pagination().totalItems(),
+						result.pagination().totalPages(),
+						result.pagination().hasNext()
+				)
+		);
+
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(ApiResponse.success(
+						HttpStatus.OK.value(),
+						viewLoginHistoryForAdminUseCase.successMessage(),
 						response
 				));
 	}

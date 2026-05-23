@@ -1,6 +1,8 @@
 package com.twohands.auth_service.infrastructure.persistence.adapter;
 
 import com.twohands.auth_service.domain.user.LoginLog;
+import com.twohands.auth_service.domain.user.LoginLogPage;
+import com.twohands.auth_service.domain.user.LoginLogQueryFilter;
 import com.twohands.auth_service.domain.user.LoginLogRepository;
 import com.twohands.auth_service.domain.user.LoginMethod;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -53,7 +55,52 @@ public class LoginLogRepositoryAdapter implements LoginLogRepository {
                 .addValue("limit", limit)
                 .addValue("offset", offset);
 
-        return jdbcTemplate.query(sql, params, (rs, rowNum) -> new LoginLog(
+        return jdbcTemplate.query(sql, params, (rs, rowNum) -> mapLoginLog(rs));
+    }
+
+    @Override
+    public LoginLogPage findPageByUserId(UUID userId, LoginLogQueryFilter filter, int limit, int offset) {
+        LoginLogQueryFilter effectiveFilter = filter == null ? LoginLogQueryFilter.empty() : filter;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("userId", userId)
+                .addValue("limit", limit)
+                .addValue("offset", offset);
+
+        StringBuilder whereClause = new StringBuilder(" WHERE user_id = :userId ");
+        if (effectiveFilter.success() != null) {
+            whereClause.append(" AND success = :success ");
+            params.addValue("success", effectiveFilter.success());
+        }
+        if (effectiveFilter.from() != null) {
+            whereClause.append(" AND created_at >= :from ");
+            params.addValue("from", effectiveFilter.from());
+        }
+        if (effectiveFilter.to() != null) {
+            whereClause.append(" AND created_at <= :to ");
+            params.addValue("to", effectiveFilter.to());
+        }
+
+        String countSql = "SELECT COUNT(*) FROM login_logs " + whereClause;
+        Long totalItems = jdbcTemplate.queryForObject(countSql, params, Long.class);
+        if (totalItems == null) {
+            totalItems = 0L;
+        }
+
+        String querySql = """
+                SELECT id, user_id, login_method, ip_address, user_agent, success, created_at
+                FROM login_logs
+                """ + whereClause + """
+                ORDER BY created_at DESC
+                LIMIT :limit OFFSET :offset
+                """;
+
+        List<LoginLog> items = jdbcTemplate.query(querySql, params, (rs, rowNum) -> mapLoginLog(rs));
+        return new LoginLogPage(items, totalItems);
+    }
+
+    private LoginLog mapLoginLog(java.sql.ResultSet rs) throws java.sql.SQLException {
+        return new LoginLog(
                 UUID.fromString(rs.getString("id")),
                 UUID.fromString(rs.getString("user_id")),
                 LoginMethod.valueOf(rs.getString("login_method")),
@@ -61,6 +108,6 @@ public class LoginLogRepositoryAdapter implements LoginLogRepository {
                 rs.getString("user_agent"),
                 rs.getBoolean("success"),
                 rs.getTimestamp("created_at").toInstant()
-        ));
+        );
     }
 }
