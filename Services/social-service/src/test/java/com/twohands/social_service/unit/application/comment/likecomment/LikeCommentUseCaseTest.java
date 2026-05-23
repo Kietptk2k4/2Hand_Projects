@@ -8,7 +8,9 @@ import com.twohands.social_service.domain.comment.CommentReactionRepository;
 import com.twohands.social_service.domain.comment.CommentRepository;
 import com.twohands.social_service.domain.comment.CommentStatus;
 import com.twohands.social_service.domain.user.UserProjection;
+import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.domain.user.UserProjectionRepository;
+import com.twohands.social_service.testsupport.UserProjectionTestFixtures;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
@@ -30,8 +32,9 @@ class LikeCommentUseCaseTest {
     private final CommentRepository commentRepository = mock(CommentRepository.class);
     private final CommentReactionRepository commentReactionRepository = mock(CommentReactionRepository.class);
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
+    private final UserWriteGuard userWriteGuard = new UserWriteGuard(userProjectionRepository);
     private final LikeCommentUseCase useCase = new LikeCommentUseCase(
-            commentRepository, commentReactionRepository, userProjectionRepository
+            commentRepository, commentReactionRepository, userWriteGuard
     );
 
     private Comment buildComment(String commentId, CommentStatus status, long likeCount) {
@@ -57,7 +60,7 @@ class LikeCommentUseCaseTest {
         Comment active = buildComment(commentId, CommentStatus.ACTIVE, 0L);
         Comment afterLike = buildComment(commentId, CommentStatus.ACTIVE, 1L);
 
-        when(userProjectionRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(userId)).thenReturn(UserProjectionTestFixtures.activeOptional(userId));
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(active), Optional.of(afterLike));
         when(commentReactionRepository.existsByCommentIdAndUserId(commentId, userId)).thenReturn(false);
 
@@ -78,7 +81,7 @@ class LikeCommentUseCaseTest {
         Comment active = buildComment(commentId, CommentStatus.ACTIVE, 1L);
         Comment afterUnlike = buildComment(commentId, CommentStatus.ACTIVE, 0L);
 
-        when(userProjectionRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(userId)).thenReturn(UserProjectionTestFixtures.activeOptional(userId));
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(active), Optional.of(afterUnlike));
         when(commentReactionRepository.existsByCommentIdAndUserId(commentId, userId)).thenReturn(true);
 
@@ -95,7 +98,7 @@ class LikeCommentUseCaseTest {
     @Test
     void shouldThrowNotFoundWhenCommentDoesNotExist() {
         UUID userId = UUID.randomUUID();
-        when(userProjectionRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(userId)).thenReturn(UserProjectionTestFixtures.activeOptional(userId));
         when(commentRepository.findById("missing")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> useCase.execute(new LikeCommentCommand(userId, "missing")))
@@ -107,7 +110,7 @@ class LikeCommentUseCaseTest {
     void shouldThrowNotFoundWhenCommentIsDeleted() {
         UUID userId = UUID.randomUUID();
         String commentId = "comment-id";
-        when(userProjectionRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(userId)).thenReturn(UserProjectionTestFixtures.activeOptional(userId));
         when(commentRepository.findById(commentId))
                 .thenReturn(Optional.of(buildComment(commentId, CommentStatus.DELETED, 0L)));
 

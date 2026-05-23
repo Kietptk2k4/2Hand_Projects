@@ -7,7 +7,9 @@ import com.twohands.social_service.domain.follow.Follow;
 import com.twohands.social_service.domain.follow.FollowRepository;
 import com.twohands.social_service.domain.follow.FollowStatus;
 import com.twohands.social_service.domain.user.UserProjection;
+import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.domain.user.UserProjectionRepository;
+import com.twohands.social_service.testsupport.UserProjectionTestFixtures;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
@@ -27,7 +29,8 @@ class UnfollowUserUseCaseTest {
 
     private final FollowRepository followRepository = mock(FollowRepository.class);
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
-    private final UnfollowUserUseCase useCase = new UnfollowUserUseCase(followRepository, userProjectionRepository);
+    private final UserWriteGuard userWriteGuard = new UserWriteGuard(userProjectionRepository);
+    private final UnfollowUserUseCase useCase = new UnfollowUserUseCase(followRepository, userWriteGuard);
 
     @Test
     void shouldDeleteFollowRelationWhenFollowing() {
@@ -35,7 +38,7 @@ class UnfollowUserUseCaseTest {
         UUID followeeId = UUID.randomUUID();
         Follow existing = new Follow(followerId, followeeId, FollowStatus.ACCEPTED, Instant.now());
 
-        when(userProjectionRepository.findByUserId(followerId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(followerId)).thenReturn(UserProjectionTestFixtures.activeOptional(followerId));
         when(followRepository.findByFollowerIdAndFolloweeId(followerId, followeeId)).thenReturn(Optional.of(existing));
 
         UnfollowUserResult result = useCase.execute(new UnfollowUserCommand(followerId, followeeId));
@@ -50,7 +53,7 @@ class UnfollowUserUseCaseTest {
         UUID followerId = UUID.randomUUID();
         UUID followeeId = UUID.randomUUID();
 
-        when(userProjectionRepository.findByUserId(followerId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(followerId)).thenReturn(UserProjectionTestFixtures.activeOptional(followerId));
         when(followRepository.findByFollowerIdAndFolloweeId(followerId, followeeId)).thenReturn(Optional.empty());
 
         UnfollowUserResult result = useCase.execute(new UnfollowUserCommand(followerId, followeeId));

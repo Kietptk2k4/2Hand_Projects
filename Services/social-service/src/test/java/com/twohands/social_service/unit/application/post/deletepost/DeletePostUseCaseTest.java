@@ -9,7 +9,9 @@ import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
 import com.twohands.social_service.domain.user.UserProjection;
+import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.domain.user.UserProjectionRepository;
+import com.twohands.social_service.testsupport.UserProjectionTestFixtures;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
@@ -32,7 +34,8 @@ class DeletePostUseCaseTest {
 
     private final PostRepository postRepository = mock(PostRepository.class);
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
-    private final DeletePostUseCase useCase = new DeletePostUseCase(postRepository, userProjectionRepository);
+    private final UserWriteGuard userWriteGuard = new UserWriteGuard(userProjectionRepository);
+    private final DeletePostUseCase useCase = new DeletePostUseCase(postRepository, userWriteGuard);
 
     private Post buildPost(UUID authorId, String postId, PostStatus status, Instant deletedAt) {
         return new Post(
@@ -59,7 +62,7 @@ class DeletePostUseCaseTest {
         String postId = "507f1f77bcf86cd799439011";
         Post existing = buildPost(authorId, postId, PostStatus.ACTIVE, null);
 
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(postRepository.findById(postId)).thenReturn(Optional.of(existing));
         when(postRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -85,7 +88,7 @@ class DeletePostUseCaseTest {
         String postId = "507f1f77bcf86cd799439011";
         Post existing = buildPost(authorId, postId, PostStatus.ACTIVE, null);
 
-        when(userProjectionRepository.findByUserId(moderatorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(moderatorId)).thenReturn(UserProjectionTestFixtures.activeOptional(moderatorId));
         when(postRepository.findById(postId)).thenReturn(Optional.of(existing));
         when(postRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -101,7 +104,7 @@ class DeletePostUseCaseTest {
         Instant deletedAt = Instant.parse("2026-05-19T08:00:00Z");
         Post existing = buildPost(authorId, postId, PostStatus.DELETED, deletedAt);
 
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(postRepository.findById(postId)).thenReturn(Optional.of(existing));
 
         DeletePostResult result = useCase.execute(new DeletePostCommand(authorId, List.of(), postId));
@@ -114,7 +117,7 @@ class DeletePostUseCaseTest {
     @Test
     void shouldThrowNotFoundWhenPostDoesNotExist() {
         UUID authorId = UUID.randomUUID();
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(postRepository.findById("missing")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> useCase.execute(new DeletePostCommand(authorId, List.of(), "missing")))
@@ -128,7 +131,7 @@ class DeletePostUseCaseTest {
         UUID otherUserId = UUID.randomUUID();
         String postId = "507f1f77bcf86cd799439011";
 
-        when(userProjectionRepository.findByUserId(otherUserId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(otherUserId)).thenReturn(UserProjectionTestFixtures.activeOptional(otherUserId));
         when(postRepository.findById(postId)).thenReturn(Optional.of(buildPost(authorId, postId, PostStatus.ACTIVE, null)));
 
         assertThatThrownBy(() -> useCase.execute(new DeletePostCommand(otherUserId, List.of("USER"), postId)))

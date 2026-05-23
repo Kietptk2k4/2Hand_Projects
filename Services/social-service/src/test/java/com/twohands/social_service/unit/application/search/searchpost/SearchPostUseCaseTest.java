@@ -1,6 +1,9 @@
 package com.twohands.social_service.unit.application.search.searchpost;
 
+import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.application.search.searchpost.SearchPostCommand;
+import com.twohands.social_service.domain.user.UserProjectionRepository;
+import com.twohands.social_service.testsupport.UserProjectionTestFixtures;
 import com.twohands.social_service.application.search.searchpost.SearchPostResult;
 import com.twohands.social_service.application.search.searchpost.SearchPostUseCase;
 import com.twohands.social_service.domain.follow.FollowRepository;
@@ -19,6 +22,7 @@ import org.mockito.ArgumentCaptor;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,6 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,10 +40,13 @@ class SearchPostUseCaseTest {
     private final PostRepository postRepository = mock(PostRepository.class);
     private final FollowRepository followRepository = mock(FollowRepository.class);
     private final SearchHistoryRepository searchHistoryRepository = mock(SearchHistoryRepository.class);
+    private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
+    private final UserWriteGuard userWriteGuard = new UserWriteGuard(userProjectionRepository);
     private final SearchPostUseCase useCase = new SearchPostUseCase(
             postRepository,
             followRepository,
-            searchHistoryRepository
+            searchHistoryRepository,
+            userWriteGuard
     );
 
     private Post buildPost(String postId) {
@@ -66,6 +74,7 @@ class SearchPostUseCaseTest {
         UUID followeeId = UUID.randomUUID();
         Post post = buildPost("507f1f77bcf86cd799439011");
 
+        when(userProjectionRepository.findByUserId(userId)).thenReturn(UserProjectionTestFixtures.activeOptional(userId));
         when(followRepository.findAcceptedFolloweeIds(userId)).thenReturn(List.of(followeeId));
         when(postRepository.searchPosts(any(PostSearchQuery.class), any()))
                 .thenReturn(new PageResult<>(List.of(post), 0, 20, 1, 1, false));
@@ -91,6 +100,20 @@ class SearchPostUseCaseTest {
         SearchPostResult result = useCase.execute(new SearchPostCommand(userId, "food", 0, 20));
 
         assertThat(result.keyword()).isEqualTo("food");
+    }
+
+    @Test
+    void shouldSkipSearchHistoryWhenUserCannotWrite() {
+        UUID userId = UUID.randomUUID();
+        when(userProjectionRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(followRepository.findAcceptedFolloweeIds(userId)).thenReturn(List.of());
+        when(postRepository.searchPosts(any(), any()))
+                .thenReturn(new PageResult<>(List.of(), 0, 20, 0, 0, false));
+
+        SearchPostResult result = useCase.execute(new SearchPostCommand(userId, "food", 0, 20));
+
+        assertThat(result.keyword()).isEqualTo("food");
+        verify(searchHistoryRepository, never()).saveOrRefresh(any(), any());
     }
 
     @Test

@@ -7,6 +7,7 @@ import com.twohands.social_service.domain.follow.FollowStatus;
 import com.twohands.social_service.domain.outbox.OutboxEventRepository;
 import com.twohands.social_service.domain.user.UserProjection;
 import com.twohands.social_service.domain.user.UserProjectionRepository;
+import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import org.springframework.stereotype.Service;
@@ -20,24 +21,27 @@ public class FollowUserUseCase {
 
     private final FollowRepository followRepository;
     private final UserProjectionRepository userProjectionRepository;
+    private final UserWriteGuard userWriteGuard;
     private final OutboxEventRepository outboxEventRepository;
     private final UserFollowedOutboxService userFollowedOutboxService;
 
     public FollowUserUseCase(
             FollowRepository followRepository,
             UserProjectionRepository userProjectionRepository,
+            UserWriteGuard userWriteGuard,
             OutboxEventRepository outboxEventRepository,
             UserFollowedOutboxService userFollowedOutboxService
     ) {
         this.followRepository = followRepository;
         this.userProjectionRepository = userProjectionRepository;
+        this.userWriteGuard = userWriteGuard;
         this.outboxEventRepository = outboxEventRepository;
         this.userFollowedOutboxService = userFollowedOutboxService;
     }
 
     @Transactional
     public FollowUserResult execute(FollowUserCommand command) {
-        validateFollower(command);
+        userWriteGuard.assertCanWrite(command.followerId());
 
         if (command.followerId().equals(command.followeeId())) {
             throw new AppException(ErrorCode.BAD_REQUEST, "Khong the tu theo doi chinh minh.");
@@ -80,15 +84,4 @@ public class FollowUserUseCase {
         return new FollowUserResult(command.followeeId(), status, now, true);
     }
 
-    private void validateFollower(FollowUserCommand command) {
-        if (command.followerId() == null) {
-            throw new AppException(ErrorCode.UNAUTHORIZED, "Authentication required");
-        }
-        userProjectionRepository.findByUserId(command.followerId()).ifPresent(user -> {
-            if (user.isActionForbidden()) {
-                throw new AppException(ErrorCode.ACCOUNT_SUSPENDED,
-                        ErrorCode.ACCOUNT_SUSPENDED.defaultMessage());
-            }
-        });
-    }
 }

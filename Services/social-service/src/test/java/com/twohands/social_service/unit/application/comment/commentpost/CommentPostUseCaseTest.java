@@ -15,7 +15,9 @@ import com.twohands.social_service.domain.post.Post;
 import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
+import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.domain.user.UserProjectionRepository;
+import com.twohands.social_service.testsupport.UserProjectionTestFixtures;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,12 +45,13 @@ class CommentPostUseCaseTest {
     private final CommentCreatedOutboxService commentCreatedOutboxService =
             new CommentCreatedOutboxService(new ObjectMapper());
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
+    private final UserWriteGuard userWriteGuard = new UserWriteGuard(userProjectionRepository);
     private final CommentPostUseCase useCase = new CommentPostUseCase(
             commentRepository,
             postRepository,
             outboxEventRepository,
             commentCreatedOutboxService,
-            userProjectionRepository
+            userWriteGuard
     );
 
     private Post buildPost(String postId, PostStatus status, boolean allowComments) {
@@ -75,7 +78,7 @@ class CommentPostUseCaseTest {
         UUID authorId = UUID.randomUUID();
         String postId = "507f1f77bcf86cd799439011";
 
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(postRepository.findById(postId))
                 .thenReturn(Optional.of(buildPost(postId, PostStatus.ACTIVE, true)));
         when(commentRepository.save(any())).thenAnswer(inv -> {
@@ -111,7 +114,7 @@ class CommentPostUseCaseTest {
         UUID authorId = UUID.randomUUID();
         String postId = "507f1f77bcf86cd799439011";
 
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(postRepository.findById(postId))
                 .thenReturn(Optional.of(buildPost(postId, PostStatus.ACTIVE, false)));
 
@@ -130,7 +133,7 @@ class CommentPostUseCaseTest {
         UUID authorId = UUID.randomUUID();
         String postId = "507f1f77bcf86cd799439011";
 
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(postRepository.findById(postId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> useCase.execute(new CommentPostCommand(

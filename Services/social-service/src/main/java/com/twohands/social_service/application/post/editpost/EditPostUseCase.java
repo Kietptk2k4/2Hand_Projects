@@ -8,7 +8,7 @@ import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
 import com.twohands.social_service.domain.post.ProductTag;
-import com.twohands.social_service.domain.user.UserProjectionRepository;
+import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import org.springframework.stereotype.Service;
@@ -31,21 +31,21 @@ public class EditPostUseCase {
     );
 
     private final PostRepository postRepository;
-    private final UserProjectionRepository userProjectionRepository;
+    private final UserWriteGuard userWriteGuard;
     private final ProductTagValidator productTagValidator;
 
     public EditPostUseCase(
             PostRepository postRepository,
-            UserProjectionRepository userProjectionRepository,
+            UserWriteGuard userWriteGuard,
             ProductTagValidator productTagValidator) {
         this.postRepository = postRepository;
-        this.userProjectionRepository = userProjectionRepository;
+        this.userWriteGuard = userWriteGuard;
         this.productTagValidator = productTagValidator;
     }
 
     @Transactional
     public EditPostResult execute(EditPostCommand command) {
-        validateEditor(command);
+        userWriteGuard.assertCanWrite(command.editorId());
         Post existing = postRepository.findById(command.postId())
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Bai viet khong ton tai."));
 
@@ -82,18 +82,6 @@ public class EditPostUseCase {
 
     public String successMessage() {
         return "Cap nhat bai viet thanh cong.";
-    }
-
-    private void validateEditor(EditPostCommand command) {
-        if (command.editorId() == null) {
-            throw new AppException(ErrorCode.UNAUTHORIZED, "Authentication required");
-        }
-        userProjectionRepository.findByUserId(command.editorId()).ifPresent(user -> {
-            if (user.isActionForbidden()) {
-                throw new AppException(ErrorCode.ACCOUNT_SUSPENDED,
-                        ErrorCode.ACCOUNT_SUSPENDED.defaultMessage());
-            }
-        });
     }
 
     private void validatePayload(EditPostCommand command) {

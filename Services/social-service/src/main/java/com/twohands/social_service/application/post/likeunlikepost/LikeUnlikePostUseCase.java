@@ -6,7 +6,7 @@ import com.twohands.social_service.domain.post.Post;
 import com.twohands.social_service.domain.post.PostLikeRepository;
 import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostStatus;
-import com.twohands.social_service.domain.user.UserProjectionRepository;
+import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import org.springframework.stereotype.Service;
@@ -21,25 +21,25 @@ public class LikeUnlikePostUseCase {
     private final PostLikeRepository postLikeRepository;
     private final OutboxEventRepository outboxEventRepository;
     private final PostLikedOutboxService postLikedOutboxService;
-    private final UserProjectionRepository userProjectionRepository;
+    private final UserWriteGuard userWriteGuard;
 
     public LikeUnlikePostUseCase(
             PostRepository postRepository,
             PostLikeRepository postLikeRepository,
             OutboxEventRepository outboxEventRepository,
             PostLikedOutboxService postLikedOutboxService,
-            UserProjectionRepository userProjectionRepository
+            UserWriteGuard userWriteGuard
     ) {
         this.postRepository = postRepository;
         this.postLikeRepository = postLikeRepository;
         this.outboxEventRepository = outboxEventRepository;
         this.postLikedOutboxService = postLikedOutboxService;
-        this.userProjectionRepository = userProjectionRepository;
+        this.userWriteGuard = userWriteGuard;
     }
 
     @Transactional
     public LikeUnlikePostResult execute(LikeUnlikePostCommand command) {
-        validateUser(command);
+        userWriteGuard.assertCanWrite(command.userId());
 
         Post post = postRepository.findById(command.postId())
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Bai viet khong ton tai."));
@@ -73,15 +73,4 @@ public class LikeUnlikePostUseCase {
         return liked ? "Like bai viet thanh cong." : "Unlike bai viet thanh cong.";
     }
 
-    private void validateUser(LikeUnlikePostCommand command) {
-        if (command.userId() == null) {
-            throw new AppException(ErrorCode.UNAUTHORIZED, "Authentication required");
-        }
-        userProjectionRepository.findByUserId(command.userId()).ifPresent(user -> {
-            if (user.isActionForbidden()) {
-                throw new AppException(ErrorCode.ACCOUNT_SUSPENDED,
-                        ErrorCode.ACCOUNT_SUSPENDED.defaultMessage());
-            }
-        });
-    }
 }

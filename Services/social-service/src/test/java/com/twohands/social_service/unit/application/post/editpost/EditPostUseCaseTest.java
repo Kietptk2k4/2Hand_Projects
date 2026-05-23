@@ -11,7 +11,9 @@ import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
 import com.twohands.social_service.domain.user.UserProjection;
+import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.domain.user.UserProjectionRepository;
+import com.twohands.social_service.testsupport.UserProjectionTestFixtures;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
@@ -34,8 +36,9 @@ class EditPostUseCaseTest {
 
     private final PostRepository postRepository = mock(PostRepository.class);
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
+    private final UserWriteGuard userWriteGuard = new UserWriteGuard(userProjectionRepository);
     private final EditPostUseCase useCase = new EditPostUseCase(
-            postRepository, userProjectionRepository, new ProductTagValidator());
+            postRepository, userWriteGuard, new ProductTagValidator());
 
     private Post buildExistingPost(UUID authorId, String postId, PostStatus status) {
         return new Post(
@@ -62,7 +65,7 @@ class EditPostUseCaseTest {
         String postId = "507f1f77bcf86cd799439011";
         Post existing = buildExistingPost(authorId, postId, PostStatus.ACTIVE);
 
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(postRepository.findById(postId)).thenReturn(Optional.of(existing));
         when(postRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -101,7 +104,7 @@ class EditPostUseCaseTest {
         String postId = "507f1f77bcf86cd799439011";
         Post existing = buildExistingPost(authorId, postId, PostStatus.ACTIVE);
 
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(postRepository.findById(postId)).thenReturn(Optional.of(existing));
         when(postRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -126,7 +129,7 @@ class EditPostUseCaseTest {
     @Test
     void shouldThrowNotFoundWhenPostDoesNotExist() {
         UUID authorId = UUID.randomUUID();
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(postRepository.findById("missing")).thenReturn(Optional.empty());
 
         EditPostCommand command = new EditPostCommand(
@@ -143,7 +146,7 @@ class EditPostUseCaseTest {
     void shouldThrowNotFoundWhenPostIsDeleted() {
         UUID authorId = UUID.randomUUID();
         String postId = "507f1f77bcf86cd799439011";
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(postRepository.findById(postId))
                 .thenReturn(Optional.of(buildExistingPost(authorId, postId, PostStatus.DELETED)));
 
@@ -163,7 +166,7 @@ class EditPostUseCaseTest {
         UUID otherUserId = UUID.randomUUID();
         String postId = "507f1f77bcf86cd799439011";
 
-        when(userProjectionRepository.findByUserId(otherUserId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(otherUserId)).thenReturn(UserProjectionTestFixtures.activeOptional(otherUserId));
         when(postRepository.findById(postId))
                 .thenReturn(Optional.of(buildExistingPost(authorId, postId, PostStatus.ACTIVE)));
 
@@ -198,7 +201,7 @@ class EditPostUseCaseTest {
         UUID authorId = UUID.randomUUID();
         String postId = "507f1f77bcf86cd799439011";
 
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(postRepository.findById(postId))
                 .thenReturn(Optional.of(buildExistingPost(authorId, postId, PostStatus.ACTIVE)));
 
@@ -223,7 +226,7 @@ class EditPostUseCaseTest {
         String productId = UUID.randomUUID().toString();
         Post existing = buildExistingPost(authorId, postId, PostStatus.ACTIVE);
 
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(postRepository.findById(postId)).thenReturn(Optional.of(existing));
         when(postRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -253,7 +256,7 @@ class EditPostUseCaseTest {
         UUID authorId = UUID.randomUUID();
         String postId = "507f1f77bcf86cd799439011";
 
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(postRepository.findById(postId))
                 .thenReturn(Optional.of(buildExistingPost(authorId, postId, PostStatus.ACTIVE)));
 

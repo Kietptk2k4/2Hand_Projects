@@ -14,7 +14,9 @@ import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
 import com.twohands.social_service.domain.user.UserProjection;
+import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.domain.user.UserProjectionRepository;
+import com.twohands.social_service.testsupport.UserProjectionTestFixtures;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,12 +43,13 @@ class LikeUnlikePostUseCaseTest {
     private final OutboxEventRepository outboxEventRepository = mock(OutboxEventRepository.class);
     private final PostLikedOutboxService postLikedOutboxService = new PostLikedOutboxService(new ObjectMapper());
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
+    private final UserWriteGuard userWriteGuard = new UserWriteGuard(userProjectionRepository);
     private final LikeUnlikePostUseCase useCase = new LikeUnlikePostUseCase(
             postRepository,
             postLikeRepository,
             outboxEventRepository,
             postLikedOutboxService,
-            userProjectionRepository
+            userWriteGuard
     );
 
     private Post buildPost(String postId, PostStatus status, long likeCount) {
@@ -75,7 +78,7 @@ class LikeUnlikePostUseCaseTest {
         Post active = buildPost(postId, PostStatus.ACTIVE, 0L);
         Post afterLike = buildPost(postId, PostStatus.ACTIVE, 1L);
 
-        when(userProjectionRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(userId)).thenReturn(UserProjectionTestFixtures.activeOptional(userId));
         when(postRepository.findById(postId)).thenReturn(Optional.of(active), Optional.of(afterLike));
         when(postLikeRepository.existsByPostIdAndUserId(postId, userId)).thenReturn(false);
         when(outboxEventRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -100,7 +103,7 @@ class LikeUnlikePostUseCaseTest {
         Post active = buildPost(postId, PostStatus.ACTIVE, 1L);
         Post afterUnlike = buildPost(postId, PostStatus.ACTIVE, 0L);
 
-        when(userProjectionRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(userId)).thenReturn(UserProjectionTestFixtures.activeOptional(userId));
         when(postRepository.findById(postId)).thenReturn(Optional.of(active), Optional.of(afterUnlike));
         when(postLikeRepository.existsByPostIdAndUserId(postId, userId)).thenReturn(true);
 
@@ -118,7 +121,7 @@ class LikeUnlikePostUseCaseTest {
     @Test
     void shouldThrowNotFoundWhenPostDoesNotExist() {
         UUID userId = UUID.randomUUID();
-        when(userProjectionRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(userId)).thenReturn(UserProjectionTestFixtures.activeOptional(userId));
         when(postRepository.findById("missing")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> useCase.execute(new LikeUnlikePostCommand(userId, "missing")))
@@ -130,7 +133,7 @@ class LikeUnlikePostUseCaseTest {
     void shouldThrowNotFoundWhenPostIsNotActive() {
         UUID userId = UUID.randomUUID();
         String postId = "507f1f77bcf86cd799439011";
-        when(userProjectionRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(userId)).thenReturn(UserProjectionTestFixtures.activeOptional(userId));
         when(postRepository.findById(postId)).thenReturn(Optional.of(buildPost(postId, PostStatus.DELETED, 0L)));
 
         assertThatThrownBy(() -> useCase.execute(new LikeUnlikePostCommand(userId, postId)))

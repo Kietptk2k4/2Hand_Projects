@@ -8,7 +8,6 @@ import com.twohands.social_service.domain.post.Post;
 import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostSaveEntry;
 import com.twohands.social_service.domain.post.PostSaveRepository;
-import com.twohands.social_service.domain.user.UserProjectionRepository;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import org.springframework.stereotype.Service;
@@ -30,24 +29,21 @@ public class ViewSavedPostsUseCase {
     private final PostRepository postRepository;
     private final FollowRepository followRepository;
     private final PostViewAccessPolicy postViewAccessPolicy;
-    private final UserProjectionRepository userProjectionRepository;
 
     public ViewSavedPostsUseCase(
             PostSaveRepository postSaveRepository,
             PostRepository postRepository,
             FollowRepository followRepository,
-            PostViewAccessPolicy postViewAccessPolicy,
-            UserProjectionRepository userProjectionRepository
+            PostViewAccessPolicy postViewAccessPolicy
     ) {
         this.postSaveRepository = postSaveRepository;
         this.postRepository = postRepository;
         this.followRepository = followRepository;
         this.postViewAccessPolicy = postViewAccessPolicy;
-        this.userProjectionRepository = userProjectionRepository;
     }
 
     public ViewSavedPostsResult execute(UUID userId, int page, int size) {
-        validateUser(userId);
+        requireAuthenticated(userId);
         validatePagination(page, size);
 
         PageResult<PostSaveEntry> savesPage = postSaveRepository.findByUserId(userId, page, size);
@@ -99,16 +95,10 @@ public class ViewSavedPostsUseCase {
         return SUCCESS_MESSAGE;
     }
 
-    private void validateUser(UUID userId) {
+    private void requireAuthenticated(UUID userId) {
         if (userId == null) {
             throw new AppException(ErrorCode.UNAUTHORIZED, "Authentication required");
         }
-        userProjectionRepository.findByUserId(userId).ifPresent(user -> {
-            if (user.isActionForbidden()) {
-                throw new AppException(ErrorCode.ACCOUNT_SUSPENDED,
-                        ErrorCode.ACCOUNT_SUSPENDED.defaultMessage());
-            }
-        });
     }
 
     private void validatePagination(int page, int size) {

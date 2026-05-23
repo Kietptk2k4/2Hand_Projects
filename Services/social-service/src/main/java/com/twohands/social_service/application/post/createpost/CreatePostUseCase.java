@@ -8,7 +8,7 @@ import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
 import com.twohands.social_service.domain.post.ProductTag;
-import com.twohands.social_service.domain.user.UserProjectionRepository;
+import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import org.springframework.stereotype.Service;
@@ -26,21 +26,21 @@ public class CreatePostUseCase {
     private static final int MAX_HASHTAG_LENGTH = 100;
 
     private final PostRepository postRepository;
-    private final UserProjectionRepository userProjectionRepository;
+    private final UserWriteGuard userWriteGuard;
     private final ProductTagValidator productTagValidator;
 
     public CreatePostUseCase(
             PostRepository postRepository,
-            UserProjectionRepository userProjectionRepository,
+            UserWriteGuard userWriteGuard,
             ProductTagValidator productTagValidator) {
         this.postRepository = postRepository;
-        this.userProjectionRepository = userProjectionRepository;
+        this.userWriteGuard = userWriteGuard;
         this.productTagValidator = productTagValidator;
     }
 
     @Transactional
     public CreatePostResult execute(CreatePostCommand command) {
-        validateAuthor(command);
+        userWriteGuard.assertCanWrite(command.authorId());
         validatePayload(command);
 
         PostVisibility visibility = parseVisibility(command.visibility());
@@ -73,18 +73,6 @@ public class CreatePostUseCase {
 
     public String successMessage() {
         return "Tao bai viet thanh cong.";
-    }
-
-    private void validateAuthor(CreatePostCommand command) {
-        if (command.authorId() == null) {
-            throw new AppException(ErrorCode.UNAUTHORIZED, "Authentication required");
-        }
-        userProjectionRepository.findByUserId(command.authorId()).ifPresent(user -> {
-            if (user.isActionForbidden()) {
-                throw new AppException(ErrorCode.ACCOUNT_SUSPENDED,
-                        ErrorCode.ACCOUNT_SUSPENDED.defaultMessage());
-            }
-        });
     }
 
     private void validatePayload(CreatePostCommand command) {

@@ -8,7 +8,9 @@ import com.twohands.social_service.domain.comment.CommentRepository;
 import com.twohands.social_service.domain.comment.CommentStatus;
 import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.user.UserProjection;
+import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.domain.user.UserProjectionRepository;
+import com.twohands.social_service.testsupport.UserProjectionTestFixtures;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
@@ -32,8 +34,9 @@ class DeleteOwnCommentUseCaseTest {
     private final CommentRepository commentRepository = mock(CommentRepository.class);
     private final PostRepository postRepository = mock(PostRepository.class);
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
+    private final UserWriteGuard userWriteGuard = new UserWriteGuard(userProjectionRepository);
     private final DeleteOwnCommentUseCase useCase = new DeleteOwnCommentUseCase(
-            commentRepository, postRepository, userProjectionRepository
+            commentRepository, postRepository, userWriteGuard
     );
 
     private Comment buildComment(UUID authorId, String commentId, CommentStatus status, Instant deletedAt) {
@@ -58,7 +61,7 @@ class DeleteOwnCommentUseCaseTest {
         String commentId = "comment-id";
         Comment existing = buildComment(authorId, commentId, CommentStatus.ACTIVE, null);
 
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(existing));
         when(commentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -83,7 +86,7 @@ class DeleteOwnCommentUseCaseTest {
         Instant deletedAt = Instant.parse("2026-05-19T08:00:00Z");
         Comment existing = buildComment(authorId, commentId, CommentStatus.DELETED, deletedAt);
 
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(existing));
 
         DeleteOwnCommentResult result = useCase.execute(
@@ -103,7 +106,7 @@ class DeleteOwnCommentUseCaseTest {
         String commentId = "comment-id";
         Comment existing = buildComment(authorId, commentId, CommentStatus.ACTIVE, null);
 
-        when(userProjectionRepository.findByUserId(moderatorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(moderatorId)).thenReturn(UserProjectionTestFixtures.activeOptional(moderatorId));
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(existing));
         when(commentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -116,7 +119,7 @@ class DeleteOwnCommentUseCaseTest {
     @Test
     void shouldThrowNotFoundWhenCommentDoesNotExist() {
         UUID authorId = UUID.randomUUID();
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(commentRepository.findById("missing")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> useCase.execute(
@@ -131,7 +134,7 @@ class DeleteOwnCommentUseCaseTest {
         UUID otherUserId = UUID.randomUUID();
         String commentId = "comment-id";
 
-        when(userProjectionRepository.findByUserId(otherUserId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(otherUserId)).thenReturn(UserProjectionTestFixtures.activeOptional(otherUserId));
         when(commentRepository.findById(commentId))
                 .thenReturn(Optional.of(buildComment(authorId, commentId, CommentStatus.ACTIVE, null)));
 

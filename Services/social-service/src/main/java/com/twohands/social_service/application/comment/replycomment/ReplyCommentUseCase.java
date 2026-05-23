@@ -9,7 +9,7 @@ import com.twohands.social_service.domain.outbox.OutboxEventRepository;
 import com.twohands.social_service.domain.post.Post;
 import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostStatus;
-import com.twohands.social_service.domain.user.UserProjectionRepository;
+import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import org.springframework.stereotype.Service;
@@ -32,25 +32,25 @@ public class ReplyCommentUseCase {
     private final PostRepository postRepository;
     private final OutboxEventRepository outboxEventRepository;
     private final CommentCreatedOutboxService commentCreatedOutboxService;
-    private final UserProjectionRepository userProjectionRepository;
+    private final UserWriteGuard userWriteGuard;
 
     public ReplyCommentUseCase(
             CommentRepository commentRepository,
             PostRepository postRepository,
             OutboxEventRepository outboxEventRepository,
             CommentCreatedOutboxService commentCreatedOutboxService,
-            UserProjectionRepository userProjectionRepository
+            UserWriteGuard userWriteGuard
     ) {
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
         this.outboxEventRepository = outboxEventRepository;
         this.commentCreatedOutboxService = commentCreatedOutboxService;
-        this.userProjectionRepository = userProjectionRepository;
+        this.userWriteGuard = userWriteGuard;
     }
 
     @Transactional
     public ReplyCommentResult execute(ReplyCommentCommand command) {
-        validateAuthor(command);
+        userWriteGuard.assertCanWrite(command.authorId());
         validatePayload(command);
 
         Comment parent = commentRepository.findById(command.parentCommentId())
@@ -93,18 +93,6 @@ public class ReplyCommentUseCase {
 
     public String successMessage() {
         return "Tra loi comment thanh cong.";
-    }
-
-    private void validateAuthor(ReplyCommentCommand command) {
-        if (command.authorId() == null) {
-            throw new AppException(ErrorCode.UNAUTHORIZED, "Authentication required");
-        }
-        userProjectionRepository.findByUserId(command.authorId()).ifPresent(user -> {
-            if (user.isActionForbidden()) {
-                throw new AppException(ErrorCode.ACCOUNT_SUSPENDED,
-                        ErrorCode.ACCOUNT_SUSPENDED.defaultMessage());
-            }
-        });
     }
 
     private void validatePayload(ReplyCommentCommand command) {

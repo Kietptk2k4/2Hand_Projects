@@ -11,7 +11,9 @@ import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
 import com.twohands.social_service.domain.user.UserProjection;
+import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.domain.user.UserProjectionRepository;
+import com.twohands.social_service.testsupport.UserProjectionTestFixtures;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
@@ -34,8 +36,9 @@ class CreatePostUseCaseTest {
 
     private final PostRepository postRepository = mock(PostRepository.class);
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
+    private final UserWriteGuard userWriteGuard = new UserWriteGuard(userProjectionRepository);
     private final CreatePostUseCase useCase = new CreatePostUseCase(
-            postRepository, userProjectionRepository, new ProductTagValidator());
+            postRepository, userWriteGuard, new ProductTagValidator());
 
     private Post buildSavedPost(UUID authorId, String postId, PostStatus status, PostVisibility visibility) {
         return new Post(
@@ -59,7 +62,7 @@ class CreatePostUseCaseTest {
     @Test
     void shouldCreateActivePostWhenPublishIsTrue() {
         UUID authorId = UUID.randomUUID();
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(postRepository.save(any())).thenAnswer(inv -> {
             Post p = inv.getArgument(0);
             return buildSavedPost(authorId, "507f1f77bcf86cd799439011", p.status(), p.visibility());
@@ -92,7 +95,7 @@ class CreatePostUseCaseTest {
     @Test
     void shouldCreateDraftPostWhenPublishIsFalse() {
         UUID authorId = UUID.randomUUID();
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(postRepository.save(any())).thenAnswer(inv -> {
             Post p = inv.getArgument(0);
             return buildSavedPost(authorId, "draft-id", p.status(), p.visibility());
@@ -125,6 +128,20 @@ class CreatePostUseCaseTest {
     }
 
     @Test
+    void shouldRejectWriteWhenProjectionMissing() {
+        UUID authorId = UUID.randomUUID();
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+
+        CreatePostCommand command = new CreatePostCommand(
+                authorId, "caption", List.of(), List.of(), "PUBLIC", true, List.of(), true
+        );
+
+        assertThatThrownBy(() -> useCase.execute(command))
+                .isInstanceOf(AppException.class)
+                .satisfies(ex -> assertThat(((AppException) ex).getErrorCode()).isEqualTo(ErrorCode.FORBIDDEN));
+    }
+
+    @Test
     void shouldThrowForbiddenWhenUserIsSuspended() {
         UUID authorId = UUID.randomUUID();
         when(userProjectionRepository.findByUserId(authorId))
@@ -145,7 +162,7 @@ class CreatePostUseCaseTest {
     @Test
     void shouldThrowValidationErrorWhenVisibilityIsInvalid() {
         UUID authorId = UUID.randomUUID();
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
 
         CreatePostCommand command = new CreatePostCommand(
                 authorId, "caption", List.of(), List.of(), "PRIVATE", true, List.of(), true
@@ -163,7 +180,7 @@ class CreatePostUseCaseTest {
     @Test
     void shouldThrowValidationErrorWhenCaptionExceedsLimit() {
         UUID authorId = UUID.randomUUID();
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
 
         String longCaption = "a".repeat(2001);
         CreatePostCommand command = new CreatePostCommand(
@@ -182,7 +199,7 @@ class CreatePostUseCaseTest {
     @Test
     void shouldThrowValidationErrorWhenMediaTypeIsInvalid() {
         UUID authorId = UUID.randomUUID();
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
 
         CreatePostCommand command = new CreatePostCommand(
                 authorId, "caption",
@@ -203,7 +220,7 @@ class CreatePostUseCaseTest {
     void shouldPersistProductTagsWhenProvided() {
         UUID authorId = UUID.randomUUID();
         String productId = UUID.randomUUID().toString();
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(postRepository.save(any())).thenAnswer(inv -> {
             Post p = inv.getArgument(0);
             return new Post(
@@ -249,7 +266,7 @@ class CreatePostUseCaseTest {
     @Test
     void shouldThrowValidationErrorWhenProductIdIsNotUuid() {
         UUID authorId = UUID.randomUUID();
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
 
         CreatePostCommand command = new CreatePostCommand(
                 authorId, "caption", List.of(),
@@ -269,7 +286,7 @@ class CreatePostUseCaseTest {
     @Test
     void shouldThrowValidationErrorWhenTooManyHashtags() {
         UUID authorId = UUID.randomUUID();
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
 
         List<String> tooManyTags = java.util.stream.IntStream.range(0, 31)
                 .mapToObj(i -> "tag" + i)

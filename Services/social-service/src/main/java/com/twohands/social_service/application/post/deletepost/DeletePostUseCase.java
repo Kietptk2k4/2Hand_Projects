@@ -3,7 +3,7 @@ package com.twohands.social_service.application.post.deletepost;
 import com.twohands.social_service.domain.post.Post;
 import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostStatus;
-import com.twohands.social_service.domain.user.UserProjectionRepository;
+import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import org.springframework.stereotype.Service;
@@ -20,16 +20,16 @@ public class DeletePostUseCase {
     private static final Set<String> MODERATION_ROLES = Set.of("MODERATOR", "ADMIN");
 
     private final PostRepository postRepository;
-    private final UserProjectionRepository userProjectionRepository;
+    private final UserWriteGuard userWriteGuard;
 
-    public DeletePostUseCase(PostRepository postRepository, UserProjectionRepository userProjectionRepository) {
+    public DeletePostUseCase(PostRepository postRepository, UserWriteGuard userWriteGuard) {
         this.postRepository = postRepository;
-        this.userProjectionRepository = userProjectionRepository;
+        this.userWriteGuard = userWriteGuard;
     }
 
     @Transactional
     public DeletePostResult execute(DeletePostCommand command) {
-        validateActor(command);
+        userWriteGuard.assertCanWrite(command.actorId(), command.actorRoles());
 
         Post existing = postRepository.findById(command.postId())
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Bai viet khong ton tai."));
@@ -66,18 +66,6 @@ public class DeletePostUseCase {
 
     public String successMessage() {
         return "Xoa bai viet thanh cong.";
-    }
-
-    private void validateActor(DeletePostCommand command) {
-        if (command.actorId() == null) {
-            throw new AppException(ErrorCode.UNAUTHORIZED, "Authentication required");
-        }
-        userProjectionRepository.findByUserId(command.actorId()).ifPresent(user -> {
-            if (user.isActionForbidden()) {
-                throw new AppException(ErrorCode.ACCOUNT_SUSPENDED,
-                        ErrorCode.ACCOUNT_SUSPENDED.defaultMessage());
-            }
-        });
     }
 
     private boolean canDelete(Post post, DeletePostCommand command) {

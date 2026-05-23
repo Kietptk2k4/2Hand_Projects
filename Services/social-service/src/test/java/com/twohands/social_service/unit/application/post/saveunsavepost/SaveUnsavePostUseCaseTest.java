@@ -10,7 +10,9 @@ import com.twohands.social_service.domain.post.PostSaveRepository;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
 import com.twohands.social_service.domain.user.UserProjection;
+import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.domain.user.UserProjectionRepository;
+import com.twohands.social_service.testsupport.UserProjectionTestFixtures;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
@@ -32,10 +34,11 @@ class SaveUnsavePostUseCaseTest {
     private final PostRepository postRepository = mock(PostRepository.class);
     private final PostSaveRepository postSaveRepository = mock(PostSaveRepository.class);
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
+    private final UserWriteGuard userWriteGuard = new UserWriteGuard(userProjectionRepository);
     private final SaveUnsavePostUseCase useCase = new SaveUnsavePostUseCase(
             postRepository,
             postSaveRepository,
-            userProjectionRepository
+            userWriteGuard
     );
 
     private Post buildPost(String postId, PostStatus status) {
@@ -62,7 +65,7 @@ class SaveUnsavePostUseCaseTest {
         UUID userId = UUID.randomUUID();
         String postId = "507f1f77bcf86cd799439011";
 
-        when(userProjectionRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(userId)).thenReturn(UserProjectionTestFixtures.activeOptional(userId));
         when(postRepository.findById(postId)).thenReturn(Optional.of(buildPost(postId, PostStatus.ACTIVE)));
         when(postSaveRepository.existsByPostIdAndUserId(postId, userId)).thenReturn(false);
 
@@ -79,7 +82,7 @@ class SaveUnsavePostUseCaseTest {
         UUID userId = UUID.randomUUID();
         String postId = "507f1f77bcf86cd799439011";
 
-        when(userProjectionRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(userId)).thenReturn(UserProjectionTestFixtures.activeOptional(userId));
         when(postRepository.findById(postId)).thenReturn(Optional.of(buildPost(postId, PostStatus.ACTIVE)));
         when(postSaveRepository.existsByPostIdAndUserId(postId, userId)).thenReturn(true);
 
@@ -93,7 +96,7 @@ class SaveUnsavePostUseCaseTest {
     @Test
     void shouldThrowNotFoundWhenPostDoesNotExist() {
         UUID userId = UUID.randomUUID();
-        when(userProjectionRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(userId)).thenReturn(UserProjectionTestFixtures.activeOptional(userId));
         when(postRepository.findById("missing")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> useCase.execute(new SaveUnsavePostCommand(userId, "missing")))
@@ -105,7 +108,7 @@ class SaveUnsavePostUseCaseTest {
     void shouldThrowNotFoundWhenPostIsDeleted() {
         UUID userId = UUID.randomUUID();
         String postId = "507f1f77bcf86cd799439011";
-        when(userProjectionRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(userId)).thenReturn(UserProjectionTestFixtures.activeOptional(userId));
         when(postRepository.findById(postId)).thenReturn(Optional.of(buildPost(postId, PostStatus.DELETED)));
 
         assertThatThrownBy(() -> useCase.execute(new SaveUnsavePostCommand(userId, postId)))

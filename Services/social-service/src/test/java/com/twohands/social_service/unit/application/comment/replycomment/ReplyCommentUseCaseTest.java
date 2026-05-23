@@ -17,7 +17,9 @@ import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
 import com.twohands.social_service.domain.user.UserProjection;
+import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.domain.user.UserProjectionRepository;
+import com.twohands.social_service.testsupport.UserProjectionTestFixtures;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,12 +47,13 @@ class ReplyCommentUseCaseTest {
     private final CommentCreatedOutboxService commentCreatedOutboxService =
             new CommentCreatedOutboxService(new ObjectMapper());
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
+    private final UserWriteGuard userWriteGuard = new UserWriteGuard(userProjectionRepository);
     private final ReplyCommentUseCase useCase = new ReplyCommentUseCase(
             commentRepository,
             postRepository,
             outboxEventRepository,
             commentCreatedOutboxService,
-            userProjectionRepository
+            userWriteGuard
     );
 
     private Comment buildParentComment(UUID authorId, String commentId, String postId) {
@@ -94,7 +97,7 @@ class ReplyCommentUseCaseTest {
         String parentId = "parent-comment-id";
         String postId = "507f1f77bcf86cd799439011";
 
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(commentRepository.findById(parentId))
                 .thenReturn(Optional.of(buildParentComment(authorId, parentId, postId)));
         when(postRepository.findById(postId))
@@ -128,7 +131,7 @@ class ReplyCommentUseCaseTest {
     @Test
     void shouldThrowNotFoundWhenParentCommentDoesNotExist() {
         UUID authorId = UUID.randomUUID();
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(commentRepository.findById("missing")).thenReturn(Optional.empty());
 
         ReplyCommentCommand command = new ReplyCommentCommand(authorId, "missing", "Reply", List.of());
@@ -147,7 +150,7 @@ class ReplyCommentUseCaseTest {
                 CommentStatus.DELETED, 0L, Instant.now(), Instant.now(), Instant.now()
         );
 
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(commentRepository.findById(parentId)).thenReturn(Optional.of(deletedParent));
 
         assertThatThrownBy(() -> useCase.execute(new ReplyCommentCommand(authorId, parentId, "Reply", List.of())))
@@ -164,7 +167,7 @@ class ReplyCommentUseCaseTest {
                 CommentStatus.ACTIVE, 0L, Instant.now(), Instant.now(), null
         );
 
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(commentRepository.findById(parentId)).thenReturn(Optional.of(nestedParent));
 
         assertThatThrownBy(() -> useCase.execute(new ReplyCommentCommand(authorId, parentId, "Reply", List.of())))
@@ -182,7 +185,7 @@ class ReplyCommentUseCaseTest {
         String parentId = "parent-id";
         String postId = "post-id";
 
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
         when(commentRepository.findById(parentId))
                 .thenReturn(Optional.of(buildParentComment(authorId, parentId, postId)));
         when(postRepository.findById(postId))

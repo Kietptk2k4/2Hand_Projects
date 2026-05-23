@@ -6,6 +6,7 @@ import com.twohands.social_service.domain.post.PageResult;
 import com.twohands.social_service.domain.post.Post;
 import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostSearchQuery;
+import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.domain.search.SearchHistoryRepository;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
@@ -29,15 +30,18 @@ public class SearchPostUseCase {
     private final PostRepository postRepository;
     private final FollowRepository followRepository;
     private final SearchHistoryRepository searchHistoryRepository;
+    private final UserWriteGuard userWriteGuard;
 
     public SearchPostUseCase(
             PostRepository postRepository,
             FollowRepository followRepository,
-            SearchHistoryRepository searchHistoryRepository
+            SearchHistoryRepository searchHistoryRepository,
+            UserWriteGuard userWriteGuard
     ) {
         this.postRepository = postRepository;
         this.followRepository = followRepository;
         this.searchHistoryRepository = searchHistoryRepository;
+        this.userWriteGuard = userWriteGuard;
     }
 
     public SearchPostResult execute(SearchPostCommand command) {
@@ -80,6 +84,9 @@ public class SearchPostUseCase {
     }
 
     private void saveSearchHistoryBestEffort(UUID userId, String keyword) {
+        if (!userWriteGuard.canWrite(userId)) {
+            return;
+        }
         try {
             searchHistoryRepository.saveOrRefresh(userId, keyword);
         } catch (Exception ex) {

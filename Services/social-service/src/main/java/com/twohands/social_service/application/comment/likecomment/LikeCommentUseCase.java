@@ -4,7 +4,7 @@ import com.twohands.social_service.domain.comment.Comment;
 import com.twohands.social_service.domain.comment.CommentReactionRepository;
 import com.twohands.social_service.domain.comment.CommentRepository;
 import com.twohands.social_service.domain.comment.CommentStatus;
-import com.twohands.social_service.domain.user.UserProjectionRepository;
+import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import org.springframework.stereotype.Service;
@@ -15,21 +15,21 @@ public class LikeCommentUseCase {
 
     private final CommentRepository commentRepository;
     private final CommentReactionRepository commentReactionRepository;
-    private final UserProjectionRepository userProjectionRepository;
+    private final UserWriteGuard userWriteGuard;
 
     public LikeCommentUseCase(
             CommentRepository commentRepository,
             CommentReactionRepository commentReactionRepository,
-            UserProjectionRepository userProjectionRepository
+            UserWriteGuard userWriteGuard
     ) {
         this.commentRepository = commentRepository;
         this.commentReactionRepository = commentReactionRepository;
-        this.userProjectionRepository = userProjectionRepository;
+        this.userWriteGuard = userWriteGuard;
     }
 
     @Transactional
     public LikeCommentResult execute(LikeCommentCommand command) {
-        validateUser(command);
+        userWriteGuard.assertCanWrite(command.userId());
 
         Comment comment = commentRepository.findById(command.commentId())
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Comment khong ton tai."));
@@ -65,15 +65,4 @@ public class LikeCommentUseCase {
         return liked ? "Like comment thanh cong." : "Unlike comment thanh cong.";
     }
 
-    private void validateUser(LikeCommentCommand command) {
-        if (command.userId() == null) {
-            throw new AppException(ErrorCode.UNAUTHORIZED, "Authentication required");
-        }
-        userProjectionRepository.findByUserId(command.userId()).ifPresent(user -> {
-            if (user.isActionForbidden()) {
-                throw new AppException(ErrorCode.ACCOUNT_SUSPENDED,
-                        ErrorCode.ACCOUNT_SUSPENDED.defaultMessage());
-            }
-        });
-    }
 }

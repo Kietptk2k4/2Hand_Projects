@@ -2,6 +2,8 @@ package com.twohands.social_service.unit.application.user.followuser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.twohands.social_service.application.user.common.UserFollowedOutboxService;
+import com.twohands.social_service.application.user.common.UserWriteGuard;
+import com.twohands.social_service.testsupport.UserProjectionTestFixtures;
 import com.twohands.social_service.application.user.followuser.FollowUserCommand;
 import com.twohands.social_service.application.user.followuser.FollowUserResult;
 import com.twohands.social_service.application.user.followuser.FollowUserUseCase;
@@ -34,11 +36,13 @@ class FollowUserUseCaseTest {
 
     private final FollowRepository followRepository = mock(FollowRepository.class);
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
+    private final UserWriteGuard userWriteGuard = new UserWriteGuard(userProjectionRepository);
     private final OutboxEventRepository outboxEventRepository = mock(OutboxEventRepository.class);
     private final UserFollowedOutboxService userFollowedOutboxService = new UserFollowedOutboxService(new ObjectMapper());
     private final FollowUserUseCase useCase = new FollowUserUseCase(
             followRepository,
             userProjectionRepository,
+            userWriteGuard,
             outboxEventRepository,
             userFollowedOutboxService
     );
@@ -49,7 +53,7 @@ class FollowUserUseCaseTest {
         UUID followeeId = UUID.randomUUID();
         Instant now = Instant.now();
 
-        when(userProjectionRepository.findByUserId(followerId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(followerId)).thenReturn(UserProjectionTestFixtures.activeOptional(followerId));
         when(userProjectionRepository.findByUserId(followeeId))
                 .thenReturn(Optional.of(new UserProjection(followeeId.toString(), "ACTIVE", "User B", null, false)));
         when(followRepository.findByFollowerIdAndFolloweeId(followerId, followeeId)).thenReturn(Optional.empty());
@@ -75,7 +79,7 @@ class FollowUserUseCaseTest {
         UUID followerId = UUID.randomUUID();
         UUID followeeId = UUID.randomUUID();
 
-        when(userProjectionRepository.findByUserId(followerId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(followerId)).thenReturn(UserProjectionTestFixtures.activeOptional(followerId));
         when(userProjectionRepository.findByUserId(followeeId))
                 .thenReturn(Optional.of(new UserProjection(followeeId.toString(), "ACTIVE", "User B", null, true)));
         when(followRepository.findByFollowerIdAndFolloweeId(followerId, followeeId)).thenReturn(Optional.empty());
@@ -96,7 +100,7 @@ class FollowUserUseCaseTest {
         Instant createdAt = Instant.now();
         Follow existing = new Follow(followerId, followeeId, FollowStatus.ACCEPTED, createdAt);
 
-        when(userProjectionRepository.findByUserId(followerId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(followerId)).thenReturn(UserProjectionTestFixtures.activeOptional(followerId));
         when(userProjectionRepository.findByUserId(followeeId))
                 .thenReturn(Optional.of(new UserProjection(followeeId.toString(), "ACTIVE", "User B", null, false)));
         when(followRepository.findByFollowerIdAndFolloweeId(followerId, followeeId)).thenReturn(Optional.of(existing));
@@ -112,7 +116,7 @@ class FollowUserUseCaseTest {
     @Test
     void shouldThrowBadRequestWhenSelfFollow() {
         UUID userId = UUID.randomUUID();
-        when(userProjectionRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(userId)).thenReturn(UserProjectionTestFixtures.activeOptional(userId));
 
         assertThatThrownBy(() -> useCase.execute(new FollowUserCommand(userId, userId)))
                 .isInstanceOf(AppException.class)
@@ -124,7 +128,7 @@ class FollowUserUseCaseTest {
         UUID followerId = UUID.randomUUID();
         UUID followeeId = UUID.randomUUID();
 
-        when(userProjectionRepository.findByUserId(followerId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.findByUserId(followerId)).thenReturn(UserProjectionTestFixtures.activeOptional(followerId));
         when(userProjectionRepository.findByUserId(followeeId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> useCase.execute(new FollowUserCommand(followerId, followeeId)))

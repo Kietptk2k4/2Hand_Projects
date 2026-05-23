@@ -12,7 +12,6 @@ import com.twohands.social_service.domain.post.PostSaveEntry;
 import com.twohands.social_service.domain.post.PostSaveRepository;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
-import com.twohands.social_service.domain.user.UserProjectionRepository;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
@@ -33,15 +32,12 @@ class ViewSavedPostsUseCaseTest {
     private final PostSaveRepository postSaveRepository = org.mockito.Mockito.mock(PostSaveRepository.class);
     private final PostRepository postRepository = org.mockito.Mockito.mock(PostRepository.class);
     private final FollowRepository followRepository = org.mockito.Mockito.mock(FollowRepository.class);
-    private final UserProjectionRepository userProjectionRepository =
-            org.mockito.Mockito.mock(UserProjectionRepository.class);
     private final PostViewAccessPolicy postViewAccessPolicy = new PostViewAccessPolicy();
     private final ViewSavedPostsUseCase useCase = new ViewSavedPostsUseCase(
             postSaveRepository,
             postRepository,
             followRepository,
-            postViewAccessPolicy,
-            userProjectionRepository
+            postViewAccessPolicy
     );
 
     @Test
