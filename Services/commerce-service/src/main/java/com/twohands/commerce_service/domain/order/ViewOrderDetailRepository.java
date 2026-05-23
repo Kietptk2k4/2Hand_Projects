@@ -6,4 +6,6 @@ import java.util.UUID;
 public interface ViewOrderDetailRepository {
 
     Optional<ViewOrderDetailResult> findByOrderIdAndBuyerId(UUID orderId, UUID buyerId);
+
+    Optional<ViewOrderDetailResult> findByOrderId(UUID orderId);
 }

@@ -44,11 +44,20 @@ public class ViewOrderDetailRepositoryAdapter implements ViewOrderDetailReposito
 
     @Override
     public Optional<ViewOrderDetailResult> findByOrderIdAndBuyerId(UUID orderId, UUID buyerId) {
-        OrderHeaderRow order = loadOrder(orderId, buyerId);
+        return buildResult(loadOrderForBuyer(orderId, buyerId));
+    }
+
+    @Override
+    public Optional<ViewOrderDetailResult> findByOrderId(UUID orderId) {
+        return buildResult(loadOrderById(orderId));
+    }
+
+    private Optional<ViewOrderDetailResult> buildResult(OrderHeaderRow order) {
         if (order == null) {
             return Optional.empty();
         }
 
+        UUID orderId = order.orderId();
         ViewOrderDetailPaymentSummary payment = loadPayment(orderId);
         List<ViewOrderDetailItem> items = loadOrderItems(orderId);
         List<ViewOrderDetailShipment> shipments = loadShipments(orderId);
@@ -72,7 +81,7 @@ public class ViewOrderDetailRepositoryAdapter implements ViewOrderDetailReposito
         ));
     }
 
-    private OrderHeaderRow loadOrder(UUID orderId, UUID buyerId) {
+    private OrderHeaderRow loadOrderForBuyer(UUID orderId, UUID buyerId) {
         String sql = """
                 SELECT id, buyer_id, status::text AS order_status, payment_status::text AS order_payment_status,
                        payment_method::text AS payment_method, total_amount, final_amount,
@@ -85,6 +94,22 @@ public class ViewOrderDetailRepositoryAdapter implements ViewOrderDetailReposito
                 new MapSqlParameterSource()
                         .addValue("orderId", orderId)
                         .addValue("buyerId", buyerId),
+                (rs, rowNum) -> mapOrderHeader(rs)
+        );
+        return rows.isEmpty() ? null : rows.getFirst();
+    }
+
+    private OrderHeaderRow loadOrderById(UUID orderId) {
+        String sql = """
+                SELECT id, buyer_id, status::text AS order_status, payment_status::text AS order_payment_status,
+                       payment_method::text AS payment_method, total_amount, final_amount,
+                       created_at, updated_at, completed_at
+                FROM orders
+                WHERE id = :orderId
+                """;
+        List<OrderHeaderRow> rows = jdbcTemplate.query(
+                sql,
+                new MapSqlParameterSource("orderId", orderId),
                 (rs, rowNum) -> mapOrderHeader(rs)
         );
         return rows.isEmpty() ? null : rows.getFirst();
