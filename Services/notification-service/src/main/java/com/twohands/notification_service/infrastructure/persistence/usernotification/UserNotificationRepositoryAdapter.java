@@ -78,6 +78,27 @@ public class UserNotificationRepositoryAdapter implements UserNotificationReposi
     }
 
     @Override
+    public PageResult<UserNotification> findUnreadVisibleByUserId(UserNotificationListQuery query) {
+        Page<UserNotificationEntity> page = jpaRepository.findByUserIdAndReadFalseAndDeletedFalseOrderByCreatedAtDesc(
+                query.userId(),
+                PageRequest.of(query.page(), query.size())
+        );
+
+        List<UserNotification> items = page.getContent().stream()
+                .map(this::toDomain)
+                .toList();
+
+        return new PageResult<>(
+                items,
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.hasNext()
+        );
+    }
+
+    @Override
     public long countByUserIdAndReadFalseAndDeletedFalse(UUID userId) {
         return jpaRepository.countByUserIdAndReadFalseAndDeletedFalse(userId);
     }

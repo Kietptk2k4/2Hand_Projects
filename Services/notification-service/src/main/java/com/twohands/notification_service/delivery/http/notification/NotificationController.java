@@ -1,5 +1,7 @@
 package com.twohands.notification_service.delivery.http.notification;
 
+import com.twohands.notification_service.application.read.ViewUnreadNotificationsCommand;
+import com.twohands.notification_service.application.read.ViewUnreadNotificationsUseCase;
 import com.twohands.notification_service.application.read.ViewUserNotificationsCommand;
 import com.twohands.notification_service.application.read.ViewUserNotificationsResult;
 import com.twohands.notification_service.application.read.ViewUserNotificationsUseCase;
@@ -25,13 +27,16 @@ public class NotificationController {
     private static final int DEFAULT_SIZE = 20;
 
     private final ViewUserNotificationsUseCase viewUserNotificationsUseCase;
+    private final ViewUnreadNotificationsUseCase viewUnreadNotificationsUseCase;
     private final ViewUserNotificationsHttpMapper viewUserNotificationsHttpMapper;
 
     public NotificationController(
             ViewUserNotificationsUseCase viewUserNotificationsUseCase,
+            ViewUnreadNotificationsUseCase viewUnreadNotificationsUseCase,
             ViewUserNotificationsHttpMapper viewUserNotificationsHttpMapper
     ) {
         this.viewUserNotificationsUseCase = viewUserNotificationsUseCase;
+        this.viewUnreadNotificationsUseCase = viewUnreadNotificationsUseCase;
         this.viewUserNotificationsHttpMapper = viewUserNotificationsHttpMapper;
     }
 
@@ -49,6 +54,24 @@ public class NotificationController {
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK.value(),
                 viewUserNotificationsUseCase.successMessage(),
+                viewUserNotificationsHttpMapper.toResponse(result)
+        ));
+    }
+
+    @GetMapping("/unread")
+    public ResponseEntity<ApiResponse<ViewUserNotificationsResponse>> viewUnreadNotifications(
+            @RequestParam(name = "page", defaultValue = "" + DEFAULT_PAGE) int page,
+            @RequestParam(name = "size", defaultValue = "" + DEFAULT_SIZE) int size,
+            Authentication authentication
+    ) {
+        UUID userId = AuthenticationSupport.requireUserId(authentication);
+        ViewUserNotificationsResult result = viewUnreadNotificationsUseCase.execute(
+                new ViewUnreadNotificationsCommand(userId, page, size)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewUnreadNotificationsUseCase.successMessage(),
                 viewUserNotificationsHttpMapper.toResponse(result)
         ));
     }

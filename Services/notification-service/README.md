@@ -52,6 +52,7 @@ Base URL local: **`http://localhost:3004`**
 | Method | Path | Auth |
 |--------|------|------|
 | `GET` | `/api/v1/notification/notifications` | Bearer JWT |
+| `GET` | `/api/v1/notification/notifications/unread` | Bearer JWT |
 
 Query: `page` (default `0`), `size` (default `20`, max `50`).
 
@@ -171,7 +172,7 @@ cd Services/notification-service
 ./gradlew test
 ```
 
-Use cases hiện có: `ConsumeDomainEventUseCase`, `StoreNotificationEventUseCase`, `ProcessNotificationEventUseCase`, `RespectNotificationSettingsUseCase`, `ApplyNotificationDeliveryRulesUseCase`, `ApplySkipSelfNotificationUseCase`, `InitializeDefaultNotificationSettingsUseCase`, `CreateInAppNotificationUseCase`, `ViewUserNotificationsUseCase`, `MarkNotificationEventCompletedUseCase`, `MarkNotificationEventFailedUseCase`, `EnsureNotificationEventIdempotencyUseCase`, `CreateIdempotentUserNotificationUseCase`, `RecoverStaleProcessingNotificationEventsUseCase`, `IngestNotificationEventUseCase`, `ProcessPendingNotificationEventsUseCase`, `RetryFailedNotificationEventsUseCase`, `RetryFailedNotificationDeliveryUseCase`.
+Use cases hiện có: `ConsumeDomainEventUseCase`, `StoreNotificationEventUseCase`, `ProcessNotificationEventUseCase`, `RespectNotificationSettingsUseCase`, `ApplyNotificationDeliveryRulesUseCase`, `ApplySkipSelfNotificationUseCase`, `InitializeDefaultNotificationSettingsUseCase`, `CreateInAppNotificationUseCase`, `ViewUserNotificationsUseCase`, `ViewUnreadNotificationsUseCase`, `MarkNotificationEventCompletedUseCase`, `MarkNotificationEventFailedUseCase`, `EnsureNotificationEventIdempotencyUseCase`, `CreateIdempotentUserNotificationUseCase`, `RecoverStaleProcessingNotificationEventsUseCase`, `IngestNotificationEventUseCase`, `ProcessPendingNotificationEventsUseCase`, `RetryFailedNotificationEventsUseCase`, `RetryFailedNotificationDeliveryUseCase`.
 
 ---
 
@@ -184,7 +185,7 @@ src/main/java/com/twohands/notification_service/
 ├── application/idempotency/  # Ensure event/user idempotency, stale recovery
 ├── application/delivery/     # RespectNotificationSettingsUseCase, ApplyNotificationDeliveryRulesUseCase, ApplySkipSelfNotificationUseCase
 ├── application/inapp/        # CreateInAppNotificationUseCase
-├── application/read/         # ViewUserNotificationsUseCase
+├── application/read/         # ViewUserNotificationsUseCase, ViewUnreadNotificationsUseCase
 ├── application/settings/     # InitializeDefaultNotificationSettingsUseCase
 ├── application/handler/      # Event handlers + recipient/skip policies
 ├── application/worker/       # Process / retry use cases

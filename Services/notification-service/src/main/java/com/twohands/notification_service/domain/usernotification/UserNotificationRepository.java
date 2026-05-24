@@ -14,5 +14,7 @@ public interface UserNotificationRepository {
 
     PageResult<UserNotification> findVisibleByUserId(UserNotificationListQuery query);
 
+    PageResult<UserNotification> findUnreadVisibleByUserId(UserNotificationListQuery query);
+
     long countByUserIdAndReadFalseAndDeletedFalse(UUID userId);
 }
