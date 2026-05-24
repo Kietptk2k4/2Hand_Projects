@@ -176,7 +176,7 @@ cd Services/notification-service
 ./gradlew test
 ```
 
-Use cases hiện có: `ConsumeDomainEventUseCase`, `StoreNotificationEventUseCase`, `ProcessNotificationEventUseCase`, `RespectNotificationSettingsUseCase`, `ApplyNotificationDeliveryRulesUseCase`, `ApplySkipSelfNotificationUseCase`, `InitializeDefaultNotificationSettingsUseCase`, `CreateInAppNotificationUseCase`, `ViewUserNotificationsUseCase`, `ViewUnreadNotificationsUseCase`, `CountUnreadNotificationsUseCase`, `MarkNotificationAsReadUseCase`, `MarkAllNotificationsAsReadUseCase`, `DeleteNotificationUseCase`, `MarkNotificationEventCompletedUseCase`, `MarkNotificationEventFailedUseCase`, `EnsureNotificationEventIdempotencyUseCase`, `CreateIdempotentUserNotificationUseCase`, `RecoverStaleProcessingNotificationEventsUseCase`, `IngestNotificationEventUseCase`, `ProcessPendingNotificationEventsUseCase`, `RetryFailedNotificationEventsUseCase`, `RetryFailedNotificationDeliveryUseCase`.
+Use cases hiện có: `ConsumeDomainEventUseCase`, `StoreNotificationEventUseCase`, `ProcessNotificationEventUseCase`, `RespectNotificationSettingsUseCase`, `ApplyNotificationDeliveryRulesUseCase`, `ApplySkipSelfNotificationUseCase`, `InitializeDefaultNotificationSettingsUseCase`, `ViewNotificationSettingsUseCase`, `CreateInAppNotificationUseCase`, `ViewUserNotificationsUseCase`, `ViewUnreadNotificationsUseCase`, `CountUnreadNotificationsUseCase`, `MarkNotificationAsReadUseCase`, `MarkAllNotificationsAsReadUseCase`, `DeleteNotificationUseCase`, `MarkNotificationEventCompletedUseCase`, `MarkNotificationEventFailedUseCase`, `EnsureNotificationEventIdempotencyUseCase`, `CreateIdempotentUserNotificationUseCase`, `RecoverStaleProcessingNotificationEventsUseCase`, `IngestNotificationEventUseCase`, `ProcessPendingNotificationEventsUseCase`, `RetryFailedNotificationEventsUseCase`, `RetryFailedNotificationDeliveryUseCase`.
 
 ---
 
@@ -190,7 +190,7 @@ src/main/java/com/twohands/notification_service/
 ├── application/delivery/     # RespectNotificationSettingsUseCase, ApplyNotificationDeliveryRulesUseCase, ApplySkipSelfNotificationUseCase
 ├── application/inapp/        # CreateInAppNotificationUseCase
 ├── application/read/         # View/MarkRead/Delete user notification use cases
-├── application/settings/     # InitializeDefaultNotificationSettingsUseCase
+├── application/settings/     # InitializeDefaultNotificationSettingsUseCase, ViewNotificationSettingsUseCase
 ├── application/handler/      # Event handlers + recipient/skip policies
 ├── application/worker/       # Process / retry use cases
 ├── delivery/http/       # Health, InternalEventController, NotificationController
