@@ -12,6 +12,8 @@ public interface UserNotificationRepository {
 
     Optional<UserNotification> findByIdempotencyKey(UserNotificationIdempotencyKey idempotencyKey);
 
+    Optional<UserNotification> findVisibleByIdAndUserId(UUID notificationId, UUID userId);
+
     PageResult<UserNotification> findVisibleByUserId(UserNotificationListQuery query);
 
     PageResult<UserNotification> findUnreadVisibleByUserId(UserNotificationListQuery query);

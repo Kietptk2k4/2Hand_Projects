@@ -3,6 +3,9 @@ package com.twohands.notification_service.delivery.http.notification;
 import com.twohands.notification_service.application.read.CountUnreadNotificationsCommand;
 import com.twohands.notification_service.application.read.CountUnreadNotificationsResult;
 import com.twohands.notification_service.application.read.CountUnreadNotificationsUseCase;
+import com.twohands.notification_service.application.read.MarkNotificationAsReadCommand;
+import com.twohands.notification_service.application.read.MarkNotificationAsReadResult;
+import com.twohands.notification_service.application.read.MarkNotificationAsReadUseCase;
 import com.twohands.notification_service.application.read.ViewUnreadNotificationsCommand;
 import com.twohands.notification_service.application.read.ViewUnreadNotificationsUseCase;
 import com.twohands.notification_service.application.read.ViewUserNotificationsCommand;
@@ -11,12 +14,15 @@ import com.twohands.notification_service.application.read.ViewUserNotificationsU
 import com.twohands.notification_service.common.dto.ApiResponse;
 import com.twohands.notification_service.delivery.http.notification.mapper.ViewUserNotificationsHttpMapper;
 import com.twohands.notification_service.delivery.http.notification.response.CountUnreadNotificationsResponse;
+import com.twohands.notification_service.delivery.http.notification.response.MarkNotificationAsReadResponse;
 import com.twohands.notification_service.delivery.http.notification.response.ViewUserNotificationsResponse;
 import com.twohands.notification_service.security.AuthenticationSupport;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,17 +39,20 @@ public class NotificationController {
     private final ViewUserNotificationsUseCase viewUserNotificationsUseCase;
     private final ViewUnreadNotificationsUseCase viewUnreadNotificationsUseCase;
     private final CountUnreadNotificationsUseCase countUnreadNotificationsUseCase;
+    private final MarkNotificationAsReadUseCase markNotificationAsReadUseCase;
     private final ViewUserNotificationsHttpMapper viewUserNotificationsHttpMapper;
 
     public NotificationController(
             ViewUserNotificationsUseCase viewUserNotificationsUseCase,
             ViewUnreadNotificationsUseCase viewUnreadNotificationsUseCase,
             CountUnreadNotificationsUseCase countUnreadNotificationsUseCase,
+            MarkNotificationAsReadUseCase markNotificationAsReadUseCase,
             ViewUserNotificationsHttpMapper viewUserNotificationsHttpMapper
     ) {
         this.viewUserNotificationsUseCase = viewUserNotificationsUseCase;
         this.viewUnreadNotificationsUseCase = viewUnreadNotificationsUseCase;
         this.countUnreadNotificationsUseCase = countUnreadNotificationsUseCase;
+        this.markNotificationAsReadUseCase = markNotificationAsReadUseCase;
         this.viewUserNotificationsHttpMapper = viewUserNotificationsHttpMapper;
     }
 
@@ -96,6 +105,28 @@ public class NotificationController {
                 HttpStatus.OK.value(),
                 countUnreadNotificationsUseCase.successMessage(),
                 new CountUnreadNotificationsResponse(result.count())
+        ));
+    }
+
+    @PatchMapping("/{notificationId}/read")
+    public ResponseEntity<ApiResponse<MarkNotificationAsReadResponse>> markNotificationAsRead(
+            @PathVariable UUID notificationId,
+            Authentication authentication
+    ) {
+        UUID userId = AuthenticationSupport.requireUserId(authentication);
+        MarkNotificationAsReadResult result = markNotificationAsReadUseCase.execute(
+                new MarkNotificationAsReadCommand(userId, notificationId)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                markNotificationAsReadUseCase.successMessage(),
+                new MarkNotificationAsReadResponse(
+                        result.notificationId(),
+                        result.read(),
+                        result.readAt(),
+                        result.alreadyRead()
+                )
         ));
     }
 }
