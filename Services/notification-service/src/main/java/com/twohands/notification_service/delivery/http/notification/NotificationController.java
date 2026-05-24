@@ -1,5 +1,8 @@
 package com.twohands.notification_service.delivery.http.notification;
 
+import com.twohands.notification_service.application.read.CountUnreadNotificationsCommand;
+import com.twohands.notification_service.application.read.CountUnreadNotificationsResult;
+import com.twohands.notification_service.application.read.CountUnreadNotificationsUseCase;
 import com.twohands.notification_service.application.read.ViewUnreadNotificationsCommand;
 import com.twohands.notification_service.application.read.ViewUnreadNotificationsUseCase;
 import com.twohands.notification_service.application.read.ViewUserNotificationsCommand;
@@ -7,6 +10,7 @@ import com.twohands.notification_service.application.read.ViewUserNotificationsR
 import com.twohands.notification_service.application.read.ViewUserNotificationsUseCase;
 import com.twohands.notification_service.common.dto.ApiResponse;
 import com.twohands.notification_service.delivery.http.notification.mapper.ViewUserNotificationsHttpMapper;
+import com.twohands.notification_service.delivery.http.notification.response.CountUnreadNotificationsResponse;
 import com.twohands.notification_service.delivery.http.notification.response.ViewUserNotificationsResponse;
 import com.twohands.notification_service.security.AuthenticationSupport;
 import org.springframework.http.HttpStatus;
@@ -28,15 +32,18 @@ public class NotificationController {
 
     private final ViewUserNotificationsUseCase viewUserNotificationsUseCase;
     private final ViewUnreadNotificationsUseCase viewUnreadNotificationsUseCase;
+    private final CountUnreadNotificationsUseCase countUnreadNotificationsUseCase;
     private final ViewUserNotificationsHttpMapper viewUserNotificationsHttpMapper;
 
     public NotificationController(
             ViewUserNotificationsUseCase viewUserNotificationsUseCase,
             ViewUnreadNotificationsUseCase viewUnreadNotificationsUseCase,
+            CountUnreadNotificationsUseCase countUnreadNotificationsUseCase,
             ViewUserNotificationsHttpMapper viewUserNotificationsHttpMapper
     ) {
         this.viewUserNotificationsUseCase = viewUserNotificationsUseCase;
         this.viewUnreadNotificationsUseCase = viewUnreadNotificationsUseCase;
+        this.countUnreadNotificationsUseCase = countUnreadNotificationsUseCase;
         this.viewUserNotificationsHttpMapper = viewUserNotificationsHttpMapper;
     }
 
@@ -73,6 +80,22 @@ public class NotificationController {
                 HttpStatus.OK.value(),
                 viewUnreadNotificationsUseCase.successMessage(),
                 viewUserNotificationsHttpMapper.toResponse(result)
+        ));
+    }
+
+    @GetMapping("/unread-count")
+    public ResponseEntity<ApiResponse<CountUnreadNotificationsResponse>> countUnreadNotifications(
+            Authentication authentication
+    ) {
+        UUID userId = AuthenticationSupport.requireUserId(authentication);
+        CountUnreadNotificationsResult result = countUnreadNotificationsUseCase.execute(
+                new CountUnreadNotificationsCommand(userId)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                countUnreadNotificationsUseCase.successMessage(),
+                new CountUnreadNotificationsResponse(result.count())
         ));
     }
 }
