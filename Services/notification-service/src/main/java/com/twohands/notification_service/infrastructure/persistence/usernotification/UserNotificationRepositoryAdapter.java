@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -107,6 +108,11 @@ public class UserNotificationRepositoryAdapter implements UserNotificationReposi
     @Override
     public long countByUserIdAndReadFalseAndDeletedFalse(UUID userId) {
         return jpaRepository.countByUserIdAndReadFalseAndDeletedFalse(userId);
+    }
+
+    @Override
+    public int markAllUnreadVisibleAsRead(UUID userId, Instant readAt) {
+        return jpaRepository.markAllUnreadVisibleAsReadByUserId(userId, readAt);
     }
 
     private UserNotification toDomain(UserNotificationEntity entity) {

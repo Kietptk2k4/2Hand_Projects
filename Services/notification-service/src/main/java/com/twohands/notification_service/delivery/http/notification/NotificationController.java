@@ -3,6 +3,9 @@ package com.twohands.notification_service.delivery.http.notification;
 import com.twohands.notification_service.application.read.CountUnreadNotificationsCommand;
 import com.twohands.notification_service.application.read.CountUnreadNotificationsResult;
 import com.twohands.notification_service.application.read.CountUnreadNotificationsUseCase;
+import com.twohands.notification_service.application.read.MarkAllNotificationsAsReadCommand;
+import com.twohands.notification_service.application.read.MarkAllNotificationsAsReadResult;
+import com.twohands.notification_service.application.read.MarkAllNotificationsAsReadUseCase;
 import com.twohands.notification_service.application.read.MarkNotificationAsReadCommand;
 import com.twohands.notification_service.application.read.MarkNotificationAsReadResult;
 import com.twohands.notification_service.application.read.MarkNotificationAsReadUseCase;
@@ -14,6 +17,7 @@ import com.twohands.notification_service.application.read.ViewUserNotificationsU
 import com.twohands.notification_service.common.dto.ApiResponse;
 import com.twohands.notification_service.delivery.http.notification.mapper.ViewUserNotificationsHttpMapper;
 import com.twohands.notification_service.delivery.http.notification.response.CountUnreadNotificationsResponse;
+import com.twohands.notification_service.delivery.http.notification.response.MarkAllNotificationsAsReadResponse;
 import com.twohands.notification_service.delivery.http.notification.response.MarkNotificationAsReadResponse;
 import com.twohands.notification_service.delivery.http.notification.response.ViewUserNotificationsResponse;
 import com.twohands.notification_service.security.AuthenticationSupport;
@@ -40,6 +44,7 @@ public class NotificationController {
     private final ViewUnreadNotificationsUseCase viewUnreadNotificationsUseCase;
     private final CountUnreadNotificationsUseCase countUnreadNotificationsUseCase;
     private final MarkNotificationAsReadUseCase markNotificationAsReadUseCase;
+    private final MarkAllNotificationsAsReadUseCase markAllNotificationsAsReadUseCase;
     private final ViewUserNotificationsHttpMapper viewUserNotificationsHttpMapper;
 
     public NotificationController(
@@ -47,12 +52,14 @@ public class NotificationController {
             ViewUnreadNotificationsUseCase viewUnreadNotificationsUseCase,
             CountUnreadNotificationsUseCase countUnreadNotificationsUseCase,
             MarkNotificationAsReadUseCase markNotificationAsReadUseCase,
+            MarkAllNotificationsAsReadUseCase markAllNotificationsAsReadUseCase,
             ViewUserNotificationsHttpMapper viewUserNotificationsHttpMapper
     ) {
         this.viewUserNotificationsUseCase = viewUserNotificationsUseCase;
         this.viewUnreadNotificationsUseCase = viewUnreadNotificationsUseCase;
         this.countUnreadNotificationsUseCase = countUnreadNotificationsUseCase;
         this.markNotificationAsReadUseCase = markNotificationAsReadUseCase;
+        this.markAllNotificationsAsReadUseCase = markAllNotificationsAsReadUseCase;
         this.viewUserNotificationsHttpMapper = viewUserNotificationsHttpMapper;
     }
 
@@ -105,6 +112,22 @@ public class NotificationController {
                 HttpStatus.OK.value(),
                 countUnreadNotificationsUseCase.successMessage(),
                 new CountUnreadNotificationsResponse(result.count())
+        ));
+    }
+
+    @PatchMapping("/read-all")
+    public ResponseEntity<ApiResponse<MarkAllNotificationsAsReadResponse>> markAllNotificationsAsRead(
+            Authentication authentication
+    ) {
+        UUID userId = AuthenticationSupport.requireUserId(authentication);
+        MarkAllNotificationsAsReadResult result = markAllNotificationsAsReadUseCase.execute(
+                new MarkAllNotificationsAsReadCommand(userId)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                markAllNotificationsAsReadUseCase.successMessage(),
+                new MarkAllNotificationsAsReadResponse(result.updatedCount())
         ));
     }
 

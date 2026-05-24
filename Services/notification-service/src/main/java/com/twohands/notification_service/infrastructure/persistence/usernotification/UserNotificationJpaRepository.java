@@ -3,7 +3,11 @@ package com.twohands.notification_service.infrastructure.persistence.usernotific
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,6 +23,14 @@ public interface UserNotificationJpaRepository extends JpaRepository<UserNotific
             UUID userId,
             Pageable pageable
     );
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            UPDATE UserNotificationEntity n
+            SET n.read = true, n.readAt = :readAt
+            WHERE n.userId = :userId AND n.read = false AND n.deleted = false
+            """)
+    int markAllUnreadVisibleAsReadByUserId(@Param("userId") UUID userId, @Param("readAt") Instant readAt);
 
     Optional<UserNotificationEntity> findByNotificationEventIdAndUserIdAndTypeAndReferenceTypeAndReferenceId(
             UUID notificationEventId,

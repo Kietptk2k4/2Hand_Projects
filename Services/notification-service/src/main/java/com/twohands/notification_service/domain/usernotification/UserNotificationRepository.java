@@ -3,6 +3,7 @@ package com.twohands.notification_service.domain.usernotification;
 import com.twohands.notification_service.domain.common.PageResult;
 import com.twohands.notification_service.domain.idempotency.UserNotificationIdempotencyKey;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,4 +20,6 @@ public interface UserNotificationRepository {
     PageResult<UserNotification> findUnreadVisibleByUserId(UserNotificationListQuery query);
 
     long countByUserIdAndReadFalseAndDeletedFalse(UUID userId);
+
+    int markAllUnreadVisibleAsRead(UUID userId, Instant readAt);
 }
