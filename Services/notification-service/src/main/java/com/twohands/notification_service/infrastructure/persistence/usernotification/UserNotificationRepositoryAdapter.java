@@ -64,6 +64,12 @@ public class UserNotificationRepositoryAdapter implements UserNotificationReposi
     }
 
     @Override
+    public Optional<UserNotification> findByIdAndUserId(UUID notificationId, UUID userId) {
+        return jpaRepository.findByIdAndUserId(notificationId, userId)
+                .map(this::toDomain);
+    }
+
+    @Override
     public PageResult<UserNotification> findVisibleByUserId(UserNotificationListQuery query) {
         Page<UserNotificationEntity> page = jpaRepository.findByUserIdAndDeletedFalseOrderByCreatedAtDesc(
                 query.userId(),

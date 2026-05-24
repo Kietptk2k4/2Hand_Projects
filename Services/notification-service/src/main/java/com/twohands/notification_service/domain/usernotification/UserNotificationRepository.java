@@ -15,6 +15,8 @@ public interface UserNotificationRepository {
 
     Optional<UserNotification> findVisibleByIdAndUserId(UUID notificationId, UUID userId);
 
+    Optional<UserNotification> findByIdAndUserId(UUID notificationId, UUID userId);
+
     PageResult<UserNotification> findVisibleByUserId(UserNotificationListQuery query);
 
     PageResult<UserNotification> findUnreadVisibleByUserId(UserNotificationListQuery query);

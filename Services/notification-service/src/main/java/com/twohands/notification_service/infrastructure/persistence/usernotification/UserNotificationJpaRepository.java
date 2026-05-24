@@ -17,6 +17,8 @@ public interface UserNotificationJpaRepository extends JpaRepository<UserNotific
 
     Optional<UserNotificationEntity> findByIdAndUserIdAndDeletedFalse(UUID id, UUID userId);
 
+    Optional<UserNotificationEntity> findByIdAndUserId(UUID id, UUID userId);
+
     Page<UserNotificationEntity> findByUserIdAndDeletedFalseOrderByCreatedAtDesc(UUID userId, Pageable pageable);
 
     Page<UserNotificationEntity> findByUserIdAndReadFalseAndDeletedFalseOrderByCreatedAtDesc(

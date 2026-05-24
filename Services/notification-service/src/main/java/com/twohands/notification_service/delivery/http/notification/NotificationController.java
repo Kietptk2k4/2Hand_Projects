@@ -3,6 +3,9 @@ package com.twohands.notification_service.delivery.http.notification;
 import com.twohands.notification_service.application.read.CountUnreadNotificationsCommand;
 import com.twohands.notification_service.application.read.CountUnreadNotificationsResult;
 import com.twohands.notification_service.application.read.CountUnreadNotificationsUseCase;
+import com.twohands.notification_service.application.read.DeleteNotificationCommand;
+import com.twohands.notification_service.application.read.DeleteNotificationResult;
+import com.twohands.notification_service.application.read.DeleteNotificationUseCase;
 import com.twohands.notification_service.application.read.MarkAllNotificationsAsReadCommand;
 import com.twohands.notification_service.application.read.MarkAllNotificationsAsReadResult;
 import com.twohands.notification_service.application.read.MarkAllNotificationsAsReadUseCase;
@@ -17,6 +20,7 @@ import com.twohands.notification_service.application.read.ViewUserNotificationsU
 import com.twohands.notification_service.common.dto.ApiResponse;
 import com.twohands.notification_service.delivery.http.notification.mapper.ViewUserNotificationsHttpMapper;
 import com.twohands.notification_service.delivery.http.notification.response.CountUnreadNotificationsResponse;
+import com.twohands.notification_service.delivery.http.notification.response.DeleteNotificationResponse;
 import com.twohands.notification_service.delivery.http.notification.response.MarkAllNotificationsAsReadResponse;
 import com.twohands.notification_service.delivery.http.notification.response.MarkNotificationAsReadResponse;
 import com.twohands.notification_service.delivery.http.notification.response.ViewUserNotificationsResponse;
@@ -24,6 +28,7 @@ import com.twohands.notification_service.security.AuthenticationSupport;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,6 +50,7 @@ public class NotificationController {
     private final CountUnreadNotificationsUseCase countUnreadNotificationsUseCase;
     private final MarkNotificationAsReadUseCase markNotificationAsReadUseCase;
     private final MarkAllNotificationsAsReadUseCase markAllNotificationsAsReadUseCase;
+    private final DeleteNotificationUseCase deleteNotificationUseCase;
     private final ViewUserNotificationsHttpMapper viewUserNotificationsHttpMapper;
 
     public NotificationController(
@@ -53,6 +59,7 @@ public class NotificationController {
             CountUnreadNotificationsUseCase countUnreadNotificationsUseCase,
             MarkNotificationAsReadUseCase markNotificationAsReadUseCase,
             MarkAllNotificationsAsReadUseCase markAllNotificationsAsReadUseCase,
+            DeleteNotificationUseCase deleteNotificationUseCase,
             ViewUserNotificationsHttpMapper viewUserNotificationsHttpMapper
     ) {
         this.viewUserNotificationsUseCase = viewUserNotificationsUseCase;
@@ -60,6 +67,7 @@ public class NotificationController {
         this.countUnreadNotificationsUseCase = countUnreadNotificationsUseCase;
         this.markNotificationAsReadUseCase = markNotificationAsReadUseCase;
         this.markAllNotificationsAsReadUseCase = markAllNotificationsAsReadUseCase;
+        this.deleteNotificationUseCase = deleteNotificationUseCase;
         this.viewUserNotificationsHttpMapper = viewUserNotificationsHttpMapper;
     }
 
@@ -149,6 +157,27 @@ public class NotificationController {
                         result.read(),
                         result.readAt(),
                         result.alreadyRead()
+                )
+        ));
+    }
+
+    @DeleteMapping("/{notificationId}")
+    public ResponseEntity<ApiResponse<DeleteNotificationResponse>> deleteNotification(
+            @PathVariable UUID notificationId,
+            Authentication authentication
+    ) {
+        UUID userId = AuthenticationSupport.requireUserId(authentication);
+        DeleteNotificationResult result = deleteNotificationUseCase.execute(
+                new DeleteNotificationCommand(userId, notificationId)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                deleteNotificationUseCase.successMessage(),
+                new DeleteNotificationResponse(
+                        result.notificationId(),
+                        result.deleted(),
+                        result.alreadyDeleted()
                 )
         ));
     }
