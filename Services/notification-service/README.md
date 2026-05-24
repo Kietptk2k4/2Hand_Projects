@@ -47,6 +47,14 @@ Base URL local: **`http://localhost:3004`**
 | `GET` | `/api/v1/notification/health` | Public |
 | `GET` | `/actuator/health` | Public |
 
+### User notifications
+
+| Method | Path | Auth |
+|--------|------|------|
+| `GET` | `/api/v1/notification/notifications` | Bearer JWT |
+
+Query: `page` (default `0`), `size` (default `20`, max `50`).
+
 ### Internal ingest (dev / service-to-service)
 
 | Method | Path | Auth |
@@ -163,7 +171,7 @@ cd Services/notification-service
 ./gradlew test
 ```
 
-Use cases hiện có: `ConsumeDomainEventUseCase`, `StoreNotificationEventUseCase`, `ProcessNotificationEventUseCase`, `RespectNotificationSettingsUseCase`, `ApplyNotificationDeliveryRulesUseCase`, `ApplySkipSelfNotificationUseCase`, `InitializeDefaultNotificationSettingsUseCase`, `CreateInAppNotificationUseCase`, `MarkNotificationEventCompletedUseCase`, `MarkNotificationEventFailedUseCase`, `EnsureNotificationEventIdempotencyUseCase`, `CreateIdempotentUserNotificationUseCase`, `RecoverStaleProcessingNotificationEventsUseCase`, `IngestNotificationEventUseCase`, `ProcessPendingNotificationEventsUseCase`, `RetryFailedNotificationEventsUseCase`, `RetryFailedNotificationDeliveryUseCase`.
+Use cases hiện có: `ConsumeDomainEventUseCase`, `StoreNotificationEventUseCase`, `ProcessNotificationEventUseCase`, `RespectNotificationSettingsUseCase`, `ApplyNotificationDeliveryRulesUseCase`, `ApplySkipSelfNotificationUseCase`, `InitializeDefaultNotificationSettingsUseCase`, `CreateInAppNotificationUseCase`, `ViewUserNotificationsUseCase`, `MarkNotificationEventCompletedUseCase`, `MarkNotificationEventFailedUseCase`, `EnsureNotificationEventIdempotencyUseCase`, `CreateIdempotentUserNotificationUseCase`, `RecoverStaleProcessingNotificationEventsUseCase`, `IngestNotificationEventUseCase`, `ProcessPendingNotificationEventsUseCase`, `RetryFailedNotificationEventsUseCase`, `RetryFailedNotificationDeliveryUseCase`.
 
 ---
 
@@ -176,10 +184,11 @@ src/main/java/com/twohands/notification_service/
 ├── application/idempotency/  # Ensure event/user idempotency, stale recovery
 ├── application/delivery/     # RespectNotificationSettingsUseCase, ApplyNotificationDeliveryRulesUseCase, ApplySkipSelfNotificationUseCase
 ├── application/inapp/        # CreateInAppNotificationUseCase
+├── application/read/         # ViewUserNotificationsUseCase
 ├── application/settings/     # InitializeDefaultNotificationSettingsUseCase
 ├── application/handler/      # Event handlers + recipient/skip policies
 ├── application/worker/       # Process / retry use cases
-├── delivery/http/       # Health, InternalEventController
+├── delivery/http/       # Health, InternalEventController, NotificationController
 ├── domain/
 ├── infrastructure/
 └── config/ security/ exception/

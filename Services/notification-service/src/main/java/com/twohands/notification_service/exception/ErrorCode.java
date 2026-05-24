@@ -6,6 +6,7 @@ public enum ErrorCode {
     INTERNAL_ERROR("NOTIFICATION-500", HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error"),
     BAD_REQUEST("NOTIFICATION-400", HttpStatus.BAD_REQUEST, "Invalid request"),
     VALIDATION_ERROR("NOTIFICATION-400-VALIDATION", HttpStatus.BAD_REQUEST, "Validation failed"),
+    INVALID_PAGINATION("NOTIFICATION-400-PAGINATION", HttpStatus.BAD_REQUEST, "Invalid pagination parameters"),
     UNAUTHORIZED("NOTIFICATION-401", HttpStatus.UNAUTHORIZED, "Authentication required"),
     FORBIDDEN("NOTIFICATION-403", HttpStatus.FORBIDDEN, "Access denied"),
     RESOURCE_NOT_FOUND("NOTIFICATION-404", HttpStatus.NOT_FOUND, "Resource not found"),

@@ -1,10 +1,15 @@
 package com.twohands.notification_service.infrastructure.persistence.usernotification;
 
+import com.twohands.notification_service.domain.common.PageResult;
 import com.twohands.notification_service.domain.idempotency.UserNotificationIdempotencyKey;
 import com.twohands.notification_service.domain.usernotification.UserNotification;
+import com.twohands.notification_service.domain.usernotification.UserNotificationListQuery;
 import com.twohands.notification_service.domain.usernotification.UserNotificationRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -49,6 +54,27 @@ public class UserNotificationRepositoryAdapter implements UserNotificationReposi
                         idempotencyKey.referenceId()
                 )
                 .map(this::toDomain);
+    }
+
+    @Override
+    public PageResult<UserNotification> findVisibleByUserId(UserNotificationListQuery query) {
+        Page<UserNotificationEntity> page = jpaRepository.findByUserIdAndDeletedFalseOrderByCreatedAtDesc(
+                query.userId(),
+                PageRequest.of(query.page(), query.size())
+        );
+
+        List<UserNotification> items = page.getContent().stream()
+                .map(this::toDomain)
+                .toList();
+
+        return new PageResult<>(
+                items,
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.hasNext()
+        );
     }
 
     @Override
