@@ -22,7 +22,8 @@ public class NotificationDeliveryChannelPolicy {
     );
 
     private static final Set<String> DEDICATED_ADMIN_MODERATION_NOTIFICATION_EVENTS = Set.of(
-            "PRODUCT_REMOVED"
+            "PRODUCT_REMOVED",
+            "REVIEW_HIDDEN"
     );
 
     private static final Set<String> DEDICATED_COMMERCE_NOTIFICATION_EVENTS = Set.of(

@@ -29,6 +29,12 @@ public final class InAppNotificationTemplatePolicy {
                     "A shipment was created for an order you are fulfilling."
             ));
         }
+        if ("REVIEW_HIDDEN".equals(eventType) && SELLER_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new InAppNotificationTemplate(
+                    "Review hidden on your product",
+                    "A review on one of your products was hidden."
+            ));
+        }
         return Optional.ofNullable(switch (eventType) {
             case "POST_LIKED" -> new InAppNotificationTemplate("New like", "Someone liked your post.");
             case "USER_FOLLOWED" -> new InAppNotificationTemplate("New follower", "Someone started following you.");
@@ -74,6 +80,10 @@ public final class InAppNotificationTemplatePolicy {
             case "PRODUCT_REMOVED" -> new InAppNotificationTemplate(
                     "Product removed",
                     "One of your products was removed."
+            );
+            case "REVIEW_HIDDEN" -> new InAppNotificationTemplate(
+                    "Review hidden",
+                    "One of your reviews was hidden."
             );
             default -> null;
         });
