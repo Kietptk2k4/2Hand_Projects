@@ -66,13 +66,13 @@ class InAppSocialNotificationEventHandlerTest {
         UUID recipientId = UUID.randomUUID();
         UUID actorId = UUID.randomUUID();
 
-        NotificationEvent event = sampleEvent(eventId, actorId, recipientId);
+        NotificationEvent event = sampleEvent(eventId, "USER_FOLLOWED", actorId, recipientId);
 
         when(applySkipSelfNotificationUseCase.execute(
-                new ApplySkipSelfNotificationCommand("POST_LIKED", NotificationSourceService.SOCIAL, actorId, recipientId)
+                new ApplySkipSelfNotificationCommand("USER_FOLLOWED", NotificationSourceService.SOCIAL, actorId, recipientId)
         )).thenReturn(SkipSelfNotificationOutcome.PROCEED);
         when(applyNotificationDeliveryRulesUseCase.execute(
-                new ApplyNotificationDeliveryRulesCommand(recipientId, "POST_LIKED")
+                new ApplyNotificationDeliveryRulesCommand(recipientId, "USER_FOLLOWED")
         )).thenReturn(new NotificationDeliveryDecision(true, true, false));
         when(createInAppNotificationUseCase.execute(any(CreateInAppNotificationCommand.class)))
                 .thenReturn(new CreateInAppNotificationResult(UUID.randomUUID(), false));
@@ -91,10 +91,10 @@ class InAppSocialNotificationEventHandlerTest {
     @Test
     void handle_returnsNoOpWhenSelfNotificationSkipped() {
         UUID userId = UUID.randomUUID();
-        NotificationEvent event = sampleEvent(UUID.randomUUID(), userId, userId);
+        NotificationEvent event = sampleEvent(UUID.randomUUID(), "USER_FOLLOWED", userId, userId);
 
         when(applySkipSelfNotificationUseCase.execute(
-                new ApplySkipSelfNotificationCommand("POST_LIKED", NotificationSourceService.SOCIAL, userId, userId)
+                new ApplySkipSelfNotificationCommand("USER_FOLLOWED", NotificationSourceService.SOCIAL, userId, userId)
         )).thenReturn(SkipSelfNotificationOutcome.SKIP);
 
         NotificationEventHandlerResult result = handler.handle(event);
@@ -107,10 +107,10 @@ class InAppSocialNotificationEventHandlerTest {
     @Test
     void handle_returnsRetryableFailureWhenActorMissingForSelfSkipEvent() {
         UUID recipientId = UUID.randomUUID();
-        NotificationEvent event = sampleEvent(UUID.randomUUID(), null, recipientId);
+        NotificationEvent event = sampleEvent(UUID.randomUUID(), "COMMENT_CREATED", null, recipientId);
 
         when(applySkipSelfNotificationUseCase.execute(
-                new ApplySkipSelfNotificationCommand("POST_LIKED", NotificationSourceService.SOCIAL, null, recipientId)
+                new ApplySkipSelfNotificationCommand("COMMENT_CREATED", NotificationSourceService.SOCIAL, null, recipientId)
         )).thenReturn(SkipSelfNotificationOutcome.MISSING_ACTOR);
 
         NotificationEventHandlerResult result = handler.handle(event);
@@ -126,7 +126,7 @@ class InAppSocialNotificationEventHandlerTest {
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 null,
-                "POST_LIKED",
+                "COMMENT_CREATED",
                 NotificationSourceService.SOCIAL,
                 null,
                 null,
@@ -150,12 +150,17 @@ class InAppSocialNotificationEventHandlerTest {
         verify(createInAppNotificationUseCase, never()).execute(any());
     }
 
-    private NotificationEvent sampleEvent(UUID eventId, UUID actorId, UUID recipientId) {
+    @Test
+    void supports_doesNotHandlePostLiked() {
+        assertEquals(false, handler.supports("POST_LIKED"));
+    }
+
+    private NotificationEvent sampleEvent(UUID eventId, String eventType, UUID actorId, UUID recipientId) {
         return new NotificationEvent(
                 eventId,
                 UUID.randomUUID(),
                 null,
-                "POST_LIKED",
+                eventType,
                 NotificationSourceService.SOCIAL,
                 "POST",
                 "post-id",

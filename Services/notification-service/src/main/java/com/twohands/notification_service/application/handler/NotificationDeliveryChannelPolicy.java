@@ -8,8 +8,11 @@ import java.util.Set;
 @Component
 public class NotificationDeliveryChannelPolicy {
 
+    private static final Set<String> DEDICATED_SOCIAL_NOTIFICATION_EVENTS = Set.of(
+            "POST_LIKED"
+    );
+
     private static final Set<String> SOCIAL_IN_APP_EVENTS = Set.of(
-            "POST_LIKED",
             "USER_FOLLOWED",
             "COMMENT_CREATED",
             "COMMENT_REPLIED",
@@ -24,6 +27,10 @@ public class NotificationDeliveryChannelPolicy {
 
     public boolean isSocialInAppEvent(String eventType) {
         return SOCIAL_IN_APP_EVENTS.contains(eventType);
+    }
+
+    public boolean isDedicatedSocialNotificationEvent(String eventType) {
+        return DEDICATED_SOCIAL_NOTIFICATION_EVENTS.contains(eventType);
     }
 
     public boolean isKnownEventType(String eventType) {
