@@ -3,6 +3,7 @@ package com.twohands.notification_service.unit.application.ingest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.twohands.notification_service.application.idempotency.EnsureNotificationEventIdempotencyUseCase;
 import com.twohands.notification_service.application.email.AccountEnforcementEmailPayloadNormalizer;
+import com.twohands.notification_service.application.email.AdminProductModerationPayloadNormalizer;
 import com.twohands.notification_service.application.email.AuthSecurityEmailNotificationPayloadNormalizer;
 import com.twohands.notification_service.application.email.CommerceOrderCompletedPayloadNormalizer;
 import com.twohands.notification_service.application.email.CommerceOrderNotificationPayloadNormalizer;
@@ -70,6 +71,8 @@ class StoreNotificationEventUseCaseTest {
                 new CommerceShipmentNotificationPayloadNormalizer(new ObjectMapper());
         CommerceOrderCompletedPayloadNormalizer commerceOrderCompletedNormalizer =
                 new CommerceOrderCompletedPayloadNormalizer(new ObjectMapper());
+        AdminProductModerationPayloadNormalizer adminProductModerationNormalizer =
+                new AdminProductModerationPayloadNormalizer(new ObjectMapper());
         useCase = new StoreNotificationEventUseCase(
                 notificationEventRepository,
                 authSecurityEmailNormalizer,
@@ -78,6 +81,7 @@ class StoreNotificationEventUseCaseTest {
                 commercePaymentFailedNormalizer,
                 commerceShipmentNormalizer,
                 commerceOrderCompletedNormalizer,
+                adminProductModerationNormalizer,
                 payloadSanitizer,
                 ensureIdempotency
         );

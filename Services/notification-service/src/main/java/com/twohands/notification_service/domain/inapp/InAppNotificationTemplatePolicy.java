@@ -71,6 +71,10 @@ public final class InAppNotificationTemplatePolicy {
                     "Account restricted",
                     "Some features on your account have been restricted."
             );
+            case "PRODUCT_REMOVED" -> new InAppNotificationTemplate(
+                    "Product removed",
+                    "One of your products was removed."
+            );
             default -> null;
         });
     }

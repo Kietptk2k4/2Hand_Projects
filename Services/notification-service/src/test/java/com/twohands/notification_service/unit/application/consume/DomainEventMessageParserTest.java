@@ -149,6 +149,28 @@ class DomainEventMessageParserTest {
     }
 
     @Test
+    void parse_resolvesProductRemovedFromAdminTopicFallback() {
+        UUID eventId = UUID.randomUUID();
+        UUID sellerId = UUID.randomUUID();
+
+        String json = """
+                {
+                  "event_id": "%s",
+                  "payload": {
+                    "product_id": "product-1",
+                    "seller_user_id": "%s"
+                  }
+                }
+                """.formatted(eventId, sellerId);
+
+        var command = parser.parse(json, "admin.product.removed");
+
+        assertEquals("PRODUCT_REMOVED", command.eventType());
+        assertEquals(sellerId, command.recipientUserId());
+        assertEquals(NotificationSourceService.ADMIN, command.sourceService());
+    }
+
+    @Test
     void parse_resolvesUserRestrictedFromAdminTopicFallback() {
         UUID eventId = UUID.randomUUID();
         UUID targetUserId = UUID.randomUUID();

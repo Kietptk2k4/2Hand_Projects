@@ -63,13 +63,14 @@ class PushNotificationEventHandlerTest {
         assertFalse(handler.supports("COMMERCE_ORDER_COMPLETED"));
         assertFalse(handler.supports("USER_SUSPENDED"));
         assertFalse(handler.supports("USER_RESTRICTED"));
-        assertTrue(handler.supports("PRODUCT_REMOVED"));
+        assertFalse(handler.supports("PRODUCT_REMOVED"));
         assertFalse(handler.supports("ORDER_CREATED"));
         assertFalse(handler.supports("COMMERCE_ORDER_CREATED"));
         assertFalse(handler.supports("PAYMENT_SUCCESS"));
         assertFalse(handler.supports("COMMERCE_PAYMENT_PAID"));
         assertFalse(handler.supports("POST_LIKED"));
         assertFalse(handler.supports("USER_CREATED"));
+        assertTrue(handler.supports("SYSTEM_ANNOUNCEMENT_SENT"));
     }
 
     @Test
@@ -78,7 +79,7 @@ class PushNotificationEventHandlerTest {
         when(sendPushNotificationUseCase.execute(any(SendPushNotificationCommand.class)))
                 .thenReturn(SendPushNotificationResult.skipped("No active device tokens."));
 
-        var result = handler.handle(sampleEvent("PRODUCT_REMOVED"));
+        var result = handler.handle(sampleEvent("SYSTEM_ANNOUNCEMENT_SENT"));
 
         assertEquals(HandlerOutcome.NO_OP, result.outcome());
     }
@@ -93,7 +94,7 @@ class PushNotificationEventHandlerTest {
                         0
                 ));
 
-        var result = handler.handle(sampleEvent("PRODUCT_REMOVED"));
+        var result = handler.handle(sampleEvent("SYSTEM_ANNOUNCEMENT_SENT"));
 
         assertEquals(HandlerOutcome.FAILURE, result.outcome());
         assertEquals(NotificationFailurePolicy.RETRYABLE, result.failurePolicy());
@@ -105,7 +106,7 @@ class PushNotificationEventHandlerTest {
         when(sendPushNotificationUseCase.execute(any(SendPushNotificationCommand.class)))
                 .thenReturn(SendPushNotificationResult.sent(1, 0));
 
-        var result = handler.handle(sampleEvent("PRODUCT_REMOVED"));
+        var result = handler.handle(sampleEvent("SYSTEM_ANNOUNCEMENT_SENT"));
 
         assertEquals(HandlerOutcome.SUCCESS, result.outcome());
     }
