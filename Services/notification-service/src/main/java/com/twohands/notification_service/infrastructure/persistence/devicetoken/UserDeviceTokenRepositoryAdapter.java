@@ -2,8 +2,10 @@ package com.twohands.notification_service.infrastructure.persistence.devicetoken
 
 import com.twohands.notification_service.domain.devicetoken.UserDeviceToken;
 import com.twohands.notification_service.domain.devicetoken.UserDeviceTokenRepository;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -60,6 +62,20 @@ public class UserDeviceTokenRepositoryAdapter implements UserDeviceTokenReposito
     @Override
     public boolean existsActiveByUserId(UUID userId) {
         return jpaRepository.existsByUserIdAndActiveTrue(userId);
+    }
+
+    @Override
+    public List<UserDeviceToken> findStaleActiveTokens(Instant updatedBefore, int limit) {
+        if (limit <= 0) {
+            return List.of();
+        }
+        return jpaRepository.findByActiveTrueAndLastUsedAtIsNullAndUpdatedAtBeforeOrderByUpdatedAtAsc(
+                        updatedBefore,
+                        PageRequest.of(0, limit)
+                )
+                .stream()
+                .map(this::toDomain)
+                .toList();
     }
 
     private UserDeviceToken toDomain(UserDeviceTokenEntity entity) {

@@ -2,12 +2,14 @@ package com.twohands.notification_service.application.push;
 
 import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesCommand;
 import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesUseCase;
+import com.twohands.notification_service.application.devicetoken.DeactivateInvalidDeviceTokenCommand;
+import com.twohands.notification_service.application.devicetoken.DeactivateInvalidDeviceTokenResult;
+import com.twohands.notification_service.application.devicetoken.DeactivateInvalidDeviceTokenUseCase;
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
 import com.twohands.notification_service.config.NotificationFcmProperties;
 import com.twohands.notification_service.domain.delivery.NotificationDeliveryDecision;
+import com.twohands.notification_service.domain.devicetoken.DeactivateInvalidDeviceTokenOutcome;
 import com.twohands.notification_service.domain.devicetoken.RegisterDeviceTokenPolicy;
-import com.twohands.notification_service.domain.devicetoken.RevokeDeviceTokenOutcome;
-import com.twohands.notification_service.domain.devicetoken.RevokeDeviceTokenPolicy;
 import com.twohands.notification_service.domain.devicetoken.UserDeviceToken;
 import com.twohands.notification_service.domain.devicetoken.UserDeviceTokenRepository;
 import com.twohands.notification_service.domain.push.PushDeliveryFailureType;
@@ -38,17 +40,20 @@ public class SendPushNotificationUseCase {
     private final UserDeviceTokenRepository userDeviceTokenRepository;
     private final PushNotificationProvider pushNotificationProvider;
     private final NotificationFcmProperties notificationFcmProperties;
+    private final DeactivateInvalidDeviceTokenUseCase deactivateInvalidDeviceTokenUseCase;
 
     public SendPushNotificationUseCase(
             ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase,
             UserDeviceTokenRepository userDeviceTokenRepository,
             PushNotificationProvider pushNotificationProvider,
-            NotificationFcmProperties notificationFcmProperties
+            NotificationFcmProperties notificationFcmProperties,
+            DeactivateInvalidDeviceTokenUseCase deactivateInvalidDeviceTokenUseCase
     ) {
         this.applyNotificationDeliveryRulesUseCase = applyNotificationDeliveryRulesUseCase;
         this.userDeviceTokenRepository = userDeviceTokenRepository;
         this.pushNotificationProvider = pushNotificationProvider;
         this.notificationFcmProperties = notificationFcmProperties;
+        this.deactivateInvalidDeviceTokenUseCase = deactivateInvalidDeviceTokenUseCase;
     }
 
     public SendPushNotificationResult execute(SendPushNotificationCommand command) {
@@ -132,14 +137,12 @@ public class SendPushNotificationUseCase {
                 );
             } catch (PushProviderException ex) {
                 if (ex.failureType() == PushDeliveryFailureType.INVALID_TOKEN) {
-                    deactivateToken(token);
-                    deactivatedCount++;
-                    log.warn(
-                            "Push notification invalid token deactivated eventType={} recipientUserId={} token={}",
-                            command.eventType(),
-                            command.recipientUserId(),
-                            RegisterDeviceTokenPolicy.maskDeviceToken(token.deviceToken())
+                    DeactivateInvalidDeviceTokenResult deactivateResult = deactivateInvalidDeviceTokenUseCase.execute(
+                            new DeactivateInvalidDeviceTokenCommand(token.deviceToken())
                     );
+                    if (deactivateResult.outcome() == DeactivateInvalidDeviceTokenOutcome.DEACTIVATED) {
+                        deactivatedCount++;
+                    }
                     continue;
                 }
 
@@ -178,12 +181,6 @@ public class SendPushNotificationUseCase {
             );
         }
         return SendPushNotificationResult.skipped("No push sent to active device tokens.", deactivatedCount);
-    }
-
-    private void deactivateToken(UserDeviceToken token) {
-        Instant now = Instant.now();
-        RevokeDeviceTokenOutcome outcome = RevokeDeviceTokenPolicy.apply(token, now);
-        userDeviceTokenRepository.save(outcome.token());
     }
 
     private void validateCommand(SendPushNotificationCommand command) {

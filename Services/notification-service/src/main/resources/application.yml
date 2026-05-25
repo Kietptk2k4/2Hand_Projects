@@ -72,6 +72,11 @@ notification:
       max-retry-count: ${NOTIFICATION_RETRY_DELIVERY_MAX_RETRY_COUNT:5}
       base-backoff-seconds: ${NOTIFICATION_RETRY_DELIVERY_BASE_BACKOFF_SECONDS:30}
       max-backoff-seconds: ${NOTIFICATION_RETRY_DELIVERY_MAX_BACKOFF_SECONDS:3600}
+    cleanup-invalid-device-tokens:
+      enabled: ${NOTIFICATION_CLEANUP_INVALID_DEVICE_TOKENS_ENABLED:false}
+      cron: ${NOTIFICATION_CLEANUP_INVALID_DEVICE_TOKENS_CRON:0 0 3 * * *}
+      batch-size: ${NOTIFICATION_CLEANUP_INVALID_DEVICE_TOKENS_BATCH_SIZE:100}
+      stale-inactive-days: ${NOTIFICATION_CLEANUP_INVALID_DEVICE_TOKENS_STALE_INACTIVE_DAYS:90}
   integrations:
     fcm:
       enabled: ${NOTIFICATION_FCM_ENABLED:false}

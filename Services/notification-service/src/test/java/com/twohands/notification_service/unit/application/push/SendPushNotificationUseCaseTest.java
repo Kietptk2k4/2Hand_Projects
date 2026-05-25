@@ -2,6 +2,9 @@ package com.twohands.notification_service.unit.application.push;
 
 import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesCommand;
 import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesUseCase;
+import com.twohands.notification_service.application.devicetoken.DeactivateInvalidDeviceTokenCommand;
+import com.twohands.notification_service.application.devicetoken.DeactivateInvalidDeviceTokenResult;
+import com.twohands.notification_service.application.devicetoken.DeactivateInvalidDeviceTokenUseCase;
 import com.twohands.notification_service.application.push.SendPushNotificationCommand;
 import com.twohands.notification_service.application.push.SendPushNotificationOutcome;
 import com.twohands.notification_service.application.push.SendPushNotificationUseCase;
@@ -48,6 +51,9 @@ class SendPushNotificationUseCaseTest {
     @Mock
     private PushNotificationProvider pushNotificationProvider;
 
+    @Mock
+    private DeactivateInvalidDeviceTokenUseCase deactivateInvalidDeviceTokenUseCase;
+
     private NotificationFcmProperties notificationFcmProperties;
     private SendPushNotificationUseCase useCase;
 
@@ -58,7 +64,8 @@ class SendPushNotificationUseCaseTest {
                 applyNotificationDeliveryRulesUseCase,
                 userDeviceTokenRepository,
                 pushNotificationProvider,
-                notificationFcmProperties
+                notificationFcmProperties,
+                deactivateInvalidDeviceTokenUseCase
         );
     }
 
@@ -171,8 +178,8 @@ class SendPushNotificationUseCaseTest {
         when(pushNotificationProvider.send(any(PushNotificationPayload.class), any(UserDeviceToken.class)))
                 .thenThrow(new PushProviderException(PushDeliveryFailureType.INVALID_TOKEN, "Invalid"))
                 .thenReturn(new PushProviderSendResult("msg-ok"));
-        when(userDeviceTokenRepository.save(any(UserDeviceToken.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(deactivateInvalidDeviceTokenUseCase.execute(any(DeactivateInvalidDeviceTokenCommand.class)))
+                .thenReturn(DeactivateInvalidDeviceTokenResult.deactivated());
 
         var result = useCase.execute(new SendPushNotificationCommand(
                 USER_ID,
@@ -185,7 +192,7 @@ class SendPushNotificationUseCaseTest {
         assertEquals(SendPushNotificationOutcome.SENT, result.outcome());
         assertEquals(1, result.sentTokenCount());
         assertEquals(1, result.deactivatedTokenCount());
-        verify(userDeviceTokenRepository).save(any(UserDeviceToken.class));
+        verify(deactivateInvalidDeviceTokenUseCase).execute(any(DeactivateInvalidDeviceTokenCommand.class));
     }
 
     @Test

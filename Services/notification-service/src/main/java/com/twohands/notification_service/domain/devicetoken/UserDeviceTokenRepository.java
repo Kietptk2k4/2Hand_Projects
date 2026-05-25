@@ -1,5 +1,6 @@
 package com.twohands.notification_service.domain.devicetoken;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,4 +16,6 @@ public interface UserDeviceTokenRepository {
     List<UserDeviceToken> findActiveByUserId(UUID userId);
 
     boolean existsActiveByUserId(UUID userId);
+
+    List<UserDeviceToken> findStaleActiveTokens(Instant updatedBefore, int limit);
 }
