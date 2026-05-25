@@ -59,6 +59,8 @@ class PushNotificationEventHandlerTest {
         assertFalse(handler.supports("COMMERCE_SHIPMENT_SHIPPED"));
         assertFalse(handler.supports("SHIPMENT_DELIVERED"));
         assertFalse(handler.supports("COMMERCE_SHIPMENT_DELIVERED"));
+        assertFalse(handler.supports("ORDER_COMPLETED"));
+        assertFalse(handler.supports("COMMERCE_ORDER_COMPLETED"));
         assertTrue(handler.supports("PRODUCT_REMOVED"));
         assertFalse(handler.supports("ORDER_CREATED"));
         assertFalse(handler.supports("COMMERCE_ORDER_CREATED"));

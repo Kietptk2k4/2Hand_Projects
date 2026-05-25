@@ -59,6 +59,10 @@ public final class InAppNotificationTemplatePolicy {
                     "Order delivered",
                     "Your order has been delivered."
             );
+            case "ORDER_COMPLETED" -> new InAppNotificationTemplate(
+                    "Order completed",
+                    "Your order is complete."
+            );
             default -> null;
         });
     }

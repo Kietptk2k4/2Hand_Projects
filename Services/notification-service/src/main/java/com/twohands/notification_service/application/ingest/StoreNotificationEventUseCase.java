@@ -2,6 +2,7 @@ package com.twohands.notification_service.application.ingest;
 
 import com.twohands.notification_service.application.email.AccountEnforcementEmailPayloadNormalizer;
 import com.twohands.notification_service.application.email.AuthSecurityEmailNotificationPayloadNormalizer;
+import com.twohands.notification_service.application.email.CommerceOrderCompletedPayloadNormalizer;
 import com.twohands.notification_service.application.email.CommerceOrderNotificationPayloadNormalizer;
 import com.twohands.notification_service.application.email.CommercePaymentFailedPayloadNormalizer;
 import com.twohands.notification_service.application.email.CommerceShipmentNotificationPayloadNormalizer;
@@ -33,6 +34,7 @@ public class StoreNotificationEventUseCase {
     private final CommerceOrderNotificationPayloadNormalizer commerceOrderNotificationPayloadNormalizer;
     private final CommercePaymentFailedPayloadNormalizer commercePaymentFailedPayloadNormalizer;
     private final CommerceShipmentNotificationPayloadNormalizer commerceShipmentNotificationPayloadNormalizer;
+    private final CommerceOrderCompletedPayloadNormalizer commerceOrderCompletedPayloadNormalizer;
     private final NotificationEventPayloadSanitizer payloadSanitizer;
     private final EnsureNotificationEventIdempotencyUseCase ensureNotificationEventIdempotencyUseCase;
 
@@ -43,6 +45,7 @@ public class StoreNotificationEventUseCase {
             CommerceOrderNotificationPayloadNormalizer commerceOrderNotificationPayloadNormalizer,
             CommercePaymentFailedPayloadNormalizer commercePaymentFailedPayloadNormalizer,
             CommerceShipmentNotificationPayloadNormalizer commerceShipmentNotificationPayloadNormalizer,
+            CommerceOrderCompletedPayloadNormalizer commerceOrderCompletedPayloadNormalizer,
             NotificationEventPayloadSanitizer payloadSanitizer,
             EnsureNotificationEventIdempotencyUseCase ensureNotificationEventIdempotencyUseCase
     ) {
@@ -52,6 +55,7 @@ public class StoreNotificationEventUseCase {
         this.commerceOrderNotificationPayloadNormalizer = commerceOrderNotificationPayloadNormalizer;
         this.commercePaymentFailedPayloadNormalizer = commercePaymentFailedPayloadNormalizer;
         this.commerceShipmentNotificationPayloadNormalizer = commerceShipmentNotificationPayloadNormalizer;
+        this.commerceOrderCompletedPayloadNormalizer = commerceOrderCompletedPayloadNormalizer;
         this.payloadSanitizer = payloadSanitizer;
         this.ensureNotificationEventIdempotencyUseCase = ensureNotificationEventIdempotencyUseCase;
     }
@@ -78,6 +82,10 @@ public class StoreNotificationEventUseCase {
                 normalizedPayload
         );
         normalizedPayload = commerceShipmentNotificationPayloadNormalizer.normalizeForStorage(
+                command.eventType(),
+                normalizedPayload
+        );
+        normalizedPayload = commerceOrderCompletedPayloadNormalizer.normalizeForStorage(
                 command.eventType(),
                 normalizedPayload
         );

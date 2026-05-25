@@ -149,6 +149,28 @@ class DomainEventMessageParserTest {
     }
 
     @Test
+    void parse_resolvesOrderCompletedAliasFromTopicFallback() {
+        UUID eventId = UUID.randomUUID();
+        UUID buyerId = UUID.randomUUID();
+
+        String json = """
+                {
+                  "event_id": "%s",
+                  "payload": {
+                    "order_id": "order-1",
+                    "buyer_id": "%s"
+                  }
+                }
+                """.formatted(eventId, buyerId);
+
+        var command = parser.parse(json, "commerce.order.completed");
+
+        assertEquals("ORDER_COMPLETED", command.eventType());
+        assertEquals(buyerId, command.recipientUserId());
+        assertEquals(NotificationSourceService.COMMERCE, command.sourceService());
+    }
+
+    @Test
     void parse_resolvesPaymentFailedAliasFromTopicFallback() {
         UUID eventId = UUID.randomUUID();
         UUID buyerId = UUID.randomUUID();
