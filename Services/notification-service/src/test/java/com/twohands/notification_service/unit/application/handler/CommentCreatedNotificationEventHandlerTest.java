@@ -1,24 +1,24 @@
 package com.twohands.notification_service.unit.application.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesCommand;
 import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesUseCase;
 import com.twohands.notification_service.application.delivery.ApplySkipSelfNotificationCommand;
 import com.twohands.notification_service.application.delivery.ApplySkipSelfNotificationUseCase;
+import com.twohands.notification_service.application.handler.CommentCreatedNotificationEventHandler;
+import com.twohands.notification_service.application.handler.CommentCreatedNotificationPayloadParser;
 import com.twohands.notification_service.application.handler.HandlerOutcome;
-import com.twohands.notification_service.application.handler.InAppSocialNotificationEventHandler;
-import com.twohands.notification_service.application.handler.NotificationDeliveryChannelPolicy;
 import com.twohands.notification_service.application.handler.NotificationEventHandlerResult;
-import com.twohands.notification_service.application.handler.NotificationRecipientResolver;
 import com.twohands.notification_service.application.inapp.CreateInAppNotificationCommand;
 import com.twohands.notification_service.application.inapp.CreateInAppNotificationResult;
 import com.twohands.notification_service.application.inapp.CreateInAppNotificationUseCase;
+import com.twohands.notification_service.application.push.SendPushNotificationUseCase;
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
 import com.twohands.notification_service.domain.delivery.NotificationDeliveryDecision;
 import com.twohands.notification_service.domain.delivery.SkipSelfNotificationOutcome;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventStatus;
 import com.twohands.notification_service.domain.notificationevent.NotificationSourceService;
+import com.twohands.notification_service.domain.social.CommentCreatedNotificationContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,13 +30,18 @@ import java.time.Instant;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class InAppSocialNotificationEventHandlerTest {
+class CommentCreatedNotificationEventHandlerTest {
+
+    @Mock
+    private CommentCreatedNotificationPayloadParser payloadParser;
 
     @Mock
     private ApplySkipSelfNotificationUseCase applySkipSelfNotificationUseCase;
@@ -47,33 +52,44 @@ class InAppSocialNotificationEventHandlerTest {
     @Mock
     private CreateInAppNotificationUseCase createInAppNotificationUseCase;
 
-    private InAppSocialNotificationEventHandler handler;
+    @Mock
+    private SendPushNotificationUseCase sendPushNotificationUseCase;
+
+    private CommentCreatedNotificationEventHandler handler;
 
     @BeforeEach
     void setUp() {
-        handler = new InAppSocialNotificationEventHandler(
-                new NotificationDeliveryChannelPolicy(),
-                new NotificationRecipientResolver(new ObjectMapper()),
+        handler = new CommentCreatedNotificationEventHandler(
+                payloadParser,
                 applySkipSelfNotificationUseCase,
                 applyNotificationDeliveryRulesUseCase,
-                createInAppNotificationUseCase
+                createInAppNotificationUseCase,
+                sendPushNotificationUseCase
         );
     }
 
     @Test
-    void handle_createsInAppNotificationForRecipient() {
+    void supports_onlyCommentCreated() {
+        assertTrue(handler.supports("COMMENT_CREATED"));
+        assertFalse(handler.supports("COMMENT_REPLIED"));
+    }
+
+    @Test
+    void handle_createsInAppWithPostReference() {
         UUID eventId = UUID.randomUUID();
-        UUID recipientId = UUID.randomUUID();
         UUID actorId = UUID.randomUUID();
+        UUID postAuthorId = UUID.randomUUID();
+        NotificationEvent event = sampleEvent(eventId, actorId, postAuthorId);
 
-        NotificationEvent event = sampleEvent(eventId, "COMMENT_REPLIED", actorId, recipientId);
-
+        when(payloadParser.parse(event)).thenReturn(
+                new CommentCreatedNotificationContext(actorId, postAuthorId, "post-42", "comment-7")
+        );
         when(applySkipSelfNotificationUseCase.execute(
-                new ApplySkipSelfNotificationCommand("COMMENT_REPLIED", NotificationSourceService.SOCIAL, actorId, recipientId)
+                new ApplySkipSelfNotificationCommand("COMMENT_CREATED", NotificationSourceService.SOCIAL, actorId, postAuthorId)
         )).thenReturn(SkipSelfNotificationOutcome.PROCEED);
         when(applyNotificationDeliveryRulesUseCase.execute(
-                new ApplyNotificationDeliveryRulesCommand(recipientId, "COMMENT_REPLIED")
-        )).thenReturn(new NotificationDeliveryDecision(true, true, false));
+                new ApplyNotificationDeliveryRulesCommand(postAuthorId, "COMMENT_CREATED")
+        )).thenReturn(new NotificationDeliveryDecision(true, false, false));
         when(createInAppNotificationUseCase.execute(any(CreateInAppNotificationCommand.class)))
                 .thenReturn(new CreateInAppNotificationResult(UUID.randomUUID(), false));
 
@@ -84,90 +100,51 @@ class InAppSocialNotificationEventHandlerTest {
         ArgumentCaptor<CreateInAppNotificationCommand> captor =
                 ArgumentCaptor.forClass(CreateInAppNotificationCommand.class);
         verify(createInAppNotificationUseCase).execute(captor.capture());
-        assertEquals(recipientId, captor.getValue().userId());
-        assertEquals(eventId, captor.getValue().notificationEventId());
+        assertEquals("POST", captor.getValue().referenceType());
+        assertEquals("post-42", captor.getValue().referenceId());
+        assertEquals(postAuthorId, captor.getValue().userId());
     }
 
     @Test
-    void handle_returnsNoOpWhenSelfNotificationSkipped() {
+    void handle_returnsNoOpWhenPostAuthorCommentsOnOwnPost() {
         UUID userId = UUID.randomUUID();
-        NotificationEvent event = sampleEvent(UUID.randomUUID(), "COMMENT_REPLIED", userId, userId);
+        NotificationEvent event = sampleEvent(UUID.randomUUID(), userId, userId);
 
-        when(applySkipSelfNotificationUseCase.execute(
-                new ApplySkipSelfNotificationCommand("COMMENT_REPLIED", NotificationSourceService.SOCIAL, userId, userId)
-        )).thenReturn(SkipSelfNotificationOutcome.SKIP);
+        when(payloadParser.parse(event)).thenReturn(
+                new CommentCreatedNotificationContext(userId, userId, "post-1", "comment-1")
+        );
+        when(applySkipSelfNotificationUseCase.execute(any(ApplySkipSelfNotificationCommand.class)))
+                .thenReturn(SkipSelfNotificationOutcome.SKIP);
 
         NotificationEventHandlerResult result = handler.handle(event);
 
         assertEquals(HandlerOutcome.NO_OP, result.outcome());
-        verify(applyNotificationDeliveryRulesUseCase, never()).execute(any());
         verify(createInAppNotificationUseCase, never()).execute(any());
     }
 
     @Test
-    void handle_returnsRetryableFailureWhenActorMissingForSelfSkipEvent() {
-        UUID recipientId = UUID.randomUUID();
-        NotificationEvent event = sampleEvent(UUID.randomUUID(), "COMMENT_REPLIED", null, recipientId);
-
-        when(applySkipSelfNotificationUseCase.execute(
-                new ApplySkipSelfNotificationCommand("COMMENT_REPLIED", NotificationSourceService.SOCIAL, null, recipientId)
-        )).thenReturn(SkipSelfNotificationOutcome.MISSING_ACTOR);
+    void handle_returnsPermanentFailureWhenRequiredFieldMissing() {
+        NotificationEvent event = sampleEvent(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+        when(payloadParser.parse(event))
+                .thenThrow(new IllegalArgumentException("comment_id is required for COMMENT_CREATED notification event."));
 
         NotificationEventHandlerResult result = handler.handle(event);
 
         assertEquals(HandlerOutcome.FAILURE, result.outcome());
-        assertEquals(NotificationFailurePolicy.RETRYABLE, result.failurePolicy());
-        verify(createInAppNotificationUseCase, never()).execute(any());
+        assertEquals(NotificationFailurePolicy.PERMANENT, result.failurePolicy());
     }
 
-    @Test
-    void handle_returnsRetryableFailureWhenRecipientMissing() {
-        NotificationEvent event = new NotificationEvent(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                null,
-                "COMMENT_REPLIED",
-                NotificationSourceService.SOCIAL,
-                null,
-                null,
-                null,
-                null,
-                "{}",
-                NotificationEventStatus.PROCESSING,
-                0,
-                5,
-                null,
-                Instant.now(),
-                "worker-1",
-                Instant.now(),
-                null
-        );
-
-        NotificationEventHandlerResult result = handler.handle(event);
-
-        assertEquals(HandlerOutcome.FAILURE, result.outcome());
-        assertEquals(NotificationFailurePolicy.RETRYABLE, result.failurePolicy());
-        verify(createInAppNotificationUseCase, never()).execute(any());
-    }
-
-    @Test
-    void supports_doesNotHandleDedicatedSocialEvents() {
-        assertEquals(false, handler.supports("POST_LIKED"));
-        assertEquals(false, handler.supports("USER_FOLLOWED"));
-        assertEquals(false, handler.supports("COMMENT_CREATED"));
-    }
-
-    private NotificationEvent sampleEvent(UUID eventId, String eventType, UUID actorId, UUID recipientId) {
+    private NotificationEvent sampleEvent(UUID eventId, UUID actorId, UUID postAuthorId) {
         return new NotificationEvent(
                 eventId,
                 UUID.randomUUID(),
                 null,
-                eventType,
+                "COMMENT_CREATED",
                 NotificationSourceService.SOCIAL,
                 "COMMENT",
-                "comment-id",
+                "comment-1",
                 actorId,
-                recipientId,
+                postAuthorId,
                 "{}",
                 NotificationEventStatus.PROCESSING,
                 0,

@@ -47,7 +47,6 @@ public class NotificationEventEntity {
     @Column(name = "recipient_user_id")
     private UUID recipientUserId;
 
-    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "payload", nullable = false, columnDefinition = "jsonb")
     private String payload;
 
