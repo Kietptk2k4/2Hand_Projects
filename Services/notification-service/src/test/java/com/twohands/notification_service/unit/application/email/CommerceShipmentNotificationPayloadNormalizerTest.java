@@ -35,4 +35,30 @@ class CommerceShipmentNotificationPayloadNormalizerTest {
         assertFalse(normalized.contains("internal_note"));
         assertFalse(normalized.contains("carrier_raw_response"));
     }
+
+    @Test
+    void normalizeForStorage_appliesToShipmentShippedEvents() {
+        String raw = """
+                {
+                  "shipment_id":"ship-1",
+                  "buyer_id":"buyer-uuid",
+                  "tracking_code":"  TRACK99  ",
+                  "carrier_raw_response":"{}"
+                }
+                """;
+
+        String normalized = normalizer.normalizeForStorage("SHIPMENT_SHIPPED", raw);
+
+        assertTrue(normalized.contains("\"tracking_code\":\"TRACK99\""));
+        assertFalse(normalized.contains("carrier_raw_response"));
+    }
+
+    @Test
+    void normalizeForStorage_leavesOtherEventTypesUntouched() {
+        String raw = "{\"tracking_code\":\"test\"}";
+
+        String normalized = normalizer.normalizeForStorage("POST_LIKED", raw);
+
+        assertTrue(normalized.contains("tracking_code"));
+    }
 }

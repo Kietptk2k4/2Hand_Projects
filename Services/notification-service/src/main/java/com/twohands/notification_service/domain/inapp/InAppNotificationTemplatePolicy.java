@@ -51,6 +51,10 @@ public final class InAppNotificationTemplatePolicy {
                     "Shipment created",
                     "A shipment has been created for your order."
             );
+            case "SHIPMENT_SHIPPED" -> new InAppNotificationTemplate(
+                    "Order shipped",
+                    "Your order is on the way."
+            );
             default -> null;
         });
     }

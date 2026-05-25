@@ -55,6 +55,8 @@ class PushNotificationEventHandlerTest {
     void supports_pushOnlyEligibleEvents() {
         assertFalse(handler.supports("PAYMENT_FAILED"));
         assertFalse(handler.supports("COMMERCE_PAYMENT_FAILED"));
+        assertFalse(handler.supports("SHIPMENT_SHIPPED"));
+        assertFalse(handler.supports("COMMERCE_SHIPMENT_SHIPPED"));
         assertTrue(handler.supports("PRODUCT_REMOVED"));
         assertFalse(handler.supports("ORDER_CREATED"));
         assertFalse(handler.supports("COMMERCE_ORDER_CREATED"));
