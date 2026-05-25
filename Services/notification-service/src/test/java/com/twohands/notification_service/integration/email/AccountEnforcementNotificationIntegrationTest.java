@@ -88,10 +88,11 @@ class AccountEnforcementNotificationIntegrationTest {
                 """
                         {
                           "target_user_id":"%s",
+                          "enforcement_id":"%s",
                           "recipient_email":"user@example.com",
                           "enforcement_reason":"Policy violation"
                         }
-                        """.formatted(userId)
+                        """.formatted(userId, UUID.randomUUID())
         );
 
         var result = processNotificationEventUseCase.execute(new ProcessNotificationEventCommand(eventId));

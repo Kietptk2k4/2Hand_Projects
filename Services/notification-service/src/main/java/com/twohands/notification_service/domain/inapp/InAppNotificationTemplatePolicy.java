@@ -67,6 +67,10 @@ public final class InAppNotificationTemplatePolicy {
                     "Account suspended",
                     "Your account has been suspended."
             );
+            case "USER_RESTRICTED" -> new InAppNotificationTemplate(
+                    "Account restricted",
+                    "Some features on your account have been restricted."
+            );
             default -> null;
         });
     }

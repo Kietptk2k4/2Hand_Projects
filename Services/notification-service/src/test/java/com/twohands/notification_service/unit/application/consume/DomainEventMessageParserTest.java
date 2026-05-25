@@ -149,6 +149,28 @@ class DomainEventMessageParserTest {
     }
 
     @Test
+    void parse_resolvesUserRestrictedFromAdminTopicFallback() {
+        UUID eventId = UUID.randomUUID();
+        UUID targetUserId = UUID.randomUUID();
+
+        String json = """
+                {
+                  "event_id": "%s",
+                  "payload": {
+                    "user_id": "%s",
+                    "enforcement_id": "enforcement-1"
+                  }
+                }
+                """.formatted(eventId, targetUserId);
+
+        var command = parser.parse(json, "admin.user.restricted");
+
+        assertEquals("USER_RESTRICTED", command.eventType());
+        assertEquals(targetUserId, command.recipientUserId());
+        assertEquals(NotificationSourceService.ADMIN, command.sourceService());
+    }
+
+    @Test
     void parse_resolvesUserSuspendedFromAdminTopicFallback() {
         UUID eventId = UUID.randomUUID();
         UUID targetUserId = UUID.randomUUID();

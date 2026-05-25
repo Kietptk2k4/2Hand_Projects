@@ -57,4 +57,22 @@ class AccountEnforcementEmailPayloadNormalizerTest {
 
         assertTrue(result.contains("\"enforcement_reason\":\"Policy violation\""));
     }
+
+    @Test
+    void normalizeForStorage_mapsRestrictedCapabilitiesToSummary() {
+        String result = normalizer.normalizeForStorage(
+                "USER_RESTRICTED",
+                """
+                        {
+                          "user_id": "11111111-1111-1111-1111-111111111111",
+                          "enforcement_id": "22222222-2222-2222-2222-222222222222",
+                          "restricted_capabilities": ["POST_CREATE","COMMENT_CREATE"],
+                          "description": "Policy violation"
+                        }
+                        """
+        );
+
+        assertTrue(result.contains("\"restricted_capabilities_summary\":\"Creating posts, Commenting\""));
+        assertFalse(result.contains("\"restricted_capabilities\":"));
+    }
 }

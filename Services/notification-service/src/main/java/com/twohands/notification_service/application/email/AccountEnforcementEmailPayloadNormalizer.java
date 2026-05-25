@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.twohands.notification_service.domain.admin.AccountEnforcementRestrictedCapabilitiesPolicy;
 import com.twohands.notification_service.domain.email.AccountEnforcementEmailReasonPolicy;
 import org.springframework.stereotype.Component;
 
@@ -44,7 +45,7 @@ public class AccountEnforcementEmailPayloadNormalizer {
             }
             ObjectNode normalized = ((ObjectNode) root).deepCopy();
             normalizeRecipientFields(normalized);
-            normalizeEnforcementContext(normalized);
+            normalizeEnforcementContext(eventType, normalized);
             INTERNAL_FIELDS.forEach(normalized::remove);
             normalized.remove("description");
             return objectMapper.writeValueAsString(normalized);
@@ -60,7 +61,7 @@ public class AccountEnforcementEmailPayloadNormalizer {
         }
     }
 
-    private void normalizeEnforcementContext(ObjectNode payload) {
+    private void normalizeEnforcementContext(String eventType, ObjectNode payload) {
         String userFacingReason = AccountEnforcementEmailReasonPolicy.resolveUserFacingReason(
                 firstNonBlank(
                         textValue(payload, "enforcement_reason"),
@@ -80,6 +81,20 @@ public class AccountEnforcementEmailPayloadNormalizer {
         );
         if (expiresAt != null) {
             payload.put("enforcement_expires_at", expiresAt);
+        }
+
+        if ("USER_RESTRICTED".equals(eventType)) {
+            normalizeRestrictedCapabilities(payload);
+        }
+    }
+
+    private void normalizeRestrictedCapabilities(ObjectNode payload) {
+        String summary = AccountEnforcementRestrictedCapabilitiesPolicy.resolveSummary(
+                payload.get("restricted_capabilities")
+        );
+        payload.remove("restricted_capabilities");
+        if (summary != null && !summary.isBlank()) {
+            payload.put("restricted_capabilities_summary", summary);
         }
     }
 

@@ -51,7 +51,7 @@ Thông báo **target user** khi Admin publish `USER_SUSPENDED`: in-app + push th
 ## 7. Related FR
 
 - `FR_SendAccountEnforcementEmail` — email enforcement.
-- `FR_HandleUserRestrictedNotification` — restricted flow tương tự.
+- `FR_HandleUserRestrictedNotification` — restricted flow (`UserRestrictedNotificationEventHandler` @Order 45).
 - Generic `PushNotificationEventHandler` **loại trừ** `USER_SUSPENDED`.
 
 ## 8. FE / Client
