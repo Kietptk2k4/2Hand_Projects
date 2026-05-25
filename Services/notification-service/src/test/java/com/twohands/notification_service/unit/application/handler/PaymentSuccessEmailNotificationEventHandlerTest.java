@@ -1,18 +1,14 @@
 package com.twohands.notification_service.unit.application.handler;
 
-import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesCommand;
-import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesUseCase;
+import com.twohands.notification_service.application.email.SendEmailNotificationCommand;
+import com.twohands.notification_service.application.email.SendEmailNotificationOutcome;
+import com.twohands.notification_service.application.email.SendEmailNotificationResult;
+import com.twohands.notification_service.application.email.SendEmailNotificationUseCase;
 import com.twohands.notification_service.application.handler.HandlerOutcome;
-import com.twohands.notification_service.application.handler.PaymentSuccessNotificationEventHandler;
+import com.twohands.notification_service.application.handler.PaymentSuccessEmailNotificationEventHandler;
 import com.twohands.notification_service.application.handler.PaymentSuccessNotificationPayloadParser;
-import com.twohands.notification_service.application.inapp.CreateInAppNotificationCommand;
-import com.twohands.notification_service.application.inapp.CreateInAppNotificationUseCase;
-import com.twohands.notification_service.application.push.SendPushNotificationCommand;
-import com.twohands.notification_service.application.push.SendPushNotificationResult;
-import com.twohands.notification_service.application.push.SendPushNotificationUseCase;
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
 import com.twohands.notification_service.domain.commerce.PaymentSuccessNotificationContext;
-import com.twohands.notification_service.domain.delivery.NotificationDeliveryDecision;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventStatus;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventTypeAliasResolver;
@@ -34,7 +30,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PaymentSuccessNotificationEventHandlerTest {
+class PaymentSuccessEmailNotificationEventHandlerTest {
 
     private static final UUID EVENT_ID = UUID.randomUUID();
     private static final UUID BUYER_ID = UUID.randomUUID();
@@ -43,24 +39,16 @@ class PaymentSuccessNotificationEventHandlerTest {
     private PaymentSuccessNotificationPayloadParser payloadParser;
 
     @Mock
-    private ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase;
+    private SendEmailNotificationUseCase sendEmailNotificationUseCase;
 
-    @Mock
-    private CreateInAppNotificationUseCase createInAppNotificationUseCase;
-
-    @Mock
-    private SendPushNotificationUseCase sendPushNotificationUseCase;
-
-    private PaymentSuccessNotificationEventHandler handler;
+    private PaymentSuccessEmailNotificationEventHandler handler;
 
     @BeforeEach
     void setUp() {
-        handler = new PaymentSuccessNotificationEventHandler(
+        handler = new PaymentSuccessEmailNotificationEventHandler(
                 new NotificationEventTypeAliasResolver(),
                 payloadParser,
-                applyNotificationDeliveryRulesUseCase,
-                createInAppNotificationUseCase,
-                sendPushNotificationUseCase
+                sendEmailNotificationUseCase
         );
     }
 
@@ -69,11 +57,10 @@ class PaymentSuccessNotificationEventHandlerTest {
         assertTrue(handler.supports("PAYMENT_SUCCESS"));
         assertTrue(handler.supports("COMMERCE_PAYMENT_PAID"));
         assertFalse(handler.supports("PAYMENT_FAILED"));
-        assertFalse(handler.supports("COMMERCE_ORDER_CREATED"));
     }
 
     @Test
-    void handle_notifiesBuyerInAppAndPush() {
+    void handle_sendsPaymentSuccessEmailToBuyer() {
         when(payloadParser.parse(any())).thenReturn(new PaymentSuccessNotificationContext(
                 BUYER_ID,
                 "pay-1",
@@ -83,37 +70,64 @@ class PaymentSuccessNotificationEventHandlerTest {
                 "pay-1",
                 "100000"
         ));
-        when(applyNotificationDeliveryRulesUseCase.execute(any(ApplyNotificationDeliveryRulesCommand.class)))
-                .thenReturn(new NotificationDeliveryDecision(true, true, true));
-        when(sendPushNotificationUseCase.execute(any(SendPushNotificationCommand.class)))
-                .thenReturn(SendPushNotificationResult.sent(1, 0));
+        when(sendEmailNotificationUseCase.execute(any(SendEmailNotificationCommand.class)))
+                .thenReturn(SendEmailNotificationResult.sent("email-1"));
 
         var result = handler.handle(sampleEvent());
 
         assertEquals(HandlerOutcome.SUCCESS, result.outcome());
-        verify(createInAppNotificationUseCase).execute(new CreateInAppNotificationCommand(
-                EVENT_ID,
-                BUYER_ID,
-                null,
-                "PAYMENT_SUCCESS",
-                "PAYMENT",
-                "pay-1",
-                "{}",
-                null
-        ));
-        verify(sendPushNotificationUseCase).execute(new SendPushNotificationCommand(
+        verify(sendEmailNotificationUseCase).execute(new SendEmailNotificationCommand(
                 BUYER_ID,
                 "PAYMENT_SUCCESS",
+                sampleEvent().payload()
+        ));
+    }
+
+    @Test
+    void handle_returnsNoOpWhenEmailSkipped() {
+        when(payloadParser.parse(any())).thenReturn(new PaymentSuccessNotificationContext(
+                BUYER_ID,
+                "pay-1",
+                "order-1",
+                "ORD-1",
                 "PAYMENT",
                 "pay-1",
-                EVENT_ID,
-                null
+                "100000"
         ));
+        when(sendEmailNotificationUseCase.execute(any(SendEmailNotificationCommand.class)))
+                .thenReturn(SendEmailNotificationResult.skipped("Email channel disabled by delivery policy."));
+
+        var result = handler.handle(sampleEvent());
+
+        assertEquals(HandlerOutcome.NO_OP, result.outcome());
     }
 
     @Test
     void handle_returnsFailureWhenBuyerIdMissing() {
         when(payloadParser.parse(any())).thenThrow(new IllegalArgumentException("buyer_id is required"));
+
+        var result = handler.handle(sampleEvent());
+
+        assertEquals(HandlerOutcome.FAILURE, result.outcome());
+        assertEquals(NotificationFailurePolicy.PERMANENT, result.failurePolicy());
+    }
+
+    @Test
+    void handle_returnsFailureWhenEmailSendFails() {
+        when(payloadParser.parse(any())).thenReturn(new PaymentSuccessNotificationContext(
+                BUYER_ID,
+                "pay-1",
+                "order-1",
+                "ORD-1",
+                "PAYMENT",
+                "pay-1",
+                "100000"
+        ));
+        when(sendEmailNotificationUseCase.execute(any(SendEmailNotificationCommand.class)))
+                .thenReturn(SendEmailNotificationResult.failed(
+                        NotificationFailurePolicy.PERMANENT,
+                        "Missing required template variable: recipient_email"
+                ));
 
         var result = handler.handle(sampleEvent());
 
@@ -132,7 +146,17 @@ class PaymentSuccessNotificationEventHandlerTest {
                 "pay-1",
                 null,
                 BUYER_ID,
-                "{}",
+                """
+                        {
+                          "buyer_id":"%s",
+                          "payment_id":"pay-1",
+                          "order_id":"order-1",
+                          "order_code":"ORD-1",
+                          "recipient_email":"buyer@example.com",
+                          "amount":"100000",
+                          "payment_method":"COD"
+                        }
+                        """.formatted(BUYER_ID),
                 NotificationEventStatus.PROCESSING,
                 0,
                 5,

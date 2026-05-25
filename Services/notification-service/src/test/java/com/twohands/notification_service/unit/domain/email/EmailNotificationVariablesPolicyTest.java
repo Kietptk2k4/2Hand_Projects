@@ -57,6 +57,19 @@ class EmailNotificationVariablesPolicyTest {
     }
 
     @Test
+    void extract_buildsPaymentSummaryLineForPaymentSuccessEmail() {
+        var variables = EmailNotificationVariablesPolicy.extract(Map.of(
+                "recipient_email", "buyer@example.com",
+                "order_code", "ORD-100",
+                "amount", "100000",
+                "payment_method", "COD"
+        ));
+
+        assertTrue(variables.get("payment_summary_line").contains("Amount paid: 100000"));
+        assertTrue(variables.get("payment_summary_line").contains("Payment method: COD"));
+    }
+
+    @Test
     void maskEmail_hidesLocalPart() {
         assertEquals("u***@example.com", EmailNotificationVariablesPolicy.maskEmail("user@example.com"));
     }

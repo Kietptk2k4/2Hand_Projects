@@ -70,7 +70,7 @@ public final class EmailNotificationTemplatePolicy {
                             """
                                     Hello{{recipient_name}},
 
-                                    We received your payment for order {{order_code}}.
+                                    We received your payment for order {{order_code}}.{{payment_summary_line}}
                                     Thank you for shopping with 2Hands.
                                     """,
                             Set.of("recipient_email", "order_code")

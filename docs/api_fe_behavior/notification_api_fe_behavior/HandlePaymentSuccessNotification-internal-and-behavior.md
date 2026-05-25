@@ -2,7 +2,7 @@
 
 ## 1. Business Goal
 
-Thông báo **buyer** khi Commerce publish `PAYMENT_SUCCESS` (alias `COMMERCE_PAYMENT_PAID`): in-app + push theo default policy. Email payment success: `FR_SendPaymentSuccessEmail` (generic `EmailNotificationEventHandler` hoặc handler chuyên biệt sau).
+Thông báo **buyer** khi Commerce publish `PAYMENT_SUCCESS` (alias `COMMERCE_PAYMENT_PAID`): in-app + push theo default policy. Email: `FR_SendPaymentSuccessEmail` (`PaymentSuccessEmailNotificationEventHandler`).
 
 ## 2. Trigger
 

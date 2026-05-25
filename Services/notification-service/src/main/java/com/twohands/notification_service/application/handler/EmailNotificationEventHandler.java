@@ -37,7 +37,9 @@ public class EmailNotificationEventHandler implements NotificationEventHandler {
                 && !"USER_SUSPENDED".equals(eventType)
                 && !"USER_RESTRICTED".equals(eventType)
                 && !"ORDER_CREATED".equals(eventType)
-                && !"COMMERCE_ORDER_CREATED".equals(eventType);
+                && !"COMMERCE_ORDER_CREATED".equals(eventType)
+                && !"PAYMENT_SUCCESS".equals(eventType)
+                && !"COMMERCE_PAYMENT_PAID".equals(eventType);
     }
 
     @Override

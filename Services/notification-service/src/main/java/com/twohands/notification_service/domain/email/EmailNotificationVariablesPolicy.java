@@ -1,6 +1,7 @@
 package com.twohands.notification_service.domain.email;
 
 import com.twohands.notification_service.domain.commerce.OrderConfirmationEmailSummaryPolicy;
+import com.twohands.notification_service.domain.commerce.PaymentSuccessEmailSummaryPolicy;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,6 +61,14 @@ public final class EmailNotificationVariablesPolicy {
                         rawValues.get("final_amount"),
                         rawValues.get("total_amount")
                 )
+        ));
+        putTextVariable(variables, "payment_summary_line", PaymentSuccessEmailSummaryPolicy.formatSummaryLine(
+                firstNonBlank(
+                        rawValues.get("amount"),
+                        rawValues.get("final_amount"),
+                        rawValues.get("total_amount")
+                ),
+                rawValues.get("payment_method")
         ));
 
         putOptionalNameVariable(variables, "recipient_name", firstNonBlank(
