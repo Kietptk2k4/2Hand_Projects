@@ -4,12 +4,17 @@ import com.twohands.notification_service.domain.common.PageResult;
 import com.twohands.notification_service.domain.idempotency.UserNotificationIdempotencyKey;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface UserNotificationRepository {
 
     UserNotification save(UserNotification notification);
+
+    Optional<UserNotification> findById(UUID notificationId);
+
+    List<UserNotification> findFailedDeliveryCandidates(int batchSize);
 
     Optional<UserNotification> findByIdempotencyKey(UserNotificationIdempotencyKey idempotencyKey);
 
