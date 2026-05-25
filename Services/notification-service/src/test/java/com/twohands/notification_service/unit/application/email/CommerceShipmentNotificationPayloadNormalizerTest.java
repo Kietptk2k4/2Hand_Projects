@@ -54,6 +54,25 @@ class CommerceShipmentNotificationPayloadNormalizerTest {
     }
 
     @Test
+    void normalizeForStorage_sanitizesDeliveredMetadataForShipmentDelivered() {
+        String raw = """
+                {
+                  "shipment_id":"ship-1",
+                  "buyer_id":"buyer-uuid",
+                  "delivered_at":"  2026-05-25T10:00:00Z  ",
+                  "show_confirm_receipt":true,
+                  "carrier_raw_response":"{}"
+                }
+                """;
+
+        String normalized = normalizer.normalizeForStorage("SHIPMENT_DELIVERED", raw);
+
+        assertTrue(normalized.contains("\"delivered_at\":\"2026-05-25T10:00:00Z\""));
+        assertTrue(normalized.contains("\"prompt_confirm_receipt\":true"));
+        assertFalse(normalized.contains("carrier_raw_response"));
+    }
+
+    @Test
     void normalizeForStorage_leavesOtherEventTypesUntouched() {
         String raw = "{\"tracking_code\":\"test\"}";
 

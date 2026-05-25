@@ -55,6 +55,10 @@ public final class InAppNotificationTemplatePolicy {
                     "Order shipped",
                     "Your order is on the way."
             );
+            case "SHIPMENT_DELIVERED" -> new InAppNotificationTemplate(
+                    "Order delivered",
+                    "Your order has been delivered."
+            );
             default -> null;
         });
     }
