@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class ProcessNotificationEventUseCase {
 
@@ -65,10 +67,9 @@ public class ProcessNotificationEventUseCase {
     }
 
     private ProcessNotificationEventResult dispatch(NotificationEvent event) {
-        NotificationEventHandler handler = handlerRegistry.resolve(event.eventType())
-                .orElse(null);
+        List<NotificationEventHandler> handlers = handlerRegistry.resolveAll(event.eventType());
 
-        if (handler == null) {
+        if (handlers.isEmpty()) {
             markNotificationEventFailedUseCase.execute(new MarkNotificationEventFailedCommand(
                     event.id(),
                     "Unsupported event type: " + event.eventType(),
@@ -77,23 +78,22 @@ public class ProcessNotificationEventUseCase {
             return new ProcessNotificationEventResult(event.id(), ProcessNotificationEventOutcome.FAILED);
         }
 
-        NotificationEventHandlerResult handlerResult = handler.handle(event);
-        return switch (handlerResult.outcome()) {
-            case SUCCESS, NO_OP -> {
-                markNotificationEventCompletedUseCase.execute(
-                        new MarkNotificationEventCompletedCommand(event.id())
-                );
-                yield new ProcessNotificationEventResult(event.id(), ProcessNotificationEventOutcome.COMPLETED);
-            }
-            case FAILURE -> {
+        for (NotificationEventHandler handler : handlers) {
+            NotificationEventHandlerResult handlerResult = handler.handle(event);
+            if (handlerResult.outcome() == HandlerOutcome.FAILURE) {
                 markNotificationEventFailedUseCase.execute(new MarkNotificationEventFailedCommand(
                         event.id(),
                         handlerResult.errorMessage(),
                         handlerResult.failurePolicy()
                 ));
-                yield new ProcessNotificationEventResult(event.id(), ProcessNotificationEventOutcome.FAILED);
+                return new ProcessNotificationEventResult(event.id(), ProcessNotificationEventOutcome.FAILED);
             }
-        };
+        }
+
+        markNotificationEventCompletedUseCase.execute(
+                new MarkNotificationEventCompletedCommand(event.id())
+        );
+        return new ProcessNotificationEventResult(event.id(), ProcessNotificationEventOutcome.COMPLETED);
     }
 
     private void validateCommand(ProcessNotificationEventCommand command) {

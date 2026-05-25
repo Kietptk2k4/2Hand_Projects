@@ -26,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -72,7 +73,7 @@ class ProcessNotificationEventUseCaseTest {
         NotificationEvent event = sampleEvent(eventId, NotificationEventStatus.PROCESSING);
 
         when(notificationEventRepository.findById(eventId)).thenReturn(Optional.of(event));
-        when(handlerRegistry.resolve("POST_LIKED")).thenReturn(Optional.of(handler));
+        when(handlerRegistry.resolveAll("POST_LIKED")).thenReturn(List.of(handler));
         when(handler.handle(event)).thenReturn(NotificationEventHandlerResult.success());
         when(markNotificationEventCompletedUseCase.execute(any(MarkNotificationEventCompletedCommand.class)))
                 .thenReturn(new MarkNotificationEventCompletedResult(eventId, Instant.now(), true));
@@ -90,7 +91,7 @@ class ProcessNotificationEventUseCaseTest {
         NotificationEvent event = sampleEvent(eventId, NotificationEventStatus.PROCESSING);
 
         when(notificationEventRepository.findById(eventId)).thenReturn(Optional.of(event));
-        when(handlerRegistry.resolve("POST_LIKED")).thenReturn(Optional.of(handler));
+        when(handlerRegistry.resolveAll("POST_LIKED")).thenReturn(List.of(handler));
         when(handler.handle(event)).thenReturn(NotificationEventHandlerResult.noOp());
         when(markNotificationEventCompletedUseCase.execute(any(MarkNotificationEventCompletedCommand.class)))
                 .thenReturn(new MarkNotificationEventCompletedResult(eventId, Instant.now(), true));
@@ -107,7 +108,7 @@ class ProcessNotificationEventUseCaseTest {
         NotificationEvent event = sampleEvent(eventId, NotificationEventStatus.PROCESSING);
 
         when(notificationEventRepository.findById(eventId)).thenReturn(Optional.of(event));
-        when(handlerRegistry.resolve("POST_LIKED")).thenReturn(Optional.empty());
+        when(handlerRegistry.resolveAll("POST_LIKED")).thenReturn(List.of());
         when(markNotificationEventFailedUseCase.execute(any(MarkNotificationEventFailedCommand.class)))
                 .thenReturn(new MarkNotificationEventFailedResult(eventId, 5, 5, true, true));
 
@@ -127,7 +128,7 @@ class ProcessNotificationEventUseCaseTest {
         NotificationEvent event = sampleEvent(eventId, NotificationEventStatus.PROCESSING);
 
         when(notificationEventRepository.findById(eventId)).thenReturn(Optional.of(event));
-        when(handlerRegistry.resolve("POST_LIKED")).thenReturn(Optional.of(handler));
+        when(handlerRegistry.resolveAll("POST_LIKED")).thenReturn(List.of(handler));
         when(handler.handle(event)).thenReturn(NotificationEventHandlerResult.failure(
                 "Recipient is required for notification event",
                 NotificationFailurePolicy.RETRYABLE
@@ -146,6 +147,52 @@ class ProcessNotificationEventUseCaseTest {
     }
 
     @Test
+    void execute_runsAllSupportingHandlersInOrder() {
+        UUID eventId = UUID.randomUUID();
+        NotificationEvent event = sampleEvent(eventId, NotificationEventStatus.PROCESSING);
+        NotificationEventHandler secondHandler = org.mockito.Mockito.mock(NotificationEventHandler.class);
+
+        when(notificationEventRepository.findById(eventId)).thenReturn(Optional.of(event));
+        when(handlerRegistry.resolveAll("POST_LIKED")).thenReturn(List.of(handler, secondHandler));
+        when(handler.handle(event)).thenReturn(NotificationEventHandlerResult.success());
+        when(secondHandler.handle(event)).thenReturn(NotificationEventHandlerResult.noOp());
+        when(markNotificationEventCompletedUseCase.execute(any(MarkNotificationEventCompletedCommand.class)))
+                .thenReturn(new MarkNotificationEventCompletedResult(eventId, Instant.now(), true));
+
+        var result = useCase.execute(new ProcessNotificationEventCommand(eventId));
+
+        assertEquals(ProcessNotificationEventOutcome.COMPLETED, result.outcome());
+        org.mockito.Mockito.verify(handler).handle(event);
+        org.mockito.Mockito.verify(secondHandler).handle(event);
+    }
+
+    @Test
+    void execute_marksFailedWhenAnyHandlerFails() {
+        UUID eventId = UUID.randomUUID();
+        NotificationEvent event = sampleEvent(eventId, NotificationEventStatus.PROCESSING);
+        NotificationEventHandler secondHandler = org.mockito.Mockito.mock(NotificationEventHandler.class);
+
+        when(notificationEventRepository.findById(eventId)).thenReturn(Optional.of(event));
+        when(handlerRegistry.resolveAll("POST_LIKED")).thenReturn(List.of(handler, secondHandler));
+        when(handler.handle(event)).thenReturn(NotificationEventHandlerResult.success());
+        when(secondHandler.handle(event)).thenReturn(NotificationEventHandlerResult.failure(
+                "Missing required template variable: recipient_email",
+                NotificationFailurePolicy.PERMANENT
+        ));
+        when(markNotificationEventFailedUseCase.execute(any(MarkNotificationEventFailedCommand.class)))
+                .thenReturn(new MarkNotificationEventFailedResult(eventId, 1, 5, false, true));
+
+        var result = useCase.execute(new ProcessNotificationEventCommand(eventId));
+
+        assertEquals(ProcessNotificationEventOutcome.FAILED, result.outcome());
+        verify(markNotificationEventFailedUseCase).execute(new MarkNotificationEventFailedCommand(
+                eventId,
+                "Missing required template variable: recipient_email",
+                NotificationFailurePolicy.PERMANENT
+        ));
+    }
+
+    @Test
     void execute_skipsAlreadyCompletedEvent() {
         UUID eventId = UUID.randomUUID();
         NotificationEvent event = sampleEvent(eventId, NotificationEventStatus.COMPLETED);
@@ -155,7 +202,7 @@ class ProcessNotificationEventUseCaseTest {
         var result = useCase.execute(new ProcessNotificationEventCommand(eventId));
 
         assertEquals(ProcessNotificationEventOutcome.SKIPPED, result.outcome());
-        verify(handlerRegistry, never()).resolve(any());
+        verify(handlerRegistry, never()).resolveAll(any());
         verify(markNotificationEventCompletedUseCase, never()).execute(any());
         verify(markNotificationEventFailedUseCase, never()).execute(any());
     }

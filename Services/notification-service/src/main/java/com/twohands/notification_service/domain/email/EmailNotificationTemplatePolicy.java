@@ -57,7 +57,7 @@ public final class EmailNotificationTemplatePolicy {
                             """
                                     Hello{{recipient_name}},
 
-                                    Your order {{order_code}} has been created successfully.
+                                    Your order {{order_code}} has been created successfully.{{order_summary_line}}
                                     We will notify you when it progresses.
                                     """,
                             Set.of("recipient_email", "order_code")

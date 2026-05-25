@@ -1,5 +1,7 @@
 package com.twohands.notification_service.domain.email;
 
+import com.twohands.notification_service.domain.commerce.OrderConfirmationEmailSummaryPolicy;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -52,6 +54,12 @@ public final class EmailNotificationVariablesPolicy {
         putTextVariable(variables, "order_code", firstNonBlank(
                 rawValues.get("order_code"),
                 rawValues.get("order_id")
+        ));
+        putTextVariable(variables, "order_summary_line", OrderConfirmationEmailSummaryPolicy.formatAmountLine(
+                firstNonBlank(
+                        rawValues.get("final_amount"),
+                        rawValues.get("total_amount")
+                )
         ));
 
         putOptionalNameVariable(variables, "recipient_name", firstNonBlank(

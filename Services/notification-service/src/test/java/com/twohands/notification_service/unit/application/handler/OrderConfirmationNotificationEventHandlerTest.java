@@ -1,19 +1,14 @@
 package com.twohands.notification_service.unit.application.handler;
 
-import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesCommand;
-import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesUseCase;
+import com.twohands.notification_service.application.email.SendEmailNotificationCommand;
+import com.twohands.notification_service.application.email.SendEmailNotificationOutcome;
+import com.twohands.notification_service.application.email.SendEmailNotificationResult;
+import com.twohands.notification_service.application.email.SendEmailNotificationUseCase;
 import com.twohands.notification_service.application.handler.HandlerOutcome;
-import com.twohands.notification_service.application.handler.OrderCreatedNotificationEventHandler;
+import com.twohands.notification_service.application.handler.OrderConfirmationNotificationEventHandler;
 import com.twohands.notification_service.application.handler.OrderCreatedNotificationPayloadParser;
-import com.twohands.notification_service.application.inapp.CreateInAppNotificationCommand;
-import com.twohands.notification_service.application.inapp.CreateInAppNotificationUseCase;
-import com.twohands.notification_service.application.push.SendPushNotificationCommand;
-import com.twohands.notification_service.application.push.SendPushNotificationResult;
-import com.twohands.notification_service.application.push.SendPushNotificationUseCase;
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
 import com.twohands.notification_service.domain.commerce.OrderCreatedNotificationContext;
-import com.twohands.notification_service.domain.delivery.NotificationDeliveryDecision;
-import com.twohands.notification_service.domain.inapp.InAppNotificationTemplatePolicy;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventStatus;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventTypeAliasResolver;
@@ -36,34 +31,25 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class OrderCreatedNotificationEventHandlerTest {
+class OrderConfirmationNotificationEventHandlerTest {
 
     private static final UUID EVENT_ID = UUID.randomUUID();
     private static final UUID BUYER_ID = UUID.randomUUID();
-    private static final UUID SELLER_ID = UUID.randomUUID();
 
     @Mock
     private OrderCreatedNotificationPayloadParser payloadParser;
 
     @Mock
-    private ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase;
+    private SendEmailNotificationUseCase sendEmailNotificationUseCase;
 
-    @Mock
-    private CreateInAppNotificationUseCase createInAppNotificationUseCase;
-
-    @Mock
-    private SendPushNotificationUseCase sendPushNotificationUseCase;
-
-    private OrderCreatedNotificationEventHandler handler;
+    private OrderConfirmationNotificationEventHandler handler;
 
     @BeforeEach
     void setUp() {
-        handler = new OrderCreatedNotificationEventHandler(
+        handler = new OrderConfirmationNotificationEventHandler(
                 new NotificationEventTypeAliasResolver(),
                 payloadParser,
-                applyNotificationDeliveryRulesUseCase,
-                createInAppNotificationUseCase,
-                sendPushNotificationUseCase
+                sendEmailNotificationUseCase
         );
     }
 
@@ -75,55 +61,68 @@ class OrderCreatedNotificationEventHandlerTest {
     }
 
     @Test
-    void handle_notifiesBuyerAndSellerWithDistinctTemplates() {
+    void handle_sendsOrderConfirmationEmailToBuyer() {
         when(payloadParser.parse(any())).thenReturn(new OrderCreatedNotificationContext(
                 BUYER_ID,
                 "order-1",
                 "ORD-1",
-                List.of(SELLER_ID),
+                List.of(),
                 "100000"
         ));
-        when(applyNotificationDeliveryRulesUseCase.execute(any(ApplyNotificationDeliveryRulesCommand.class)))
-                .thenReturn(new NotificationDeliveryDecision(true, true, true));
-        when(sendPushNotificationUseCase.execute(any(SendPushNotificationCommand.class)))
-                .thenReturn(SendPushNotificationResult.sent(1, 0));
+        when(sendEmailNotificationUseCase.execute(any(SendEmailNotificationCommand.class)))
+                .thenReturn(SendEmailNotificationResult.sent("email-1"));
 
         var result = handler.handle(sampleEvent());
 
         assertEquals(HandlerOutcome.SUCCESS, result.outcome());
-        verify(createInAppNotificationUseCase).execute(new CreateInAppNotificationCommand(
-                EVENT_ID,
-                BUYER_ID,
+        verify(sendEmailNotificationUseCase).execute(new SendEmailNotificationCommand(
                 BUYER_ID,
                 "ORDER_CREATED",
-                "ORDER",
-                "order-1",
-                "{}",
-                null
-        ));
-        verify(createInAppNotificationUseCase).execute(new CreateInAppNotificationCommand(
-                EVENT_ID,
-                SELLER_ID,
-                BUYER_ID,
-                "ORDER_CREATED",
-                "ORDER",
-                "order-1",
-                "{}",
-                InAppNotificationTemplatePolicy.SELLER_TEMPLATE_VARIANT
-        ));
-        verify(sendPushNotificationUseCase).execute(new SendPushNotificationCommand(
-                SELLER_ID,
-                "ORDER_CREATED",
-                "ORDER",
-                "order-1",
-                EVENT_ID,
-                InAppNotificationTemplatePolicy.SELLER_TEMPLATE_VARIANT
+                sampleEvent().payload()
         ));
     }
 
     @Test
-    void handle_returnsFailureWhenBuyerIdMissingInPayload() {
+    void handle_returnsNoOpWhenEmailSkipped() {
+        when(payloadParser.parse(any())).thenReturn(new OrderCreatedNotificationContext(
+                BUYER_ID,
+                "order-1",
+                "ORD-1",
+                List.of(),
+                null
+        ));
+        when(sendEmailNotificationUseCase.execute(any(SendEmailNotificationCommand.class)))
+                .thenReturn(SendEmailNotificationResult.skipped("Email channel disabled by delivery policy."));
+
+        var result = handler.handle(sampleEvent());
+
+        assertEquals(HandlerOutcome.NO_OP, result.outcome());
+    }
+
+    @Test
+    void handle_returnsFailureWhenBuyerIdMissing() {
         when(payloadParser.parse(any())).thenThrow(new IllegalArgumentException("buyer_id is required"));
+
+        var result = handler.handle(sampleEvent());
+
+        assertEquals(HandlerOutcome.FAILURE, result.outcome());
+        assertEquals(NotificationFailurePolicy.PERMANENT, result.failurePolicy());
+    }
+
+    @Test
+    void handle_returnsFailureWhenEmailSendFails() {
+        when(payloadParser.parse(any())).thenReturn(new OrderCreatedNotificationContext(
+                BUYER_ID,
+                "order-1",
+                "ORD-1",
+                List.of(),
+                "100000"
+        ));
+        when(sendEmailNotificationUseCase.execute(any(SendEmailNotificationCommand.class)))
+                .thenReturn(SendEmailNotificationResult.failed(
+                        NotificationFailurePolicy.PERMANENT,
+                        "Missing required template variable: recipient_email"
+                ));
 
         var result = handler.handle(sampleEvent());
 
@@ -142,7 +141,15 @@ class OrderCreatedNotificationEventHandlerTest {
                 "order-1",
                 null,
                 BUYER_ID,
-                "{}",
+                """
+                        {
+                          "buyer_id":"%s",
+                          "order_id":"order-1",
+                          "order_code":"ORD-1",
+                          "recipient_email":"buyer@example.com",
+                          "final_amount":"100000"
+                        }
+                        """.formatted(BUYER_ID),
                 NotificationEventStatus.PROCESSING,
                 0,
                 5,

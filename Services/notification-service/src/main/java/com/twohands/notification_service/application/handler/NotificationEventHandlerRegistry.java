@@ -19,9 +19,13 @@ public class NotificationEventHandlerRegistry {
     }
 
     public Optional<NotificationEventHandler> resolve(String eventType) {
+        return resolveAll(eventType).stream().findFirst();
+    }
+
+    public List<NotificationEventHandler> resolveAll(String eventType) {
         return handlers.stream()
                 .filter(handler -> handler.supports(eventType))
-                .findFirst();
+                .toList();
     }
 
     private int orderValue(NotificationEventHandler handler) {

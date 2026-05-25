@@ -2,10 +2,6 @@ package com.twohands.notification_service.application.handler;
 
 import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesCommand;
 import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesUseCase;
-import com.twohands.notification_service.application.email.SendEmailNotificationCommand;
-import com.twohands.notification_service.application.email.SendEmailNotificationOutcome;
-import com.twohands.notification_service.application.email.SendEmailNotificationResult;
-import com.twohands.notification_service.application.email.SendEmailNotificationUseCase;
 import com.twohands.notification_service.application.inapp.CreateInAppNotificationCommand;
 import com.twohands.notification_service.application.inapp.CreateInAppNotificationUseCase;
 import com.twohands.notification_service.application.push.PushNotificationHandlerSupport;
@@ -40,22 +36,19 @@ public class OrderCreatedNotificationEventHandler implements NotificationEventHa
     private final ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase;
     private final CreateInAppNotificationUseCase createInAppNotificationUseCase;
     private final SendPushNotificationUseCase sendPushNotificationUseCase;
-    private final SendEmailNotificationUseCase sendEmailNotificationUseCase;
 
     public OrderCreatedNotificationEventHandler(
             NotificationEventTypeAliasResolver eventTypeAliasResolver,
             OrderCreatedNotificationPayloadParser payloadParser,
             ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase,
             CreateInAppNotificationUseCase createInAppNotificationUseCase,
-            SendPushNotificationUseCase sendPushNotificationUseCase,
-            SendEmailNotificationUseCase sendEmailNotificationUseCase
+            SendPushNotificationUseCase sendPushNotificationUseCase
     ) {
         this.eventTypeAliasResolver = eventTypeAliasResolver;
         this.payloadParser = payloadParser;
         this.applyNotificationDeliveryRulesUseCase = applyNotificationDeliveryRulesUseCase;
         this.createInAppNotificationUseCase = createInAppNotificationUseCase;
         this.sendPushNotificationUseCase = sendPushNotificationUseCase;
-        this.sendEmailNotificationUseCase = sendEmailNotificationUseCase;
     }
 
     @Override
@@ -85,8 +78,7 @@ public class OrderCreatedNotificationEventHandler implements NotificationEventHa
                 event,
                 context,
                 context.buyerId(),
-                null,
-                true
+                null
         );
         if (buyerResult.failed()) {
             return buyerResult.failure();
@@ -103,8 +95,7 @@ public class OrderCreatedNotificationEventHandler implements NotificationEventHa
                     event,
                     context,
                     sellerId,
-                    InAppNotificationTemplatePolicy.SELLER_TEMPLATE_VARIANT,
-                    false
+                    InAppNotificationTemplatePolicy.SELLER_TEMPLATE_VARIANT
             );
             if (sellerResult.failed()) {
                 return sellerResult.failure();
@@ -125,8 +116,7 @@ public class OrderCreatedNotificationEventHandler implements NotificationEventHa
             NotificationEvent event,
             OrderCreatedNotificationContext context,
             UUID recipientId,
-            String templateVariant,
-            boolean includeEmail
+            String templateVariant
     ) {
         NotificationDeliveryDecision deliveryDecision;
         try {
@@ -178,22 +168,6 @@ public class OrderCreatedNotificationEventHandler implements NotificationEventHa
                 return RecipientDeliveryResult.failed(failure.errorMessage(), failure.failurePolicy());
             }
             if (pushResult.outcome() == SendPushNotificationOutcome.SENT) {
-                delivered = true;
-            }
-        }
-
-        if (includeEmail && deliveryDecision.email()) {
-            SendEmailNotificationResult emailResult = sendEmailNotificationUseCase.execute(
-                    new SendEmailNotificationCommand(recipientId, ORDER_CREATED, event.payload())
-            );
-
-            if (emailResult.outcome() == SendEmailNotificationOutcome.FAILED) {
-                return RecipientDeliveryResult.failed(
-                        emailResult.failureReason(),
-                        emailResult.failurePolicy()
-                );
-            }
-            if (emailResult.outcome() == SendEmailNotificationOutcome.SENT) {
                 delivered = true;
             }
         }
