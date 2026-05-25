@@ -20,13 +20,19 @@ public class UserNotificationSettingRepositoryAdapter implements UserNotificatio
 
     @Override
     public UserNotificationSetting save(UserNotificationSetting setting) {
-        UserNotificationSettingEntity entity = new UserNotificationSettingEntity();
+        UserNotificationSettingEntity entity = jpaRepository
+                .findByUserIdAndEventType(setting.userId(), setting.eventType())
+                .orElseGet(UserNotificationSettingEntity::new);
+
+        if (entity.getCreatedAt() == null) {
+            entity.setCreatedAt(setting.createdAt());
+        }
+
         entity.setUserId(setting.userId());
         entity.setEventType(setting.eventType());
         entity.setAllowPush(setting.allowPush());
         entity.setAllowEmail(setting.allowEmail());
         entity.setAllowInApp(setting.allowInApp());
-        entity.setCreatedAt(setting.createdAt());
         entity.setUpdatedAt(setting.updatedAt());
         return toDomain(jpaRepository.save(entity));
     }
