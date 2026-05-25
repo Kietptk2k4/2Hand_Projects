@@ -18,15 +18,22 @@ public class UserDeviceTokenRepositoryAdapter implements UserDeviceTokenReposito
 
     @Override
     public UserDeviceToken save(UserDeviceToken token) {
-        UserDeviceTokenEntity entity = new UserDeviceTokenEntity();
-        entity.setId(token.id());
+        UserDeviceTokenEntity entity = jpaRepository.findByDeviceToken(token.deviceToken())
+                .orElseGet(UserDeviceTokenEntity::new);
+
+        if (entity.getId() == null) {
+            entity.setId(token.id());
+        }
+        if (entity.getCreatedAt() == null) {
+            entity.setCreatedAt(token.createdAt());
+        }
+
         entity.setUserId(token.userId());
         entity.setDeviceType(token.deviceType());
         entity.setDeviceToken(token.deviceToken());
         entity.setActive(token.active());
         entity.setUpdatedAt(token.updatedAt());
         entity.setLastUsedAt(token.lastUsedAt());
-        entity.setCreatedAt(token.createdAt());
         return toDomain(jpaRepository.save(entity));
     }
 
