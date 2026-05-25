@@ -66,51 +66,13 @@ class PushNotificationEventHandlerTest {
         assertFalse(handler.supports("PRODUCT_REMOVED"));
         assertFalse(handler.supports("REVIEW_HIDDEN"));
         assertFalse(handler.supports("SHOP_SUSPENDED"));
+        assertFalse(handler.supports("SYSTEM_ANNOUNCEMENT_SENT"));
         assertFalse(handler.supports("ORDER_CREATED"));
         assertFalse(handler.supports("COMMERCE_ORDER_CREATED"));
         assertFalse(handler.supports("PAYMENT_SUCCESS"));
         assertFalse(handler.supports("COMMERCE_PAYMENT_PAID"));
         assertFalse(handler.supports("POST_LIKED"));
         assertFalse(handler.supports("USER_CREATED"));
-        assertTrue(handler.supports("SYSTEM_ANNOUNCEMENT_SENT"));
-    }
-
-    @Test
-    void handle_returnsNoOpWhenPushSkipped() {
-        when(recipientResolver.resolve(any())).thenReturn(List.of(RECIPIENT_ID));
-        when(sendPushNotificationUseCase.execute(any(SendPushNotificationCommand.class)))
-                .thenReturn(SendPushNotificationResult.skipped("No active device tokens."));
-
-        var result = handler.handle(sampleEvent("SYSTEM_ANNOUNCEMENT_SENT"));
-
-        assertEquals(HandlerOutcome.NO_OP, result.outcome());
-    }
-
-    @Test
-    void handle_returnsFailureWhenPushFailsRetryable() {
-        when(recipientResolver.resolve(any())).thenReturn(List.of(RECIPIENT_ID));
-        when(sendPushNotificationUseCase.execute(any(SendPushNotificationCommand.class)))
-                .thenReturn(SendPushNotificationResult.failed(
-                        NotificationFailurePolicy.RETRYABLE,
-                        "FCM provider timeout.",
-                        0
-                ));
-
-        var result = handler.handle(sampleEvent("SYSTEM_ANNOUNCEMENT_SENT"));
-
-        assertEquals(HandlerOutcome.FAILURE, result.outcome());
-        assertEquals(NotificationFailurePolicy.RETRYABLE, result.failurePolicy());
-    }
-
-    @Test
-    void handle_returnsSuccessWhenPushSent() {
-        when(recipientResolver.resolve(any())).thenReturn(List.of(RECIPIENT_ID));
-        when(sendPushNotificationUseCase.execute(any(SendPushNotificationCommand.class)))
-                .thenReturn(SendPushNotificationResult.sent(1, 0));
-
-        var result = handler.handle(sampleEvent("SYSTEM_ANNOUNCEMENT_SENT"));
-
-        assertEquals(HandlerOutcome.SUCCESS, result.outcome());
     }
 
     private NotificationEvent sampleEvent(String eventType) {

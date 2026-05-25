@@ -27,6 +27,10 @@ public class NotificationDeliveryChannelPolicy {
             "SHOP_SUSPENDED"
     );
 
+    private static final Set<String> DEDICATED_SYSTEM_ANNOUNCEMENT_EVENTS = Set.of(
+            "SYSTEM_ANNOUNCEMENT_SENT"
+    );
+
     private static final Set<String> DEDICATED_COMMERCE_NOTIFICATION_EVENTS = Set.of(
             "ORDER_CREATED",
             "COMMERCE_ORDER_CREATED",
@@ -70,6 +74,10 @@ public class NotificationDeliveryChannelPolicy {
 
     public boolean isDedicatedAdminModerationNotificationEvent(String eventType) {
         return DEDICATED_ADMIN_MODERATION_NOTIFICATION_EVENTS.contains(eventType);
+    }
+
+    public boolean isDedicatedSystemAnnouncementEvent(String eventType) {
+        return DEDICATED_SYSTEM_ANNOUNCEMENT_EVENTS.contains(eventType);
     }
 
     public boolean isKnownEventType(String eventType) {
