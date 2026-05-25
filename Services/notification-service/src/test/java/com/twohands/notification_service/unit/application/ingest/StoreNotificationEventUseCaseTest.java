@@ -6,6 +6,7 @@ import com.twohands.notification_service.application.email.AccountEnforcementEma
 import com.twohands.notification_service.application.email.AuthSecurityEmailNotificationPayloadNormalizer;
 import com.twohands.notification_service.application.email.CommerceOrderNotificationPayloadNormalizer;
 import com.twohands.notification_service.application.email.CommercePaymentFailedPayloadNormalizer;
+import com.twohands.notification_service.application.email.CommerceShipmentNotificationPayloadNormalizer;
 import com.twohands.notification_service.application.ingest.JacksonNotificationEventPayloadSanitizer;
 import com.twohands.notification_service.application.ingest.NotificationEventIngestCommand;
 import com.twohands.notification_service.application.ingest.StoreNotificationEventUseCase;
@@ -64,12 +65,15 @@ class StoreNotificationEventUseCaseTest {
                 new CommerceOrderNotificationPayloadNormalizer(new ObjectMapper());
         CommercePaymentFailedPayloadNormalizer commercePaymentFailedNormalizer =
                 new CommercePaymentFailedPayloadNormalizer(new ObjectMapper());
+        CommerceShipmentNotificationPayloadNormalizer commerceShipmentNormalizer =
+                new CommerceShipmentNotificationPayloadNormalizer(new ObjectMapper());
         useCase = new StoreNotificationEventUseCase(
                 notificationEventRepository,
                 authSecurityEmailNormalizer,
                 accountEnforcementNormalizer,
                 commerceOrderNormalizer,
                 commercePaymentFailedNormalizer,
+                commerceShipmentNormalizer,
                 payloadSanitizer,
                 ensureIdempotency
         );

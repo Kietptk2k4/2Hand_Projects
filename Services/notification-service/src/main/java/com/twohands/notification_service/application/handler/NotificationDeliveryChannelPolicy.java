@@ -22,7 +22,9 @@ public class NotificationDeliveryChannelPolicy {
             "PAYMENT_SUCCESS",
             "COMMERCE_PAYMENT_PAID",
             "PAYMENT_FAILED",
-            "COMMERCE_PAYMENT_FAILED"
+            "COMMERCE_PAYMENT_FAILED",
+            "SHIPMENT_CREATED",
+            "COMMERCE_SHIPMENT_CREATED"
     );
 
     private static final Set<String> SOCIAL_IN_APP_EVENTS = Set.of();

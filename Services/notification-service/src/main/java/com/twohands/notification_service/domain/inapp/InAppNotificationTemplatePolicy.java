@@ -23,6 +23,12 @@ public final class InAppNotificationTemplatePolicy {
                     "You have received a new order."
             ));
         }
+        if ("SHIPMENT_CREATED".equals(eventType) && SELLER_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new InAppNotificationTemplate(
+                    "Shipment created",
+                    "A shipment was created for an order you are fulfilling."
+            ));
+        }
         return Optional.ofNullable(switch (eventType) {
             case "POST_LIKED" -> new InAppNotificationTemplate("New like", "Someone liked your post.");
             case "USER_FOLLOWED" -> new InAppNotificationTemplate("New follower", "Someone started following you.");
@@ -40,6 +46,10 @@ public final class InAppNotificationTemplatePolicy {
             case "PAYMENT_FAILED" -> new InAppNotificationTemplate(
                     "Payment failed",
                     "Your payment could not be completed."
+            );
+            case "SHIPMENT_CREATED" -> new InAppNotificationTemplate(
+                    "Shipment created",
+                    "A shipment has been created for your order."
             );
             default -> null;
         });
