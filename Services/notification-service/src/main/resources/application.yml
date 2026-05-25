@@ -74,6 +74,8 @@ notification:
       enabled: ${NOTIFICATION_FCM_ENABLED:false}
     email:
       enabled: ${NOTIFICATION_EMAIL_ENABLED:false}
+      from-address: ${NOTIFICATION_EMAIL_FROM:noreply@2hands.vn}
+      from-name: ${NOTIFICATION_EMAIL_FROM_NAME:2Hands}
   kafka:
     consumer:
       enabled: ${NOTIFICATION_KAFKA_CONSUMER_ENABLED:false}

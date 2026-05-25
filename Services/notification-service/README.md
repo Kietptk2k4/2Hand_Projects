@@ -176,7 +176,7 @@ cd Services/notification-service
 ./gradlew test
 ```
 
-Use cases hiện có: `ConsumeDomainEventUseCase`, `StoreNotificationEventUseCase`, `ProcessNotificationEventUseCase`, `RespectNotificationSettingsUseCase`, `ApplyNotificationDeliveryRulesUseCase`, `ApplySkipSelfNotificationUseCase`, `InitializeDefaultNotificationSettingsUseCase`, `ViewNotificationSettingsUseCase`, `UpdateNotificationSettingsUseCase`, `RegisterDeviceTokenUseCase`, `RevokeDeviceTokenUseCase`, `ViewUserDeviceTokensUseCase`, `CreateInAppNotificationUseCase`, `ViewUserNotificationsUseCase`, `ViewUnreadNotificationsUseCase`, `CountUnreadNotificationsUseCase`, `MarkNotificationAsReadUseCase`, `MarkAllNotificationsAsReadUseCase`, `DeleteNotificationUseCase`, `MarkNotificationEventCompletedUseCase`, `MarkNotificationEventFailedUseCase`, `EnsureNotificationEventIdempotencyUseCase`, `CreateIdempotentUserNotificationUseCase`, `RecoverStaleProcessingNotificationEventsUseCase`, `IngestNotificationEventUseCase`, `ProcessPendingNotificationEventsUseCase`, `RetryFailedNotificationEventsUseCase`, `RetryFailedNotificationDeliveryUseCase`.
+Use cases hiện có: `ConsumeDomainEventUseCase`, `StoreNotificationEventUseCase`, `ProcessNotificationEventUseCase`, `RespectNotificationSettingsUseCase`, `ApplyNotificationDeliveryRulesUseCase`, `ApplySkipSelfNotificationUseCase`, `InitializeDefaultNotificationSettingsUseCase`, `ViewNotificationSettingsUseCase`, `UpdateNotificationSettingsUseCase`, `RegisterDeviceTokenUseCase`, `RevokeDeviceTokenUseCase`, `ViewUserDeviceTokensUseCase`, `SendEmailNotificationUseCase`, `CreateInAppNotificationUseCase`, `ViewUserNotificationsUseCase`, `ViewUnreadNotificationsUseCase`, `CountUnreadNotificationsUseCase`, `MarkNotificationAsReadUseCase`, `MarkAllNotificationsAsReadUseCase`, `DeleteNotificationUseCase`, `MarkNotificationEventCompletedUseCase`, `MarkNotificationEventFailedUseCase`, `EnsureNotificationEventIdempotencyUseCase`, `CreateIdempotentUserNotificationUseCase`, `RecoverStaleProcessingNotificationEventsUseCase`, `IngestNotificationEventUseCase`, `ProcessPendingNotificationEventsUseCase`, `RetryFailedNotificationEventsUseCase`, `RetryFailedNotificationDeliveryUseCase`.
 
 ---
 
@@ -192,6 +192,7 @@ src/main/java/com/twohands/notification_service/
 ├── application/read/         # View/MarkRead/Delete user notification use cases
 ├── application/settings/     # InitializeDefaultNotificationSettingsUseCase, ViewNotificationSettingsUseCase, UpdateNotificationSettingsUseCase
 ├── application/devicetoken/    # RegisterDeviceTokenUseCase, RevokeDeviceTokenUseCase, ViewUserDeviceTokensUseCase
+├── application/email/          # SendEmailNotificationUseCase
 ├── application/handler/      # Event handlers + recipient/skip policies
 ├── application/worker/       # Process / retry use cases
 ├── delivery/http/       # Health, InternalEventController, NotificationController, DeviceTokenController
