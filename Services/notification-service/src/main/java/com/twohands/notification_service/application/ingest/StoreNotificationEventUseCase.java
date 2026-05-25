@@ -1,6 +1,6 @@
 package com.twohands.notification_service.application.ingest;
 
-import com.twohands.notification_service.application.email.EmailVerificationNotificationPayloadNormalizer;
+import com.twohands.notification_service.application.email.AuthSecurityEmailNotificationPayloadNormalizer;
 import com.twohands.notification_service.application.idempotency.EnsureNotificationEventIdempotencyUseCase;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventPayloadSanitizer;
@@ -24,18 +24,18 @@ public class StoreNotificationEventUseCase {
     private static final Pattern EVENT_TYPE_PATTERN = Pattern.compile("^[A-Z][A-Z0-9_]*$");
 
     private final NotificationEventRepository notificationEventRepository;
-    private final EmailVerificationNotificationPayloadNormalizer emailVerificationPayloadNormalizer;
+    private final AuthSecurityEmailNotificationPayloadNormalizer authSecurityEmailPayloadNormalizer;
     private final NotificationEventPayloadSanitizer payloadSanitizer;
     private final EnsureNotificationEventIdempotencyUseCase ensureNotificationEventIdempotencyUseCase;
 
     public StoreNotificationEventUseCase(
             NotificationEventRepository notificationEventRepository,
-            EmailVerificationNotificationPayloadNormalizer emailVerificationPayloadNormalizer,
+            AuthSecurityEmailNotificationPayloadNormalizer authSecurityEmailPayloadNormalizer,
             NotificationEventPayloadSanitizer payloadSanitizer,
             EnsureNotificationEventIdempotencyUseCase ensureNotificationEventIdempotencyUseCase
     ) {
         this.notificationEventRepository = notificationEventRepository;
-        this.emailVerificationPayloadNormalizer = emailVerificationPayloadNormalizer;
+        this.authSecurityEmailPayloadNormalizer = authSecurityEmailPayloadNormalizer;
         this.payloadSanitizer = payloadSanitizer;
         this.ensureNotificationEventIdempotencyUseCase = ensureNotificationEventIdempotencyUseCase;
     }
@@ -45,7 +45,7 @@ public class StoreNotificationEventUseCase {
         ensureNotificationEventIdempotencyUseCase.validateIdempotencyKeyPresent(command);
         validateEventType(command.eventType());
 
-        String normalizedPayload = emailVerificationPayloadNormalizer.normalizeForStorage(
+        String normalizedPayload = authSecurityEmailPayloadNormalizer.normalizeForStorage(
                 command.eventType(),
                 command.payload()
         );

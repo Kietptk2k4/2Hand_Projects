@@ -4,9 +4,9 @@ import com.twohands.notification_service.application.email.SendEmailNotification
 import com.twohands.notification_service.application.email.SendEmailNotificationOutcome;
 import com.twohands.notification_service.application.email.SendEmailNotificationResult;
 import com.twohands.notification_service.application.email.SendEmailNotificationUseCase;
-import com.twohands.notification_service.application.handler.EmailNotificationEventHandler;
 import com.twohands.notification_service.application.handler.HandlerOutcome;
 import com.twohands.notification_service.application.handler.NotificationRecipientResolver;
+import com.twohands.notification_service.application.handler.PasswordResetNotificationEventHandler;
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventStatus;
@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class EmailNotificationEventHandlerTest {
+class PasswordResetNotificationEventHandlerTest {
 
     private static final UUID EVENT_ID = UUID.randomUUID();
     private static final UUID RECIPIENT_ID = UUID.randomUUID();
@@ -39,19 +39,17 @@ class EmailNotificationEventHandlerTest {
     @Mock
     private SendEmailNotificationUseCase sendEmailNotificationUseCase;
 
-    private EmailNotificationEventHandler handler;
+    private PasswordResetNotificationEventHandler handler;
 
     @BeforeEach
     void setUp() {
-        handler = new EmailNotificationEventHandler(recipientResolver, sendEmailNotificationUseCase);
+        handler = new PasswordResetNotificationEventHandler(recipientResolver, sendEmailNotificationUseCase);
     }
 
     @Test
-    void supports_emailEligibleEventsExceptDedicatedHandlers() {
+    void supports_onlyPasswordResetRequested() {
+        assertTrue(handler.supports("PASSWORD_RESET_REQUESTED"));
         assertFalse(handler.supports("EMAIL_VERIFICATION_REQUESTED"));
-        assertFalse(handler.supports("PASSWORD_RESET_REQUESTED"));
-        assertTrue(handler.supports("ORDER_CREATED"));
-        assertFalse(handler.supports("USER_CREATED"));
         assertFalse(handler.supports("POST_LIKED"));
     }
 
@@ -61,20 +59,19 @@ class EmailNotificationEventHandlerTest {
         when(sendEmailNotificationUseCase.execute(any(SendEmailNotificationCommand.class)))
                 .thenReturn(SendEmailNotificationResult.sent("msg-1"));
 
-        var result = handler.handle(sampleEvent("ORDER_CREATED"));
+        var result = handler.handle(sampleEvent());
 
         assertEquals(HandlerOutcome.SUCCESS, result.outcome());
     }
 
     @Test
-    void handle_returnsNoOpWhenEmailSkipped() {
-        when(recipientResolver.resolve(any())).thenReturn(List.of(RECIPIENT_ID));
-        when(sendEmailNotificationUseCase.execute(any(SendEmailNotificationCommand.class)))
-                .thenReturn(SendEmailNotificationResult.skipped("Email integration is disabled."));
+    void handle_returnsFailureWhenRecipientMissing() {
+        when(recipientResolver.resolve(any())).thenReturn(List.of());
 
-        var result = handler.handle(sampleEvent("ORDER_CREATED"));
+        var result = handler.handle(sampleEvent());
 
-        assertEquals(HandlerOutcome.NO_OP, result.outcome());
+        assertEquals(HandlerOutcome.FAILURE, result.outcome());
+        assertEquals(NotificationFailurePolicy.RETRYABLE, result.failurePolicy());
     }
 
     @Test
@@ -83,27 +80,32 @@ class EmailNotificationEventHandlerTest {
         when(sendEmailNotificationUseCase.execute(any(SendEmailNotificationCommand.class)))
                 .thenReturn(SendEmailNotificationResult.failed(
                         NotificationFailurePolicy.PERMANENT,
-                        "Missing required template variable: order_code"
+                        "Missing required template variable: reset_link"
                 ));
 
-        var result = handler.handle(sampleEvent("ORDER_CREATED"));
+        var result = handler.handle(sampleEvent());
 
         assertEquals(HandlerOutcome.FAILURE, result.outcome());
         assertEquals(NotificationFailurePolicy.PERMANENT, result.failurePolicy());
     }
 
-    private NotificationEvent sampleEvent(String eventType) {
+    private NotificationEvent sampleEvent() {
         return new NotificationEvent(
                 EVENT_ID,
                 UUID.randomUUID(),
                 null,
-                eventType,
+                "PASSWORD_RESET_REQUESTED",
                 NotificationSourceService.AUTH,
                 null,
                 null,
                 null,
                 RECIPIENT_ID,
-                "{}",
+                """
+                        {
+                          "recipient_email": "user@example.com",
+                          "reset_link": "https://2hands.vn/reset-password?token=abc"
+                        }
+                        """,
                 NotificationEventStatus.PROCESSING,
                 0,
                 5,

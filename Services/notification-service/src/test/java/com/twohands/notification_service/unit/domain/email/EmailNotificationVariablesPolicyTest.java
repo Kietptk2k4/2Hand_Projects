@@ -47,6 +47,16 @@ class EmailNotificationVariablesPolicyTest {
     }
 
     @Test
+    void extract_usesResetCodeWhenLinkMissing() {
+        var variables = EmailNotificationVariablesPolicy.extract(Map.of(
+                "recipient_email", "user@example.com",
+                "reset_code", "654321"
+        ));
+
+        assertEquals("654321", variables.get("reset_link"));
+    }
+
+    @Test
     void maskEmail_hidesLocalPart() {
         assertEquals("u***@example.com", EmailNotificationVariablesPolicy.maskEmail("user@example.com"));
     }

@@ -11,7 +11,7 @@ Gửi email xác minh khi Auth Service publish `EMAIL_VERIFICATION_REQUESTED`. N
 
 ## 3. Flow
 
-1. **Ingest:** `EmailVerificationNotificationPayloadNormalizer` map payload Auth (`email`, `verification_token`) → `recipient_email` + `verification_link` (hoặc `verification_code` nếu không cấu hình base URL), rồi `JacksonNotificationEventPayloadSanitizer` redact sensitive keys.
+1. **Ingest:** `AuthSecurityEmailNotificationPayloadNormalizer` map payload Auth (`email`, `verification_token`) → `recipient_email` + `verification_link` (hoặc `verification_code` nếu không cấu hình base URL), rồi `JacksonNotificationEventPayloadSanitizer` redact sensitive keys.
 2. **Worker:** `EmailVerificationNotificationEventHandler` (@Order 49) resolve `user_id` / `recipient_user_id`, gọi `SendEmailNotificationUseCase`.
 3. **Delivery:** Critical override bật email dù user tắt `allow_email`; template `Verify your 2Hands email`.
 

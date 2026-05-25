@@ -40,6 +40,14 @@ public final class EmailNotificationVariablesPolicy {
                 rawValues.get("reset_link"),
                 rawValues.get("password_reset_link")
         ));
+        putTextVariable(variables, "reset_code", firstNonBlank(
+                rawValues.get("reset_code"),
+                rawValues.get("reset_token")
+        ));
+
+        if (!variables.containsKey("reset_link") && variables.containsKey("reset_code")) {
+            variables.put("reset_link", variables.get("reset_code"));
+        }
 
         putTextVariable(variables, "order_code", firstNonBlank(
                 rawValues.get("order_code"),

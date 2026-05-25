@@ -5,7 +5,6 @@ import com.twohands.notification_service.application.email.SendEmailNotification
 import com.twohands.notification_service.application.email.SendEmailNotificationResult;
 import com.twohands.notification_service.application.email.SendEmailNotificationUseCase;
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
-import com.twohands.notification_service.domain.email.EmailNotificationChannelPolicy;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -14,13 +13,15 @@ import java.util.List;
 import java.util.UUID;
 
 @Component
-@Order(50)
-public class EmailNotificationEventHandler implements NotificationEventHandler {
+@Order(48)
+public class PasswordResetNotificationEventHandler implements NotificationEventHandler {
+
+    private static final String PASSWORD_RESET_REQUESTED = "PASSWORD_RESET_REQUESTED";
 
     private final NotificationRecipientResolver recipientResolver;
     private final SendEmailNotificationUseCase sendEmailNotificationUseCase;
 
-    public EmailNotificationEventHandler(
+    public PasswordResetNotificationEventHandler(
             NotificationRecipientResolver recipientResolver,
             SendEmailNotificationUseCase sendEmailNotificationUseCase
     ) {
@@ -30,10 +31,7 @@ public class EmailNotificationEventHandler implements NotificationEventHandler {
 
     @Override
     public boolean supports(String eventType) {
-        return EmailNotificationChannelPolicy.supportsEmailChannel(eventType)
-                && !"USER_CREATED".equals(eventType)
-                && !"EMAIL_VERIFICATION_REQUESTED".equals(eventType)
-                && !"PASSWORD_RESET_REQUESTED".equals(eventType);
+        return PASSWORD_RESET_REQUESTED.equals(eventType);
     }
 
     @Override
@@ -41,7 +39,7 @@ public class EmailNotificationEventHandler implements NotificationEventHandler {
         List<UUID> recipients = recipientResolver.resolve(event);
         if (recipients.isEmpty()) {
             return NotificationEventHandlerResult.failure(
-                    "Recipient is required for email notification event",
+                    "Recipient user id is required for password reset notification event",
                     NotificationFailurePolicy.RETRYABLE
             );
         }
