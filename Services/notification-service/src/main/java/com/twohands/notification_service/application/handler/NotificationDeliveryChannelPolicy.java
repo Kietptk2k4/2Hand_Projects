@@ -12,12 +12,11 @@ public class NotificationDeliveryChannelPolicy {
             "POST_LIKED",
             "USER_FOLLOWED",
             "COMMENT_CREATED",
-            "COMMENT_REPLIED"
-    );
-
-    private static final Set<String> SOCIAL_IN_APP_EVENTS = Set.of(
+            "COMMENT_REPLIED",
             "COMMENT_LIKED"
     );
+
+    private static final Set<String> SOCIAL_IN_APP_EVENTS = Set.of();
 
     public boolean allowsInApp(String eventType) {
         return NotificationDefaultChannelPolicy.resolve(eventType)
