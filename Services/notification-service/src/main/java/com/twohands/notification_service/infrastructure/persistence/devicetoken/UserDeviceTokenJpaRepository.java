@@ -12,5 +12,7 @@ public interface UserDeviceTokenJpaRepository extends JpaRepository<UserDeviceTo
 
     List<UserDeviceTokenEntity> findByUserIdOrderByActiveDescUpdatedAtDesc(UUID userId);
 
+    List<UserDeviceTokenEntity> findByUserIdAndActiveTrueOrderByUpdatedAtDesc(UUID userId);
+
     boolean existsByUserIdAndActiveTrue(UUID userId);
 }

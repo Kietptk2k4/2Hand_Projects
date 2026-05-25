@@ -51,6 +51,13 @@ public class UserDeviceTokenRepositoryAdapter implements UserDeviceTokenReposito
     }
 
     @Override
+    public List<UserDeviceToken> findActiveByUserId(UUID userId) {
+        return jpaRepository.findByUserIdAndActiveTrueOrderByUpdatedAtDesc(userId).stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
     public boolean existsActiveByUserId(UUID userId) {
         return jpaRepository.existsByUserIdAndActiveTrue(userId);
     }

@@ -12,5 +12,7 @@ public interface UserDeviceTokenRepository {
 
     List<UserDeviceToken> findByUserIdOrderByActiveDescUpdatedAtDesc(UUID userId);
 
+    List<UserDeviceToken> findActiveByUserId(UUID userId);
+
     boolean existsActiveByUserId(UUID userId);
 }
