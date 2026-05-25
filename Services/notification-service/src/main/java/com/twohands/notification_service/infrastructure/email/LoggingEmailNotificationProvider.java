@@ -29,6 +29,14 @@ public class LoggingEmailNotificationProvider implements EmailNotificationProvid
             throw new EmailProviderException(EmailDeliveryFailureType.PERMANENT, "Email body is required.");
         }
 
+        String recipient = content.to();
+        if (recipient.contains("retryable-email")) {
+            throw new EmailProviderException(EmailDeliveryFailureType.RETRYABLE, "Email provider timeout.");
+        }
+        if (recipient.contains("invalid-email")) {
+            throw new EmailProviderException(EmailDeliveryFailureType.PERMANENT, "Recipient email is invalid.");
+        }
+
         String messageId = UUID.randomUUID().toString();
         log.info(
                 "Email provider accepted message messageId={} to={} subject={}",
