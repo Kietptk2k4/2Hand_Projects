@@ -149,6 +149,28 @@ class DomainEventMessageParserTest {
     }
 
     @Test
+    void parse_resolvesShopSuspendedFromAdminTopicFallback() {
+        UUID eventId = UUID.randomUUID();
+        UUID shopOwnerId = UUID.randomUUID();
+
+        String json = """
+                {
+                  "event_id": "%s",
+                  "payload": {
+                    "shop_id": "shop-1",
+                    "shop_owner_id": "%s"
+                  }
+                }
+                """.formatted(eventId, shopOwnerId);
+
+        var command = parser.parse(json, "admin.shop.suspended");
+
+        assertEquals("SHOP_SUSPENDED", command.eventType());
+        assertEquals(shopOwnerId, command.recipientUserId());
+        assertEquals(NotificationSourceService.ADMIN, command.sourceService());
+    }
+
+    @Test
     void parse_resolvesReviewHiddenFromAdminTopicFallback() {
         UUID eventId = UUID.randomUUID();
         UUID authorId = UUID.randomUUID();

@@ -5,6 +5,7 @@ import com.twohands.notification_service.application.idempotency.EnsureNotificat
 import com.twohands.notification_service.application.email.AccountEnforcementEmailPayloadNormalizer;
 import com.twohands.notification_service.application.email.AdminProductModerationPayloadNormalizer;
 import com.twohands.notification_service.application.email.AdminReviewModerationPayloadNormalizer;
+import com.twohands.notification_service.application.email.AdminShopModerationPayloadNormalizer;
 import com.twohands.notification_service.application.email.AuthSecurityEmailNotificationPayloadNormalizer;
 import com.twohands.notification_service.application.email.CommerceOrderCompletedPayloadNormalizer;
 import com.twohands.notification_service.application.email.CommerceOrderNotificationPayloadNormalizer;
@@ -76,6 +77,8 @@ class StoreNotificationEventUseCaseTest {
                 new AdminProductModerationPayloadNormalizer(new ObjectMapper());
         AdminReviewModerationPayloadNormalizer adminReviewModerationNormalizer =
                 new AdminReviewModerationPayloadNormalizer(new ObjectMapper());
+        AdminShopModerationPayloadNormalizer adminShopModerationNormalizer =
+                new AdminShopModerationPayloadNormalizer(new ObjectMapper());
         useCase = new StoreNotificationEventUseCase(
                 notificationEventRepository,
                 authSecurityEmailNormalizer,
@@ -86,6 +89,7 @@ class StoreNotificationEventUseCaseTest {
                 commerceOrderCompletedNormalizer,
                 adminProductModerationNormalizer,
                 adminReviewModerationNormalizer,
+                adminShopModerationNormalizer,
                 payloadSanitizer,
                 ensureIdempotency
         );

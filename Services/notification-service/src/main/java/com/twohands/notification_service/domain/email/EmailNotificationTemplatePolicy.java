@@ -112,6 +112,7 @@ public final class EmailNotificationTemplatePolicy {
                                     Hello,
 
                                     Your shop has been suspended due to a policy enforcement action.
+                                    {{enforcement_reason_line}}{{enforcement_expires_at_line}}
                                     Contact support if you need assistance.
                                     """,
                             Set.of("recipient_email")

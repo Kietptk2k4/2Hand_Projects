@@ -5,7 +5,6 @@ import com.twohands.notification_service.application.email.SendEmailNotification
 import com.twohands.notification_service.application.email.SendEmailNotificationResult;
 import com.twohands.notification_service.application.email.SendEmailNotificationUseCase;
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
-import com.twohands.notification_service.domain.email.EmailNotificationChannelPolicy;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -14,42 +13,40 @@ import java.util.List;
 import java.util.UUID;
 
 @Component
-@Order(50)
-public class EmailNotificationEventHandler implements NotificationEventHandler {
+@Order(49)
+public class ShopSuspendedEmailNotificationEventHandler implements NotificationEventHandler {
 
-    private final NotificationRecipientResolver recipientResolver;
+    private static final String SHOP_SUSPENDED = "SHOP_SUSPENDED";
+
+    private final ShopSuspendedNotificationPayloadParser payloadParser;
     private final SendEmailNotificationUseCase sendEmailNotificationUseCase;
 
-    public EmailNotificationEventHandler(
-            NotificationRecipientResolver recipientResolver,
+    public ShopSuspendedEmailNotificationEventHandler(
+            ShopSuspendedNotificationPayloadParser payloadParser,
             SendEmailNotificationUseCase sendEmailNotificationUseCase
     ) {
-        this.recipientResolver = recipientResolver;
+        this.payloadParser = payloadParser;
         this.sendEmailNotificationUseCase = sendEmailNotificationUseCase;
     }
 
     @Override
     public boolean supports(String eventType) {
-        return EmailNotificationChannelPolicy.supportsEmailChannel(eventType)
-                && !"USER_CREATED".equals(eventType)
-                && !"EMAIL_VERIFICATION_REQUESTED".equals(eventType)
-                && !"PASSWORD_RESET_REQUESTED".equals(eventType)
-                && !"USER_SUSPENDED".equals(eventType)
-                && !"USER_RESTRICTED".equals(eventType)
-                && !"ORDER_CREATED".equals(eventType)
-                && !"COMMERCE_ORDER_CREATED".equals(eventType)
-                && !"PAYMENT_SUCCESS".equals(eventType)
-                && !"COMMERCE_PAYMENT_PAID".equals(eventType)
-                && !"SHOP_SUSPENDED".equals(eventType);
+        return SHOP_SUSPENDED.equals(eventType);
     }
 
     @Override
     public NotificationEventHandlerResult handle(NotificationEvent event) {
-        List<UUID> recipients = recipientResolver.resolve(event);
+        try {
+            payloadParser.parse(event);
+        } catch (IllegalArgumentException ex) {
+            return NotificationEventHandlerResult.failure(ex.getMessage(), NotificationFailurePolicy.PERMANENT);
+        }
+
+        List<UUID> recipients = resolveEmailRecipients(event);
         if (recipients.isEmpty()) {
             return NotificationEventHandlerResult.failure(
-                    "Recipient is required for email notification event",
-                    NotificationFailurePolicy.RETRYABLE
+                    "shop_owner_id is required for shop suspended email notification event",
+                    NotificationFailurePolicy.PERMANENT
             );
         }
 
@@ -58,7 +55,7 @@ public class EmailNotificationEventHandler implements NotificationEventHandler {
 
         for (UUID recipientId : recipients) {
             SendEmailNotificationResult result = sendEmailNotificationUseCase.execute(
-                    new SendEmailNotificationCommand(recipientId, event.eventType(), event.payload())
+                    new SendEmailNotificationCommand(recipientId, SHOP_SUSPENDED, event.payload())
             );
 
             if (result.outcome() == SendEmailNotificationOutcome.FAILED) {
@@ -83,5 +80,17 @@ public class EmailNotificationEventHandler implements NotificationEventHandler {
         }
 
         return NotificationEventHandlerResult.noOp();
+    }
+
+    private List<UUID> resolveEmailRecipients(NotificationEvent event) {
+        UUID shopOwnerId = event.recipientUserId();
+        if (shopOwnerId == null) {
+            try {
+                shopOwnerId = payloadParser.parse(event).shopOwnerId();
+            } catch (IllegalArgumentException ignored) {
+                return List.of();
+            }
+        }
+        return List.of(shopOwnerId);
     }
 }

@@ -55,7 +55,7 @@ class EmailNotificationEventHandlerTest {
         assertFalse(handler.supports("ORDER_CREATED"));
         assertFalse(handler.supports("PAYMENT_SUCCESS"));
         assertFalse(handler.supports("COMMERCE_PAYMENT_PAID"));
-        assertTrue(handler.supports("SHOP_SUSPENDED"));
+        assertFalse(handler.supports("SHOP_SUSPENDED"));
         assertFalse(handler.supports("USER_CREATED"));
         assertFalse(handler.supports("POST_LIKED"));
     }

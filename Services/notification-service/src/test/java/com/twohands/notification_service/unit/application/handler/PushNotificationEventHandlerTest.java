@@ -65,6 +65,7 @@ class PushNotificationEventHandlerTest {
         assertFalse(handler.supports("USER_RESTRICTED"));
         assertFalse(handler.supports("PRODUCT_REMOVED"));
         assertFalse(handler.supports("REVIEW_HIDDEN"));
+        assertFalse(handler.supports("SHOP_SUSPENDED"));
         assertFalse(handler.supports("ORDER_CREATED"));
         assertFalse(handler.supports("COMMERCE_ORDER_CREATED"));
         assertFalse(handler.supports("PAYMENT_SUCCESS"));

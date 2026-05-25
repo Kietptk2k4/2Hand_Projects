@@ -85,6 +85,10 @@ public final class InAppNotificationTemplatePolicy {
                     "Review hidden",
                     "One of your reviews was hidden."
             );
+            case "SHOP_SUSPENDED" -> new InAppNotificationTemplate(
+                    "Shop suspended",
+                    "Your shop has been suspended."
+            );
             default -> null;
         });
     }
