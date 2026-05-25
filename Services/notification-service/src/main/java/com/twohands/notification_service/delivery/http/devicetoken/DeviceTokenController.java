@@ -6,16 +6,22 @@ import com.twohands.notification_service.application.devicetoken.RegisterDeviceT
 import com.twohands.notification_service.application.devicetoken.RevokeDeviceTokenCommand;
 import com.twohands.notification_service.application.devicetoken.RevokeDeviceTokenResult;
 import com.twohands.notification_service.application.devicetoken.RevokeDeviceTokenUseCase;
+import com.twohands.notification_service.application.devicetoken.ViewUserDeviceTokensCommand;
+import com.twohands.notification_service.application.devicetoken.ViewUserDeviceTokensResult;
+import com.twohands.notification_service.application.devicetoken.ViewUserDeviceTokensUseCase;
 import com.twohands.notification_service.common.dto.ApiResponse;
+import com.twohands.notification_service.delivery.http.devicetoken.mapper.ViewUserDeviceTokensHttpMapper;
 import com.twohands.notification_service.delivery.http.devicetoken.request.RegisterDeviceTokenRequest;
 import com.twohands.notification_service.delivery.http.devicetoken.response.RegisterDeviceTokenResponse;
 import com.twohands.notification_service.delivery.http.devicetoken.response.RevokeDeviceTokenResponse;
+import com.twohands.notification_service.delivery.http.devicetoken.response.ViewUserDeviceTokensResponse;
 import com.twohands.notification_service.security.AuthenticationSupport;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,13 +36,35 @@ public class DeviceTokenController {
 
     private final RegisterDeviceTokenUseCase registerDeviceTokenUseCase;
     private final RevokeDeviceTokenUseCase revokeDeviceTokenUseCase;
+    private final ViewUserDeviceTokensUseCase viewUserDeviceTokensUseCase;
+    private final ViewUserDeviceTokensHttpMapper viewUserDeviceTokensHttpMapper;
 
     public DeviceTokenController(
             RegisterDeviceTokenUseCase registerDeviceTokenUseCase,
-            RevokeDeviceTokenUseCase revokeDeviceTokenUseCase
+            RevokeDeviceTokenUseCase revokeDeviceTokenUseCase,
+            ViewUserDeviceTokensUseCase viewUserDeviceTokensUseCase,
+            ViewUserDeviceTokensHttpMapper viewUserDeviceTokensHttpMapper
     ) {
         this.registerDeviceTokenUseCase = registerDeviceTokenUseCase;
         this.revokeDeviceTokenUseCase = revokeDeviceTokenUseCase;
+        this.viewUserDeviceTokensUseCase = viewUserDeviceTokensUseCase;
+        this.viewUserDeviceTokensHttpMapper = viewUserDeviceTokensHttpMapper;
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<ViewUserDeviceTokensResponse>> viewUserDeviceTokens(
+            Authentication authentication
+    ) {
+        UUID userId = AuthenticationSupport.requireUserId(authentication);
+        ViewUserDeviceTokensResult result = viewUserDeviceTokensUseCase.execute(
+                new ViewUserDeviceTokensCommand(userId)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewUserDeviceTokensUseCase.successMessage(),
+                viewUserDeviceTokensHttpMapper.toResponse(result)
+        ));
     }
 
     @PostMapping
