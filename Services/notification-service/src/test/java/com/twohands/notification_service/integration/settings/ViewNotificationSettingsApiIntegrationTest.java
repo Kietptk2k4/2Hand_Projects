@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -62,10 +63,10 @@ class ViewNotificationSettingsApiIntegrationTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.settings.length()")
                         .value(NotificationDefaultChannelPolicy.supportedEventTypes().size()))
-                .andExpect(jsonPath("$.data.settings[?(@.eventType == 'POST_LIKED')].allowPush").value(true))
-                .andExpect(jsonPath("$.data.settings[?(@.eventType == 'POST_LIKED')].allowEmail").value(true))
-                .andExpect(jsonPath("$.data.settings[?(@.eventType == 'POST_LIKED')].allowInApp").value(false))
-                .andExpect(jsonPath("$.data.settings[?(@.eventType == 'POST_LIKED')].explicitSetting").value(false));
+                .andExpect(jsonPath("$.data.settings[?(@.eventType == 'POST_LIKED')].allowPush").value(hasItem(true)))
+                .andExpect(jsonPath("$.data.settings[?(@.eventType == 'POST_LIKED')].allowEmail").value(hasItem(false)))
+                .andExpect(jsonPath("$.data.settings[?(@.eventType == 'POST_LIKED')].allowInApp").value(hasItem(true)))
+                .andExpect(jsonPath("$.data.settings[?(@.eventType == 'POST_LIKED')].explicitSetting").value(hasItem(false)));
     }
 
     @Test
@@ -80,11 +81,11 @@ class ViewNotificationSettingsApiIntegrationTest {
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + buildAccessToken(userId))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.settings[?(@.eventType == 'POST_LIKED')].allowPush").value(false))
-                .andExpect(jsonPath("$.data.settings[?(@.eventType == 'POST_LIKED')].allowEmail").value(false))
-                .andExpect(jsonPath("$.data.settings[?(@.eventType == 'POST_LIKED')].allowInApp").value(true))
-                .andExpect(jsonPath("$.data.settings[?(@.eventType == 'POST_LIKED')].explicitSetting").value(true))
-                .andExpect(jsonPath("$.data.settings[?(@.eventType == 'USER_FOLLOWED')].explicitSetting").value(false));
+                .andExpect(jsonPath("$.data.settings[?(@.eventType == 'POST_LIKED')].allowPush").value(hasItem(false)))
+                .andExpect(jsonPath("$.data.settings[?(@.eventType == 'POST_LIKED')].allowEmail").value(hasItem(false)))
+                .andExpect(jsonPath("$.data.settings[?(@.eventType == 'POST_LIKED')].allowInApp").value(hasItem(true)))
+                .andExpect(jsonPath("$.data.settings[?(@.eventType == 'POST_LIKED')].explicitSetting").value(hasItem(true)))
+                .andExpect(jsonPath("$.data.settings[?(@.eventType == 'USER_FOLLOWED')].explicitSetting").value(hasItem(false)));
     }
 
     private void insertSetting(

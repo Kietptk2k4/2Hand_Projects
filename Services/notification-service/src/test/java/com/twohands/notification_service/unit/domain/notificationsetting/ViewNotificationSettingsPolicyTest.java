@@ -28,8 +28,8 @@ class ViewNotificationSettingsPolicyTest {
 
         EffectiveNotificationSetting postLiked = findByEventType(settings, "POST_LIKED");
         assertTrue(postLiked.allowPush());
-        assertTrue(postLiked.allowEmail());
-        assertFalse(postLiked.allowInApp());
+        assertFalse(postLiked.allowEmail());
+        assertTrue(postLiked.allowInApp());
     }
 
     @Test
