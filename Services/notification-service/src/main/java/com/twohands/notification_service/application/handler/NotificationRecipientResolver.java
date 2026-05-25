@@ -29,6 +29,7 @@ public class NotificationRecipientResolver {
         try {
             JsonNode payload = objectMapper.readTree(event.payload());
             addRecipient(recipients, payload, "recipient_user_id");
+            addRecipient(recipients, payload, "followed_user_id");
             addRecipient(recipients, payload, "user_id");
             addRecipient(recipients, payload, "post_author_id");
             addRecipient(recipients, payload, "post_owner_id");

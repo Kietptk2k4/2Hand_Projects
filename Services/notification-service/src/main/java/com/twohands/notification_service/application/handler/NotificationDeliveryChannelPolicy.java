@@ -9,11 +9,11 @@ import java.util.Set;
 public class NotificationDeliveryChannelPolicy {
 
     private static final Set<String> DEDICATED_SOCIAL_NOTIFICATION_EVENTS = Set.of(
-            "POST_LIKED"
+            "POST_LIKED",
+            "USER_FOLLOWED"
     );
 
     private static final Set<String> SOCIAL_IN_APP_EVENTS = Set.of(
-            "USER_FOLLOWED",
             "COMMENT_CREATED",
             "COMMENT_REPLIED",
             "COMMENT_LIKED"
