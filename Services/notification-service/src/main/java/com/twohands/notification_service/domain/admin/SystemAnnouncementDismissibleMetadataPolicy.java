@@ -1,6 +1,8 @@
 package com.twohands.notification_service.domain.admin;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public final class SystemAnnouncementDismissibleMetadataPolicy {
 
@@ -26,5 +28,20 @@ public final class SystemAnnouncementDismissibleMetadataPolicy {
             return Boolean.parseBoolean(value.trim());
         }
         throw new IllegalArgumentException("dismissible must be a boolean value.");
+    }
+
+    public static boolean isDismissibleFromStoredMetadata(ObjectMapper objectMapper, String metadata) {
+        if (metadata == null || metadata.isBlank()) {
+            return false;
+        }
+        try {
+            JsonNode root = objectMapper.readTree(metadata);
+            if (!root.isObject()) {
+                return false;
+            }
+            return resolveDismissible(root);
+        } catch (JsonProcessingException | IllegalArgumentException ex) {
+            return false;
+        }
     }
 }

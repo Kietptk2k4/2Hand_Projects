@@ -60,7 +60,7 @@ Unique theo `(notification_event_id, user_id, type=SYSTEM_ANNOUNCEMENT_SENT, ref
 
 ## 7. Related FR
 
-- `FR_DismissAnnouncementNotification` — dismiss khi `metadata.dismissible=true`.
+- `FR_DismissAnnouncementNotification` — `POST .../dismiss` khi `metadata.dismissible=true` (xem `DismissAnnouncementNotification-api-and-behavior.md`).
 - Generic `PushNotificationEventHandler` **loại trừ** `SYSTEM_ANNOUNCEMENT_SENT`.
 
 ## 8. FE / Client

@@ -14,6 +14,16 @@ public enum ErrorCode {
     USER_NOTIFICATION_NOT_FOUND("NOTIFICATION-404-NOTIFICATION", HttpStatus.NOT_FOUND, "User notification not found"),
     DEVICE_TOKEN_NOT_FOUND("NOTIFICATION-404-DEVICE-TOKEN", HttpStatus.NOT_FOUND, "Device token not found"),
     DUPLICATE_EVENT("NOTIFICATION-409-DUPLICATE-EVENT", HttpStatus.CONFLICT, "Event already ingested"),
+    ANNOUNCEMENT_NOT_DISMISSIBLE(
+            "NOTIFICATION-409-NOT-DISMISSIBLE",
+            HttpStatus.CONFLICT,
+            "System announcement is not dismissible"
+    ),
+    NOT_SYSTEM_ANNOUNCEMENT(
+            "NOTIFICATION-400-NOT-ANNOUNCEMENT",
+            HttpStatus.BAD_REQUEST,
+            "Notification is not a system announcement"
+    ),
     MISSING_IDEMPOTENCY_KEY(
             "NOTIFICATION-400-MISSING-IDEMPOTENCY-KEY",
             HttpStatus.BAD_REQUEST,

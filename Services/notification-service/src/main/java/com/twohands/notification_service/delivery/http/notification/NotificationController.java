@@ -6,6 +6,9 @@ import com.twohands.notification_service.application.read.CountUnreadNotificatio
 import com.twohands.notification_service.application.read.DeleteNotificationCommand;
 import com.twohands.notification_service.application.read.DeleteNotificationResult;
 import com.twohands.notification_service.application.read.DeleteNotificationUseCase;
+import com.twohands.notification_service.application.read.DismissAnnouncementNotificationCommand;
+import com.twohands.notification_service.application.read.DismissAnnouncementNotificationResult;
+import com.twohands.notification_service.application.read.DismissAnnouncementNotificationUseCase;
 import com.twohands.notification_service.application.read.MarkAllNotificationsAsReadCommand;
 import com.twohands.notification_service.application.read.MarkAllNotificationsAsReadResult;
 import com.twohands.notification_service.application.read.MarkAllNotificationsAsReadUseCase;
@@ -21,6 +24,7 @@ import com.twohands.notification_service.common.dto.ApiResponse;
 import com.twohands.notification_service.delivery.http.notification.mapper.ViewUserNotificationsHttpMapper;
 import com.twohands.notification_service.delivery.http.notification.response.CountUnreadNotificationsResponse;
 import com.twohands.notification_service.delivery.http.notification.response.DeleteNotificationResponse;
+import com.twohands.notification_service.delivery.http.notification.response.DismissAnnouncementNotificationResponse;
 import com.twohands.notification_service.delivery.http.notification.response.MarkAllNotificationsAsReadResponse;
 import com.twohands.notification_service.delivery.http.notification.response.MarkNotificationAsReadResponse;
 import com.twohands.notification_service.delivery.http.notification.response.ViewUserNotificationsResponse;
@@ -32,6 +36,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -51,6 +56,7 @@ public class NotificationController {
     private final MarkNotificationAsReadUseCase markNotificationAsReadUseCase;
     private final MarkAllNotificationsAsReadUseCase markAllNotificationsAsReadUseCase;
     private final DeleteNotificationUseCase deleteNotificationUseCase;
+    private final DismissAnnouncementNotificationUseCase dismissAnnouncementNotificationUseCase;
     private final ViewUserNotificationsHttpMapper viewUserNotificationsHttpMapper;
 
     public NotificationController(
@@ -60,6 +66,7 @@ public class NotificationController {
             MarkNotificationAsReadUseCase markNotificationAsReadUseCase,
             MarkAllNotificationsAsReadUseCase markAllNotificationsAsReadUseCase,
             DeleteNotificationUseCase deleteNotificationUseCase,
+            DismissAnnouncementNotificationUseCase dismissAnnouncementNotificationUseCase,
             ViewUserNotificationsHttpMapper viewUserNotificationsHttpMapper
     ) {
         this.viewUserNotificationsUseCase = viewUserNotificationsUseCase;
@@ -68,6 +75,7 @@ public class NotificationController {
         this.markNotificationAsReadUseCase = markNotificationAsReadUseCase;
         this.markAllNotificationsAsReadUseCase = markAllNotificationsAsReadUseCase;
         this.deleteNotificationUseCase = deleteNotificationUseCase;
+        this.dismissAnnouncementNotificationUseCase = dismissAnnouncementNotificationUseCase;
         this.viewUserNotificationsHttpMapper = viewUserNotificationsHttpMapper;
     }
 
@@ -157,6 +165,27 @@ public class NotificationController {
                         result.read(),
                         result.readAt(),
                         result.alreadyRead()
+                )
+        ));
+    }
+
+    @PostMapping("/{notificationId}/dismiss")
+    public ResponseEntity<ApiResponse<DismissAnnouncementNotificationResponse>> dismissAnnouncementNotification(
+            @PathVariable UUID notificationId,
+            Authentication authentication
+    ) {
+        UUID userId = AuthenticationSupport.requireUserId(authentication);
+        DismissAnnouncementNotificationResult result = dismissAnnouncementNotificationUseCase.execute(
+                new DismissAnnouncementNotificationCommand(userId, notificationId)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                dismissAnnouncementNotificationUseCase.successMessage(),
+                new DismissAnnouncementNotificationResponse(
+                        result.notificationId(),
+                        result.dismissed(),
+                        result.alreadyDismissed()
                 )
         ));
     }
