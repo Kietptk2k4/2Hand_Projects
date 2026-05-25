@@ -37,6 +37,10 @@ public final class InAppNotificationTemplatePolicy {
                     "Payment received",
                     "Your payment was successful."
             );
+            case "PAYMENT_FAILED" -> new InAppNotificationTemplate(
+                    "Payment failed",
+                    "Your payment could not be completed."
+            );
             default -> null;
         });
     }

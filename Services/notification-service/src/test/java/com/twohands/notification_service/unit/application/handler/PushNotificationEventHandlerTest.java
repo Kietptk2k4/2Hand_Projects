@@ -53,7 +53,8 @@ class PushNotificationEventHandlerTest {
 
     @Test
     void supports_pushOnlyEligibleEvents() {
-        assertTrue(handler.supports("PAYMENT_FAILED"));
+        assertFalse(handler.supports("PAYMENT_FAILED"));
+        assertFalse(handler.supports("COMMERCE_PAYMENT_FAILED"));
         assertTrue(handler.supports("PRODUCT_REMOVED"));
         assertFalse(handler.supports("ORDER_CREATED"));
         assertFalse(handler.supports("COMMERCE_ORDER_CREATED"));
@@ -69,7 +70,7 @@ class PushNotificationEventHandlerTest {
         when(sendPushNotificationUseCase.execute(any(SendPushNotificationCommand.class)))
                 .thenReturn(SendPushNotificationResult.skipped("No active device tokens."));
 
-        var result = handler.handle(sampleEvent("PAYMENT_FAILED"));
+        var result = handler.handle(sampleEvent("PRODUCT_REMOVED"));
 
         assertEquals(HandlerOutcome.NO_OP, result.outcome());
     }
@@ -84,7 +85,7 @@ class PushNotificationEventHandlerTest {
                         0
                 ));
 
-        var result = handler.handle(sampleEvent("PAYMENT_FAILED"));
+        var result = handler.handle(sampleEvent("PRODUCT_REMOVED"));
 
         assertEquals(HandlerOutcome.FAILURE, result.outcome());
         assertEquals(NotificationFailurePolicy.RETRYABLE, result.failurePolicy());
