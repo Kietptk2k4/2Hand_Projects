@@ -29,4 +29,13 @@ public interface UserNotificationRepository {
     long countByUserIdAndReadFalseAndDeletedFalse(UUID userId);
 
     int markAllUnreadVisibleAsRead(UUID userId, Instant readAt);
+
+    List<UUID> findEligibleForRetentionCleanup(
+            Instant createdBefore,
+            java.util.Set<String> excludedTypes,
+            String excludedReferenceType,
+            int batchSize
+    );
+
+    int softDeleteByIds(List<UUID> notificationIds);
 }

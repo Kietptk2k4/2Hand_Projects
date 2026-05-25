@@ -18,6 +18,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Repository
@@ -157,6 +158,60 @@ public class UserNotificationRepositoryAdapter implements UserNotificationReposi
     @Override
     public int markAllUnreadVisibleAsRead(UUID userId, Instant readAt) {
         return jpaRepository.markAllUnreadVisibleAsReadByUserId(userId, readAt);
+    }
+
+    @Override
+    @Transactional
+    public List<UUID> findEligibleForRetentionCleanup(
+            Instant createdBefore,
+            Set<String> excludedTypes,
+            String excludedReferenceType,
+            int batchSize
+    ) {
+        if (batchSize <= 0) {
+            return List.of();
+        }
+
+        Set<String> safeExcludedTypes = excludedTypes == null || excludedTypes.isEmpty()
+                ? Set.of("__none__")
+                : excludedTypes;
+
+        String sql = """
+                SELECT id
+                FROM user_notifications
+                WHERE is_deleted = false
+                  AND created_at < :createdBefore
+                  AND type NOT IN (:excludedTypes)
+                  AND (reference_type IS NULL OR reference_type <> :excludedReferenceType)
+                ORDER BY created_at ASC
+                LIMIT :batchSize
+                """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("createdBefore", Timestamp.from(createdBefore))
+                .addValue("excludedTypes", safeExcludedTypes)
+                .addValue("excludedReferenceType", excludedReferenceType == null ? "" : excludedReferenceType)
+                .addValue("batchSize", batchSize);
+
+        return jdbcTemplate.query(sql, params, (rs, rowNum) -> UUID.fromString(rs.getString("id")));
+    }
+
+    @Override
+    @Transactional
+    public int softDeleteByIds(List<UUID> notificationIds) {
+        if (notificationIds == null || notificationIds.isEmpty()) {
+            return 0;
+        }
+
+        String sql = """
+                UPDATE user_notifications
+                SET is_deleted = true
+                WHERE id IN (:notificationIds)
+                  AND is_deleted = false
+                """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource("notificationIds", notificationIds);
+        return jdbcTemplate.update(sql, params);
     }
 
     private UserNotification toDomain(UserNotificationEntity entity) {
