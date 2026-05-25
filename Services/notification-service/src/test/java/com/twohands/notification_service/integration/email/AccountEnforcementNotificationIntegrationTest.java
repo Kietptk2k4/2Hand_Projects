@@ -108,9 +108,10 @@ class AccountEnforcementNotificationIntegrationTest {
                 """
                         {
                           "target_user_id":"%s",
+                          "enforcement_id":"%s",
                           "enforcement_reason":"Spam abuse"
                         }
-                        """.formatted(userId)
+                        """.formatted(userId, UUID.randomUUID())
         );
 
         var result = processNotificationEventUseCase.execute(new ProcessNotificationEventCommand(eventId));

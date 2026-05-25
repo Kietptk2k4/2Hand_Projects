@@ -16,6 +16,11 @@ public class NotificationDeliveryChannelPolicy {
             "COMMENT_LIKED"
     );
 
+    private static final Set<String> DEDICATED_ACCOUNT_ENFORCEMENT_NOTIFICATION_EVENTS = Set.of(
+            "USER_SUSPENDED",
+            "USER_RESTRICTED"
+    );
+
     private static final Set<String> DEDICATED_COMMERCE_NOTIFICATION_EVENTS = Set.of(
             "ORDER_CREATED",
             "COMMERCE_ORDER_CREATED",
@@ -51,6 +56,10 @@ public class NotificationDeliveryChannelPolicy {
 
     public boolean isDedicatedCommerceNotificationEvent(String eventType) {
         return DEDICATED_COMMERCE_NOTIFICATION_EVENTS.contains(eventType);
+    }
+
+    public boolean isDedicatedAccountEnforcementNotificationEvent(String eventType) {
+        return DEDICATED_ACCOUNT_ENFORCEMENT_NOTIFICATION_EVENTS.contains(eventType);
     }
 
     public boolean isKnownEventType(String eventType) {

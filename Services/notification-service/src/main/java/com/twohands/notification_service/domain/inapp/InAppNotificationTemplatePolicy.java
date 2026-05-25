@@ -63,6 +63,10 @@ public final class InAppNotificationTemplatePolicy {
                     "Order completed",
                     "Your order is complete."
             );
+            case "USER_SUSPENDED" -> new InAppNotificationTemplate(
+                    "Account suspended",
+                    "Your account has been suspended."
+            );
             default -> null;
         });
     }
