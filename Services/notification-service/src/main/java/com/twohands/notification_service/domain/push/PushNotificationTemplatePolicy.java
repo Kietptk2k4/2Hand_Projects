@@ -36,6 +36,10 @@ public final class PushNotificationTemplatePolicy {
             case "SHIPMENT_SHIPPED" -> new PushNotificationTemplate("Order shipped", "Your order is on the way.");
             case "SHIPMENT_DELIVERED" -> new PushNotificationTemplate("Order delivered", "Your order has been delivered.");
             case "ORDER_COMPLETED" -> new PushNotificationTemplate("Order completed", "Your order is complete.");
+            case "REVIEW_REMINDER" -> new PushNotificationTemplate(
+                    "Review your purchase",
+                    "Tell us what you think about your order."
+            );
             case "USER_SUSPENDED" -> new PushNotificationTemplate("Account suspended", "Your account has been suspended.");
             case "USER_RESTRICTED" -> new PushNotificationTemplate("Account restricted", "Your account access has been restricted.");
             case "PRODUCT_REMOVED" -> new PushNotificationTemplate("Product removed", "One of your products was removed.");

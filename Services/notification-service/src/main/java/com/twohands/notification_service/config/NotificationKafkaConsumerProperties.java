@@ -28,6 +28,7 @@ public class NotificationKafkaConsumerProperties {
             "commerce.shipment.shipped",
             "commerce.shipment.delivered",
             "commerce.order.completed",
+            "commerce.review.reminder",
             "admin.user.suspended",
             "admin.user.banned",
             "admin.user.restricted",

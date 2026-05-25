@@ -69,6 +69,10 @@ public final class InAppNotificationTemplatePolicy {
                     "Order completed",
                     "Your order is complete."
             );
+            case "REVIEW_REMINDER" -> new InAppNotificationTemplate(
+                    "Review your purchase",
+                    "Share your experience with a product from your recent order."
+            );
             case "USER_SUSPENDED" -> new InAppNotificationTemplate(
                     "Account suspended",
                     "Your account has been suspended."

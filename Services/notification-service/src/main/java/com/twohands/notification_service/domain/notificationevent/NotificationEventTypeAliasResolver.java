@@ -15,6 +15,7 @@ public class NotificationEventTypeAliasResolver {
             Map.entry("COMMERCE_SHIPMENT_CREATED", "SHIPMENT_CREATED"),
             Map.entry("COMMERCE_SHIPMENT_SHIPPED", "SHIPMENT_SHIPPED"),
             Map.entry("COMMERCE_SHIPMENT_DELIVERED", "SHIPMENT_DELIVERED"),
+            Map.entry("COMMERCE_REVIEW_REMINDER", "REVIEW_REMINDER"),
             Map.entry("SYSTEM_ANNOUNCEMENT_PUBLISHED", "SYSTEM_ANNOUNCEMENT_SENT")
     );
 

@@ -9,6 +9,7 @@ import com.twohands.notification_service.application.email.AdminShopModerationPa
 import com.twohands.notification_service.application.email.AdminSystemAnnouncementPayloadNormalizer;
 import com.twohands.notification_service.application.email.AuthSecurityEmailNotificationPayloadNormalizer;
 import com.twohands.notification_service.application.email.CommerceOrderCompletedPayloadNormalizer;
+import com.twohands.notification_service.application.email.CommerceReviewReminderPayloadNormalizer;
 import com.twohands.notification_service.application.email.CommerceOrderNotificationPayloadNormalizer;
 import com.twohands.notification_service.application.email.CommercePaymentFailedPayloadNormalizer;
 import com.twohands.notification_service.application.email.CommerceShipmentNotificationPayloadNormalizer;
@@ -74,6 +75,8 @@ class StoreNotificationEventUseCaseTest {
                 new CommerceShipmentNotificationPayloadNormalizer(new ObjectMapper());
         CommerceOrderCompletedPayloadNormalizer commerceOrderCompletedNormalizer =
                 new CommerceOrderCompletedPayloadNormalizer(new ObjectMapper());
+        CommerceReviewReminderPayloadNormalizer commerceReviewReminderNormalizer =
+                new CommerceReviewReminderPayloadNormalizer(new ObjectMapper());
         AdminProductModerationPayloadNormalizer adminProductModerationNormalizer =
                 new AdminProductModerationPayloadNormalizer(new ObjectMapper());
         AdminReviewModerationPayloadNormalizer adminReviewModerationNormalizer =
@@ -90,6 +93,7 @@ class StoreNotificationEventUseCaseTest {
                 commercePaymentFailedNormalizer,
                 commerceShipmentNormalizer,
                 commerceOrderCompletedNormalizer,
+                commerceReviewReminderNormalizer,
                 adminProductModerationNormalizer,
                 adminReviewModerationNormalizer,
                 adminShopModerationNormalizer,

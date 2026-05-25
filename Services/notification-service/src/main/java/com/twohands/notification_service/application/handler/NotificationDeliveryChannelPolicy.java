@@ -45,7 +45,9 @@ public class NotificationDeliveryChannelPolicy {
             "SHIPMENT_DELIVERED",
             "COMMERCE_SHIPMENT_DELIVERED",
             "ORDER_COMPLETED",
-            "COMMERCE_ORDER_COMPLETED"
+            "COMMERCE_ORDER_COMPLETED",
+            "REVIEW_REMINDER",
+            "COMMERCE_REVIEW_REMINDER"
     );
 
     private static final Set<String> SOCIAL_IN_APP_EVENTS = Set.of();

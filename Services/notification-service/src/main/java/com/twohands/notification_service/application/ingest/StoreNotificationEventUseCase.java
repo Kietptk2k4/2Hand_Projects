@@ -7,6 +7,7 @@ import com.twohands.notification_service.application.email.AdminShopModerationPa
 import com.twohands.notification_service.application.email.AdminSystemAnnouncementPayloadNormalizer;
 import com.twohands.notification_service.application.email.AuthSecurityEmailNotificationPayloadNormalizer;
 import com.twohands.notification_service.application.email.CommerceOrderCompletedPayloadNormalizer;
+import com.twohands.notification_service.application.email.CommerceReviewReminderPayloadNormalizer;
 import com.twohands.notification_service.application.email.CommerceOrderNotificationPayloadNormalizer;
 import com.twohands.notification_service.application.email.CommercePaymentFailedPayloadNormalizer;
 import com.twohands.notification_service.application.email.CommerceShipmentNotificationPayloadNormalizer;
@@ -39,6 +40,7 @@ public class StoreNotificationEventUseCase {
     private final CommercePaymentFailedPayloadNormalizer commercePaymentFailedPayloadNormalizer;
     private final CommerceShipmentNotificationPayloadNormalizer commerceShipmentNotificationPayloadNormalizer;
     private final CommerceOrderCompletedPayloadNormalizer commerceOrderCompletedPayloadNormalizer;
+    private final CommerceReviewReminderPayloadNormalizer commerceReviewReminderPayloadNormalizer;
     private final AdminProductModerationPayloadNormalizer adminProductModerationPayloadNormalizer;
     private final AdminReviewModerationPayloadNormalizer adminReviewModerationPayloadNormalizer;
     private final AdminShopModerationPayloadNormalizer adminShopModerationPayloadNormalizer;
@@ -54,6 +56,7 @@ public class StoreNotificationEventUseCase {
             CommercePaymentFailedPayloadNormalizer commercePaymentFailedPayloadNormalizer,
             CommerceShipmentNotificationPayloadNormalizer commerceShipmentNotificationPayloadNormalizer,
             CommerceOrderCompletedPayloadNormalizer commerceOrderCompletedPayloadNormalizer,
+            CommerceReviewReminderPayloadNormalizer commerceReviewReminderPayloadNormalizer,
             AdminProductModerationPayloadNormalizer adminProductModerationPayloadNormalizer,
             AdminReviewModerationPayloadNormalizer adminReviewModerationPayloadNormalizer,
             AdminShopModerationPayloadNormalizer adminShopModerationPayloadNormalizer,
@@ -68,6 +71,7 @@ public class StoreNotificationEventUseCase {
         this.commercePaymentFailedPayloadNormalizer = commercePaymentFailedPayloadNormalizer;
         this.commerceShipmentNotificationPayloadNormalizer = commerceShipmentNotificationPayloadNormalizer;
         this.commerceOrderCompletedPayloadNormalizer = commerceOrderCompletedPayloadNormalizer;
+        this.commerceReviewReminderPayloadNormalizer = commerceReviewReminderPayloadNormalizer;
         this.adminProductModerationPayloadNormalizer = adminProductModerationPayloadNormalizer;
         this.adminReviewModerationPayloadNormalizer = adminReviewModerationPayloadNormalizer;
         this.adminShopModerationPayloadNormalizer = adminShopModerationPayloadNormalizer;
@@ -102,6 +106,10 @@ public class StoreNotificationEventUseCase {
                 normalizedPayload
         );
         normalizedPayload = commerceOrderCompletedPayloadNormalizer.normalizeForStorage(
+                command.eventType(),
+                normalizedPayload
+        );
+        normalizedPayload = commerceReviewReminderPayloadNormalizer.normalizeForStorage(
                 command.eventType(),
                 normalizedPayload
         );
