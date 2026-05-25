@@ -10,6 +10,7 @@ class NotificationCriticalOverridePolicyTest {
 
     @Test
     void forcesEmailForSecurityCriticalEvents() {
+        assertTrue(NotificationCriticalOverridePolicy.forcesEmail("EMAIL_VERIFICATION_REQUESTED"));
         assertTrue(NotificationCriticalOverridePolicy.forcesEmail("PASSWORD_RESET_REQUESTED"));
         assertTrue(NotificationCriticalOverridePolicy.forcesEmail("USER_SUSPENDED"));
         assertFalse(NotificationCriticalOverridePolicy.forcesEmail("POST_LIKED"));

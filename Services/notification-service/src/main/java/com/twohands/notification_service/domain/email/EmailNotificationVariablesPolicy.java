@@ -27,7 +27,10 @@ public final class EmailNotificationVariablesPolicy {
                 rawValues.get("verification_link"),
                 rawValues.get("verify_link")
         ));
-        putTextVariable(variables, "verification_code", rawValues.get("verification_code"));
+        putTextVariable(variables, "verification_code", firstNonBlank(
+                rawValues.get("verification_code"),
+                rawValues.get("verification_token")
+        ));
 
         if (!variables.containsKey("verification_link") && variables.containsKey("verification_code")) {
             variables.put("verification_link", variables.get("verification_code"));

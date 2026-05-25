@@ -8,6 +8,7 @@ public class NotificationEmailProperties {
     private boolean enabled;
     private String fromAddress = "noreply@2hands.vn";
     private String fromName = "2Hands";
+    private String verificationLinkBaseUrl;
 
     public boolean enabled() {
         return enabled;
@@ -31,5 +32,13 @@ public class NotificationEmailProperties {
 
     public void setFromName(String fromName) {
         this.fromName = fromName;
+    }
+
+    public String verificationLinkBaseUrl() {
+        return verificationLinkBaseUrl;
+    }
+
+    public void setVerificationLinkBaseUrl(String verificationLinkBaseUrl) {
+        this.verificationLinkBaseUrl = verificationLinkBaseUrl;
     }
 }

@@ -4,7 +4,7 @@ import com.twohands.notification_service.application.email.SendEmailNotification
 import com.twohands.notification_service.application.email.SendEmailNotificationOutcome;
 import com.twohands.notification_service.application.email.SendEmailNotificationResult;
 import com.twohands.notification_service.application.email.SendEmailNotificationUseCase;
-import com.twohands.notification_service.application.handler.EmailNotificationEventHandler;
+import com.twohands.notification_service.application.handler.EmailVerificationNotificationEventHandler;
 import com.twohands.notification_service.application.handler.HandlerOutcome;
 import com.twohands.notification_service.application.handler.NotificationRecipientResolver;
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class EmailNotificationEventHandlerTest {
+class EmailVerificationNotificationEventHandlerTest {
 
     private static final UUID EVENT_ID = UUID.randomUUID();
     private static final UUID RECIPIENT_ID = UUID.randomUUID();
@@ -39,18 +39,17 @@ class EmailNotificationEventHandlerTest {
     @Mock
     private SendEmailNotificationUseCase sendEmailNotificationUseCase;
 
-    private EmailNotificationEventHandler handler;
+    private EmailVerificationNotificationEventHandler handler;
 
     @BeforeEach
     void setUp() {
-        handler = new EmailNotificationEventHandler(recipientResolver, sendEmailNotificationUseCase);
+        handler = new EmailVerificationNotificationEventHandler(recipientResolver, sendEmailNotificationUseCase);
     }
 
     @Test
-    void supports_emailEligibleEventsExceptDedicatedHandlers() {
-        assertFalse(handler.supports("EMAIL_VERIFICATION_REQUESTED"));
-        assertTrue(handler.supports("ORDER_CREATED"));
-        assertFalse(handler.supports("USER_CREATED"));
+    void supports_onlyEmailVerificationRequested() {
+        assertTrue(handler.supports("EMAIL_VERIFICATION_REQUESTED"));
+        assertFalse(handler.supports("PASSWORD_RESET_REQUESTED"));
         assertFalse(handler.supports("POST_LIKED"));
     }
 
@@ -60,20 +59,19 @@ class EmailNotificationEventHandlerTest {
         when(sendEmailNotificationUseCase.execute(any(SendEmailNotificationCommand.class)))
                 .thenReturn(SendEmailNotificationResult.sent("msg-1"));
 
-        var result = handler.handle(sampleEvent("ORDER_CREATED"));
+        var result = handler.handle(sampleEvent());
 
         assertEquals(HandlerOutcome.SUCCESS, result.outcome());
     }
 
     @Test
-    void handle_returnsNoOpWhenEmailSkipped() {
-        when(recipientResolver.resolve(any())).thenReturn(List.of(RECIPIENT_ID));
-        when(sendEmailNotificationUseCase.execute(any(SendEmailNotificationCommand.class)))
-                .thenReturn(SendEmailNotificationResult.skipped("Email integration is disabled."));
+    void handle_returnsFailureWhenRecipientMissing() {
+        when(recipientResolver.resolve(any())).thenReturn(List.of());
 
-        var result = handler.handle(sampleEvent("ORDER_CREATED"));
+        var result = handler.handle(sampleEvent());
 
-        assertEquals(HandlerOutcome.NO_OP, result.outcome());
+        assertEquals(HandlerOutcome.FAILURE, result.outcome());
+        assertEquals(NotificationFailurePolicy.RETRYABLE, result.failurePolicy());
     }
 
     @Test
@@ -82,27 +80,32 @@ class EmailNotificationEventHandlerTest {
         when(sendEmailNotificationUseCase.execute(any(SendEmailNotificationCommand.class)))
                 .thenReturn(SendEmailNotificationResult.failed(
                         NotificationFailurePolicy.PERMANENT,
-                        "Missing required template variable: order_code"
+                        "Missing required template variable: verification_link"
                 ));
 
-        var result = handler.handle(sampleEvent("ORDER_CREATED"));
+        var result = handler.handle(sampleEvent());
 
         assertEquals(HandlerOutcome.FAILURE, result.outcome());
         assertEquals(NotificationFailurePolicy.PERMANENT, result.failurePolicy());
     }
 
-    private NotificationEvent sampleEvent(String eventType) {
+    private NotificationEvent sampleEvent() {
         return new NotificationEvent(
                 EVENT_ID,
                 UUID.randomUUID(),
                 null,
-                eventType,
+                "EMAIL_VERIFICATION_REQUESTED",
                 NotificationSourceService.AUTH,
                 null,
                 null,
                 null,
                 RECIPIENT_ID,
-                "{}",
+                """
+                        {
+                          "recipient_email": "user@example.com",
+                          "verification_link": "https://2hands.vn/verify-email?token=abc"
+                        }
+                        """,
                 NotificationEventStatus.PROCESSING,
                 0,
                 5,

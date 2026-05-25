@@ -2,9 +2,11 @@ package com.twohands.notification_service.unit.application.ingest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.twohands.notification_service.application.idempotency.EnsureNotificationEventIdempotencyUseCase;
+import com.twohands.notification_service.application.email.EmailVerificationNotificationPayloadNormalizer;
 import com.twohands.notification_service.application.ingest.JacksonNotificationEventPayloadSanitizer;
 import com.twohands.notification_service.application.ingest.NotificationEventIngestCommand;
 import com.twohands.notification_service.application.ingest.StoreNotificationEventUseCase;
+import com.twohands.notification_service.config.NotificationEmailProperties;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventPayloadSanitizer;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventRepository;
@@ -48,8 +50,13 @@ class StoreNotificationEventUseCaseTest {
         payloadSanitizer = new JacksonNotificationEventPayloadSanitizer(new ObjectMapper());
         EnsureNotificationEventIdempotencyUseCase ensureIdempotency =
                 new EnsureNotificationEventIdempotencyUseCase(notificationEventRepository);
+        NotificationEmailProperties emailProperties = new NotificationEmailProperties();
+        emailProperties.setVerificationLinkBaseUrl("https://2hands.vn/verify-email");
+        EmailVerificationNotificationPayloadNormalizer verificationNormalizer =
+                new EmailVerificationNotificationPayloadNormalizer(new ObjectMapper(), emailProperties);
         useCase = new StoreNotificationEventUseCase(
                 notificationEventRepository,
+                verificationNormalizer,
                 payloadSanitizer,
                 ensureIdempotency
         );
@@ -205,6 +212,65 @@ class StoreNotificationEventUseCaseTest {
 
         assertEquals(ErrorCode.VALIDATION_ERROR, ex.getErrorCode());
         verify(notificationEventRepository, never()).save(any());
+    }
+
+    @Test
+    void execute_normalizesEmailVerificationPayloadBeforeSanitizing() {
+        UUID sourceEventId = UUID.randomUUID();
+        UUID savedId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        NotificationEventIngestCommand command = new NotificationEventIngestCommand(
+                sourceEventId,
+                null,
+                "EMAIL_VERIFICATION_REQUESTED",
+                NotificationSourceService.AUTH,
+                null,
+                null,
+                null,
+                userId,
+                """
+                        {
+                          "user_id":"%s",
+                          "email":"user@example.com",
+                          "verification_token":"secret-token-value"
+                        }
+                        """.formatted(userId)
+        );
+
+        when(notificationEventRepository.findBySourceServiceAndSourceEventId(NotificationSourceService.AUTH, sourceEventId))
+                .thenReturn(Optional.empty());
+        when(notificationEventRepository.save(any(NotificationEvent.class))).thenAnswer(invocation -> {
+            NotificationEvent event = invocation.getArgument(0);
+            return new NotificationEvent(
+                    savedId,
+                    event.sourceEventId(),
+                    event.eventKey(),
+                    event.eventType(),
+                    event.sourceService(),
+                    event.aggregateType(),
+                    event.aggregateId(),
+                    event.actorId(),
+                    event.recipientUserId(),
+                    event.payload(),
+                    event.status(),
+                    event.retryCount(),
+                    event.maxRetryCount(),
+                    event.lastError(),
+                    event.lockedAt(),
+                    event.lockedBy(),
+                    event.createdAt(),
+                    event.processedAt()
+            );
+        });
+
+        useCase.execute(command);
+
+        ArgumentCaptor<NotificationEvent> captor = ArgumentCaptor.forClass(NotificationEvent.class);
+        verify(notificationEventRepository).save(captor.capture());
+        String storedPayload = captor.getValue().payload();
+        assertTrue(storedPayload.contains("recipient_email"));
+        assertTrue(storedPayload.contains("verification_link"));
+        assertFalse(storedPayload.contains("\"verification_token\""));
     }
 
     @Test
