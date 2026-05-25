@@ -2,7 +2,10 @@ package com.twohands.notification_service.application.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.notification_service.domain.admin.SystemAnnouncementDismissibleMetadataPolicy;
 import com.twohands.notification_service.domain.admin.SystemAnnouncementFanOutContext;
+import com.twohands.notification_service.domain.admin.SystemAnnouncementNotificationMetadataPolicy;
+import com.twohands.notification_service.domain.admin.SystemAnnouncementPinnedMetadataPolicy;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import org.springframework.stereotype.Component;
 
@@ -49,9 +52,10 @@ public class SystemAnnouncementFanOutPayloadParser {
         if (severity == null || severity.isBlank()) {
             throw new IllegalArgumentException("severity is required for SYSTEM_ANNOUNCEMENT_SENT event.");
         }
+        String normalizedSeverity = SystemAnnouncementNotificationMetadataPolicy.normalizeSeverity(severity);
 
-        boolean isPinned = booleanField(payload, "is_pinned", false);
-        boolean dismissible = booleanField(payload, "dismissible", false);
+        boolean isPinned = SystemAnnouncementPinnedMetadataPolicy.resolveIsPinned(payload);
+        boolean dismissible = SystemAnnouncementDismissibleMetadataPolicy.resolveDismissible(payload);
         List<UUID> explicitRecipients = parseRecipientUserIds(payload);
         String targetAudience = textField(payload, "target_audience");
 
@@ -59,7 +63,7 @@ public class SystemAnnouncementFanOutPayloadParser {
                 announcementId.trim(),
                 title.trim(),
                 content.trim(),
-                severity.trim(),
+                normalizedSeverity,
                 isPinned,
                 dismissible,
                 explicitRecipients,
@@ -112,24 +116,6 @@ public class SystemAnnouncementFanOutPayloadParser {
         } catch (IllegalArgumentException ex) {
             return null;
         }
-    }
-
-    private boolean booleanField(JsonNode payload, String field, boolean defaultValue) {
-        JsonNode node = payload.get(field);
-        if (node == null || node.isNull()) {
-            return defaultValue;
-        }
-        if (node.isBoolean()) {
-            return node.asBoolean();
-        }
-        if (node.isValueNode()) {
-            String value = node.asText();
-            if (value == null || value.isBlank()) {
-                return defaultValue;
-            }
-            return Boolean.parseBoolean(value.trim());
-        }
-        return defaultValue;
     }
 
     private String textField(JsonNode payload, String field) {

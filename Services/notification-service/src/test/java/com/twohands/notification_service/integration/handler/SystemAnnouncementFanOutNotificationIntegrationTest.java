@@ -57,7 +57,7 @@ class SystemAnnouncementFanOutNotificationIntegrationTest {
         UUID recipientOne = UUID.randomUUID();
         UUID recipientTwo = UUID.randomUUID();
         UUID announcementId = UUID.randomUUID();
-        UUID eventId = ingestAnnouncementEvent(announcementId, recipientOne, recipientTwo, "INFO");
+        UUID eventId = ingestAnnouncementEvent(announcementId, recipientOne, recipientTwo, "INFO", true);
 
         var result = processNotificationEventUseCase.execute(new ProcessNotificationEventCommand(eventId));
 
@@ -76,9 +76,21 @@ class SystemAnnouncementFanOutNotificationIntegrationTest {
     }
 
     @Test
+    void process_storesNonPinnedMetadataWhenIsPinnedFalse() {
+        UUID recipientId = UUID.randomUUID();
+        UUID announcementId = UUID.randomUUID();
+        UUID eventId = ingestAnnouncementEvent(announcementId, recipientId, null, "INFO", false);
+
+        processNotificationEventUseCase.execute(new ProcessNotificationEventCommand(eventId));
+
+        String metadata = queryMetadata(eventId, recipientId);
+        assertTrue(metadata.contains("\"is_pinned\":false"));
+    }
+
+    @Test
     void process_marksEventFailedWhenRecipientsMissing() {
         UUID announcementId = UUID.randomUUID();
-        UUID eventId = ingestAnnouncementEvent(announcementId, null, null, "INFO");
+        UUID eventId = ingestAnnouncementEvent(announcementId, null, null, "INFO", false);
 
         var result = processNotificationEventUseCase.execute(new ProcessNotificationEventCommand(eventId));
 
@@ -90,7 +102,7 @@ class SystemAnnouncementFanOutNotificationIntegrationTest {
     void process_isIdempotentForDuplicateFanOut() {
         UUID recipientId = UUID.randomUUID();
         UUID announcementId = UUID.randomUUID();
-        UUID eventId = ingestAnnouncementEvent(announcementId, recipientId, null, "WARNING");
+        UUID eventId = ingestAnnouncementEvent(announcementId, recipientId, null, "WARNING", true);
 
         processNotificationEventUseCase.execute(new ProcessNotificationEventCommand(eventId));
         notificationEventRepository.save(reopenForReprocess(eventId));
@@ -124,7 +136,8 @@ class SystemAnnouncementFanOutNotificationIntegrationTest {
             UUID announcementId,
             UUID recipientOne,
             UUID recipientTwo,
-            String severity
+            String severity,
+            boolean isPinned
     ) {
         String recipientsJson = buildRecipientsJson(recipientOne, recipientTwo);
         var ingestResult = storeNotificationEventUseCase.execute(new NotificationEventIngestCommand(
@@ -142,7 +155,7 @@ class SystemAnnouncementFanOutNotificationIntegrationTest {
                           "title":"Platform update",
                           "content":"New features are live.",
                           "severity":"%s",
-                          "is_pinned":true,
+                          "is_pinned":%s,
                           "dismissible":true,
                           "created_by":"%s",
                           "status":"SENT"%s
@@ -150,6 +163,7 @@ class SystemAnnouncementFanOutNotificationIntegrationTest {
                         """.formatted(
                         announcementId,
                         severity,
+                        isPinned,
                         UUID.randomUUID(),
                         recipientsJson
                 )

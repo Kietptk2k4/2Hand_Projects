@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -70,6 +71,44 @@ class SystemAnnouncementFanOutPayloadParserTest {
                           "severity":"INFO"
                         }
                         """))
+        );
+    }
+
+    @Test
+    void parse_defaultsIsPinnedFalseWhenMissing() {
+        UUID announcementId = UUID.randomUUID();
+
+        SystemAnnouncementFanOutContext context = parser.parse(sampleEvent(
+                "ANNOUNCEMENT",
+                announcementId.toString(),
+                """
+                        {
+                          "announcement_id":"%s",
+                          "title":"Info",
+                          "content":"Body",
+                          "severity":"INFO",
+                          "recipient_user_ids":["%s"]
+                        }
+                        """.formatted(announcementId, UUID.randomUUID())
+        ));
+
+        assertFalse(context.isPinned());
+    }
+
+    @Test
+    void parse_throwsWhenIsPinnedShapeInvalid() {
+        UUID announcementId = UUID.randomUUID();
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> parser.parse(sampleEvent("ANNOUNCEMENT", announcementId.toString(), """
+                        {
+                          "announcement_id":"%s",
+                          "title":"T",
+                          "content":"C",
+                          "severity":"INFO",
+                          "is_pinned":{"invalid":true}
+                        }
+                        """.formatted(announcementId)))
         );
     }
 

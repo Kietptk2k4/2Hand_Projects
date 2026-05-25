@@ -1,5 +1,6 @@
 package com.twohands.notification_service.application.read;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.twohands.notification_service.domain.common.PageResult;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventPayloadSanitizer;
 import com.twohands.notification_service.domain.usernotification.UserNotification;
@@ -21,13 +22,16 @@ public class ViewUserNotificationsUseCase {
 
     private final UserNotificationRepository userNotificationRepository;
     private final NotificationEventPayloadSanitizer metadataSanitizer;
+    private final ObjectMapper objectMapper;
 
     public ViewUserNotificationsUseCase(
             UserNotificationRepository userNotificationRepository,
-            NotificationEventPayloadSanitizer metadataSanitizer
+            NotificationEventPayloadSanitizer metadataSanitizer,
+            ObjectMapper objectMapper
     ) {
         this.userNotificationRepository = userNotificationRepository;
         this.metadataSanitizer = metadataSanitizer;
+        this.objectMapper = objectMapper;
     }
 
     public ViewUserNotificationsResult execute(ViewUserNotificationsCommand command) {
@@ -64,7 +68,12 @@ public class ViewUserNotificationsUseCase {
                 notification.content(),
                 notification.referenceType(),
                 notification.referenceId(),
-                metadataSanitizer.sanitize(notification.metadata()),
+                UserNotificationMetadataPresenter.present(
+                        objectMapper,
+                        metadataSanitizer,
+                        notification.referenceType(),
+                        notification.metadata()
+                ),
                 notification.read(),
                 notification.readAt(),
                 notification.createdAt()

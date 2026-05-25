@@ -39,10 +39,32 @@ public class AdminSystemAnnouncementPayloadNormalizer {
             }
             ObjectNode normalized = ((ObjectNode) root).deepCopy();
             copyTextField(normalized, "id", "announcement_id");
+            copyBooleanField(normalized, "pinned", "is_pinned");
             STRIP_FIELDS.forEach(normalized::remove);
+            normalized.remove("pinned");
             return objectMapper.writeValueAsString(normalized);
         } catch (JsonProcessingException ex) {
             return rawPayload;
+        }
+    }
+
+    private static void copyBooleanField(ObjectNode payload, String sourceField, String targetField) {
+        if (payload.has(targetField) && payload.get(targetField).isBoolean()) {
+            return;
+        }
+        JsonNode source = payload.get(sourceField);
+        if (source == null || source.isNull()) {
+            return;
+        }
+        if (source.isBoolean()) {
+            payload.put(targetField, source.asBoolean());
+            return;
+        }
+        if (source.isValueNode()) {
+            String value = source.asText();
+            if (value != null && !value.isBlank()) {
+                payload.put(targetField, Boolean.parseBoolean(value.trim()));
+            }
         }
     }
 

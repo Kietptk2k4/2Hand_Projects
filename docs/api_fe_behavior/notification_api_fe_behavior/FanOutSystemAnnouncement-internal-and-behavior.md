@@ -16,7 +16,7 @@ Fan-out thông báo in-app (và push khi `severity=CRITICAL`) cho danh sách use
 3. **Recipients:** `recipient_user_ids` trong payload, hoặc `target_audience` qua `SystemAnnouncementAudienceUserProvider` (MVP: provider chưa nối Auth → retryable khi `ALL_USERS` không resolve được user).
 4. **Fan-out:** `FanOutSystemAnnouncementUseCase` tạo `user_notifications` theo batch (`notification.system-announcement.fan-out-batch-size`).
 5. **Reference:** `SYSTEM_ANNOUNCEMENT/{announcement_id}`.
-6. **Metadata:** `announcement_id`, `severity`, `is_pinned`, `dismissible`.
+6. **Metadata:** `announcement_id`, `severity`, `is_pinned`, `dismissible` (chi tiết pin: `PinSystemAnnouncementNotification-internal-and-behavior.md`).
 
 ## 4. Admin Payload (producer)
 

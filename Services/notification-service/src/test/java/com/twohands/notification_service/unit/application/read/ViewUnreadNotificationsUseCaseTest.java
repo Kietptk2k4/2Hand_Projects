@@ -41,7 +41,11 @@ class ViewUnreadNotificationsUseCaseTest {
 
     @BeforeEach
     void setUp() {
-        useCase = new ViewUnreadNotificationsUseCase(userNotificationRepository, metadataSanitizer);
+        useCase = new ViewUnreadNotificationsUseCase(
+                userNotificationRepository,
+                metadataSanitizer,
+                new com.fasterxml.jackson.databind.ObjectMapper()
+        );
     }
 
     @Test

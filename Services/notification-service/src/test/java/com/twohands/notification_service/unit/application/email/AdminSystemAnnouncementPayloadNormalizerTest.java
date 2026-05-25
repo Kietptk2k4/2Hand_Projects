@@ -20,6 +20,25 @@ class AdminSystemAnnouncementPayloadNormalizerTest {
     }
 
     @Test
+    void normalizeForStorage_mapsPinnedAliasToIsPinned() {
+        String normalized = normalizer.normalizeForStorage(
+                "SYSTEM_ANNOUNCEMENT_SENT",
+                """
+                        {
+                          "announcement_id":"ann-1",
+                          "title":"T",
+                          "content":"C",
+                          "severity":"INFO",
+                          "pinned":true
+                        }
+                        """
+        );
+
+        assertTrue(normalized.contains("\"is_pinned\":true"));
+        assertFalse(normalized.contains("\"pinned\""));
+    }
+
+    @Test
     void normalizeForStorage_mapsIdAndStripsInternalFields() {
         UUID announcementId = UUID.randomUUID();
         UUID createdBy = UUID.randomUUID();
