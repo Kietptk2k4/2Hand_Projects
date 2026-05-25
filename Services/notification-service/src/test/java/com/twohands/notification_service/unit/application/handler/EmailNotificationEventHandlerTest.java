@@ -52,7 +52,7 @@ class EmailNotificationEventHandlerTest {
         assertFalse(handler.supports("PASSWORD_RESET_REQUESTED"));
         assertFalse(handler.supports("USER_SUSPENDED"));
         assertFalse(handler.supports("USER_RESTRICTED"));
-        assertTrue(handler.supports("ORDER_CREATED"));
+        assertFalse(handler.supports("ORDER_CREATED"));
         assertTrue(handler.supports("SHOP_SUSPENDED"));
         assertFalse(handler.supports("USER_CREATED"));
         assertFalse(handler.supports("POST_LIKED"));

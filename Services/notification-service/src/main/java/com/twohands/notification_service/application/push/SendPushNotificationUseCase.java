@@ -84,7 +84,10 @@ public class SendPushNotificationUseCase {
             return SendPushNotificationResult.skipped("FCM integration is disabled.");
         }
 
-        PushNotificationTemplate template = PushNotificationTemplatePolicy.resolve(command.eventType())
+        PushNotificationTemplate template = PushNotificationTemplatePolicy.resolve(
+                        command.eventType(),
+                        command.templateVariant()
+                )
                 .orElse(null);
         if (template == null) {
             return SendPushNotificationResult.failed(

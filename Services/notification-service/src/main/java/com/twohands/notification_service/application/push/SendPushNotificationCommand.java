@@ -7,6 +7,16 @@ public record SendPushNotificationCommand(
         String eventType,
         String referenceType,
         String referenceId,
-        UUID notificationEventId
+        UUID notificationEventId,
+        String templateVariant
 ) {
+    public SendPushNotificationCommand(
+            UUID recipientUserId,
+            String eventType,
+            String referenceType,
+            String referenceId,
+            UUID notificationEventId
+    ) {
+        this(recipientUserId, eventType, referenceType, referenceId, notificationEventId, null);
+    }
 }

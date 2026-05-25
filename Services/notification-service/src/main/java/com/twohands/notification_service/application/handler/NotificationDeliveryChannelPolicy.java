@@ -16,6 +16,11 @@ public class NotificationDeliveryChannelPolicy {
             "COMMENT_LIKED"
     );
 
+    private static final Set<String> DEDICATED_COMMERCE_NOTIFICATION_EVENTS = Set.of(
+            "ORDER_CREATED",
+            "COMMERCE_ORDER_CREATED"
+    );
+
     private static final Set<String> SOCIAL_IN_APP_EVENTS = Set.of();
 
     public boolean allowsInApp(String eventType) {
@@ -30,6 +35,10 @@ public class NotificationDeliveryChannelPolicy {
 
     public boolean isDedicatedSocialNotificationEvent(String eventType) {
         return DEDICATED_SOCIAL_NOTIFICATION_EVENTS.contains(eventType);
+    }
+
+    public boolean isDedicatedCommerceNotificationEvent(String eventType) {
+        return DEDICATED_COMMERCE_NOTIFICATION_EVENTS.contains(eventType);
     }
 
     public boolean isKnownEventType(String eventType) {

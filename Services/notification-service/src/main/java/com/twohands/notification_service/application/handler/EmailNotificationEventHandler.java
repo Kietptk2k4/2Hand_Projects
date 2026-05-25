@@ -35,7 +35,9 @@ public class EmailNotificationEventHandler implements NotificationEventHandler {
                 && !"EMAIL_VERIFICATION_REQUESTED".equals(eventType)
                 && !"PASSWORD_RESET_REQUESTED".equals(eventType)
                 && !"USER_SUSPENDED".equals(eventType)
-                && !"USER_RESTRICTED".equals(eventType);
+                && !"USER_RESTRICTED".equals(eventType)
+                && !"ORDER_CREATED".equals(eventType)
+                && !"COMMERCE_ORDER_CREATED".equals(eventType);
     }
 
     @Override

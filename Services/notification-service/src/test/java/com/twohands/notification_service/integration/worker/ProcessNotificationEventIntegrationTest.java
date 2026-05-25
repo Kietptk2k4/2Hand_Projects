@@ -78,7 +78,7 @@ class ProcessNotificationEventIntegrationTest {
                 eventId,
                 UUID.randomUUID(),
                 null,
-                "COMMERCE_ORDER_CREATED",
+                "UNKNOWN_EVENT_TYPE",
                 NotificationSourceService.COMMERCE,
                 null,
                 null,

@@ -7,9 +7,21 @@ public final class PushNotificationTemplatePolicy {
     private PushNotificationTemplatePolicy() {
     }
 
+    public static final String SELLER_TEMPLATE_VARIANT = "seller";
+
     public static Optional<PushNotificationTemplate> resolve(String eventType) {
+        return resolve(eventType, null);
+    }
+
+    public static Optional<PushNotificationTemplate> resolve(String eventType, String templateVariant) {
         if (eventType == null || eventType.isBlank()) {
             return Optional.empty();
+        }
+        if ("ORDER_CREATED".equals(eventType) && SELLER_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new PushNotificationTemplate(
+                    "New order",
+                    "You have received a new order."
+            ));
         }
         return Optional.ofNullable(switch (eventType) {
             case "PASSWORD_CHANGED" -> new PushNotificationTemplate("Password changed", "Your account password was changed.");

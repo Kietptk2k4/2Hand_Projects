@@ -29,7 +29,10 @@ public class CreateInAppNotificationUseCase {
     public CreateInAppNotificationResult execute(CreateInAppNotificationCommand command) {
         validateCommand(command);
 
-        InAppNotificationTemplate template = InAppNotificationTemplatePolicy.resolve(command.eventType())
+        InAppNotificationTemplate template = InAppNotificationTemplatePolicy.resolve(
+                        command.eventType(),
+                        command.templateVariant()
+                )
                 .orElseThrow(() -> new AppException(
                         ErrorCode.UNKNOWN_EVENT_TYPE,
                         "In-app notification template not configured",
