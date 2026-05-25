@@ -8,7 +8,7 @@ Không có HTTP API public — use case được gọi từ worker/handler.
 
 ## 2. Trigger
 
-- `EmailNotificationEventHandler` xử lý event có `NotificationDefaultChannelPolicy.email = true` (trừ `USER_CREATED` — handler riêng).
+- `EmailNotificationEventHandler` xử lý event có `NotificationDefaultChannelPolicy.email = true` (trừ handler riêng: `USER_CREATED`, `EMAIL_VERIFICATION_REQUESTED`, `PASSWORD_RESET_REQUESTED`, `USER_SUSPENDED`, `USER_RESTRICTED`).
 - Hoặc gọi trực tiếp `SendEmailNotificationUseCase` từ handler chuyên biệt (Phase 7/8).
 
 ## 3. Flow

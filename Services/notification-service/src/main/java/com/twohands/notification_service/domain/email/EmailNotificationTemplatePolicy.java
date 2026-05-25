@@ -84,6 +84,7 @@ public final class EmailNotificationTemplatePolicy {
                                     Hello,
 
                                     Your account has been suspended due to a policy enforcement action.
+                                    {{enforcement_reason_line}}{{enforcement_expires_at_line}}
                                     Contact support if you need assistance.
                                     """,
                             Set.of("recipient_email")
@@ -97,6 +98,7 @@ public final class EmailNotificationTemplatePolicy {
                                     Hello,
 
                                     Your account access has been restricted due to a policy enforcement action.
+                                    {{enforcement_reason_line}}{{enforcement_expires_at_line}}
                                     Contact support if you need assistance.
                                     """,
                             Set.of("recipient_email")

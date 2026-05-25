@@ -119,6 +119,14 @@ public class DomainEventMessageParser {
         if (recipient != null) {
             return recipient;
         }
+        recipient = firstUuid(root, payload, "target_user_id");
+        if (recipient != null) {
+            return recipient;
+        }
+        recipient = firstUuid(root, payload, "user_id");
+        if (recipient != null) {
+            return recipient;
+        }
         JsonNode recipients = root.get("recipient_user_ids");
         if (recipients == null || recipients.isNull()) {
             recipients = payload.get("recipient_user_ids");

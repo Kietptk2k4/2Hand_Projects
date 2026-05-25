@@ -60,6 +60,27 @@ public final class EmailNotificationVariablesPolicy {
                 rawValues.get("buyer_name")
         ));
 
+        String enforcementReason = AccountEnforcementEmailReasonPolicy.resolveUserFacingReason(
+                firstNonBlank(
+                        rawValues.get("enforcement_reason"),
+                        rawValues.get("description"),
+                        rawValues.get("user_reason"),
+                        rawValues.get("reason")
+                ),
+                rawValues.get("reason_code")
+        );
+        variables.put(
+                "enforcement_reason_line",
+                AccountEnforcementEmailReasonPolicy.formatReasonLine(enforcementReason)
+        );
+        variables.put(
+                "enforcement_expires_at_line",
+                AccountEnforcementEmailReasonPolicy.formatExpiresAtLine(firstNonBlank(
+                        rawValues.get("enforcement_expires_at"),
+                        rawValues.get("expires_at")
+                ))
+        );
+
         return variables;
     }
 

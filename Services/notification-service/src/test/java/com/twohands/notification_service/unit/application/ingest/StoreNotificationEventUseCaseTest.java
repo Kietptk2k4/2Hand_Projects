@@ -2,6 +2,7 @@ package com.twohands.notification_service.unit.application.ingest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.twohands.notification_service.application.idempotency.EnsureNotificationEventIdempotencyUseCase;
+import com.twohands.notification_service.application.email.AccountEnforcementEmailPayloadNormalizer;
 import com.twohands.notification_service.application.email.AuthSecurityEmailNotificationPayloadNormalizer;
 import com.twohands.notification_service.application.ingest.JacksonNotificationEventPayloadSanitizer;
 import com.twohands.notification_service.application.ingest.NotificationEventIngestCommand;
@@ -55,9 +56,12 @@ class StoreNotificationEventUseCaseTest {
         emailProperties.setPasswordResetLinkBaseUrl("https://2hands.vn/reset-password");
         AuthSecurityEmailNotificationPayloadNormalizer authSecurityEmailNormalizer =
                 new AuthSecurityEmailNotificationPayloadNormalizer(new ObjectMapper(), emailProperties);
+        AccountEnforcementEmailPayloadNormalizer accountEnforcementNormalizer =
+                new AccountEnforcementEmailPayloadNormalizer(new ObjectMapper());
         useCase = new StoreNotificationEventUseCase(
                 notificationEventRepository,
                 authSecurityEmailNormalizer,
+                accountEnforcementNormalizer,
                 payloadSanitizer,
                 ensureIdempotency
         );

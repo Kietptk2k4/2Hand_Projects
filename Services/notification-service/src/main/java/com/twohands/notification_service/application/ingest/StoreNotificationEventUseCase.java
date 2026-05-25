@@ -1,5 +1,6 @@
 package com.twohands.notification_service.application.ingest;
 
+import com.twohands.notification_service.application.email.AccountEnforcementEmailPayloadNormalizer;
 import com.twohands.notification_service.application.email.AuthSecurityEmailNotificationPayloadNormalizer;
 import com.twohands.notification_service.application.idempotency.EnsureNotificationEventIdempotencyUseCase;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
@@ -25,17 +26,20 @@ public class StoreNotificationEventUseCase {
 
     private final NotificationEventRepository notificationEventRepository;
     private final AuthSecurityEmailNotificationPayloadNormalizer authSecurityEmailPayloadNormalizer;
+    private final AccountEnforcementEmailPayloadNormalizer accountEnforcementEmailPayloadNormalizer;
     private final NotificationEventPayloadSanitizer payloadSanitizer;
     private final EnsureNotificationEventIdempotencyUseCase ensureNotificationEventIdempotencyUseCase;
 
     public StoreNotificationEventUseCase(
             NotificationEventRepository notificationEventRepository,
             AuthSecurityEmailNotificationPayloadNormalizer authSecurityEmailPayloadNormalizer,
+            AccountEnforcementEmailPayloadNormalizer accountEnforcementEmailPayloadNormalizer,
             NotificationEventPayloadSanitizer payloadSanitizer,
             EnsureNotificationEventIdempotencyUseCase ensureNotificationEventIdempotencyUseCase
     ) {
         this.notificationEventRepository = notificationEventRepository;
         this.authSecurityEmailPayloadNormalizer = authSecurityEmailPayloadNormalizer;
+        this.accountEnforcementEmailPayloadNormalizer = accountEnforcementEmailPayloadNormalizer;
         this.payloadSanitizer = payloadSanitizer;
         this.ensureNotificationEventIdempotencyUseCase = ensureNotificationEventIdempotencyUseCase;
     }
@@ -48,6 +52,10 @@ public class StoreNotificationEventUseCase {
         String normalizedPayload = authSecurityEmailPayloadNormalizer.normalizeForStorage(
                 command.eventType(),
                 command.payload()
+        );
+        normalizedPayload = accountEnforcementEmailPayloadNormalizer.normalizeForStorage(
+                command.eventType(),
+                normalizedPayload
         );
         String sanitizedPayload = payloadSanitizer.sanitize(normalizedPayload);
 

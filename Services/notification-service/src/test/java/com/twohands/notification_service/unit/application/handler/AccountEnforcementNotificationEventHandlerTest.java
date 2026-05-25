@@ -4,7 +4,7 @@ import com.twohands.notification_service.application.email.SendEmailNotification
 import com.twohands.notification_service.application.email.SendEmailNotificationOutcome;
 import com.twohands.notification_service.application.email.SendEmailNotificationResult;
 import com.twohands.notification_service.application.email.SendEmailNotificationUseCase;
-import com.twohands.notification_service.application.handler.EmailNotificationEventHandler;
+import com.twohands.notification_service.application.handler.AccountEnforcementNotificationEventHandler;
 import com.twohands.notification_service.application.handler.HandlerOutcome;
 import com.twohands.notification_service.application.handler.NotificationRecipientResolver;
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class EmailNotificationEventHandlerTest {
+class AccountEnforcementNotificationEventHandlerTest {
 
     private static final UUID EVENT_ID = UUID.randomUUID();
     private static final UUID RECIPIENT_ID = UUID.randomUUID();
@@ -39,22 +39,18 @@ class EmailNotificationEventHandlerTest {
     @Mock
     private SendEmailNotificationUseCase sendEmailNotificationUseCase;
 
-    private EmailNotificationEventHandler handler;
+    private AccountEnforcementNotificationEventHandler handler;
 
     @BeforeEach
     void setUp() {
-        handler = new EmailNotificationEventHandler(recipientResolver, sendEmailNotificationUseCase);
+        handler = new AccountEnforcementNotificationEventHandler(recipientResolver, sendEmailNotificationUseCase);
     }
 
     @Test
-    void supports_emailEligibleEventsExceptDedicatedHandlers() {
-        assertFalse(handler.supports("EMAIL_VERIFICATION_REQUESTED"));
-        assertFalse(handler.supports("PASSWORD_RESET_REQUESTED"));
-        assertFalse(handler.supports("USER_SUSPENDED"));
-        assertFalse(handler.supports("USER_RESTRICTED"));
-        assertTrue(handler.supports("ORDER_CREATED"));
-        assertTrue(handler.supports("SHOP_SUSPENDED"));
-        assertFalse(handler.supports("USER_CREATED"));
+    void supports_accountEnforcementEmailEventsOnly() {
+        assertTrue(handler.supports("USER_SUSPENDED"));
+        assertTrue(handler.supports("USER_RESTRICTED"));
+        assertFalse(handler.supports("SHOP_SUSPENDED"));
         assertFalse(handler.supports("POST_LIKED"));
     }
 
@@ -64,35 +60,19 @@ class EmailNotificationEventHandlerTest {
         when(sendEmailNotificationUseCase.execute(any(SendEmailNotificationCommand.class)))
                 .thenReturn(SendEmailNotificationResult.sent("msg-1"));
 
-        var result = handler.handle(sampleEvent("ORDER_CREATED"));
+        var result = handler.handle(sampleEvent("USER_SUSPENDED"));
 
         assertEquals(HandlerOutcome.SUCCESS, result.outcome());
     }
 
     @Test
-    void handle_returnsNoOpWhenEmailSkipped() {
-        when(recipientResolver.resolve(any())).thenReturn(List.of(RECIPIENT_ID));
-        when(sendEmailNotificationUseCase.execute(any(SendEmailNotificationCommand.class)))
-                .thenReturn(SendEmailNotificationResult.skipped("Email integration is disabled."));
+    void handle_returnsFailureWhenRecipientMissing() {
+        when(recipientResolver.resolve(any())).thenReturn(List.of());
 
-        var result = handler.handle(sampleEvent("ORDER_CREATED"));
-
-        assertEquals(HandlerOutcome.NO_OP, result.outcome());
-    }
-
-    @Test
-    void handle_returnsFailureWhenEmailSendFails() {
-        when(recipientResolver.resolve(any())).thenReturn(List.of(RECIPIENT_ID));
-        when(sendEmailNotificationUseCase.execute(any(SendEmailNotificationCommand.class)))
-                .thenReturn(SendEmailNotificationResult.failed(
-                        NotificationFailurePolicy.PERMANENT,
-                        "Missing required template variable: order_code"
-                ));
-
-        var result = handler.handle(sampleEvent("ORDER_CREATED"));
+        var result = handler.handle(sampleEvent("USER_RESTRICTED"));
 
         assertEquals(HandlerOutcome.FAILURE, result.outcome());
-        assertEquals(NotificationFailurePolicy.PERMANENT, result.failurePolicy());
+        assertEquals(NotificationFailurePolicy.RETRYABLE, result.failurePolicy());
     }
 
     private NotificationEvent sampleEvent(String eventType) {
@@ -101,12 +81,19 @@ class EmailNotificationEventHandlerTest {
                 UUID.randomUUID(),
                 null,
                 eventType,
-                NotificationSourceService.AUTH,
+                NotificationSourceService.ADMIN,
                 null,
                 null,
                 null,
                 RECIPIENT_ID,
-                "{}",
+                """
+                        {
+                          "target_user_id": "%s",
+                          "recipient_email": "user@example.com",
+                          "enforcement_reason": "Repeated policy violations",
+                          "enforcement_expires_at": "2026-12-31T00:00:00Z"
+                        }
+                        """.formatted(RECIPIENT_ID),
                 NotificationEventStatus.PROCESSING,
                 0,
                 5,

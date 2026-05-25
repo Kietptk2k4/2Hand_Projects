@@ -31,6 +31,7 @@ public class NotificationRecipientResolver {
             addRecipient(recipients, payload, "recipient_user_id");
             addRecipient(recipients, payload, "followed_user_id");
             addRecipient(recipients, payload, "user_id");
+            addRecipient(recipients, payload, "target_user_id");
             addRecipient(recipients, payload, "post_author_id");
             addRecipient(recipients, payload, "post_owner_id");
             addRecipient(recipients, payload, "parent_comment_author_id");
