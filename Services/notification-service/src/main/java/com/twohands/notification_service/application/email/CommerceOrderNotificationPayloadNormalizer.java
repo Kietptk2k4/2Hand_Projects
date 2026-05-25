@@ -6,10 +6,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 @Component
 public class CommerceOrderNotificationPayloadNormalizer {
 
-    private static final String ORDER_CREATED = "ORDER_CREATED";
+    private static final Set<String> SUPPORTED_EVENT_TYPES = Set.of(
+            "ORDER_CREATED",
+            "COMMERCE_ORDER_CREATED",
+            "PAYMENT_SUCCESS",
+            "COMMERCE_PAYMENT_PAID"
+    );
+
+    private static final Set<String> PAYMENT_SECRET_FIELDS = Set.of(
+            "provider_secret",
+            "raw_webhook",
+            "webhook_payload",
+            "client_secret",
+            "card_number",
+            "card_token",
+            "cvv",
+            "stripe_payment_intent_secret"
+    );
 
     private final ObjectMapper objectMapper;
 
@@ -18,7 +36,7 @@ public class CommerceOrderNotificationPayloadNormalizer {
     }
 
     public String normalizeForStorage(String eventType, String rawPayload) {
-        if (!ORDER_CREATED.equals(eventType) || rawPayload == null || rawPayload.isBlank()) {
+        if (!SUPPORTED_EVENT_TYPES.contains(eventType) || rawPayload == null || rawPayload.isBlank()) {
             return rawPayload;
         }
 
@@ -33,7 +51,12 @@ public class CommerceOrderNotificationPayloadNormalizer {
             if (!hasText(normalized, "order_code")) {
                 copyTextField(normalized, "order_id", "order_code");
             }
-            normalized.remove("payment_method");
+            if ("ORDER_CREATED".equals(eventType) || "COMMERCE_ORDER_CREATED".equals(eventType)) {
+                normalized.remove("payment_method");
+            }
+            if ("PAYMENT_SUCCESS".equals(eventType) || "COMMERCE_PAYMENT_PAID".equals(eventType)) {
+                PAYMENT_SECRET_FIELDS.forEach(normalized::remove);
+            }
             return objectMapper.writeValueAsString(normalized);
         } catch (JsonProcessingException ex) {
             return rawPayload;

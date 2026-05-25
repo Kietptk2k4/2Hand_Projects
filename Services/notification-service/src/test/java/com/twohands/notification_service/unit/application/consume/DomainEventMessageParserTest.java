@@ -58,6 +58,28 @@ class DomainEventMessageParserTest {
     }
 
     @Test
+    void parse_resolvesBuyerIdAsRecipientForCommercePayment() {
+        UUID eventId = UUID.randomUUID();
+        UUID buyerId = UUID.randomUUID();
+
+        String json = """
+                {
+                  "event_id": "%s",
+                  "payload": {
+                    "payment_id": "pay-1",
+                    "order_id": "order-1",
+                    "buyer_id": "%s"
+                  }
+                }
+                """.formatted(eventId, buyerId);
+
+        var command = parser.parse(json, "commerce.payment.paid");
+
+        assertEquals(buyerId, command.recipientUserId());
+        assertEquals("PAYMENT_SUCCESS", command.eventType());
+    }
+
+    @Test
     void parse_resolvesCommerceAliasFromTopicFallback() {
         UUID eventId = UUID.randomUUID();
 

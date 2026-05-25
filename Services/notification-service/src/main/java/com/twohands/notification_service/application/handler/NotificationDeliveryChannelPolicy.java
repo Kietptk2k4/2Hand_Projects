@@ -18,7 +18,9 @@ public class NotificationDeliveryChannelPolicy {
 
     private static final Set<String> DEDICATED_COMMERCE_NOTIFICATION_EVENTS = Set.of(
             "ORDER_CREATED",
-            "COMMERCE_ORDER_CREATED"
+            "COMMERCE_ORDER_CREATED",
+            "PAYMENT_SUCCESS",
+            "COMMERCE_PAYMENT_PAID"
     );
 
     private static final Set<String> SOCIAL_IN_APP_EVENTS = Set.of();

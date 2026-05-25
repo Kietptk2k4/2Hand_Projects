@@ -33,6 +33,10 @@ public final class InAppNotificationTemplatePolicy {
                     "Order confirmed",
                     "Your order has been placed successfully."
             );
+            case "PAYMENT_SUCCESS" -> new InAppNotificationTemplate(
+                    "Payment received",
+                    "Your payment was successful."
+            );
             default -> null;
         });
     }
