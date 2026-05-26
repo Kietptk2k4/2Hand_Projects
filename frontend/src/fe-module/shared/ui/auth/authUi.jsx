@@ -140,6 +140,108 @@ export function PrimaryButton({ children, disabled, loading, type = "button", on
   );
 }
 
+export function MaterialIcon({ name, className = "", filled = false }) {
+  return (
+    <span
+      className={["material-symbols-outlined", className].filter(Boolean).join(" ")}
+      style={filled ? { fontVariationSettings: "'FILL' 1" } : undefined}
+      aria-hidden="true"
+    >
+      {name}
+    </span>
+  );
+}
+
+export function PasswordField({
+  id,
+  name,
+  label,
+  value,
+  onChange,
+  onBlur,
+  placeholder,
+  error,
+  visible,
+  onToggleVisible,
+  disabled,
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className="text-sm font-medium text-on-surface">
+        {label}
+      </label>
+      <div className="relative">
+        <input
+          id={id}
+          name={name}
+          type={visible ? "text" : "password"}
+          value={value}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={placeholder}
+          disabled={disabled}
+          autoComplete={name === "current_password" ? "current-password" : "new-password"}
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? `${id}-error` : undefined}
+          className={[
+            "w-full rounded-lg border bg-white px-3 py-3 pr-12 text-base outline-none transition",
+            error
+              ? "border-error focus:border-error focus:ring-1 focus:ring-error"
+              : "border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary/30",
+            disabled ? "cursor-not-allowed opacity-70" : "",
+          ].join(" ")}
+        />
+        <button
+          type="button"
+          onClick={onToggleVisible}
+          disabled={disabled}
+          className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-on-surface-variant disabled:cursor-not-allowed"
+          aria-label={visible ? `An ${label}` : `Hien ${label}`}
+        >
+          <MaterialIcon name={visible ? "visibility" : "visibility_off"} className="text-[22px]" />
+        </button>
+      </div>
+      {error ? (
+        <p id={`${id}-error`} className="text-xs text-error">
+          {error}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+const PASSWORD_CHECKLIST_ITEMS = [
+  { key: "length", label: "8-32 ky tu" },
+  { key: "uppercase", label: "1 chu hoa" },
+  { key: "lowercase", label: "1 chu thuong" },
+  { key: "number", label: "1 chu so" },
+];
+
+export function PasswordChecklist({ checklistState }) {
+  return (
+    <div className="mt-2 rounded-lg bg-account-surface-low p-3">
+      <ul className="flex flex-col gap-2 text-sm">
+        {PASSWORD_CHECKLIST_ITEMS.map((item) => {
+          const met = Boolean(checklistState[item.key]);
+          return (
+            <li
+              key={item.key}
+              className={["flex items-center gap-2", met ? "text-primary" : "text-on-surface-variant"].join(" ")}
+            >
+              <MaterialIcon
+                name={met ? "check_circle" : "radio_button_unchecked"}
+                className="text-base"
+                filled={met}
+              />
+              <span>{item.label}</span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 export function SecondaryButton({ children, disabled, type = "button", onClick, className = "" }) {
   return (
     <button

@@ -142,8 +142,14 @@ export const authHandlers = [
     );
   }),
 
+  // Mock credentials: active@2hands.vn / Password123!
   http.post("*/api/v1/auth/change-password", async ({ request }) => {
     await delay(450);
+    const user = getUserByToken(request);
+    if (!user) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+
     const body = await request.json();
     if (!body?.current_password || !body?.new_password || !body?.confirm_new_password) {
       return HttpResponse.json(
@@ -157,6 +163,22 @@ export const authHandlers = [
         { status: 400 }
       );
     }
+    if (body.current_password !== user.password) {
+      return HttpResponse.json(
+        apiError(400, "Mat khau khong chinh xac.", [{ field: "password", reason: "INVALID_CREDENTIAL" }]),
+        { status: 400 }
+      );
+    }
+    if (body.new_password === body.current_password) {
+      return HttpResponse.json(
+        apiError(400, "Mat khau moi phai khac mat khau hien tai.", [
+          { field: "new_password", reason: "SAME_AS_CURRENT" },
+        ]),
+        { status: 400 }
+      );
+    }
+
+    user.password = body.new_password;
     return HttpResponse.json(apiSuccess(200, "Doi mat khau thanh cong.", null), { status: 200 });
   }),
 

@@ -8,6 +8,7 @@ import { ForgotPasswordPage } from "../../features/auth/pages/ForgotPasswordPage
 import { AccountPage } from "../../features/auth/pages/AccountPage";
 import { AccountSecurityPage } from "../../features/auth/pages/AccountSecurityPage";
 import { VerifyEmailPage } from "../../features/auth/pages/VerifyEmailPage";
+import { AccountPasswordPage } from "../../features/auth/pages/AccountPasswordPage";
 import { ChangePasswordPage } from "../../features/auth/pages/ChangePasswordPage";
 import { SessionExpiredPage } from "../../features/auth/pages/SessionExpiredPage";
 
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
         children: [
           { path: APP_ROUTES.account.slice(1), element: <AccountPage /> },
           { path: APP_ROUTES.accountSecurity.slice(1), element: <AccountSecurityPage /> },
+          { path: APP_ROUTES.accountPassword.slice(1), element: <AccountPasswordPage /> },
           { path: APP_ROUTES.changePassword.slice(1), element: <ChangePasswordPage /> },
         ],
       },

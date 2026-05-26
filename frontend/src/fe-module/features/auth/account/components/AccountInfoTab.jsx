@@ -118,7 +118,7 @@ export function AccountInfoTab({ profile, onTabChange }) {
             <button type="button" onClick={() => onTabChange("settings")} className="font-medium text-primary hover:underline">
               Cap nhat cai dat
             </button>
-            <Link to={APP_ROUTES.changePassword} className="font-medium text-primary hover:underline">
+            <Link to={APP_ROUTES.accountPassword} className="font-medium text-primary hover:underline">
               Doi mat khau
             </Link>
           </div>
