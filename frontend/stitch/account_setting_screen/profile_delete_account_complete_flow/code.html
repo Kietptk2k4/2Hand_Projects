@@ -1,0 +1,300 @@
+<!DOCTYPE html><html class="light" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>2Hands - Xóa tài khoản</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#565a5b",
+                        "on-error": "#ffffff",
+                        "surface-container": "#e7eeff",
+                        "on-primary": "#ffffff",
+                        "on-background": "#111c2d",
+                        "inverse-on-surface": "#ecf1ff",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "on-secondary-container": "#fffbff",
+                        "outline-variant": "#c2c6d8",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#d8e3fb",
+                        "tertiary-container": "#6f7274",
+                        "surface": "#f9f9ff",
+                        "on-surface": "#111c2d",
+                        "surface-dim": "#cfdaf2",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f9f9ff",
+                        "on-primary-fixed-variant": "#003fa4",
+                        "surface-tint": "#0054d6",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed": "#e0e3e5",
+                        "surface-container-high": "#dee8ff",
+                        "inverse-primary": "#b3c5ff",
+                        "on-tertiary-fixed": "#191c1e",
+                        "secondary-container": "#6063ee",
+                        "secondary": "#4648d4",
+                        "primary-container": "#0066ff",
+                        "outline": "#727687",
+                        "on-tertiary-container": "#f6f8fa",
+                        "background": "#f9f9ff",
+                        "primary-fixed": "#dae1ff",
+                        "primary": "#0050cb",
+                        "secondary-fixed": "#e1e0ff",
+                        "on-primary-container": "#f8f7ff",
+                        "surface-variant": "#d8e3fb",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "on-primary-fixed": "#001849",
+                        "surface-container-low": "#f0f3ff",
+                        "on-surface-variant": "#424656",
+                        "on-secondary-fixed": "#07006c",
+                        "on-secondary": "#ffffff",
+                        "inverse-surface": "#263143",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "md": "24px",
+                        "margin-desktop": "32px",
+                        "sm": "12px",
+                        "margin-mobile": "16px",
+                        "xl": "64px",
+                        "gutter": "24px",
+                        "lg": "40px",
+                        "base": "8px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "headline-xl": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-xl-mobile": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "headline-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased selection:bg-primary selection:text-on-primary">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-on-background border-b border-outline-variant dark:border-outline shadow-sm dark:shadow-none w-full sticky top-0 z-50">
+<div class="flex justify-between items-center px-margin-desktop w-full h-16 max-w-container-max mx-auto">
+<div class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">2Hands</div>
+<nav class="hidden md:flex gap-md">
+<a class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors cursor-pointer active:opacity-80" href="#">Dashboard</a>
+<a class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors cursor-pointer active:opacity-80" href="#">Services</a>
+<a class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors cursor-pointer active:opacity-80" href="#">My Bookings</a>
+</nav>
+<div class="flex items-center gap-sm">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="text-primary border-b-2 border-primary pb-1 transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+</button>
+<div class="ml-sm h-10 w-10 rounded-full overflow-hidden border border-outline-variant cursor-pointer">
+<img alt="User Profile Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a smiling young woman with dark hair pulled back, wearing a neat, light-colored blouse. The lighting is soft and natural, emphasizing a bright, trustworthy, and modern aesthetic consistent with a reliable corporate minimalist platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0AQbsbRFz0syh_D62FSCOEzcpksAyX8MGFCB3AWoCZIDg1gsX-GEgyarVhEmwUB_BvrB4bdxFkOqNqUCyplw1dwkMz85sCXNuGg4oAs9CwH3F1HV2cyCpWvF9mOo54HH5W0fZqUcGW0-pDsXCZfRe3S4h5HPLRVI3zKjohSi2YLfjNVxpqiEc8eCTh9OUTJvNJ0HBXwnUB_gK7i7GF_L9IiHj971PaDDMu5ABDZMGlHlZTVr-OjGv8GvzRZ0jv0bEQihAaXO7LAU">
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-container-max mx-auto w-full flex min-h-[calc(100vh-64px)]">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col bg-surface-container-low dark:bg-inverse-surface border-l border-outline-variant dark:border-outline w-64 h-full min-h-[calc(100vh-64px)] py-lg px-sm">
+<div class="mb-lg px-sm">
+<h2 class="font-headline-sm text-headline-sm font-semibold text-on-surface dark:text-surface">Profile Settings</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">Manage your 2Hands account</p>
+</div>
+<nav class="flex flex-col gap-xs">
+<a class="flex items-center gap-sm px-sm py-sm rounded-DEFAULT font-label-md text-label-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-highest dark:hover:bg-tertiary-container transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+                    Account Info
+                </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-DEFAULT font-label-md text-label-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-highest dark:hover:bg-tertiary-container transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">edit_square</span>
+                    Edit Profile
+                </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-DEFAULT font-label-md text-label-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-highest dark:hover:bg-tertiary-container transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">face</span>
+                    Update Avatar
+                </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-DEFAULT font-label-md text-label-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-highest dark:hover:bg-tertiary-container transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">lock</span>
+                    Privacy
+                </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-DEFAULT font-label-md text-label-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-highest dark:hover:bg-tertiary-container transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">settings</span>
+                    Settings
+                </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-DEFAULT font-label-md text-label-md text-primary dark:text-primary-fixed font-bold border-r-4 border-primary dark:border-primary-fixed bg-surface-container-high dark:bg-on-tertiary-fixed-variant transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">delete_forever</span>
+                    Delete Account
+                </a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<div class="flex-1 px-margin-mobile md:px-margin-desktop py-lg">
+<div class="max-w-3xl mx-auto">
+<div class="mb-md">
+<h1 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background mb-xs">Delete Account</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage your account deletion securely.</p>
+</div>
+<!-- Danger Zone Card -->
+<div class="bg-surface rounded-lg border border-[#e2e8f0] shadow-sm overflow-hidden mb-lg">
+<div class="bg-error-container p-sm border-b border-error/20 flex items-center gap-sm">
+<span class="material-symbols-outlined text-error">warning</span>
+<h3 class="font-headline-sm text-headline-sm text-error">Vùng nguy hiểm</h3>
+</div>
+<div class="p-md">
+<p class="font-body-md text-body-md text-on-surface mb-sm font-semibold">Khi bạn xóa tài khoản của mình:</p>
+<ul class="space-y-sm mb-md pl-sm border-l-2 border-outline-variant">
+<li class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-outline text-[20px] mt-xs">cloud_off</span>
+<div>
+<span class="font-label-md text-label-md text-on-surface block">Mất dữ liệu vĩnh viễn</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Tất cả thông tin cá nhân, cài đặt và tùy chọn sẽ bị xóa khỏi hệ thống.</span>
+</div>
+</li>
+<li class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-outline text-[20px] mt-xs">history</span>
+<div>
+<span class="font-label-md text-label-md text-on-surface block">Xóa lịch sử</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Lịch sử đặt dịch vụ, đánh giá và các giao dịch cũ sẽ không thể khôi phục.</span>
+</div>
+</li>
+<li class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-outline text-[20px] mt-xs">person_off</span>
+<div>
+<span class="font-label-md text-label-md text-on-surface block">Hủy bỏ kết nối</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Tất cả các kết nối với nhà cung cấp dịch vụ và khách hàng sẽ bị ngắt.</span>
+</div>
+</li>
+</ul>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT p-md mt-md">
+<h4 class="font-label-md text-label-md text-on-surface mb-sm">Xác nhận mật khẩu để tiếp tục</h4>
+<div class="relative max-w-md">
+<label class="sr-only" for="password">Mật khẩu hiện tại</label>
+<input class="w-full h-10 px-sm border border-outline-variant rounded-DEFAULT font-body-sm text-body-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface-container-lowest placeholder:text-outline transition-colors" id="password" placeholder="Nhập mật khẩu hiện tại" type="password">
+<button class="absolute right-sm top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" onclick="togglePasswordVisibility()" type="button">
+<span class="material-symbols-outlined text-[20px]" id="visibility-icon">visibility_off</span>
+</button>
+</div>
+</div>
+<div class="mt-lg pt-md border-t border-outline-variant flex justify-end">
+<button class="bg-error text-on-error font-label-md text-label-md px-md py-sm rounded-DEFAULT hover:bg-[#a61717] transition-colors focus:outline-none focus:ring-2 focus:ring-error focus:ring-offset-2" onclick="openModal()">
+                                Xóa tài khoản
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Confirmation Modal Overlay -->
+<div class="fixed inset-0 z-[100] hidden bg-[#111c2d]/40 backdrop-blur-sm flex items-center justify-center p-margin-mobile opacity-0 transition-opacity duration-200" id="delete-modal">
+<div class="bg-surface rounded-xl shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-200" id="modal-content">
+<div class="p-md flex items-start gap-md">
+<div class="w-12 h-12 rounded-full bg-error-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-error text-[28px]">delete_forever</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-xs">Bạn có chắc chắn muốn xóa?</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Hành động này không thể hoàn tác. Mọi dữ liệu của bạn sẽ bị xóa ngay lập tức khỏi hệ thống 2Hands.</p>
+</div>
+</div>
+<div class="bg-surface-container-low px-md py-sm flex justify-end gap-sm border-t border-outline-variant">
+<button class="font-label-md text-label-md px-sm py-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded-DEFAULT transition-colors" onclick="closeModal()">
+                    Hủy
+                </button>
+<button class="font-label-md text-label-md px-md py-xs bg-error text-on-error rounded-DEFAULT hover:bg-[#a61717] transition-colors focus:outline-none focus:ring-2 focus:ring-error focus:ring-offset-2">
+                    Xóa vĩnh viễn
+                </button>
+</div>
+</div>
+</div>
+<script>
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const visibilityIcon = document.getElementById('visibility-icon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                visibilityIcon.textContent = 'visibility';
+            } else {
+                passwordInput.type = 'password';
+                visibilityIcon.textContent = 'visibility_off';
+            }
+        }
+
+        const modal = document.getElementById('delete-modal');
+        const modalContent = document.getElementById('modal-content');
+
+        function openModal() {
+            modal.classList.remove('hidden');
+            // Trigger reflow
+            void modal.offsetWidth;
+            modal.classList.add('opacity-100');
+            modalContent.classList.remove('scale-95');
+            modalContent.classList.add('scale-100');
+        }
+
+        function closeModal() {
+            modal.classList.remove('opacity-100');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        // Close on click outside
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    </script>
+</body></html>

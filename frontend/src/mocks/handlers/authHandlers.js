@@ -209,35 +209,138 @@ export const authHandlers = [
     );
   }),
 
-  http.put("*/api/v1/users/me/profile", async () => {
+  http.put("*/api/v1/users/me/profile", async ({ request }) => {
     await delay(300);
+    const user = getUserByToken(request);
+    if (!user) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+    const body = await request.json();
+    if (!body?.display_name?.trim()) {
+      return HttpResponse.json(
+        apiError(400, "Validation failed", [{ field: "display_name", reason: "Required" }]),
+        { status: 400 }
+      );
+    }
+    if (body.website && !/^https?:\/\//i.test(body.website)) {
+      return HttpResponse.json(
+        apiError(400, "URL khong hop le.", [{ field: "website", reason: "INVALID_URL" }]),
+        { status: 400 }
+      );
+    }
+    user.display_name = body.display_name;
+    user.bio = body.bio ?? user.bio;
+    user.website = body.website ?? user.website;
+    user.social_links = body.social_links ?? user.social_links;
     return HttpResponse.json(apiSuccess(200, "Cap nhat ho so thanh cong.", null), { status: 200 });
   }),
 
-  http.patch("*/api/v1/users/me/avatar", async () => {
-    await delay(300);
-    return HttpResponse.json(apiSuccess(200, "Cap nhat avatar thanh cong.", null), { status: 200 });
-  }),
-
-  http.patch("*/api/v1/users/me/privacy", async () => {
-    await delay(250);
-    return HttpResponse.json(apiSuccess(200, "Cap nhat quyen rieng tu thanh cong.", null), { status: 200 });
-  }),
-
-  http.patch("*/api/v1/users/me/settings", async ({ request }) => {
-    await delay(250);
+  http.post("*/api/v1/users/me/avatar/upload-url", async ({ request }) => {
+    await delay(350);
+    const user = getUserByToken(request);
+    if (!user) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
     const body = await request.json();
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowed.includes(body?.content_type)) {
+      return HttpResponse.json(
+        apiError(400, "Dinh dang khong duoc ho tro.", [{ field: "content_type", reason: "INVALID" }]),
+        { status: 400 }
+      );
+    }
+    if (!body?.file_size_bytes || body.file_size_bytes > 5_242_880) {
+      return HttpResponse.json(
+        apiError(400, "Tep vuot qua 5MB.", [{ field: "file_size_bytes", reason: "TOO_LARGE" }]),
+        { status: 400 }
+      );
+    }
+    const objectKey = `avatars/${user.id}/${crypto.randomUUID()}.png`;
+    const avatarUrl = `https://cdn.2hands.vn/${objectKey}`;
     return HttpResponse.json(
-      apiSuccess(200, "Cap nhat cai dat thanh cong.", {
-        appearance_mode: body?.appearance_mode || "SYSTEM"
+      apiSuccess(200, "Tao link upload avatar thanh cong.", {
+        upload_url: `https://mock-minio.2hands.vn/upload/${objectKey}`,
+        object_key: objectKey,
+        avatar_url: avatarUrl,
+        expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+        max_file_size_bytes: 5_242_880,
+        allowed_content_types: allowed,
       }),
       { status: 200 }
     );
   }),
 
-  http.post("*/api/v1/users/me/soft-delete", async () => {
+  http.put("https://mock-minio.2hands.vn/upload/*", async () => {
+    await delay(200);
+    return new HttpResponse(null, { status: 200 });
+  }),
+
+  http.patch("*/api/v1/users/me/avatar", async ({ request }) => {
+    await delay(300);
+    const user = getUserByToken(request);
+    if (!user) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+    const body = await request.json();
+    if (!body?.avatar_url) {
+      return HttpResponse.json(
+        apiError(400, "Validation failed", [{ field: "avatar_url", reason: "Required" }]),
+        { status: 400 }
+      );
+    }
+    user.avatar_url = body.avatar_url;
+    return HttpResponse.json(apiSuccess(200, "Cap nhat avatar thanh cong.", null), { status: 200 });
+  }),
+
+  http.patch("*/api/v1/users/me/privacy", async ({ request }) => {
+    await delay(250);
+    const user = getUserByToken(request);
+    if (!user) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+    const body = await request.json();
+    user.is_private = Boolean(body?.is_private);
+    return HttpResponse.json(apiSuccess(200, "Cap nhat quyen rieng tu thanh cong.", null), { status: 200 });
+  }),
+
+  http.patch("*/api/v1/users/me/settings", async ({ request }) => {
+    await delay(250);
+    const user = getUserByToken(request);
+    if (!user) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+    const body = await request.json();
+    const allowed = ["LIGHT", "DARK", "SYSTEM"];
+    if (!allowed.includes(body?.appearance_mode)) {
+      return HttpResponse.json(
+        apiError(400, "Validation failed", [{ field: "appearance_mode", reason: "INVALID" }]),
+        { status: 400 }
+      );
+    }
+    user.appearance_mode = body.appearance_mode;
+    return HttpResponse.json(
+      apiSuccess(200, "Cap nhat cai dat thanh cong.", {
+        appearance_mode: user.appearance_mode,
+      }),
+      { status: 200 }
+    );
+  }),
+
+  http.post("*/api/v1/users/me/soft-delete", async ({ request }) => {
     await delay(400);
+    const user = getUserByToken(request);
+    if (!user) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+    const body = await request.json();
+    if (!body?.password || body.password !== user.password) {
+      return HttpResponse.json(
+        apiError(400, "Mat khau khong chinh xac.", [{ field: "password", reason: "INVALID_CREDENTIAL" }]),
+        { status: 400 }
+      );
+    }
+    user.status = "DELETED";
     return HttpResponse.json(apiSuccess(200, "Xoa tai khoan thanh cong.", null), { status: 200 });
-  })
+  }),
 ];
 

@@ -199,31 +199,7 @@ export function ChangePasswordPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-on-background">
-      <header className="border-b border-outline-variant/60 bg-surface">
-        <div className="mx-auto flex w-full max-w-[1280px] items-center justify-between px-4 py-3 md:px-8">
-          <Link to={APP_ROUTES.home} className="text-3xl font-bold text-primary">
-            2Hands
-          </Link>
-          <nav className="hidden items-center gap-6 text-sm font-medium text-on-surface-variant md:flex">
-            <span>Services</span>
-            <span>How it Works</span>
-            <span>About</span>
-          </nav>
-          <div className="flex items-center gap-4">
-            <Link to={APP_ROUTES.login} className="text-sm font-semibold text-primary">
-              Sign In
-            </Link>
-            <Link
-              to={APP_ROUTES.register}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary"
-            >
-              Register
-            </Link>
-          </div>
-        </div>
-      </header>
-
+    <div className="bg-background text-on-background">
       <main className="flex items-center justify-center px-4 py-12 md:px-8 md:py-16">
         <section className="w-full max-w-[500px] rounded-xl border border-outline-variant/70 bg-white p-6 shadow-sm">
           <header className="mb-6 text-center">
@@ -353,20 +329,6 @@ export function ChangePasswordPage() {
         </section>
       </main>
 
-      <footer className="border-t border-outline-variant/60 bg-surface-container">
-        <div className="mx-auto flex w-full max-w-[1280px] flex-col items-center justify-between gap-4 px-4 py-8 md:flex-row md:px-8">
-          <div className="text-center md:text-left">
-            <p className="text-3xl font-bold text-primary">2Hands</p>
-            <p className="text-sm text-on-surface-variant">© 2024 2Hands. Professional Service Marketplace.</p>
-          </div>
-          <nav className="flex flex-wrap justify-center gap-4 text-sm text-on-surface-variant">
-            <span>Privacy Policy</span>
-            <span>Terms of Service</span>
-            <span>Support</span>
-            <span>Contact Us</span>
-          </nav>
-        </div>
-      </footer>
     </div>
   );
 }

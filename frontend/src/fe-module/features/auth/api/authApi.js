@@ -113,3 +113,57 @@ export async function getMyProfile() {
   }
 }
 
+export async function updateMyProfile(payload) {
+  try {
+    const response = await apiClient.put("/api/v1/users/me/profile", payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function requestAvatarUploadUrl(payload) {
+  try {
+    const response = await apiClient.post("/api/v1/users/me/avatar/upload-url", payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function updateMyAvatar(payload) {
+  try {
+    const response = await apiClient.patch("/api/v1/users/me/avatar", payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function updateMyPrivacy(payload) {
+  try {
+    const response = await apiClient.patch("/api/v1/users/me/privacy", payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function updateMySettings(payload) {
+  try {
+    const response = await apiClient.patch("/api/v1/users/me/settings", payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function softDeleteMyAccount(payload) {
+  try {
+    const response = await apiClient.post("/api/v1/users/me/soft-delete", payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+

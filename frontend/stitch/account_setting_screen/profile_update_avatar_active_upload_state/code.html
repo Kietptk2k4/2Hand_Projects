@@ -1,0 +1,242 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Cập nhật Ảnh đại diện - Quản lý</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "on-tertiary-fixed": "#191c1e",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "on-background": "#111c2d",
+                        "on-secondary-fixed": "#07006c",
+                        "on-secondary-container": "#fffbff",
+                        "tertiary": "#565a5b",
+                        "on-primary-fixed-variant": "#003fa4",
+                        "secondary": "#4648d4",
+                        "on-tertiary-container": "#f6f8fa",
+                        "inverse-surface": "#263143",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "background": "#f9f9ff",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "surface-container-low": "#f0f3ff",
+                        "secondary-fixed": "#e1e0ff",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "outline": "#727687",
+                        "surface-container-highest": "#d8e3fb",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "primary-container": "#0066ff",
+                        "on-primary-fixed": "#001849",
+                        "surface-variant": "#d8e3fb",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "inverse-on-surface": "#ecf1ff",
+                        "surface-dim": "#cfdaf2",
+                        "tertiary-container": "#6f7274",
+                        "primary": "#0050cb",
+                        "primary-fixed": "#dae1ff",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#b3c5ff",
+                        "on-primary-container": "#f8f7ff",
+                        "surface-container-high": "#dee8ff",
+                        "on-secondary": "#ffffff",
+                        "surface": "#f9f9ff",
+                        "secondary-container": "#6063ee",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#f9f9ff",
+                        "tertiary-fixed": "#e0e3e5",
+                        "on-surface": "#111c2d",
+                        "surface-tint": "#0054d6",
+                        "outline-variant": "#c2c6d8",
+                        "surface-container": "#e7eeff",
+                        "on-surface-variant": "#424656"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "lg": "40px",
+                        "gutter": "24px",
+                        "container-max": "1280px",
+                        "xs": "4px",
+                        "base": "8px",
+                        "md": "24px",
+                        "xl": "64px",
+                        "margin-desktop": "32px",
+                        "sm": "12px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-xl-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-xl": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-xl-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<header class="bg-surface shadow-sm docked full-width top-0 z-50">
+<div class="flex justify-between items-center px-margin-desktop h-16 w-full max-w-container-max mx-auto">
+<div class="flex items-center gap-md">
+<a class="font-headline-md text-headline-md font-bold text-primary" href="#">ProMarket</a>
+<div class="hidden md:flex items-center relative">
+<span class="material-symbols-outlined absolute left-3 text-outline-variant">search</span>
+<input class="pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface-container-lowest font-body-sm text-body-sm w-64 text-on-surface" placeholder="Tìm kiếm..." type="text">
+</div>
+</div>
+<nav class="hidden md:flex items-center gap-gutter">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md active:scale-95 duration-100" href="#">Marketplace</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md active:scale-95 duration-100" href="#">Services</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md active:scale-95 duration-100" href="#">Experts</a>
+</nav>
+<div class="flex items-center gap-sm">
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant rounded-full transition-colors active:scale-95 duration-100">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant rounded-full transition-colors active:scale-95 duration-100">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="p-2 text-primary bg-surface-variant rounded-full transition-colors active:scale-95 duration-100">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<img alt="User avatar" class="w-8 h-8 rounded-full border border-outline-variant ml-2 cursor-pointer" data-alt="A close-up portrait of a professional individual in a modern, brightly lit office environment. The lighting is soft and even, typical of a high-end corporate setting, casting minimal shadows and highlighting a friendly, approachable expression. The color palette leans towards clean whites, soft greys, and muted blues, conveying trust and reliability. This image embodies the 'Corporate Modern' aesthetic, suitable for a professional services marketplace avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrKF18sujT04FtC-3rMqdGE0EXRQuHZKW4MGisafjJQ-7Tl7hSen-zBbBzM45U0XLmdnN9bSq4YF9EZwOGpTJL8LGNRR1J-Zou4gN5GrVr2I_DGfeoua_NJ_205yiyFeQRH1KeV28AMCyVxOb2wZmi-Yq-hxmUVzd9Z31b6zyIkSwQqEBmHiGM64wjsBa87lyhqxf9m87RKqFcaDTYErIKvna5YAQOxXqyybWVa29pAz0SNiqsmt9W3Q90xBWJLGN7c_LYhUJF6B8">
+</div>
+</div>
+</header>
+<div class="flex-1 w-full max-w-container-max mx-auto relative flex">
+<!-- Main Content Area -->
+<main class="flex-1 px-margin-mobile md:px-margin-desktop py-xl md:mr-64 relative z-10">
+<div class="max-w-4xl mx-auto">
+<div class="mb-lg">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-xs">Cập nhật Ảnh đại diện</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Chọn một bức ảnh thể hiện sự chuyên nghiệp của bạn.</p>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant shadow-sm rounded-xl p-md md:p-lg">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-xl items-start">
+<!-- Left Column: Avatar Preview -->
+<div class="flex flex-col items-center justify-center">
+<div class="relative group cursor-pointer">
+<div class="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden border-4 border-surface shadow-sm relative">
+<img alt="Current Avatar" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 opacity-50" data-alt="A medium-close-up portrait of a confident professional in a bright, modern minimalist workspace. The person is wearing smart-casual attire. The background is slightly out of focus, showing clean architectural lines and ample natural light. The overall mood is approachable yet highly competent, utilizing a fresh, airy color palette to inspire trust and efficiency." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4MedQ0aFR8Afq-TGQWL1mZsJiSRo5-LY-pO7DmQSmJwjutZ8q6DXgk3G_qL89kDYJJx7ioPAmcz_PPTFD5R-J54H7UV5du4Y5s-PGhpV4OvpkA4yphylIRiU1KOU1n9xV1VmTcRGNVOIYkqNrisW5k5D4ZLQXVjYGeau_YYmhWSBHV72DpMZrBuiQ8YKN52B2DWv2L9R5Ubq_AJW5IMTq46wy7XDCjRYCYN2mltLzCqQcymUxHrldbZ5upFKQNY5rXrxnApW_n3o">
+<div class="absolute inset-0 bg-surface-variant/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+<span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 1;">photo_camera</span>
+</div>
+</div>
+<div class="absolute bottom-2 right-2 md:bottom-4 md:right-4 bg-primary-container text-on-primary-container p-3 rounded-full shadow-md flex items-center justify-center border-2 border-surface hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">edit</span>
+</div>
+</div>
+<p class="mt-4 font-label-sm text-label-sm text-on-surface-variant text-center">Nhấp vào ảnh để thay đổi</p>
+</div>
+<!-- Right Column: Upload Guidelines & Progress -->
+<div class="flex flex-col justify-center h-full space-y-6">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-sm">Hướng dẫn tải lên</h3>
+<ul class="space-y-3">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-outline-variant text-sm mt-0.5">check_circle</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Sử dụng hình ảnh rõ nét, chụp chính diện khuôn mặt.</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-outline-variant text-sm mt-0.5">check_circle</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Định dạng hỗ trợ: JPG, PNG, WEBP.</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-outline-variant text-sm mt-0.5">check_circle</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Kích thước tệp tối đa: 5MB. Độ phân giải khuyên dùng 500x500px.</span>
+</li>
+</ul>
+</div>
+<!-- Active Upload State -->
+<div class="bg-surface-container-low p-4 rounded-lg border border-surface-variant">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-sm text-label-sm text-primary">Đang tải lên... avatar_new_professional.jpg</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">75%</span>
+</div>
+<div class="w-full bg-outline-variant/30 rounded-full h-2">
+<div class="bg-primary-container h-2 rounded-full transition-all duration-300" style="width: 75%"></div>
+</div>
+<div class="mt-2 flex justify-end">
+<button class="font-label-sm text-label-sm text-error hover:text-on-error-container transition-colors">Hủy</button>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-xl pt-md border-t border-outline-variant flex justify-end gap-sm">
+<button class="px-6 py-2 rounded-lg font-label-md text-label-md border-2 border-primary text-primary hover:bg-surface-variant transition-colors focus:ring-2 focus:ring-primary focus:ring-offset-2">Hủy</button>
+<button class="px-6 py-2 rounded-lg font-label-md text-label-md bg-primary-container text-on-primary-container hover:bg-primary transition-colors focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled="">Lưu thay đổi</button>
+</div>
+</div>
+</div>
+</main>
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col bg-surface-container-low docked right-0 h-full w-64 fixed right-0 top-16 h-[calc(100vh-64px)] p-md gap-base border-l border-surface-variant z-40">
+<div class="mb-4">
+<h2 class="font-headline-sm text-headline-sm font-bold text-primary">Management</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Manage your preferences</p>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-all font-label-md text-label-md active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+                    Account Info
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-all font-label-md text-label-md active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">edit</span>
+                    Edit Profile
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary font-bold bg-surface-container-highest font-label-md text-label-md active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">face</span>
+                    Avatar
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-all font-label-md text-label-md active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">lock</span>
+                    Privacy
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-all font-label-md text-label-md active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+                    Settings
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-all font-label-md text-label-md active:translate-x-1 duration-200 mt-4 text-error hover:bg-error-container hover:text-on-error-container" href="#">
+<span class="material-symbols-outlined">delete_forever</span>
+                    Delete Account
+                </a>
+</nav>
+</aside>
+</div>
+</body></html>

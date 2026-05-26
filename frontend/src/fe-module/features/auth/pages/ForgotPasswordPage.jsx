@@ -76,11 +76,7 @@ export function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-on-background">
-      <header className="w-full border-b border-outline-variant bg-surface-container-lowest py-6">
-        <div className="text-center text-3xl font-bold text-primary">2Hands</div>
-      </header>
-
+    <div className="bg-background text-on-background">
       <main className="flex items-center justify-center px-4 py-10 sm:px-6">
         <section className="w-full max-w-[500px] rounded-lg border border-outline-variant bg-white p-6 shadow-sm sm:p-8">
           <header className="text-center">
@@ -160,18 +156,6 @@ export function ForgotPasswordPage() {
         </section>
       </main>
 
-      <footer className="mt-auto w-full border-t border-outline-variant bg-surface-container-lowest px-4 py-6">
-        <div className="mx-auto flex w-full max-w-[1280px] flex-col items-center justify-between gap-4 md:flex-row">
-          <div className="text-2xl font-bold text-primary">2Hands</div>
-          <p className="text-sm text-on-surface-variant">© 2024 2Hands Marketplace. All rights reserved.</p>
-          <nav className="flex flex-wrap gap-4 text-sm text-on-surface-variant">
-            <span>Privacy Policy</span>
-            <span>Terms of Service</span>
-            <span>Support Center</span>
-            <span>Contact Us</span>
-          </nav>
-        </div>
-      </footer>
     </div>
   );
 }

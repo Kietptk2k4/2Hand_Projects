@@ -1,8 +1,9 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { APP_ROUTES } from "../../shared/constants/routes";
 import { useAuthSession } from "../../features/auth/hooks/useAuthSession.jsx";
 import { SessionExpiredModal } from "../../features/auth/components/SessionExpiredModal.jsx";
-import { useNavigate } from "react-router-dom";
+import { AppFooter } from "../../shared/ui/AppFooter.jsx";
+import { AppHeader } from "../../shared/ui/AppHeader.jsx";
 
 export function AppLayout() {
   const location = useLocation();
@@ -13,7 +14,8 @@ export function AppLayout() {
     location.pathname === APP_ROUTES.register ||
     location.pathname === APP_ROUTES.verifyEmail;
 
-  const isSensitiveRoute = location.pathname.startsWith("/account");
+  const isAccountRoute = location.pathname.startsWith(APP_ROUTES.account);
+  const isSensitiveRoute = isAccountRoute;
   const allowClose = !isSensitiveRoute;
 
   const onSignIn = () => {
@@ -31,10 +33,12 @@ export function AppLayout() {
 
   if (isAuthImmersiveRoute) {
     return (
-      <div className="min-h-screen bg-surface text-on-surface">
-        <main className="px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+      <div className="flex min-h-screen flex-col bg-surface text-on-surface">
+        <AppHeader />
+        <main className="flex-1 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
           <Outlet />
         </main>
+        <AppFooter />
         <SessionExpiredModal
           open={sessionExpiredState.isOpen}
           message={sessionExpiredState.message}
@@ -47,23 +51,18 @@ export function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-surface text-on-surface">
-      <header className="border-b border-outline-variant/40 bg-surface-container-low">
-        <nav className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3">
-          <Link to={APP_ROUTES.home} className="text-lg font-semibold text-primary">
-            2Hands FE Module
-          </Link>
-          <div className="flex items-center gap-4 text-sm text-on-surface-variant">
-            <Link to={APP_ROUTES.login}>Login</Link>
-            <Link to={APP_ROUTES.register}>Register</Link>
-            <Link to={APP_ROUTES.account}>Account</Link>
-          </div>
-        </nav>
-      </header>
+    <div className="flex min-h-screen flex-col bg-surface text-on-surface">
+      <AppHeader />
 
-      <main className="mx-auto w-full max-w-6xl px-4 py-8">
+      <main
+        className={[
+          "mx-auto w-full flex-1 px-4 py-8",
+          isAccountRoute ? "max-w-[1280px]" : "max-w-6xl",
+        ].join(" ")}
+      >
         <Outlet />
       </main>
+      <AppFooter />
       <SessionExpiredModal
         open={sessionExpiredState.isOpen}
         message={sessionExpiredState.message}
