@@ -1,5 +1,21 @@
 export const mockUsers = [
   {
+    id: "c0000000-0000-4000-8000-000000000099",
+    email: "admin@2hands.vn",
+    password: "Password123!",
+    status: "ACTIVE",
+    email_verified: true,
+    display_name: "Admin User",
+    avatar_url: "https://i.pravatar.cc/200?img=12",
+    bio: "Platform administrator",
+    website: "",
+    social_links: {},
+    is_private: false,
+    appearance_mode: "SYSTEM",
+    last_login_at: "2026-05-20T10:00:00Z",
+    is_admin: true,
+  },
+  {
     id: "b8b9bf76-2ab2-4a01-8f16-fd0f5f9f95d1",
     email: "active@2hands.vn",
     password: "Password123!",

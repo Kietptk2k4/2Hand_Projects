@@ -1,6 +1,9 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { APP_ROUTES } from "../constants/routes";
+import { getMyProfile } from "../../features/auth/api/authApi";
 import { useAuthSession } from "../../features/auth/hooks/useAuthSession.jsx";
+import { APP_ROUTES } from "../constants/routes";
+import { HeaderAccountMenu } from "./HeaderAccountMenu.jsx";
 
 const DEFAULT_AVATAR_URL = "https://i.pravatar.cc/96?img=11";
 
@@ -78,8 +81,31 @@ function SettingsIcon() {
 
 export function AppHeader({ className = "" }) {
   const { isAuthenticated, user } = useAuthSession();
-  const avatarUrl = user?.avatar_url || user?.profile?.avatar_url || DEFAULT_AVATAR_URL;
-  const profileLink = isAuthenticated ? APP_ROUTES.account : APP_ROUTES.login;
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState(null);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setProfileAvatarUrl(null);
+      return undefined;
+    }
+
+    let cancelled = false;
+    getMyProfile()
+      .then((data) => {
+        if (!cancelled && data?.profile?.avatar_url) {
+          setProfileAvatarUrl(data.profile.avatar_url);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
+
+  const avatarUrl =
+    profileAvatarUrl || user?.avatar_url || user?.profile?.avatar_url || DEFAULT_AVATAR_URL;
+  const userLabel = user?.display_name || user?.email || "";
 
   return (
     <header
@@ -137,13 +163,11 @@ export function AppHeader({ className = "" }) {
               <SettingsIcon />
             </HeaderIconButton>
 
-            <Link
-              to={profileLink}
-              className="ml-1 flex h-9 w-9 overflow-hidden rounded-full border border-header-border ring-2 ring-transparent transition hover:ring-primary/20"
-              aria-label={isAuthenticated ? "Tài khoản của tôi" : "Đăng nhập"}
-            >
-              <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
-            </Link>
+            <HeaderAccountMenu
+              avatarUrl={avatarUrl}
+              isAuthenticated={isAuthenticated}
+              userLabel={userLabel}
+            />
           </div>
         </div>
       </div>

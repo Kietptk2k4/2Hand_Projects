@@ -11,6 +11,7 @@ import { VerifyEmailPage } from "../../features/auth/pages/VerifyEmailPage";
 import { AccountPasswordPage } from "../../features/auth/pages/AccountPasswordPage";
 import { ChangePasswordPage } from "../../features/auth/pages/ChangePasswordPage";
 import { SessionExpiredPage } from "../../features/auth/pages/SessionExpiredPage";
+import { AdminPage } from "../../features/auth/pages/AdminPage";
 
 function HomePage() {
   return (
@@ -41,6 +42,7 @@ export const router = createBrowserRouter([
           { path: APP_ROUTES.accountSecurity.slice(1), element: <AccountSecurityPage /> },
           { path: APP_ROUTES.accountPassword.slice(1), element: <AccountPasswordPage /> },
           { path: APP_ROUTES.changePassword.slice(1), element: <ChangePasswordPage /> },
+          { path: APP_ROUTES.admin.slice(1), element: <AdminPage /> },
         ],
       },
     ],

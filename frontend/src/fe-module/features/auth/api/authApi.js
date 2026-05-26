@@ -187,3 +187,39 @@ export async function getLoginHistory({ limit = 20, offset = 0 } = {}) {
   }
 }
 
+export async function getAdminRoles() {
+  try {
+    const response = await apiClient.get("/api/v1/admin/roles");
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function getRolePermissions(roleId) {
+  try {
+    const response = await apiClient.get(`/api/v1/admin/roles/${roleId}/permissions`);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function getUserPermissions(userId) {
+  try {
+    const response = await apiClient.get(`/api/v1/admin/users/${userId}/permissions`);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function assignRoleToUser(userId, payload) {
+  try {
+    const response = await apiClient.post(`/api/v1/admin/users/${userId}/roles`, payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+

@@ -6,10 +6,11 @@ export const APP_ROUTES = {
   verifyEmail: "/auth/verify-email",
   oauthSuccess: "/oauth/success",
   oauthFailure: "/oauth/failure",
-  account: "/account",
+  account: "/account-profile",
   accountSecurity: "/account/security",
   accountPassword: "/account/password",
   changePassword: "/account/change-password",
   sessionExpired: "/auth/session-expired",
+  admin: "/admin",
 };
 

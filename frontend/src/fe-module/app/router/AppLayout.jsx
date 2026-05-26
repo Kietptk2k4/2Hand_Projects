@@ -14,8 +14,9 @@ export function AppLayout() {
     location.pathname === APP_ROUTES.register ||
     location.pathname === APP_ROUTES.verifyEmail;
 
-  const isAccountRoute = location.pathname.startsWith(APP_ROUTES.account);
-  const isSensitiveRoute = isAccountRoute;
+  const isWideLayoutRoute =
+    location.pathname.startsWith(APP_ROUTES.account) || location.pathname.startsWith(APP_ROUTES.admin);
+  const isSensitiveRoute = location.pathname.startsWith(APP_ROUTES.account);
   const allowClose = !isSensitiveRoute;
 
   const onSignIn = () => {
@@ -57,7 +58,7 @@ export function AppLayout() {
       <main
         className={[
           "mx-auto w-full flex-1 px-4 py-8",
-          isAccountRoute ? "max-w-[1280px]" : "max-w-6xl",
+          isWideLayoutRoute ? "max-w-[1280px]" : "max-w-6xl",
         ].join(" ")}
       >
         <Outlet />
