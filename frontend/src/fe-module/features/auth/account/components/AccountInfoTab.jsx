@@ -123,6 +123,18 @@ export function AccountInfoTab({ profile, onTabChange }) {
             </Link>
           </div>
         </AccountCard>
+
+        <AccountCard>
+          <h2 className="mb-4 text-lg font-semibold text-on-surface">Bao mat</h2>
+          <p className="text-sm text-on-surface-variant">
+            Xem phien dang nhap dang hoat dong va lich su dang nhap cua tai khoan.
+          </p>
+          <div className="mt-4">
+            <Link to={APP_ROUTES.accountSecurity} className="font-medium text-primary hover:underline">
+              Bao mat tai khoan
+            </Link>
+          </div>
+        </AccountCard>
       </div>
     </div>
   );

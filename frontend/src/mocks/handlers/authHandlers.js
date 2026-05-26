@@ -1,5 +1,10 @@
 import { delay, http, HttpResponse } from "msw";
-import { DEVICE_RATE_LIMIT_EMAIL, mockUsers } from "../data/authData";
+import {
+  DEVICE_RATE_LIMIT_EMAIL,
+  mockLoginHistoryByUserId,
+  mockSessionsByUserId,
+  mockUsers,
+} from "../data/authData";
 import { apiError, apiSuccess } from "../utils/response";
 
 function getUserByToken(req) {
@@ -322,6 +327,53 @@ export const authHandlers = [
       apiSuccess(200, "Cap nhat cai dat thanh cong.", {
         appearance_mode: user.appearance_mode,
       }),
+      { status: 200 }
+    );
+  }),
+
+  http.get("*/api/v1/users/me/sessions", async ({ request }) => {
+    await delay(300);
+    const user = getUserByToken(request);
+    if (!user) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+
+    const sessions = mockSessionsByUserId[user.id] || [];
+    return HttpResponse.json(
+      apiSuccess(200, "Lay danh sach phien dang nhap thanh cong.", { sessions }),
+      { status: 200 }
+    );
+  }),
+
+  http.get("*/api/v1/users/me/login-history", async ({ request }) => {
+    await delay(350);
+    const user = getUserByToken(request);
+    if (!user) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+
+    const url = new URL(request.url);
+    const limit = Number.parseInt(url.searchParams.get("limit") || "20", 10);
+    const offset = Number.parseInt(url.searchParams.get("offset") || "0", 10);
+
+    if (Number.isNaN(limit) || limit < 1 || limit > 100) {
+      return HttpResponse.json(
+        apiError(400, "Limit khong hop le.", [{ field: "limit", reason: "INVALID_RANGE" }]),
+        { status: 400 }
+      );
+    }
+    if (Number.isNaN(offset) || offset < 0) {
+      return HttpResponse.json(
+        apiError(400, "Offset khong hop le.", [{ field: "offset", reason: "INVALID" }]),
+        { status: 400 }
+      );
+    }
+
+    const all = mockLoginHistoryByUserId[user.id] || [];
+    const items = all.slice(offset, offset + limit);
+
+    return HttpResponse.json(
+      apiSuccess(200, "Lay lich su dang nhap thanh cong.", { items, limit, offset }),
       { status: 200 }
     );
   }),

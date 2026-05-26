@@ -167,3 +167,23 @@ export async function softDeleteMyAccount(payload) {
   }
 }
 
+export async function getLoginSessions() {
+  try {
+    const response = await apiClient.get("/api/v1/users/me/sessions");
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function getLoginHistory({ limit = 20, offset = 0 } = {}) {
+  try {
+    const response = await apiClient.get("/api/v1/users/me/login-history", {
+      params: { limit, offset },
+    });
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
