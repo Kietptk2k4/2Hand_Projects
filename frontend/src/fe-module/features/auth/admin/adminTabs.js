@@ -4,4 +4,9 @@ export const ADMIN_TOP_TABS = [
     labelVn: "Role & Permission",
     labelEn: "Role & Permission",
   },
+  {
+    id: "loginSession",
+    labelVn: "Login & Session",
+    labelEn: "Login & Session",
+  },
 ];

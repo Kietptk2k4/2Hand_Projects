@@ -223,3 +223,30 @@ export async function assignRoleToUser(userId, payload) {
   }
 }
 
+export async function getAdminLoginHistory(userId, { page = 1, limit = 20, success, from, to } = {}) {
+  try {
+    const params = { page, limit };
+    if (success !== undefined && success !== null && success !== "") {
+      params.success = success;
+    }
+    if (from) params.from = from;
+    if (to) params.to = to;
+
+    const response = await apiClient.get(`/api/v1/admin/users/${userId}/login-history`, { params });
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function getAdminUserSessions(userId, { page = 1, limit = 20, status = "ACTIVE" } = {}) {
+  try {
+    const response = await apiClient.get(`/api/v1/admin/users/${userId}/sessions`, {
+      params: { page, limit, status },
+    });
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
