@@ -2,6 +2,7 @@ import { delay, http, HttpResponse } from "msw";
 import { mockUsers } from "../data/authData";
 import {
   ADMIN_USER_ID,
+  ROLE_IDS,
   mockAssignableUsers,
   mockRolePermissionsByRoleId,
   mockRoles,
@@ -158,6 +159,66 @@ export const adminRbacHandlers = [
       apiSuccess(200, "Gan role cho user thanh cong.", {
         user_id: userId,
         role_id: body.role_id,
+      }),
+      { status: 200 }
+    );
+  }),
+
+  http.delete("*/api/v1/admin/users/:userId/roles/:roleId", async ({ request, params }) => {
+    await delay(400);
+    const actor = getActorFromRequest(request);
+    if (!actor) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+    if (!isAdminActor(actor)) {
+      return HttpResponse.json(apiError(403, "Ban khong co quyen truy cap."), { status: 403 });
+    }
+
+    const userId = params.userId;
+    const roleId = params.roleId;
+
+    if (!isValidUuid(userId) || !isValidUuid(roleId)) {
+      return HttpResponse.json(
+        apiError(400, "Du lieu khong hop le.", [{ field: "roleId", reason: "INVALID_FORMAT" }]),
+        { status: 400 }
+      );
+    }
+
+    if (userId === actor.id) {
+      return HttpResponse.json(apiError(403, "Khong the thu hoi role cua chinh minh."), { status: 403 });
+    }
+
+    const target = mockUsers.find((u) => u.id === userId && u.status !== "DELETED");
+    if (!target) {
+      return HttpResponse.json(apiError(404, "Khong tim thay user."), { status: 404 });
+    }
+
+    const role = mockRoles.find((r) => r.id === roleId);
+    if (!role) {
+      return HttpResponse.json(apiError(404, "Khong tim thay role."), { status: 404 });
+    }
+
+    if (mockUserRoleAssignments[userId] !== roleId) {
+      return HttpResponse.json(
+        apiError(409, "Resource conflict", [{ field: "role_id", reason: "ROLE_NOT_ASSIGNED" }]),
+        { status: 409 }
+      );
+    }
+
+    if (roleId === ROLE_IDS.ADMIN && userId === ADMIN_USER_ID) {
+      return HttpResponse.json(
+        apiError(403, "Khong the thu hoi role ADMIN cuoi cung."),
+        { status: 403 }
+      );
+    }
+
+    delete mockUserRoleAssignments[userId];
+    mockUserPermissionsByUserId[userId] = [];
+
+    return HttpResponse.json(
+      apiSuccess(200, "Thu hoi role khoi user thanh cong.", {
+        user_id: userId,
+        role_id: roleId,
       }),
       { status: 200 }
     );

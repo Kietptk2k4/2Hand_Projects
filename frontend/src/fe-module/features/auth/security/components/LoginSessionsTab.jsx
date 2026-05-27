@@ -1,9 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
-import { getLoginSessions } from "../../api/authApi";
+import { useNavigate } from "react-router-dom";
+import { getLoginSessions, logoutAllSessions } from "../../api/authApi";
 import { useAuthSession } from "../../hooks/useAuthSession.jsx";
 import { formatDateTime } from "../utils/formatDateTime.js";
-import { AccountCard, AccountSkeleton, TabPanelHeader } from "../../../../shared/ui/auth/authUi.jsx";
+import { APP_ROUTES } from "../../../../shared/constants/routes";
+import {
+  AccountCard,
+  AccountSkeleton,
+  AuthAlert,
+  PrimaryButton,
+  SecondaryButton,
+  TabPanelHeader,
+} from "../../../../shared/ui/auth/authUi.jsx";
 import { EmptyState, ErrorState } from "../../../../shared/ui/PageState.jsx";
+
+const LOGOUT_ALL_SUCCESS_MESSAGE = "Da dang xuat tat ca phien dang nhap.";
 
 function SessionRow({ session }) {
   return (
@@ -37,10 +48,14 @@ function SessionRow({ session }) {
 }
 
 export function LoginSessionsTab() {
-  const { showSessionExpired } = useAuthSession();
+  const navigate = useNavigate();
+  const { showSessionExpired, clearSession, hideSessionExpired } = useAuthSession();
   const [sessions, setSessions] = useState([]);
   const [status, setStatus] = useState("loading");
   const [errorMessage, setErrorMessage] = useState("");
+  const [logoutAllError, setLogoutAllError] = useState("");
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isLoggingOutAll, setIsLoggingOutAll] = useState(false);
 
   const load = useCallback(async () => {
     setStatus("loading");
@@ -62,6 +77,36 @@ export function LoginSessionsTab() {
   useEffect(() => {
     load();
   }, [load]);
+
+  const onConfirmLogoutAll = async () => {
+    setIsLoggingOutAll(true);
+    setLogoutAllError("");
+
+    try {
+      await logoutAllSessions();
+      hideSessionExpired();
+      clearSession();
+      navigate(APP_ROUTES.login, {
+        replace: true,
+        state: { logoutMessage: LOGOUT_ALL_SUCCESS_MESSAGE },
+      });
+    } catch (error) {
+      if (error?.code === 401) {
+        showSessionExpired(error?.message);
+        setIsConfirmOpen(false);
+        return;
+      }
+      if (error?.code === 500) {
+        setLogoutAllError(error?.message || "Co loi xay ra. Vui long thu lai.");
+        setIsConfirmOpen(false);
+        return;
+      }
+      setLogoutAllError(error?.message || "Co loi xay ra. Vui long thu lai.");
+      setIsConfirmOpen(false);
+    } finally {
+      setIsLoggingOutAll(false);
+    }
+  };
 
   if (status === "loading") {
     return (
@@ -106,6 +151,33 @@ export function LoginSessionsTab() {
         subtitle="Xem cac thiet bi dang dang nhap vao tai khoan cua ban."
       />
 
+      {logoutAllError ? (
+        <div className="mb-4">
+          <AuthAlert variant="error" message={logoutAllError} />
+          <button
+            type="button"
+            onClick={() => setLogoutAllError("")}
+            className="mt-2 text-sm font-medium text-primary hover:underline"
+          >
+            Thu lai
+          </button>
+        </div>
+      ) : null}
+
+      <AccountCard className="mb-6">
+        <p className="mb-3 text-sm text-on-surface-variant">
+          Dang xuat khoi tat ca thiet bi dang dang nhap. Ban se can dang nhap lai.
+        </p>
+        <button
+          type="button"
+          onClick={() => setIsConfirmOpen(true)}
+          disabled={isLoggingOutAll}
+          className="rounded-lg border border-error px-4 py-2.5 text-sm font-semibold text-error transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Dang xuat tat ca thiet bi
+        </button>
+      </AccountCard>
+
       {sessions.length === 0 ? (
         <EmptyState message="Khong co phien dang nhap dang hoat dong." />
       ) : (
@@ -117,6 +189,41 @@ export function LoginSessionsTab() {
           </ul>
         </AccountCard>
       )}
+
+      {isConfirmOpen ? (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-on-surface/40 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="logout-all-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isLoggingOutAll) setIsConfirmOpen(false);
+          }}
+        >
+          <div className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-lg">
+            <div className="p-6">
+              <h3 id="logout-all-title" className="text-lg font-semibold text-on-surface">
+                Dang xuat tat ca thiet bi?
+              </h3>
+              <p className="mt-2 text-sm text-on-surface-variant">
+                Ban se can dang nhap lai tren cac thiet bi khac.
+              </p>
+            </div>
+            <div className="flex justify-end gap-3 border-t border-outline-variant bg-account-surface-low px-6 py-4">
+              <SecondaryButton
+                type="button"
+                disabled={isLoggingOutAll}
+                onClick={() => setIsConfirmOpen(false)}
+              >
+                Huy
+              </SecondaryButton>
+              <PrimaryButton type="button" loading={isLoggingOutAll} onClick={onConfirmLogoutAll}>
+                Dang xuat
+              </PrimaryButton>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

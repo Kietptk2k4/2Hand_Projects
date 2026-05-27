@@ -3,6 +3,7 @@ import { AdminNestedNav } from "../admin/components/AdminNestedNav.jsx";
 import { AdminPageLayout } from "../admin/components/AdminPageLayout.jsx";
 import { AdminUserTargetBar } from "../admin/loginSession/components/AdminUserTargetBar.jsx";
 import { AssignRoleTab } from "../admin/rolePermission/components/AssignRoleTab.jsx";
+import { RevokeRoleTab } from "../admin/rolePermission/components/RevokeRoleTab.jsx";
 import { PermissionsOfRoleTab } from "../admin/rolePermission/components/PermissionsOfRoleTab.jsx";
 import { PermissionsOfUserTab } from "../admin/rolePermission/components/PermissionsOfUserTab.jsx";
 import { RoleListTab } from "../admin/rolePermission/components/RoleListTab.jsx";
@@ -13,6 +14,7 @@ import { AuthAlert } from "../../../shared/ui/auth/authUi.jsx";
 const ROLE_PERMISSION_TAB_COMPONENTS = {
   "role-list": RoleListTab,
   assign: AssignRoleTab,
+  revoke: RevokeRoleTab,
   "role-permissions": PermissionsOfRoleTab,
   "user-permissions": PermissionsOfUserTab,
 };

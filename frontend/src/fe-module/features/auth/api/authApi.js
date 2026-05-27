@@ -93,6 +93,17 @@ export async function verifyEmail(payload) {
   }
 }
 
+export async function logoutWithRefreshToken(refreshToken) {
+  try {
+    const response = await httpClient.post("/api/v1/auth/logout", {
+      refresh_token: refreshToken,
+    });
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export function getOAuthRedirectUrl(provider) {
   const providers = {
     google: "/oauth2/authorization/google",
@@ -176,6 +187,15 @@ export async function getLoginSessions() {
   }
 }
 
+export async function logoutAllSessions() {
+  try {
+    const response = await apiClient.post("/api/v1/users/me/sessions/logout-all");
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export async function getLoginHistory({ limit = 20, offset = 0 } = {}) {
   try {
     const response = await apiClient.get("/api/v1/users/me/login-history", {
@@ -217,6 +237,15 @@ export async function getUserPermissions(userId) {
 export async function assignRoleToUser(userId, payload) {
   try {
     const response = await apiClient.post(`/api/v1/admin/users/${userId}/roles`, payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function revokeRoleFromUser(userId, roleId) {
+  try {
+    const response = await apiClient.delete(`/api/v1/admin/users/${userId}/roles/${roleId}`);
     return unwrapResponse(response);
   } catch (error) {
     throw mapAxiosError(error);

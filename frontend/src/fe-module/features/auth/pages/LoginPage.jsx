@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { loginWithEmail } from "../api/authApi";
 import { SocialLoginButtons } from "../components/SocialLoginButtons";
@@ -33,6 +33,7 @@ export function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({ email: "", password: "" });
   const [globalError, setGlobalError] = useState("");
+  const [logoutInfo, setLogoutInfo] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSocialRedirecting, setIsSocialRedirecting] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -42,6 +43,13 @@ export function LoginPage() {
     const value = params.get("redirectUrl");
     return isSafeRedirectUrl(value) ? value : APP_ROUTES.home;
   }, [location.search]);
+
+  useEffect(() => {
+    if (location.state?.logoutMessage) {
+      setLogoutInfo(location.state.logoutMessage);
+      navigate(`${location.pathname}${location.search}`, { replace: true, state: {} });
+    }
+  }, [location.pathname, location.search, location.state, navigate]);
 
   const onChange = (key) => (event) => {
     const nextValue = event.target.value;
@@ -120,6 +128,12 @@ export function LoginPage() {
             <h1 className="text-[44px] font-semibold leading-none text-primary">2Hands</h1>
             <p className="text-sm text-on-surface-variant">Chao mung ban quay tro lai. Vui long dang nhap.</p>
           </header>
+
+          {logoutInfo ? (
+            <div className="mt-7 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-on-surface">
+              <p>{logoutInfo}</p>
+            </div>
+          ) : null}
 
           {globalError ? (
             <div className="mt-7 rounded-lg border border-error bg-error-container px-4 py-3 text-sm text-on-error-container">

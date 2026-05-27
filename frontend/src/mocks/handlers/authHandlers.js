@@ -114,8 +114,15 @@ export const authHandlers = [
     );
   }),
 
-  http.post("*/api/v1/auth/logout", async () => {
+  http.post("*/api/v1/auth/logout", async ({ request }) => {
     await delay(250);
+    const body = await request.json();
+    if (!body?.refresh_token) {
+      return HttpResponse.json(
+        apiError(400, "Validation failed", [{ field: "refresh_token", reason: "REQUIRED" }]),
+        { status: 400 }
+      );
+    }
     return HttpResponse.json(apiSuccess(200, "Dang xuat thanh cong.", null), { status: 200 });
   }),
 
@@ -363,6 +370,28 @@ export const authHandlers = [
     const sessions = mockSessionsByUserId[user.id] || [];
     return HttpResponse.json(
       apiSuccess(200, "Lay danh sach phien dang nhap thanh cong.", { sessions }),
+      { status: 200 }
+    );
+  }),
+
+  http.post("*/api/v1/users/me/sessions/logout-all", async ({ request }) => {
+    await delay(300);
+    const user = getUserByToken(request);
+    if (!user) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+
+    const sessions = mockSessionsByUserId[user.id];
+    if (sessions) {
+      sessions.forEach((session) => {
+        if (session.status === "ACTIVE") {
+          session.status = "REVOKED";
+        }
+      });
+    }
+
+    return HttpResponse.json(
+      apiSuccess(200, "Dang xuat tat ca phien dang nhap thanh cong.", null),
       { status: 200 }
     );
   }),

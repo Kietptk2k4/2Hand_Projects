@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useLogout } from "../../features/auth/hooks/useLogout.js";
+import { PrimaryButton } from "./auth/authUi.jsx";
 import { APP_ROUTES } from "../constants/routes";
 
 const MENU_ITEMS = [
@@ -10,9 +12,11 @@ const MENU_ITEMS = [
 
 export function HeaderAccountMenu({ avatarUrl, isAuthenticated, userLabel = "" }) {
   const navigate = useNavigate();
+  const { performLogout, isLoggingOut } = useLogout();
   const menuId = useId();
   const rootRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const closeMenu = useCallback(() => {
     setIsOpen(false);
@@ -57,6 +61,16 @@ export function HeaderAccountMenu({ avatarUrl, isAuthenticated, userLabel = "" }
     }
   };
 
+  const handleLogoutClick = () => {
+    closeMenu();
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmLogout = async () => {
+    await performLogout();
+    setIsConfirmOpen(false);
+  };
+
   const displayLabel = userLabel?.trim();
 
   return (
@@ -99,6 +113,54 @@ export function HeaderAccountMenu({ avatarUrl, isAuthenticated, userLabel = "" }
               </Link>
             ))}
           </nav>
+
+          <div className="border-t border-header-border py-1">
+            <button
+              type="button"
+              role="menuitem"
+              onClick={handleLogoutClick}
+              disabled={isLoggingOut}
+              className="flex min-h-[44px] w-full items-center px-4 py-2.5 text-left text-sm font-medium text-account-danger transition-colors hover:bg-red-50 focus:bg-red-50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isLoggingOut ? "Dang xuat..." : "Logout"}
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {isConfirmOpen ? (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-on-surface/40 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="logout-confirm-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isLoggingOut) setIsConfirmOpen(false);
+          }}
+        >
+          <div className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-lg">
+            <div className="p-6">
+              <h3 id="logout-confirm-title" className="text-lg font-semibold text-on-surface">
+                Dang xuat?
+              </h3>
+              <p className="mt-2 text-sm text-on-surface-variant">
+                Ban co chac chan muon dang xuat khoi tai khoan tren thiet bi nay?
+              </p>
+            </div>
+            <div className="flex justify-end gap-3 border-t border-outline-variant bg-account-surface-low px-6 py-4">
+              <button
+                type="button"
+                disabled={isLoggingOut}
+                onClick={() => setIsConfirmOpen(false)}
+                className="rounded-lg px-4 py-2 text-sm font-medium text-on-surface-variant hover:text-on-surface"
+              >
+                Huy
+              </button>
+              <PrimaryButton type="button" onClick={handleConfirmLogout} loading={isLoggingOut}>
+                Dang xuat
+              </PrimaryButton>
+            </div>
+          </div>
         </div>
       ) : null}
     </div>
