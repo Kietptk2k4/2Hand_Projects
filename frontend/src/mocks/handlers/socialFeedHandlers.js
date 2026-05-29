@@ -1,15 +1,7 @@
 import { delay, http, HttpResponse } from "msw";
-import { mockUsers } from "../data/authData";
 import { mockFollowingFeedPosts, mockGlobalFeedPosts } from "../data/socialFeedData";
+import { getUserByToken } from "../utils/socialMockAuth";
 import { apiError, apiSuccess } from "../utils/response";
-
-function getUserByToken(request) {
-  const authHeader = request.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) return null;
-  const token = authHeader.replace("Bearer ", "");
-  if (token.includes("expired-access")) return null;
-  return mockUsers.find((item) => token.includes(item.id)) || null;
-}
 
 function parsePagination(url) {
   const pageParam = url.searchParams.get("page");

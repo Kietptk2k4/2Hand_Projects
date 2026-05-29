@@ -38,6 +38,25 @@
     @apply bg-surface font-body text-on-surface antialiased;
   }
 
+  .skeleton-shimmer {
+    background: linear-gradient(90deg, #f0f3ff 25%, #e7eeff 50%, #f0f3ff 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  .material-symbols-outlined.fill {
+    font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+  }
+
   .material-symbols-outlined {
     font-family: "Material Symbols Outlined";
     font-weight: normal;

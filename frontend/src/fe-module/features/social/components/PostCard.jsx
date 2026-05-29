@@ -1,5 +1,3 @@
-import { useNavigate } from "react-router-dom";
-import { APP_ROUTES } from "../../../shared/constants/routes";
 import { authorAvatarUrl, authorDisplayName } from "../utils/authorDisplay";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
 import { PostCaption } from "./PostCaption";
@@ -13,12 +11,9 @@ function formatCount(value) {
   return String(num);
 }
 
-export function PostCard({ post, onComingSoon }) {
-  const navigate = useNavigate();
-  const postRoute = APP_ROUTES.socialPostDetail.replace(":postId", post.postId);
-
-  const openPost = () => {
-    navigate(postRoute);
+export function PostCard({ post, onOpenPost, onComingSoon }) {
+  const openDetail = (options) => {
+    onOpenPost?.(post.postId, options);
   };
 
   const stopAnd = (handler) => (event) => {
@@ -27,29 +22,24 @@ export function PostCard({ post, onComingSoon }) {
   };
 
   return (
-    <article
-      className="cursor-pointer overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm transition-shadow hover:shadow-md"
-      onClick={openPost}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          openPost();
-        }
-      }}
-      role="link"
-      tabIndex={0}
-      aria-label="Xem chi tiết bài viết"
-    >
+    <article className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm transition-shadow hover:shadow-md">
       <div className="p-6">
         <div className="mb-4 flex items-start justify-between">
-          <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="flex items-center gap-3 text-left"
+            onClick={stopAnd(onComingSoon)}
+            aria-label="Xem hồ sơ tác giả"
+          >
             <img
               src={authorAvatarUrl(post.authorId)}
               alt=""
               className="h-12 w-12 rounded-full object-cover"
             />
             <div>
-              <h4 className="text-sm font-semibold text-on-surface">{authorDisplayName(post.authorId)}</h4>
+              <h4 className="text-sm font-semibold text-on-surface">
+                {authorDisplayName(post.authorId)}
+              </h4>
               <p className="text-sm text-on-surface-variant">Thành viên 2Hands</p>
               <span className="mt-1 flex items-center gap-1 text-xs text-outline">
                 <span className="material-symbols-outlined text-[14px]" aria-hidden="true">
@@ -58,7 +48,7 @@ export function PostCard({ post, onComingSoon }) {
                 {formatRelativeTime(post.createdAt)}
               </span>
             </div>
-          </div>
+          </button>
           <button
             type="button"
             className="p-1 text-on-surface-variant hover:text-on-surface"
@@ -70,10 +60,15 @@ export function PostCard({ post, onComingSoon }) {
             </span>
           </button>
         </div>
-        <PostCaption caption={post.caption} hashtags={post.hashtags} />
+        <PostCaption
+          caption={post.caption}
+          hashtags={post.hashtags}
+          onCaptionClick={() => openDetail()}
+          onHashtagClick={() => onComingSoon?.()}
+        />
       </div>
 
-      <PostMediaGrid media={post.media} />
+      <PostMediaGrid media={post.media} onMediaClick={() => openDetail()} />
 
       <div className="flex items-center justify-between border-t border-outline-variant bg-[#f9f9ff] p-6">
         <div className="flex gap-4">
@@ -91,7 +86,7 @@ export function PostCard({ post, onComingSoon }) {
           <button
             type="button"
             className="flex items-center gap-2 text-on-surface-variant transition-colors hover:text-primary"
-            onClick={stopAnd(onComingSoon)}
+            onClick={() => openDetail({ focusComments: true })}
             aria-label="Bình luận"
             disabled={post.allowComments === false}
           >

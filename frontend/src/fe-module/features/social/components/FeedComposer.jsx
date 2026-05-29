@@ -18,9 +18,12 @@ function ArticleIcon() {
   );
 }
 
-export function FeedComposer({ onComingSoon }) {
+export function FeedComposer({ onOpenCreatePost, onOpenCreatePostWithFilePicker }) {
   const { user } = useAuthSession();
   const avatarUrl = user?.avatar_url || user?.profile?.avatar_url || DEFAULT_AVATAR_URL;
+
+  const openModal = () => onOpenCreatePost?.();
+  const openWithPicker = () => onOpenCreatePostWithFilePicker?.();
 
   return (
     <div className="flex items-start gap-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
@@ -33,16 +36,17 @@ export function FeedComposer({ onComingSoon }) {
         <input
           type="text"
           readOnly
-          onFocus={onComingSoon}
+          onClick={openModal}
+          onFocus={openModal}
           placeholder="Start a post or share an update..."
-          className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-4 py-3 text-base text-on-surface outline-none transition placeholder:text-on-surface-variant/70 focus:border-primary focus:ring-1 focus:ring-primary"
+          className="cursor-pointer w-full rounded-lg border border-outline-variant bg-surface-container-low px-4 py-3 text-base text-on-surface outline-none transition placeholder:text-on-surface-variant/70 focus:border-primary focus:ring-1 focus:ring-primary"
           aria-label="Soạn bài viết"
         />
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={onComingSoon}
+              onClick={openWithPicker}
               className="rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-low"
               title="Thêm ảnh"
               aria-label="Thêm ảnh"
@@ -51,7 +55,7 @@ export function FeedComposer({ onComingSoon }) {
             </button>
             <button
               type="button"
-              onClick={onComingSoon}
+              onClick={openWithPicker}
               className="rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-low"
               title="Thêm tài liệu"
               aria-label="Thêm tài liệu"
@@ -59,13 +63,9 @@ export function FeedComposer({ onComingSoon }) {
               <ArticleIcon />
             </button>
           </div>
-          <button
-            type="button"
-            onClick={onComingSoon}
-            className="rounded-lg bg-primary px-6 py-2 text-sm font-medium text-on-primary shadow-sm transition-colors hover:bg-[#0050cb]"
-          >
+          <span className="rounded-lg px-6 py-2 text-sm font-medium text-on-surface-variant">
             Post
-          </button>
+          </span>
         </div>
       </div>
     </div>

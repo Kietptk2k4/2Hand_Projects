@@ -76,6 +76,10 @@ export function useFeed(activeTab) {
     loadPage(0, { append: false });
   }, [items.length, loadPage, page]);
 
+  const refetch = useCallback(() => {
+    loadPage(0, { append: false });
+  }, [loadPage]);
+
   return {
     items,
     meta,
@@ -86,5 +90,6 @@ export function useFeed(activeTab) {
     hasNext: Boolean(meta?.hasNext),
     loadMore,
     retry,
+    refetch,
   };
 }

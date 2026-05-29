@@ -104,6 +104,8 @@ Handlers: `frontend/src/mocks/handlers/socialFeedHandlers.js`
 
 Đăng nhập mock: `active@2hands.vn` / `Password123!` → mở `/social`.
 
+Post detail (modal): `/social?postId=674a10000000000000000001` (ObjectId **24** ký tự hex).
+
 ---
 
 ## 8. Assumptions

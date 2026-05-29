@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Create Post - 2Hands</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary-container": "#f8f7ff",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "secondary": "#4648d4",
+                        "surface-variant": "#d8e3fb",
+                        "on-primary": "#ffffff",
+                        "on-background": "#111c2d",
+                        "on-tertiary-fixed": "#191c1e",
+                        "inverse-surface": "#263143",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "on-primary-fixed": "#001849",
+                        "surface-container": "#e7eeff",
+                        "surface-tint": "#0054d6",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "error": "#ba1a1a",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-container": "#6f7274",
+                        "surface-dim": "#cfdaf2",
+                        "tertiary": "#565a5b",
+                        "primary-container": "#0066ff",
+                        "outline": "#727687",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "secondary-container": "#6063ee",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#dee8ff",
+                        "on-tertiary-container": "#f6f8fa",
+                        "primary-fixed": "#dae1ff",
+                        "on-surface-variant": "#424656",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#e0e3e5",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "surface": "#f9f9ff",
+                        "primary": "#0050cb",
+                        "error-container": "#ffdad6",
+                        "background": "#f9f9ff",
+                        "on-secondary-fixed": "#07006c",
+                        "on-primary-fixed-variant": "#003fa4",
+                        "secondary-fixed": "#e1e0ff",
+                        "surface-container-low": "#f0f3ff",
+                        "surface-container-highest": "#d8e3fb",
+                        "surface-bright": "#f9f9ff",
+                        "on-secondary-container": "#fffbff",
+                        "inverse-primary": "#b3c5ff",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#111c2d",
+                        "outline-variant": "#c2c6d8",
+                        "inverse-on-surface": "#ecf1ff"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "xs": "4px",
+                        "sm": "12px",
+                        "container-max": "1280px",
+                        "lg": "40px",
+                        "xl": "64px",
+                        "md": "24px",
+                        "gutter": "24px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "32px"
+                    },
+                    fontFamily: {
+                        "body-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-xl-mobile": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    fontSize: {
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "headline-xl": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-xl-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1;
+        }
+        /* Custom scrollbar for textareas/scrollable areas */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #c2c6d8;
+            border-radius: 9999px;
+        }
+        body {
+            background-color: #f9f9ff;
+            /* Simulating backdrop */
+            background-image: radial-gradient(circle at 50% 50%, rgba(17, 28, 45, 0.4) 0%, rgba(17, 28, 45, 0.8) 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-margin-mobile md:p-margin-desktop font-body-md text-body-md text-on-surface antialiased overflow-hidden">
+<!-- Modal Backdrop / Container -->
+<div aria-modal="true" class="fixed inset-0 z-40 bg-on-background/40 backdrop-blur-sm flex items-center justify-center p-margin-mobile md:p-margin-desktop" role="dialog">
+<!-- Modal Card -->
+<div class="bg-surface-container-lowest w-full max-w-[1024px] max-h-[921px] rounded-xl shadow-lg flex flex-col overflow-hidden ring-1 ring-outline-variant/30 transform transition-all">
+<!-- Modal Header -->
+<div class="flex items-center justify-between px-md py-sm border-b border-outline-variant/50 bg-surface">
+<div class="flex items-center gap-sm">
+<button aria-label="Close" class="p-base rounded-full hover:bg-surface-variant transition-colors group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface">close</span>
+</button>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Create Post</h2>
+</div>
+<div class="flex items-center gap-sm">
+<button class="font-label-md text-label-md text-primary bg-primary-fixed hover:bg-primary-fixed-dim px-sm py-base rounded-full transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">draft</span>
+                        Save Draft
+                    </button>
+<button class="font-label-md text-label-md text-on-primary bg-primary hover:bg-on-primary-fixed-variant px-md py-base rounded-full transition-colors font-semibold shadow-sm">
+                        Publish
+                    </button>
+</div>
+</div>
+<!-- Modal Body (Two Column Layout on Desktop) -->
+<div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+<!-- Left Column: Media Preview & Edit -->
+<div class="w-full md:w-[55%] bg-surface-container-low flex flex-col border-r border-outline-variant/30">
+<!-- Main Media Display -->
+<div class="relative flex-1 bg-surface-container-high flex items-center justify-center overflow-hidden min-h-[300px] md:min-h-0">
+<!-- Placeholder Image - In reality would be uploaded media -->
+<img alt="Professional cleaning service" class="absolute inset-0 w-full h-full object-cover" data-alt="A bright, modern interior showing a professional cleaning service context. Natural sunlight streaming through large windows illuminating a pristine living room. The style is clean, corporate modern, reflecting high quality and reliability. The color palette features neutral whites, soft greys, and subtle hints of vibrant blue matching a professional brand aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD1nyjHdqHO59UFiR6E8ul-6BbMLpM9vOrriTLQOLqEAZ5uEnrQQdGZYzyR7NCaanyR64MOIGRUQHnbbo-1zO64SHT7dBw-UdHtKjZS5rgCCUGYyaf8EOHCxj7pztDo_hwGrXgGz4OZ6CxzIso5LPvHtTjMzpBnTLMvKpAcmcWru3S-QVzrpYRM1OsW_RthlFMVFFXbQjei4oxQMPiQp9pKGkHl39IrqVQ-ztfbR4MMPS4R4zSa7k2LbL3knUXreZvKAPylzGxUr4"/>
+<!-- Overlay Gradient for better visibility of controls if needed -->
+<div class="absolute inset-0 bg-gradient-to-b from-on-background/20 via-transparent to-on-background/40 pointer-events-none"></div>
+<!-- Product Tag UI overlay on image -->
+<div class="absolute top-md left-md right-md flex justify-center z-10 pointer-events-none">
+<div class="bg-surface-container-lowest/90 backdrop-blur-md px-sm py-xs rounded-full border border-outline-variant/30 flex items-center gap-sm shadow-sm pointer-events-auto cursor-pointer hover:bg-surface-container-lowest transition-colors">
+<span class="material-symbols-outlined text-[16px] text-primary">sell</span>
+<span class="font-label-sm text-label-sm text-on-surface">Tag Service / Product</span>
+</div>
+</div>
+<!-- Media Controls -->
+<div class="absolute bottom-md left-md right-md flex justify-between items-center z-10">
+<div class="flex gap-sm">
+<button aria-label="Edit Image" class="bg-on-background/60 hover:bg-on-background/80 text-on-primary p-base rounded-full backdrop-blur-sm transition-colors">
+<span class="material-symbols-outlined text-[20px]">crop</span>
+</button>
+<button aria-label="Add Filters" class="bg-on-background/60 hover:bg-on-background/80 text-on-primary p-base rounded-full backdrop-blur-sm transition-colors">
+<span class="material-symbols-outlined text-[20px]">auto_fix_high</span>
+</button>
+</div>
+<button aria-label="Add more media" class="bg-primary hover:bg-primary-fixed-dim text-on-primary p-base rounded-full shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[20px]">add_photo_alternate</span>
+</button>
+</div>
+</div>
+<!-- Thumbnail Strip -->
+<div class="p-sm flex gap-sm overflow-x-auto bg-surface border-t border-outline-variant/30 hide-scrollbar">
+<!-- Active Thumbnail -->
+<div class="w-16 h-16 rounded-lg overflow-hidden border-2 border-primary relative flex-shrink-0 cursor-pointer">
+<img alt="Thumb 1" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxrxHbcHwILHDXD4jDQ6v4d4ELsRypP7zux4B3bXJewdesYoCrQ6Yp_AczQ6Dkb7-gF3R8KbrOMM_XWv_UKyX7OAFDvAd3XLt1smiCJ_rsIn1fM52z5uJyd60DVlODDhtB_krgpgjZrae6y_R2S1MW7-UqT7yBauW2P01uzHYpYcPP3n7dr2NFp2JahcED0CHyeDQpa9lc47Jc38iOIdVsYDP1qIKd-qZextFxyuxF7CiM6ZT7j-Xs6QoZWItEoEoMJrecuX12jp0"/>
+</div>
+<!-- Inactive Thumbnail -->
+<div class="w-16 h-16 rounded-lg overflow-hidden border border-outline-variant/50 relative flex-shrink-0 cursor-pointer opacity-70 hover:opacity-100 transition-opacity">
+<div class="absolute inset-0 bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">image</span>
+</div>
+</div>
+<!-- Add Thumbnail Button -->
+<button class="w-16 h-16 rounded-lg border border-dashed border-outline-variant flex items-center justify-center text-outline hover:text-primary hover:border-primary hover:bg-primary-fixed/20 transition-colors flex-shrink-0">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+<!-- Right Column: Form Controls -->
+<div class="w-full md:w-[45%] flex flex-col bg-surface-container-lowest overflow-y-auto">
+<!-- User Info & Privacy -->
+<div class="p-md flex items-center justify-between border-b border-outline-variant/30">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div>
+<div class="font-label-md text-label-md text-on-surface font-semibold">Workspace</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Posting as business</div>
+</div>
+</div>
+<!-- Visibility Dropdown -->
+<button class="flex items-center gap-xs px-sm py-xs bg-surface-container border border-outline-variant/50 rounded-lg hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">public</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Public</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">expand_more</span>
+</button>
+</div>
+<!-- Content Entry -->
+<div class="p-md flex-1 flex flex-col gap-md">
+<!-- Caption Area -->
+<div class="flex-1 min-h-[120px]">
+<textarea class="w-full h-full bg-transparent border-none focus:ring-0 p-0 font-body-md text-body-md text-on-surface placeholder:text-outline resize-none" placeholder="Write a caption... Describe your service, share a tip, or ask a question."></textarea>
+</div>
+<!-- Hashtags -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-sm text-label-sm text-on-surface-variant">Hashtags</label>
+<div class="flex flex-wrap gap-xs">
+<div class="px-sm py-xs rounded-full bg-surface-container-high text-on-surface-variant font-body-sm text-body-sm flex items-center gap-xs">
+                                    #cleaning
+                                    <span class="material-symbols-outlined text-[14px] cursor-pointer hover:text-error">close</span>
+</div>
+<div class="px-sm py-xs rounded-full bg-surface-container-high text-on-surface-variant font-body-sm text-body-sm flex items-center gap-xs">
+                                    #professional
+                                    <span class="material-symbols-outlined text-[14px] cursor-pointer hover:text-error">close</span>
+</div>
+<input class="bg-transparent border-none focus:ring-0 p-0 py-xs text-body-sm font-body-sm placeholder:text-outline w-24" placeholder="Add hashtag..." type="text"/>
+</div>
+</div>
+<hr class="border-outline-variant/30"/>
+<!-- Linked Commerce Product/Service Section -->
+<div class="flex flex-col gap-sm">
+<div class="flex justify-between items-center">
+<h3 class="font-label-md text-label-md text-on-surface font-semibold">Linked Service</h3>
+<button class="font-label-sm text-label-sm text-primary hover:text-on-primary-fixed-variant transition-colors">Change</button>
+</div>
+<!-- Linked Item Card -->
+<div class="flex gap-sm p-sm border border-outline-variant/50 rounded-lg bg-surface-container-low items-center">
+<div class="w-12 h-12 rounded bg-surface-container-high flex-shrink-0 overflow-hidden flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">cleaning_services</span>
+</div>
+<div class="flex-1">
+<div class="font-label-md text-label-md text-on-surface truncate">Deep Home Cleaning Service</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Residential</div>
+</div>
+<div class="font-label-md text-label-md text-on-surface font-semibold">
+                                    $120.00
+                                </div>
+</div>
+</div>
+<!-- Location/Check-in (Optional addition based on standard social patterns) -->
+<div class="flex items-center gap-sm p-sm hover:bg-surface-container rounded-lg cursor-pointer transition-colors border border-transparent hover:border-outline-variant/30">
+<span class="material-symbols-outlined text-on-surface-variant">location_on</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Add Location</span>
+<span class="material-symbols-outlined text-outline ml-auto">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

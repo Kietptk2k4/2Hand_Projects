@@ -1,3 +1,17 @@
+/** MongoDB ObjectId = exactly 24 hex characters */
+const POST_PREFIX = "674a100000000000000000";
+
+export function mockPostId(suffix) {
+  if (suffix === "403") {
+    return "674a10000000000000000403";
+  }
+  const id = `${POST_PREFIX}${String(suffix).padStart(2, "0")}`;
+  if (id.length !== 24) {
+    throw new Error(`Invalid mock postId "${id}" (length ${id.length})`);
+  }
+  return id;
+}
+
 /** Followee author IDs (ACCEPTED) for mock following feed */
 export const MOCK_FOLLOWEE_IDS = [
   "a5af3d91-b53a-4b82-9eef-1dfa15e1fbb5",
@@ -23,7 +37,7 @@ function post(overrides) {
 /** Sorted newest first (createdAt DESC) */
 export const mockGlobalFeedPosts = [
   post({
-    postId: "674a100000000000000000001",
+    postId: mockPostId("01"),
     authorId: MOCK_FOLLOWEE_IDS[0],
     caption:
       "Just wrapped up an incredible seminar on cross-border taxation. Key takeaways for e-commerce platforms are massive. #TaxLaw #Ecommerce #Consulting",
@@ -40,7 +54,7 @@ export const mockGlobalFeedPosts = [
     ],
   }),
   post({
-    postId: "674a100000000000000000002",
+    postId: mockPostId("02"),
     authorId: "b8b9bf76-2ab2-4a01-8f16-fd0f5f9f95d1",
     caption:
       "Excited to announce my new portfolio site! Thanks to the 2Hands community for beta feedback. #WebDev #Portfolio",
@@ -51,7 +65,7 @@ export const mockGlobalFeedPosts = [
     updatedAt: "2026-05-28T14:30:00Z",
   }),
   post({
-    postId: "674a100000000000000000003",
+    postId: mockPostId("03"),
     authorId: MOCK_FOLLOWEE_IDS[1],
     caption: "Spring microservices tip: keep feed reads separate from write paths. #spring #java",
     hashtags: ["spring", "java"],
@@ -64,7 +78,7 @@ export const mockGlobalFeedPosts = [
     ],
   }),
   post({
-    postId: "674a100000000000000000004",
+    postId: mockPostId("04"),
     authorId: "c0000000-0000-4000-8000-000000000099",
     caption: "Platform maintenance completed. All social APIs are green.",
     likeCount: 8,
@@ -72,7 +86,7 @@ export const mockGlobalFeedPosts = [
     createdAt: "2026-05-26T09:00:00Z",
   }),
   post({
-    postId: "674a100000000000000000005",
+    postId: mockPostId("05"),
     authorId: MOCK_FOLLOWEE_IDS[0],
     caption: "Remote work checklist for 2024 — thread in comments.",
     hashtags: ["RemoteWork2024"],
@@ -87,7 +101,7 @@ export const mockGlobalFeedPosts = [
     ],
   }),
   post({
-    postId: "674a100000000000000000006",
+    postId: mockPostId("06"),
     authorId: MOCK_FOLLOWEE_IDS[1],
     caption: "hello world",
     likeCount: 4,
@@ -95,7 +109,7 @@ export const mockGlobalFeedPosts = [
     createdAt: "2026-05-24T11:00:00Z",
   }),
   post({
-    postId: "674a100000000000000000007",
+    postId: mockPostId("07"),
     authorId: "b8b9bf76-2ab2-4a01-8f16-fd0f5f9f95d1",
     caption: "Long caption for testing Xem thêm in feed. ".repeat(12),
     likeCount: 2,
@@ -103,7 +117,7 @@ export const mockGlobalFeedPosts = [
     createdAt: "2026-05-23T08:00:00Z",
   }),
   post({
-    postId: "674a100000000000000000008",
+    postId: mockPostId("08"),
     authorId: MOCK_FOLLOWEE_IDS[0],
     caption: "Freelance tips: invoice early, communicate often.",
     hashtags: ["FreelanceTips"],
@@ -112,7 +126,7 @@ export const mockGlobalFeedPosts = [
     createdAt: "2026-05-22T12:00:00Z",
   }),
   post({
-    postId: "674a100000000000000000009",
+    postId: mockPostId("09"),
     authorId: MOCK_FOLLOWEE_IDS[1],
     caption: "AI in finance — what we are watching this quarter.",
     hashtags: ["AIinFinance"],
@@ -122,7 +136,7 @@ export const mockGlobalFeedPosts = [
     media: [{ url: `${CDN}/photo-1551288049-bebda4e38f71?w=800&q=80`, type: "IMAGE" }],
   }),
   post({
-    postId: "674a10000000000000000000a",
+    postId: mockPostId("0a"),
     authorId: "c0000000-0000-4000-8000-000000000099",
     caption: "Welcome new providers to 2Hands!",
     likeCount: 150,
@@ -130,7 +144,7 @@ export const mockGlobalFeedPosts = [
     createdAt: "2026-05-20T10:00:00Z",
   }),
   post({
-    postId: "674a10000000000000000000b",
+    postId: mockPostId("0b"),
     authorId: MOCK_FOLLOWEE_IDS[0],
     caption: "Legal tech roundup #LegalTech",
     hashtags: ["LegalTech"],
@@ -139,7 +153,7 @@ export const mockGlobalFeedPosts = [
     createdAt: "2026-05-19T15:00:00Z",
   }),
   post({
-    postId: "674a10000000000000000000c",
+    postId: mockPostId("0c"),
     authorId: MOCK_FOLLOWEE_IDS[1],
     caption: "Following-only visibility demo post.",
     visibility: "FOLLOWERS",
@@ -158,7 +172,7 @@ export const mockGlobalFeedPosts = [
     createdAt: "2026-05-17T18:00:00Z",
   }),
   post({
-    postId: "674a10000000000000000000e",
+    postId: mockPostId("0e"),
     authorId: MOCK_FOLLOWEE_IDS[0],
     caption: "Pagination test post 14",
     likeCount: 1,
@@ -166,7 +180,7 @@ export const mockGlobalFeedPosts = [
     createdAt: "2026-05-16T10:00:00Z",
   }),
   post({
-    postId: "674a10000000000000000000f",
+    postId: mockPostId("0f"),
     authorId: MOCK_FOLLOWEE_IDS[1],
     caption: "Pagination test post 15",
     likeCount: 1,
@@ -174,7 +188,7 @@ export const mockGlobalFeedPosts = [
     createdAt: "2026-05-15T10:00:00Z",
   }),
   post({
-    postId: "674a100000000000000000010",
+    postId: mockPostId("10"),
     authorId: MOCK_FOLLOWEE_IDS[0],
     caption: "Pagination test post 16",
     likeCount: 1,
@@ -182,7 +196,7 @@ export const mockGlobalFeedPosts = [
     createdAt: "2026-05-14T10:00:00Z",
   }),
   post({
-    postId: "674a100000000000000000011",
+    postId: mockPostId("11"),
     authorId: MOCK_FOLLOWEE_IDS[1],
     caption: "Pagination test post 17",
     likeCount: 1,
@@ -190,7 +204,7 @@ export const mockGlobalFeedPosts = [
     createdAt: "2026-05-13T10:00:00Z",
   }),
   post({
-    postId: "674a100000000000000000012",
+    postId: mockPostId("12"),
     authorId: "b8b9bf76-2ab2-4a01-8f16-fd0f5f9f95d1",
     caption: "Pagination test post 18",
     likeCount: 1,
@@ -198,7 +212,7 @@ export const mockGlobalFeedPosts = [
     createdAt: "2026-05-12T10:00:00Z",
   }),
   post({
-    postId: "674a100000000000000000013",
+    postId: mockPostId("13"),
     authorId: MOCK_FOLLOWEE_IDS[0],
     caption: "Pagination test post 19",
     likeCount: 1,
@@ -214,7 +228,7 @@ export const mockGlobalFeedPosts = [
     createdAt: "2026-05-10T10:00:00Z",
   }),
   post({
-    postId: "674a100000000000000000015",
+    postId: mockPostId("15"),
     authorId: MOCK_FOLLOWEE_IDS[0],
     caption: "Pagination test post 21 — appears on page 1",
     likeCount: 1,
@@ -222,7 +236,7 @@ export const mockGlobalFeedPosts = [
     createdAt: "2026-05-09T10:00:00Z",
   }),
   post({
-    postId: "674a100000000000000000016",
+    postId: mockPostId("16"),
     authorId: MOCK_FOLLOWEE_IDS[1],
     caption: "Pagination test post 22",
     likeCount: 1,

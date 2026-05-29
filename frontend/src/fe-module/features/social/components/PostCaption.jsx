@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 
 const HASHTAG_REGEX = /#([\w\u00C0-\u024F\u1E00-\u1EFF]+)/g;
 
-function renderCaptionWithHashtags(text, extraHashtags = []) {
+function renderCaptionWithHashtags(text, extraHashtags = [], onHashtagClick) {
   if (!text && extraHashtags.length === 0) return null;
 
   const tagSet = new Set(
@@ -45,7 +45,11 @@ function renderCaptionWithHashtags(text, extraHashtags = []) {
         key={`h-${index}-${part.value}`}
         href="#"
         className="text-primary hover:underline"
-        onClick={(event) => event.preventDefault()}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          onHashtagClick?.(part.value);
+        }}
       >
         #{part.value}
       </a>
@@ -53,7 +57,12 @@ function renderCaptionWithHashtags(text, extraHashtags = []) {
   });
 }
 
-export function PostCaption({ caption, hashtags = [] }) {
+export function PostCaption({
+  caption,
+  hashtags = [],
+  onCaptionClick,
+  onHashtagClick,
+}) {
   const [expanded, setExpanded] = useState(false);
   const isLong = useMemo(() => (caption || "").length > 180, [caption]);
 
@@ -61,20 +70,44 @@ export function PostCaption({ caption, hashtags = [] }) {
     return null;
   }
 
-  return (
-    <div className="text-base text-on-surface">
+  const captionBody = (
+    <>
       <p className={!expanded && isLong ? "line-clamp-3" : ""}>
-        {renderCaptionWithHashtags(caption, hashtags)}
+        {renderCaptionWithHashtags(caption, hashtags, onHashtagClick)}
       </p>
       {isLong ? (
         <button
           type="button"
-          onClick={() => setExpanded((prev) => !prev)}
+          onClick={(event) => {
+            event.stopPropagation();
+            setExpanded((prev) => !prev);
+          }}
           className="mt-1 text-sm font-medium text-primary hover:underline"
         >
           {expanded ? "Thu gọn" : "Xem thêm"}
         </button>
       ) : null}
-    </div>
+    </>
   );
+
+  if (onCaptionClick) {
+    return (
+      <div
+        className="cursor-pointer text-base text-on-surface"
+        onClick={onCaptionClick}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onCaptionClick(event);
+          }
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        {captionBody}
+      </div>
+    );
+  }
+
+  return <div className="text-base text-on-surface">{captionBody}</div>;
 }
