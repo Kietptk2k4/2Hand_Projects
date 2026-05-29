@@ -26,6 +26,11 @@
   --color-account-surface-dim: #cfdaf2;
   --color-account-danger: #d92d20;
   --color-primary-container: #0066ff;
+  --color-secondary: #4648d4;
+  --color-surface-container-low: #f0f3ff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-high: #dee8ff;
+  --color-outline: #727687;
 }
 
 @layer base {

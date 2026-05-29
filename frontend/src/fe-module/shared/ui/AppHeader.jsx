@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { getMyProfile } from "../../features/auth/api/authApi";
 import { useAuthSession } from "../../features/auth/hooks/useAuthSession.jsx";
 import { APP_ROUTES } from "../constants/routes";
@@ -9,6 +9,7 @@ const DEFAULT_AVATAR_URL = "https://i.pravatar.cc/96?img=11";
 
 const NAV_LINKS = [
   { label: "Dashboard", to: APP_ROUTES.home },
+  { label: "Social", to: APP_ROUTES.socialFeed },
   { label: "Services", to: "#services" },
   { label: "My Bookings", to: "#bookings" },
 ];
@@ -80,6 +81,7 @@ function SettingsIcon() {
 }
 
 export function AppHeader({ className = "" }) {
+  const location = useLocation();
   const { isAuthenticated, user } = useAuthSession();
   const [profileAvatarUrl, setProfileAvatarUrl] = useState(null);
 
@@ -139,17 +141,27 @@ export function AppHeader({ className = "" }) {
             className="hidden items-center gap-6 text-sm font-medium text-header-nav md:flex"
             aria-label="Main"
           >
-            {NAV_LINKS.map((item) =>
-              item.to.startsWith("#") ? (
-                <a key={item.label} href={item.to} className="transition-colors hover:text-header-brand">
+            {NAV_LINKS.map((item) => {
+              const isActive =
+                !item.to.startsWith("#") &&
+                (location.pathname === item.to || location.pathname.startsWith(`${item.to}/`));
+              const linkClass = [
+                "transition-colors hover:text-header-brand",
+                isActive ? "border-b-2 border-header-brand pb-0.5 text-header-brand" : "",
+              ]
+                .filter(Boolean)
+                .join(" ");
+
+              return item.to.startsWith("#") ? (
+                <a key={item.label} href={item.to} className={linkClass}>
                   {item.label}
                 </a>
               ) : (
-                <Link key={item.label} to={item.to} className="transition-colors hover:text-header-brand">
+                <Link key={item.label} to={item.to} className={linkClass}>
                   {item.label}
                 </Link>
-              )
-            )}
+              );
+            })}
           </nav>
 
           <div className="flex items-center gap-2 md:gap-3">

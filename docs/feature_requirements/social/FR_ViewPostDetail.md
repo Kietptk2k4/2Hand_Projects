@@ -2,7 +2,7 @@
 
 ## 1. Feature Overview
 
-Cho phep user xem chi tiet mot bai viet (caption, media, hashtags, counters, author, trang thai tuong tac cua viewer) de phuc vu man hinh post detail, deep link va share.
+Cho phep user xem chi tiet mot bai viet (caption, media, hashtags, counters, author, trang thai tuong tac cua viewer) de phuc vu **Post Detail Modal** (overlay tren feed/profile/saved), deep link va share. Quy tac mo modal va entry points: `docs/api_fe_behavior/social_api_fe_behavior/FR_ViewPostDetail.md` muc 9.1.
 
 ## 2. Actors
 
@@ -146,3 +146,4 @@ Cho phep user xem chi tiet mot bai viet (caption, media, hashtags, counters, aut
 - Endpoint: `GET /api/v1/social/posts/{postId}` — `ViewPostDetailUseCase`, `PostViewAccessPolicy.evaluateViewAccess`.
 - Read-only: khong `UserWriteGuard` (`FR_EnforceUserStatusOnWrite`).
 - JSON response: camelCase (`postId`, `likedByMe`, `savedByMe`, `isOwner`).
+- FE: drill-down tu list → **modal**, khong route page full-screen; chi tiet UI/xu ly mo modal: `docs/api_fe_behavior/social_api_fe_behavior/FR_ViewPostDetail.md` (muc 9).
