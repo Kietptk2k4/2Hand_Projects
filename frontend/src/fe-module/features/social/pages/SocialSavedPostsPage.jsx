@@ -12,6 +12,7 @@ import { SavedPostsHeader } from "../components/SavedPostsHeader";
 import { useEditPostModal } from "../hooks/useEditPostModal";
 import { usePostDetailModal } from "../hooks/usePostDetailModal";
 import { useSavedPosts } from "../hooks/useSavedPosts";
+import { buildSocialHashtagPath } from "../utils/socialHashtagRoutes";
 import { buildSocialProfilePath } from "../utils/socialProfileRoutes";
 
 const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
@@ -43,6 +44,13 @@ export function SocialSavedPostsPage() {
     (profileUserId) => {
       if (!profileUserId) return;
       navigate(buildSocialProfilePath(profileUserId));
+    },
+    [navigate]
+  );
+
+  const viewHashtag = useCallback(
+    (tag) => {
+      navigate(buildSocialHashtagPath(tag));
     },
     [navigate]
   );
@@ -155,7 +163,11 @@ export function SocialSavedPostsPage() {
           ) : null}
         </section>
 
-        <FeedRightSidebar onComingSoon={showComingSoon} onViewProfile={viewProfile} />
+        <FeedRightSidebar
+          onComingSoon={showComingSoon}
+          onViewProfile={viewProfile}
+          onSelectHashtag={viewHashtag}
+        />
       </div>
 
       {isOpen ? (

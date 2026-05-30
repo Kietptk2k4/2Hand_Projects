@@ -12,7 +12,15 @@ function formatCount(value) {
   return String(num);
 }
 
-export function PostCard({ post, onOpenPost, onComingSoon, onEdit, onViewProfile, currentUserId }) {
+export function PostCard({
+  post,
+  onOpenPost,
+  onComingSoon,
+  onEdit,
+  onViewProfile,
+  onHashtagClick,
+  currentUserId,
+}) {
   const isOwner = Boolean(currentUserId && post.authorId === currentUserId);
   const openDetail = (options) => {
     onOpenPost?.(post.postId, options);
@@ -68,7 +76,13 @@ export function PostCard({ post, onOpenPost, onComingSoon, onEdit, onViewProfile
           caption={post.caption}
           hashtags={post.hashtags}
           onCaptionClick={() => openDetail()}
-          onHashtagClick={() => onComingSoon?.()}
+          onHashtagClick={(tag) => {
+            if (onHashtagClick) {
+              onHashtagClick(tag);
+              return;
+            }
+            onComingSoon?.();
+          }}
         />
       </div>
 

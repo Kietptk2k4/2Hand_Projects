@@ -1,15 +1,29 @@
+import { useNavigate } from "react-router-dom";
 import { SUGGESTED_PROVIDERS } from "../constants/suggestedProviders";
+import { buildSocialHashtagPath } from "../utils/socialHashtagRoutes";
 
 const TRENDING = [
-  { tag: "#RemoteWork2024", count: "12.5k posts" },
-  { tag: "#AIinFinance", count: "8.2k posts" },
-  { tag: "#FreelanceTips", count: "5.1k posts" },
-  { tag: "#LegalTech", count: "3.9k posts" },
+  { tag: "RemoteWork2024", count: "12.5k posts" },
+  { tag: "AIinFinance", count: "8.2k posts" },
+  { tag: "FreelanceTips", count: "5.1k posts" },
+  { tag: "LegalTech", count: "3.9k posts" },
 ];
 
 const SUGGESTIONS = SUGGESTED_PROVIDERS;
 
-export function FeedRightSidebar({ onComingSoon, onViewProfile }) {
+export function FeedRightSidebar({ onComingSoon, onViewProfile, onSelectHashtag }) {
+  const navigate = useNavigate();
+
+  const goToHashtag = (tag) => {
+    const normalized = tag?.replace(/^#+/, "").trim();
+    if (!normalized) return;
+    if (onSelectHashtag) {
+      onSelectHashtag(normalized);
+      return;
+    }
+    navigate(buildSocialHashtagPath(normalized));
+  };
+
   return (
     <aside className="hidden flex-col gap-6 lg:flex lg:col-span-3">
       <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
@@ -17,16 +31,13 @@ export function FeedRightSidebar({ onComingSoon, onViewProfile }) {
         <ul className="flex flex-col gap-3">
           {TRENDING.map((item) => (
             <li key={item.tag} className="flex flex-col">
-              <a
-                href="#"
-                className="text-sm font-medium text-primary hover:underline"
-                onClick={(event) => {
-                  event.preventDefault();
-                  onComingSoon?.();
-                }}
+              <button
+                type="button"
+                className="text-left text-sm font-medium text-primary hover:underline"
+                onClick={() => goToHashtag(item.tag)}
               >
-                {item.tag}
-              </a>
+                #{item.tag}
+              </button>
               <span className="text-xs font-semibold text-on-surface-variant">{item.count}</span>
             </li>
           ))}

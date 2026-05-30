@@ -16,6 +16,7 @@ import { SocialFeedPage } from "../../features/social/pages/SocialFeedPage";
 import { SocialProfilePage } from "../../features/social/pages/SocialProfilePage";
 import { SocialSavedPostsPage } from "../../features/social/pages/SocialSavedPostsPage";
 import { SocialSearchPostsPage } from "../../features/social/pages/SocialSearchPostsPage";
+import { SocialHashtagPostsPage } from "../../features/social/pages/SocialHashtagPostsPage";
 
 function HomePage() {
   return (
@@ -50,6 +51,7 @@ export const router = createBrowserRouter([
           { path: APP_ROUTES.socialFeed.slice(1), element: <SocialFeedPage /> },
           { path: APP_ROUTES.socialSavedPosts.slice(1), element: <SocialSavedPostsPage /> },
           { path: APP_ROUTES.socialSearchPosts.slice(1), element: <SocialSearchPostsPage /> },
+          { path: APP_ROUTES.socialHashtagPosts.slice(1), element: <SocialHashtagPostsPage /> },
           { path: APP_ROUTES.socialProfile.slice(1), element: <SocialProfilePage /> },
         ],
       },

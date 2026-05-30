@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { POPULAR_SEARCH_HASHTAGS } from "../constants/searchPostsConstants";
 import { clearSearchHistory, getSearchHistory } from "../utils/searchHistoryStorage";
 
-export function SearchSidebar({ onSelectKeyword, refreshKey = 0 }) {
+export function SearchSidebar({ onSelectKeyword, onSelectHashtag, refreshKey = 0 }) {
   const [history, setHistory] = useState([]);
 
   const refreshHistory = () => {
@@ -71,7 +71,7 @@ export function SearchSidebar({ onSelectKeyword, refreshKey = 0 }) {
             <button
               key={tag}
               type="button"
-              onClick={() => handleSelect(tag)}
+              onClick={() => onSelectHashtag?.(tag)}
               className="rounded-full border border-outline-variant bg-surface-container-low px-3 py-1 text-sm font-medium text-primary transition-colors hover:bg-[#e7eeff]"
             >
               #{tag}

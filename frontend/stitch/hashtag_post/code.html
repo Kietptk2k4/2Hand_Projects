@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hashtag Feed - 2Hands</title>
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-highest": "#d8e3fb",
+                        "primary-container": "#0066ff",
+                        "surface-container-low": "#f0f3ff",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "secondary": "#4648d4",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "on-tertiary-fixed": "#191c1e",
+                        "tertiary-container": "#6f7274",
+                        "outline": "#727687",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#d8e3fb",
+                        "surface-container": "#e7eeff",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#dae1ff",
+                        "tertiary-fixed": "#e0e3e5",
+                        "surface-bright": "#f9f9ff",
+                        "on-primary-fixed-variant": "#003fa4",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#0054d6",
+                        "secondary-fixed": "#e1e0ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#f9f9ff",
+                        "on-secondary-container": "#fffbff",
+                        "on-primary-container": "#f8f7ff",
+                        "on-surface-variant": "#424656",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#07006c",
+                        "surface-container-high": "#dee8ff",
+                        "on-primary-fixed": "#001849",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "on-error-container": "#93000a",
+                        "primary": "#0050cb",
+                        "secondary-container": "#6063ee",
+                        "inverse-primary": "#b3c5ff",
+                        "surface-dim": "#cfdaf2",
+                        "on-tertiary-container": "#f6f8fa",
+                        "outline-variant": "#c2c6d8",
+                        "inverse-on-surface": "#ecf1ff",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#111c2d",
+                        "on-background": "#111c2d",
+                        "background": "#f9f9ff",
+                        "inverse-surface": "#263143",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "error": "#ba1a1a",
+                        "tertiary": "#565a5b"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        full: "9999px"
+                    },
+                    spacing: {
+                        xs: "4px",
+                        "container-max": "1280px",
+                        md: "24px",
+                        xl: "64px",
+                        gutter: "24px",
+                        base: "8px",
+                        sm: "12px",
+                        "margin-desktop": "32px",
+                        "margin-mobile": "16px",
+                        lg: "40px"
+                    },
+                    fontFamily: {
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-xl-mobile": ["Inter"],
+                        "headline-sm": ["Inter"]
+                    },
+                    fontSize: {
+                        "headline-md": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+                        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500" }],
+                        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+                        "headline-lg-mobile": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }],
+                        "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "label-sm": ["12px", { lineHeight: "16px", fontWeight: "600" }],
+                        "headline-xl": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600" }],
+                        "headline-xl-mobile": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "headline-sm": ["20px", { lineHeight: "28px", fontWeight: "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md antialiased">
+<!-- TopNavBar -->
+<nav class="bg-surface-container-lowest shadow-sm flex justify-between items-center px-margin-mobile md:px-margin-desktop w-full max-w-container-max mx-auto h-16 sticky top-0 z-50">
+<div class="flex items-center gap-md">
+<div class="text-headline-md font-headline-md font-bold text-primary">
+                2Hands
+            </div>
+<div class="hidden md:flex items-center bg-surface-container px-sm py-xs rounded-full border border-outline-variant focus-within:border-primary transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-sm text-on-surface w-48 placeholder-on-surface-variant" placeholder="Search..." type="text"/>
+</div>
+</div>
+<div class="hidden md:flex items-center gap-lg">
+<a class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer font-label-md text-label-md" href="#">Marketplace</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer font-label-md text-label-md" href="#">Services</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer font-label-md text-label-md" href="#">Pro Center</a>
+</div>
+<div class="flex items-center gap-sm">
+<button class="text-primary font-label-md text-label-md px-sm py-xs hover:bg-surface-container rounded-lg transition-colors">Login</button>
+<button class="bg-primary text-on-primary font-label-md text-label-md px-md py-sm rounded-lg hover:bg-surface-tint transition-colors shadow-sm">Join Now</button>
+</div>
+</nav>
+<!-- Sub-Header / Hashtag Search -->
+<div class="sticky top-16 z-40 bg-surface/90 backdrop-blur-md border-b border-outline-variant py-sm px-margin-mobile md:px-margin-desktop">
+<div class="max-w-container-max mx-auto flex flex-col md:flex-row md:items-center justify-between gap-sm">
+<div class="flex items-center gap-sm">
+<div class="bg-primary-container text-on-primary-container h-12 w-12 rounded-xl flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[28px]">tag</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md text-on-surface">noithat</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">24.5k Posts • 1.2k Providers</p>
+</div>
+</div>
+<div class="flex-grow max-w-md relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-xl pr-sm py-sm rounded-lg border border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-1 focus:ring-primary text-body-sm transition-all shadow-sm" placeholder="Search other tags..." type="text"/>
+</div>
+</div>
+</div>
+<!-- Main Content -->
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-md md:py-lg grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Left Sidebar: Trending/Related Tags -->
+<aside class="md:col-span-4 lg:col-span-3 space-y-md">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary">trending_up</span> Trending Tags
+                </h2>
+<div class="flex flex-wrap gap-xs">
+<span class="px-sm py-xs bg-surface-container text-on-surface font-label-sm text-label-sm rounded-full cursor-pointer hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors">#thietkenoithat</span>
+<span class="px-sm py-xs bg-surface-container text-on-surface font-label-sm text-label-sm rounded-full cursor-pointer hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors">#homedecor</span>
+<span class="px-sm py-xs bg-surface-container text-on-surface font-label-sm text-label-sm rounded-full cursor-pointer hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors">#minimalism</span>
+<span class="px-sm py-xs bg-surface-container text-on-surface font-label-sm text-label-sm rounded-full cursor-pointer hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors">#renovation</span>
+<span class="px-sm py-xs bg-surface-container text-on-surface font-label-sm text-label-sm rounded-full cursor-pointer hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors">#architecture</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-sm">Top Providers</h2>
+<ul class="space-y-sm">
+<li class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-high bg-cover bg-center" data-alt="A professional headshot of an interior designer in a modern, light-filled office space. The designer is smiling warmly, wearing a neat navy blazer. The background features architectural blueprints and minimalist furniture, conveying expertise and premium quality. Bright, natural lighting enhances the modern corporate aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCGRcmstViUMGqDZgQ5fIzA0S8gbX0uv78rasbOKF2TcHVHSEKutLAmC_sMU-Mm7pYyBlQwtvo02Lk-ypp78drBPY-VpqtgmkbrT0YHoy6RvruJOFnykKML8Z2O6YYVJFvRuG_dR7y920BjcRz-YeKKXX8qxPC70ZSW6A6TyQclZhqA5RjUVK6WgMwluE31jagfs5m8KQKCCeNx57Z-koOr9dyjjGHcVibsxzXJYkDBEfhvjzuDddc5eaXyY28kQ6pOG0xlrhbI12g');"></div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Minh Nguyen</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Interior Architect</p>
+</div>
+</li>
+<li class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-high bg-cover bg-center" data-alt="A portrait of a confident female project manager in a bright, modern architectural studio. She is standing next to a material sample board. Soft ambient lighting creates a trustworthy and professional mood. The palette is dominated by neutral tones and crisp whites." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDiJ1PLvMGNXEBv4U7TZbwHY185WkeoQDI5nEbx6R4gOCtL76X18lbo-RNRq9TvwbFBaeaXHaAWHdAtOyFt2M-UFWHflke328AKsd8iy9LpC2EZIJ-2Ot3Ng0Mo-OVk05AJstWyn747hfdsSX44YVLeEFhTWp-E_BOQCpQdo4JsHKG9ifbJJgAthFvf03den69EF3fTQ8ADERr6SgxG7dBg7IuHpayGeJdXX7ehjA0xwJyC3q9LBo9qXhMPUksDx-rBhaLc6RfQw5I');"></div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Linh Tran</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Decor Specialist</p>
+</div>
+</li>
+</ul>
+</div>
+</aside>
+<!-- Right Main Area: Feed -->
+<section class="md:col-span-8 lg:col-span-9 space-y-md">
+<!-- Feed Controls -->
+<div class="flex items-center justify-between border-b border-outline-variant pb-sm">
+<div class="flex gap-md">
+<button class="font-label-md text-label-md text-primary border-b-2 border-primary pb-sm -mb-[13px]">Latest</button>
+<button class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors pb-sm">Top Posts</button>
+</div>
+<button class="flex items-center gap-xs text-on-surface-variant hover:text-on-surface transition-colors font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">filter_list</span> Filter
+                </button>
+</div>
+<!-- Dense List Cards -->
+<div class="flex flex-col gap-sm">
+<!-- Post Card 1 -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm flex flex-col md:flex-row gap-md hover:shadow-md transition-shadow">
+<div class="md:w-1/3 aspect-[4/3] rounded-lg bg-surface-container overflow-hidden relative">
+<img alt="Modern living room interior" class="w-full h-full object-cover" data-alt="A high-end modern living room featuring a minimalist gray sectional sofa, a sleek glass coffee table, and large floor-to-ceiling windows. The room is bathed in bright, natural daylight highlighting the clean architectural lines. Accents of warm wood and subtle indoor plants add life to the pristine white and gray palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZYtJt0kS_Cj33U6RA3fPhZcwbUXfx-4FcLV0qpYQQRVWr-KWIuRAkmC-Or8n15XV8sY7SAy5owTBNJ5JPb8JwQQTQIaAKqcj6xS_lt9T32fhCRa-FpmpG-KX6huW8a_WVY0KNsNiM8BHavsDpc92_Get83EMDWoURaSg2_CIQWOAs6SA_hfskc0XUno7d769OgxVTYUEQjVPacLM4dcg83f8-ZMnwwFkCarIaRps8Ww2V0aS74goq0DuBhPZKbfdI7ODCU39WEdo"/>
+</div>
+<div class="md:w-2/3 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-xs">
+<div class="flex items-center gap-xs">
+<div class="w-6 h-6 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-label-sm text-[10px]">VT</div>
+<span class="font-label-md text-label-md text-on-surface">VietDecor Studio</span>
+<span class="text-outline-variant">•</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">2h ago</span>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[20px]">more_horiz</span></button>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-xs">Modern Apartment Renovation in District 2</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mb-sm">We recently completed this minimalist transformation focusing on maximizing natural light and utilizing sustainable materials. The open-plan design connects the living and dining areas seamlessly...</p>
+</div>
+<div class="flex items-center justify-between mt-auto">
+<div class="flex gap-xs">
+<span class="text-primary font-label-sm text-label-sm hover:underline cursor-pointer">#noithat</span>
+<span class="text-primary font-label-sm text-label-sm hover:underline cursor-pointer">#minimalism</span>
+</div>
+<div class="flex gap-sm text-on-surface-variant">
+<div class="flex items-center gap-xs cursor-pointer hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">favorite</span><span class="font-label-sm text-label-sm">245</span></div>
+<div class="flex items-center gap-xs cursor-pointer hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">chat_bubble</span><span class="font-label-sm text-label-sm">32</span></div>
+</div>
+</div>
+</div>
+</article>
+<!-- Post Card 2 -->
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm flex flex-col md:flex-row gap-md hover:shadow-md transition-shadow">
+<div class="md:w-1/3 aspect-[4/3] rounded-lg bg-surface-container overflow-hidden relative">
+<img alt="Kitchen interior" class="w-full h-full object-cover" data-alt="A pristine, contemporary kitchen design with matte black cabinetry and a stark white marble island. Soft LED under-cabinet lighting creates a sophisticated, moody atmosphere while maintaining functional brightness. Stainless steel premium appliances integrate seamlessly into the minimalist layout, embodying high-end residential architecture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJeUfBg_arjDC9oF9Hk2x12I2KLvSEUuk3_I-D_vbdkYkKgDUAT1QA1b7m7zbMJZtr2OzUZ7ust1DVurVOP7av9UfJfn-EjS5W0nubDSzt4LFN5oXHrSxH1gJ37M8oPN3b3NAw_oFPtYo0SmwQ9bzh6d0mFj9K9H0KH7JVByTfoK9clv24uvc13gAZTMmXTR7YHBCYAjXT2uGFfoD5G7qZA_N1PLq4rjejh4-LUQjmTf2v3dJd1Iy4B7YpIKlkL15C6Hn7hL_9T4M"/>
+</div>
+<div class="md:w-2/3 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-xs">
+<div class="flex items-center gap-xs">
+<div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-label-sm text-[10px]">HA</div>
+<span class="font-label-md text-label-md text-on-surface">Hoang Architecture</span>
+<span class="text-outline-variant">•</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">5h ago</span>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[20px]">more_horiz</span></button>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-xs">Smart Kitchen Integration</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mb-sm">Combining sleek matte finishes with hidden smart appliances. This kitchen project emphasizes workflow efficiency without compromising on the high-end aesthetic required by the client.</p>
+</div>
+<div class="flex items-center justify-between mt-auto">
+<div class="flex gap-xs">
+<span class="text-primary font-label-sm text-label-sm hover:underline cursor-pointer">#noithat</span>
+<span class="text-primary font-label-sm text-label-sm hover:underline cursor-pointer">#kitchen</span>
+</div>
+<div class="flex gap-sm text-on-surface-variant">
+<div class="flex items-center gap-xs cursor-pointer hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">favorite</span><span class="font-label-sm text-label-sm">189</span></div>
+<div class="flex items-center gap-xs cursor-pointer hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">chat_bubble</span><span class="font-label-sm text-label-sm">14</span></div>
+</div>
+</div>
+</div>
+</article>
+<!-- 403 Privacy Masking State (Private Hashtag Feed Content) -->
+<article class="bg-surface-container border border-outline-variant rounded-xl p-md shadow-sm relative overflow-hidden flex flex-col md:flex-row gap-md">
+<!-- Blur Overlay -->
+<div class="absolute inset-0 bg-surface/60 backdrop-blur-md z-10 flex flex-col items-center justify-center p-md text-center">
+<div class="w-12 h-12 rounded-full bg-error-container text-on-error-container flex items-center justify-center mb-sm shadow-sm">
+<span class="material-symbols-outlined icon-fill">lock</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-xs">Private Content</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-md mb-sm">This post is restricted to members of the 'Pro Designers' group. Request access to view this content.</p>
+<button class="bg-primary text-on-primary px-md py-sm rounded-lg font-label-md text-label-md hover:bg-primary-container transition-colors shadow-sm">Request Access</button>
+</div>
+<!-- Blurred Content Underneath -->
+<div class="md:w-1/3 aspect-[4/3] rounded-lg bg-surface-container-high opacity-50"></div>
+<div class="md:w-2/3 flex flex-col justify-between opacity-50 blur-sm pointer-events-none">
+<div>
+<div class="h-6 w-1/2 bg-surface-variant rounded mb-xs"></div>
+<div class="h-4 w-full bg-surface-variant rounded mb-xs"></div>
+<div class="h-4 w-3/4 bg-surface-variant rounded mb-sm"></div>
+</div>
+</div>
+</article>
+<!-- Empty State (Demonstration) -->
+<div class="bg-surface-container-lowest border border-outline-variant border-dashed rounded-xl p-xl flex flex-col items-center justify-center text-center mt-lg shadow-sm">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-md text-outline">
+<span class="material-symbols-outlined text-[32px]">tag</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">No more posts found</h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md mb-md">There are currently no more posts associated with this hashtag. Be the first to share your project!</p>
+<button class="border-2 border-primary text-primary px-md py-sm rounded-lg font-label-md text-label-md hover:bg-primary hover:text-on-primary transition-all shadow-sm">Create Post</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container mt-auto">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-margin-desktop py-md w-full max-w-container-max mx-auto">
+<div class="text-headline-sm font-headline-sm font-bold text-on-surface mb-sm md:mb-0">
+                2Hands
+            </div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mb-sm md:mb-0 text-center">
+                © 2024 2Hands Social Marketplace. All rights reserved.
+            </div>
+<div class="flex gap-md font-body-sm text-body-sm text-on-surface-variant">
+<a class="hover:underline text-primary cursor-pointer" href="#">Privacy Policy</a>
+<a class="hover:underline text-primary cursor-pointer" href="#">Terms of Service</a>
+<a class="hover:underline text-primary cursor-pointer" href="#">Support</a>
+</div>
+</div>
+</footer>
+</body></html>

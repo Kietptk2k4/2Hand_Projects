@@ -1,34 +1,29 @@
 import { useCallback, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
-import { useCurrentUserId } from "../../auth/hooks/useCurrentUserId";
-import { FeedPostSkeleton } from "../components/FeedPostSkeleton";
+import { Link, useNavigate } from "react-router-dom";
+import { APP_ROUTES } from "../../../shared/constants/routes";
 import { FeedToast } from "../components/FeedToast";
 import { EditPostModal } from "../components/EditPostModal";
-import { PostCard } from "../components/PostCard";
+import { HashtagPageHeader } from "../components/HashtagPageHeader";
+import { HashtagPostCard } from "../components/HashtagPostCard";
+import { HashtagPostCardSkeleton } from "../components/HashtagPostCardSkeleton";
+import { HashtagSidebar } from "../components/HashtagSidebar";
 import { PostDetailModal } from "../components/PostDetailModal";
-import { SearchResultsHeader } from "../components/SearchResultsHeader";
-import { SearchSidebar } from "../components/SearchSidebar";
 import { useEditPostModal } from "../hooks/useEditPostModal";
+import { useHashtagPosts } from "../hooks/useHashtagPosts";
 import { usePostDetailModal } from "../hooks/usePostDetailModal";
-import { useSearchPosts } from "../hooks/useSearchPosts";
 import { buildSocialHashtagPath } from "../utils/socialHashtagRoutes";
-import { buildSocialSearchPath } from "../utils/socialSearchRoutes";
 import { buildSocialProfilePath } from "../utils/socialProfileRoutes";
 
-const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
-
-export function SocialSearchPostsPage() {
+export function SocialHashtagPostsPage() {
   const navigate = useNavigate();
-  const { user } = useAuthSession();
-  const currentUserId = useCurrentUserId();
   const [toastMessage, setToastMessage] = useState("");
   const [detailRefreshKey, setDetailRefreshKey] = useState(0);
   const { postId, focusComments, isOpen, openPost, closePost } = usePostDetailModal();
   const { editPostId, isEditOpen, openEdit, closeEdit } = useEditPostModal();
   const {
-    q,
-    keyword,
+    hashtag,
+    resolvedHashtag,
+    isInvalidHashtag,
     items,
     isInitialLoading,
     isLoadingMore,
@@ -38,13 +33,16 @@ export function SocialSearchPostsPage() {
     loadMore,
     retry,
     refetch,
-  } = useSearchPosts();
+  } = useHashtagPosts();
 
-  const resolvedUserId = currentUserId || user?.id;
+  const displayHashtag = resolvedHashtag || hashtag;
 
-  const showComingSoon = useCallback(() => {
-    setToastMessage(COMING_SOON_MESSAGE);
-  }, []);
+  const navigateToHashtag = useCallback(
+    (tag) => {
+      navigate(buildSocialHashtagPath(tag));
+    },
+    [navigate]
+  );
 
   const viewProfile = useCallback(
     (profileUserId) => {
@@ -66,61 +64,45 @@ export function SocialSearchPostsPage() {
     setToastMessage("Cập nhật bài viết thành công.");
   }, [postId, refetch]);
 
-  const handleSelectKeyword = useCallback(
-    (nextKeyword) => {
-      navigate(buildSocialSearchPath(nextKeyword));
-    },
-    [navigate]
-  );
-
-  const viewHashtag = useCallback(
-    (tag) => {
-      navigate(buildSocialHashtagPath(tag));
-    },
-    [navigate]
-  );
-
   const handleHashtagFromModal = useCallback(
     (tag) => {
       closePost();
-      viewHashtag(tag);
+      navigateToHashtag(tag);
     },
-    [closePost, viewHashtag]
+    [closePost, navigateToHashtag]
   );
 
-  const displayKeyword = keyword || q;
-  const emptyQuery = !q;
-  const emptyResults = !emptyQuery && !isInitialLoading && !errorMessage && items.length === 0;
+  if (isInvalidHashtag) {
+    return (
+      <div className="mx-auto max-w-[1280px] px-4 py-16 text-center md:px-8">
+        <p className="text-sm text-on-surface-variant">Hashtag không hợp lệ.</p>
+        <Link to={APP_ROUTES.socialFeed} className="mt-4 inline-block text-sm font-medium text-primary hover:underline">
+          Về feed
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <>
+      <HashtagPageHeader
+        hashtag={displayHashtag}
+        totalElements={totalElements}
+        onSearchTag={navigateToHashtag}
+      />
+
       <div className="mx-auto grid w-full max-w-[1280px] grid-cols-1 gap-6 px-4 py-8 md:px-8 lg:grid-cols-12">
-        <SearchSidebar
-          onSelectKeyword={handleSelectKeyword}
-          onSelectHashtag={viewHashtag}
-          refreshKey={displayKeyword}
-        />
+        <HashtagSidebar currentHashtag={displayHashtag} onSelectTag={navigateToHashtag} />
 
         <section className="flex flex-col gap-6 lg:col-span-9">
-          <SearchResultsHeader keyword={displayKeyword} totalElements={totalElements} />
-
-          {emptyQuery ? (
-            <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-8 text-center shadow-sm">
-              <span className="material-symbols-outlined mb-2 text-4xl text-outline" aria-hidden="true">
-                search
-              </span>
-              <p className="text-sm text-on-surface-variant">Nhập từ khóa để tìm bài viết</p>
-            </div>
-          ) : null}
-
           {isInitialLoading ? (
             <div className="flex flex-col gap-6">
-              <FeedPostSkeleton />
-              <FeedPostSkeleton />
+              <HashtagPostCardSkeleton />
+              <HashtagPostCardSkeleton />
             </div>
           ) : null}
 
-          {!emptyQuery && !isInitialLoading && errorMessage ? (
+          {!isInitialLoading && errorMessage ? (
             <div className="rounded-xl border border-error/30 bg-error-container/40 p-6 text-center">
               <p className="text-sm text-on-error-container">{errorMessage}</p>
               <button
@@ -133,35 +115,33 @@ export function SocialSearchPostsPage() {
             </div>
           ) : null}
 
-          {emptyResults ? (
+          {!isInitialLoading && !errorMessage && items.length === 0 ? (
             <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-8 text-center shadow-sm">
               <span className="material-symbols-outlined mb-2 text-4xl text-outline" aria-hidden="true">
-                search_off
+                tag
               </span>
               <p className="text-sm text-on-surface-variant">
-                Không tìm thấy bài viết cho &quot;{displayKeyword}&quot;
+                Chưa có bài viết cho #{displayHashtag}
               </p>
             </div>
           ) : null}
 
-          {!emptyQuery && !isInitialLoading && !errorMessage && items.length > 0 ? (
+          {!isInitialLoading && !errorMessage && items.length > 0 ? (
             <div className="flex flex-col gap-6">
               {items.map((post) => (
-                <PostCard
+                <HashtagPostCard
                   key={post.postId}
                   post={post}
-                  currentUserId={resolvedUserId}
-                  onOpenPost={openPost}
-                  onComingSoon={showComingSoon}
-                  onEdit={openEdit}
+                  onOpenPost={(id) => openPost(id)}
+                  onOpenComments={(id) => openPost(id, { focusComments: true })}
                   onViewProfile={viewProfile}
-                  onHashtagClick={viewHashtag}
+                  onHashtagClick={navigateToHashtag}
                 />
               ))}
             </div>
           ) : null}
 
-          {!emptyQuery && !isInitialLoading && !errorMessage && hasNext ? (
+          {!isInitialLoading && !errorMessage && hasNext ? (
             <div className="flex justify-center py-4">
               {isLoadingMore ? (
                 <div

@@ -19,7 +19,15 @@ function formatCount(value) {
   return String(num);
 }
 
-export function PostDetailModal({ postId, focusComments, onClose, onToast, onEdit, onViewProfile }) {
+export function PostDetailModal({
+  postId,
+  focusComments,
+  onClose,
+  onToast,
+  onEdit,
+  onViewProfile,
+  onHashtagClick,
+}) {
   const { user } = useAuthSession();
   const commentAnchorRef = useRef(null);
   const commentInputRef = useRef(null);
@@ -193,7 +201,11 @@ export function PostDetailModal({ postId, focusComments, onClose, onToast, onEdi
                 <div className="flex-1 overflow-y-auto p-6">
                   {post.caption || (post.hashtags && post.hashtags.length > 0) ? (
                     <div className="mb-6">
-                      <PostCaption caption={post.caption} hashtags={post.hashtags} />
+                      <PostCaption
+                        caption={post.caption}
+                        hashtags={post.hashtags}
+                        onHashtagClick={onHashtagClick}
+                      />
                     </div>
                   ) : null}
 

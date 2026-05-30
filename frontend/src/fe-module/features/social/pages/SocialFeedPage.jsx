@@ -16,6 +16,7 @@ import { FeedTabs } from "../components/FeedTabs";
 import { FeedToast } from "../components/FeedToast";
 import { PostCard } from "../components/PostCard";
 import { PostDetailModal } from "../components/PostDetailModal";
+import { buildSocialHashtagPath } from "../utils/socialHashtagRoutes";
 import { buildSocialProfilePath } from "../utils/socialProfileRoutes";
 
 const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
@@ -55,6 +56,21 @@ export function SocialFeedPage() {
       navigate(buildSocialProfilePath(profileUserId));
     },
     [navigate]
+  );
+
+  const viewHashtag = useCallback(
+    (tag) => {
+      navigate(buildSocialHashtagPath(tag));
+    },
+    [navigate]
+  );
+
+  const handleHashtagFromModal = useCallback(
+    (tag) => {
+      closePost();
+      viewHashtag(tag);
+    },
+    [closePost, viewHashtag]
   );
 
   const dismissToast = useCallback(() => {
@@ -141,6 +157,7 @@ export function SocialFeedPage() {
                   onComingSoon={showComingSoon}
                   onEdit={openEdit}
                   onViewProfile={viewProfile}
+                  onHashtagClick={viewHashtag}
                 />
               ))}
             </div>
@@ -166,7 +183,11 @@ export function SocialFeedPage() {
           ) : null}
         </section>
 
-        <FeedRightSidebar onComingSoon={showComingSoon} onViewProfile={viewProfile} />
+        <FeedRightSidebar
+          onComingSoon={showComingSoon}
+          onViewProfile={viewProfile}
+          onSelectHashtag={viewHashtag}
+        />
       </div>
 
       {isOpen ? (
@@ -178,6 +199,7 @@ export function SocialFeedPage() {
           onToast={setToastMessage}
           onEdit={openEdit}
           onViewProfile={viewProfile}
+          onHashtagClick={handleHashtagFromModal}
         />
       ) : null}
 
