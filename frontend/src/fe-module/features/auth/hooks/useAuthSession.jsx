@@ -1,13 +1,37 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { configureAuthRefreshService } from "../../../services/http/authRefreshService";
+import {
+  persistStoredUser,
+  readStoredUser,
+  resolveUserIdFromAccessToken,
+} from "../utils/resolveCurrentUserId";
 
 const AuthSessionContext = createContext(null);
 const DEFAULT_SESSION_EXPIRED_MESSAGE = "Phien dang nhap da het han, vui long dang nhap lai.";
 
+function readInitialAccessToken() {
+  return localStorage.getItem("twohands_access_token");
+}
+
+function readInitialUser() {
+  const stored = readStoredUser();
+  if (stored?.id) return stored;
+
+  const token = readInitialAccessToken();
+  const idFromToken = resolveUserIdFromAccessToken(token);
+  if (idFromToken) {
+    return { id: idFromToken };
+  }
+
+  return null;
+}
+
 export function AuthSessionProvider({ children }) {
-  const [accessToken, setAccessToken] = useState(null);
-  const [refreshToken, setRefreshToken] = useState(null);
-  const [user, setUser] = useState(null);
+  const [accessToken, setAccessToken] = useState(readInitialAccessToken);
+  const [refreshToken, setRefreshToken] = useState(() =>
+    localStorage.getItem("twohands_refresh_token")
+  );
+  const [user, setUser] = useState(readInitialUser);
   const [sessionExpiredState, setSessionExpiredState] = useState({
     isOpen: false,
     message: DEFAULT_SESSION_EXPIRED_MESSAGE,
@@ -17,6 +41,7 @@ export function AuthSessionProvider({ children }) {
     setAccessToken(nextAccessToken || null);
     setRefreshToken(nextRefreshToken || null);
     setUser(nextUser || null);
+    persistStoredUser(nextUser);
 
     if (nextAccessToken) {
       localStorage.setItem("twohands_access_token", nextAccessToken);
@@ -32,6 +57,7 @@ export function AuthSessionProvider({ children }) {
     setUser(null);
     localStorage.removeItem("twohands_access_token");
     localStorage.removeItem("twohands_refresh_token");
+    persistStoredUser(null);
   }, []);
 
   const showSessionExpired = useCallback((message = DEFAULT_SESSION_EXPIRED_MESSAGE) => {

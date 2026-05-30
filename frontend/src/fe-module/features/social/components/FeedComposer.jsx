@@ -1,4 +1,7 @@
+import { useNavigate } from "react-router-dom";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
+import { useCurrentUserId } from "../../auth/hooks/useCurrentUserId";
+import { buildSocialProfilePath } from "../utils/socialProfileRoutes";
 
 const DEFAULT_AVATAR_URL = "https://i.pravatar.cc/96?img=11";
 
@@ -19,19 +22,33 @@ function ArticleIcon() {
 }
 
 export function FeedComposer({ onOpenCreatePost, onOpenCreatePostWithFilePicker }) {
+  const navigate = useNavigate();
   const { user } = useAuthSession();
+  const currentUserId = useCurrentUserId();
   const avatarUrl = user?.avatar_url || user?.profile?.avatar_url || DEFAULT_AVATAR_URL;
 
   const openModal = () => onOpenCreatePost?.();
   const openWithPicker = () => onOpenCreatePostWithFilePicker?.();
 
+  const openSelfProfile = () => {
+    if (currentUserId) navigate(buildSocialProfilePath(currentUserId));
+  };
+
   return (
     <div className="flex items-start gap-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
-      <img
-        src={avatarUrl}
-        alt=""
-        className="h-10 w-10 shrink-0 rounded-full border border-outline-variant object-cover"
-      />
+      <button
+        type="button"
+        onClick={openSelfProfile}
+        className="shrink-0 rounded-full p-0.5 ring-2 ring-primary ring-offset-2 ring-offset-surface-container-lowest"
+        aria-label="Xem social profile của bạn"
+        title="Stories — xem profile"
+      >
+        <img
+          src={avatarUrl}
+          alt=""
+          className="h-10 w-10 rounded-full border border-outline-variant object-cover"
+        />
+      </button>
       <div className="flex flex-1 flex-col gap-3">
         <input
           type="text"

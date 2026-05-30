@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { SocialUserSearchDropdown } from "../../features/social/components/SocialUserSearchDropdown";
 import { getMyProfile } from "../../features/auth/api/authApi";
 import { useAuthSession } from "../../features/auth/hooks/useAuthSession.jsx";
 import { APP_ROUTES } from "../constants/routes";
@@ -84,6 +85,9 @@ export function AppHeader({ className = "" }) {
   const location = useLocation();
   const { isAuthenticated, user } = useAuthSession();
   const [profileAvatarUrl, setProfileAvatarUrl] = useState(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRef = useRef(null);
+  const isSocialRoute = location.pathname.startsWith("/social");
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -105,6 +109,17 @@ export function AppHeader({ className = "" }) {
     };
   }, [isAuthenticated]);
 
+  useEffect(() => {
+    if (!searchOpen) return undefined;
+    const onPointerDown = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [searchOpen]);
+
   const avatarUrl =
     profileAvatarUrl || user?.avatar_url || user?.profile?.avatar_url || DEFAULT_AVATAR_URL;
   const userLabel = user?.display_name || user?.email || "";
@@ -124,16 +139,27 @@ export function AppHeader({ className = "" }) {
             2Hands
           </Link>
 
-          <label className="relative hidden min-w-0 max-w-[280px] flex-1 sm:block lg:max-w-[320px]">
-            <span className="sr-only">Tìm kiếm</span>
-            <SearchIcon />
-            <input
-              type="search"
-              name="global-search"
-              placeholder="Tìm kiếm..."
-              className="w-full rounded-lg border border-header-border bg-white py-2 pl-10 pr-3 text-sm text-on-surface outline-none transition placeholder:text-header-muted focus:border-primary focus:ring-1 focus:ring-primary/30"
-            />
-          </label>
+          <div
+            ref={searchRef}
+            className="relative hidden min-w-0 max-w-[280px] flex-1 sm:block lg:max-w-[320px]"
+          >
+            <label>
+              <span className="sr-only">Tìm kiếm</span>
+              <SearchIcon />
+              <input
+                type="search"
+                name="global-search"
+                placeholder="Tìm kiếm..."
+                onFocus={() => {
+                  if (isSocialRoute && isAuthenticated) setSearchOpen(true);
+                }}
+                className="w-full rounded-lg border border-header-border bg-white py-2 pl-10 pr-3 text-sm text-on-surface outline-none transition placeholder:text-header-muted focus:border-primary focus:ring-1 focus:ring-primary/30"
+              />
+            </label>
+            {searchOpen && isSocialRoute && isAuthenticated ? (
+              <SocialUserSearchDropdown onClose={() => setSearchOpen(false)} />
+            ) : null}
+          </div>
         </div>
 
         <div className="flex shrink-0 items-center gap-4 md:gap-6">
@@ -179,6 +205,7 @@ export function AppHeader({ className = "" }) {
               avatarUrl={avatarUrl}
               isAuthenticated={isAuthenticated}
               userLabel={userLabel}
+              userId={user?.id}
             />
           </div>
         </div>

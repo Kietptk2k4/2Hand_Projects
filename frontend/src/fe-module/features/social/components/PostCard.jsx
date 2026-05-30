@@ -12,7 +12,7 @@ function formatCount(value) {
   return String(num);
 }
 
-export function PostCard({ post, onOpenPost, onComingSoon, onEdit, currentUserId }) {
+export function PostCard({ post, onOpenPost, onComingSoon, onEdit, onViewProfile, currentUserId }) {
   const isOwner = Boolean(currentUserId && post.authorId === currentUserId);
   const openDetail = (options) => {
     onOpenPost?.(post.postId, options);
@@ -27,19 +27,25 @@ export function PostCard({ post, onOpenPost, onComingSoon, onEdit, currentUserId
     <article className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm transition-shadow hover:shadow-md">
       <div className="p-6">
         <div className="mb-4 flex items-start justify-between">
-          <button
-            type="button"
-            className="flex items-center gap-3 text-left"
-            onClick={stopAnd(onComingSoon)}
-            aria-label="Xem hồ sơ tác giả"
-          >
-            <img
-              src={authorAvatarUrl(post.authorId)}
-              alt=""
-              className="h-12 w-12 rounded-full object-cover"
-            />
-            <div>
-              <h4 className="text-sm font-semibold text-on-surface">
+          <div className="flex min-w-0 items-center gap-3">
+            <button
+              type="button"
+              className="shrink-0"
+              onClick={stopAnd(() => onViewProfile?.(post.authorId))}
+              aria-label="Xem hồ sơ tác giả"
+            >
+              <img
+                src={authorAvatarUrl(post.authorId)}
+                alt=""
+                className="h-12 w-12 rounded-full object-cover"
+              />
+            </button>
+            <button
+              type="button"
+              className="min-w-0 text-left"
+              onClick={stopAnd(() => onViewProfile?.(post.authorId))}
+            >
+              <h4 className="truncate text-sm font-semibold text-on-surface hover:text-primary">
                 {authorDisplayName(post.authorId)}
               </h4>
               <p className="text-sm text-on-surface-variant">Thành viên 2Hands</p>
@@ -49,8 +55,8 @@ export function PostCard({ post, onOpenPost, onComingSoon, onEdit, currentUserId
                 </span>
                 {formatRelativeTime(post.createdAt)}
               </span>
-            </div>
-          </button>
+            </button>
+          </div>
           {isOwner ? (
             <PostOwnerMenu
               icon="more_horiz"

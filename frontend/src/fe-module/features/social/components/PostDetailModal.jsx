@@ -19,7 +19,7 @@ function formatCount(value) {
   return String(num);
 }
 
-export function PostDetailModal({ postId, focusComments, onClose, onToast, onEdit }) {
+export function PostDetailModal({ postId, focusComments, onClose, onToast, onEdit, onViewProfile }) {
   const { user } = useAuthSession();
   const commentAnchorRef = useRef(null);
   const commentInputRef = useRef(null);
@@ -154,22 +154,33 @@ export function PostDetailModal({ postId, focusComments, onClose, onToast, onEdi
 
               <div className="flex max-h-[70vh] w-full flex-col bg-surface-container-lowest md:w-1/2 md:max-h-[921px]">
                 <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-outline-variant bg-surface-container-lowest p-6">
-                  <img
-                    src={post.author?.avatarUrl || DEFAULT_AVATAR}
-                    alt=""
-                    className="h-12 w-12 rounded-full border border-outline-variant object-cover"
-                  />
-                  <div className="min-w-0 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => onViewProfile?.(post.author?.userId)}
+                    className="shrink-0"
+                    aria-label="Xem hồ sơ tác giả"
+                  >
+                    <img
+                      src={post.author?.avatarUrl || DEFAULT_AVATAR}
+                      alt=""
+                      className="h-12 w-12 rounded-full border border-outline-variant object-cover"
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onViewProfile?.(post.author?.userId)}
+                    className="min-w-0 flex-1 text-left"
+                  >
                     <h2
                       id="post-detail-title"
-                      className="truncate text-xl font-semibold text-on-surface"
+                      className="truncate text-xl font-semibold text-on-surface hover:text-primary"
                     >
                       {post.author?.displayName || "User"}
                     </h2>
                     <p className="text-sm text-on-surface-variant">
                       {formatRelativeTime(post.createdAt)}
                     </p>
-                  </div>
+                  </button>
                   {post.isOwner ? (
                     <PostOwnerMenu
                       icon="more_vert"
@@ -260,6 +271,7 @@ export function PostDetailModal({ postId, focusComments, onClose, onToast, onEdi
                     <PostDetailComments
                       commentsState={commentsState}
                       onComingSoon={showComingSoon}
+                      onViewProfile={onViewProfile}
                       commentInputRef={commentInputRef}
                     />
                   </div>

@@ -3,14 +3,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { useLogout } from "../../features/auth/hooks/useLogout.js";
 import { PrimaryButton } from "./auth/authUi.jsx";
 import { APP_ROUTES } from "../constants/routes";
+import { buildSocialProfilePath } from "../../features/social/utils/socialProfileRoutes";
 
-const MENU_ITEMS = [
+const ACCOUNT_MENU_ITEMS = [
   { label: "Profile Setting", to: APP_ROUTES.account },
   { label: "Account Security", to: APP_ROUTES.accountSecurity },
   { label: "Account Password", to: APP_ROUTES.accountPassword },
 ];
 
-export function HeaderAccountMenu({ avatarUrl, isAuthenticated, userLabel = "" }) {
+export function HeaderAccountMenu({ avatarUrl, isAuthenticated, userLabel = "", userId }) {
   const navigate = useNavigate();
   const { performLogout, isLoggingOut } = useLogout();
   const menuId = useId();
@@ -101,7 +102,17 @@ export function HeaderAccountMenu({ avatarUrl, isAuthenticated, userLabel = "" }
           ) : null}
 
           <nav className="py-1" aria-label="Account">
-            {MENU_ITEMS.map((item) => (
+            {userId ? (
+              <Link
+                to={buildSocialProfilePath(userId)}
+                role="menuitem"
+                onClick={closeMenu}
+                className="flex min-h-[44px] items-center px-4 py-2.5 text-sm text-on-surface transition-colors hover:bg-account-surface-low focus:bg-account-surface-low focus:outline-none"
+              >
+                Social Profile
+              </Link>
+            ) : null}
+            {ACCOUNT_MENU_ITEMS.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}

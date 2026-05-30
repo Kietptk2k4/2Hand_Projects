@@ -4,6 +4,7 @@ import { CommentSkeleton } from "./CommentSkeleton";
 export function PostDetailComments({
   commentsState,
   onComingSoon,
+  onViewProfile,
   commentInputRef,
 }) {
   const {
@@ -62,6 +63,7 @@ export function PostDetailComments({
                 isRepliesLoading={replyStatusByParent[item.commentId] === "loading"}
                 onExpandReplies={expandReplies}
                 onComingSoon={onComingSoon}
+                onViewProfile={onViewProfile}
               />
             );
           })}

@@ -1,6 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAccountProfile } from "../../auth/account/hooks/useAccountProfile";
+import { useCurrentUserId } from "../../auth/hooks/useCurrentUserId";
 import { APP_ROUTES } from "../../../shared/constants/routes";
+import { buildSocialProfilePath } from "../utils/socialProfileRoutes";
 
 const DEFAULT_AVATAR_URL = "https://i.pravatar.cc/96?img=11";
 
@@ -11,10 +13,20 @@ const QUICK_LINKS = [
 ];
 
 export function FeedLeftSidebar() {
+  const navigate = useNavigate();
+  const currentUserId = useCurrentUserId();
   const { profile, isLoading } = useAccountProfile();
   const displayName = profile?.profile?.display_name || profile?.email || "Thành viên";
   const title = profile?.profile?.bio || "Thành viên 2Hands";
   const avatarUrl = profile?.profile?.avatar_url || DEFAULT_AVATAR_URL;
+  const resolvedUserId = currentUserId || profile?.user?.id;
+  const selfProfilePath = resolvedUserId
+    ? buildSocialProfilePath(resolvedUserId)
+    : APP_ROUTES.socialFeed;
+
+  const goToSelfProfile = () => {
+    if (resolvedUserId) navigate(buildSocialProfilePath(resolvedUserId));
+  };
 
   return (
     <aside className="hidden flex-col gap-6 lg:flex lg:col-span-3">
@@ -22,11 +34,18 @@ export function FeedLeftSidebar() {
         {isLoading ? (
           <div className="mb-4 h-24 w-24 animate-pulse rounded-full bg-surface-container-high" />
         ) : (
-          <div className="mb-4 h-24 w-24 overflow-hidden rounded-full border-2 border-[#d8e3fb]">
+          <button
+            type="button"
+            onClick={goToSelfProfile}
+            className="mb-4 h-24 w-24 overflow-hidden rounded-full border-2 border-[#d8e3fb] ring-2 ring-primary/20 transition hover:ring-primary/50"
+            aria-label="Xem social profile của bạn"
+          >
             <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
-          </div>
+          </button>
         )}
-        <h2 className="text-xl font-semibold text-on-surface">{displayName}</h2>
+        <button type="button" onClick={goToSelfProfile} className="text-left">
+          <h2 className="text-xl font-semibold text-on-surface hover:text-primary">{displayName}</h2>
+        </button>
         <p className="mt-1 text-sm text-on-surface-variant">{title}</p>
         <div className="mt-4 flex w-full justify-between border-t border-outline-variant pt-4">
           <div className="flex flex-1 flex-col items-center">
@@ -40,10 +59,16 @@ export function FeedLeftSidebar() {
           </div>
         </div>
         <Link
-          to={APP_ROUTES.account}
+          to={selfProfilePath}
           className="mt-4 text-sm font-medium text-primary hover:underline"
         >
-          Xem hồ sơ
+          Xem social profile
+        </Link>
+        <Link
+          to={APP_ROUTES.account}
+          className="mt-2 text-xs text-on-surface-variant hover:text-primary hover:underline"
+        >
+          Cài đặt tài khoản
         </Link>
       </div>
 

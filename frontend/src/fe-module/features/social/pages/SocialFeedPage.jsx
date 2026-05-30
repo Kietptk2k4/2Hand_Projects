@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { FEED_TABS } from "../constants/feedTabs";
 import { useCreatePostModal } from "../hooks/useCreatePostModal";
@@ -15,10 +16,12 @@ import { FeedTabs } from "../components/FeedTabs";
 import { FeedToast } from "../components/FeedToast";
 import { PostCard } from "../components/PostCard";
 import { PostDetailModal } from "../components/PostDetailModal";
+import { buildSocialProfilePath } from "../utils/socialProfileRoutes";
 
 const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
 
 export function SocialFeedPage() {
+  const navigate = useNavigate();
   const { user } = useAuthSession();
   const [activeTab, setActiveTab] = useState(FEED_TABS.GLOBAL);
   const [toastMessage, setToastMessage] = useState("");
@@ -45,6 +48,14 @@ export function SocialFeedPage() {
   const showComingSoon = useCallback(() => {
     setToastMessage(COMING_SOON_MESSAGE);
   }, []);
+
+  const viewProfile = useCallback(
+    (profileUserId) => {
+      if (!profileUserId) return;
+      navigate(buildSocialProfilePath(profileUserId));
+    },
+    [navigate]
+  );
 
   const dismissToast = useCallback(() => {
     setToastMessage("");
@@ -129,6 +140,7 @@ export function SocialFeedPage() {
                   onOpenPost={openPost}
                   onComingSoon={showComingSoon}
                   onEdit={openEdit}
+                  onViewProfile={viewProfile}
                 />
               ))}
             </div>
@@ -154,7 +166,7 @@ export function SocialFeedPage() {
           ) : null}
         </section>
 
-        <FeedRightSidebar onComingSoon={showComingSoon} />
+        <FeedRightSidebar onComingSoon={showComingSoon} onViewProfile={viewProfile} />
       </div>
 
       {isOpen ? (
@@ -165,6 +177,7 @@ export function SocialFeedPage() {
           onClose={closePost}
           onToast={setToastMessage}
           onEdit={openEdit}
+          onViewProfile={viewProfile}
         />
       ) : null}
 
