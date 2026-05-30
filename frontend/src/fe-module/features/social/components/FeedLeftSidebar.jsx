@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAccountProfile } from "../../auth/account/hooks/useAccountProfile";
 import { useCurrentUserId } from "../../auth/hooks/useCurrentUserId";
 import { APP_ROUTES } from "../../../shared/constants/routes";
@@ -7,7 +7,7 @@ import { buildSocialProfilePath } from "../utils/socialProfileRoutes";
 const DEFAULT_AVATAR_URL = "https://i.pravatar.cc/96?img=11";
 
 const QUICK_LINKS = [
-  { icon: "bookmark", label: "Saved Items", color: "text-primary" },
+  { icon: "bookmark", label: "Đã lưu", color: "text-primary", to: APP_ROUTES.socialSavedPosts },
   { icon: "group", label: "My Network", color: "text-secondary" },
   { icon: "event", label: "Events", color: "text-[#565a5b]" },
 ];
@@ -74,19 +74,40 @@ export function FeedLeftSidebar() {
 
       <div className="flex flex-col gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
         <h3 className="mb-2 text-sm font-medium uppercase tracking-wider text-on-surface">Quick Links</h3>
-        {QUICK_LINKS.map((item) => (
-          <a
-            key={item.label}
-            href="#"
-            className="flex items-center gap-3 rounded-lg p-2 text-on-surface transition-colors hover:bg-[#f0f3ff]"
-            onClick={(event) => event.preventDefault()}
-          >
-            <span className={`material-symbols-outlined ${item.color}`} aria-hidden="true">
-              {item.icon}
-            </span>
-            <span className="text-sm">{item.label}</span>
-          </a>
-        ))}
+        {QUICK_LINKS.map((item) =>
+          item.to ? (
+            <NavLink
+              key={item.label}
+              to={item.to}
+              className={({ isActive }) =>
+                [
+                  "flex items-center gap-3 rounded-lg p-2 text-sm transition-colors hover:bg-[#f0f3ff]",
+                  isActive ? "bg-[#f0f3ff] text-primary" : "text-on-surface",
+                ].join(" ")
+              }
+            >
+              <span
+                className={`material-symbols-outlined ${item.color}`}
+                aria-hidden="true"
+              >
+                {item.icon}
+              </span>
+              <span>{item.label}</span>
+            </NavLink>
+          ) : (
+            <a
+              key={item.label}
+              href="#"
+              className="flex items-center gap-3 rounded-lg p-2 text-on-surface transition-colors hover:bg-[#f0f3ff]"
+              onClick={(event) => event.preventDefault()}
+            >
+              <span className={`material-symbols-outlined ${item.color}`} aria-hidden="true">
+                {item.icon}
+              </span>
+              <span className="text-sm">{item.label}</span>
+            </a>
+          )
+        )}
       </div>
     </aside>
   );

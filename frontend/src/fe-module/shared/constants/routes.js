@@ -13,6 +13,7 @@ export const APP_ROUTES = {
   sessionExpired: "/auth/session-expired",
   admin: "/admin",
   socialFeed: "/social",
+  socialSavedPosts: "/social/saved",
   socialProfile: "/social/users/:userId",
 };
 

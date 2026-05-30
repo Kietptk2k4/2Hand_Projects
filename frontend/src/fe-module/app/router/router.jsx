@@ -14,6 +14,7 @@ import { SessionExpiredPage } from "../../features/auth/pages/SessionExpiredPage
 import { AdminPage } from "../../features/auth/pages/AdminPage";
 import { SocialFeedPage } from "../../features/social/pages/SocialFeedPage";
 import { SocialProfilePage } from "../../features/social/pages/SocialProfilePage";
+import { SocialSavedPostsPage } from "../../features/social/pages/SocialSavedPostsPage";
 
 function HomePage() {
   return (
@@ -46,6 +47,7 @@ export const router = createBrowserRouter([
           { path: APP_ROUTES.changePassword.slice(1), element: <ChangePasswordPage /> },
           { path: APP_ROUTES.admin.slice(1), element: <AdminPage /> },
           { path: APP_ROUTES.socialFeed.slice(1), element: <SocialFeedPage /> },
+          { path: APP_ROUTES.socialSavedPosts.slice(1), element: <SocialSavedPostsPage /> },
           { path: APP_ROUTES.socialProfile.slice(1), element: <SocialProfilePage /> },
         ],
       },
