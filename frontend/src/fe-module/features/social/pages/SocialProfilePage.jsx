@@ -7,6 +7,8 @@ import { FeedToast } from "../components/FeedToast";
 import { PostDetailModal } from "../components/PostDetailModal";
 import { ProfileHero } from "../components/ProfileHero";
 import { ProfilePortfolioSection } from "../components/ProfilePortfolioSection";
+import { ProfilePostsFilter } from "../components/ProfilePostsFilter";
+import { DEFAULT_PROFILE_STATUS_FILTER } from "../constants/profilePostsConstants";
 import { useEditPostModal } from "../hooks/useEditPostModal";
 import { usePostActions } from "../hooks/usePostActions";
 import { usePostDetailModal } from "../hooks/usePostDetailModal";
@@ -24,6 +26,7 @@ export function SocialProfilePage() {
   const { user } = useAuthSession();
   const [toastMessage, setToastMessage] = useState("");
   const [detailRefreshKey, setDetailRefreshKey] = useState(0);
+  const [statusFilter, setStatusFilter] = useState(DEFAULT_PROFILE_STATUS_FILTER);
 
   const { profile, isLoading, isError, errorMessage, errorCode, retry: refetchProfile } =
     useSocialProfile(userId);
@@ -31,11 +34,11 @@ export function SocialProfilePage() {
 
   const isSelf = profile?.followStatus === "SELF";
   const canViewPosts = Boolean(profile?.canViewFullProfile);
-  const statusFilter = isSelf ? "all" : "published";
+  const effectiveStatusFilter = isSelf ? statusFilter : "published";
 
   const postsState = useUserPosts(userId, {
     enabled: canViewPosts,
-    statusFilter,
+    statusFilter: effectiveStatusFilter,
   });
 
   const { postId, focusComments, isOpen, openPost, closePost } = usePostDetailModal();
@@ -161,10 +164,17 @@ export function SocialProfilePage() {
             />
 
             <section className="mt-10 px-4 md:px-8">
-              <div className="mb-4 border-b border-outline-variant pb-1">
+              <div className="mb-4 flex flex-col gap-3 border-b border-outline-variant pb-4 sm:flex-row sm:items-center sm:justify-between">
                 <h2 className="inline-block border-b-2 border-primary pb-2 text-lg font-semibold text-on-surface">
                   Portfolio
                 </h2>
+                {isSelf && canViewPosts ? (
+                  <ProfilePostsFilter
+                    value={statusFilter}
+                    onChange={setStatusFilter}
+                    disabled={postsState.isInitialLoading}
+                  />
+                ) : null}
               </div>
 
               <ProfilePortfolioSection

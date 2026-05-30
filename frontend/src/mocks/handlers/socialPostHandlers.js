@@ -51,6 +51,34 @@ function paginateItems(items, page, size) {
   };
 }
 
+function parseCommentSort(url) {
+  const sortParam = url.searchParams.get("sort");
+  const sort = sortParam === null || sortParam === "" ? "created_at_asc" : sortParam;
+
+  if (!["created_at_asc", "created_at_desc"].includes(sort)) {
+    return {
+      error: {
+        code: "SOCIAL-400",
+        success: false,
+        message: "Tham so sort khong hop le.",
+        data: null,
+        errors: [{ field: "sort", reason: "MUST_BE_created_at_asc_OR_created_at_desc" }],
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+
+  return { sort };
+}
+
+function sortCommentsByCreatedAt(items, sort) {
+  return [...items].sort((a, b) => {
+    const timeA = new Date(a.createdAt).getTime();
+    const timeB = new Date(b.createdAt).getTime();
+    return sort === "created_at_desc" ? timeB - timeA : timeA - timeB;
+  });
+}
+
 export const socialPostHandlers = [
   http.get("*/api/v1/social/posts/:postId", async ({ params, request }) => {
     await delay(450);
@@ -117,6 +145,11 @@ export const socialPostHandlers = [
       return HttpResponse.json(pagination.error, { status: 400 });
     }
 
+    const sortResult = parseCommentSort(url);
+    if (sortResult.error) {
+      return HttpResponse.json(sortResult.error, { status: 400 });
+    }
+
     if (postId === MOCK_POST_ID_NOT_FOUND) {
       return HttpResponse.json(apiError(404, "Khong tim thay bai viet."), { status: 404 });
     }
@@ -145,7 +178,11 @@ export const socialPostHandlers = [
     }
 
     const { page, size } = pagination;
-    const allComments = getCommentsForPost(postId, { parentCommentId });
+    const { sort } = sortResult;
+    const allComments = sortCommentsByCreatedAt(
+      getCommentsForPost(postId, { parentCommentId }),
+      sort
+    );
     const data = paginateItems(allComments, page, size);
 
     return HttpResponse.json(

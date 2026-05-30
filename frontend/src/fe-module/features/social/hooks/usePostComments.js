@@ -4,6 +4,7 @@ import { canDeleteCommentItem } from "../utils/commentPermissions";
 import { fetchPostComments } from "../api/postApi";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { buildAuthorFromSessionUser, mapApiCommentToListItem } from "../utils/mapCommentItem";
+import { DEFAULT_COMMENT_SORT } from "../constants/commentConstants";
 import { validateCommentContent } from "../utils/validateCommentContent";
 import { mapSocialWriteError } from "../utils/socialWriteErrors";
 
@@ -20,6 +21,7 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
   const [isSubmittingReplyId, setIsSubmittingReplyId] = useState(null);
   const [submitError, setSubmitError] = useState("");
   const [deletingCommentId, setDeletingCommentId] = useState(null);
+  const [commentSort, setCommentSort] = useState(DEFAULT_COMMENT_SORT);
 
   const loadTopLevel = useCallback(async () => {
     if (!postId || !enabled) return;
@@ -32,7 +34,7 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
     setSubmitError("");
 
     try {
-      const data = await fetchPostComments(postId, { page: 0, size: 20 });
+      const data = await fetchPostComments(postId, { page: 0, size: 20, sort: commentSort });
       setComments(data?.items || []);
       setMeta(data?.meta || null);
       setStatus("ready");
@@ -44,7 +46,7 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
       setStatus("error");
       setErrorMessage(error?.message || "Không tải được bình luận.");
     }
-  }, [enabled, postId, showSessionExpired]);
+  }, [commentSort, enabled, postId, showSessionExpired]);
 
   useEffect(() => {
     if (!enabled) {
@@ -56,7 +58,7 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
       return;
     }
     loadTopLevel();
-  }, [enabled, loadTopLevel, postId]);
+  }, [commentSort, enabled, loadTopLevel, postId]);
 
   const loadMore = useCallback(async () => {
     if (!postId || !meta?.hasNext || status === "loadingMore") return;
@@ -64,7 +66,11 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
     setStatus("loadingMore");
     try {
       const nextPage = (meta?.page || 0) + 1;
-      const data = await fetchPostComments(postId, { page: nextPage, size: meta?.size || 20 });
+      const data = await fetchPostComments(postId, {
+        page: nextPage,
+        size: meta?.size || 20,
+        sort: commentSort,
+      });
       setComments((prev) => [...prev, ...(data?.items || [])]);
       setMeta(data?.meta || null);
       setStatus("ready");
@@ -76,7 +82,7 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
       setErrorMessage(error?.message || "Không tải thêm bình luận.");
       setStatus("ready");
     }
-  }, [meta, postId, showSessionExpired, status]);
+  }, [commentSort, meta, postId, showSessionExpired, status]);
 
   const expandReplies = useCallback(
     async (parentCommentId) => {
@@ -89,6 +95,7 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
           page: 0,
           size: 20,
           parentCommentId,
+          sort: commentSort,
         });
         setRepliesByParent((prev) => ({
           ...prev,
@@ -103,8 +110,12 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
         setReplyStatusByParent((prev) => ({ ...prev, [parentCommentId]: "error" }));
       }
     },
-    [postId, repliesByParent, showSessionExpired]
+    [commentSort, postId, repliesByParent, showSessionExpired]
   );
+
+  const handleCommentSortChange = useCallback((nextSort) => {
+    setCommentSort(nextSort);
+  }, []);
 
   const startReply = useCallback((parentCommentId) => {
     setReplyingToId(parentCommentId);
@@ -328,5 +339,7 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
     deleteComment,
     canDeleteComment,
     deletingCommentId,
+    commentSort,
+    setCommentSort: handleCommentSortChange,
   };
 }

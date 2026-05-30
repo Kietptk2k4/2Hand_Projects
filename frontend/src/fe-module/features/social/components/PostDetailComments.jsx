@@ -1,5 +1,6 @@
 import { CommentItem } from "./CommentItem";
 import { CommentSkeleton } from "./CommentSkeleton";
+import { CommentSortSelect } from "./CommentSortSelect";
 
 export function PostDetailComments({
   commentsState,
@@ -29,6 +30,8 @@ export function PostDetailComments({
     deleteComment: deleteCommentFromState,
     canDeleteComment,
     deletingCommentId,
+    commentSort,
+    setCommentSort,
   } = commentsState;
 
   const handleDeleteComment =
@@ -38,7 +41,14 @@ export function PostDetailComments({
 
   return (
     <div className="space-y-4">
-      <h4 className="text-sm font-semibold text-on-surface">Bình luận</h4>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h4 className="text-sm font-semibold text-on-surface">Bình luận</h4>
+        <CommentSortSelect
+          value={commentSort}
+          onChange={setCommentSort}
+          disabled={isLoading}
+        />
+      </div>
 
       {submitError ? (
         <p className="text-xs text-error" role="alert">
