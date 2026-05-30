@@ -1,9 +1,12 @@
 import { useCallback, useState } from "react";
+import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { FEED_TABS } from "../constants/feedTabs";
 import { useCreatePostModal } from "../hooks/useCreatePostModal";
+import { useEditPostModal } from "../hooks/useEditPostModal";
 import { useFeed } from "../hooks/useFeed";
 import { usePostDetailModal } from "../hooks/usePostDetailModal";
 import { CreatePostModal } from "../components/CreatePostModal";
+import { EditPostModal } from "../components/EditPostModal";
 import { FeedComposer } from "../components/FeedComposer";
 import { FeedLeftSidebar } from "../components/FeedLeftSidebar";
 import { FeedPostSkeleton } from "../components/FeedPostSkeleton";
@@ -16,9 +19,12 @@ import { PostDetailModal } from "../components/PostDetailModal";
 const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
 
 export function SocialFeedPage() {
+  const { user } = useAuthSession();
   const [activeTab, setActiveTab] = useState(FEED_TABS.GLOBAL);
   const [toastMessage, setToastMessage] = useState("");
+  const [detailRefreshKey, setDetailRefreshKey] = useState(0);
   const { postId, focusComments, isOpen, openPost, closePost } = usePostDetailModal();
+  const { editPostId, isEditOpen, openEdit, closeEdit } = useEditPostModal();
   const {
     isOpen: isCreateOpen,
     openFilePickerOnMount,
@@ -43,6 +49,14 @@ export function SocialFeedPage() {
   const dismissToast = useCallback(() => {
     setToastMessage("");
   }, []);
+
+  const onEditSuccess = useCallback(() => {
+    refetch();
+    if (postId) {
+      setDetailRefreshKey((key) => key + 1);
+    }
+    setToastMessage("Cập nhật bài viết thành công.");
+  }, [postId, refetch]);
 
   const onCreateSuccess = useCallback(
     (_created, { publish }) => {
@@ -111,8 +125,10 @@ export function SocialFeedPage() {
                 <PostCard
                   key={post.postId}
                   post={post}
+                  currentUserId={user?.id}
                   onOpenPost={openPost}
                   onComingSoon={showComingSoon}
+                  onEdit={openEdit}
                 />
               ))}
             </div>
@@ -143,9 +159,20 @@ export function SocialFeedPage() {
 
       {isOpen ? (
         <PostDetailModal
+          key={`${postId}-${detailRefreshKey}`}
           postId={postId}
           focusComments={focusComments}
           onClose={closePost}
+          onToast={setToastMessage}
+          onEdit={openEdit}
+        />
+      ) : null}
+
+      {isEditOpen ? (
+        <EditPostModal
+          postId={editPostId}
+          onClose={closeEdit}
+          onSuccess={onEditSuccess}
           onToast={setToastMessage}
         />
       ) : null}

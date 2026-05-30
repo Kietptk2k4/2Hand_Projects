@@ -8,6 +8,7 @@ import { MediaGalleryLightbox } from "./MediaGalleryLightbox";
 import { PostCaption } from "./PostCaption";
 import { PostDetailComments } from "./PostDetailComments";
 import { PostMediaGrid } from "./PostMediaGrid";
+import { PostOwnerMenu } from "./PostOwnerMenu";
 
 const DEFAULT_AVATAR = "https://i.pravatar.cc/96?img=11";
 const COMING_SOON = "Tính năng đang được phát triển.";
@@ -18,7 +19,7 @@ function formatCount(value) {
   return String(num);
 }
 
-export function PostDetailModal({ postId, focusComments, onClose, onToast }) {
+export function PostDetailModal({ postId, focusComments, onClose, onToast, onEdit }) {
   const { user } = useAuthSession();
   const commentAnchorRef = useRef(null);
   const commentInputRef = useRef(null);
@@ -169,16 +170,13 @@ export function PostDetailModal({ postId, focusComments, onClose, onToast }) {
                       {formatRelativeTime(post.createdAt)}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    className="rounded-full p-2 text-primary hover:bg-primary-fixed"
-                    onClick={showComingSoon}
-                    aria-label="Tùy chọn"
-                  >
-                    <span className="material-symbols-outlined" aria-hidden="true">
-                      more_vert
-                    </span>
-                  </button>
+                  {post.isOwner ? (
+                    <PostOwnerMenu
+                      icon="more_vert"
+                      className="rounded-full text-primary hover:bg-primary-fixed"
+                      onEdit={() => onEdit?.(post.postId)}
+                    />
+                  ) : null}
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6">

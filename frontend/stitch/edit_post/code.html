@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sửa bài viết - 2Hands</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#6f7274",
+                        "on-primary-fixed": "#001849",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#ecf1ff",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#b3c5ff",
+                        "surface-container-high": "#dee8ff",
+                        "on-secondary-container": "#fffbff",
+                        "surface-container-low": "#f0f3ff",
+                        "surface-container-highest": "#d8e3fb",
+                        "primary-fixed": "#dae1ff",
+                        "on-primary-container": "#f8f7ff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "on-secondary": "#ffffff",
+                        "background": "#f9f9ff",
+                        "on-surface-variant": "#424656",
+                        "surface-tint": "#0054d6",
+                        "on-tertiary-fixed": "#191c1e",
+                        "outline": "#727687",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "secondary-container": "#6063ee",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#111c2d",
+                        "on-background": "#111c2d",
+                        "tertiary": "#565a5b",
+                        "inverse-surface": "#263143",
+                        "surface-variant": "#d8e3fb",
+                        "error-container": "#ffdad6",
+                        "secondary": "#4648d4",
+                        "primary": "#0050cb",
+                        "on-secondary-fixed": "#07006c",
+                        "secondary-fixed": "#e1e0ff",
+                        "surface-dim": "#cfdaf2",
+                        "surface-container": "#e7eeff",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "tertiary-fixed": "#e0e3e5",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#f9f9ff",
+                        "on-tertiary-container": "#f6f8fa",
+                        "on-primary-fixed-variant": "#003fa4",
+                        "outline-variant": "#c2c6d8",
+                        "primary-container": "#0066ff",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "surface": "#f9f9ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "64px",
+                        "lg": "40px",
+                        "margin-desktop": "32px",
+                        "xs": "4px",
+                        "md": "24px",
+                        "sm": "12px",
+                        "base": "8px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-xl-mobile": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                        "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen relative overflow-hidden flex items-center justify-center">
+<!-- Mock Background (Feed/Profile Context) -->
+<div class="absolute inset-0 p-lg w-full max-w-container-max mx-auto opacity-40 blur-sm pointer-events-none">
+<div class="bg-surface rounded-xl shadow-sm p-md mb-md h-64"></div>
+<div class="bg-surface rounded-xl shadow-sm p-md h-96"></div>
+</div>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 bg-on-background/40 backdrop-blur-sm z-40" id="modal-overlay"></div>
+<!-- Edit Post Modal -->
+<div class="relative z-50 bg-surface w-full max-w-5xl max-h-[921px] rounded-xl shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] flex flex-col m-md" id="edit-modal">
+<!-- Modal Header -->
+<header class="flex justify-between items-center px-md py-sm border-b border-outline-variant">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Sửa bài viết</h2>
+<button aria-label="Close" class="text-on-surface-variant hover:text-on-surface transition-colors p-sm rounded-full hover:bg-surface-variant" onclick="closeModal()">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">close</span>
+</button>
+</header>
+<!-- Modal Body (2 Columns) -->
+<div class="flex-1 overflow-y-auto flex flex-col md:flex-row p-md gap-md">
+<!-- Left Column: Media Preview -->
+<div class="w-full md:w-1/2 flex flex-col gap-sm">
+<div class="relative rounded-lg overflow-hidden bg-surface-container-high h-[400px] group border border-outline-variant">
+<img alt="Red Nike shoe product photography" class="w-full h-full object-cover" data-alt="A clean, professional product photograph of a modern red sneaker resting on a subtle reflective surface. The setting is a minimalist studio with soft, diffused white lighting that highlights the shoe's textures and contours. The color palette focuses on deep reds contrasted against crisp whites and subtle greys, evoking a high-end retail aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoIkSMVH0Rz3sVbO_vzfl-Z8otTS3-bvmDlCwS0ta-qzdKBj8ScI7khhJ-LgL91s2ASjdA4orV0a8vyfy94vXRdXFk9RpQHZlP5sob4vHoWzzQ7GDSiPcsm5uWFwMXFWSor13FwFt9HICEyP4Xk6MuKOHdSOYgBOmr_X-j7mtP0OiQOqYiSEMXwmg3JTKRCX3c3Xm3RGcLWIY016g6qswdDm4JiZjXLty3kwsRaDNSqTVhaPA2bCVKATM7tkAY24_eAF-j186BD3M"/>
+<!-- Media Controls Overlay -->
+<div class="absolute top-sm right-sm flex gap-xs opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="bg-surface/90 text-on-surface p-base rounded-full shadow-sm hover:bg-surface transition-colors" title="Change Image">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="bg-error/90 text-on-error p-base rounded-full shadow-sm hover:bg-error transition-colors" title="Remove Image">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Media Thumbnails -->
+<div class="flex gap-sm overflow-x-auto pb-base">
+<div class="w-20 h-20 rounded-lg overflow-hidden border-2 border-primary cursor-pointer shrink-0">
+<img alt="Thumbnail 1" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2gyv7B8Lw9SnIo7_eWfAXg0rEi0gi93j4GgqQRKXb-r5_U6ixPG7nB6AfS3atOlYThKw4PAmD2KikJP7eF_T-eYEWC1Afd2NpuK9L53Gu58XSn9SBdzag59FxPXCqF_U2aJMBAsK8uMtak-Za1K4Gaw9uoiwfYQVS10qKROolDf-V5JCzt2556QxEMReYte6nXXzEzIdgTAH9cguIMoovUXqb6OJlgnds7O3XwpeWgigX9LmaZkT37yc6R4O-y0mbKrEogLXc_RQ"/>
+</div>
+<div class="w-20 h-20 rounded-lg overflow-hidden border border-outline-variant cursor-pointer opacity-70 hover:opacity-100 transition-opacity shrink-0">
+<img alt="Thumbnail 2" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6cUIp2GbGOiotWEV0m88tql-78e6XWpssa5pyAdBz4BmHQOVPuCBTec3ravuUYruIwKLQcVys4DU09Hq5S3dK0019y9BeUiY4wOb-ocK2kzVJjZ7mTqxzqGiN2VQA9oJxmT96J_9mwnzYR8DrHpDgKW36qUz5iiO7nMd6KedHAoznDZL24_8zc-b6-pabcHcIz1deyi6vAj1cj9U8Zrh9Pbyu6Z6CcAOVZjBL1wpGcD2JaD--YU3zTge3w0XBr71lpDDVARKVGPY"/>
+</div>
+<button class="w-20 h-20 rounded-lg border border-dashed border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors shrink-0">
+<span class="material-symbols-outlined">add_photo_alternate</span>
+</button>
+</div>
+</div>
+<!-- Right Column: Content & Settings -->
+<div class="w-full md:w-1/2 flex flex-col gap-md">
+<!-- User Info & Visibility -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container">
+<img alt="User Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZTP_NBOq2nRMBJvQzCFAnZLNibYB5KgTLvNlw39p5SvEnzgiEikqbeWmu8ID6Wo2pYG3_Eol2mSy6Y_zHgB6UTy3UeoLHxTUd4uxf7A8ZRas3_f0tJJzHjz0SlA7TaGgOsguDTK-14h5Wle9pHN_cw0zOz-N7O_Db7jK4Udt0Y4lKCWT2yIDr-83kK9gv1D5ilpyW-sco9PEbMxU6Pi2EIJRl4kpXe3yNajMTIpMkcM83wMjQzESdaQCdTSCxTFjjo2GT-N4_Sko"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface font-semibold">Nguyễn Văn A</p>
+</div>
+</div>
+<!-- Visibility Dropdown -->
+<div class="relative">
+<select class="appearance-none bg-surface-container border border-outline-variant text-on-surface font-body-sm text-body-sm rounded-full px-sm py-base pr-8 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer">
+<option value="public">Công khai</option>
+<option value="followers">Chỉ người theo dõi</option>
+<option value="private">Chỉ mình tôi</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Caption Textarea -->
+<div class="flex-1 flex flex-col">
+<textarea class="w-full flex-1 min-h-[150px] p-sm border border-outline-variant rounded-lg bg-surface text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none placeholder:text-on-surface-variant/50" placeholder="Bạn đang nghĩ gì?">Giày thể thao nam nữ phong cách hiện đại.
+Hàng chính hãng 100%, sẵn size 39-43.
+Inbox để nhận tư vấn size chi tiết nhé mọi người! 🚀
+#Sneaker #Fashion #Streetstyle</textarea>
+</div>
+<!-- Product Tagging Section -->
+<div class="border border-outline-variant rounded-lg p-sm flex flex-col gap-sm bg-surface-container-low">
+<div class="flex items-center justify-between">
+<h3 class="font-label-sm text-label-sm text-on-surface flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">sell</span>
+                            Sản phẩm gắn kèm
+                        </h3>
+<button class="text-primary font-label-sm text-label-sm hover:underline">Thêm sản phẩm</button>
+</div>
+<!-- Tagged Product Item -->
+<div class="flex items-center gap-sm bg-surface p-base rounded border border-outline-variant">
+<div class="w-12 h-12 rounded bg-surface-container overflow-hidden shrink-0">
+<img alt="Product Thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvYb90r6xRaq4LAUaYlUcyvCraDQxu_AQhFvZdpoYjaJ3rZ5Qc-Vf4cQHYxK5Hv2W-UKOC4ipbdtlfAW-0skrQtzv6HTFo6lj8WxYuXsR665cjZsjtkGRROT2ZNpmQecJKm1E6nrczsmnpABU1VkfRIOMErwQtTYfcGLvMM0Iy-xQco0UhAdairO80F4dhXeALNQrpT1KWBN_H83NzC7Zi_bWHW6PJU5e4ykJVZ-ifs1blNF20u1O0VPrPC56Eo4lbIab2ZZ58vxY"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-md text-label-md text-on-surface truncate">Giày Sneaker Đỏ Năng Động</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">1,250,000 đ</p>
+</div>
+<button class="text-on-surface-variant hover:text-error p-base transition-colors" title="Gỡ sản phẩm">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+</div>
+<!-- Additional Options (Location, etc.) -->
+<div class="flex gap-sm">
+<button class="flex items-center gap-xs px-sm py-base border border-outline-variant rounded-full text-on-surface-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<span class="font-body-sm text-body-sm">Thêm vị trí</span>
+</button>
+<button class="flex items-center gap-xs px-sm py-base border border-outline-variant rounded-full text-on-surface-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">sentiment_satisfied</span>
+<span class="font-body-sm text-body-sm">Cảm xúc</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Modal Footer -->
+<footer class="flex justify-end gap-sm px-md py-sm border-t border-outline-variant bg-surface-container-low rounded-b-xl">
+<button class="px-md py-sm rounded-lg font-label-md text-label-md border-2 border-primary text-primary hover:bg-primary/5 transition-colors" onclick="closeModal()">
+                Hủy
+            </button>
+<button class="px-md py-sm rounded-lg font-label-md text-label-md bg-primary text-on-primary hover:bg-primary/90 transition-colors shadow-sm" onclick="savePost()">
+                Cập nhật
+            </button>
+</footer>
+</div>
+<script>
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.add('hidden');
+            document.getElementById('edit-modal').classList.add('hidden');
+        }
+
+        function savePost() {
+            // Mock save action
+            const btn = event.currentTarget;
+            const originalText = btn.innerText;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>';
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
+            
+            setTimeout(() => {
+                closeModal();
+                btn.innerHTML = originalText;
+                btn.classList.remove('opacity-80', 'cursor-not-allowed');
+            }, 800);
+        }
+    </script>
+</body></html>

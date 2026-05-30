@@ -2,6 +2,7 @@ import { authorAvatarUrl, authorDisplayName } from "../utils/authorDisplay";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
 import { PostCaption } from "./PostCaption";
 import { PostMediaGrid } from "./PostMediaGrid";
+import { PostOwnerMenu } from "./PostOwnerMenu";
 
 function formatCount(value) {
   const num = Number(value) || 0;
@@ -11,7 +12,8 @@ function formatCount(value) {
   return String(num);
 }
 
-export function PostCard({ post, onOpenPost, onComingSoon }) {
+export function PostCard({ post, onOpenPost, onComingSoon, onEdit, currentUserId }) {
+  const isOwner = Boolean(currentUserId && post.authorId === currentUserId);
   const openDetail = (options) => {
     onOpenPost?.(post.postId, options);
   };
@@ -49,16 +51,12 @@ export function PostCard({ post, onOpenPost, onComingSoon }) {
               </span>
             </div>
           </button>
-          <button
-            type="button"
-            className="p-1 text-on-surface-variant hover:text-on-surface"
-            aria-label="Tùy chọn bài viết"
-            onClick={stopAnd(onComingSoon)}
-          >
-            <span className="material-symbols-outlined" aria-hidden="true">
-              more_horiz
-            </span>
-          </button>
+          {isOwner ? (
+            <PostOwnerMenu
+              icon="more_horiz"
+              onEdit={() => onEdit?.(post.postId)}
+            />
+          ) : null}
         </div>
         <PostCaption
           caption={post.caption}

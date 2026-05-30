@@ -3,6 +3,7 @@ import { adminRbacHandlers } from "./adminRbacHandlers";
 import { authHandlers } from "./authHandlers";
 import { socialFeedHandlers } from "./socialFeedHandlers";
 import { socialCreatePostHandlers } from "./socialCreatePostHandlers";
+import { socialEditPostHandlers } from "./socialEditPostHandlers";
 import { socialPostHandlers } from "./socialPostHandlers";
 
 export const handlers = [
@@ -12,5 +13,6 @@ export const handlers = [
   ...socialFeedHandlers,
   ...socialPostHandlers,
   ...socialCreatePostHandlers,
+  ...socialEditPostHandlers,
 ];
 

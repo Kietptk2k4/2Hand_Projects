@@ -33,6 +33,21 @@ export const mockUsers = [
     last_login_at: "2026-05-17T08:00:00Z"
   },
   {
+    id: "e2222222-2222-4222-8222-222222222222",
+    email: "suspended@2hands.vn",
+    password: "Password123!",
+    status: "SUSPENDED",
+    email_verified: true,
+    display_name: "Suspended User",
+    avatar_url: "https://i.pravatar.cc/200?img=9",
+    bio: "",
+    website: "",
+    social_links: {},
+    is_private: false,
+    appearance_mode: "SYSTEM",
+    last_login_at: null,
+  },
+  {
     id: "83e01f6e-cd36-4440-8af7-5af876ec9d95",
     email: "pending@2hands.vn",
     password: "Password123!",

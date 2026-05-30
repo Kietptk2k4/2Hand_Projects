@@ -64,8 +64,68 @@ const EXTRA_POSTS = [
 
 const ALL_FEED_POSTS = [...mockGlobalFeedPosts, ...EXTRA_POSTS];
 
+const postProductTagsByPostId = new Map([
+  [
+    MOCK_POST_ID_SUCCESS,
+    [{ productId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", price: 500000 }],
+  ],
+]);
+
+function getMutableFeedPost(postId) {
+  const feedIndex = mockGlobalFeedPosts.findIndex((item) => item.postId === postId);
+  if (feedIndex >= 0) {
+    return { post: mockGlobalFeedPosts[feedIndex], list: mockGlobalFeedPosts, index: feedIndex };
+  }
+  const extraIndex = EXTRA_POSTS.findIndex((item) => item.postId === postId);
+  if (extraIndex >= 0) {
+    return { post: EXTRA_POSTS[extraIndex], list: EXTRA_POSTS, index: extraIndex };
+  }
+  return null;
+}
+
 export function findFeedPost(postId) {
   return ALL_FEED_POSTS.find((item) => item.postId === postId) || null;
+}
+
+export function updateFeedPostInStore(postId, patch) {
+  const target = getMutableFeedPost(postId);
+  if (!target) return null;
+
+  const { post } = target;
+  const now = new Date().toISOString();
+
+  if (patch.caption !== undefined) {
+    post.caption = patch.caption ?? "";
+  }
+  if (patch.media !== undefined) {
+    post.media = [...patch.media];
+  }
+  if (patch.hashtags !== undefined) {
+    post.hashtags = [...patch.hashtags];
+  }
+  if (patch.visibility !== undefined) {
+    post.visibility = patch.visibility;
+  }
+  if (patch.allowComments !== undefined) {
+    post.allowComments = patch.allowComments;
+  }
+  if (patch.productTags !== undefined) {
+    if (patch.productTags.length > 0) {
+      postProductTagsByPostId.set(postId, patch.productTags.map((item) => ({ ...item })));
+    } else {
+      postProductTagsByPostId.delete(postId);
+    }
+  }
+
+  post.updatedAt = now;
+  return post;
+}
+
+export function touchFeedPostUpdatedAt(postId) {
+  const target = getMutableFeedPost(postId);
+  if (!target) return null;
+  target.post.updatedAt = new Date().toISOString();
+  return target.post;
 }
 
 export function buildPostDetail(postId, viewerUserId) {
@@ -75,10 +135,7 @@ export function buildPostDetail(postId, viewerUserId) {
   const author = resolveAuthor(feedPost.authorId);
   const isOwner = viewerUserId === feedPost.authorId;
 
-  const productTags =
-    postId === MOCK_POST_ID_SUCCESS
-      ? [{ productId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", price: 500000 }]
-      : [];
+  const productTags = postProductTagsByPostId.get(postId) || [];
 
   return {
     postId: feedPost.postId,
