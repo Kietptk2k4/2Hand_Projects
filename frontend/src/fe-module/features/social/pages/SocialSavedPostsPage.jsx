@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toggleSavePost } from "../api/savePostApi";
 import { FeedLeftSidebar } from "../components/FeedLeftSidebar";
 import { FeedRightSidebar } from "../components/FeedRightSidebar";
 import { FeedToast } from "../components/FeedToast";
@@ -10,6 +9,7 @@ import { SavedPostCard } from "../components/SavedPostCard";
 import { SavedPostCardSkeleton } from "../components/SavedPostCardSkeleton";
 import { SavedPostsHeader } from "../components/SavedPostsHeader";
 import { useEditPostModal } from "../hooks/useEditPostModal";
+import { usePostActions } from "../hooks/usePostActions";
 import { usePostDetailModal } from "../hooks/usePostDetailModal";
 import { useSavedPosts } from "../hooks/useSavedPosts";
 import { buildSocialHashtagPath } from "../utils/socialHashtagRoutes";
@@ -67,6 +67,32 @@ export function SocialSavedPostsPage() {
     setToastMessage("Cập nhật bài viết thành công.");
   }, [postId, refetch]);
 
+  const { handleDeletePost, handleToggleSavePost, isSavingPost, isDeletingPost } =
+    usePostActions({
+      onToast: setToastMessage,
+      openPostId: postId,
+      closePost,
+    });
+
+  const onDeletePost = useCallback(
+    (targetPostId) => {
+      handleDeletePost(targetPostId, { onRemoved: removeItem });
+    },
+    [handleDeletePost, removeItem]
+  );
+
+  const onToggleSavePost = useCallback(
+    (targetPostId) =>
+      handleToggleSavePost(targetPostId, {
+        onSavedChange: (_id, saved) => {
+          if (!saved) {
+            removeItem(targetPostId);
+          }
+        },
+      }),
+    [handleToggleSavePost, removeItem]
+  );
+
   const handleUnsave = useCallback(
     async (targetPostId) => {
       if (!targetPostId || unsavingId) return;
@@ -75,18 +101,17 @@ export function SocialSavedPostsPage() {
       setUnsavingId(targetPostId);
 
       try {
-        const result = await toggleSavePost(targetPostId);
+        const result = await handleToggleSavePost(targetPostId);
         if (result?.saved) {
           refetch();
         }
-      } catch (error) {
+      } catch {
         refetch();
-        setToastMessage(error?.message || "Không thể bỏ lưu bài viết.");
       } finally {
         setUnsavingId(null);
       }
     },
-    [refetch, removeItem, unsavingId]
+    [handleToggleSavePost, refetch, removeItem, unsavingId]
   );
 
   return (
@@ -178,6 +203,10 @@ export function SocialSavedPostsPage() {
           onClose={closePost}
           onToast={setToastMessage}
           onEdit={openEdit}
+          onDeletePost={onDeletePost}
+          onToggleSavePost={onToggleSavePost}
+          isSavingPost={isSavingPost(postId)}
+          isDeletingPost={isDeletingPost(postId)}
           onViewProfile={viewProfile}
         />
       ) : null}

@@ -4,6 +4,12 @@ export function ProfilePortfolioSection({
   postsState,
   onOpenPost,
   isPrivateLocked,
+  isOwner = false,
+  onEdit,
+  onDeletePost,
+  onToggleSavePost,
+  isSavingPost,
+  isDeletingPost,
 }) {
   const {
     items,
@@ -77,7 +83,18 @@ export function ProfilePortfolioSection({
     <>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-6">
         {items.map((post) => (
-          <ProfilePostTile key={post.postId} post={post} onOpenPost={onOpenPost} />
+          <ProfilePostTile
+            key={post.postId}
+            post={post}
+            onOpenPost={onOpenPost}
+            isOwner={isOwner}
+            savedByMe={post.savedByMe ?? false}
+            onEdit={onEdit}
+            onDeletePost={onDeletePost}
+            onToggleSavePost={onToggleSavePost}
+            isSavingPost={isSavingPost?.(post.postId)}
+            isDeletingPost={isDeletingPost?.(post.postId)}
+          />
         ))}
       </div>
 

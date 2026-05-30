@@ -176,6 +176,7 @@ export function buildUserPostsPage(userId, viewerId, { page, size, statusFilter 
   }
 
   let posts = collectAuthorPosts(userId);
+  posts = posts.filter((post) => (post.status || "ACTIVE") !== "DELETED");
 
   if (statusFilter === "published") {
     posts = posts.filter((post) => (post.status || "ACTIVE") === "ACTIVE");

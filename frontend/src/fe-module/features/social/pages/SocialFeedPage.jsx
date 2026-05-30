@@ -5,6 +5,7 @@ import { FEED_TABS } from "../constants/feedTabs";
 import { useCreatePostModal } from "../hooks/useCreatePostModal";
 import { useEditPostModal } from "../hooks/useEditPostModal";
 import { useFeed } from "../hooks/useFeed";
+import { usePostActions } from "../hooks/usePostActions";
 import { usePostDetailModal } from "../hooks/usePostDetailModal";
 import { CreatePostModal } from "../components/CreatePostModal";
 import { EditPostModal } from "../components/EditPostModal";
@@ -44,7 +45,28 @@ export function SocialFeedPage() {
     loadMore,
     retry,
     refetch,
+    removeItem,
+    patchSaved,
   } = useFeed(activeTab);
+
+  const { handleDeletePost, handleToggleSavePost, isSavingPost, isDeletingPost } =
+    usePostActions({
+      onToast: setToastMessage,
+      openPostId: postId,
+      closePost,
+    });
+
+  const onDeletePost = useCallback(
+    (targetPostId) => {
+      handleDeletePost(targetPostId, { onRemoved: removeItem });
+    },
+    [handleDeletePost, removeItem]
+  );
+
+  const onToggleSavePost = useCallback(
+    (targetPostId) => handleToggleSavePost(targetPostId, { onSavedChange: patchSaved }),
+    [handleToggleSavePost, patchSaved]
+  );
 
   const showComingSoon = useCallback(() => {
     setToastMessage(COMING_SOON_MESSAGE);
@@ -156,6 +178,10 @@ export function SocialFeedPage() {
                   onOpenPost={openPost}
                   onComingSoon={showComingSoon}
                   onEdit={openEdit}
+                  onDeletePost={onDeletePost}
+                  onToggleSavePost={onToggleSavePost}
+                  isSavingPost={isSavingPost(post.postId)}
+                  isDeletingPost={isDeletingPost(post.postId)}
                   onViewProfile={viewProfile}
                   onHashtagClick={viewHashtag}
                 />
@@ -198,6 +224,10 @@ export function SocialFeedPage() {
           onClose={closePost}
           onToast={setToastMessage}
           onEdit={openEdit}
+          onDeletePost={onDeletePost}
+          onToggleSavePost={onToggleSavePost}
+          isSavingPost={isSavingPost(postId)}
+          isDeletingPost={isDeletingPost(postId)}
           onViewProfile={viewProfile}
           onHashtagClick={handleHashtagFromModal}
         />

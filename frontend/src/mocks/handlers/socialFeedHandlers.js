@@ -1,5 +1,9 @@
 import { delay, http, HttpResponse } from "msw";
-import { mockFollowingFeedPosts, mockGlobalFeedPosts } from "../data/socialFeedData";
+import {
+  isFeedPostVisible,
+  mockFollowingFeedPosts,
+  mockGlobalFeedPosts,
+} from "../data/socialFeedData";
 import { getUserByToken } from "../utils/socialMockAuth";
 import { apiError, apiSuccess } from "../utils/response";
 
@@ -66,12 +70,24 @@ async function handleFeedRequest(request, items, successMessage) {
   return HttpResponse.json(apiSuccess(200, successMessage, data), { status: 200 });
 }
 
+function visibleFeedPosts(posts) {
+  return posts.filter(isFeedPostVisible);
+}
+
 export const socialFeedHandlers = [
   http.get("*/api/v1/social/feed/global", (ctx) =>
-    handleFeedRequest(ctx.request, mockGlobalFeedPosts, "Lay global feed thanh cong.")
+    handleFeedRequest(
+      ctx.request,
+      visibleFeedPosts(mockGlobalFeedPosts),
+      "Lay global feed thanh cong."
+    )
   ),
 
   http.get("*/api/v1/social/feed/following", (ctx) =>
-    handleFeedRequest(ctx.request, mockFollowingFeedPosts, "Lay following feed thanh cong.")
+    handleFeedRequest(
+      ctx.request,
+      visibleFeedPosts(mockFollowingFeedPosts),
+      "Lay following feed thanh cong."
+    )
   ),
 ];

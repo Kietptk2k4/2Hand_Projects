@@ -2,7 +2,7 @@ import { authorAvatarUrl, authorDisplayName } from "../utils/authorDisplay";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
 import { PostCaption } from "./PostCaption";
 import { PostMediaGrid } from "./PostMediaGrid";
-import { PostOwnerMenu } from "./PostOwnerMenu";
+import { PostOptionsMenu } from "./PostOptionsMenu";
 
 function formatCount(value) {
   const num = Number(value) || 0;
@@ -17,11 +17,16 @@ export function PostCard({
   onOpenPost,
   onComingSoon,
   onEdit,
+  onDeletePost,
+  onToggleSavePost,
+  isSavingPost = false,
+  isDeletingPost = false,
   onViewProfile,
   onHashtagClick,
   currentUserId,
 }) {
   const isOwner = Boolean(currentUserId && post.authorId === currentUserId);
+  const savedByMe = post.savedByMe ?? false;
   const openDetail = (options) => {
     onOpenPost?.(post.postId, options);
   };
@@ -65,10 +70,17 @@ export function PostCard({
               </span>
             </button>
           </div>
-          {isOwner ? (
-            <PostOwnerMenu
+          {currentUserId ? (
+            <PostOptionsMenu
+              postId={post.postId}
+              isOwner={isOwner}
+              savedByMe={savedByMe}
               icon="more_horiz"
               onEdit={() => onEdit?.(post.postId)}
+              onDelete={() => onDeletePost?.(post.postId)}
+              onToggleSave={() => onToggleSavePost?.(post.postId)}
+              isSaving={isSavingPost}
+              isDeleting={isDeletingPost}
             />
           ) : null}
         </div>

@@ -105,7 +105,7 @@ export const socialSavedPostsHandlers = [
     }
 
     const post = findFeedPost(postId);
-    if (!post) {
+    if (!post || (post.status || "ACTIVE") === "DELETED") {
       return HttpResponse.json(apiError(404, "Khong tim thay bai viet."), { status: 404 });
     }
 

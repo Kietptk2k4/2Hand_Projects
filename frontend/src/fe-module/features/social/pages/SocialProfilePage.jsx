@@ -8,6 +8,7 @@ import { PostDetailModal } from "../components/PostDetailModal";
 import { ProfileHero } from "../components/ProfileHero";
 import { ProfilePortfolioSection } from "../components/ProfilePortfolioSection";
 import { useEditPostModal } from "../hooks/useEditPostModal";
+import { usePostActions } from "../hooks/usePostActions";
 import { usePostDetailModal } from "../hooks/usePostDetailModal";
 import { useSocialProfile } from "../hooks/useSocialProfile";
 import { useUserPosts } from "../hooks/useUserPosts";
@@ -57,6 +58,26 @@ export function SocialProfilePage() {
       : isSelf && user?.bio
         ? user.bio
         : "";
+
+  const { handleDeletePost, handleToggleSavePost, isSavingPost, isDeletingPost } =
+    usePostActions({
+      onToast: setToastMessage,
+      openPostId: postId,
+      closePost,
+    });
+
+  const onDeletePost = useCallback(
+    (targetPostId) => {
+      handleDeletePost(targetPostId, { onRemoved: postsState.removeItem });
+    },
+    [handleDeletePost, postsState.removeItem]
+  );
+
+  const onToggleSavePost = useCallback(
+    (targetPostId) =>
+      handleToggleSavePost(targetPostId, { onSavedChange: postsState.patchSaved }),
+    [handleToggleSavePost, postsState.patchSaved]
+  );
 
   const onEditSuccess = useCallback(() => {
     postsState.refetch();
@@ -143,6 +164,12 @@ export function SocialProfilePage() {
                 postsState={postsState}
                 onOpenPost={openPost}
                 isPrivateLocked={!canViewPosts}
+                isOwner={isSelf}
+                onEdit={openEdit}
+                onDeletePost={onDeletePost}
+                onToggleSavePost={onToggleSavePost}
+                isSavingPost={isSavingPost}
+                isDeletingPost={isDeletingPost}
               />
             </section>
           </>
@@ -157,6 +184,10 @@ export function SocialProfilePage() {
           onClose={closePost}
           onToast={setToastMessage}
           onEdit={openEdit}
+          onDeletePost={onDeletePost}
+          onToggleSavePost={onToggleSavePost}
+          isSavingPost={isSavingPost(postId)}
+          isDeletingPost={isDeletingPost(postId)}
           onViewProfile={viewProfile}
         />
       ) : null}

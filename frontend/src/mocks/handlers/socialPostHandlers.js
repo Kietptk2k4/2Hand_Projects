@@ -5,6 +5,7 @@ import {
   canViewerSeePost,
   findFeedPost,
   MOCK_POST_ID_NOT_FOUND,
+  softDeletePost,
 } from "../data/socialPostDetailData";
 import { getUserByToken, isValidObjectId } from "../utils/socialMockAuth";
 import { apiError, apiSuccess } from "../utils/response";
@@ -148,6 +149,59 @@ export const socialPostHandlers = [
 
     return HttpResponse.json(
       apiSuccess(200, "Lay danh sach binh luan thanh cong.", data),
+      { status: 200 }
+    );
+  }),
+
+  http.delete("*/api/v1/social/posts/:postId", async ({ params, request }) => {
+    await delay(350);
+
+    const user = getUserByToken(request);
+    if (!user) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+
+    if (user.status === "SUSPENDED" || user.status === "DELETED") {
+      return HttpResponse.json(
+        {
+          code: "SOCIAL-403-SUSPENDED",
+          success: false,
+          message: "Tai khoan bi tam khoa.",
+          data: null,
+          errors: null,
+          timestamp: new Date().toISOString(),
+        },
+        { status: 403 }
+      );
+    }
+
+    const postId = params.postId;
+    if (!isValidObjectId(postId)) {
+      return HttpResponse.json(apiError(400, "postId khong hop le."), { status: 400 });
+    }
+
+    if (postId === MOCK_POST_ID_NOT_FOUND) {
+      return HttpResponse.json(apiError(404, "Khong tim thay bai viet."), { status: 404 });
+    }
+
+    const feedPost = findFeedPost(postId);
+    if (!feedPost) {
+      return HttpResponse.json(apiError(404, "Khong tim thay bai viet."), { status: 404 });
+    }
+
+    const result = softDeletePost(postId, user.id);
+    if (!result.ok) {
+      if (result.status === 403) {
+        return HttpResponse.json(
+          apiError(403, "Ban khong co quyen xoa bai viet nay."),
+          { status: 403 }
+        );
+      }
+      return HttpResponse.json(apiError(404, "Khong tim thay bai viet."), { status: 404 });
+    }
+
+    return HttpResponse.json(
+      apiSuccess(200, "Xoa bai viet thanh cong.", result.data),
       { status: 200 }
     );
   }),

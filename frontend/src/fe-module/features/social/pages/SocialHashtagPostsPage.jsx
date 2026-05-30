@@ -10,12 +10,17 @@ import { HashtagSidebar } from "../components/HashtagSidebar";
 import { PostDetailModal } from "../components/PostDetailModal";
 import { useEditPostModal } from "../hooks/useEditPostModal";
 import { useHashtagPosts } from "../hooks/useHashtagPosts";
+import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
+import { useCurrentUserId } from "../../auth/hooks/useCurrentUserId";
+import { usePostActions } from "../hooks/usePostActions";
 import { usePostDetailModal } from "../hooks/usePostDetailModal";
 import { buildSocialHashtagPath } from "../utils/socialHashtagRoutes";
 import { buildSocialProfilePath } from "../utils/socialProfileRoutes";
 
 export function SocialHashtagPostsPage() {
   const navigate = useNavigate();
+  const { user } = useAuthSession();
+  const currentUserId = useCurrentUserId();
   const [toastMessage, setToastMessage] = useState("");
   const [detailRefreshKey, setDetailRefreshKey] = useState(0);
   const { postId, focusComments, isOpen, openPost, closePost } = usePostDetailModal();
@@ -33,7 +38,30 @@ export function SocialHashtagPostsPage() {
     loadMore,
     retry,
     refetch,
+    removeItem,
+    patchSaved,
   } = useHashtagPosts();
+
+  const resolvedUserId = currentUserId || user?.id;
+
+  const { handleDeletePost, handleToggleSavePost, isSavingPost, isDeletingPost } =
+    usePostActions({
+      onToast: setToastMessage,
+      openPostId: postId,
+      closePost,
+    });
+
+  const onDeletePost = useCallback(
+    (targetPostId) => {
+      handleDeletePost(targetPostId, { onRemoved: removeItem });
+    },
+    [handleDeletePost, removeItem]
+  );
+
+  const onToggleSavePost = useCallback(
+    (targetPostId) => handleToggleSavePost(targetPostId, { onSavedChange: patchSaved }),
+    [handleToggleSavePost, patchSaved]
+  );
 
   const displayHashtag = resolvedHashtag || hashtag;
 
@@ -132,10 +160,16 @@ export function SocialHashtagPostsPage() {
                 <HashtagPostCard
                   key={post.postId}
                   post={post}
+                  currentUserId={resolvedUserId}
                   onOpenPost={(id) => openPost(id)}
                   onOpenComments={(id) => openPost(id, { focusComments: true })}
                   onViewProfile={viewProfile}
                   onHashtagClick={navigateToHashtag}
+                  onEdit={openEdit}
+                  onDeletePost={onDeletePost}
+                  onToggleSavePost={onToggleSavePost}
+                  isSavingPost={isSavingPost(post.postId)}
+                  isDeletingPost={isDeletingPost(post.postId)}
                 />
               ))}
             </div>
@@ -170,6 +204,10 @@ export function SocialHashtagPostsPage() {
           onClose={closePost}
           onToast={setToastMessage}
           onEdit={openEdit}
+          onDeletePost={onDeletePost}
+          onToggleSavePost={onToggleSavePost}
+          isSavingPost={isSavingPost(postId)}
+          isDeletingPost={isDeletingPost(postId)}
           onViewProfile={viewProfile}
           onHashtagClick={handleHashtagFromModal}
         />

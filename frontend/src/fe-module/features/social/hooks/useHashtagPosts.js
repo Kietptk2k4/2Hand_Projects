@@ -90,6 +90,26 @@ export function useHashtagPosts() {
     loadPage(0, { append: false });
   }, [loadPage]);
 
+  const removeItem = useCallback((targetPostId) => {
+    setItems((prev) => prev.filter((item) => item.postId !== targetPostId));
+    setMeta((prev) =>
+      prev
+        ? {
+            ...prev,
+            totalElements: Math.max(0, (prev.totalElements || 0) - 1),
+          }
+        : prev
+    );
+  }, []);
+
+  const patchSaved = useCallback((targetPostId, saved) => {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.postId === targetPostId ? { ...item, savedByMe: saved } : item
+      )
+    );
+  }, []);
+
   return {
     hashtag,
     resolvedHashtag,
@@ -105,5 +125,7 @@ export function useHashtagPosts() {
     loadMore,
     retry,
     refetch,
+    removeItem,
+    patchSaved,
   };
 }

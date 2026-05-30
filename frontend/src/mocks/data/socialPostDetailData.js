@@ -1,5 +1,6 @@
 import { mockUsers } from "./authData";
 import { MOCK_FOLLOWEE_IDS, mockGlobalFeedPosts, mockPostId } from "./socialFeedData";
+import { isPostSavedByUser } from "./socialSavedPostsData";
 
 export const MOCK_POST_ID_SUCCESS = mockPostId("01");
 export const MOCK_POST_ID_EMPTY_COMMENTS = mockPostId("06");
@@ -142,6 +143,34 @@ export function decrementPostReplyCount(postId, delta = 1) {
   return target.post.replyCount;
 }
 
+export function softDeletePost(postId, actorUserId) {
+  const feedPost = findFeedPost(postId);
+  if (!feedPost) {
+    return { ok: false, status: 404 };
+  }
+
+  if (feedPost.authorId !== actorUserId) {
+    return { ok: false, status: 403 };
+  }
+
+  const now = new Date().toISOString();
+  if (!feedPost.deletedAt) {
+    feedPost.deletedAt = now;
+  }
+  feedPost.status = "DELETED";
+  feedPost.updatedAt = now;
+
+  return {
+    ok: true,
+    data: {
+      postId: feedPost.postId,
+      status: "DELETED",
+      deletedAt: feedPost.deletedAt,
+      updatedAt: feedPost.updatedAt,
+    },
+  };
+}
+
 export function buildPostDetail(postId, viewerUserId) {
   const feedPost = findFeedPost(postId);
   if (!feedPost) return null;
@@ -164,7 +193,7 @@ export function buildPostDetail(postId, viewerUserId) {
     hashtags: feedPost.hashtags || [],
     allowComments: feedPost.allowComments !== false,
     likedByMe: false,
-    savedByMe: postId === MOCK_POST_ID_SUCCESS,
+    savedByMe: viewerUserId ? isPostSavedByUser(viewerUserId, postId) : false,
     isOwner,
     createdAt: feedPost.createdAt,
     updatedAt: feedPost.updatedAt,

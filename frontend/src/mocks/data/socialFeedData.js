@@ -1,6 +1,10 @@
 /** MongoDB ObjectId = exactly 24 hex characters */
 const POST_PREFIX = "674a100000000000000000";
 
+export function isFeedPostVisible(post) {
+  return (post?.status || "ACTIVE") !== "DELETED";
+}
+
 export function mockPostId(suffix) {
   if (suffix === "403") {
     return "674a10000000000000000403";

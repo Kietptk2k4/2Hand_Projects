@@ -10,6 +10,7 @@ import { PostDetailModal } from "../components/PostDetailModal";
 import { SearchResultsHeader } from "../components/SearchResultsHeader";
 import { SearchSidebar } from "../components/SearchSidebar";
 import { useEditPostModal } from "../hooks/useEditPostModal";
+import { usePostActions } from "../hooks/usePostActions";
 import { usePostDetailModal } from "../hooks/usePostDetailModal";
 import { useSearchPosts } from "../hooks/useSearchPosts";
 import { buildSocialHashtagPath } from "../utils/socialHashtagRoutes";
@@ -38,9 +39,30 @@ export function SocialSearchPostsPage() {
     loadMore,
     retry,
     refetch,
+    removeItem,
+    patchSaved,
   } = useSearchPosts();
 
   const resolvedUserId = currentUserId || user?.id;
+
+  const { handleDeletePost, handleToggleSavePost, isSavingPost, isDeletingPost } =
+    usePostActions({
+      onToast: setToastMessage,
+      openPostId: postId,
+      closePost,
+    });
+
+  const onDeletePost = useCallback(
+    (targetPostId) => {
+      handleDeletePost(targetPostId, { onRemoved: removeItem });
+    },
+    [handleDeletePost, removeItem]
+  );
+
+  const onToggleSavePost = useCallback(
+    (targetPostId) => handleToggleSavePost(targetPostId, { onSavedChange: patchSaved }),
+    [handleToggleSavePost, patchSaved]
+  );
 
   const showComingSoon = useCallback(() => {
     setToastMessage(COMING_SOON_MESSAGE);
@@ -154,6 +176,10 @@ export function SocialSearchPostsPage() {
                   onOpenPost={openPost}
                   onComingSoon={showComingSoon}
                   onEdit={openEdit}
+                  onDeletePost={onDeletePost}
+                  onToggleSavePost={onToggleSavePost}
+                  isSavingPost={isSavingPost(post.postId)}
+                  isDeletingPost={isDeletingPost(post.postId)}
                   onViewProfile={viewProfile}
                   onHashtagClick={viewHashtag}
                 />
@@ -190,6 +216,10 @@ export function SocialSearchPostsPage() {
           onClose={closePost}
           onToast={setToastMessage}
           onEdit={openEdit}
+          onDeletePost={onDeletePost}
+          onToggleSavePost={onToggleSavePost}
+          isSavingPost={isSavingPost(postId)}
+          isDeletingPost={isDeletingPost(postId)}
           onViewProfile={viewProfile}
           onHashtagClick={handleHashtagFromModal}
         />

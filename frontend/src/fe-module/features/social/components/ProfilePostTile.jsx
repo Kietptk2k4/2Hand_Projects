@@ -1,4 +1,17 @@
-export function ProfilePostTile({ post, onOpenPost }) {
+import { PostOptionsMenu } from "./PostOptionsMenu";
+
+export function ProfilePostTile({
+  post,
+  onOpenPost,
+  isOwner = false,
+  savedByMe = false,
+  onEdit,
+  onDeletePost,
+  onToggleSavePost,
+  isSavingPost = false,
+  isDeletingPost = false,
+  showMenu = true,
+}) {
   const thumbUrl = post.media?.[0]?.url;
   const isDraft = post.status === "DRAFT";
 
@@ -26,8 +39,28 @@ export function ProfilePostTile({ post, onOpenPost }) {
         </div>
       )}
       <div className="pointer-events-none absolute inset-0 bg-on-background/0 transition-colors group-hover:bg-on-background/10" />
+      {showMenu ? (
+        <div
+          className="pointer-events-auto absolute right-2 top-2 z-10"
+          onClick={(event) => event.stopPropagation()}
+          onKeyDown={(event) => event.stopPropagation()}
+        >
+          <PostOptionsMenu
+            postId={post.postId}
+            isOwner={isOwner}
+            savedByMe={savedByMe}
+            icon="more_horiz"
+            className="rounded-full bg-surface-container-lowest/90 shadow-sm backdrop-blur-sm"
+            onEdit={() => onEdit?.(post.postId)}
+            onDelete={() => onDeletePost?.(post.postId)}
+            onToggleSave={() => onToggleSavePost?.(post.postId)}
+            isSaving={isSavingPost}
+            isDeleting={isDeletingPost}
+          />
+        </div>
+      ) : null}
       {isDraft ? (
-        <span className="absolute right-2 top-2 rounded-sm bg-surface-variant/90 px-2 py-0.5 text-xs font-semibold text-on-surface-variant shadow-sm backdrop-blur-sm">
+        <span className="absolute left-2 top-2 rounded-sm bg-surface-variant/90 px-2 py-0.5 text-xs font-semibold text-on-surface-variant shadow-sm backdrop-blur-sm">
           DRAFT
         </span>
       ) : null}

@@ -9,7 +9,7 @@ import { MediaGalleryLightbox } from "./MediaGalleryLightbox";
 import { PostCaption } from "./PostCaption";
 import { PostDetailComments } from "./PostDetailComments";
 import { PostMediaGrid } from "./PostMediaGrid";
-import { PostOwnerMenu } from "./PostOwnerMenu";
+import { PostOptionsMenu } from "./PostOptionsMenu";
 
 const DEFAULT_AVATAR = "https://i.pravatar.cc/96?img=11";
 const COMING_SOON = "Tính năng đang được phát triển.";
@@ -26,6 +26,10 @@ export function PostDetailModal({
   onClose,
   onToast,
   onEdit,
+  onDeletePost,
+  onToggleSavePost,
+  isSavingPost = false,
+  isDeletingPost = false,
   onViewProfile,
   onHashtagClick,
 }) {
@@ -37,6 +41,11 @@ export function PostDetailModal({
   const [replyCountBump, setReplyCountBump] = useState(0);
 
   const { post, isLoading, isError, errorMessage, errorCode, retry } = usePostDetail(postId);
+  const [savedByMe, setSavedByMe] = useState(false);
+
+  useEffect(() => {
+    setSavedByMe(post?.savedByMe ?? false);
+  }, [post?.savedByMe, postId]);
 
   const bumpReplyCount = useCallback((delta = 1) => {
     setReplyCountBump((value) => value + delta);
@@ -246,13 +255,23 @@ export function PostDetailModal({
                       {formatRelativeTime(post.createdAt)}
                     </p>
                   </button>
-                  {post.isOwner ? (
-                    <PostOwnerMenu
-                      icon="more_vert"
-                      className="rounded-full text-primary hover:bg-primary-fixed"
-                      onEdit={() => onEdit?.(post.postId)}
-                    />
-                  ) : null}
+                  <PostOptionsMenu
+                    postId={post.postId}
+                    isOwner={Boolean(post.isOwner)}
+                    savedByMe={savedByMe}
+                    icon="more_vert"
+                    className="rounded-full text-primary hover:bg-primary-fixed"
+                    onEdit={() => onEdit?.(post.postId)}
+                    onDelete={() => onDeletePost?.(post.postId)}
+                    onToggleSave={async () => {
+                      const data = await onToggleSavePost?.(post.postId);
+                      if (data?.saved !== undefined) {
+                        setSavedByMe(data.saved);
+                      }
+                    }}
+                    isSaving={isSavingPost}
+                    isDeleting={isDeletingPost}
+                  />
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6">

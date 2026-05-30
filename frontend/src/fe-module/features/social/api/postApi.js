@@ -10,6 +10,15 @@ export async function fetchPostDetail(postId) {
   }
 }
 
+export async function deletePost(postId) {
+  try {
+    const response = await socialApiClient.delete(`/api/v1/social/posts/${postId}`);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export async function fetchPostComments(postId, { page = 0, size = 20, parentCommentId, sort } = {}) {
   try {
     const params = { page, size };
