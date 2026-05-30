@@ -10,6 +10,7 @@ import { usePostDetailModal } from "../hooks/usePostDetailModal";
 import { CreatePostModal } from "../components/CreatePostModal";
 import { EditPostModal } from "../components/EditPostModal";
 import { FeedComposer } from "../components/FeedComposer";
+import { SocialWriteBlockedBanner } from "../components/SocialWriteBlockedBanner";
 import { FeedLeftSidebar } from "../components/FeedLeftSidebar";
 import { FeedPostSkeleton } from "../components/FeedPostSkeleton";
 import { FeedRightSidebar } from "../components/FeedRightSidebar";
@@ -134,6 +135,7 @@ export function SocialFeedPage() {
 
         <section className="flex flex-col gap-6 lg:col-span-6">
           <FeedTabs activeTab={activeTab} onChange={setActiveTab} />
+          <SocialWriteBlockedBanner />
           <FeedComposer
             onOpenCreatePost={() => openCreatePost()}
             onOpenCreatePostWithFilePicker={() => openCreatePost({ filePicker: true })}

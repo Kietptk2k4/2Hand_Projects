@@ -9,6 +9,7 @@ import { MediaGalleryLightbox } from "./MediaGalleryLightbox";
 import { PostCaption } from "./PostCaption";
 import { PostDetailComments } from "./PostDetailComments";
 import { PostMediaGrid } from "./PostMediaGrid";
+import { useSocialWriteBlock } from "../context/SocialWriteBlockContext";
 import { PostOptionsMenu } from "./PostOptionsMenu";
 
 const DEFAULT_AVATAR = "https://i.pravatar.cc/96?img=11";
@@ -34,6 +35,7 @@ export function PostDetailModal({
   onHashtagClick,
 }) {
   const { user } = useAuthSession();
+  const { isWriteBlocked, suspendMessage } = useSocialWriteBlock();
   const commentAnchorRef = useRef(null);
   const commentInputRef = useRef(null);
   const [galleryIndex, setGalleryIndex] = useState(null);
@@ -64,7 +66,7 @@ export function PostDetailModal({
   }, [postId]);
 
   const displayReplyCount = (post?.replyCount ?? 0) + replyCountBump;
-  const commentsDisabled = post?.allowComments === false;
+  const commentsDisabled = post?.allowComments === false || isWriteBlocked;
   const canSubmitComment =
     !commentsDisabled && !commentsState.isSubmittingTopLevel && draftComment.trim().length > 0;
 
@@ -382,8 +384,13 @@ export function PostDetailModal({
                       onKeyDown={handleCommentKeyDown}
                       maxLength={MAX_COMMENT_LENGTH}
                       placeholder={
-                        commentsDisabled ? "Bình luận đã tắt" : "Thêm bình luận..."
+                        isWriteBlocked
+                          ? "Tài khoản bị đình chỉ"
+                          : commentsDisabled
+                            ? "Bình luận đã tắt"
+                            : "Thêm bình luận..."
                       }
+                      title={isWriteBlocked ? suspendMessage : undefined}
                       disabled={commentsDisabled || commentsState.isSubmittingTopLevel}
                       className="flex-1 rounded-full border border-outline-variant bg-surface-container-low px-4 py-2 text-sm outline-none transition focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-60"
                     />

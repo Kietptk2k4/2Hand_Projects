@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { useCurrentUserId } from "../../auth/hooks/useCurrentUserId";
+import { useSocialWriteBlock } from "../context/SocialWriteBlockContext";
 import { buildSocialProfilePath } from "../utils/socialProfileRoutes";
 
 const DEFAULT_AVATAR_URL = "https://i.pravatar.cc/96?img=11";
@@ -25,10 +26,18 @@ export function FeedComposer({ onOpenCreatePost, onOpenCreatePostWithFilePicker 
   const navigate = useNavigate();
   const { user } = useAuthSession();
   const currentUserId = useCurrentUserId();
+  const { isWriteBlocked, suspendMessage } = useSocialWriteBlock();
   const avatarUrl = user?.avatar_url || user?.profile?.avatar_url || DEFAULT_AVATAR_URL;
+  const blockedTitle = isWriteBlocked ? suspendMessage : undefined;
 
-  const openModal = () => onOpenCreatePost?.();
-  const openWithPicker = () => onOpenCreatePostWithFilePicker?.();
+  const openModal = () => {
+    if (isWriteBlocked) return;
+    onOpenCreatePost?.();
+  };
+  const openWithPicker = () => {
+    if (isWriteBlocked) return;
+    onOpenCreatePostWithFilePicker?.();
+  };
 
   const openSelfProfile = () => {
     if (currentUserId) navigate(buildSocialProfilePath(currentUserId));
@@ -53,19 +62,27 @@ export function FeedComposer({ onOpenCreatePost, onOpenCreatePostWithFilePicker 
         <input
           type="text"
           readOnly
+          disabled={isWriteBlocked}
           onClick={openModal}
           onFocus={openModal}
-          placeholder="Start a post or share an update..."
-          className="cursor-pointer w-full rounded-lg border border-outline-variant bg-surface-container-low px-4 py-3 text-base text-on-surface outline-none transition placeholder:text-on-surface-variant/70 focus:border-primary focus:ring-1 focus:ring-primary"
+          placeholder={
+            isWriteBlocked
+              ? "Tài khoản bị đình chỉ — không thể đăng bài"
+              : "Start a post or share an update..."
+          }
+          title={blockedTitle}
+          className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-4 py-3 text-base text-on-surface outline-none transition placeholder:text-on-surface-variant/70 focus:border-primary focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
           aria-label="Soạn bài viết"
+          aria-disabled={isWriteBlocked}
         />
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
             <button
               type="button"
               onClick={openWithPicker}
-              className="rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-low"
-              title="Thêm ảnh"
+              disabled={isWriteBlocked}
+              className="rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50"
+              title={blockedTitle || "Thêm ảnh"}
               aria-label="Thêm ảnh"
             >
               <ImageIcon />
@@ -73,8 +90,9 @@ export function FeedComposer({ onOpenCreatePost, onOpenCreatePostWithFilePicker 
             <button
               type="button"
               onClick={openWithPicker}
-              className="rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-low"
-              title="Thêm tài liệu"
+              disabled={isWriteBlocked}
+              className="rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50"
+              title={blockedTitle || "Thêm tài liệu"}
               aria-label="Thêm tài liệu"
             >
               <ArticleIcon />

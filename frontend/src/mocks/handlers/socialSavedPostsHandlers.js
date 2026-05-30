@@ -2,6 +2,7 @@ import { delay, http, HttpResponse } from "msw";
 import { buildSavedPostsPage, toggleUserSave } from "../data/socialSavedPostsData";
 import { findFeedPost } from "../data/socialPostDetailData";
 import { getUserByToken, isValidObjectId } from "../utils/socialMockAuth";
+import { checkSocialMockUserCanWrite } from "../utils/socialMockWriteGuard";
 import { apiError, apiSuccess } from "../utils/response";
 
 function parsePagination(url) {
@@ -81,22 +82,9 @@ export const socialSavedPostsHandlers = [
     await delay(300);
 
     const user = getUserByToken(request);
-    if (!user) {
-      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
-    }
-
-    if (user.status === "SUSPENDED" || user.status === "DELETED") {
-      return HttpResponse.json(
-        {
-          code: "SOCIAL-403-SUSPENDED",
-          success: false,
-          message: "Tai khoan bi tam khoa.",
-          data: null,
-          errors: null,
-          timestamp: new Date().toISOString(),
-        },
-        { status: 403 }
-      );
+    const writeBlock = checkSocialMockUserCanWrite(user);
+    if (writeBlock) {
+      return HttpResponse.json(writeBlock.body, { status: writeBlock.status });
     }
 
     const postId = params.postId;

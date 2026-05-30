@@ -10,6 +10,7 @@ import {
   VIDEO_MAX_BYTES,
 } from "../constants/createPostConstants";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
+import { mapSocialWriteError } from "../utils/socialWriteErrors";
 
 function resolveMediaKind(file) {
   return file.type.startsWith("video/") ? "VIDEO" : "IMAGE";
@@ -290,18 +291,22 @@ export function useCreatePost({ onSuccess }) {
         resetForm();
         onSuccess?.(created, { publish });
       } catch (error) {
-        if (error?.code === 401) {
-          showSessionExpired(error?.message);
+        const mapped = mapSocialWriteError(error);
+        if (mapped.type === "session") {
+          showSessionExpired(mapped.message);
           return;
         }
-        if (error?.errors?.length) {
-          const mapped = error.errors.reduce((acc, item) => {
+        if (mapped.type === "suspended") {
+          return;
+        }
+        if (mapped.raw?.errors?.length) {
+          const fieldMapped = mapped.raw.errors.reduce((acc, item) => {
             if (item.field) acc[item.field] = item.reason;
             return acc;
           }, {});
-          setFieldErrors(mapped);
+          setFieldErrors(fieldMapped);
         }
-        setGlobalError(error?.message || "Không tạo được bài viết.");
+        setGlobalError(mapped.message || "Không tạo được bài viết.");
       } finally {
         setIsSubmitting(false);
       }

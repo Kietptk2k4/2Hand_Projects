@@ -2,6 +2,7 @@ import { delay, http, HttpResponse } from "msw";
 import { mockUsers } from "../data/authData";
 import { mockGlobalFeedPosts, mockPostId } from "../data/socialFeedData";
 import { getUserByToken } from "../utils/socialMockAuth";
+import { checkSocialMockUserCanWrite } from "../utils/socialMockWriteGuard";
 import { apiError, apiSuccess } from "../utils/response";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "video/mp4"];
@@ -67,8 +68,9 @@ export const socialCreatePostHandlers = [
     await delay(400);
 
     const user = getUserByToken(request);
-    if (!user) {
-      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    const writeBlock = checkSocialMockUserCanWrite(user);
+    if (writeBlock) {
+      return HttpResponse.json(writeBlock.body, { status: writeBlock.status });
     }
 
     const body = await request.json();
@@ -120,8 +122,9 @@ export const socialCreatePostHandlers = [
     await delay(500);
 
     const user = getUserByToken(request);
-    if (!user) {
-      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    const writeBlock = checkSocialMockUserCanWrite(user);
+    if (writeBlock) {
+      return HttpResponse.json(writeBlock.body, { status: writeBlock.status });
     }
 
     const body = await request.json();

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { MAX_COMMENT_LENGTH } from "../constants/commentConstants";
+import { useSocialWriteBlock } from "../context/SocialWriteBlockContext";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
 
 const DEFAULT_AVATAR = "https://i.pravatar.cc/80?img=11";
@@ -18,6 +19,7 @@ function CommentActions({
   isRepliesExpanded,
   isRepliesLoading,
   onExpandReplies,
+  writeDisabled = false,
 }) {
   return (
     <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-on-surface-variant">
@@ -30,7 +32,7 @@ function CommentActions({
           type="button"
           className="font-medium hover:text-primary"
           onClick={onStartReply}
-          disabled={isSubmittingReply}
+          disabled={writeDisabled || isSubmittingReply}
         >
           Trả lời
         </button>
@@ -40,7 +42,7 @@ function CommentActions({
           type="button"
           className="font-medium text-error hover:underline"
           onClick={onDelete}
-          disabled={isDeleting}
+          disabled={writeDisabled || isDeleting}
         >
           {isDeleting ? "Đang xóa..." : "Xóa"}
         </button>
@@ -76,6 +78,7 @@ export function CommentItem({
   onDeleteComment,
   deletingCommentId,
 }) {
+  const { isWriteBlocked } = useSocialWriteBlock();
   const [replyDraft, setReplyDraft] = useState("");
   const avatarUrl = comment.author?.avatarUrl || DEFAULT_AVATAR;
   const displayName = comment.author?.displayName || "User";
@@ -149,6 +152,7 @@ export function CommentItem({
             isRepliesExpanded={isRepliesExpanded}
             isRepliesLoading={isRepliesLoading}
             onExpandReplies={() => onExpandReplies(comment.commentId)}
+            writeDisabled={isWriteBlocked}
           />
 
           {isTopLevel && isReplying ? (
@@ -160,7 +164,7 @@ export function CommentItem({
                 onKeyDown={handleReplyKeyDown}
                 maxLength={MAX_COMMENT_LENGTH}
                 placeholder="Viết phản hồi..."
-                disabled={isSubmittingReply}
+                disabled={isWriteBlocked || isSubmittingReply}
                 className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-60"
                 autoFocus
               />
@@ -168,7 +172,7 @@ export function CommentItem({
                 <button
                   type="button"
                   onClick={handleSubmitReply}
-                  disabled={isSubmittingReply || !replyDraft.trim()}
+                  disabled={isWriteBlocked || isSubmittingReply || !replyDraft.trim()}
                   className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-on-primary hover:bg-[#0050cb] disabled:opacity-50"
                 >
                   {isSubmittingReply ? "Đang gửi..." : "Gửi"}
@@ -234,6 +238,7 @@ export function CommentItem({
                     isRepliesExpanded={false}
                     isRepliesLoading={false}
                     onExpandReplies={() => {}}
+                    writeDisabled={isWriteBlocked}
                   />
                 </div>
               </div>

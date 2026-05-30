@@ -5,22 +5,7 @@ import { fetchPostComments } from "../api/postApi";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { buildAuthorFromSessionUser, mapApiCommentToListItem } from "../utils/mapCommentItem";
 import { validateCommentContent } from "../utils/validateCommentContent";
-
-function mapSubmitError(error) {
-  if (error?.code === 401) {
-    return { type: "session", message: error?.message };
-  }
-  if (error?.code === 400 || String(error?.code).includes("400")) {
-    return { type: "validation", message: error?.message || "Nội dung không hợp lệ." };
-  }
-  if (error?.code === 403 || String(error?.code).includes("403")) {
-    return { type: "forbidden", message: error?.message || "Không thể bình luận." };
-  }
-  if (error?.code === 404) {
-    return { type: "notFound", message: error?.message || "Không tìm thấy nội dung." };
-  }
-  return { type: "generic", message: error?.message || "Không gửi được bình luận. Vui lòng thử lại." };
-}
+import { mapSocialWriteError } from "../utils/socialWriteErrors";
 
 export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
   const { user, showSessionExpired } = useAuthSession();
@@ -159,9 +144,12 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
         onReplyCountChange?.(1);
         return { ok: true };
       } catch (error) {
-        const mapped = mapSubmitError(error);
+        const mapped = mapSocialWriteError(error);
         if (mapped.type === "session") {
           showSessionExpired(mapped.message);
+          return { ok: false };
+        }
+        if (mapped.type === "suspended") {
           return { ok: false };
         }
         setSubmitError(mapped.message);
@@ -215,9 +203,12 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
         setReplyingToId(null);
         return { ok: true };
       } catch (error) {
-        const mapped = mapSubmitError(error);
+        const mapped = mapSocialWriteError(error);
         if (mapped.type === "session") {
           showSessionExpired(mapped.message);
+          return { ok: false };
+        }
+        if (mapped.type === "suspended") {
           return { ok: false };
         }
         setSubmitError(mapped.message);
@@ -278,12 +269,16 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
         onReplyCountChange?.(-1);
         return { ok: true };
       } catch (error) {
-        if (error?.code === 401) {
-          showSessionExpired(error?.message);
+        const mapped = mapSocialWriteError(error);
+        if (mapped.type === "session") {
+          showSessionExpired(mapped.message);
+          return { ok: false };
+        }
+        if (mapped.type === "suspended") {
           return { ok: false };
         }
 
-        if (error?.code === 404) {
+        if (mapped.type === "notFound" || error?.code === 404) {
           removeCommentFromState(commentId, parentCommentId);
           onReplyCountChange?.(-1);
           return { ok: true, notFound: true, message: error?.message };

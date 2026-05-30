@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useSocialWriteBlock } from "../context/SocialWriteBlockContext";
 
 const DELETE_CONFIRM_MESSAGE =
   "Bạn có chắc muốn xóa bài viết này? Hành động không thể hoàn tác.";
@@ -16,8 +17,10 @@ export function PostOptionsMenu({
   align = "right",
   className = "",
 }) {
+  const { isWriteBlocked, suspendMessage } = useSocialWriteBlock();
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
+  const writeDisabled = isWriteBlocked;
 
   useEffect(() => {
     if (!open) return undefined;
@@ -45,11 +48,14 @@ export function PostOptionsMenu({
     <div ref={rootRef} className={`relative ${className}`} data-post-id={postId}>
       <button
         type="button"
-        className="p-1 text-on-surface-variant hover:text-on-surface"
+        disabled={writeDisabled}
+        title={writeDisabled ? suspendMessage : undefined}
+        className="p-1 text-on-surface-variant hover:text-on-surface disabled:cursor-not-allowed disabled:opacity-50"
         aria-label="Tùy chọn bài viết"
         aria-expanded={open}
         onClick={(event) => {
           stopPropagation(event);
+          if (writeDisabled) return;
           setOpen((prev) => !prev);
         }}
       >

@@ -13,6 +13,7 @@ import {
   MOCK_POST_ID_NOT_FOUND,
 } from "../data/socialPostDetailData";
 import { getUserByToken, isValidObjectId } from "../utils/socialMockAuth";
+import { checkSocialMockUserCanWrite } from "../utils/socialMockWriteGuard";
 import { apiError, apiSuccess } from "../utils/response";
 
 const MAX_COMMENT_LENGTH = 2000;
@@ -45,20 +46,8 @@ function validateContentText(body) {
 }
 
 function checkUserCanWrite(user) {
-  if (!user) return { status: 401 };
-  if (user.status === "SUSPENDED" || user.status === "DELETED") {
-    return {
-      status: 403,
-      body: {
-        code: "SOCIAL-403-SUSPENDED",
-        success: false,
-        message: "Tai khoan bi tam khoa.",
-        data: null,
-        errors: null,
-        timestamp: new Date().toISOString(),
-      },
-    };
-  }
+  const blocked = checkSocialMockUserCanWrite(user);
+  if (blocked) return blocked;
   return { status: 200 };
 }
 

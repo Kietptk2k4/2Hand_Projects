@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { POST_MEDIA_ACCEPT, VISIBILITY_OPTIONS } from "../constants/createPostConstants";
 import { formatVndPrice } from "../utils/formatPrice";
+import { useSocialWriteBlock } from "../context/SocialWriteBlockContext";
 import { ProductPickerPanel } from "./ProductPickerPanel";
 
 const DEFAULT_AVATAR = "https://i.pravatar.cc/96?img=11";
@@ -18,6 +19,7 @@ export function PostFormModal({
   loadError = "",
 }) {
   const { user } = useAuthSession();
+  const { isWriteBlocked, suspendMessage } = useSocialWriteBlock();
   const fileInputRef = useRef(null);
   const [showProductPicker, setShowProductPicker] = useState(false);
   const [showVisibilityMenu, setShowVisibilityMenu] = useState(false);
@@ -60,7 +62,7 @@ export function PostFormModal({
   const avatarUrl = user?.avatar_url || user?.profile?.avatar_url || DEFAULT_AVATAR;
   const visibilityMeta = VISIBILITY_OPTIONS.find((item) => item.value === visibility);
 
-  const isBusy = isSubmitting || isUploadingMedia || isLoadingInitial;
+  const isBusy = isSubmitting || isUploadingMedia || isLoadingInitial || isWriteBlocked;
 
   useEffect(() => {
     const previous = document.body.style.overflow;
