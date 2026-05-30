@@ -25,11 +25,11 @@ export function RoleListTab({ onViewRolePermissions }) {
       }
       if (error?.code === 403) {
         setStatus("forbidden");
-        setErrorMessage(error?.message || "Ban khong co quyen truy cap.");
+        setErrorMessage(error?.message || "Bạn không co quyen truy cap.");
         return;
       }
       setStatus("error");
-      setErrorMessage(error?.message || "Khong tai duoc danh sach role.");
+      setErrorMessage(error?.message || "Không tải duoc danh sách vai trò.");
     }
   }, [showSessionExpired]);
 
@@ -40,7 +40,7 @@ export function RoleListTab({ onViewRolePermissions }) {
   if (status === "loading") {
     return (
       <div>
-        <TabPanelHeader title="Danh sach Role" subtitle="Xem tat ca role trong he thong." />
+        <TabPanelHeader title="Danh sách vai trò" subtitle="Xem tất cả role trong hệ thống." />
         <AccountSkeleton />
       </div>
     );
@@ -49,7 +49,7 @@ export function RoleListTab({ onViewRolePermissions }) {
   if (status === "forbidden") {
     return (
       <div>
-        <TabPanelHeader title="Danh sach Role" subtitle="Xem tat ca role trong he thong." />
+        <TabPanelHeader title="Danh sách vai trò" subtitle="Xem tất cả role trong hệ thống." />
         <ErrorState message={errorMessage} />
       </div>
     );
@@ -58,11 +58,11 @@ export function RoleListTab({ onViewRolePermissions }) {
   if (status === "error") {
     return (
       <div>
-        <TabPanelHeader title="Danh sach Role" subtitle="Xem tat ca role trong he thong." />
+        <TabPanelHeader title="Danh sách vai trò" subtitle="Xem tất cả role trong hệ thống." />
         <AccountCard>
           <ErrorState message={errorMessage} />
           <PrimaryButton type="button" onClick={load} className="mt-4">
-            Thu lai
+            Thử lại
           </PrimaryButton>
         </AccountCard>
       </div>
@@ -71,10 +71,10 @@ export function RoleListTab({ onViewRolePermissions }) {
 
   return (
     <div>
-      <TabPanelHeader title="Danh sach Role" subtitle="Xem tat ca role trong he thong." />
+      <TabPanelHeader title="Danh sách vai trò" subtitle="Xem tất cả role trong hệ thống." />
 
       {roles.length === 0 ? (
-        <EmptyState message="Khong co role nao." />
+        <EmptyState message="Không co role nao." />
       ) : (
         <AccountCard className="overflow-x-auto !p-0">
           <table className="w-full min-w-[640px] text-left text-sm">
@@ -82,9 +82,9 @@ export function RoleListTab({ onViewRolePermissions }) {
               <tr>
                 <th className="px-4 py-3 font-semibold text-on-surface">Code</th>
                 <th className="px-4 py-3 font-semibold text-on-surface">Ten</th>
-                <th className="px-4 py-3 font-semibold text-on-surface">Tao luc</th>
-                <th className="px-4 py-3 font-semibold text-on-surface">Cap nhat</th>
-                <th className="px-4 py-3 font-semibold text-on-surface">Thao tac</th>
+                <th className="px-4 py-3 font-semibold text-on-surface">Tạo lúc</th>
+                <th className="px-4 py-3 font-semibold text-on-surface">Cập nhật</th>
+                <th className="px-4 py-3 font-semibold text-on-surface">Thao tác</th>
               </tr>
             </thead>
             <tbody>

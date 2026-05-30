@@ -26,7 +26,7 @@ function HistoryRow({ item }) {
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-medium text-on-surface">
-            {LOGIN_METHOD_LABELS[item.login_method] || item.login_method || "Dang nhap"}
+            {LOGIN_METHOD_LABELS[item.login_method] || item.login_method || "Đăng nhập"}
           </span>
           <span
             className={[
@@ -81,7 +81,7 @@ export function LoginHistoryTab() {
       if (!append) {
         setStatus("error");
       }
-      setErrorMessage(error?.message || "Khong tai duoc lich su dang nhap.");
+      setErrorMessage(error?.message || "Không tải duoc lịch sử đăng nhập.");
     } finally {
       setLoadMoreStatus("idle");
     }
@@ -100,8 +100,8 @@ export function LoginHistoryTab() {
     return (
       <div>
         <TabPanelHeader
-          title="Lich su dang nhap"
-          subtitle="Theo doi cac lan dang nhap thanh cong va that bai."
+          title="Lịch sử đăng nhập"
+          subtitle="Theo doi các lan đăng nhập thành công và that bai."
         />
         <AccountSkeleton />
       </div>
@@ -112,8 +112,8 @@ export function LoginHistoryTab() {
     return (
       <div>
         <TabPanelHeader
-          title="Lich su dang nhap"
-          subtitle="Theo doi cac lan dang nhap thanh cong va that bai."
+          title="Lịch sử đăng nhập"
+          subtitle="Theo doi các lan đăng nhập thành công và that bai."
         />
         <AccountCard className="border-error/30">
           <ErrorState message={errorMessage} />
@@ -122,7 +122,7 @@ export function LoginHistoryTab() {
             onClick={() => fetchPage(0, false)}
             className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
           >
-            Thu lai
+            Thử lại
           </button>
         </AccountCard>
       </div>
@@ -132,12 +132,12 @@ export function LoginHistoryTab() {
   return (
     <div>
       <TabPanelHeader
-        title="Lich su dang nhap"
-        subtitle="Theo doi cac lan dang nhap thanh cong va that bai."
+        title="Lịch sử đăng nhập"
+        subtitle="Theo doi các lan đăng nhập thành công và that bai."
       />
 
       {items.length === 0 ? (
-        <EmptyState message="Chua co lich su dang nhap." />
+        <EmptyState message="Chưa co lịch sử đăng nhập." />
       ) : (
         <AccountCard>
           <ul>

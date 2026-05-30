@@ -15,7 +15,7 @@ export function AdminUserTargetBar({ userId, onUserIdChange }) {
         onChange={(e) => onUserIdChange(e.target.value)}
         className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2.5 text-base outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
       >
-        <option value="">Chon user...</option>
+        <option value="">Chọn người dùng...</option>
         {ASSIGNABLE_USERS.map((user) => (
           <option key={user.id} value={user.id}>
             {user.email} — {user.display_name}

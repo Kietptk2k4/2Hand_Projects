@@ -29,10 +29,10 @@ export function ProfilePortfolioSection({
           lock
         </span>
         <p className="text-sm font-medium text-on-surface">
-          Tài khoản riêng tư — follow để xem bài viết
+          Tài khoản riêng tư — theo dõi để xem bài viết
         </p>
         <p className="mt-1 text-sm text-on-surface-variant">
-          Gửi yêu cầu theo dõi để xem portfolio của người dùng này.
+          Gửi yêu cầu theo dõi để xem bài viết của người dùng này.
         </p>
       </div>
     );

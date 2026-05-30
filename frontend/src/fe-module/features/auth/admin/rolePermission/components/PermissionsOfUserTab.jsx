@@ -48,16 +48,16 @@ export function PermissionsOfUserTab() {
       }
       if (error?.code === 403) {
         setStatus("forbidden");
-        setErrorMessage(error?.message || "Ban khong co quyen truy cap.");
+        setErrorMessage(error?.message || "Bạn không co quyen truy cap.");
         return;
       }
       if (error?.code === 404) {
         setStatus("not_found");
-        setErrorMessage(error?.message || "Khong tim thay user.");
+        setErrorMessage(error?.message || "Không tìm thay user.");
         return;
       }
       setStatus("error");
-      setErrorMessage(error?.message || "Khong tai duoc permission.");
+      setErrorMessage(error?.message || "Không tải duoc permission.");
     }
   }, [userId, showSessionExpired]);
 
@@ -67,8 +67,8 @@ export function PermissionsOfUserTab() {
   return (
     <div>
       <TabPanelHeader
-        title="Permission cua User"
-        subtitle="Xem permission hieu luc cua user (chi ma permission)."
+        title="Quyền của người dùng"
+        subtitle="Xem permission hieu luc của người dùng (chi ma permission)."
       />
 
       <AccountCard className="mb-6">
@@ -83,7 +83,7 @@ export function PermissionsOfUserTab() {
               onChange={(e) => setUserId(e.target.value)}
               className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2.5 text-base outline-none focus:border-primary"
             >
-              <option value="">Chon user...</option>
+              <option value="">Chọn người dùng...</option>
               {ASSIGNABLE_USERS.map((user) => (
                 <option key={user.id} value={user.id}>
                   {user.email}
@@ -113,7 +113,7 @@ export function PermissionsOfUserTab() {
           </AccountCard>
 
           {permissions.length === 0 ? (
-            <EmptyState message="User chua co permission nao." />
+            <EmptyState message="User chưa co permission nao." />
           ) : (
             <AccountCard>
               <div className="flex flex-wrap gap-2">

@@ -49,8 +49,8 @@ export function FeedComposer({ onOpenCreatePost, onOpenCreatePostWithFilePicker 
         type="button"
         onClick={openSelfProfile}
         className="shrink-0 rounded-full p-0.5 ring-2 ring-primary ring-offset-2 ring-offset-surface-container-lowest"
-        aria-label="Xem social profile của bạn"
-        title="Stories — xem profile"
+        aria-label="Xem hồ sơ của bạn"
+        title="Xem hồ sơ"
       >
         <img
           src={avatarUrl}
@@ -68,7 +68,7 @@ export function FeedComposer({ onOpenCreatePost, onOpenCreatePostWithFilePicker 
           placeholder={
             isWriteBlocked
               ? "Tài khoản bị đình chỉ — không thể đăng bài"
-              : "Start a post or share an update..."
+              : "Bắt đầu đăng bài hoặc chia sẻ cập nhật..."
           }
           title={blockedTitle}
           className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-4 py-3 text-base text-on-surface outline-none transition placeholder:text-on-surface-variant/70 focus:border-primary focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
@@ -99,7 +99,7 @@ export function FeedComposer({ onOpenCreatePost, onOpenCreatePostWithFilePicker 
             </button>
           </div>
           <span className="rounded-lg px-6 py-2 text-sm font-medium text-on-surface-variant">
-            Post
+            Đăng bài
           </span>
         </div>
       </div>

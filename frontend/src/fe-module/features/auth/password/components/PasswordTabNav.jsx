@@ -26,8 +26,8 @@ export function PasswordTabNav({ avatarUrl }) {
           alt=""
           className="mb-4 h-20 w-20 rounded-full border-2 border-white object-cover shadow-sm"
         />
-        <h2 className="text-xl font-semibold text-on-surface">Mat khau &amp; bao mat</h2>
-        <p className="mt-1 text-sm text-on-surface-variant">Cap nhat mat khau dang nhap</p>
+        <h2 className="text-xl font-semibold text-on-surface">Mật khẩu &amp; bảo mật</h2>
+        <p className="mt-1 text-sm text-on-surface-variant">Cập nhật mật khẩu đăng nhập</p>
       </div>
 
       <nav className="px-4 pb-6" aria-label="Account password">

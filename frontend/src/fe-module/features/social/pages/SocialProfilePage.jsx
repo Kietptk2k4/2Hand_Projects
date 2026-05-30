@@ -166,7 +166,7 @@ export function SocialProfilePage() {
             <section className="mt-10 px-4 md:px-8">
               <div className="mb-4 flex flex-col gap-3 border-b border-outline-variant pb-4 sm:flex-row sm:items-center sm:justify-between">
                 <h2 className="inline-block border-b-2 border-primary pb-2 text-lg font-semibold text-on-surface">
-                  Portfolio
+                  Bài viết
                 </h2>
                 {isSelf && canViewPosts ? (
                   <ProfilePostsFilter

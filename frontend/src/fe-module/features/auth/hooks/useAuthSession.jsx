@@ -5,9 +5,10 @@ import {
   readStoredUser,
   resolveUserIdFromAccessToken,
 } from "../utils/resolveCurrentUserId";
+import { SESSION_EXPIRED_DEFAULT_MESSAGE } from "../constants/authUiStrings";
 
 const AuthSessionContext = createContext(null);
-const DEFAULT_SESSION_EXPIRED_MESSAGE = "Phien dang nhap da het han, vui long dang nhap lai.";
+const DEFAULT_SESSION_EXPIRED_MESSAGE = SESSION_EXPIRED_DEFAULT_MESSAGE;
 
 function readInitialAccessToken() {
   return localStorage.getItem("twohands_access_token");

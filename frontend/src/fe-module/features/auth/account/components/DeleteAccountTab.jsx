@@ -16,7 +16,7 @@ export function DeleteAccountTab({ onNotify }) {
 
   const openModal = () => {
     if (!password.trim()) {
-      setFieldError("Vui long nhap mat khau hien tai.");
+      setFieldError("Vui lòng nhap mật khẩu hien tai.");
       return;
     }
     setFieldError("");
@@ -29,14 +29,14 @@ export function DeleteAccountTab({ onNotify }) {
     try {
       await softDeleteMyAccount({ password });
       clearSession();
-      onNotify?.({ variant: "success", message: "Tai khoan da duoc xoa." });
+      onNotify?.({ variant: "success", message: "Tài khoản da duoc xoa." });
       navigate(APP_ROUTES.login, { replace: true });
     } catch (error) {
       const passwordError = error?.errors?.find((e) => e.field === "password");
       if (passwordError) {
-        setFieldError(passwordError.reason || "Mat khau khong chinh xac.");
+        setFieldError(passwordError.reason || "Mật khẩu không chinh xac.");
       } else {
-        setFieldError(error?.message || "Co loi xay ra. Vui long thu lai.");
+        setFieldError(error?.message || "Có lỗi xảy ra. Vui lòng thử lại.");
       }
       onNotify?.({ variant: "error", message: error?.message });
       setIsModalOpen(false);
@@ -47,7 +47,7 @@ export function DeleteAccountTab({ onNotify }) {
 
   return (
     <div>
-      <TabPanelHeader title="Xoa tai khoan" subtitle="Quan ly viec xoa tai khoan mot cach an toan." />
+      <TabPanelHeader title="Xoa tài khoản" subtitle="Quan ly viec xoa tài khoản mot cach an toan." />
 
       <AccountCard className="overflow-hidden p-0">
         <div className="flex items-center gap-3 border-b border-error/20 bg-error-container px-6 py-4">
@@ -58,30 +58,30 @@ export function DeleteAccountTab({ onNotify }) {
         </div>
 
         <div className="space-y-6 p-6">
-          <p className="font-medium text-on-surface">Khi ban xoa tai khoan cua minh:</p>
+          <p className="font-medium text-on-surface">Khi bạn xoa tài khoản của minh:</p>
           <ul className="space-y-4 border-l-2 border-outline-variant pl-4">
             <li>
-              <p className="text-sm font-medium text-on-surface">Mat du lieu vinh vien</p>
+              <p className="text-sm font-medium text-on-surface">Mat dữ liệu vinh vien</p>
               <p className="text-sm text-on-surface-variant">
-                Tat ca thong tin ca nhan, cai dat va tuy chon se bi xoa khoi he thong.
+                Tat ca thông tin ca nhan, cài đặt và tuy chọn sẽ bi xoa khỏi hệ thống.
               </p>
             </li>
             <li>
-              <p className="text-sm font-medium text-on-surface">Xoa lich su</p>
+              <p className="text-sm font-medium text-on-surface">Xoa lịch sử</p>
               <p className="text-sm text-on-surface-variant">
-                Lich su dat dich vu, danh gia va cac giao dich cu se khong the khoi phuc.
+                Lịch sử dat dich vu, danh gia và các giao dich cu sẽ không the khỏi phuc.
               </p>
             </li>
             <li>
               <p className="text-sm font-medium text-on-surface">Huy bo ket noi</p>
               <p className="text-sm text-on-surface-variant">
-                Tat ca cac ket noi voi nha cung cap dich vu va khach hang se bi ngat.
+                Tat ca các ket noi voi nha cung cap dich vu và khach hang sẽ bi ngat.
               </p>
             </li>
           </ul>
 
           <div className="rounded-lg border border-outline-variant bg-account-surface-low p-4">
-            <h3 className="mb-3 text-sm font-medium text-on-surface">Xac nhan mat khau de tiep tuc</h3>
+            <h3 className="mb-3 text-sm font-medium text-on-surface">Xac nhan mật khẩu de tiep tuc</h3>
             <div className="relative max-w-md">
               <input
                 type={isPasswordVisible ? "text" : "password"}
@@ -90,7 +90,7 @@ export function DeleteAccountTab({ onNotify }) {
                   setPassword(e.target.value);
                   setFieldError("");
                 }}
-                placeholder="Nhap mat khau hien tai"
+                placeholder="Nhập mật khẩu hiện tại"
                 className={[
                   "w-full rounded-lg border bg-white px-3 py-2.5 pr-12 text-sm outline-none transition",
                   fieldError && !isModalOpen
@@ -115,7 +115,7 @@ export function DeleteAccountTab({ onNotify }) {
               onClick={openModal}
               className="rounded-lg bg-error px-6 py-2.5 text-sm font-medium text-white transition hover:opacity-90"
             >
-              Xoa tai khoan
+              Xoa tài khoản
             </button>
           </div>
         </div>
@@ -138,10 +138,10 @@ export function DeleteAccountTab({ onNotify }) {
               </div>
               <div>
                 <h3 id="delete-account-title" className="text-lg font-semibold text-on-surface">
-                  Xac nhan xoa tai khoan?
+                  Xac nhan xoa tài khoản?
                 </h3>
                 <p className="mt-2 text-sm text-on-surface-variant">
-                  Ban sap xoa vinh vien quyen truy cap vao tai khoan nay. Hanh dong khong the hoan tac tu phia ban.
+                  Bạn sap xoa vinh vien quyen truy cap vào tài khoản nay. Hanh dong không the hoan tac tu phia ban.
                 </p>
                 {fieldError && isModalOpen ? <p className="mt-2 text-sm text-error">{fieldError}</p> : null}
               </div>
@@ -161,7 +161,7 @@ export function DeleteAccountTab({ onNotify }) {
                 loading={isSubmitting}
                 className="!bg-error hover:!opacity-90"
               >
-                Xoa tai khoan
+                Xoa tài khoản
               </PrimaryButton>
             </div>
           </div>

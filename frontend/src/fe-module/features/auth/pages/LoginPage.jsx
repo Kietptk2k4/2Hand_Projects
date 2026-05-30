@@ -5,18 +5,19 @@ import { SocialLoginButtons } from "../components/SocialLoginButtons";
 import { validateEmail, validateLoginForm } from "../schemas/authSchemas";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 import { useAuthSession } from "../hooks/useAuthSession";
+import { GENERIC_ERROR_RETRY, HIDE_PASSWORD, INVALID_FIELD_MESSAGE, SHOW_PASSWORD } from "../constants/authUiStrings";
 
 const ERROR_MESSAGE_BY_CODE = {
-  401: "Email hoac mat khau khong chinh xac.",
-  403: "Tai khoan hien khong kha dung.",
-  429: "Ban dang thu qua nhieu lan. Vui long doi it phut roi thu lai.",
-  500: "He thong dang ban. Vui long thu lai sau.",
+  401: "Email hoặc mật khẩu không chính xác.",
+  403: "Tài khoản hiện không khả dụng.",
+  429: "Bạn đang thử quá nhiều lần. Vui lòng đợi ít phút rồi thử lại.",
+  500: "Hệ thống đang bận. Vui lòng thử lại sau.",
 };
 
 function resolveFieldErrors(errors = []) {
   return errors.reduce((acc, item) => {
     if (item?.field && !acc[item.field]) {
-      acc[item.field] = item.reason || "Truong du lieu khong hop le.";
+      acc[item.field] = item.reason || INVALID_FIELD_MESSAGE;
     }
     return acc;
   }, {});
@@ -66,9 +67,9 @@ export function LoginPage() {
   const getErrorMessage = (error) => {
     const code = error?.code || 500;
     if (code === 400) {
-      return error?.message || "Du lieu khong hop le. Vui long kiem tra lai.";
+      return error?.message || "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.";
     }
-    return ERROR_MESSAGE_BY_CODE[code] || "Co loi xay ra. Vui long thu lai.";
+    return ERROR_MESSAGE_BY_CODE[code] || GENERIC_ERROR_RETRY;
   };
 
   const onSubmit = async (event) => {
@@ -114,10 +115,10 @@ export function LoginPage() {
         <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#1f2f49] to-transparent" />
         <div className="relative z-10 flex h-full flex-col justify-end p-10 text-white">
           <h2 className="max-w-[16ch] text-[52px] font-semibold leading-[1.05]">
-            Dich vu chuyen nghiep, dang tin cay.
+            Dịch vụ chuyên nghiệp, đáng tin cậy.
           </h2>
           <p className="mt-5 max-w-md text-base text-white/85">
-            Ket noi voi hang ngan chuyen gia hang dau cho moi nhu cau dich vu cua ban.
+            Kết nối với hàng ngàn chuyên gia hàng đầu cho mọi nhu cầu dịch vụ của bạn.
           </p>
         </div>
       </div>
@@ -126,7 +127,7 @@ export function LoginPage() {
         <div className="w-full max-w-[440px]">
           <header className="space-y-2">
             <h1 className="text-[44px] font-semibold leading-none text-primary">2Hands</h1>
-            <p className="text-sm text-on-surface-variant">Chao mung ban quay tro lai. Vui long dang nhap.</p>
+            <p className="text-sm text-on-surface-variant">Chào mừng bạn quay trở lại. Vui lòng đăng nhập.</p>
           </header>
 
           {logoutInfo ? (
@@ -137,7 +138,7 @@ export function LoginPage() {
 
           {globalError ? (
             <div className="mt-7 rounded-lg border border-error bg-error-container px-4 py-3 text-sm text-on-error-container">
-              <p className="font-semibold">Loi dang nhap</p>
+              <p className="font-semibold">Lỗi đăng nhập</p>
               <p>{globalError}</p>
             </div>
           ) : null}
@@ -173,13 +174,13 @@ export function LoginPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label htmlFor="login-password" className="text-sm font-medium text-on-surface">
-                  Mat khau
+                  Mật khẩu
                 </label>
                 <Link
                   to={APP_ROUTES.forgotPassword}
                   className="text-sm font-medium text-primary hover:underline"
                 >
-                  Quen mat khau?
+                  Quên mật khẩu?
                 </Link>
               </div>
 
@@ -191,7 +192,7 @@ export function LoginPage() {
                   autoComplete="current-password"
                   value={form.password}
                   onChange={onChange("password")}
-                  placeholder="Nhap mat khau"
+                  placeholder="Nhập mật khẩu"
                   aria-invalid={Boolean(errors.password)}
                   aria-describedby={errors.password ? "login-password-error" : undefined}
                   className={[
@@ -205,9 +206,9 @@ export function LoginPage() {
                   type="button"
                   onClick={() => setIsPasswordVisible((prev) => !prev)}
                   className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-on-surface-variant"
-                  aria-label={isPasswordVisible ? "An mat khau" : "Hien mat khau"}
+                  aria-label={isPasswordVisible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                 >
-                  {isPasswordVisible ? "Hide" : "Show"}
+                  {isPasswordVisible ? HIDE_PASSWORD : SHOW_PASSWORD}
                 </button>
               </div>
               {errors.password ? (
@@ -222,13 +223,13 @@ export function LoginPage() {
               disabled={isSubmitting || isSocialRedirecting}
               className="mt-2 w-full rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {isSubmitting ? "Dang dang nhap..." : "Dang nhap"}
+              {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
             </button>
           </form>
 
           <div className="my-6 flex items-center gap-4 text-xs font-semibold uppercase tracking-[0.08em] text-on-surface-variant/80">
             <div className="h-px flex-1 bg-outline-variant/80" />
-            <span>Hoac tiep tuc voi</span>
+            <span>Hoặc tiếp tục với</span>
             <div className="h-px flex-1 bg-outline-variant/80" />
           </div>
 
@@ -238,9 +239,9 @@ export function LoginPage() {
           />
 
           <p className="mt-8 text-center text-sm text-on-surface-variant">
-            Chua co tai khoan?{" "}
+            Chưa có tài khoản?{" "}
             <Link to={APP_ROUTES.register} className="font-semibold text-primary hover:underline">
-              Dang ky ngay
+              Đăng ký ngay
             </Link>
           </p>
         </div>
@@ -248,7 +249,7 @@ export function LoginPage() {
         {isSocialRedirecting ? (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/80 backdrop-blur-[1px]">
             <p className="rounded-lg border border-outline-variant bg-white px-4 py-2 text-sm font-medium text-on-surface">
-              Dang chuyen huong den nha cung cap dang nhap...
+              Đang chuyển hướng đến nhà cung cấp đăng nhập...
             </p>
           </div>
         ) : null}

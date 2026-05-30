@@ -5,7 +5,7 @@ import { AccountCard, PrimaryButton, TabPanelHeader } from "../../../../shared/u
 const THEME_OPTIONS = [
   { value: "LIGHT", label: "Sang", icon: "☀️" },
   { value: "DARK", label: "Toi", icon: "🌙" },
-  { value: "SYSTEM", label: "Theo he thong", icon: "💻", hint: "Tu dong theo cai dat thiet bi cua ban" },
+  { value: "SYSTEM", label: "Theo hệ thống", icon: "💻", hint: "Tu dong theo cài đặt thiết bị của ban" },
 ];
 
 export function SettingsTab({ profile, refetch, onNotify }) {
@@ -26,9 +26,9 @@ export function SettingsTab({ profile, refetch, onNotify }) {
     try {
       await updateMySettings({ appearance_mode: appearanceMode });
       await refetch();
-      onNotify?.({ variant: "success", message: "Cap nhat cai dat thanh cong." });
+      onNotify?.({ variant: "success", message: "Cập nhật cài đặt thành công." });
     } catch (error) {
-      setErrorMessage(error?.message || "Co loi xay ra. Vui long thu lai.");
+      setErrorMessage(error?.message || "Có lỗi xảy ra. Vui lòng thử lại.");
       onNotify?.({ variant: "error", message: error?.message });
     } finally {
       setIsSubmitting(false);
@@ -37,7 +37,7 @@ export function SettingsTab({ profile, refetch, onNotify }) {
 
   return (
     <div>
-      <TabPanelHeader title="Cai dat" subtitle="Tuy chinh giao dien hien thi cua ung dung 2Hands." />
+      <TabPanelHeader title="Cài đặt" subtitle="Tuy chinh giao dien hien thi của ung dung 2Hands." />
 
       <AccountCard>
         <form onSubmit={onSubmit}>
@@ -86,7 +86,7 @@ export function SettingsTab({ profile, refetch, onNotify }) {
 
           <div className="mt-8 flex justify-end border-t border-outline-variant pt-6">
             <PrimaryButton type="submit" loading={isSubmitting}>
-              Luu cai dat
+              Luu cài đặt
             </PrimaryButton>
           </div>
         </form>

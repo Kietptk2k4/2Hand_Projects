@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { MAX_COMMENT_LENGTH } from "../constants/commentConstants";
+import { DEFAULT_USER_DISPLAY_NAME } from "../constants/socialUiStrings";
 import { usePostComments } from "../hooks/usePostComments";
 import { usePostDetail } from "../hooks/usePostDetail";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
@@ -251,7 +252,7 @@ export function PostDetailModal({
                       id="post-detail-title"
                       className="truncate text-xl font-semibold text-on-surface hover:text-primary"
                     >
-                      {post.author?.displayName || "User"}
+                      {post.author?.displayName || DEFAULT_USER_DISPLAY_NAME}
                     </h2>
                     <p className="text-sm text-on-surface-variant">
                       {formatRelativeTime(post.createdAt)}
@@ -316,7 +317,7 @@ export function PostDetailModal({
                         onClick={showComingSoon}
                         className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-on-primary shadow-sm hover:bg-[#0050cb]"
                       >
-                        Book Now
+                        Đặt ngay
                       </button>
                     </div>
                   ) : null}

@@ -25,11 +25,11 @@ export function PrivacyTab({ profile, refetch, onNotify }) {
       await refetch();
       onNotify?.({
         variant: "success",
-        message: nextValue ? "Da bat che do rieng tu." : "Da tat che do rieng tu.",
+        message: nextValue ? "Đã bat che do rieng tu." : "Đã tat che do rieng tu.",
       });
     } catch (error) {
       setIsPrivate(previous);
-      setErrorMessage(error?.message || "Cap nhat that bai. Vui long thu lai.");
+      setErrorMessage(error?.message || "Cập nhật that bai. Vui lòng thử lại.");
       onNotify?.({ variant: "error", message: error?.message });
     } finally {
       setIsSaving(false);
@@ -40,17 +40,17 @@ export function PrivacyTab({ profile, refetch, onNotify }) {
     <div>
       <TabPanelHeader
         title="Quyen rieng tu"
-        subtitle="Kiem soat kha nang hien thi ho so cua ban voi cong dong."
+        subtitle="Kiem soat kha nang hien thi hồ sơ của bạn voi cong dong."
       />
 
       <AccountCard>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-2xl">
-            <h2 className="text-lg font-semibold text-on-surface">Che do ho so rieng tu</h2>
+            <h2 className="text-lg font-semibold text-on-surface">Chế độ hồ sơ rieng tu</h2>
             <p className="mt-2 text-sm text-on-surface-variant">
               {isPrivate
-                ? "Chi hien thi ten va anh dai dien voi nguoi khac."
-                : "Ho so cong khai — moi nguoi xem duoc bio, website va lien ket."}
+                ? "Chi hien thi ten và anh dai dien voi nguoi khac."
+                : "Hồ sơ cong khai — moi nguoi xem duoc bio, website và lien ket."}
             </p>
           </div>
 
@@ -81,8 +81,8 @@ export function PrivacyTab({ profile, refetch, onNotify }) {
         <div className="mt-6 flex items-start gap-3 rounded-lg bg-account-surface-low p-4 text-sm text-on-surface-variant">
           <span aria-hidden="true">ℹ️</span>
           <p>
-            Khi bat che do rieng tu, nguoi xem cong khai chi thay ten hien thi va anh dai dien. Bio, website va
-            mang xa hoi se bi an.
+            Khi bat che do rieng tu, nguoi xem cong khai chi thay ten hien thi và anh dai dien. Bio, website va
+            mang xa hoi sẽ bi an.
           </p>
         </div>
 

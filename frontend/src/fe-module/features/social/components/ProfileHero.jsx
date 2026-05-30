@@ -82,7 +82,7 @@ export function ProfileHero({
             <span
               className="material-symbols-outlined text-primary"
               style={{ fontVariationSettings: "'FILL' 1" }}
-              title="Verified"
+              title="Đã xác minh"
               aria-hidden="true"
             >
               verified
@@ -104,7 +104,7 @@ export function ProfileHero({
               className="flex flex-col items-center hover:text-primary"
             >
               <span className="text-lg font-semibold text-on-surface">{followerDisplay}</span>
-              <span className="text-sm text-on-surface-variant">Followers</span>
+              <span className="text-sm text-on-surface-variant">Người theo dõi</span>
             </button>
             <button
               type="button"
@@ -112,7 +112,7 @@ export function ProfileHero({
               className="flex flex-col items-center hover:text-primary"
             >
               <span className="text-lg font-semibold text-on-surface">{followingDisplay}</span>
-              <span className="text-sm text-on-surface-variant">Following</span>
+              <span className="text-sm text-on-surface-variant">Đang theo dõi</span>
             </button>
           </div>
         ) : null}

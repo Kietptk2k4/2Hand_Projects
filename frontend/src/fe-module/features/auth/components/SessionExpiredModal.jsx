@@ -1,4 +1,10 @@
 import { useEffect, useRef } from "react";
+import {
+  SESSION_EXPIRED_CLOSE,
+  SESSION_EXPIRED_DEFAULT_MESSAGE,
+  SESSION_EXPIRED_SIGN_IN,
+  SESSION_EXPIRED_TITLE,
+} from "../constants/authUiStrings";
 
 export function SessionExpiredModal({ open, message, allowClose, onSignIn, onClose }) {
   const dialogRef = useRef(null);
@@ -59,10 +65,10 @@ export function SessionExpiredModal({ open, message, allowClose, onSignIn, onClo
         </div>
 
         <h2 id="session-expired-title" className="text-3xl font-semibold text-on-surface">
-          Session expired
+          {SESSION_EXPIRED_TITLE}
         </h2>
         <p id="session-expired-description" className="mt-2 text-base text-on-surface-variant">
-          {message || "Please login again to continue your work."}
+          {message || SESSION_EXPIRED_DEFAULT_MESSAGE}
         </p>
 
         <div className="mt-6 flex flex-col gap-3">
@@ -72,14 +78,14 @@ export function SessionExpiredModal({ open, message, allowClose, onSignIn, onClo
             onClick={onSignIn}
             className="w-full rounded bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90"
           >
-            Sign In
+            {SESSION_EXPIRED_SIGN_IN}
           </button>
           <button
             type="button"
             onClick={allowClose ? onClose : onSignIn}
             className="w-full rounded px-4 py-3 text-sm font-semibold text-on-surface-variant transition hover:bg-surface-container-low"
           >
-            Close
+            {SESSION_EXPIRED_CLOSE}
           </button>
         </div>
       </div>

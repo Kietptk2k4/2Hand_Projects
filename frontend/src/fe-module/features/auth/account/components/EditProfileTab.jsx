@@ -18,7 +18,7 @@ import {
 function resolveFieldErrors(errors = []) {
   return errors.reduce((acc, item) => {
     if (item?.field && !acc[item.field]) {
-      acc[item.field] = item.reason || "Truong du lieu khong hop le.";
+      acc[item.field] = item.reason || "Truong dữ liệu không hợp lệ.";
     }
     return acc;
   }, {});
@@ -107,13 +107,13 @@ export function EditProfileTab({ profile, refetch, onNotify }) {
         social_links: mapSocialLinksToObject(form.social_links),
       });
       await refetch();
-      onNotify?.({ variant: "success", message: "Cap nhat ho so thanh cong." });
+      onNotify?.({ variant: "success", message: "Cập nhật hồ sơ thành công." });
     } catch (error) {
       const serverErrors = resolveFieldErrors(error?.errors);
       if (Object.keys(serverErrors).length > 0) {
         setErrors(serverErrors);
       }
-      setGlobalError(error?.message || "Co loi xay ra. Vui long thu lai.");
+      setGlobalError(error?.message || "Có lỗi xảy ra. Vui lòng thử lại.");
       onNotify?.({ variant: "error", message: error?.message });
     } finally {
       setIsSubmitting(false);
@@ -123,8 +123,8 @@ export function EditProfileTab({ profile, refetch, onNotify }) {
   return (
     <div>
       <TabPanelHeader
-        title="Chinh sua ho so"
-        subtitle="Cap nhat thong tin ca nhan va cach ban xuat hien tren nen tang."
+        title="Chỉnh sửa hồ sơ"
+        subtitle="Cập nhật thông tin ca nhan và cach bạn xuat hien trên nen tang."
       />
 
       <AccountCard>
@@ -147,7 +147,7 @@ export function EditProfileTab({ profile, refetch, onNotify }) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <AccountFieldLabel htmlFor="bio">Gioi thieu</AccountFieldLabel>
+            <AccountFieldLabel htmlFor="bio">Giới thiệu</AccountFieldLabel>
             <textarea
               id="bio"
               name="bio"
@@ -184,7 +184,7 @@ export function EditProfileTab({ profile, refetch, onNotify }) {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h3 className="text-base font-semibold text-on-surface">Lien ket mang xa hoi</h3>
-                <p className="text-sm text-on-surface-variant">Them lien ket den cac trang ca nhan cua ban.</p>
+                <p className="text-sm text-on-surface-variant">Them lien ket den các trang ca nhan của ban.</p>
               </div>
               <SecondaryButton type="button" onClick={addSocialRow} disabled={form.social_links.length >= 10}>
                 + Them lien ket

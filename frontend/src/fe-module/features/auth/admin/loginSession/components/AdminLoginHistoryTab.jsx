@@ -26,7 +26,7 @@ function HistoryRow({ item }) {
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-medium text-on-surface">
-            {LOGIN_METHOD_LABELS[item.login_method] || item.login_method || "Dang nhap"}
+            {LOGIN_METHOD_LABELS[item.login_method] || item.login_method || "Đăng nhập"}
           </span>
           <span
             className={[
@@ -47,7 +47,7 @@ function HistoryRow({ item }) {
   );
 }
 
-const EMPTY_USER_MESSAGE = "Vui long chon nguoi dung de xem du lieu.";
+const EMPTY_USER_MESSAGE = "Vui lòng chọn người dùng để xem dữ liệu.";
 
 export function AdminLoginHistoryTab({ userId, onNotify }) {
   const { showSessionExpired } = useAuthSession();
@@ -101,12 +101,12 @@ export function AdminLoginHistoryTab({ userId, onNotify }) {
           return;
         }
         if (error?.code === 403) {
-          onNotify?.({ variant: "error", message: error?.message || "Ban khong co quyen truy cap." });
+          onNotify?.({ variant: "error", message: error?.message || "Bạn không co quyen truy cap." });
         }
         if (!append) {
           setStatus("error");
         }
-        setErrorMessage(error?.message || "Khong tai duoc lich su dang nhap.");
+        setErrorMessage(error?.message || "Không tải duoc lịch sử đăng nhập.");
       } finally {
         setLoadMoreStatus("idle");
       }
@@ -150,8 +150,8 @@ export function AdminLoginHistoryTab({ userId, onNotify }) {
     return (
       <div>
         <TabPanelHeader
-          title="Lich su dang nhap"
-          subtitle="Xem lich su dang nhap cua nguoi dung duoc chon."
+          title="Lịch sử đăng nhập"
+          subtitle="Xem lịch sử đăng nhập của người dùng duoc chon."
         />
         <EmptyState message={EMPTY_USER_MESSAGE} />
       </div>
@@ -162,8 +162,8 @@ export function AdminLoginHistoryTab({ userId, onNotify }) {
     return (
       <div>
         <TabPanelHeader
-          title="Lich su dang nhap"
-          subtitle="Xem lich su dang nhap cua nguoi dung duoc chon."
+          title="Lịch sử đăng nhập"
+          subtitle="Xem lịch sử đăng nhập của người dùng duoc chon."
         />
         <AccountSkeleton />
       </div>
@@ -174,8 +174,8 @@ export function AdminLoginHistoryTab({ userId, onNotify }) {
     return (
       <div>
         <TabPanelHeader
-          title="Lich su dang nhap"
-          subtitle="Xem lich su dang nhap cua nguoi dung duoc chon."
+          title="Lịch sử đăng nhập"
+          subtitle="Xem lịch sử đăng nhập của người dùng duoc chon."
         />
         <AccountCard className="border-error/30">
           <ErrorState message={errorMessage} />
@@ -184,7 +184,7 @@ export function AdminLoginHistoryTab({ userId, onNotify }) {
             onClick={() => fetchPage(1, false)}
             className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
           >
-            Thu lai
+            Thử lại
           </button>
         </AccountCard>
       </div>
@@ -194,8 +194,8 @@ export function AdminLoginHistoryTab({ userId, onNotify }) {
   return (
     <div>
       <TabPanelHeader
-        title="Lich su dang nhap"
-        subtitle="Xem lich su dang nhap cua nguoi dung duoc chon."
+        title="Lịch sử đăng nhập"
+        subtitle="Xem lịch sử đăng nhập của người dùng duoc chon."
       />
 
       <AccountCard className="mb-6">
@@ -260,7 +260,7 @@ export function AdminLoginHistoryTab({ userId, onNotify }) {
       </AccountCard>
 
       {items.length === 0 ? (
-        <EmptyState message="Chua co lich su dang nhap." />
+        <EmptyState message="Chưa co lịch sử đăng nhập." />
       ) : (
         <AccountCard>
           <ul>

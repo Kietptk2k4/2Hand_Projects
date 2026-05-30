@@ -1,3 +1,4 @@
+import { DEFAULT_USER_DISPLAY_NAME } from "../constants/socialUiStrings";
 import { formatFollowedAt } from "../utils/formatFollowedAt";
 
 const DEFAULT_AVATAR = "https://i.pravatar.cc/80?img=11";
@@ -10,7 +11,7 @@ function initialsFromName(name) {
 }
 
 export function FollowListRow({ item, onViewProfile }) {
-  const displayName = item.displayName || "User";
+  const displayName = item.displayName || DEFAULT_USER_DISPLAY_NAME;
   const followedLabel = formatFollowedAt(item.followedAt);
 
   return (

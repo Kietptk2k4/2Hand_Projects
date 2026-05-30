@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { MAX_COMMENT_LENGTH } from "../constants/commentConstants";
+import { DEFAULT_USER_DISPLAY_NAME } from "../constants/socialUiStrings";
 import { useSocialWriteBlock } from "../context/SocialWriteBlockContext";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
 
@@ -81,7 +82,7 @@ export function CommentItem({
   const { isWriteBlocked } = useSocialWriteBlock();
   const [replyDraft, setReplyDraft] = useState("");
   const avatarUrl = comment.author?.avatarUrl || DEFAULT_AVATAR;
-  const displayName = comment.author?.displayName || "User";
+  const displayName = comment.author?.displayName || DEFAULT_USER_DISPLAY_NAME;
   const authorUserId = comment.author?.userId;
   const isTopLevel = !comment.parentCommentId;
   const isReplying = replyingToId === comment.commentId;
@@ -222,7 +223,7 @@ export function CommentItem({
                       }}
                       className="text-sm font-semibold text-on-surface hover:text-primary"
                     >
-                      {reply.author?.displayName || "User"}
+                      {reply.author?.displayName || DEFAULT_USER_DISPLAY_NAME}
                     </button>
                     <p className="mt-0.5 text-sm text-on-surface">{reply.contentText}</p>
                   </div>

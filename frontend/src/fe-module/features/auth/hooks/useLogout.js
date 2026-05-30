@@ -5,7 +5,7 @@ import { APP_ROUTES } from "../../../shared/constants/routes";
 import { useAuthSession } from "./useAuthSession.jsx";
 
 export const LOGOUT_FALLBACK_MESSAGE =
-  "Da dang xuat tren thiet bi nay. Neu can, vui long thu lai.";
+  "Đã đăng xuất trên thiết bị nay. Neu can, vui lòng thử lại.";
 
 export function useLogout() {
   const navigate = useNavigate();

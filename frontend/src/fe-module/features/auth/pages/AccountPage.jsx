@@ -47,8 +47,8 @@ export function AccountPage() {
         <ErrorState
           message={
             status === "not_found"
-              ? errorMessage || "Khong tim thay tai khoan."
-              : errorMessage || "Khong tai duoc thong tin tai khoan."
+              ? errorMessage || "Không tìm thay tài khoản."
+              : errorMessage || "Không tải duoc thông tin tài khoản."
           }
         />
         <button
@@ -56,7 +56,7 @@ export function AccountPage() {
           onClick={refetch}
           className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white"
         >
-          Thu lai
+          Thử lại
         </button>
       </AccountSettingsLayout>
     );
@@ -79,7 +79,7 @@ export function AccountPage() {
           <AuthAlert
             variant={alert.variant}
             message={alert.message}
-            title={alert.variant === "success" ? "Thanh cong" : alert.variant === "error" ? "Loi" : undefined}
+            title={alert.variant === "success" ? "Thành công" : alert.variant === "error" ? "Lỗi" : undefined}
             onDismiss={() => setAlert(null)}
           />
         </div>

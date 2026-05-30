@@ -1,5 +1,10 @@
 import { Link } from "react-router-dom";
 import { APP_ROUTES } from "../../../shared/constants/routes";
+import {
+  SESSION_EXPIRED_DEFAULT_MESSAGE,
+  SESSION_EXPIRED_SIGN_IN,
+  SESSION_EXPIRED_TITLE,
+} from "../constants/authUiStrings";
 
 export function SessionExpiredPage() {
   return (
@@ -9,15 +14,13 @@ export function SessionExpiredPage() {
           ⏳
         </span>
       </div>
-      <h1 className="text-3xl font-semibold text-on-surface">Session expired</h1>
-      <p className="mt-2 text-sm text-on-surface-variant">
-        Phien dang nhap da het han, vui long dang nhap lai.
-      </p>
+      <h1 className="text-3xl font-semibold text-on-surface">{SESSION_EXPIRED_TITLE}</h1>
+      <p className="mt-2 text-sm text-on-surface-variant">{SESSION_EXPIRED_DEFAULT_MESSAGE}</p>
       <Link
         to={APP_ROUTES.login}
         className="mt-6 inline-flex rounded bg-primary px-4 py-2 text-sm font-semibold text-white"
       >
-        Sign In
+        {SESSION_EXPIRED_SIGN_IN}
       </Link>
     </section>
   );

@@ -49,8 +49,8 @@ export function AssignRoleTab({ onNotify }) {
 
   const validateForm = () => {
     const next = { userId: "", role_id: "" };
-    if (!userId) next.userId = "Vui long chon user.";
-    if (!roleId) next.role_id = "Vui long chon role.";
+    if (!userId) next.userId = "Vui lòng chọn người dùng.";
+    if (!roleId) next.role_id = "Vui lòng chọn vai trò.";
     setFieldErrors(next);
     return !next.userId && !next.role_id;
   };
@@ -72,7 +72,7 @@ export function AssignRoleTab({ onNotify }) {
       setIsConfirmOpen(false);
       setUserId("");
       setRoleId("");
-      onNotify?.({ variant: "success", message: "Gan role cho user thanh cong." });
+      onNotify?.({ variant: "success", message: "Gán vai trò cho người dùng thành công." });
     } catch (error) {
       setIsConfirmOpen(false);
       if (error?.code === 401) {
@@ -83,12 +83,12 @@ export function AssignRoleTab({ onNotify }) {
       if (error?.code === 409 && serverErrors.role_id === "ALREADY_ASSIGNED") {
         setFieldErrors((prev) => ({
           ...prev,
-          role_id: "User da duoc gan role nay.",
+          role_id: "Người dùng đã được gán vai trò này.",
         }));
       } else if (Object.keys(serverErrors).length > 0) {
         setFieldErrors((prev) => ({ ...prev, ...serverErrors }));
       }
-      setGlobalError(error?.message || "Co loi xay ra. Vui long thu lai.");
+      setGlobalError(error?.message || "Có lỗi xảy ra. Vui lòng thử lại.");
       onNotify?.({ variant: "error", message: error?.message });
     } finally {
       setIsSubmitting(false);
@@ -98,7 +98,7 @@ export function AssignRoleTab({ onNotify }) {
   if (rolesStatus === "loading") {
     return (
       <div>
-        <TabPanelHeader title="Gan Role" subtitle="Gan role cho user trong he thong." />
+        <TabPanelHeader title="Gán vai trò" subtitle="Gán vai trò cho người dùng trong hệ thống." />
         <AccountSkeleton />
       </div>
     );
@@ -107,10 +107,10 @@ export function AssignRoleTab({ onNotify }) {
   if (rolesStatus === "error") {
     return (
       <div>
-        <TabPanelHeader title="Gan Role" subtitle="Gan role cho user trong he thong." />
-        <ErrorState message="Khong tai duoc danh sach role." />
+        <TabPanelHeader title="Gán vai trò" subtitle="Gán vai trò cho người dùng trong hệ thống." />
+        <ErrorState message="Không tải duoc danh sách vai trò." />
         <PrimaryButton type="button" onClick={loadRoles} className="mt-4">
-          Thu lai
+          Thử lại
         </PrimaryButton>
       </div>
     );
@@ -118,7 +118,7 @@ export function AssignRoleTab({ onNotify }) {
 
   return (
     <div>
-      <TabPanelHeader title="Gan Role" subtitle="Gan role cho user trong he thong." />
+      <TabPanelHeader title="Gán vai trò" subtitle="Gán vai trò cho người dùng trong hệ thống." />
 
       {globalError ? (
         <div className="mb-4">
@@ -144,7 +144,7 @@ export function AssignRoleTab({ onNotify }) {
                 fieldErrors.userId ? "border-error" : "border-outline-variant focus:border-primary",
               ].join(" ")}
             >
-              <option value="">Chon user...</option>
+              <option value="">Chọn người dùng...</option>
               {ASSIGNABLE_USERS.map((user) => (
                 <option key={user.id} value={user.id}>
                   {user.email} ({user.display_name})
@@ -170,7 +170,7 @@ export function AssignRoleTab({ onNotify }) {
                 fieldErrors.role_id ? "border-error" : "border-outline-variant focus:border-primary",
               ].join(" ")}
             >
-              <option value="">Chon role...</option>
+              <option value="">Chọn vai trò...</option>
               {roles.map((role) => (
                 <option key={role.id} value={role.id}>
                   {role.code} — {role.name}
@@ -181,7 +181,7 @@ export function AssignRoleTab({ onNotify }) {
           </div>
 
           <PrimaryButton type="submit" disabled={isSubmitting}>
-            Gan role
+            Gán vai trò
           </PrimaryButton>
         </form>
       </AccountCard>
@@ -199,10 +199,10 @@ export function AssignRoleTab({ onNotify }) {
           <div className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-lg">
             <div className="p-6">
               <h3 id="assign-role-title" className="text-lg font-semibold text-on-surface">
-                Gan role cho user?
+                Gán vai trò cho người dùng?
               </h3>
               <p className="mt-2 text-sm text-on-surface-variant">
-                Thao tac nay se cap nhat quyen truy cap cua user.
+                Thao tác này sẽ cập nhật quyền truy cập của người dùng.
               </p>
               {selectedUser && selectedRole ? (
                 <p className="mt-3 text-sm text-on-surface">

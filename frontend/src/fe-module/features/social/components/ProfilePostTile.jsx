@@ -61,7 +61,7 @@ export function ProfilePostTile({
       ) : null}
       {isDraft ? (
         <span className="absolute left-2 top-2 rounded-sm bg-surface-variant/90 px-2 py-0.5 text-xs font-semibold text-on-surface-variant shadow-sm backdrop-blur-sm">
-          DRAFT
+          NHÁP
         </span>
       ) : null}
       {post.media?.length > 1 ? (

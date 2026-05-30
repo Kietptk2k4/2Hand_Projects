@@ -54,8 +54,8 @@ export function SecurityTabNav({ activeTab, onTabChange, avatarUrl }) {
           alt=""
           className="mb-4 h-20 w-20 rounded-full border-2 border-white object-cover shadow-sm"
         />
-        <h2 className="text-xl font-semibold text-on-surface">Bao mat tai khoan</h2>
-        <p className="mt-1 text-sm text-on-surface-variant">Quan ly phien va lich su dang nhap</p>
+        <h2 className="text-xl font-semibold text-on-surface">Bảo mật tài khoản</h2>
+        <p className="mt-1 text-sm text-on-surface-variant">Quan ly phiên và lịch sử đăng nhập</p>
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 px-4 pb-6" aria-label="Account security">

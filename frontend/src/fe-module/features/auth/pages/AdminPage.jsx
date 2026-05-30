@@ -93,7 +93,7 @@ export function AdminPage() {
       {alert ? (
         <AuthAlert
           variant={alert.variant}
-          title={alert.variant === "success" ? "Thanh cong" : alert.variant === "error" ? "Loi" : undefined}
+          title={alert.variant === "success" ? "Thành công" : alert.variant === "error" ? "Lỗi" : undefined}
           message={alert.message}
           onDismiss={() => setAlert(null)}
         />

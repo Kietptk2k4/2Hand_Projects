@@ -5,7 +5,7 @@ export function ProfilePostsFilter({ value, onChange, disabled = false }) {
     <div
       className="flex flex-wrap gap-2"
       role="group"
-      aria-label="Lọc bài viết portfolio"
+      aria-label="Lọc bài viết trên hồ sơ"
     >
       {PROFILE_STATUS_FILTERS.map((option) => {
         const isActive = value === option.value;

@@ -41,7 +41,7 @@ export function UpdateAvatarTab({ profile, refetch, onNotify }) {
 
     setErrorMessage("");
     if (!AVATAR_ALLOWED_TYPES.includes(file.type)) {
-      setErrorMessage("Dinh dang khong duoc ho tro. Chi JPG, PNG, WEBP.");
+      setErrorMessage("Định dạng không được hỗ trợ. Chỉ JPG, PNG, WEBP.");
       return;
     }
     if (file.size > AVATAR_MAX_BYTES) {
@@ -99,9 +99,9 @@ export function UpdateAvatarTab({ profile, refetch, onNotify }) {
       setUploadProgress(100);
       await refetch();
       resetSelection();
-      onNotify?.({ variant: "success", message: "Cap nhat anh dai dien thanh cong." });
+      onNotify?.({ variant: "success", message: "Cập nhật anh dai dien thành công." });
     } catch (error) {
-      setErrorMessage(error?.message || "Co loi xay ra. Vui long thu lai.");
+      setErrorMessage(error?.message || "Có lỗi xảy ra. Vui lòng thử lại.");
       onNotify?.({ variant: "error", message: error?.message });
       setUploadProgress(null);
     } finally {
@@ -112,8 +112,8 @@ export function UpdateAvatarTab({ profile, refetch, onNotify }) {
   return (
     <div>
       <TabPanelHeader
-        title="Cap nhat anh dai dien"
-        subtitle="Chon mot buc anh the hien su chuyen nghiep cua ban."
+        title="Cập nhật anh dai dien"
+        subtitle="Chọn một buc anh the hien su chuyen nghiep của ban."
       />
 
       <AccountCard>
@@ -123,7 +123,7 @@ export function UpdateAvatarTab({ profile, refetch, onNotify }) {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               className="group relative"
-              aria-label="Chon anh dai dien"
+              aria-label="Chọn ảnh đại diện"
             >
               <div className="relative h-48 w-48 overflow-hidden rounded-full border-4 border-white shadow-sm md:h-64 md:w-64">
                 <img
@@ -139,7 +139,7 @@ export function UpdateAvatarTab({ profile, refetch, onNotify }) {
                 </div>
               </div>
             </button>
-            <p className="mt-4 text-center text-xs font-semibold text-on-surface-variant">Nhap vao anh de thay doi</p>
+            <p className="mt-4 text-center text-xs font-semibold text-on-surface-variant">Nhap vào anh de thay doi</p>
             <input
               ref={fileInputRef}
               type="file"
@@ -163,7 +163,7 @@ export function UpdateAvatarTab({ profile, refetch, onNotify }) {
               <div className="rounded-lg border border-outline-variant bg-account-surface-low p-4">
                 <div className="mb-2 flex justify-between text-xs font-semibold">
                   <span className="text-primary">
-                    {uploadProgress >= 100 ? "Hoan tat" : "Dang tai len..."}
+                    {uploadProgress >= 100 ? "Hoan tat" : "Đang tải len..."}
                     {selectedFile?.name ? ` ${selectedFile.name}` : ""}
                   </span>
                   <span>{uploadProgress}%</span>
@@ -191,7 +191,7 @@ export function UpdateAvatarTab({ profile, refetch, onNotify }) {
             loading={isSubmitting}
             disabled={!selectedFile || isSubmitting}
           >
-            Cap nhat anh dai dien
+            Cập nhật anh dai dien
           </PrimaryButton>
         </div>
       </AccountCard>

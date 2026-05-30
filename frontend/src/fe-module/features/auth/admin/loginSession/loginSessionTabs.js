@@ -1,4 +1,4 @@
 export const LOGIN_SESSION_TABS = [
-  { id: "login-history", labelVn: "Lich su dang nhap", icon: "history" },
-  { id: "user-sessions", labelVn: "Phien nguoi dung", icon: "sessions" },
+  { id: "login-history", labelVn: "Lịch sử đăng nhập", icon: "history" },
+  { id: "user-sessions", labelVn: "Phiên người dùng", icon: "sessions" },
 ];

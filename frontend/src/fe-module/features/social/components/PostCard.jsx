@@ -135,7 +135,7 @@ export function PostCard({
           <span className="material-symbols-outlined" aria-hidden="true">
             share
           </span>
-          <span className="text-sm font-medium">Share</span>
+          <span className="text-sm font-medium">Chia sẻ</span>
         </button>
       </div>
     </article>

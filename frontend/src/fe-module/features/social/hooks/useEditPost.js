@@ -172,7 +172,7 @@ export function useEditPost({ postId, onSuccess }) {
       setGlobalError("");
       const available = MAX_MEDIA_ITEMS - mediaItems.length;
       if (available <= 0) {
-        setGlobalError(`Tối đa ${MAX_MEDIA_ITEMS} file media.`);
+        setGlobalError(`Tối đa ${MAX_MEDIA_ITEMS} ảnh hoặc video.`);
         return;
       }
 
@@ -317,13 +317,13 @@ export function useEditPost({ postId, onSuccess }) {
   const validateForm = useCallback(() => {
     const errors = {};
     if (caption.length > MAX_CAPTION_LENGTH) {
-      errors.caption = `Caption tối đa ${MAX_CAPTION_LENGTH} ký tự.`;
+      errors.caption = `Mô tả tối đa ${MAX_CAPTION_LENGTH} ký tự.`;
     }
     const hasUploading = mediaItems.some(
       (item) => item.status === "uploading" || item.status === "pending"
     );
     if (hasUploading) {
-      errors.media = "Đang upload media, vui lòng đợi.";
+      errors.media = "Đang tải ảnh hoặc video, vui lòng đợi.";
     }
     const hasMediaError = mediaItems.some((item) => item.status === "error");
     if (hasMediaError) {

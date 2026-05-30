@@ -3,10 +3,10 @@ import { SUGGESTED_PROVIDERS } from "../constants/suggestedProviders";
 import { buildSocialHashtagPath } from "../utils/socialHashtagRoutes";
 
 const TRENDING = [
-  { tag: "RemoteWork2024", count: "12.5k posts" },
-  { tag: "AIinFinance", count: "8.2k posts" },
-  { tag: "FreelanceTips", count: "5.1k posts" },
-  { tag: "LegalTech", count: "3.9k posts" },
+  { tag: "RemoteWork2024", count: "12.5k bài viết" },
+  { tag: "AIinFinance", count: "8.2k bài viết" },
+  { tag: "FreelanceTips", count: "5.1k bài viết" },
+  { tag: "LegalTech", count: "3.9k bài viết" },
 ];
 
 const SUGGESTIONS = SUGGESTED_PROVIDERS;
@@ -27,7 +27,7 @@ export function FeedRightSidebar({ onComingSoon, onViewProfile, onSelectHashtag 
   return (
     <aside className="hidden flex-col gap-6 lg:col-span-3 lg:flex lg:sticky lg:top-20 lg:max-h-[calc(100vh-5rem)] lg:self-start lg:overflow-y-auto">
       <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
-        <h3 className="mb-4 text-xl font-semibold text-on-surface">Trending Now</h3>
+        <h3 className="mb-4 text-xl font-semibold text-on-surface">Đang thịnh hành</h3>
         <ul className="flex flex-col gap-3">
           {TRENDING.map((item) => (
             <li key={item.tag} className="flex flex-col">
@@ -45,7 +45,7 @@ export function FeedRightSidebar({ onComingSoon, onViewProfile, onSelectHashtag 
       </div>
 
       <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
-        <h3 className="mb-4 text-xl font-semibold text-on-surface">Suggested Providers</h3>
+        <h3 className="mb-4 text-xl font-semibold text-on-surface">Nhà cung cấp gợi ý</h3>
         <ul className="flex flex-col gap-4">
           {SUGGESTIONS.map((item) => (
             <li key={item.userId} className="flex items-center justify-between gap-2">
@@ -73,7 +73,7 @@ export function FeedRightSidebar({ onComingSoon, onViewProfile, onSelectHashtag 
                 onClick={onComingSoon}
                 className="shrink-0 rounded-full border border-primary px-3 py-1 text-xs font-semibold text-primary transition-colors hover:bg-[#e7eeff]"
               >
-                Follow
+                Theo dõi
               </button>
             </li>
           ))}
@@ -83,7 +83,7 @@ export function FeedRightSidebar({ onComingSoon, onViewProfile, onSelectHashtag 
           onClick={onComingSoon}
           className="mt-4 block w-full text-center text-sm font-medium text-primary hover:underline"
         >
-          View all recommendations
+          Xem tất cả gợi ý
         </button>
       </div>
     </aside>

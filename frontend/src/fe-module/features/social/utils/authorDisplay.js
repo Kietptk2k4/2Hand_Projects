@@ -1,3 +1,5 @@
+import { DEFAULT_USER_DISPLAY_NAME } from "../constants/socialUiStrings";
+
 const DEFAULT_AVATAR_BASE = "https://i.pravatar.cc/96";
 
 export function shortAuthorId(authorId) {
@@ -12,5 +14,5 @@ export function authorAvatarUrl(authorId) {
 }
 
 export function authorDisplayName(authorId) {
-  return `User ${shortAuthorId(authorId)}`;
+  return `${DEFAULT_USER_DISPLAY_NAME} ${shortAuthorId(authorId)}`;
 }

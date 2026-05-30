@@ -22,11 +22,11 @@ export function useAccountProfile() {
       }
       if (error?.code === 404) {
         setStatus("not_found");
-        setErrorMessage(error?.message || "Khong tim thay tai khoan.");
+        setErrorMessage(error?.message || "Không tìm thay tài khoản.");
         return;
       }
       setStatus("error");
-      setErrorMessage(error?.message || "Khong tai duoc thong tin tai khoan.");
+      setErrorMessage(error?.message || "Không tải duoc thông tin tài khoản.");
     }
   }, [showSessionExpired]);
 

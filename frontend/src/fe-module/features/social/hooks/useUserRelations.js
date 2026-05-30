@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetchUserRelations } from "../api/relationsApi";
+import { DEFAULT_USER_DISPLAY_NAME } from "../constants/socialUiStrings";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 
 const RELATIONS_PAGE_SIZE = 20;
@@ -93,7 +94,9 @@ export function useUserRelations(targetUserId, relationType, { enabled = true } 
   const filteredItems = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return items;
-    return items.filter((item) => (item.displayName || "User").toLowerCase().includes(query));
+    return items.filter((item) =>
+      (item.displayName || DEFAULT_USER_DISPLAY_NAME).toLowerCase().includes(query)
+    );
   }, [items, searchQuery]);
 
   return {

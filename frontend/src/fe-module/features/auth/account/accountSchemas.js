@@ -23,15 +23,15 @@ export function validateEditProfileForm(form) {
   if (!displayName) {
     errors.display_name = "Ten hien thi la bat buoc.";
   } else if (displayName.length > MAX_DISPLAY_NAME) {
-    errors.display_name = `Ten hien thi toi da ${MAX_DISPLAY_NAME} ky tu.`;
+    errors.display_name = `Ten hien thi toi da ${MAX_DISPLAY_NAME} ký tự.`;
   }
 
   if ((form.bio || "").length > MAX_BIO) {
-    errors.bio = `Gioi thieu toi da ${MAX_BIO} ky tu.`;
+    errors.bio = `Giới thiệu toi da ${MAX_BIO} ký tự.`;
   }
 
   if (!isValidHttpUrl(form.website)) {
-    errors.website = "URL khong hop le (can bat dau bang http hoac https).";
+    errors.website = "URL không hợp lệ (can bat dau bang http hoac https).";
   }
 
   const socialRows = form.social_links || [];
@@ -41,7 +41,7 @@ export function validateEditProfileForm(form) {
 
   socialRows.forEach((row, index) => {
     if (row.url && !isValidHttpUrl(row.url)) {
-      errors[`social_links.${index}.url`] = "URL khong hop le.";
+      errors[`social_links.${index}.url`] = "URL không hợp lệ.";
     }
   });
 

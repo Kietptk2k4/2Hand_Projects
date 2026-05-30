@@ -1,21 +1,21 @@
 export function validateEmail(email) {
-  if (!email) return "Vui long nhap email.";
+  if (!email) return "Vui lòng nhập email.";
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) return "Email khong dung dinh dang.";
-  if (email.length > 255) return "Email toi da 255 ky tu.";
+  if (!emailRegex.test(email)) return "Email không đúng định dạng.";
+  if (email.length > 255) return "Email tối đa 255 ký tự.";
   return "";
 }
 
 export function validatePassword(password) {
-  if (!password?.trim()) return "Vui long nhap mat khau.";
+  if (!password?.trim()) return "Vui lòng nhập mật khẩu.";
   if (password.length < 8 || password.length > 32) {
-    return "Mat khau phai tu 8 den 32 ky tu.";
+    return "Mật khẩu phải từ 8 đến 32 ký tự.";
   }
   const hasLower = /[a-z]/.test(password);
   const hasUpper = /[A-Z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
   if (!hasLower || !hasUpper || !hasNumber) {
-    return "Mat khau can it nhat 1 chu hoa, 1 chu thuong va 1 so.";
+    return "Mật khẩu cần ít nhất 1 chữ hoa, 1 chữ thường và 1 số.";
   }
   return "";
 }
@@ -33,8 +33,8 @@ export function validateLoginForm(form) {
 }
 
 export function validateConfirmPassword(password, confirmPassword) {
-  if (!confirmPassword?.trim()) return "Vui long xac nhan mat khau.";
-  if (confirmPassword !== password) return "Xac nhan mat khau khong khop.";
+  if (!confirmPassword?.trim()) return "Vui lòng xác nhận mật khẩu.";
+  if (confirmPassword !== password) return "Xác nhận mật khẩu không khớp.";
   return "";
 }
 
@@ -61,7 +61,7 @@ export function getPasswordChecklistState(password) {
 }
 
 export function validateCurrentPassword(password) {
-  if (!password?.trim()) return "Vui long nhap mat khau hien tai.";
+  if (!password?.trim()) return "Vui lòng nhập mật khẩu hiện tại.";
   return "";
 }
 
@@ -69,14 +69,14 @@ export function validateNewPassword(newPassword, currentPassword) {
   const baseError = validatePassword(newPassword);
   if (baseError) return baseError;
   if (newPassword === currentPassword) {
-    return "Mat khau moi phai khac mat khau hien tai.";
+    return "Mật khẩu mới phải khác mật khẩu hiện tại.";
   }
   return "";
 }
 
 export function validateConfirmNewPassword(newPassword, confirmNewPassword) {
-  if (!confirmNewPassword?.trim()) return "Vui long xac nhan mat khau moi.";
-  if (confirmNewPassword !== newPassword) return "Xac nhan mat khau moi khong khop.";
+  if (!confirmNewPassword?.trim()) return "Vui lòng xác nhận mật khẩu mới.";
+  if (confirmNewPassword !== newPassword) return "Xác nhận mật khẩu mới không khớp.";
   return "";
 }
 
@@ -106,8 +106,8 @@ export function validateForgotPasswordForm(form) {
 
 export function validateVerifyToken(token) {
   const normalized = token?.trim() || "";
-  if (!normalized) return "Vui long nhap ma xac thuc.";
-  if (normalized.length < 6) return "Ma xac thuc khong hop le.";
+  if (!normalized) return "Vui lòng nhập mã xác thực.";
+  if (normalized.length < 6) return "Mã xác thực không hợp lệ.";
   return "";
 }
 
@@ -121,4 +121,3 @@ export function validateVerifyEmailForm(form) {
     isValid: !nextErrors.token,
   };
 }
-

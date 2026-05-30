@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
 import { APP_ROUTES } from "../../../../shared/constants/routes";
+import { getUserStatusLabel, NOT_UPDATED } from "../../constants/authUiStrings";
 import { AccountCard, TabPanelHeader } from "../../../../shared/ui/auth/authUi.jsx";
 
 function InfoRow({ label, value, children }) {
   return (
     <div className="flex flex-col gap-1 border-b border-outline-variant/50 py-3 last:border-0 sm:flex-row sm:items-center sm:justify-between">
       <span className="text-sm font-medium text-on-surface-variant">{label}</span>
-      <div className="text-sm text-on-surface">{children || value || "Chua cap nhat"}</div>
+      <div className="text-sm text-on-surface">{children || value || NOT_UPDATED}</div>
     </div>
   );
 }
@@ -19,7 +20,11 @@ function StatusBadge({ status }) {
         ? "bg-amber-50 text-amber-800"
         : "bg-outline-variant/30 text-on-surface-variant";
 
-  return <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${styles}`}>{status}</span>;
+  return (
+    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${styles}`}>
+      {getUserStatusLabel(status)}
+    </span>
+  );
 }
 
 function formatDateTime(value) {
@@ -32,9 +37,9 @@ function formatDateTime(value) {
 }
 
 const APPEARANCE_LABELS = {
-  LIGHT: "Sang",
-  DARK: "Toi",
-  SYSTEM: "Theo he thong",
+  LIGHT: "Sáng",
+  DARK: "Tối",
+  SYSTEM: "Theo hệ thống",
 };
 
 export function AccountInfoTab({ profile, onTabChange }) {
@@ -43,26 +48,26 @@ export function AccountInfoTab({ profile, onTabChange }) {
   return (
     <div>
       <TabPanelHeader
-        title="Thong tin tai khoan"
-        subtitle="Xem thong tin tai khoan, ho so va cai dat tom tat."
+        title="Thông tin tài khoản"
+        subtitle="Xem thông tin tài khoản, hồ sơ và cài đặt tóm tắt."
       />
 
       <div className="space-y-6">
         <AccountCard>
-          <h2 className="mb-4 text-lg font-semibold text-on-surface">Tai khoan</h2>
+          <h2 className="mb-4 text-lg font-semibold text-on-surface">Tài khoản</h2>
           <InfoRow label="Email" value={user?.email} />
-          <InfoRow label="Trang thai">
+          <InfoRow label="Trạng thái">
             <StatusBadge status={user?.status || "UNKNOWN"} />
           </InfoRow>
-          <InfoRow label="Email da xac thuc">
-            {user?.email_verified ? "Da xac thuc" : "Chua xac thuc"}
+          <InfoRow label="Email đã xác thực">
+            {user?.email_verified ? "Đã xác thực" : "Chưa xác thực"}
           </InfoRow>
-          <InfoRow label="So dien thoai" value={user?.phone} />
-          <InfoRow label="Lan dang nhap gan nhat" value={formatDateTime(user?.last_login_at)} />
+          <InfoRow label="Số điện thoại" value={user?.phone} />
+          <InfoRow label="Lần đăng nhập gần nhất" value={formatDateTime(user?.last_login_at)} />
         </AccountCard>
 
         <AccountCard>
-          <h2 className="mb-4 text-lg font-semibold text-on-surface">Ho so</h2>
+          <h2 className="mb-4 text-lg font-semibold text-on-surface">Hồ sơ</h2>
           <div className="mb-4 flex items-center gap-4">
             {userProfile?.avatar_url ? (
               <img
@@ -72,17 +77,17 @@ export function AccountInfoTab({ profile, onTabChange }) {
               />
             ) : null}
             <div>
-              <p className="font-medium text-on-surface">{userProfile?.display_name || "Chua cap nhat"}</p>
+              <p className="font-medium text-on-surface">{userProfile?.display_name || NOT_UPDATED}</p>
               <button
                 type="button"
                 onClick={() => onTabChange("edit")}
                 className="mt-1 text-sm font-medium text-primary hover:underline"
               >
-                Chinh sua ho so
+                Chỉnh sửa hồ sơ
               </button>
             </div>
           </div>
-          <InfoRow label="Gioi thieu" value={userProfile?.bio} />
+          <InfoRow label="Giới thiệu" value={userProfile?.bio} />
           <InfoRow label="Website">
             {userProfile?.website ? (
               <a href={userProfile.website} className="text-primary hover:underline" target="_blank" rel="noreferrer">
@@ -90,7 +95,7 @@ export function AccountInfoTab({ profile, onTabChange }) {
               </a>
             ) : null}
           </InfoRow>
-          <InfoRow label="Mang xa hoi">
+          <InfoRow label="Mạng xã hội">
             {userProfile?.social_links && Object.keys(userProfile.social_links).length > 0 ? (
               <ul className="space-y-1">
                 {Object.entries(userProfile.social_links).map(([key, url]) => (
@@ -103,35 +108,35 @@ export function AccountInfoTab({ profile, onTabChange }) {
               </ul>
             ) : null}
           </InfoRow>
-          <InfoRow label="Che do rieng tu">
-            {userProfile?.is_private ? "Rieng tu" : "Cong khai"}
+          <InfoRow label="Chế độ riêng tư">
+            {userProfile?.is_private ? "Riêng tư" : "Công khai"}
           </InfoRow>
         </AccountCard>
 
         <AccountCard>
-          <h2 className="mb-4 text-lg font-semibold text-on-surface">Cai dat (tom tat)</h2>
+          <h2 className="mb-4 text-lg font-semibold text-on-surface">Cài đặt (tóm tắt)</h2>
           <InfoRow
-            label="Giao dien"
+            label="Giao diện"
             value={APPEARANCE_LABELS[settings?.appearance_mode] || settings?.appearance_mode}
           />
           <div className="mt-4 flex flex-wrap gap-3 text-sm">
             <button type="button" onClick={() => onTabChange("settings")} className="font-medium text-primary hover:underline">
-              Cap nhat cai dat
+              Cập nhật cài đặt
             </button>
             <Link to={APP_ROUTES.accountPassword} className="font-medium text-primary hover:underline">
-              Doi mat khau
+              Đổi mật khẩu
             </Link>
           </div>
         </AccountCard>
 
         <AccountCard>
-          <h2 className="mb-4 text-lg font-semibold text-on-surface">Bao mat</h2>
+          <h2 className="mb-4 text-lg font-semibold text-on-surface">Bảo mật</h2>
           <p className="text-sm text-on-surface-variant">
-            Xem phien dang nhap dang hoat dong va lich su dang nhap cua tai khoan.
+            Xem phiên đăng nhập đang hoạt động và lịch sử đăng nhập của tài khoản.
           </p>
           <div className="mt-4">
             <Link to={APP_ROUTES.accountSecurity} className="font-medium text-primary hover:underline">
-              Bao mat tai khoan
+              Bảo mật tài khoản
             </Link>
           </div>
         </AccountCard>

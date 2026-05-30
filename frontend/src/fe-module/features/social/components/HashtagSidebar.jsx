@@ -8,7 +8,7 @@ export function HashtagSidebar({ currentHashtag, onSelectTag }) {
           <span className="material-symbols-outlined text-primary" aria-hidden="true">
             trending_up
           </span>
-          Trending Tags
+          Hashtag thịnh hành
         </h2>
         <div className="flex flex-wrap gap-2">
           {TRENDING_HASHTAGS.map((tag) => {

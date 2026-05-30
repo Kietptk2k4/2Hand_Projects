@@ -1,8 +1,8 @@
 import { getOAuthRedirectUrl } from "../api/authApi";
 
 const SOCIAL_BUTTONS = [
-  { key: "google", label: "Tiep tuc voi Google", icon: "G" },
-  { key: "facebook", label: "Tiep tuc voi Facebook", icon: "f" },
+  { key: "google", label: "Tiếp tục với Google", icon: "G" },
+  { key: "facebook", label: "Tiếp tục với Facebook", icon: "f" },
 ];
 
 export function SocialLoginButtons({ disabled = false, onRedirectStart }) {

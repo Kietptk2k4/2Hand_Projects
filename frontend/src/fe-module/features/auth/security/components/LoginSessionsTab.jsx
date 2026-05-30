@@ -13,16 +13,17 @@ import {
   TabPanelHeader,
 } from "../../../../shared/ui/auth/authUi.jsx";
 import { EmptyState, ErrorState } from "../../../../shared/ui/PageState.jsx";
+import { getSessionStatusLabel } from "../../constants/authUiStrings";
 
-const LOGOUT_ALL_SUCCESS_MESSAGE = "Da dang xuat tat ca phien dang nhap.";
+const LOGOUT_ALL_SUCCESS_MESSAGE = "Đã đăng xuất tất cả phiên đăng nhập.";
 
 function SessionRow({ session }) {
   return (
     <li className="rounded-lg border border-outline-variant bg-account-surface-low p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <p className="font-medium text-on-surface">{session.device_id || "Thiet bi khong xac dinh"}</p>
+        <p className="font-medium text-on-surface">{session.device_id || "Thiết bị không xác định"}</p>
         <span className="rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-800">
-          {session.status || "ACTIVE"}
+          {getSessionStatusLabel(session.status)}
         </span>
       </div>
       <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
@@ -31,15 +32,15 @@ function SessionRow({ session }) {
           <dd className="text-on-surface">{session.ip_address || "—"}</dd>
         </div>
         <div>
-          <dt className="text-on-surface-variant">Tao luc</dt>
+          <dt className="text-on-surface-variant">Tạo lúc</dt>
           <dd className="text-on-surface">{formatDateTime(session.created_at)}</dd>
         </div>
         <div className="sm:col-span-2">
-          <dt className="text-on-surface-variant">User agent</dt>
+          <dt className="text-on-surface-variant">Trình duyệt / ứng dụng</dt>
           <dd className="break-all text-on-surface">{session.user_agent || "—"}</dd>
         </div>
         <div>
-          <dt className="text-on-surface-variant">Het han</dt>
+          <dt className="text-on-surface-variant">Hết hạn</dt>
           <dd className="text-on-surface">{formatDateTime(session.expires_at)}</dd>
         </div>
       </dl>
@@ -70,7 +71,7 @@ export function LoginSessionsTab() {
         return;
       }
       setStatus("error");
-      setErrorMessage(error?.message || "Khong tai duoc danh sach phien dang nhap.");
+      setErrorMessage(error?.message || "Không tải duoc danh sach phiên đăng nhập.");
     }
   }, [showSessionExpired]);
 
@@ -97,11 +98,11 @@ export function LoginSessionsTab() {
         return;
       }
       if (error?.code === 500) {
-        setLogoutAllError(error?.message || "Co loi xay ra. Vui long thu lai.");
+        setLogoutAllError(error?.message || "Có lỗi xảy ra. Vui lòng thử lại.");
         setIsConfirmOpen(false);
         return;
       }
-      setLogoutAllError(error?.message || "Co loi xay ra. Vui long thu lai.");
+      setLogoutAllError(error?.message || "Có lỗi xảy ra. Vui lòng thử lại.");
       setIsConfirmOpen(false);
     } finally {
       setIsLoggingOutAll(false);
@@ -112,8 +113,8 @@ export function LoginSessionsTab() {
     return (
       <div>
         <TabPanelHeader
-          title="Phien dang nhap"
-          subtitle="Xem cac thiet bi dang dang nhap vao tai khoan cua ban."
+          title="Phiên đăng nhập"
+          subtitle="Xem các thiết bị đang đăng nhập vào tài khoản của bạn."
         />
         <AccountSkeleton />
       </div>
@@ -124,20 +125,20 @@ export function LoginSessionsTab() {
     return (
       <div>
         <TabPanelHeader
-          title="Phien dang nhap"
-          subtitle="Xem cac thiet bi dang dang nhap vao tai khoan cua ban."
+          title="Phiên đăng nhập"
+          subtitle="Xem các thiết bị đang đăng nhập vào tài khoản của bạn."
         />
         <AccountCard className="border-error/30 bg-error-container/30">
           <ErrorState message={errorMessage} />
           <p className="mt-2 text-sm text-on-surface-variant">
-            He thong tam thoi khong phan hoi. Vui long thu lai sau vai phut.
+            Hệ thống tạm thời không phản hồi. Vui lòng thử lại sau vài phút.
           </p>
           <button
             type="button"
             onClick={load}
             className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
           >
-            Thu lai
+            Thử lại
           </button>
         </AccountCard>
       </div>
@@ -147,8 +148,8 @@ export function LoginSessionsTab() {
   return (
     <div>
       <TabPanelHeader
-        title="Phien dang nhap"
-        subtitle="Xem cac thiet bi dang dang nhap vao tai khoan cua ban."
+        title="Phiên đăng nhập"
+        subtitle="Xem các thiết bị đang đăng nhập vào tài khoản của bạn."
       />
 
       {logoutAllError ? (
@@ -159,14 +160,14 @@ export function LoginSessionsTab() {
             onClick={() => setLogoutAllError("")}
             className="mt-2 text-sm font-medium text-primary hover:underline"
           >
-            Thu lai
+            Thử lại
           </button>
         </div>
       ) : null}
 
       <AccountCard className="mb-6">
         <p className="mb-3 text-sm text-on-surface-variant">
-          Dang xuat khoi tat ca thiet bi dang dang nhap. Ban se can dang nhap lai.
+          Đăng xuất khỏi tất cả thiết bị đang đăng nhập. Bạn sẽ cần đăng nhập lại.
         </p>
         <button
           type="button"
@@ -174,12 +175,12 @@ export function LoginSessionsTab() {
           disabled={isLoggingOutAll}
           className="rounded-lg border border-error px-4 py-2.5 text-sm font-semibold text-error transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Dang xuat tat ca thiet bi
+          Đăng xuất tất cả thiết bị
         </button>
       </AccountCard>
 
       {sessions.length === 0 ? (
-        <EmptyState message="Khong co phien dang nhap dang hoat dong." />
+        <EmptyState message="Không có phiên đăng nhập đang hoạt động." />
       ) : (
         <AccountCard className="!p-0">
           <ul className="divide-y divide-outline-variant/50 p-2 sm:p-4">
@@ -203,10 +204,10 @@ export function LoginSessionsTab() {
           <div className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-lg">
             <div className="p-6">
               <h3 id="logout-all-title" className="text-lg font-semibold text-on-surface">
-                Dang xuat tat ca thiet bi?
+                Đăng xuất tất cả thiết bị?
               </h3>
               <p className="mt-2 text-sm text-on-surface-variant">
-                Ban se can dang nhap lai tren cac thiet bi khac.
+                Bạn sẽ cần đăng nhập lại trên các thiết bị khác.
               </p>
             </div>
             <div className="flex justify-end gap-3 border-t border-outline-variant bg-account-surface-low px-6 py-4">
@@ -215,10 +216,10 @@ export function LoginSessionsTab() {
                 disabled={isLoggingOutAll}
                 onClick={() => setIsConfirmOpen(false)}
               >
-                Huy
+                Hủy
               </SecondaryButton>
               <PrimaryButton type="button" loading={isLoggingOutAll} onClick={onConfirmLogoutAll}>
-                Dang xuat
+                Đăng xuất
               </PrimaryButton>
             </div>
           </div>

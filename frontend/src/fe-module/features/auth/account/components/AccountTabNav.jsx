@@ -112,11 +112,11 @@ export function AccountTabNav({ activeTab, onTabChange, avatarUrl }) {
           alt=""
           className="mb-4 h-20 w-20 rounded-full border-2 border-white object-cover shadow-sm"
         />
-        <h2 className="text-xl font-semibold text-on-surface">Profile Settings</h2>
-        <p className="mt-1 text-sm text-on-surface-variant">Manage your 2Hands account</p>
+        <h2 className="text-xl font-semibold text-on-surface">Cài đặt hồ sơ</h2>
+        <p className="mt-1 text-sm text-on-surface-variant">Quản lý tài khoản 2Hands của bạn</p>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-1 px-4" aria-label="Account settings">
+      <nav className="flex flex-1 flex-col gap-1 px-4" aria-label="Cài đặt tài khoản">
         {mainTabs.map((tab) => (
           <NavItem key={tab.id} tab={tab} isActive={activeTab === tab.id} onSelect={onTabChange} />
         ))}

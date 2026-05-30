@@ -1,18 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { verifyEmail } from "../api/authApi";
+import { GENERIC_ERROR_RETRY, INVALID_FIELD_MESSAGE } from "../constants/authUiStrings";
 import { validateVerifyEmailForm, validateVerifyToken } from "../schemas/authSchemas";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
 const ERROR_MESSAGE_BY_CODE = {
-  400: "Token khong hop le hoac da het han.",
-  500: "Co loi xay ra. Vui long thu lai.",
+  400: "Token không hợp lệ hoặc đã hết hạn.",
+  500: GENERIC_ERROR_RETRY,
 };
 
 function resolveFieldErrors(errors = []) {
   return errors.reduce((acc, item) => {
     if (item?.field && !acc[item.field]) {
-      acc[item.field] = item.reason || "Truong du lieu khong hop le.";
+      acc[item.field] = item.reason || INVALID_FIELD_MESSAGE;
     }
     return acc;
   }, {});
@@ -54,9 +55,8 @@ export function VerifyEmailPage() {
 
     setIsSubmitting(true);
     try {
-      // Payload key must be exactly `token` per API contract.
       await verifyEmail({ token: normalizedToken });
-      setSuccessMessage("Xac thuc email thanh cong. Dang chuyen huong den dang nhap...");
+      setSuccessMessage("Xác thực email thành công. Đang chuyển hướng đến đăng nhập...");
       redirectTimerRef.current = window.setTimeout(() => {
         navigate(APP_ROUTES.login, { replace: true });
       }, 1000);
@@ -65,7 +65,7 @@ export function VerifyEmailPage() {
       if (error?.code === 400 && Object.keys(serverFieldErrors).length > 0) {
         setErrors((prev) => ({ ...prev, ...serverFieldErrors }));
       }
-      setGlobalError(ERROR_MESSAGE_BY_CODE[error?.code] || "Co loi xay ra. Vui long thu lai.");
+      setGlobalError(ERROR_MESSAGE_BY_CODE[error?.code] || GENERIC_ERROR_RETRY);
     } finally {
       setIsSubmitting(false);
     }
@@ -85,7 +85,7 @@ export function VerifyEmailPage() {
         <div className="relative h-[220px] overflow-hidden border-b border-outline-variant bg-surface-container-low">
           <img
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuADCx98402-Hzrcxy8_R_6M18Ja5N45hUQfnlllE8Ttu-QG74PQTz-xZaO5cV-apL4KhRqyYMMGX2y6JjmXFLkshaH1PEOcZx7R4W6Pdst1r3BDt5V3U3npgwrW-1hIBQ7C3IhnvU10D0ymsXtmwffV_xItu9fxB4xzxKdd03ypelzZTlY48PmS8DMx6Txa_d0UJlV_rtwgERy2nFEUpRuE18VvGX2nTGQk7LkfqCviNtp9M6yirLj9QeF-SWMymjyE5YlmrbYu1vE"
-            alt="Mail verification illustration"
+            alt="Minh họa xác thực email"
             className="h-full w-full object-cover opacity-90 mix-blend-multiply"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-white/60 to-transparent" />
@@ -95,10 +95,9 @@ export function VerifyEmailPage() {
         </div>
 
         <div className="px-6 pb-6 pt-12 text-center sm:px-8">
-          <h1 className="text-5xl font-semibold text-on-surface">Verify your email</h1>
+          <h1 className="text-5xl font-semibold text-on-surface">Xác thực email</h1>
           <p className="mx-auto mt-3 max-w-[420px] text-base leading-7 text-on-surface-variant">
-            Check your inbox. We&apos;ve sent a 6-digit code to your email. Please enter it below to confirm
-            your account.
+            Kiểm tra hộp thư của bạn. Chúng tôi đã gửi mã 6 chữ số — nhập mã bên dưới để xác nhận tài khoản.
           </p>
 
           {globalError ? (
@@ -118,7 +117,7 @@ export function VerifyEmailPage() {
 
           <form className="mx-auto mt-6 w-full max-w-[360px] text-left" onSubmit={onSubmit} noValidate>
             <label htmlFor="verify-token" className="text-xs font-semibold text-on-surface">
-              6-Digit Code
+              Mã 6 chữ số
             </label>
             <input
               id="verify-token"
@@ -129,7 +128,7 @@ export function VerifyEmailPage() {
               onChange={onChangeToken}
               onBlur={onBlurToken}
               disabled={isSubmitting}
-              placeholder="Enter code"
+              placeholder="Nhập mã"
               aria-invalid={Boolean(errors.token)}
               aria-describedby={errors.token ? "verify-token-error" : undefined}
               className={[
@@ -149,19 +148,19 @@ export function VerifyEmailPage() {
               disabled={isSubmitDisabled}
               className="mt-4 w-full rounded bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-75"
             >
-              {isSubmitting ? "Verifying..." : "Verify Email"}
+              {isSubmitting ? "Đang xác thực..." : "Xác thực email"}
             </button>
           </form>
 
           <div className="mx-auto mt-8 w-full max-w-[420px] border-t border-outline-variant pt-4 text-sm text-on-surface-variant">
-            <p>Didn&apos;t receive the email?</p>
+            <p>Chưa nhận được email?</p>
             <div className="mt-2 flex items-center justify-center gap-4">
               <button type="button" disabled className="font-medium text-primary/60">
-                Resend Code
+                Gửi lại mã
               </button>
               <span className="text-outline-variant">|</span>
               <Link to={APP_ROUTES.home} className="font-medium text-primary hover:underline">
-                Contact Support
+                Liên hệ hỗ trợ
               </Link>
             </div>
           </div>

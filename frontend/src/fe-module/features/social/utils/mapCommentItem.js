@@ -1,3 +1,4 @@
+import { DEFAULT_USER_DISPLAY_NAME } from "../constants/socialUiStrings";
 import { authorAvatarUrl, authorDisplayName } from "./authorDisplay";
 
 export function mapApiCommentToListItem(data, authorOverride) {
@@ -25,7 +26,7 @@ export function buildAuthorFromSessionUser(user) {
   if (!user?.id) {
     return {
       userId: "",
-      displayName: "User",
+      displayName: DEFAULT_USER_DISPLAY_NAME,
       avatarUrl: authorAvatarUrl(""),
     };
   }

@@ -1,5 +1,5 @@
 export function formatDateTime(value) {
-  if (!value) return "Chua cap nhat";
+  if (!value) return "Chưa cập nhật";
   try {
     return new Date(value).toLocaleString("vi-VN");
   } catch {

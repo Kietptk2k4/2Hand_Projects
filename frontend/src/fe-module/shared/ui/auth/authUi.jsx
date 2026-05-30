@@ -18,7 +18,7 @@ export function AuthAlert({ variant = "info", title, message, onDismiss }) {
             type="button"
             onClick={onDismiss}
             className="shrink-0 text-on-surface-variant hover:text-on-surface"
-            aria-label="Dong thong bao"
+            aria-label="Đóng thông báo"
           >
             ×
           </button>
@@ -101,7 +101,7 @@ export function AccountTextInput({
 
 export function AccountSkeleton() {
   return (
-    <div className="animate-pulse space-y-6" aria-busy="true" aria-label="Dang tai">
+    <div className="animate-pulse space-y-6" aria-busy="true" aria-label="Đang tải">
       <div className="h-8 w-48 rounded bg-outline-variant/40" />
       <div className="h-4 w-72 max-w-full rounded bg-outline-variant/30" />
       <div className="space-y-4 rounded-xl border border-outline-variant/40 bg-white p-6">
@@ -131,7 +131,7 @@ export function PrimaryButton({ children, disabled, loading, type = "button", on
       {loading ? (
         <>
           <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-          <span>Dang xu ly...</span>
+          <span>Đang xử lý...</span>
         </>
       ) : (
         children
@@ -196,7 +196,7 @@ export function PasswordField({
           onClick={onToggleVisible}
           disabled={disabled}
           className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-on-surface-variant disabled:cursor-not-allowed"
-          aria-label={visible ? `An ${label}` : `Hien ${label}`}
+          aria-label={visible ? `Ẩn ${label}` : `Hiện ${label}`}
         >
           <MaterialIcon name={visible ? "visibility" : "visibility_off"} className="text-[22px]" />
         </button>
@@ -211,10 +211,10 @@ export function PasswordField({
 }
 
 const PASSWORD_CHECKLIST_ITEMS = [
-  { key: "length", label: "8-32 ky tu" },
-  { key: "uppercase", label: "1 chu hoa" },
-  { key: "lowercase", label: "1 chu thuong" },
-  { key: "number", label: "1 chu so" },
+  { key: "length", label: "8-32 ký tự" },
+  { key: "uppercase", label: "1 chữ hoa" },
+  { key: "lowercase", label: "1 chữ thường" },
+  { key: "number", label: "1 chữ số" },
 ];
 
 export function PasswordChecklist({ checklistState }) {

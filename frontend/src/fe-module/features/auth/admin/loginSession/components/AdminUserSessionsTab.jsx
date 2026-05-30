@@ -9,15 +9,16 @@ import {
   TabPanelHeader,
 } from "../../../../../shared/ui/auth/authUi.jsx";
 import { EmptyState, ErrorState } from "../../../../../shared/ui/PageState.jsx";
+import { getSessionStatusLabel } from "../../../constants/authUiStrings";
 
 const PAGE_LIMIT = 20;
 
 const STATUS_OPTIONS = [
-  { value: "ACTIVE", label: "Dang hoat dong" },
-  { value: "LOGGED_OUT", label: "Da dang xuat" },
-  { value: "REVOKED", label: "Da thu hoi" },
-  { value: "EXPIRED", label: "Het han" },
-  { value: "ALL", label: "Tat ca" },
+  { value: "ACTIVE", label: "Đang hoạt động" },
+  { value: "LOGGED_OUT", label: "Đã đăng xuất" },
+  { value: "REVOKED", label: "Đã thu hồi" },
+  { value: "EXPIRED", label: "Hết hạn" },
+  { value: "ALL", label: "Tất cả" },
 ];
 
 const STATUS_BADGE_CLASS = {
@@ -35,12 +36,14 @@ function SessionCard({ session }) {
     <li className="rounded-lg border border-outline-variant bg-account-surface-low p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="font-medium text-on-surface">{session.device_id || "Thiet bi khong xac dinh"}</p>
+          <p className="font-medium text-on-surface">{session.device_id || "Thiết bị không xác định"}</p>
           <p className="mt-1 break-all text-xs text-on-surface-variant">
-            Session ID: {session.session_id || "—"}
+            Mã phiên: {session.session_id || "—"}
           </p>
         </div>
-        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${badgeClass}`}>{status}</span>
+        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${badgeClass}`}>
+          {getSessionStatusLabel(status)}
+        </span>
       </div>
       <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
         <div>
@@ -48,15 +51,15 @@ function SessionCard({ session }) {
           <dd className="text-on-surface">{session.ip_address || "—"}</dd>
         </div>
         <div>
-          <dt className="text-on-surface-variant">Tao luc</dt>
+          <dt className="text-on-surface-variant">Tạo lúc</dt>
           <dd className="text-on-surface">{formatDateTime(session.created_at)}</dd>
         </div>
         <div>
-          <dt className="text-on-surface-variant">Cap nhat</dt>
+          <dt className="text-on-surface-variant">Cập nhật</dt>
           <dd className="text-on-surface">{formatDateTime(session.updated_at)}</dd>
         </div>
         <div className="sm:col-span-2">
-          <dt className="text-on-surface-variant">User agent</dt>
+          <dt className="text-on-surface-variant">Trình duyệt / ứng dụng</dt>
           <dd className="break-all text-on-surface">{session.user_agent || "—"}</dd>
         </div>
       </dl>
@@ -64,7 +67,7 @@ function SessionCard({ session }) {
   );
 }
 
-const EMPTY_USER_MESSAGE = "Vui long chon nguoi dung de xem du lieu.";
+const EMPTY_USER_MESSAGE = "Vui lòng chọn người dùng để xem dữ liệu.";
 
 export function AdminUserSessionsTab({ userId, onNotify }) {
   const { showSessionExpired } = useAuthSession();
@@ -106,12 +109,12 @@ export function AdminUserSessionsTab({ userId, onNotify }) {
           return;
         }
         if (error?.code === 403) {
-          onNotify?.({ variant: "error", message: error?.message || "Ban khong co quyen truy cap." });
+          onNotify?.({ variant: "error", message: error?.message || "Bạn không co quyen truy cap." });
         }
         if (!append) {
           setStatus("error");
         }
-        setErrorMessage(error?.message || "Khong tai duoc danh sach phien dang nhap.");
+        setErrorMessage(error?.message || "Không tải duoc danh sach phiên đăng nhập.");
       } finally {
         setLoadMoreStatus("idle");
       }
@@ -140,8 +143,8 @@ export function AdminUserSessionsTab({ userId, onNotify }) {
     return (
       <div>
         <TabPanelHeader
-          title="Phien nguoi dung"
-          subtitle="Xem cac phien dang nhap cua nguoi dung duoc chon."
+          title="Phiên người dùng"
+          subtitle="Xem các phiên đăng nhập của người dùng duoc chon."
         />
         <EmptyState message={EMPTY_USER_MESSAGE} />
       </div>
@@ -152,8 +155,8 @@ export function AdminUserSessionsTab({ userId, onNotify }) {
     return (
       <div>
         <TabPanelHeader
-          title="Phien nguoi dung"
-          subtitle="Xem cac phien dang nhap cua nguoi dung duoc chon."
+          title="Phiên người dùng"
+          subtitle="Xem các phiên đăng nhập của người dùng duoc chon."
         />
         <AccountSkeleton />
       </div>
@@ -164,20 +167,20 @@ export function AdminUserSessionsTab({ userId, onNotify }) {
     return (
       <div>
         <TabPanelHeader
-          title="Phien nguoi dung"
-          subtitle="Xem cac phien dang nhap cua nguoi dung duoc chon."
+          title="Phiên người dùng"
+          subtitle="Xem các phiên đăng nhập của người dùng duoc chon."
         />
         <AccountCard className="border-error/30 bg-error-container/30">
           <ErrorState message={errorMessage} />
           <p className="mt-2 text-sm text-on-surface-variant">
-            He thong tam thoi khong phan hoi. Vui long thu lai sau vai phut.
+            Hệ thống tạm thời không phản hồi. Vui lòng thử lại sau vài phút.
           </p>
           <button
             type="button"
             onClick={() => fetchPage(1, false)}
             className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
           >
-            Thu lai
+            Thử lại
           </button>
         </AccountCard>
       </div>
@@ -187,13 +190,13 @@ export function AdminUserSessionsTab({ userId, onNotify }) {
   return (
     <div>
       <TabPanelHeader
-        title="Phien nguoi dung"
-        subtitle="Xem cac phien dang nhap cua nguoi dung duoc chon."
+        title="Phiên người dùng"
+        subtitle="Xem các phiên đăng nhập của người dùng duoc chon."
       />
 
       <AccountCard className="mb-6">
         <label htmlFor="session-status" className="mb-1 block text-xs font-semibold text-on-surface">
-          Trang thai phien
+          Trạng thái phiên
         </label>
         <select
           id="session-status"
@@ -210,7 +213,7 @@ export function AdminUserSessionsTab({ userId, onNotify }) {
       </AccountCard>
 
       {sessions.length === 0 ? (
-        <EmptyState message="Khong co phien dang nhap phu hop bo loc." />
+        <EmptyState message="Không co phiên đăng nhập phu hop bo loc." />
       ) : (
         <AccountCard className="!p-0">
           <ul className="divide-y divide-outline-variant/50 p-2 sm:p-4">

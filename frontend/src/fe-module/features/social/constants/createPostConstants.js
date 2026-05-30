@@ -15,6 +15,6 @@ export const IMAGE_MAX_BYTES = 10 * 1024 * 1024;
 export const VIDEO_MAX_BYTES = 100 * 1024 * 1024;
 
 export const VISIBILITY_OPTIONS = [
-  { value: "PUBLIC", label: "Public", icon: "public" },
-  { value: "FOLLOWERS", label: "Followers", icon: "group" },
+  { value: "PUBLIC", label: "Công khai", icon: "public" },
+  { value: "FOLLOWERS", label: "Chỉ người theo dõi", icon: "group" },
 ];

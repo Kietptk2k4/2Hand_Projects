@@ -27,7 +27,7 @@ function unwrapResponse(response) {
   if (!payload || payload.success !== true) {
     throw {
       code: payload?.code || response?.status || 500,
-      message: payload?.message || "Co loi xay ra. Vui long thu lai.",
+      message: payload?.message || "Có lỗi xảy ra. Vui lòng thử lại.",
       errors: normalizeErrors(payload?.errors),
     };
   }
@@ -41,7 +41,7 @@ function mapAxiosError(error) {
 
   return {
     code: payload?.code || status,
-    message: payload?.message || "Co loi xay ra. Vui long thu lai.",
+    message: payload?.message || "Có lỗi xảy ra. Vui lòng thử lại.",
     errors: normalizeErrors(payload?.errors),
   };
 }

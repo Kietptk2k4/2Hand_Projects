@@ -71,7 +71,7 @@ export function FollowListModal({
 
         <header className="shrink-0 border-b border-outline-variant px-6 pb-3 pt-6">
           <h2 id="follow-list-title" className="text-center text-lg font-semibold text-on-surface">
-            Connections
+            Kết nối
           </h2>
           <div className="mt-4 flex border-b border-outline-variant">
             <button

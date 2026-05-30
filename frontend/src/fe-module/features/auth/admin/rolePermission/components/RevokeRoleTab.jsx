@@ -61,9 +61,9 @@ export function RevokeRoleTab({ onNotify }) {
 
   const validateForm = () => {
     const next = { userId: "", role_id: "" };
-    if (!userId) next.userId = "Vui long chon user.";
-    if (!assignedRoleId) next.role_id = "User chua co role nao.";
-    else if (!roleId) next.role_id = "Vui long chon role.";
+    if (!userId) next.userId = "Vui lòng chọn người dùng.";
+    if (!assignedRoleId) next.role_id = "User chưa co role nao.";
+    else if (!roleId) next.role_id = "Vui lòng chọn vai trò.";
     setFieldErrors(next);
     return !next.userId && !next.role_id;
   };
@@ -90,7 +90,7 @@ export function RevokeRoleTab({ onNotify }) {
       });
       setUserId("");
       setRoleId("");
-      onNotify?.({ variant: "success", message: "Thu hoi role khoi user thanh cong." });
+      onNotify?.({ variant: "success", message: "Thu hồi role khỏi người dùng thành công." });
     } catch (error) {
       setIsConfirmOpen(false);
       if (error?.code === 401) {
@@ -107,12 +107,12 @@ export function RevokeRoleTab({ onNotify }) {
         setRoleId("");
         setFieldErrors((prev) => ({
           ...prev,
-          role_id: "User khong con role nay.",
+          role_id: "User không con vai trò này.",
         }));
       } else if (Object.keys(serverErrors).length > 0) {
         setFieldErrors((prev) => ({ ...prev, ...serverErrors }));
       }
-      setGlobalError(error?.message || "Co loi xay ra. Vui long thu lai.");
+      setGlobalError(error?.message || "Có lỗi xảy ra. Vui lòng thử lại.");
       onNotify?.({ variant: "error", message: error?.message });
     } finally {
       setIsSubmitting(false);
@@ -122,7 +122,7 @@ export function RevokeRoleTab({ onNotify }) {
   if (rolesStatus === "loading") {
     return (
       <div>
-        <TabPanelHeader title="Thu hoi Role" subtitle="Thu hoi role da gan cho user." />
+        <TabPanelHeader title="Thu hồi vai trò" subtitle="Thu hồi role đã gán cho người dùng." />
         <AccountSkeleton />
       </div>
     );
@@ -131,10 +131,10 @@ export function RevokeRoleTab({ onNotify }) {
   if (rolesStatus === "error") {
     return (
       <div>
-        <TabPanelHeader title="Thu hoi Role" subtitle="Thu hoi role da gan cho user." />
-        <ErrorState message="Khong tai duoc danh sach role." />
+        <TabPanelHeader title="Thu hồi vai trò" subtitle="Thu hồi role đã gán cho người dùng." />
+        <ErrorState message="Không tải duoc danh sách vai trò." />
         <PrimaryButton type="button" onClick={loadRoles} className="mt-4">
-          Thu lai
+          Thử lại
         </PrimaryButton>
       </div>
     );
@@ -142,7 +142,7 @@ export function RevokeRoleTab({ onNotify }) {
 
   return (
     <div>
-      <TabPanelHeader title="Thu hoi Role" subtitle="Thu hoi role da gan cho user." />
+      <TabPanelHeader title="Thu hồi vai trò" subtitle="Thu hồi role đã gán cho người dùng." />
 
       {globalError ? (
         <div className="mb-4">
@@ -165,7 +165,7 @@ export function RevokeRoleTab({ onNotify }) {
                 fieldErrors.userId ? "border-error" : "border-outline-variant focus:border-primary",
               ].join(" ")}
             >
-              <option value="">Chon user...</option>
+              <option value="">Chọn người dùng...</option>
               {ASSIGNABLE_USERS.map((user) => (
                 <option key={user.id} value={user.id}>
                   {user.email} ({user.display_name})
@@ -192,7 +192,7 @@ export function RevokeRoleTab({ onNotify }) {
                 fieldErrors.role_id ? "border-error" : "border-outline-variant focus:border-primary",
               ].join(" ")}
             >
-              <option value="">Chon role...</option>
+              <option value="">Chọn vai trò...</option>
               {assignableRoles.map((role) => (
                 <option key={role.id} value={role.id}>
                   {role.code} — {role.name}
@@ -200,13 +200,13 @@ export function RevokeRoleTab({ onNotify }) {
               ))}
             </select>
             {userId && !assignedRoleId ? (
-              <p className="text-sm text-on-surface-variant">User chua co role nao.</p>
+              <p className="text-sm text-on-surface-variant">User chưa co role nao.</p>
             ) : null}
             {fieldErrors.role_id ? <p className="text-sm text-error">{fieldErrors.role_id}</p> : null}
           </div>
 
           <PrimaryButton type="submit" disabled={isSubmitting || !assignedRoleId}>
-            Thu hoi role
+            Thu hồi role
           </PrimaryButton>
         </form>
       </AccountCard>
@@ -224,10 +224,10 @@ export function RevokeRoleTab({ onNotify }) {
           <div className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-lg">
             <div className="p-6">
               <h3 id="revoke-role-title" className="text-lg font-semibold text-on-surface">
-                Thu hoi role?
+                Thu hồi role?
               </h3>
               <p className="mt-2 text-sm text-on-surface-variant">
-                Nguoi dung co the mat quyen truy cap lien quan den role nay.
+                Nguoi dung co the mat quyen truy cap lien quan den vai trò này.
               </p>
               {selectedUser && selectedRole ? (
                 <p className="mt-3 text-sm text-on-surface">

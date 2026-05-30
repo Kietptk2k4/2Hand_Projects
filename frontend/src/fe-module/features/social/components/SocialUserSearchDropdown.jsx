@@ -6,7 +6,7 @@ import { buildSocialProfilePath } from "../utils/socialProfileRoutes";
 const SEARCH_USERS = [
   {
     userId: MOCK_SOCIAL_USER_IDS.ACTIVE,
-    name: "Active User (bạn)",
+    name: "Tài khoản của bạn",
     role: "Tài khoản đang đăng nhập",
     avatarUrl: "https://i.pravatar.cc/200?img=3",
   },
@@ -24,7 +24,7 @@ export function SocialUserSearchDropdown({ onClose }) {
   return (
     <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-lg border border-header-border bg-white shadow-lg">
       <p className="border-b border-header-border px-3 py-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-        Tìm user (mock)
+        Tìm người dùng (demo)
       </p>
       <ul className="max-h-64 overflow-y-auto py-1">
         {SEARCH_USERS.map((item) => (

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { POST_MEDIA_ACCEPT, VISIBILITY_OPTIONS } from "../constants/createPostConstants";
+import { DEFAULT_WORKSPACE_LABEL } from "../constants/socialUiStrings";
 import { formatVndPrice } from "../utils/formatPrice";
 import { useSocialWriteBlock } from "../context/SocialWriteBlockContext";
 import { ProductPickerPanel } from "./ProductPickerPanel";
@@ -58,7 +59,7 @@ export function PostFormModal({
     fieldErrors,
   } = form;
 
-  const displayName = user?.display_name || user?.email || "Workspace";
+  const displayName = user?.display_name || user?.email || DEFAULT_WORKSPACE_LABEL;
   const avatarUrl = user?.avatar_url || user?.profile?.avatar_url || DEFAULT_AVATAR;
   const visibilityMeta = VISIBILITY_OPTIONS.find((item) => item.value === visibility);
 
@@ -139,7 +140,7 @@ export function PostFormModal({
                   <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                     draft
                   </span>
-                  Save Draft
+                  Lưu nháp
                 </button>
                 <button
                   type="button"
@@ -147,7 +148,7 @@ export function PostFormModal({
                   disabled={isBusy}
                   className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-on-primary shadow-sm transition-colors hover:bg-[#0050cb] disabled:opacity-50"
                 >
-                  {isSubmitting ? "Đang đăng..." : "Publish"}
+                  {isSubmitting ? "Đang đăng..." : "Đăng bài"}
                 </button>
               </div>
             ) : null}
@@ -236,7 +237,7 @@ export function PostFormModal({
                   <span className="material-symbols-outlined text-[16px] text-primary" aria-hidden="true">
                     sell
                   </span>
-                  Tag Service / Product
+                  Gắn dịch vụ / sản phẩm
                 </button>
 
                 <div className="absolute bottom-4 left-4 right-4 z-10 flex items-center justify-between">
@@ -245,7 +246,7 @@ export function PostFormModal({
                       type="button"
                       onClick={showComingSoon}
                       className="rounded-full bg-on-background/60 p-2 text-on-primary backdrop-blur-sm"
-                      aria-label="Crop"
+                      aria-label="Cắt ảnh"
                     >
                       <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
                         crop
@@ -255,7 +256,7 @@ export function PostFormModal({
                       type="button"
                       onClick={showComingSoon}
                       className="rounded-full bg-on-background/60 p-2 text-on-primary backdrop-blur-sm"
-                      aria-label="Filters"
+                      aria-label="Bộ lọc"
                     >
                       <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
                         auto_fix_high
@@ -344,7 +345,7 @@ export function PostFormModal({
                   <div>
                     <p className="text-sm font-semibold text-on-surface">{displayName}</p>
                     <p className="text-xs text-on-surface-variant">
-                      {isEdit ? "Chỉnh sửa bài viết của bạn" : "Posting as you"}
+                      {isEdit ? "Chỉnh sửa bài viết của bạn" : "Đang đăng với tài khoản của bạn"}
                     </p>
                   </div>
                 </div>
@@ -390,7 +391,7 @@ export function PostFormModal({
                   <textarea
                     value={caption}
                     onChange={(event) => setCaption(event.target.value)}
-                    placeholder="Write a caption... Describe your service, share a tip, or ask a question."
+                    placeholder="Viết mô tả... Giới thiệu dịch vụ, chia sẻ mẹo hoặc đặt câu hỏi."
                     className="min-h-[120px] w-full resize-none border-none bg-transparent p-0 text-base text-on-surface outline-none placeholder:text-outline"
                     maxLength={2000}
                   />
@@ -400,7 +401,7 @@ export function PostFormModal({
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-on-surface-variant">Hashtags</label>
+                  <label className="text-xs font-semibold text-on-surface-variant">Hashtag</label>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {hashtags.map((tag) => (
                       <span
@@ -431,7 +432,7 @@ export function PostFormModal({
                         }
                       }}
                       onBlur={() => addHashtag(hashtagInput)}
-                      placeholder="Add hashtag..."
+                      placeholder="Thêm hashtag..."
                       className="min-w-[120px] border-none bg-transparent p-0 text-sm outline-none placeholder:text-outline"
                     />
                   </div>
@@ -441,13 +442,13 @@ export function PostFormModal({
 
                 <div>
                   <div className="mb-3 flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-on-surface">Linked Service</h3>
+                    <h3 className="text-sm font-semibold text-on-surface">Dịch vụ đã liên kết</h3>
                     <button
                       type="button"
                       onClick={() => setShowProductPicker(true)}
                       className="text-xs font-medium text-primary hover:underline"
                     >
-                      {productTags.length > 0 ? "Change" : "Add"}
+                      {productTags.length > 0 ? "Đổi" : "Thêm"}
                     </button>
                   </div>
                   {productTags.length === 0 ? (
@@ -484,7 +485,7 @@ export function PostFormModal({
                               onClick={() => removeProductTag(tag.productId)}
                               className="text-xs text-error hover:underline"
                             >
-                              Remove
+                              Gỡ
                             </button>
                           </div>
                         </li>
@@ -511,7 +512,7 @@ export function PostFormModal({
                   <span className="material-symbols-outlined text-on-surface-variant" aria-hidden="true">
                     location_on
                   </span>
-                  <span className="text-sm text-on-surface-variant">Add Location</span>
+                  <span className="text-sm text-on-surface-variant">Thêm địa điểm</span>
                   <span className="material-symbols-outlined ml-auto text-outline" aria-hidden="true">
                     chevron_right
                   </span>

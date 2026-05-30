@@ -11,15 +11,15 @@ import {
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
 const ERROR_MESSAGE_BY_CODE = {
-  409: "Email da duoc su dung.",
-  429: "Ban thao tac qua nhanh, vui long thu lai sau.",
-  500: "Co loi he thong. Vui long thu lai sau.",
+  409: "Email đã được sử dụng.",
+  429: "Bạn thao tác quá nhanh, vui lòng thử lại sau.",
+  500: "Có lỗi hệ thống. Vui lòng thử lại sau.",
 };
 
 function resolveFieldErrors(errors = []) {
   return errors.reduce((acc, item) => {
     if (item?.field && !acc[item.field]) {
-      acc[item.field] = item.reason || "Truong du lieu khong hop le.";
+      acc[item.field] = item.reason || "Truong dữ liệu không hợp lệ.";
     }
     return acc;
   }, {});
@@ -74,9 +74,9 @@ export function RegisterPage() {
 
   const getErrorMessage = (error) => {
     if (error?.code === 400) {
-      return error?.message || "Thong tin dang ky khong hop le.";
+      return error?.message || "Thông tin dang ky không hợp lệ.";
     }
-    return ERROR_MESSAGE_BY_CODE[error?.code] || "Co loi xay ra. Vui long thu lai.";
+    return ERROR_MESSAGE_BY_CODE[error?.code] || "Có lỗi xảy ra. Vui lòng thử lại.";
   };
 
   const onSubmit = async (event) => {
@@ -98,7 +98,7 @@ export function RegisterPage() {
     setIsSubmitting(true);
     try {
       const registerData = await registerWithEmail(normalizedForm);
-      setSuccessMessage("Dang ky thanh cong. Vui long kiem tra email de xac thuc.");
+      setSuccessMessage("Đăng ký thành công. Vui lòng kiểm tra email để xác thực.");
 
       const nextRoute =
         registerData?.status === "PENDING_VERIFICATION" ? APP_ROUTES.verifyEmail : APP_ROUTES.login;
@@ -134,16 +134,16 @@ export function RegisterPage() {
         <div className="relative z-10 p-10">
           <p className="text-[44px] font-bold leading-none text-primary">2Hands</p>
           <p className="mt-4 max-w-md text-4xl font-semibold leading-tight text-on-surface">
-            Ket noi dang tin cay cho cac dich vu hien dai.
+            Kết nối đáng tin cậy cho các dịch vụ hiện đại.
           </p>
         </div>
 
         <div className="relative z-10 p-10">
           <div className="max-w-lg rounded-xl border border-outline-variant/50 bg-white/90 p-6 shadow-sm backdrop-blur-sm">
-            <p className="text-sm font-semibold text-on-surface">Cong dong chuyen nghiep</p>
+            <p className="text-sm font-semibold text-on-surface">Cộng đồng chuyên nghiệp</p>
             <p className="mt-3 text-base leading-7 text-on-surface-variant">
-              Tham gia mang luoi hang ngan chuyen gia va khach hang uy tin. Xay dung ho so va phat
-              trien cong viec cua ban ngay hom nay.
+              Tham gia mạng lưới hàng ngàn chuyên gia và khách hàng uy tín. Xây dựng hồ sơ và phát
+              triển công việc của bạn ngay hôm nay.
             </p>
           </div>
         </div>
@@ -156,16 +156,16 @@ export function RegisterPage() {
           </div>
 
           <header>
-            <h1 className="text-5xl font-semibold tracking-tight text-on-surface">Tao tai khoan moi</h1>
+            <h1 className="text-5xl font-semibold tracking-tight text-on-surface">Tạo tài khoản mới</h1>
             <p className="mt-2 text-base text-on-surface-variant">
-              Vui long dien thong tin de bat dau hanh trinh cua ban.
+              Vui lòng điền thông tin để bắt đầu hành trình của bạn.
             </p>
           </header>
 
           {successMessage ? (
             <div className="rounded-lg border border-primary bg-surface-container px-4 py-3 text-sm text-on-surface">
               <p className="font-semibold">{successMessage}</p>
-              <p className="text-on-surface-variant">Dang tu dong chuyen huong...</p>
+              <p className="text-on-surface-variant">Đang tự động chuyển hướng...</p>
             </div>
           ) : null}
 
@@ -178,7 +178,7 @@ export function RegisterPage() {
           <form onSubmit={onSubmit} className="space-y-4" noValidate>
             <div className="space-y-2">
               <label htmlFor="register-email" className="text-sm font-medium text-on-surface">
-                Dia chi Email
+                Địa chỉ Email
               </label>
               <input
                 id="register-email"
@@ -207,7 +207,7 @@ export function RegisterPage() {
 
             <div className="space-y-2">
               <label htmlFor="register-password" className="text-sm font-medium text-on-surface">
-                Mat khau
+                Mật khẩu
               </label>
               <div className="relative">
                 <input
@@ -219,7 +219,7 @@ export function RegisterPage() {
                   onChange={onChange("password")}
                   onBlur={() => onBlur("password")}
                   disabled={isSubmitting}
-                  placeholder="Nhap mat khau"
+                  placeholder="Nhập mật khẩu"
                   aria-invalid={Boolean(errors.password)}
                   aria-describedby={errors.password ? "register-password-error" : undefined}
                   className={[
@@ -235,9 +235,9 @@ export function RegisterPage() {
                   onClick={() => setIsPasswordVisible((prev) => !prev)}
                   disabled={isSubmitting}
                   className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-sm text-on-surface-variant disabled:cursor-not-allowed"
-                  aria-label={isPasswordVisible ? "An mat khau" : "Hien mat khau"}
+                  aria-label={isPasswordVisible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                 >
-                  {isPasswordVisible ? "Hide" : "Show"}
+                  {isPasswordVisible ? "Ẩn" : "Hiện"}
                 </button>
               </div>
               {errors.password ? (
@@ -249,7 +249,7 @@ export function RegisterPage() {
 
             <div className="space-y-2">
               <label htmlFor="register-confirm-password" className="text-sm font-medium text-on-surface">
-                Xac nhan mat khau
+                Xác nhận mật khẩu
               </label>
               <div className="relative">
                 <input
@@ -261,7 +261,7 @@ export function RegisterPage() {
                   onChange={onChange("confirm_password")}
                   onBlur={() => onBlur("confirm_password")}
                   disabled={isSubmitting}
-                  placeholder="Nhap lai mat khau"
+                  placeholder="Nhập lại mật khẩu"
                   aria-invalid={Boolean(errors.confirm_password)}
                   aria-describedby={errors.confirm_password ? "register-confirm-password-error" : undefined}
                   className={[
@@ -277,9 +277,9 @@ export function RegisterPage() {
                   onClick={() => setIsConfirmPasswordVisible((prev) => !prev)}
                   disabled={isSubmitting}
                   className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-sm text-on-surface-variant disabled:cursor-not-allowed"
-                  aria-label={isConfirmPasswordVisible ? "An xac nhan mat khau" : "Hien xac nhan mat khau"}
+                  aria-label={isConfirmPasswordVisible ? "Ẩn xác nhận mật khẩu" : "Hiện xác nhận mật khẩu"}
                 >
-                  {isConfirmPasswordVisible ? "Hide" : "Show"}
+                  {isConfirmPasswordVisible ? "Ẩn" : "Hiện"}
                 </button>
               </div>
               {errors.confirm_password ? (
@@ -297,17 +297,17 @@ export function RegisterPage() {
               {isSubmitting ? (
                 <>
                   <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/50 border-t-white" />
-                  <span>Dang ky...</span>
+                  <span>Đang đăng ký...</span>
                 </>
               ) : (
-                "Dang ky"
+                "Đăng ký"
               )}
             </button>
           </form>
 
           <div className="flex items-center gap-3">
             <div className="h-px flex-1 bg-outline-variant/60" />
-            <span className="text-sm text-on-surface-variant">Hoac tiep tuc voi</span>
+            <span className="text-sm text-on-surface-variant">Hoặc tiếp tục với</span>
             <div className="h-px flex-1 bg-outline-variant/60" />
           </div>
 
@@ -317,9 +317,9 @@ export function RegisterPage() {
           />
 
           <p className="pt-2 text-center text-sm text-on-surface-variant">
-            Da co tai khoan?{" "}
+            Đã có tài khoản?{" "}
             <Link to={APP_ROUTES.login} className="font-semibold text-primary hover:underline">
-              Dang nhap ngay
+              Đăng nhập ngay
             </Link>
           </p>
         </div>
@@ -327,7 +327,7 @@ export function RegisterPage() {
         {isSocialRedirecting ? (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/80 backdrop-blur-[1px]">
             <p className="rounded-lg border border-outline-variant bg-white px-4 py-2 text-sm font-medium text-on-surface">
-              Dang chuyen huong den nha cung cap dang nhap...
+              Dang chuyen huong den nha cung cap đăng nhập...
             </p>
           </div>
         ) : null}

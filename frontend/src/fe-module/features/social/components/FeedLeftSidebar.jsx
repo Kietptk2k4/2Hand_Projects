@@ -8,8 +8,8 @@ const DEFAULT_AVATAR_URL = "https://i.pravatar.cc/96?img=11";
 
 const QUICK_LINKS = [
   { icon: "bookmark", label: "Đã lưu", color: "text-primary", to: APP_ROUTES.socialSavedPosts },
-  { icon: "group", label: "My Network", color: "text-secondary" },
-  { icon: "event", label: "Events", color: "text-[#565a5b]" },
+  { icon: "group", label: "Mạng lưới", color: "text-secondary" },
+  { icon: "event", label: "Sự kiện", color: "text-[#565a5b]" },
 ];
 
 export function FeedLeftSidebar() {
@@ -38,7 +38,7 @@ export function FeedLeftSidebar() {
             type="button"
             onClick={goToSelfProfile}
             className="mb-4 h-24 w-24 overflow-hidden rounded-full border-2 border-[#d8e3fb] ring-2 ring-primary/20 transition hover:ring-primary/50"
-            aria-label="Xem social profile của bạn"
+            aria-label="Xem hồ sơ của bạn"
           >
             <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
           </button>
@@ -50,19 +50,19 @@ export function FeedLeftSidebar() {
         <div className="mt-4 flex w-full justify-between border-t border-outline-variant pt-4">
           <div className="flex flex-1 flex-col items-center">
             <span className="text-xl font-semibold text-on-surface">—</span>
-            <span className="text-xs font-semibold text-on-surface-variant">Posts</span>
+            <span className="text-xs font-semibold text-on-surface-variant">Bài viết</span>
           </div>
           <div className="mx-2 w-px bg-outline-variant" />
           <div className="flex flex-1 flex-col items-center">
             <span className="text-xl font-semibold text-on-surface">—</span>
-            <span className="text-xs font-semibold text-on-surface-variant">Followers</span>
+            <span className="text-xs font-semibold text-on-surface-variant">Người theo dõi</span>
           </div>
         </div>
         <Link
           to={selfProfilePath}
           className="mt-4 text-sm font-medium text-primary hover:underline"
         >
-          Xem social profile
+          Xem hồ sơ
         </Link>
         <Link
           to={APP_ROUTES.account}
@@ -73,7 +73,7 @@ export function FeedLeftSidebar() {
       </div>
 
       <div className="flex flex-col gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
-        <h3 className="mb-2 text-sm font-medium uppercase tracking-wider text-on-surface">Quick Links</h3>
+        <h3 className="mb-2 text-sm font-medium uppercase tracking-wider text-on-surface">Liên kết nhanh</h3>
         {QUICK_LINKS.map((item) =>
           item.to ? (
             <NavLink

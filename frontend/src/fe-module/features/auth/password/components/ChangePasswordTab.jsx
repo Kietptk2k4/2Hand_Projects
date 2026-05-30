@@ -19,7 +19,7 @@ import {
 } from "../../../../shared/ui/auth/authUi.jsx";
 
 const ERROR_MESSAGE_BY_CODE = {
-  500: "Co loi xay ra. Vui long thu lai.",
+  500: "Có lỗi xảy ra. Vui lòng thử lại.",
 };
 
 function resolveFieldErrors(errors = []) {
@@ -27,7 +27,7 @@ function resolveFieldErrors(errors = []) {
     if (!item?.field) return acc;
     const field = item.field === "password" ? "current_password" : item.field;
     if (!acc[field]) {
-      acc[field] = item.reason || "Truong du lieu khong hop le.";
+      acc[field] = item.reason || "Truong dữ liệu không hợp lệ.";
     }
     return acc;
   }, {});
@@ -100,12 +100,12 @@ export function ChangePasswordTab() {
 
   const getErrorMessage = (error) => {
     if (error?.code === 400) {
-      return error?.message || "Thong tin khong hop le. Vui long kiem tra lai.";
+      return error?.message || "Thông tin không hợp lệ. Vui lòng kiem tra lại.";
     }
     if (error?.code === 401) {
-      return "Phien dang nhap het han. Vui long dang nhap lai.";
+      return "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.";
     }
-    return ERROR_MESSAGE_BY_CODE[error?.code] || "Co loi xay ra. Vui long thu lai.";
+    return ERROR_MESSAGE_BY_CODE[error?.code] || "Có lỗi xảy ra. Vui lòng thử lại.";
   };
 
   const onSubmit = async (event) => {
@@ -123,7 +123,7 @@ export function ChangePasswordTab() {
     try {
       await changePassword(form, accessToken || localStorage.getItem("twohands_access_token"));
       setSuccessMessage(
-        "Doi mat khau thanh cong. Ban can dang nhap lai, va cac phien dang nhap khac se bi thu hoi."
+        "Đổi mật khẩu thành công. Bạn cần đăng nhập lại, và các phiên đăng nhập khác sẽ bị thu hồi."
       );
       redirectTimerRef.current = window.setTimeout(() => {
         goToLoginAndClearSession();
@@ -155,16 +155,16 @@ export function ChangePasswordTab() {
   return (
     <AccountCard className="mx-auto max-w-[500px]">
       <header className="mb-6 text-center">
-        <h1 className="text-2xl font-semibold text-on-surface md:text-3xl">Doi mat khau</h1>
+        <h1 className="text-2xl font-semibold text-on-surface md:text-3xl">Doi mật khẩu</h1>
         <p className="mt-2 text-base text-on-surface-variant">
-          Chon mot mat khau manh de bao ve tai khoan cua ban.
+          Chọn một mật khẩu mạnh de bảo vệ tài khoản của ban.
         </p>
       </header>
 
       {successMessage ? (
         <div className="mb-4">
           <AuthAlert variant="success" title="Thanh cong" message={successMessage} />
-          <p className="mt-2 text-sm text-on-surface-variant">Dang chuyen huong den trang dang nhap...</p>
+          <p className="mt-2 text-sm text-on-surface-variant">Dang chuyen huong den trang đăng nhập...</p>
         </div>
       ) : null}
 
@@ -178,11 +178,11 @@ export function ChangePasswordTab() {
         <PasswordField
           id="current-password"
           name="current_password"
-          label="Mat khau hien tai"
+          label="Mật khẩu hien tai"
           value={form.current_password}
           onChange={updateField("current_password")}
           onBlur={() => onBlurField("current_password")}
-          placeholder="Nhap mat khau hien tai"
+          placeholder="Nhập mật khẩu hiện tại"
           error={errors.current_password}
           visible={visibility.current_password}
           onToggleVisible={() =>
@@ -195,11 +195,11 @@ export function ChangePasswordTab() {
           <PasswordField
             id="new-password"
             name="new_password"
-            label="Mat khau moi"
+            label="Mật khẩu moi"
             value={form.new_password}
             onChange={updateField("new_password")}
             onBlur={() => onBlurField("new_password")}
-            placeholder="Nhap mat khau moi"
+            placeholder="Nhập mật khẩu mới"
             error={errors.new_password}
             visible={visibility.new_password}
             onToggleVisible={() => setVisibility((prev) => ({ ...prev, new_password: !prev.new_password }))}
@@ -211,11 +211,11 @@ export function ChangePasswordTab() {
         <PasswordField
           id="confirm-password"
           name="confirm_new_password"
-          label="Xac nhan mat khau moi"
+          label="Xac nhan mật khẩu moi"
           value={form.confirm_new_password}
           onChange={updateField("confirm_new_password")}
           onBlur={() => onBlurField("confirm_new_password")}
-          placeholder="Nhap lai mat khau moi"
+          placeholder="Nhập lại mật khẩu mới"
           error={errors.confirm_new_password}
           visible={visibility.confirm_new_password}
           onToggleVisible={() =>
@@ -235,10 +235,10 @@ export function ChangePasswordTab() {
           {isSubmitting ? (
             <>
               <MaterialIcon name="progress_activity" className="animate-spin text-xl" />
-              <span>Dang doi mat khau...</span>
+              <span>Dang doi mật khẩu...</span>
             </>
           ) : (
-            "Doi mat khau"
+            "Doi mật khẩu"
           )}
         </button>
       </form>

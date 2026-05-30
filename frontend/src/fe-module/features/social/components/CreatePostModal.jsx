@@ -17,7 +17,7 @@ export function CreatePostModal({
   return (
     <PostFormModal
       mode="create"
-      title="Create Post"
+      title="Tạo bài viết"
       titleId="create-post-title"
       onClose={onClose}
       onToast={onToast}
