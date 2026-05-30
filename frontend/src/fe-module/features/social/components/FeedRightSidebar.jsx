@@ -25,7 +25,7 @@ export function FeedRightSidebar({ onComingSoon, onViewProfile, onSelectHashtag 
   };
 
   return (
-    <aside className="hidden flex-col gap-6 lg:flex lg:col-span-3">
+    <aside className="hidden flex-col gap-6 lg:col-span-3 lg:flex lg:sticky lg:top-20 lg:max-h-[calc(100vh-5rem)] lg:self-start lg:overflow-y-auto">
       <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
         <h3 className="mb-4 text-xl font-semibold text-on-surface">Trending Now</h3>
         <ul className="flex flex-col gap-3">
