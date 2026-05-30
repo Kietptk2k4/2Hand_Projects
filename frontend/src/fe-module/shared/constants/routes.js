@@ -14,6 +14,7 @@ export const APP_ROUTES = {
   admin: "/admin",
   socialFeed: "/social",
   socialSavedPosts: "/social/saved",
+  socialSearchPosts: "/social/search",
   socialProfile: "/social/users/:userId",
 };
 

@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { SocialSearchSuggestionsPanel } from "../../features/social/components/SocialSearchSuggestionsPanel";
 import { SocialUserSearchDropdown } from "../../features/social/components/SocialUserSearchDropdown";
 import { getMyProfile } from "../../features/auth/api/authApi";
 import { useAuthSession } from "../../features/auth/hooks/useAuthSession.jsx";
+import { buildSocialSearchPath } from "../../features/social/utils/socialSearchRoutes";
 import { APP_ROUTES } from "../constants/routes";
 import { HeaderAccountMenu } from "./HeaderAccountMenu.jsx";
 
@@ -83,11 +85,25 @@ function SettingsIcon() {
 
 export function AppHeader({ className = "" }) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { isAuthenticated, user } = useAuthSession();
   const [profileAvatarUrl, setProfileAvatarUrl] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchPanelMode, setSearchPanelMode] = useState("suggestions");
+  const [searchInput, setSearchInput] = useState("");
   const searchRef = useRef(null);
   const isSocialRoute = location.pathname.startsWith("/social");
+  const isSearchPage = location.pathname === APP_ROUTES.socialSearchPosts;
+  const socialSearchEnabled = isSocialRoute && isAuthenticated;
+
+  const submitPostSearch = useCallback(() => {
+    const trimmed = searchInput.trim();
+    if (!trimmed) return;
+    setSearchOpen(false);
+    setSearchPanelMode("suggestions");
+    navigate(buildSocialSearchPath(trimmed));
+  }, [navigate, searchInput]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -110,10 +126,17 @@ export function AppHeader({ className = "" }) {
   }, [isAuthenticated]);
 
   useEffect(() => {
+    if (isSearchPage) {
+      setSearchInput(searchParams.get("q") ?? "");
+    }
+  }, [isSearchPage, searchParams]);
+
+  useEffect(() => {
     if (!searchOpen) return undefined;
     const onPointerDown = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setSearchOpen(false);
+        setSearchPanelMode("suggestions");
       }
     };
     document.addEventListener("pointerdown", onPointerDown);
@@ -150,14 +173,42 @@ export function AppHeader({ className = "" }) {
                 type="search"
                 name="global-search"
                 placeholder="Tìm kiếm..."
+                value={socialSearchEnabled ? searchInput : undefined}
+                onChange={(event) => {
+                  if (socialSearchEnabled) setSearchInput(event.target.value);
+                }}
                 onFocus={() => {
-                  if (isSocialRoute && isAuthenticated) setSearchOpen(true);
+                  if (!socialSearchEnabled) return;
+                  setSearchPanelMode("suggestions");
+                  setSearchOpen(true);
+                }}
+                onKeyDown={(event) => {
+                  if (!socialSearchEnabled) return;
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    submitPostSearch();
+                  }
                 }}
                 className="w-full rounded-lg border border-header-border bg-white py-2 pl-10 pr-3 text-sm text-on-surface outline-none transition placeholder:text-header-muted focus:border-primary focus:ring-1 focus:ring-primary/30"
               />
             </label>
-            {searchOpen && isSocialRoute && isAuthenticated ? (
-              <SocialUserSearchDropdown onClose={() => setSearchOpen(false)} />
+            {searchOpen && socialSearchEnabled && searchPanelMode === "suggestions" ? (
+              <SocialSearchSuggestionsPanel
+                onSelectKeyword={(keyword) => {
+                  setSearchInput(keyword);
+                  setSearchOpen(false);
+                  navigate(buildSocialSearchPath(keyword));
+                }}
+                onFindUsers={() => setSearchPanelMode("users")}
+              />
+            ) : null}
+            {searchOpen && socialSearchEnabled && searchPanelMode === "users" ? (
+              <SocialUserSearchDropdown
+                onClose={() => {
+                  setSearchOpen(false);
+                  setSearchPanelMode("suggestions");
+                }}
+              />
             ) : null}
           </div>
         </div>
