@@ -22,11 +22,20 @@ function followButtonLabel(followStatus) {
     case "ACCEPTED":
       return "Đang theo dõi";
     default:
-      return "Follow";
+      return "Theo dõi";
   }
 }
 
-export function ProfileHero({ profile, bio, onFollowClick, onFollowersClick, onFollowingClick }) {
+export function ProfileHero({
+  profile,
+  bio,
+  onFollowClick,
+  onFollowersClick,
+  onFollowingClick,
+  isFollowLoading = false,
+  followDisabled = false,
+  followDisabledTitle,
+}) {
   if (!profile) return null;
 
   const isSelf = profile.followStatus === "SELF";
@@ -128,14 +137,21 @@ export function ProfileHero({ profile, bio, onFollowClick, onFollowersClick, onF
             <button
               type="button"
               onClick={onFollowClick}
-              disabled={profile.followStatus === "PENDING" || profile.followStatus === "ACCEPTED"}
+              disabled={followDisabled || isFollowLoading}
+              title={followDisabled ? followDisabledTitle : undefined}
               className={[
-                "rounded-lg px-5 py-2.5 text-sm font-medium transition-colors",
+                "inline-flex min-w-[140px] items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60",
                 profile.followStatus === "NONE"
                   ? "bg-primary text-on-primary shadow-sm hover:bg-[#0050cb]"
-                  : "border-2 border-outline-variant text-on-surface-variant",
+                  : "border-2 border-outline-variant text-on-surface hover:border-primary hover:text-primary",
               ].join(" ")}
             >
+              {isFollowLoading ? (
+                <span
+                  className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                  aria-hidden="true"
+                />
+              ) : null}
               {followLabel}
             </button>
           ) : null}

@@ -4,6 +4,7 @@ import { authHandlers } from "./authHandlers";
 import { socialFeedHandlers } from "./socialFeedHandlers";
 import { socialCreatePostHandlers } from "./socialCreatePostHandlers";
 import { socialEditPostHandlers } from "./socialEditPostHandlers";
+import { socialFollowHandlers } from "./socialFollowHandlers";
 import { socialProfileHandlers } from "./socialProfileHandlers";
 import { socialRelationsHandlers } from "./socialRelationsHandlers";
 import { socialSavedPostsHandlers } from "./socialSavedPostsHandlers";
@@ -25,6 +26,7 @@ export const handlers = [
   ...socialCreatePostHandlers,
   ...socialEditPostHandlers,
   ...socialProfileHandlers,
+  ...socialFollowHandlers,
   ...socialRelationsHandlers,
 ];
 

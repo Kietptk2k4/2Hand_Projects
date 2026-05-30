@@ -14,10 +14,9 @@ import { useSocialProfile } from "../hooks/useSocialProfile";
 import { useUserPosts } from "../hooks/useUserPosts";
 import { EditPostModal } from "../components/EditPostModal";
 import { FollowListModal } from "../components/FollowListModal";
+import { useFollowActions } from "../hooks/useFollowActions";
 import { useFollowListModal } from "../hooks/useFollowListModal";
 import { buildSocialProfilePath } from "../utils/socialProfileRoutes";
-
-const COMING_SOON = "Tính năng đang được phát triển.";
 
 export function SocialProfilePage() {
   const { userId } = useParams();
@@ -26,7 +25,8 @@ export function SocialProfilePage() {
   const [toastMessage, setToastMessage] = useState("");
   const [detailRefreshKey, setDetailRefreshKey] = useState(0);
 
-  const { profile, isLoading, isError, errorMessage, errorCode, retry } = useSocialProfile(userId);
+  const { profile, isLoading, isError, errorMessage, errorCode, retry: refetchProfile } =
+    useSocialProfile(userId);
   const { profile: accountProfile } = useAccountProfile();
 
   const isSelf = profile?.followStatus === "SELF";
@@ -48,9 +48,13 @@ export function SocialProfilePage() {
     setActiveType: setFollowListType,
   } = useFollowListModal();
 
-  const showComingSoon = useCallback(() => {
-    setToastMessage(COMING_SOON);
-  }, []);
+  const { handleFollowToggle, isFollowLoading, followDisabled, followDisabledTitle } =
+    useFollowActions({
+      userId,
+      profile,
+      onToast: setToastMessage,
+      refetchProfile,
+    });
 
   const bio =
     isSelf && accountProfile?.profile?.bio
@@ -127,7 +131,7 @@ export function SocialProfilePage() {
             {errorCode !== 404 ? (
               <button
                 type="button"
-                onClick={retry}
+                onClick={refetchProfile}
                 className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-on-primary"
               >
                 Thử lại
@@ -148,7 +152,10 @@ export function SocialProfilePage() {
             <ProfileHero
               profile={profile}
               bio={bio}
-              onFollowClick={showComingSoon}
+              onFollowClick={handleFollowToggle}
+              isFollowLoading={isFollowLoading}
+              followDisabled={followDisabled}
+              followDisabledTitle={followDisabledTitle}
               onFollowersClick={() => openFollowList("followers")}
               onFollowingClick={() => openFollowList("following")}
             />

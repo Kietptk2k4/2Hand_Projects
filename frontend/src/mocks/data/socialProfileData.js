@@ -51,8 +51,65 @@ const PROFILE_BY_USER_ID = {
   },
 };
 
-/** Viewer has ACCEPTED follow to Sarah when logged in as active user */
-const ACCEPTED_FOLLOW_TARGETS = new Set([MOCK_FOLLOWEE_IDS[0]]);
+/** followerId -> Map(followeeId -> { status, createdAt }) */
+const followRelationsByFollower = new Map();
+
+function followKey(followerId, followeeId) {
+  return `${followerId}:${followeeId}`;
+}
+
+function seedFollowStore() {
+  const activeFollows = new Map();
+  activeFollows.set(MOCK_FOLLOWEE_IDS[0], {
+    status: "ACCEPTED",
+    createdAt: "2026-05-10T08:00:00.000Z",
+  });
+  followRelationsByFollower.set(ACTIVE_USER_ID, activeFollows);
+}
+
+seedFollowStore();
+
+export function getMockFollowRelation(followerId, followeeId) {
+  const byFollowee = followRelationsByFollower.get(followerId);
+  if (!byFollowee) return null;
+  return byFollowee.get(followeeId) || null;
+}
+
+export function applyMockFollow(followerId, followeeId, status, createdAt) {
+  if (!followRelationsByFollower.has(followerId)) {
+    followRelationsByFollower.set(followerId, new Map());
+  }
+  followRelationsByFollower.get(followerId).set(followeeId, { status, createdAt });
+
+  const followeeBase = PROFILE_BY_USER_ID[followeeId];
+  const followerBase = PROFILE_BY_USER_ID[followerId];
+  if (followeeBase) {
+    followeeBase.followerCount = (followeeBase.followerCount || 0) + 1;
+  }
+  if (followerBase) {
+    followerBase.followingCount = (followerBase.followingCount || 0) + 1;
+  }
+}
+
+export function applyMockUnfollow(followerId, followeeId) {
+  const byFollowee = followRelationsByFollower.get(followerId);
+  if (!byFollowee || !byFollowee.has(followeeId)) {
+    return false;
+  }
+
+  byFollowee.delete(followeeId);
+
+  const followeeBase = PROFILE_BY_USER_ID[followeeId];
+  const followerBase = PROFILE_BY_USER_ID[followerId];
+  if (followeeBase) {
+    followeeBase.followerCount = Math.max(0, (followeeBase.followerCount || 0) - 1);
+  }
+  if (followerBase) {
+    followerBase.followingCount = Math.max(0, (followerBase.followingCount || 0) - 1);
+  }
+
+  return true;
+}
 
 const DRAFT_POSTS_BY_AUTHOR = {
   [ACTIVE_USER_ID]: [
@@ -83,17 +140,10 @@ function isKnownUser(userId) {
   return Boolean(PROFILE_BY_USER_ID[userId]) || mockUsers.some((user) => user.id === userId && user.status !== "DELETED");
 }
 
-function resolveFollowStatus(viewerId, targetId, profile) {
+function resolveFollowStatus(viewerId, targetId) {
   if (viewerId === targetId) return "SELF";
-  if (profile.isPrivate) {
-    if (ACCEPTED_FOLLOW_TARGETS.has(targetId) && viewerId === ACTIVE_USER_ID) {
-      return "ACCEPTED";
-    }
-    return "PENDING";
-  }
-  if (ACCEPTED_FOLLOW_TARGETS.has(targetId) && viewerId === ACTIVE_USER_ID) {
-    return "ACCEPTED";
-  }
+  const relation = getMockFollowRelation(viewerId, targetId);
+  if (relation) return relation.status;
   return "NONE";
 }
 
@@ -114,7 +164,7 @@ export function buildSocialProfile(userId, viewerId) {
     followingCount: 0,
   };
 
-  const followStatus = resolveFollowStatus(viewerId, userId, base);
+  const followStatus = resolveFollowStatus(viewerId, userId);
   const canView = canViewFullProfile(viewerId, userId, base, followStatus);
   const hideCounters = !canView;
 
