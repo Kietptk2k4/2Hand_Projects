@@ -104,6 +104,7 @@ export const mockGlobalFeedPosts = [
     postId: mockPostId("06"),
     authorId: MOCK_FOLLOWEE_IDS[1],
     caption: "hello world",
+    allowComments: false,
     likeCount: 4,
     replyCount: 1,
     createdAt: "2026-05-24T11:00:00Z",

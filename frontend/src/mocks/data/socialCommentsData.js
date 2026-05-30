@@ -6,7 +6,9 @@ import {
 } from "./socialPostDetailData";
 
 const COMMENT_PREFIX = "674b100000000000000000";
-const REPLY_PREFIX = "674c100000000000000000";
+export const REPLY_PREFIX = "674c100000000000000000";
+
+let nextDynamicCommentSeq = 100;
 
 function mockCommentId(suffix, prefix = COMMENT_PREFIX) {
   const id = `${prefix}${String(suffix).padStart(2, "0")}`;
@@ -18,6 +20,7 @@ function mockCommentId(suffix, prefix = COMMENT_PREFIX) {
 
 function comment(overrides) {
   return {
+    status: "ACTIVE",
     media: [],
     likeCount: 0,
     replyCount: 0,
@@ -25,6 +28,14 @@ function comment(overrides) {
     updatedAt: "2026-05-21T10:00:00Z",
     ...overrides,
   };
+}
+
+function isActiveComment(item) {
+  return (item.status || "ACTIVE") !== "DELETED";
+}
+
+function filterActiveComments(items) {
+  return items.filter(isActiveComment);
 }
 
 const TOP_LEVEL_FOR_SUCCESS = [
@@ -132,28 +143,180 @@ const REPLIES_BY_PARENT = {
   ],
 };
 
+const extraTopLevelByPostId = new Map();
+
+function generateCommentId(prefix = COMMENT_PREFIX) {
+  nextDynamicCommentSeq += 1;
+  const suffix = String(nextDynamicCommentSeq % 90).padStart(2, "0");
+  return mockCommentId(suffix, prefix);
+}
+
+export function findCommentById(commentId) {
+  const top = TOP_LEVEL_FOR_SUCCESS.find((item) => item.commentId === commentId);
+  if (top) {
+    return { comment: top, isTopLevel: true };
+  }
+
+  for (const replies of Object.values(REPLIES_BY_PARENT)) {
+    const reply = replies.find((item) => item.commentId === commentId);
+    if (reply) {
+      return { comment: reply, isTopLevel: false, parentCommentId: reply.parentCommentId };
+    }
+  }
+
+  for (const list of extraTopLevelByPostId.values()) {
+    const extra = list.find((item) => item.commentId === commentId);
+    if (extra) {
+      return { comment: extra, isTopLevel: !extra.parentCommentId };
+    }
+  }
+
+  return null;
+}
+
+export function isReplyCommentId(commentId) {
+  return String(commentId).startsWith(REPLY_PREFIX);
+}
+
+export function appendTopLevelComment(postId, authorId, contentText) {
+  const now = new Date().toISOString();
+  const item = comment({
+    commentId: generateCommentId(COMMENT_PREFIX),
+    postId,
+    parentCommentId: null,
+    author: resolveAuthor(authorId),
+    contentText,
+    likeCount: 0,
+    replyCount: 0,
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  if (postId === MOCK_POST_ID_SUCCESS) {
+    TOP_LEVEL_FOR_SUCCESS.unshift(item);
+  } else {
+    const list = extraTopLevelByPostId.get(postId) || [];
+    list.unshift(item);
+    extraTopLevelByPostId.set(postId, list);
+  }
+
+  return {
+    commentId: item.commentId,
+    postId: item.postId,
+    authorId,
+    contentText: item.contentText,
+    media: [],
+    status: "ACTIVE",
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+  };
+}
+
+export function appendReplyComment(parentCommentId, authorId, contentText) {
+  const parentInfo = findCommentById(parentCommentId);
+  if (!parentInfo?.isTopLevel) {
+    return { error: "NESTED_REPLY_NOT_ALLOWED" };
+  }
+
+  const parent = parentInfo.comment;
+  const now = new Date().toISOString();
+  const item = comment({
+    commentId: generateCommentId(REPLY_PREFIX),
+    postId: parent.postId,
+    parentCommentId,
+    author: resolveAuthor(authorId),
+    contentText,
+    likeCount: 0,
+    replyCount: 0,
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  if (!REPLIES_BY_PARENT[parentCommentId]) {
+    REPLIES_BY_PARENT[parentCommentId] = [];
+  }
+  REPLIES_BY_PARENT[parentCommentId].push(item);
+  parent.replyCount = (parent.replyCount || 0) + 1;
+
+  return {
+    commentId: item.commentId,
+    postId: item.postId,
+    parentCommentId,
+    authorId,
+    contentText: item.contentText,
+    media: [],
+    status: "ACTIVE",
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+  };
+}
+
+export function softDeleteComment(commentId, userId, { isModerator = false } = {}) {
+  const info = findCommentById(commentId);
+  if (!info) {
+    return { error: "NOT_FOUND" };
+  }
+
+  const target = info.comment;
+  const authorId = target.author?.userId;
+  if (!isModerator && authorId !== userId) {
+    return { error: "FORBIDDEN" };
+  }
+
+  const wasActive = isActiveComment(target);
+  const now = new Date().toISOString();
+
+  if (wasActive) {
+    target.status = "DELETED";
+    target.deletedAt = now;
+    target.updatedAt = now;
+  }
+
+  return {
+    data: {
+      commentId: target.commentId,
+      postId: target.postId,
+      status: "DELETED",
+      deletedAt: target.deletedAt || now,
+      updatedAt: target.updatedAt || now,
+    },
+    shouldDecrementPost: wasActive,
+    postId: target.postId,
+    parentCommentId: target.parentCommentId || null,
+  };
+}
+
 export function getCommentsForPost(postId, { parentCommentId } = {}) {
   if (postId === MOCK_POST_ID_EMPTY_COMMENTS) {
     return [];
   }
 
-  if (postId !== MOCK_POST_ID_SUCCESS) {
-    return [
-      comment({
-        commentId: mockCommentId("99"),
-        postId,
-        parentCommentId: null,
-        author: resolveAuthor("b8b9bf76-2ab2-4a01-8f16-fd0f5f9f95d1"),
-        contentText: "Sample comment on this post.",
-        likeCount: 0,
-        replyCount: 0,
-      }),
-    ];
-  }
-
   if (parentCommentId) {
-    return REPLIES_BY_PARENT[parentCommentId] || [];
+    const parentInfo = findCommentById(parentCommentId);
+    if (!parentInfo || !isActiveComment(parentInfo.comment)) {
+      return [];
+    }
+    return filterActiveComments(REPLIES_BY_PARENT[parentCommentId] || []);
   }
 
-  return TOP_LEVEL_FOR_SUCCESS;
+  if (postId === MOCK_POST_ID_SUCCESS) {
+    return filterActiveComments(TOP_LEVEL_FOR_SUCCESS);
+  }
+
+  const extra = extraTopLevelByPostId.get(postId) || [];
+  if (extra.length > 0) {
+    return filterActiveComments(extra);
+  }
+
+  return filterActiveComments([
+    comment({
+      commentId: mockCommentId("99"),
+      postId,
+      parentCommentId: null,
+      author: resolveAuthor("b8b9bf76-2ab2-4a01-8f16-fd0f5f9f95d1"),
+      contentText: "Sample comment on this post.",
+      likeCount: 0,
+      replyCount: 0,
+    }),
+  ]);
 }

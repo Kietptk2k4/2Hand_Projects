@@ -128,6 +128,20 @@ export function touchFeedPostUpdatedAt(postId) {
   return target.post;
 }
 
+export function incrementPostReplyCount(postId, delta = 1) {
+  const target = getMutableFeedPost(postId);
+  if (!target) return null;
+  target.post.replyCount = (target.post.replyCount || 0) + delta;
+  return target.post.replyCount;
+}
+
+export function decrementPostReplyCount(postId, delta = 1) {
+  const target = getMutableFeedPost(postId);
+  if (!target) return null;
+  target.post.replyCount = Math.max(0, (target.post.replyCount || 0) - delta);
+  return target.post.replyCount;
+}
+
 export function buildPostDetail(postId, viewerUserId) {
   const feedPost = findFeedPost(postId);
   if (!feedPost) return null;

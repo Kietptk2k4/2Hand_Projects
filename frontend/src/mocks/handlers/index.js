@@ -9,6 +9,7 @@ import { socialRelationsHandlers } from "./socialRelationsHandlers";
 import { socialSavedPostsHandlers } from "./socialSavedPostsHandlers";
 import { socialSearchPostsHandlers } from "./socialSearchPostsHandlers";
 import { socialSearchHashtagHandlers } from "./socialSearchHashtagHandlers";
+import { socialCommentWriteHandlers } from "./socialCommentWriteHandlers";
 import { socialPostHandlers } from "./socialPostHandlers";
 
 export const handlers = [
@@ -20,6 +21,7 @@ export const handlers = [
   ...socialSearchPostsHandlers,
   ...socialSearchHashtagHandlers,
   ...socialPostHandlers,
+  ...socialCommentWriteHandlers,
   ...socialCreatePostHandlers,
   ...socialEditPostHandlers,
   ...socialProfileHandlers,

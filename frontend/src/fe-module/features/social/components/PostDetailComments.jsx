@@ -6,6 +6,7 @@ export function PostDetailComments({
   onComingSoon,
   onViewProfile,
   commentInputRef,
+  onDeleteComment,
 }) {
   const {
     comments,
@@ -18,12 +19,32 @@ export function PostDetailComments({
     retry,
     repliesByParent,
     replyStatusByParent,
+    replyingToId,
+    isSubmittingReplyId,
+    submitError,
+    startReply,
+    cancelReply,
+    submitReply,
     expandReplies,
+    deleteComment: deleteCommentFromState,
+    canDeleteComment,
+    deletingCommentId,
   } = commentsState;
+
+  const handleDeleteComment =
+    onDeleteComment ||
+    ((commentId, parentCommentId) =>
+      deleteCommentFromState(commentId, { parentCommentId }));
 
   return (
     <div className="space-y-4">
       <h4 className="text-sm font-semibold text-on-surface">Bình luận</h4>
+
+      {submitError ? (
+        <p className="text-xs text-error" role="alert">
+          {submitError}
+        </p>
+      ) : null}
 
       {isLoading ? (
         <div className="space-y-4">
@@ -53,7 +74,7 @@ export function PostDetailComments({
       {!isLoading && !errorMessage && comments.length > 0 ? (
         <div className="space-y-4">
           {comments.map((item) => {
-            const expanded = Boolean(repliesByParent[item.commentId]);
+            const expanded = repliesByParent[item.commentId] !== undefined;
             return (
               <CommentItem
                 key={item.commentId}
@@ -64,6 +85,14 @@ export function PostDetailComments({
                 onExpandReplies={expandReplies}
                 onComingSoon={onComingSoon}
                 onViewProfile={onViewProfile}
+                replyingToId={replyingToId}
+                onStartReply={startReply}
+                onCancelReply={cancelReply}
+                onSubmitReply={submitReply}
+                isSubmittingReply={isSubmittingReplyId === item.commentId}
+                canDeleteComment={canDeleteComment}
+                onDeleteComment={handleDeleteComment}
+                deletingCommentId={deletingCommentId}
               />
             );
           })}

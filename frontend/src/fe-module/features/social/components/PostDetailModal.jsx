@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
+import { MAX_COMMENT_LENGTH } from "../constants/commentConstants";
 import { usePostComments } from "../hooks/usePostComments";
 import { usePostDetail } from "../hooks/usePostDetail";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
@@ -32,12 +33,68 @@ export function PostDetailModal({
   const commentAnchorRef = useRef(null);
   const commentInputRef = useRef(null);
   const [galleryIndex, setGalleryIndex] = useState(null);
+  const [draftComment, setDraftComment] = useState("");
+  const [replyCountBump, setReplyCountBump] = useState(0);
 
   const { post, isLoading, isError, errorMessage, errorCode, retry } = usePostDetail(postId);
+
+  const bumpReplyCount = useCallback((delta = 1) => {
+    setReplyCountBump((value) => value + delta);
+  }, []);
+
   const commentsEnabled = Boolean(post && !isError);
-  const commentsState = usePostComments(postId, commentsEnabled);
+  const commentsState = usePostComments(postId, commentsEnabled, {
+    onReplyCountChange: bumpReplyCount,
+  });
 
   const showComingSoon = () => onToast?.(COMING_SOON);
+
+  useEffect(() => {
+    setDraftComment("");
+    setReplyCountBump(0);
+  }, [postId]);
+
+  const displayReplyCount = (post?.replyCount ?? 0) + replyCountBump;
+  const commentsDisabled = post?.allowComments === false;
+  const canSubmitComment =
+    !commentsDisabled && !commentsState.isSubmittingTopLevel && draftComment.trim().length > 0;
+
+  const handleSubmitTopLevel = async () => {
+    commentsState.clearSubmitError();
+    const result = await commentsState.submitTopLevel(draftComment);
+    if (result?.ok) {
+      setDraftComment("");
+      onToast?.("Đã gửi bình luận.");
+    } else if (commentsState.submitError) {
+      onToast?.(commentsState.submitError);
+    }
+  };
+
+  const handleCommentKeyDown = (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      if (canSubmitComment) {
+        handleSubmitTopLevel();
+      }
+    }
+  };
+
+  const handleDeleteComment = useCallback(
+    async (commentId, parentCommentId) => {
+      const result = await commentsState.deleteComment(commentId, { parentCommentId });
+      if (result?.ok) {
+        onToast?.(
+          result.notFound ? "Bình luận không còn tồn tại." : "Đã xóa bình luận."
+        );
+        return;
+      }
+      if (result?.cancelled) return;
+      if (result?.message) {
+        onToast?.(result.message);
+      }
+    },
+    [commentsState, onToast]
+  );
 
   useEffect(() => {
     const previous = document.body.style.overflow;
@@ -265,7 +322,7 @@ export function PostDetailModal({
                       <span className="material-symbols-outlined" aria-hidden="true">
                         chat_bubble_outline
                       </span>
-                      <span className="text-sm font-medium">{formatCount(post.replyCount)}</span>
+                      <span className="text-sm font-medium">{formatCount(displayReplyCount)}</span>
                     </button>
                     <button
                       type="button"
@@ -285,6 +342,7 @@ export function PostDetailModal({
                       onComingSoon={showComingSoon}
                       onViewProfile={onViewProfile}
                       commentInputRef={commentInputRef}
+                      onDeleteComment={handleDeleteComment}
                     />
                   </div>
                 </div>
@@ -295,28 +353,45 @@ export function PostDetailModal({
                     <input
                       ref={commentInputRef}
                       type="text"
-                      readOnly
-                      onFocus={showComingSoon}
+                      value={draftComment}
+                      onChange={(event) => {
+                        setDraftComment(event.target.value);
+                        if (commentsState.submitError) {
+                          commentsState.clearSubmitError();
+                        }
+                      }}
+                      onKeyDown={handleCommentKeyDown}
+                      maxLength={MAX_COMMENT_LENGTH}
                       placeholder={
-                        post.allowComments === false
-                          ? "Bình luận đã tắt"
-                          : "Thêm bình luận..."
+                        commentsDisabled ? "Bình luận đã tắt" : "Thêm bình luận..."
                       }
-                      disabled={post.allowComments === false}
+                      disabled={commentsDisabled || commentsState.isSubmittingTopLevel}
                       className="flex-1 rounded-full border border-outline-variant bg-surface-container-low px-4 py-2 text-sm outline-none transition focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-60"
                     />
                     <button
                       type="button"
-                      onClick={showComingSoon}
-                      disabled={post.allowComments === false}
+                      onClick={handleSubmitTopLevel}
+                      disabled={!canSubmitComment}
                       className="rounded-full p-2 text-primary hover:bg-primary-fixed disabled:opacity-50"
                       aria-label="Gửi bình luận"
                     >
-                      <span className="material-symbols-outlined" aria-hidden="true">
-                        send
-                      </span>
+                      {commentsState.isSubmittingTopLevel ? (
+                        <span
+                          className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent"
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <span className="material-symbols-outlined" aria-hidden="true">
+                          send
+                        </span>
+                      )}
                     </button>
                   </div>
+                  {commentsState.submitError && !commentsState.replyingToId ? (
+                    <p className="mt-2 px-1 text-xs text-error" role="alert">
+                      {commentsState.submitError}
+                    </p>
+                  ) : null}
                 </div>
               </div>
             </>
