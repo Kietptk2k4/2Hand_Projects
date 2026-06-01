@@ -37,5 +37,6 @@ export const APP_ROUTES = {
   commerceSellerProducts: "/commerce/seller/products",
   commerceSellerProductCreate: "/commerce/seller/products/new",
   commerceSellerProductEdit: "/commerce/seller/products/:productId/edit",
+  commerceSellerOrders: "/commerce/seller/orders",
 };
 

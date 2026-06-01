@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>2Hands Marketplace - Seller Order Fulfillment</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed-dim": "#c4c7c9",
+                      "tertiary-container": "#6f7274",
+                      "surface-tint": "#0054d6",
+                      "secondary-fixed": "#e1e0ff",
+                      "on-primary": "#ffffff",
+                      "primary-container": "#0066ff",
+                      "on-tertiary-fixed": "#191c1e",
+                      "surface-container-high": "#dee8ff",
+                      "inverse-surface": "#263143",
+                      "surface-variant": "#d8e3fb",
+                      "surface-container-lowest": "#ffffff",
+                      "surface": "#f9f9ff",
+                      "on-tertiary-fixed-variant": "#444749",
+                      "tertiary-fixed": "#e0e3e5",
+                      "tertiary": "#565a5b",
+                      "on-primary-fixed": "#001849",
+                      "on-secondary": "#ffffff",
+                      "inverse-primary": "#b3c5ff",
+                      "error-container": "#ffdad6",
+                      "surface-dim": "#cfdaf2",
+                      "primary-fixed-dim": "#b3c5ff",
+                      "on-secondary-fixed": "#07006c",
+                      "surface-container": "#e7eeff",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-container": "#fffbff",
+                      "error": "#ba1a1a",
+                      "outline-variant": "#c2c6d8",
+                      "on-background": "#111c2d",
+                      "on-surface": "#111c2d",
+                      "secondary-container": "#6063ee",
+                      "on-error": "#ffffff",
+                      "inverse-on-surface": "#ecf1ff",
+                      "background": "#f9f9ff",
+                      "on-primary-fixed-variant": "#003fa4",
+                      "on-tertiary-container": "#f6f8fa",
+                      "on-secondary-fixed-variant": "#2f2ebe",
+                      "primary-fixed": "#dae1ff",
+                      "surface-bright": "#f9f9ff",
+                      "surface-container-highest": "#d8e3fb",
+                      "on-error-container": "#93000a",
+                      "primary": "#0050cb",
+                      "secondary": "#4648d4",
+                      "on-surface-variant": "#424656",
+                      "surface-container-low": "#f0f3ff",
+                      "on-primary-container": "#f8f7ff",
+                      "outline": "#727687",
+                      "secondary-fixed-dim": "#c0c1ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "24px",
+                      "xl": "64px",
+                      "container-max": "1280px",
+                      "sm": "12px",
+                      "xs": "4px",
+                      "margin-desktop": "32px",
+                      "md": "24px",
+                      "base": "8px",
+                      "margin-mobile": "16px",
+                      "lg": "40px"
+              },
+              "fontFamily": {
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "headline-xl-mobile": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "headline-xl": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-xl-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-xl": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+      </style>
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex font-body-md">
+<!-- SideNavBar (Shared Component) -->
+<nav class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 py-md px-base border-r border-outline-variant bg-surface-container-low dark:bg-inverse-surface shadow-sm z-40">
+<!-- Brand / Header -->
+<div class="flex items-center gap-3 px-4 mb-8">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-headline-sm font-bold overflow-hidden">
+<img alt="Service Provider Shop Logo" class="w-full h-full object-cover" data-alt="A modern, minimalist corporate logo for a verified professional service provider shop on a white background, high quality, crisp details, professional lighting, conveying trust and reliability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDE-oAn3kkVcn5p8-G2Xoagvl4b8T3KARlVAfdeKe8PQPnjzShrKodVUMtv8UzpoFhNQI9pwTiRhdqxPMdI8N06EMWYZGdCV7LUpAh61hPiXRmtIcnP9dBZYPfODQ0u3cOyD9n8YmxKeslpgbUapM3yB0-efzB345FBuzyxn9ALieJv93yQv8Qdc9ug6iSXs7Dzykvv7F-iAR4TTs3JOSoXxi8hqEd4iaxFtDF3ym8Kju8QmoiM_eOByZHDEC_bEqBO8TSjy-ouLiI"/>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface dark:text-inverse-on-surface">Shop Manager</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Verified Pro</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<ul class="flex-1 flex flex-col gap-2 font-label-md text-label-md">
+<li>
+<a class="flex items-center gap-4 text-on-surface-variant dark:text-outline-variant px-4 py-3 hover:bg-surface-container-high dark:hover:bg-tertiary-container transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 text-on-surface-variant dark:text-outline-variant px-4 py-3 hover:bg-surface-container-high dark:hover:bg-tertiary-container transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="list_alt">list_alt</span>
+<span>Service Listings</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 bg-primary-container text-on-primary-container dark:bg-primary dark:text-on-primary rounded-lg px-4 py-3 font-semibold Active: scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined fill" data-icon="shopping_bag" data-weight="fill">shopping_bag</span>
+<span>Orders</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 text-on-surface-variant dark:text-outline-variant px-4 py-3 hover:bg-surface-container-high dark:hover:bg-tertiary-container transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+<span>Shop Settings</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 text-on-surface-variant dark:text-outline-variant px-4 py-3 hover:bg-surface-container-high dark:hover:bg-tertiary-container transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>Analytics</span>
+</a>
+</li>
+</ul>
+<!-- Footer Links / CTA -->
+<div class="mt-auto flex flex-col gap-4">
+<button class="w-full bg-surface text-primary border-2 border-primary rounded-lg py-2 font-label-md text-label-md hover:bg-surface-container-high transition-colors">
+                View Live Shop
+            </button>
+<ul class="flex flex-col gap-2 font-label-md text-label-md border-t border-outline-variant pt-4">
+<li>
+<a class="flex items-center gap-4 text-on-surface-variant dark:text-outline-variant px-4 py-3 hover:bg-surface-container-high dark:hover:bg-tertiary-container transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="support">support</span>
+<span>Help Center</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 text-on-surface-variant dark:text-outline-variant px-4 py-3 hover:bg-surface-container-high dark:hover:bg-tertiary-container transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span>Logout</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- TopNavBar (Shared Component - Mobile Only for this layout context usually, but keeping as header per strict instruction if needed, though SideNav is primary on desktop. I will render it for mobile support or as a general app bar if needed. Assuming standard desktop layout with side nav, the main content area will sit next to it.) -->
+<!-- We will rely on SideNav for desktop. Main content area starts here. -->
+<main class="flex-1 md:ml-64 flex flex-col min-h-screen bg-background pb-20 md:pb-0">
+<!-- Header Section -->
+<header class="bg-surface border-b border-outline-variant px-margin-desktop py-md sticky top-0 z-30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Order Fulfillment</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Manage and process your pending service orders efficiently.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-2 border border-outline-variant rounded-lg bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-sm text-body-sm w-64" placeholder="Search Order ID..." type="text"/>
+</div>
+<button class="bg-primary-container text-on-primary-container hover:bg-primary hover:text-on-primary px-6 py-2 rounded-lg font-label-md text-label-md flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden" disabled="" id="bulk-confirm-btn">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+<span class="relative z-10">Confirm Preparation</span>
+<!-- Loader overlay -->
+<div class="absolute inset-0 bg-primary flex items-center justify-center opacity-0 pointer-events-none transition-opacity" id="action-loader">
+<span class="material-symbols-outlined animate-spin" data-icon="sync">sync</span>
+</div>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<div class="flex-1 p-margin-mobile md:p-margin-desktop">
+<!-- Filters & Controls -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-outline-variant pb-2">
+<div class="flex gap-6 font-label-md text-label-md">
+<button class="text-primary border-b-2 border-primary pb-2 font-semibold flex items-center gap-2">
+                        PENDING <span class="bg-error text-on-error text-[10px] px-2 py-0.5 rounded-full">12</span>
+</button>
+<button class="text-on-surface-variant hover:text-on-surface pb-2 transition-colors">
+                        PROCESSING
+                    </button>
+<button class="text-on-surface-variant hover:text-on-surface pb-2 transition-colors">
+                        SHIPPED/COMPLETED
+                    </button>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-sm" data-icon="filter_list">filter_list</span>
+<span>Sort by: Oldest First</span>
+</div>
+</div>
+<!-- Data Table Container (Level 1 Elevation) -->
+<div class="bg-surface rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[800px]">
+<thead class="bg-surface-container-low border-b border-outline-variant font-label-sm text-label-sm text-on-surface-variant">
+<tr>
+<th class="p-4 w-12 text-center">
+<input class="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" id="select-all" type="checkbox"/>
+</th>
+<th class="p-4 font-semibold">Order ID</th>
+<th class="p-4 font-semibold">Product/Service</th>
+<th class="p-4 font-semibold text-right">Qty</th>
+<th class="p-4 font-semibold text-right">Unit Price</th>
+<th class="p-4 font-semibold text-right">Total</th>
+<th class="p-4 font-semibold">Status/Payment</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant" id="order-table-body">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="p-4 text-center">
+<input class="row-checkbox rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="p-4 font-label-md text-label-md">#ORD-9921-A</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-surface-container flex-shrink-0 overflow-hidden">
+<img alt="Cleaning Service" class="w-full h-full object-cover" data-alt="Close up of a professional cleaning caddy filled with various colorful cleaning supplies, modern bright setting, representing a deep cleaning service. High quality, crisp focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuASaHvkkmyCxDnWePmyLDqW5CXuMFoN7ukL74IQahOgtwHw-uZR1Mp-tR0ESxXnPYAMcJoJkWODVUDYKD9kJ1URIbdYGvuRUCTdAm2qVoK2jwFyAfFmWqEO6L7-3GHY6MTaoAzyTsEWsbXg9L1v7p3aBTmaZa0p9tqzEc9_m_5v7MZeoZ9FdAnOzYPFgyRf50ERZ79ESmdTa8ehWVVCyCgIYSDmKtvqk1Ml3F7lvGQ4Hng-YiHqH05ARoDX_jWFP6svGxJ4YCTROKY"/>
+</div>
+<div>
+<p class="font-semibold truncate w-48">Deep Home Cleaning Service - 3 Bed</p>
+<p class="text-on-surface-variant text-xs">Requested: Tomorrow, 10:00 AM</p>
+</div>
+</div>
+</td>
+<td class="p-4 text-right">1</td>
+<td class="p-4 text-right">$150.00</td>
+<td class="p-4 text-right font-semibold">$150.00</td>
+<td class="p-4">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-error-container text-on-error-container text-[11px] font-semibold w-max border border-red-200">
+                                            PENDING
+                                        </span>
+<span class="text-xs text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-green-600" data-icon="verified">verified</span> Paid (Escrow)
+                                        </span>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="p-4 text-center">
+<input class="row-checkbox rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="p-4 font-label-md text-label-md">#ORD-9922-B</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-surface-container flex-shrink-0 overflow-hidden">
+<img alt="Plumbing Repair" class="w-full h-full object-cover" data-alt="A set of professional plumbing tools including wrenches and pipes laid out neatly on a clean white surface, well-lit, representing plumbing repair services. Crisp details, modern corporate style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5O2b5k9e3fbhzwHNFitNsAsWAn04mt9hdUmGyEZveXt-NwyUwVO-AVBqNMdVp7ythY2BGHsg1YRSfqJyt3jIgIbUzMtZ3ealdN4hZ3fE-Rs9wM4nGu2t7FDmfCLbI6GDXXAvyo6EUAJiO3N9Yca_jnhn0eYnpq0a0KhW9eGH0scykP0pV-twh6JKsiga0H7rIQlZMUcfzNvUn3_WGNuKN-hq7gMP_E7jXCK5uQ1_AsohwyoVWqSvbHrWj_DHgEpMdiCfHRBM9Pd4"/>
+</div>
+<div>
+<p class="font-semibold truncate w-48">Emergency Leak Repair</p>
+<p class="text-on-surface-variant text-xs">Requested: ASAP</p>
+</div>
+</div>
+</td>
+<td class="p-4 text-right">1</td>
+<td class="p-4 text-right">$85.00</td>
+<td class="p-4 text-right font-semibold">$85.00</td>
+<td class="p-4">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-error-container text-on-error-container text-[11px] font-semibold w-max border border-red-200">
+                                            PENDING
+                                        </span>
+<span class="text-xs text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-green-600" data-icon="verified">verified</span> Paid (Escrow)
+                                        </span>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="p-4 text-center">
+<input class="row-checkbox rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="p-4 font-label-md text-label-md">#ORD-9924-X</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-surface-container flex-shrink-0 overflow-hidden">
+<div class="w-full h-full bg-surface-variant flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="design_services">design_services</span>
+</div>
+</div>
+<div>
+<p class="font-semibold truncate w-48">Custom Logo Design</p>
+<p class="text-on-surface-variant text-xs">Digital Delivery</p>
+</div>
+</div>
+</td>
+<td class="p-4 text-right">1</td>
+<td class="p-4 text-right">$250.00</td>
+<td class="p-4 text-right font-semibold">$250.00</td>
+<td class="p-4">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-error-container text-on-error-container text-[11px] font-semibold w-max border border-red-200">
+                                            PENDING
+                                        </span>
+<span class="text-xs text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-green-600" data-icon="verified">verified</span> Paid (Escrow)
+                                        </span>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination / Footer -->
+<div class="bg-surface border-t border-outline-variant p-4 flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant">
+<p>Showing 1-3 of 12 pending orders</p>
+<div class="flex gap-2">
+<button class="px-3 py-1 border border-outline-variant rounded hover:bg-surface-container-low disabled:opacity-50" disabled="">Prev</button>
+<button class="px-3 py-1 border border-outline-variant rounded hover:bg-surface-container-low">Next</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-outline-variant flex justify-around items-center h-16 pb-safe z-40">
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="dashboard">dashboard</span>
+<span class="font-label-sm text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-primary relative" href="#">
+<div class="absolute -top-1 right-4 w-2 h-2 bg-error rounded-full"></div>
+<span class="material-symbols-outlined mb-1 fill" data-icon="shopping_bag" data-weight="fill">shopping_bag</span>
+<span class="font-label-sm text-[10px]">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="storefront">storefront</span>
+<span class="font-label-sm text-[10px]">Shop</span>
+</a>
+</nav>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            const confirmBtn = document.getElementById('bulk-confirm-btn');
+            const actionLoader = document.getElementById('action-loader');
+            const btnText = confirmBtn.querySelector('span:not(.material-symbols-outlined)');
+
+            function updateButtonState() {
+                const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+                if (checkedCount > 0) {
+                    confirmBtn.removeAttribute('disabled');
+                    btnText.textContent = `Confirm Preparation (${checkedCount})`;
+                } else {
+                    confirmBtn.setAttribute('disabled', 'true');
+                    btnText.textContent = 'Confirm Preparation';
+                }
+            }
+
+            selectAll.addEventListener('change', (e) => {
+                checkboxes.forEach(cb => {
+                    cb.checked = e.target.checked;
+                    // Optional visual feedback for row selection
+                    const row = cb.closest('tr');
+                    if(e.target.checked) {
+                        row.classList.add('bg-surface-container-low');
+                    } else {
+                        row.classList.remove('bg-surface-container-low');
+                    }
+                });
+                updateButtonState();
+            });
+
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', (e) => {
+                    const allChecked = Array.from(checkboxes).every(c => c.checked);
+                    const someChecked = Array.from(checkboxes).some(c => c.checked);
+                    selectAll.checked = allChecked;
+                    selectAll.indeterminate = someChecked && !allChecked;
+                    
+                    const row = e.target.closest('tr');
+                    if(e.target.checked) {
+                        row.classList.add('bg-surface-container-low');
+                    } else {
+                        row.classList.remove('bg-surface-container-low');
+                    }
+
+                    updateButtonState();
+                });
+            });
+
+            confirmBtn.addEventListener('click', () => {
+                // Simulate action
+                actionLoader.classList.remove('opacity-0');
+                btnText.classList.add('opacity-0'); // Hide text during load
+                confirmBtn.setAttribute('disabled', 'true');
+
+                setTimeout(() => {
+                    actionLoader.classList.add('opacity-0');
+                    btnText.classList.remove('opacity-0');
+                    
+                    // Simulate success and clear selection
+                    checkboxes.forEach(cb => {
+                        if(cb.checked) {
+                            cb.checked = false;
+                            const row = cb.closest('tr');
+                            row.classList.remove('bg-surface-container-low');
+                            // In reality, you'd remove the row or update status here
+                        }
+                    });
+                    selectAll.checked = false;
+                    selectAll.indeterminate = false;
+                    updateButtonState();
+                    
+                    // Simple toast simulation
+                    alert('Selected orders have been moved to PROCESSING status.');
+                }, 1500);
+            });
+        });
+    </script>
+</body></html>
