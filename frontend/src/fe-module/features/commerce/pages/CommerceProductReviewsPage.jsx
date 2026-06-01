@@ -5,7 +5,9 @@ import { CommerceShell } from "../components/CommerceShell";
 import { ProductReviewCard } from "../components/ProductReviewCard";
 import { ProductReviewsFilters } from "../components/ProductReviewsFilters";
 import { ProductReviewsSkeleton } from "../components/ProductReviewsSkeleton";
+import { MyProductReviewStrip } from "../components/MyProductReviewStrip";
 import { ProductReviewsSummary } from "../components/ProductReviewsSummary";
+import { useMyProductReview } from "../hooks/useMyProductReview";
 import { useProductDetail } from "../hooks/useProductDetail";
 import { useProductReviews } from "../hooks/useProductReviews";
 import { APP_ROUTES } from "../../../shared/constants/routes";
@@ -34,6 +36,14 @@ export function CommerceProductReviewsPage() {
     loadMore,
     retry,
   } = useProductReviews(productId);
+
+  const {
+    myReview,
+    isLoading: isMyReviewLoading,
+    isError: isMyReviewError,
+    errorMessage: myReviewErrorMessage,
+    shouldShowStrip,
+  } = useMyProductReview(productId);
 
   const showComingSoon = useCallback(() => {
     setToastMessage(COMING_SOON_MESSAGE);
@@ -118,6 +128,16 @@ export function CommerceProductReviewsPage() {
               </h1>
               <p className="mt-1 line-clamp-2 text-body-md text-on-surface-variant">{productTitle}</p>
             </header>
+
+            {shouldShowStrip ? (
+              <MyProductReviewStrip
+                myReview={myReview}
+                isLoading={isMyReviewLoading}
+                isError={isMyReviewError}
+                errorMessage={myReviewErrorMessage}
+                productId={productId}
+              />
+            ) : null}
 
             <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
               <aside className="space-y-0 lg:sticky lg:top-24 lg:col-span-4">

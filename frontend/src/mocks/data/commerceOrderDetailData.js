@@ -1,5 +1,6 @@
 import { findOrderSummaryForUser } from "./commerceOrderListData";
 import { mockCommerceProducts } from "./commerceProductListData";
+import { getReviewIdForOrderItem } from "./commerceProductReviewIndex";
 
 const DEFAULT_SHIPPING_ADDRESS = {
   receiver_name: "Nguyễn Văn An",
@@ -332,7 +333,18 @@ export function getOrderDetailForUser(userId, orderId) {
   if (!summary) {
     return { error: "COMMERCE-404-ORDER", status: 404 };
   }
-  return { data: buildDetailFromSummary(summary) };
+  const data = buildDetailFromSummary(summary);
+  return { data: enrichOrderItemsWithReviewIds(data) };
+}
+
+function enrichOrderItemsWithReviewIds(data) {
+  return {
+    ...data,
+    items: (data.items || []).map((item) => ({
+      ...item,
+      review_id: getReviewIdForOrderItem(item.order_item_id),
+    })),
+  };
 }
 
 export function getOrderTrackStatusForUser(userId, orderId) {

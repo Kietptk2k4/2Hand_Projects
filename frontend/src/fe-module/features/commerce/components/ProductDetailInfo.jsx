@@ -14,7 +14,7 @@ export function ProductDetailInfo({ product, onOpenReviews }) {
       </h1>
 
       <div className="mt-3 flex flex-wrap items-center gap-3 text-body-sm text-on-surface-variant">
-        {product.ratingCount > 0 ? (
+        {onOpenReviews ? (
           <button
             type="button"
             onClick={onOpenReviews}
@@ -23,7 +23,13 @@ export function ProductDetailInfo({ product, onOpenReviews }) {
             <span className="material-symbols-outlined fill text-[18px]" aria-hidden="true">
               star
             </span>
-            {product.ratingAvg} · {product.ratingCount} đánh giá
+            {product.ratingCount > 0 ? (
+              <>
+                {product.ratingAvg} · {product.ratingCount} đánh giá
+              </>
+            ) : (
+              <>Chưa có đánh giá · Xem trang đánh giá</>
+            )}
           </button>
         ) : null}
         {stockLabel ? (

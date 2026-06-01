@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cài đặt cửa hàng - 2Hands Marketplace</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#6f7274",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "inverse-on-surface": "#ecf1ff",
+                        "primary-container": "#0066ff",
+                        "on-tertiary-fixed": "#191c1e",
+                        "surface-dim": "#cfdaf2",
+                        "on-surface-variant": "#424656",
+                        "inverse-surface": "#263143",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#0050cb",
+                        "outline-variant": "#c2c6d8",
+                        "tertiary-fixed": "#e0e3e5",
+                        "surface-variant": "#d8e3fb",
+                        "on-error-container": "#93000a",
+                        "tertiary": "#565a5b",
+                        "surface-container-high": "#dee8ff",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "surface-tint": "#0054d6",
+                        "surface": "#f9f9ff",
+                        "surface-container": "#e7eeff",
+                        "on-background": "#111c2d",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#f6f8fa",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "primary-fixed": "#dae1ff",
+                        "on-surface": "#111c2d",
+                        "on-secondary-container": "#fffbff",
+                        "on-primary-container": "#f8f7ff",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed": "#e1e0ff",
+                        "outline": "#727687",
+                        "on-secondary-fixed": "#07006c",
+                        "inverse-primary": "#b3c5ff",
+                        "on-primary-fixed": "#001849",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "error": "#ba1a1a",
+                        "on-tertiary": "#ffffff",
+                        "background": "#f9f9ff",
+                        "surface-container-highest": "#d8e3fb",
+                        "surface-bright": "#f9f9ff",
+                        "on-primary-fixed-variant": "#003fa4",
+                        "surface-container-low": "#f0f3ff",
+                        "secondary-container": "#6063ee",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "secondary": "#4648d4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "24px",
+                        "margin-mobile": "16px",
+                        "xl": "64px",
+                        "sm": "12px",
+                        "container-max": "1280px",
+                        "base": "8px",
+                        "xs": "4px",
+                        "margin-desktop": "32px",
+                        "lg": "40px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-xl-mobile": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-xl": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-xl-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f9f9ff; }
+        .toggle-checkbox:checked { right: 0; border-color: #68D391; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #0066ff; }
+        .toggle-checkbox:checked + .toggle-label:after { transform: translateX(100%); border-color: white; }
+        .toggle-label { width: 44px; height: 24px; background-color: #c2c6d8; border-radius: 9999px; position: relative; cursor: pointer; transition: background-color 0.2s ease-in-out; }
+        .toggle-label:after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background-color: white; border-radius: 50%; transition: transform 0.2s ease-in-out; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-background text-on-surface antialiased flex flex-col md:flex-row min-h-screen">
+<!-- SideNavBar (Hidden on Mobile, Visible on Web) -->
+<aside class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container-low shadow-sm py-md px-base border-r border-outline-variant z-40">
+<div class="flex items-center gap-sm px-4 mb-xl">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-headline-sm">2H</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Shop Manager</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Verified Pro</p>
+</div>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-4 text-on-surface-variant px-4 py-3 rounded-lg hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant px-4 py-3 rounded-lg hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="list_alt">list_alt</span>
+<span class="font-label-md text-label-md">Service Listings</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant px-4 py-3 rounded-lg hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+<span class="font-label-md text-label-md">Orders</span>
+</a>
+<a class="flex items-center gap-4 bg-primary-container text-on-primary-container rounded-lg px-4 py-3 font-label-md text-label-md font-semibold transition-transform duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+<span>Shop Settings</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant px-4 py-3 rounded-lg hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+</nav>
+<div class="mt-auto space-y-2 pt-4 border-t border-outline-variant">
+<button class="w-full text-center py-2 mb-4 bg-primary text-on-primary font-label-md text-label-md rounded-DEFAULT hover:bg-primary/90 transition-colors">View Live Shop</button>
+<a class="flex items-center gap-4 text-on-surface-variant px-4 py-2 hover:bg-surface-container-high transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="support">support</span>
+<span class="font-label-md text-label-md">Help Center</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant px-4 py-2 hover:bg-surface-container-high transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 flex flex-col min-h-screen">
+<!-- TopNavBar (Visible on Web) -->
+<header class="hidden md:flex justify-between items-center w-full px-margin-desktop h-16 sticky top-0 z-50 bg-surface border-b border-outline-variant">
+<div class="font-headline-sm text-headline-sm font-bold text-primary">2Hands Marketplace</div>
+<div class="flex items-center gap-md text-primary">
+<button class="hover:bg-surface-container-high p-2 rounded-full transition-colors flex items-center justify-center"><span class="material-symbols-outlined" data-icon="notifications">notifications</span></button>
+<button class="hover:bg-surface-container-high p-2 rounded-full transition-colors flex items-center justify-center"><span class="material-symbols-outlined" data-icon="help_outline">help_outline</span></button>
+<div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden border border-outline-variant ml-2">
+<img alt="Seller Profile Avatar" class="w-full h-full object-cover" data-alt="Professional portrait of a male service provider, well-lit studio environment, modern corporate style, friendly expression. Clean white background. Shallow depth of field emphasizing trust and reliability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUqlsuwcAXTZGhoB1-s7g8M75ngkqqF0KysMCHzWTJxhIJymXVx20lz2UmfwFYUPW3HDMl9zT_wEKb_5HFWrWPxUE3X4ZpkP9ZdnD5IdTQktkJ72mXz2zZTKt2N1mBz2n67mWWtQ3rMXCuWcUuYAcVIrtdyTBF0KCrGH87snFS8WFEwE1lTb6cjKybWBXAJp0OY-12L_5Aj9d-AUiruv7IRn3-Bo9t_eNgwsmGlSXuoWAUAsMSxn6n-LhLnvd8DQFJzBSR1wrWSP8"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="flex-1 p-margin-mobile md:p-margin-desktop max-w-container-max mx-auto w-full pb-24">
+<!-- Breadcrumbs & Header -->
+<div class="mb-lg">
+<nav aria-label="Breadcrumb" class="flex text-on-surface-variant font-body-sm text-body-sm mb-sm">
+<ol class="inline-flex items-center space-x-1 md:space-x-3">
+<li class="inline-flex items-center">
+<a class="hover:text-primary transition-colors" href="#">Trang quản trị</a>
+</li>
+<li>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-sm mx-1">chevron_right</span>
+<span class="text-on-surface font-medium">Cài đặt</span>
+</div>
+</li>
+</ol>
+</nav>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Cài đặt cửa hàng</h1>
+</div>
+<!-- Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg">
+<!-- Main Form Area (Spans 2 columns on lg) -->
+<div class="lg:col-span-2 space-y-lg">
+<!-- Section 1: Hồ sơ cửa hàng -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md shadow-sm">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-md">Hồ sơ cửa hàng</h3>
+<div class="space-y-md">
+<!-- Shop Name -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-xs" for="shopName">Tên cửa hàng</label>
+<input class="w-full bg-surface-container-lowest border border-outline rounded-DEFAULT px-4 py-2 font-body-md text-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" id="shopName" type="text" value="Dịch vụ Sửa chữa 24/7"/>
+</div>
+<!-- Description -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-xs" for="shopDesc">Mô tả</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline rounded-DEFAULT px-4 py-2 font-body-md text-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none" id="shopDesc" rows="4">Chuyên cung cấp dịch vụ sửa chữa điện nước chuyên nghiệp tại nhà. Đội ngũ thợ lành nghề, có mặt nhanh chóng.</textarea>
+<p class="text-right text-on-surface-variant font-body-sm text-body-sm mt-1">124/500</p>
+</div>
+<!-- Image Uploads -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-md pt-4 border-t border-surface-variant">
+<!-- Avatar -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-xs">Ảnh đại diện (1:1)</label>
+<div class="mt-2 flex justify-center rounded-lg border border-dashed border-outline-variant px-6 py-8 hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="text-center">
+<div class="w-20 h-20 mx-auto rounded-full bg-surface-variant flex items-center justify-center overflow-hidden border border-outline-variant group-hover:border-primary">
+<img alt="Avatar placeholder" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A clean, professional logo mark or profile icon for a service business, featuring simple geometric tools on a light blue background. High resolution, flat design aesthetic suitable for modern UI avatars." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBK7y4-s8W7NMQgWdyIxiylZY6wuCDHZXv5FQ1Y6srZfDLFR1ZBWr6z_JvuLGAWjbg7aHh6AS5vl-odLwmmdV_IFdud84zvlcqafxofTfa9qdmE8mtJDhvs3eWhAcNKboSa_dwxGpEA-HKSWfaEt5JoIyBnP2_0ojQFuTmW2Xq6aP8bYqfYPjSYeTH6Vh3havVf6TT4iTcyTJGf7hUiqSf7N8s-4ZJHmnkwAih6MdF-6tqwoIEwcCfWyI9XXLNju3dhR9AUlypBas8"/>
+</div>
+<div class="mt-4 flex text-body-sm leading-6 text-on-surface-variant">
+<label class="relative cursor-pointer rounded-md bg-surface-container-lowest font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 hover:text-primary/80" for="file-upload-avatar">
+<span>Tải ảnh lên</span>
+<input class="sr-only" id="file-upload-avatar" name="file-upload-avatar" type="file"/>
+</label>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">PNG, JPG lên đến 2MB</p>
+</div>
+</div>
+</div>
+<!-- Cover -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-xs">Ảnh bìa (16:9)</label>
+<div class="mt-2 flex justify-center rounded-lg border border-dashed border-outline-variant px-6 py-8 hover:bg-surface-container-low transition-colors cursor-pointer group h-full items-center">
+<div class="text-center w-full">
+<div class="w-full h-24 mx-auto rounded-DEFAULT bg-surface-variant flex items-center justify-center overflow-hidden border border-outline-variant group-hover:border-primary">
+<span class="material-symbols-outlined text-outline-variant text-3xl group-hover:text-primary transition-colors">add_photo_alternate</span>
+</div>
+<div class="mt-4 flex justify-center text-body-sm leading-6 text-on-surface-variant">
+<label class="relative cursor-pointer rounded-md bg-surface-container-lowest font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 hover:text-primary/80" for="file-upload-cover">
+<span>Tải ảnh lên</span>
+<input class="sr-only" id="file-upload-cover" name="file-upload-cover" type="file"/>
+</label>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">PNG, JPG lên đến 5MB</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Secondary Column (Sidebar on lg) -->
+<div class="space-y-lg">
+<!-- Section 2: Chế độ nghỉ lễ -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md shadow-sm">
+<div class="flex items-start justify-between mb-md">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">beach_access</span>
+                                    Chế độ nghỉ lễ
+                                </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Tạm dừng nhận đơn hàng mới trong thời gian bạn đi vắng.</p>
+</div>
+<!-- Toggle Switch -->
+<div class="relative inline-block w-11 h-6 align-middle select-none transition duration-200 ease-in mt-1">
+<input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 opacity-0" id="vacationToggle" name="vacationToggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-outline-variant cursor-pointer" for="vacationToggle"></label>
+</div>
+</div>
+<!-- Expandable Message Area (Controlled by JS, shown for design purposes here) -->
+<div class="hidden mt-4 pt-4 border-t border-surface-variant animate-fade-in" id="vacationMessageContainer">
+<label class="block font-label-md text-label-md text-on-surface mb-xs" for="vacationMessage">Thông báo nghỉ lễ (Tùy chọn)</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline rounded-DEFAULT px-4 py-2 font-body-md text-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none" id="vacationMessage" placeholder="Ví dụ: Cửa hàng tạm nghỉ từ ngày... đến ngày..." rows="3"></textarea>
+<p class="text-right text-on-surface-variant font-body-sm text-body-sm mt-1">0/500</p>
+</div>
+</section>
+</div>
+</div>
+</div>
+<!-- Sticky Footer Action Bar -->
+<div class="fixed bottom-0 md:left-64 right-0 bg-surface border-t border-outline-variant p-4 md:px-margin-desktop z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+<div class="max-w-container-max mx-auto flex justify-end items-center gap-4">
+<button class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors bg-transparent border-0 px-4 py-2" type="button">
+                    Hủy
+                </button>
+<button class="font-label-md text-label-md bg-primary text-on-primary hover:bg-primary/90 px-6 py-2 rounded-DEFAULT shadow-sm transition-all focus:ring-2 focus:ring-offset-2 focus:ring-primary" type="button">
+                    Lưu thay đổi
+                </button>
+</div>
+</div>
+</main>
+<script>
+        // Simple toggle logic for Vacation Mode
+        const toggle = document.getElementById('vacationToggle');
+        const messageContainer = document.getElementById('vacationMessageContainer');
+
+        toggle.addEventListener('change', function() {
+            if(this.checked) {
+                messageContainer.classList.remove('hidden');
+            } else {
+                messageContainer.classList.add('hidden');
+            }
+        });
+    </script>
+</body></html>

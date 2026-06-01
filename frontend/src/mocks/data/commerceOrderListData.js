@@ -1,5 +1,7 @@
 import { MOCK_CART_DEMO_USER_ID } from "./commerceCartData";
+import { buildDetailFromSummary } from "./commerceOrderDetailData";
 import { mockCommerceProducts } from "./commerceProductListData";
+import { hasReviewForOrderItem } from "./commerceProductReviewIndex";
 
 const VALID_ORDER_STATUSES = [
   "CREATED",
@@ -15,6 +17,14 @@ function daysAgoIso(days) {
   const date = new Date();
   date.setDate(date.getDate() - days);
   return date.toISOString();
+}
+
+function orderHasPendingReview(summary) {
+  if (summary.order_status !== "COMPLETED") return false;
+  const detail = buildDetailFromSummary(summary);
+  return detail.items.some(
+    (item) => item.status === "COMPLETED" && !hasReviewForOrderItem(item.order_item_id),
+  );
 }
 
 function productPreview(index) {
@@ -315,7 +325,10 @@ export function getOrdersForUser(userId, { page, limit, status }) {
   const start = (page - 1) * limit;
   const slice = list.slice(start, start + limit).map((order) => {
     const { buyer_id: _buyerId, _sort_key: _sortKey, ...rest } = order;
-    return rest;
+    return {
+      ...rest,
+      pending_review: orderHasPendingReview(order),
+    };
   });
 
   return {

@@ -79,6 +79,11 @@ export function OrderListCard({ order, onOrderClick, onPayNow }) {
           {paymentMethodLabel ? (
             <span className="text-label-sm text-on-surface-variant">{paymentMethodLabel}</span>
           ) : null}
+          {order.pendingReview ? (
+            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-label-sm text-amber-900">
+              Chờ đánh giá
+            </span>
+          ) : null}
         </div>
 
         <div className="mt-4 flex gap-3">

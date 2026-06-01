@@ -14,6 +14,13 @@ const SIDEBAR_LINKS = [
     route: APP_ROUTES.commerceOrders,
     requiresAuth: true,
   },
+  {
+    id: "create-shop",
+    icon: "store",
+    label: "Tạo shop",
+    route: APP_ROUTES.commerceCreateShop,
+    requiresAuth: true,
+  },
   { id: "analytics", icon: "analytics", label: "Thống kê", comingSoon: true },
   { id: "settings", icon: "settings", label: "Cài đặt", comingSoon: true },
 ];
@@ -31,6 +38,9 @@ function isLinkActive(link, pathname) {
       pathname === APP_ROUTES.commerceOrders ||
       pathname.startsWith(`${APP_ROUTES.commerceOrders}/`)
     );
+  }
+  if (link.id === "create-shop") {
+    return pathname === APP_ROUTES.commerceCreateShop;
   }
   return pathname === link.route || pathname.startsWith(`${link.route}/`);
 }

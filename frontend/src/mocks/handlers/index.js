@@ -19,12 +19,14 @@ import { commerceShopProductsHandlers } from "./commerceShopProductsHandlers";
 import { commerceProductDetailHandlers } from "./commerceProductDetailHandlers";
 import { commerceCartHandlers } from "./commerceCartHandlers";
 import { commerceProductReviewsHandlers } from "./commerceProductReviewsHandlers";
+import { commerceProductReviewWriteHandlers } from "./commerceProductReviewWriteHandlers";
 import { commerceAddressHandlers } from "./commerceAddressHandlers";
 import { commerceCheckoutHandlers } from "./commerceCheckoutHandlers";
 import { commerceOrderHandlers } from "./commerceOrderHandlers";
 import { commerceOrderDetailHandlers } from "./commerceOrderDetailHandlers";
 import { commerceShipmentHandlers } from "./commerceShipmentHandlers";
 import { commercePaymentHandlers } from "./commercePaymentHandlers";
+import { commerceSellerShopHandlers } from "./commerceSellerShopHandlers";
 
 export const handlers = [
   ...authHandlers,
@@ -48,11 +50,13 @@ export const handlers = [
   ...commerceProductDetailHandlers,
   ...commerceCartHandlers,
   ...commerceProductReviewsHandlers,
+  ...commerceProductReviewWriteHandlers,
   ...commerceAddressHandlers,
   ...commerceCheckoutHandlers,
   ...commercePaymentHandlers,
   ...commerceOrderHandlers,
   ...commerceOrderDetailHandlers,
   ...commerceShipmentHandlers,
+  ...commerceSellerShopHandlers,
 ];
 

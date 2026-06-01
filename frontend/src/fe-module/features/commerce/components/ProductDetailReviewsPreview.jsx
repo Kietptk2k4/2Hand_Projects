@@ -35,15 +35,18 @@ export function ProductDetailReviewsPreview({
               <span className="text-sm text-on-surface-variant">({count} đánh giá)</span>
             </div>
           ) : null}
+          {!isLoading && count === 0 ? (
+            <p className="mt-2 text-sm text-on-surface-variant">Chưa có đánh giá</p>
+          ) : null}
         </div>
 
-        {!isLoading && count > 0 && hasMoreReviews ? (
+        {!isLoading ? (
           <button
             type="button"
             onClick={onViewAll}
             className="text-sm font-medium text-primary hover:underline"
           >
-            Xem tất cả ({count})
+            {count > 0 && hasMoreReviews ? `Xem tất cả (${count})` : "Xem trang đánh giá"}
           </button>
         ) : null}
       </div>
@@ -95,13 +98,15 @@ export function ProductDetailReviewsPreview({
         </div>
       ) : null}
 
-      {!isLoading && !errorMessage && count > 0 ? (
+      {!isLoading && !errorMessage ? (
         <button
           type="button"
           onClick={onViewAll}
           className="mt-6 w-full rounded-lg border-2 border-primary py-2.5 text-sm font-medium text-primary transition-colors hover:bg-surface-container-low"
         >
-          {hasMoreReviews ? `Xem tất cả ${count} đánh giá` : "Xem trang đánh giá"}
+          {count > 0 && hasMoreReviews
+            ? `Xem tất cả ${count} đánh giá`
+            : "Xem trang đánh giá"}
         </button>
       ) : null}
     </section>

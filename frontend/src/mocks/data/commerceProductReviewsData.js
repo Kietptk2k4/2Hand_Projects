@@ -101,6 +101,20 @@ export function getAllReviewsForProduct(productId) {
   return REVIEWS_BY_PRODUCT_ID.get(productId) || [];
 }
 
+/** Buyer-created reviews (MSW write flow) — prepended to public list */
+export function appendReviewForProduct(productId, review) {
+  const list = REVIEWS_BY_PRODUCT_ID.get(productId) || [];
+  REVIEWS_BY_PRODUCT_ID.set(productId, [review, ...list]);
+}
+
+export function updateReviewInProductList(productId, reviewId, patch) {
+  const list = REVIEWS_BY_PRODUCT_ID.get(productId) || [];
+  const index = list.findIndex((item) => item.review_id === reviewId);
+  if (index < 0) return;
+  list[index] = { ...list[index], ...patch };
+  REVIEWS_BY_PRODUCT_ID.set(productId, list);
+}
+
 export function computeRatingSummary(reviews) {
   if (!reviews.length) {
     return { rating_avg: 0, rating_count: 0 };

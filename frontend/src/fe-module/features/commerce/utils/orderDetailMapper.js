@@ -42,6 +42,7 @@ function mapItems(items) {
     shopNameSnapshot: item.shop_name_snapshot,
     shippingFeeAllocated: item.shipping_fee_allocated,
     completedAt: item.completed_at,
+    reviewId: item.review_id,
   }));
 }
 

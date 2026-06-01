@@ -96,3 +96,21 @@ export function getPublicShopSummary(shopId) {
     vacation_message,
   };
 }
+
+/** Đăng ký shop mới từ CreateShop — storefront GET /shops/{id}/products */
+export function registerShopFromCreate(data) {
+  const shop = {
+    shop_id: data.shop_id,
+    shop_name: data.shop_name,
+    description: data.description || "",
+    avatar_url: data.avatar_url || "",
+    cover_url: data.cover_url || "",
+    rating_avg: 0,
+    rating_count: 0,
+    shop_vacation: Boolean(data.is_vacation),
+    vacation_message: null,
+    status: data.status || "ACTIVE",
+  };
+  shopById.set(shop.shop_id, shop);
+  return shop;
+}

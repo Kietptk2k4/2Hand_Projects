@@ -37,6 +37,7 @@ export function mapOrderListItem(item) {
     previewImageUrl: item.preview_image_url,
     payment: mapPayment(item.payment),
     shipmentSummary: mapShipmentSummary(item.shipment_summary),
+    pendingReview: Boolean(item.pending_review ?? item.pendingReview),
   };
 }
 

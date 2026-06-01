@@ -23,6 +23,8 @@ export const APP_ROUTES = {
   commerceShopProducts: "/commerce/shops/:shopId",
   commerceProductDetail: "/commerce/products/:productId",
   commerceProductReviews: "/commerce/products/:productId/reviews",
+  commerceReviewCreate: "/commerce/reviews/new",
+  commerceReviewEdit: "/commerce/reviews/:reviewId/edit",
   commerceCart: "/commerce/cart",
   commerceOrders: "/commerce/orders",
   commerceOrderDetail: "/commerce/orders/:orderId",
@@ -30,5 +32,6 @@ export const APP_ROUTES = {
   commerceCheckout: "/commerce/checkout",
   commerceCheckoutSuccess: "/commerce/checkout/success",
   commerceCheckoutPaymentResult: "/commerce/checkout/payment-result",
+  commerceCreateShop: "/commerce/seller/shop/create",
 };
 

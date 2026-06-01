@@ -136,7 +136,7 @@ export function CommerceOrderDetailPage() {
 
             <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
               <div className="flex flex-col gap-6 lg:col-span-8">
-                <OrderDetailItemsSection items={order.items} />
+                <OrderDetailItemsSection orderId={order.orderId} items={order.items} />
                 <OrderDetailShipmentsSection orderId={order.orderId} shipments={order.shipments} />
               </div>
 

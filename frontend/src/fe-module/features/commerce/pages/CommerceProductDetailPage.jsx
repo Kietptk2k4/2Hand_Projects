@@ -140,10 +140,7 @@ export function CommerceProductDetailPage() {
 
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10">
               <div className="flex flex-col gap-8 lg:col-span-8">
-                <ProductDetailInfo
-                  product={product}
-                  onOpenReviews={product.ratingCount > 0 ? openReviews : undefined}
-                />
+                <ProductDetailInfo product={product} onOpenReviews={openReviews} />
                 <ProductDetailDescription product={product} />
                 <ProductDetailReviewsPreview
                   ratingSummary={previewRatingSummary}

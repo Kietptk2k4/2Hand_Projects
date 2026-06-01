@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Write Review - 2Hands</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#d8e3fb",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#0050cb",
+                        "surface-tint": "#0054d6",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#f9f9ff",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "background": "#f9f9ff",
+                        "surface-dim": "#cfdaf2",
+                        "surface-container-low": "#f0f3ff",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "on-surface-variant": "#424656",
+                        "surface": "#f9f9ff",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#6f7274",
+                        "outline-variant": "#c2c6d8",
+                        "primary-fixed": "#dae1ff",
+                        "inverse-on-surface": "#ecf1ff",
+                        "on-surface": "#111c2d",
+                        "on-background": "#111c2d",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "inverse-primary": "#b3c5ff",
+                        "on-secondary-container": "#fffbff",
+                        "surface-container-highest": "#d8e3fb",
+                        "secondary-container": "#6063ee",
+                        "primary-container": "#0066ff",
+                        "tertiary": "#565a5b",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "on-secondary-fixed": "#07006c",
+                        "inverse-surface": "#263143",
+                        "surface-container-high": "#dee8ff",
+                        "on-primary-fixed": "#001849",
+                        "on-tertiary-fixed": "#191c1e",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-container": "#f6f8fa",
+                        "on-primary-container": "#f8f7ff",
+                        "tertiary-fixed": "#e0e3e5",
+                        "on-primary-fixed-variant": "#003fa4",
+                        "outline": "#727687",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "secondary-fixed": "#e1e0ff",
+                        "on-tertiary": "#ffffff",
+                        "surface-container": "#e7eeff",
+                        "secondary": "#4648d4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "12px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "xs": "4px",
+                        "lg": "40px",
+                        "gutter": "24px",
+                        "xl": "64px",
+                        "md": "24px",
+                        "margin-desktop": "32px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-xl-mobile": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-xl": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-xl-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #f9f9ff; color: #111c2d; }
+        .rating-star:hover ~ .rating-star { opacity: 0.5; }
+        .rating-star:hover { opacity: 1; transform: scale(1.1); transition: all 0.2s ease; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans">
+<!-- TopNavBar -->
+<header class="bg-surface-container-lowest border-b border-outline-variant shadow-sm flex justify-between items-center px-margin-desktop w-full h-16 sticky top-0 z-50">
+<div class="flex items-center gap-md">
+<span class="text-headline-md font-headline-md font-bold text-primary">2Hands</span>
+<nav class="hidden md:flex gap-md ml-lg">
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-label-md text-label-md py-4" href="#">Marketplace</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-label-md text-label-md py-4" href="#">Services</a>
+<a class="text-primary border-b-2 border-primary pb-1 font-label-md text-label-md py-4" href="#">Orders</a>
+</nav>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-2 rounded-full hover:bg-surface-container-low transition-colors duration-200 cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-low transition-colors duration-200 cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined text-on-surface-variant">shopping_cart</span>
+</button>
+<img alt="User profile avatar" class="w-8 h-8 rounded-full ml-sm cursor-pointer active:opacity-80 border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBszrxS1nIBpQ57nCIp4ynYgzN1E5zRT7qIUjY62Ov5cHAkiLPPFh0e9rskFn8yv7k9S_8dl6pvRbqDQPK52h5fizVK6tKCHqYJjv6kgI3jUhqYtwELtb3ql5K8wE5rZIFQNYu6wLu8g5ifOmlVsDpXm7Ms6JEAKEJmAHaxIeF4oKW5SjQRZ-CuhSpllDyjF9XTQ_ozuzOvK0TZxuRh9CNhoFU_QLQbC8cCxq9nuz1Wg-KVxIwey6anA0RLLgtdCYcnwRcDYYG5RAk"/>
+</div>
+</header>
+<!-- Main Content Split View -->
+<main class="flex-grow w-full max-w-[1280px] mx-auto px-margin-desktop py-lg grid grid-cols-1 md:grid-cols-12 gap-gutter items-start">
+<!-- Left Column: Product Summary (40%) -->
+<aside class="col-span-1 md:col-span-5 bg-surface-container-lowest rounded-lg border border-outline-variant p-md sticky top-[88px]">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-md">Product Summary</h2>
+<img class="w-full h-auto object-cover rounded-t-lg mb-sm aspect-[4/3]" data-alt="A sleek, modern red athletic shoe sitting perfectly centered against a pristine, brightly lit minimalist studio background. The lighting is high-key and soft, emphasizing the clean lines and premium texture of the footwear. The overall aesthetic feels like a high-end commercial product shot, conveying quality and professional integrity. Vibrant red contrasts sharply against the pristine white setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4hd5FQrncNePGRedetxSYELR-RfUClv9Cx6vLX8H_s-RII6TjCkN2XLLw6Fn9N4Q46zCR8czSeg3wS1dvxXyoJnDq7KUgPBcla5-37_vkiDkAeYgeXmCkLJxP3z0EGi31AX5dBnuT7EdYH2EC73FCvXJsdUegizMu1j1HWH-x7KZmo1YYeSNd5v4HmragANxpcma6HqTkhF0AkiB1khjdn9_EmLXZHa91mabbp-yUBFJiM8uU-X_TFVYZ_sxhfqHs9YWda111HPA"/>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Nike Air Max 270 React</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-md">Premium lifestyle shoe offering exceptional comfort and durable style for everyday wear. Features advanced cushioning technology.</p>
+<div class="flex justify-between items-center pt-md border-t border-outline-variant">
+<span class="font-label-md text-label-md text-on-surface-variant">Purchased Price</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold">1,250,000 ₫</span>
+</div>
+<div class="mt-sm flex items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+<span class="font-body-sm text-body-sm">Delivered Oct 15, 2023</span>
+</div>
+</aside>
+<!-- Right Column: Review Form (60%) -->
+<section class="col-span-1 md:col-span-7 bg-surface-container-lowest rounded-lg border border-outline-variant p-lg shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1)]">
+<div class="mb-lg">
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-xs">Write a Review</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Share your experience with this product to help other buyers make informed decisions.</p>
+</div>
+<form class="flex flex-col gap-lg">
+<!-- Rating -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-sm">Overall Rating</label>
+<div class="flex gap-sm text-[#F59E0B] cursor-pointer" id="star-rating">
+<span class="material-symbols-outlined text-[32px] rating-star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[32px] rating-star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[32px] rating-star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[32px] rating-star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[32px] rating-star">star</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">Tap a star to rate</p>
+</div>
+<!-- Detailed Feedback -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-sm" for="review-text">Detailed Feedback</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant rounded-DEFAULT p-sm font-body-md text-body-md text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-colors" id="review-text" placeholder="What did you like or dislike? How did the product fit?" rows="5"></textarea>
+<div class="flex justify-between mt-xs">
+<p class="font-body-sm text-body-sm text-on-surface-variant">Minimum 50 characters for helpful reviews.</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">0 / 500</p>
+</div>
+</div>
+<!-- Visual Media Picker -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-sm">Add Photos or Video</label>
+<div class="border-2 border-dashed border-outline-variant rounded-lg p-lg flex flex-col items-center justify-center text-center bg-surface-container-low hover:bg-surface-variant transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-[40px] text-on-surface-variant group-hover:text-primary transition-colors mb-sm">cloud_upload</span>
+<p class="font-label-md text-label-md text-on-surface mb-xs">Click or drag media here to upload</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">JPG, PNG or MP4 up to 10MB</p>
+</div>
+</div>
+<!-- Success Note -->
+<div class="bg-[#ECFDF5] border border-[#A7F3D0] rounded-DEFAULT p-sm flex items-center gap-sm">
+<span class="material-symbols-outlined text-[#059669]" style="font-variation-settings: 'FILL' 1;">monetization_on</span>
+<p class="font-label-md text-label-md text-[#065F46]">Bạn sẽ nhận được 100 xu sau khi hoàn thành đánh giá này.</p>
+</div>
+<!-- Actions -->
+<div class="flex justify-end gap-md pt-md border-t border-outline-variant mt-sm">
+<button class="px-md py-sm rounded-DEFAULT border-2 border-transparent text-on-surface-variant hover:bg-surface-variant font-label-md text-label-md transition-colors" type="button">Cancel</button>
+<button class="px-md py-sm rounded-DEFAULT bg-[#0066FF] text-white hover:bg-[#0054d6] font-label-md text-label-md font-bold transition-colors shadow-sm" type="button">Gửi ngay</button>
+</div>
+</form>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low flex flex-col md:flex-row justify-between items-center py-8 px-margin-desktop w-full mt-auto border-t border-outline-variant">
+<span class="font-headline-sm text-headline-sm text-on-surface mb-4 md:mb-0">2Hands</span>
+<div class="flex gap-md mb-4 md:mb-0">
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary hover:underline transition-all cursor-pointer" href="#">Privacy Policy</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary hover:underline transition-all cursor-pointer" href="#">Terms of Service</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary hover:underline transition-all cursor-pointer" href="#">Contact Support</a>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">© 2024 2Hands Professional Marketplace. All rights reserved.</span>
+</footer>
+<script>
+        // Simple star rating interaction
+        document.querySelectorAll('.rating-star').forEach((star, index, stars) => {
+            star.addEventListener('click', () => {
+                stars.forEach((s, i) => {
+                    if(i <= index) {
+                        s.setAttribute('data-weight', 'fill');
+                        s.style.fontVariationSettings = "'FILL' 1";
+                    } else {
+                        s.removeAttribute('data-weight');
+                        s.style.fontVariationSettings = "'FILL' 0";
+                    }
+                });
+            });
+        });
+    </script>
+</body></html>

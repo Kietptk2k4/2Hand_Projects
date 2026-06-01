@@ -1,5 +1,7 @@
+import { Link, useNavigate } from "react-router-dom";
 import { formatVndPrice } from "../../social/utils/formatPrice";
 import { ITEM_STATUS_BADGE_CLASS, ITEM_STATUS_LABELS } from "../constants/orderDetailConstants";
+import { APP_ROUTES } from "../../../shared/constants/routes";
 
 function parseAttributes(attributesSnapshot) {
   if (!attributesSnapshot) return null;
@@ -14,8 +16,21 @@ function parseAttributes(attributesSnapshot) {
   }
 }
 
-export function OrderDetailItemsSection({ items }) {
+export function OrderDetailItemsSection({ orderId, items }) {
+  const navigate = useNavigate();
+
   if (!items?.length) return null;
+
+  const handleWriteReview = (item) => {
+    const path = `${APP_ROUTES.commerceReviewCreate}?orderItemId=${encodeURIComponent(item.orderItemId)}`;
+    navigate(path, {
+      state: {
+        orderId,
+        orderItem: item,
+        productId: item.productId,
+      },
+    });
+  };
 
   return (
     <section className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
@@ -31,6 +46,8 @@ export function OrderDetailItemsSection({ items }) {
             ITEM_STATUS_BADGE_CLASS[item.status] ||
             "bg-surface-container-high text-on-surface-variant";
           const attributesText = parseAttributes(item.attributesSnapshot);
+          const canReview = item.status === "COMPLETED";
+          const hasReview = Boolean(item.reviewId);
 
           return (
             <div
@@ -70,6 +87,25 @@ export function OrderDetailItemsSection({ items }) {
                   <span>Số lượng: {item.quantity}</span>
                   <span className="font-semibold">{formatVndPrice(item.finalPrice)}</span>
                 </div>
+
+                {canReview && !hasReview ? (
+                  <button
+                    type="button"
+                    onClick={() => handleWriteReview(item)}
+                    className="mt-3 rounded-lg border border-primary px-4 py-2 text-label-md font-medium text-primary hover:bg-surface-container-low"
+                  >
+                    Viết đánh giá
+                  </button>
+                ) : null}
+
+                {canReview && hasReview ? (
+                  <Link
+                    to={APP_ROUTES.commerceReviewEdit.replace(":reviewId", item.reviewId)}
+                    className="mt-3 inline-block rounded-lg border border-primary px-4 py-2 text-label-md font-medium text-primary hover:bg-surface-container-low"
+                  >
+                    Sửa đánh giá
+                  </Link>
+                ) : null}
               </div>
 
               <span className={`self-start rounded-full px-2.5 py-0.5 text-label-sm ${statusClass}`}>
