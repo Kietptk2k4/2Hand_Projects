@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FeedToast } from "../../social/components/FeedToast";
 import { CommerceShell } from "../components/CommerceShell";
 import { OrderListCard } from "../components/OrderListCard";
@@ -6,10 +7,10 @@ import { OrderListEmptyState } from "../components/OrderListEmptyState";
 import { OrderListFilters } from "../components/OrderListFilters";
 import { OrderListSkeleton } from "../components/OrderListSkeleton";
 import { useOrderList } from "../hooks/useOrderList";
-
-const COMING_SOON_DETAIL = "Chi tiết đơn hàng đang được phát triển.";
+import { APP_ROUTES } from "../../../shared/constants/routes";
 
 export function CommerceOrderListPage() {
+  const navigate = useNavigate();
   const [toastMessage, setToastMessage] = useState("");
 
   const {
@@ -34,9 +35,13 @@ export function CommerceOrderListPage() {
     setToastMessage("");
   }, []);
 
-  const handleOrderClick = useCallback(() => {
-    showComingSoon(COMING_SOON_DETAIL);
-  }, [showComingSoon]);
+  const handleOrderClick = useCallback(
+    (targetOrderId) => {
+      if (!targetOrderId) return;
+      navigate(APP_ROUTES.commerceOrderDetail.replace(":orderId", targetOrderId));
+    },
+    [navigate]
+  );
 
   const handleStatusFilterChange = useCallback(
     (nextStatus) => {

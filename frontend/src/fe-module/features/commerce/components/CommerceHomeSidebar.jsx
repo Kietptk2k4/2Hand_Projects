@@ -27,7 +27,10 @@ function isLinkActive(link, pathname) {
     return pathname === APP_ROUTES.commerceCart;
   }
   if (link.id === "orders") {
-    return pathname === APP_ROUTES.commerceOrders;
+    return (
+      pathname === APP_ROUTES.commerceOrders ||
+      pathname.startsWith(`${APP_ROUTES.commerceOrders}/`)
+    );
   }
   return pathname === link.route || pathname.startsWith(`${link.route}/`);
 }

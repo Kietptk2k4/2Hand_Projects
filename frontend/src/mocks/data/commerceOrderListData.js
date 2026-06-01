@@ -296,6 +296,11 @@ export function validateOrderListQuery({ page, limit, status }) {
   return { page: pageNum, limit: limitNum, status: status || null };
 }
 
+export function findOrderSummaryForUser(userId, orderId) {
+  const list = ordersByUserId.get(userId) || [];
+  return list.find((order) => order.order_id === orderId) || null;
+}
+
 export function getOrdersForUser(userId, { page, limit, status }) {
   let list = [...(ordersByUserId.get(userId) || [])];
 
