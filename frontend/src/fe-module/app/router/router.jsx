@@ -21,6 +21,7 @@ import { CommerceHomePage } from "../../features/commerce/pages/CommerceHomePage
 import { CommerceProductPlaceholderPage } from "../../features/commerce/pages/CommerceProductPlaceholderPage";
 import { CommerceCategoryProductsPage } from "../../features/commerce/pages/CommerceCategoryProductsPage";
 import { CommerceSearchPage } from "../../features/commerce/pages/CommerceSearchPage";
+import { CommerceShopProductsPage } from "../../features/commerce/pages/CommerceShopProductsPage";
 
 function HomePage() {
   return (
@@ -49,6 +50,10 @@ export const router = createBrowserRouter([
       {
         path: APP_ROUTES.commerceCategoryProducts.slice(1),
         element: <CommerceCategoryProductsPage />,
+      },
+      {
+        path: APP_ROUTES.commerceShopProducts.slice(1),
+        element: <CommerceShopProductsPage />,
       },
       {
         path: APP_ROUTES.commerceProductDetail.slice(1),

@@ -7,7 +7,7 @@ import { ProductCard } from "../components/ProductCard";
 import { ProductListSkeleton } from "../components/ProductListSkeleton";
 import { ProductListSortSelect } from "../components/ProductListSortSelect";
 import { useProductList } from "../hooks/useProductList";
-import { buildCommerceCategoryPath } from "../utils/commerceRoutes";
+import { buildCommerceCategoryPath, buildCommerceShopPath } from "../utils/commerceRoutes";
 import { buildCommerceSearchPath } from "../utils/commerceSearchRoutes";
 import { normalizeSearchKeyword } from "../utils/normalizeSearchKeyword";
 import { MIN_KEYWORD_LENGTH } from "../constants/productSearchConstants";
@@ -50,6 +50,14 @@ export function CommerceHomePage() {
     (item) => {
       if (!item?.categoryId) return;
       navigate(buildCommerceCategoryPath(item.categoryId));
+    },
+    [navigate]
+  );
+
+  const openShop = useCallback(
+    (targetShopId) => {
+      if (!targetShopId) return;
+      navigate(buildCommerceShopPath(targetShopId));
     },
     [navigate]
   );
@@ -128,12 +136,13 @@ export function CommerceHomePage() {
         {!isInitialLoading && !errorMessage && items.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {items.map((product) => (
-              <ProductCard
-                key={product.productId}
-                product={product}
-                onOpenProduct={openProduct}
-                onComingSoon={showComingSoon}
-              />
+                <ProductCard
+                  key={product.productId}
+                  product={product}
+                  onOpenProduct={openProduct}
+                  onOpenShop={openShop}
+                  onComingSoon={showComingSoon}
+                />
             ))}
           </div>
         ) : null}

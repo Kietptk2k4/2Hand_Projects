@@ -20,6 +20,7 @@ export const APP_ROUTES = {
   commerceHome: "/commerce",
   commerceSearch: "/commerce/search",
   commerceCategoryProducts: "/commerce/categories/:categoryId",
+  commerceShopProducts: "/commerce/shops/:shopId",
   commerceProductDetail: "/commerce/products/:productId",
 };
 

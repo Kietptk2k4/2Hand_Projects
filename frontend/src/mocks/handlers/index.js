@@ -15,6 +15,7 @@ import { socialPostHandlers } from "./socialPostHandlers";
 import { commerceProductListHandlers } from "./commerceProductListHandlers";
 import { commerceCategoryProductsHandlers } from "./commerceCategoryProductsHandlers";
 import { commerceProductSearchHandlers } from "./commerceProductSearchHandlers";
+import { commerceShopProductsHandlers } from "./commerceShopProductsHandlers";
 
 export const handlers = [
   ...authHandlers,
@@ -34,5 +35,6 @@ export const handlers = [
   ...commerceProductListHandlers,
   ...commerceCategoryProductsHandlers,
   ...commerceProductSearchHandlers,
+  ...commerceShopProductsHandlers,
 ];
 

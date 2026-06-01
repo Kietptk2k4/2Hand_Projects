@@ -10,6 +10,7 @@ import { CommerceShell } from "../components/CommerceShell";
 import { ProductCard } from "../components/ProductCard";
 import { ProductListSkeleton } from "../components/ProductListSkeleton";
 import { useCategoryProducts } from "../hooks/useCategoryProducts";
+import { buildCommerceShopPath } from "../utils/commerceRoutes";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
 const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
@@ -48,6 +49,14 @@ export function CommerceCategoryProductsPage() {
     (productId) => {
       if (!productId) return;
       navigate(APP_ROUTES.commerceProductDetail.replace(":productId", productId));
+    },
+    [navigate]
+  );
+
+  const openShop = useCallback(
+    (targetShopId) => {
+      if (!targetShopId) return;
+      navigate(buildCommerceShopPath(targetShopId));
     },
     [navigate]
   );
@@ -126,6 +135,7 @@ export function CommerceCategoryProductsPage() {
                       key={product.productId}
                       product={product}
                       onOpenProduct={openProduct}
+                      onOpenShop={openShop}
                       onComingSoon={showComingSoon}
                     />
                   ))}

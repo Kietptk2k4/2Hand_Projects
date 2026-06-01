@@ -10,7 +10,13 @@ function ProductBadge({ children, className = "" }) {
   );
 }
 
-export function ProductCard({ product, onOpenProduct, onComingSoon, disabledActions = false }) {
+export function ProductCard({
+  product,
+  onOpenProduct,
+  onOpenShop,
+  onComingSoon,
+  disabledActions = false,
+}) {
   const isOnSale =
     product.salePrice != null &&
     product.price != null &&
@@ -97,7 +103,20 @@ export function ProductCard({ product, onOpenProduct, onComingSoon, disabledActi
           <span className="material-symbols-outlined text-[16px] text-outline" aria-hidden="true">
             storefront
           </span>
-          <span className="text-label-sm text-on-surface-variant">{product.shopName}</span>
+          {onOpenShop && product.shopId ? (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                onOpenShop(product.shopId);
+              }}
+              className="text-left text-label-sm text-on-surface-variant transition-colors hover:text-primary"
+            >
+              {product.shopName}
+            </button>
+          ) : (
+            <span className="text-label-sm text-on-surface-variant">{product.shopName}</span>
+          )}
         </div>
 
         {product.shopVacation ? (
