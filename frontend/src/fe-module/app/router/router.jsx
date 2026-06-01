@@ -18,7 +18,7 @@ import { SocialSavedPostsPage } from "../../features/social/pages/SocialSavedPos
 import { SocialSearchPostsPage } from "../../features/social/pages/SocialSearchPostsPage";
 import { SocialHashtagPostsPage } from "../../features/social/pages/SocialHashtagPostsPage";
 import { CommerceHomePage } from "../../features/commerce/pages/CommerceHomePage";
-import { CommerceProductPlaceholderPage } from "../../features/commerce/pages/CommerceProductPlaceholderPage";
+import { CommerceProductDetailPage } from "../../features/commerce/pages/CommerceProductDetailPage";
 import { CommerceCategoryProductsPage } from "../../features/commerce/pages/CommerceCategoryProductsPage";
 import { CommerceSearchPage } from "../../features/commerce/pages/CommerceSearchPage";
 import { CommerceShopProductsPage } from "../../features/commerce/pages/CommerceShopProductsPage";
@@ -57,7 +57,7 @@ export const router = createBrowserRouter([
       },
       {
         path: APP_ROUTES.commerceProductDetail.slice(1),
-        element: <CommerceProductPlaceholderPage />,
+        element: <CommerceProductDetailPage />,
       },
       {
         element: <AuthGuard />,
