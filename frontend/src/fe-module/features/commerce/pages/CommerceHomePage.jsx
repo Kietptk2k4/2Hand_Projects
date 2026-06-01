@@ -8,6 +8,9 @@ import { ProductListSkeleton } from "../components/ProductListSkeleton";
 import { ProductListSortSelect } from "../components/ProductListSortSelect";
 import { useProductList } from "../hooks/useProductList";
 import { buildCommerceCategoryPath } from "../utils/commerceRoutes";
+import { buildCommerceSearchPath } from "../utils/commerceSearchRoutes";
+import { normalizeSearchKeyword } from "../utils/normalizeSearchKeyword";
+import { MIN_KEYWORD_LENGTH } from "../constants/productSearchConstants";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
 const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
@@ -51,6 +54,19 @@ export function CommerceHomePage() {
     [navigate]
   );
 
+  const handleSearchSubmit = useCallback(
+    (rawQuery) => {
+      const normalized = normalizeSearchKeyword(rawQuery);
+      if (!normalized) return;
+      if (normalized.length < MIN_KEYWORD_LENGTH) {
+        setToastMessage("Nhập ít nhất 2 ký tự.");
+        return;
+      }
+      navigate(buildCommerceSearchPath(normalized));
+    },
+    [navigate]
+  );
+
   return (
     <CommerceShell onComingSoon={showComingSoon}>
       <div className="mb-6 flex items-center justify-end gap-2 lg:hidden">
@@ -77,7 +93,7 @@ export function CommerceHomePage() {
         </button>
       </div>
 
-      <CommerceHomeHero onSearchSubmit={showComingSoon} onCategoryClick={navigateToCategory} />
+      <CommerceHomeHero onSearchSubmit={handleSearchSubmit} onCategoryClick={navigateToCategory} />
 
       <section>
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

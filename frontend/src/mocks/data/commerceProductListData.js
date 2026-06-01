@@ -7,7 +7,17 @@ import {
   MOCK_CATEGORY_TOOLS_ID,
 } from "./commerceCategoryIds";
 
+const CATEGORY_NAME_BY_ID = {
+  [MOCK_CATEGORY_TOOLS_ID]: "Dụng cụ điện",
+  [MOCK_CATEGORY_DRILL_ID]: "Máy khoan",
+  [MOCK_CATEGORY_BUILDING_ID]: "Vật liệu xây dựng",
+  [MOCK_CATEGORY_ELECTRICAL_ID]: "Thiết bị điện",
+  [MOCK_CATEGORY_PLUMBING_ID]: "Ống nước",
+  [MOCK_CATEGORY_SAFETY_ID]: "Bảo hộ lao động",
+};
+
 function product(overrides) {
+  const categoryId = overrides.category_id;
   return {
     condition: "NEW",
     status: "ACTIVE",
@@ -17,7 +27,10 @@ function product(overrides) {
     vacation_message: null,
     rating_avg: 4.5,
     rating_count: 10,
+    description: "",
+    category_name: CATEGORY_NAME_BY_ID[categoryId] || "",
     ...overrides,
+    category_name: overrides.category_name || CATEGORY_NAME_BY_ID[categoryId] || "",
   };
 }
 
@@ -26,6 +39,7 @@ export const mockCommerceProducts = [
   product({
     product_id: "c1000000-0000-4000-8000-000000000001",
     title: "Máy khoan búa 20V ProGrade",
+    description: "Máy khoan búa pin 20V công nghiệp ProGrade cho thợ chuyên nghiệp",
     thumbnail_url: "https://picsum.photos/seed/commerce-drill/400/300",
     shop_id: "s1000000-0000-4000-8000-000000000001",
     shop_name: "BuildTech Supplies",
@@ -40,6 +54,7 @@ export const mockCommerceProducts = [
   product({
     product_id: "c1000000-0000-4000-8000-000000000002",
     title: "Bộ giá đỡ kết cấu thép (4 chiếc)",
+    description: "Giá đỡ kết cấu thép chịu lực cho dự án xây dựng",
     thumbnail_url: "https://picsum.photos/seed/commerce-bracket/400/300",
     shop_id: "s1000000-0000-4000-8000-000000000002",
     shop_name: "MetalWorks Direct",
@@ -54,6 +69,7 @@ export const mockCommerceProducts = [
   product({
     product_id: "c1000000-0000-4000-8000-000000000003",
     title: "Dây đồng 12/2 cao cấp (30m)",
+    description: "Dây đồng 12/2 chống cháy cho hệ thống điện dân dụng",
     thumbnail_url: "https://picsum.photos/seed/commerce-wire/400/300",
     shop_id: "s1000000-0000-4000-8000-000000000003",
     shop_name: "VoltCore Supply",
