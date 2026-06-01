@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { AdminProductRemovalTab } from "../../commerce/components/AdminProductRemovalTab";
 import { AdminReviewModerationTab } from "../../commerce/components/AdminReviewModerationTab";
 import { AdminShopModerationTab } from "../../commerce/components/AdminShopModerationTab";
 import {
@@ -9,7 +10,6 @@ import {
 } from "../admin/adminUrlParams.js";
 import { AdminNestedNav } from "../admin/components/AdminNestedNav.jsx";
 import { AdminPageLayout } from "../admin/components/AdminPageLayout.jsx";
-import { AdminCommerceModerationPlaceholderTab } from "../admin/commerceModeration/components/AdminCommerceModerationPlaceholderTab.jsx";
 import { AdminUserTargetBar } from "../admin/loginSession/components/AdminUserTargetBar.jsx";
 import { AssignRoleTab } from "../admin/rolePermission/components/AssignRoleTab.jsx";
 import { RevokeRoleTab } from "../admin/rolePermission/components/RevokeRoleTab.jsx";
@@ -36,14 +36,7 @@ const LOGIN_SESSION_TAB_COMPONENTS = {
 const COMMERCE_MODERATION_TAB_COMPONENTS = {
   "shop-moderation": AdminShopModerationTab,
   "review-moderation": AdminReviewModerationTab,
-  "product-moderation": function AdminProductModerationPlaceholder() {
-    return (
-      <AdminCommerceModerationPlaceholderTab
-        title="Kiểm duyệt sản phẩm"
-        description="RemoveProductByAdmin — đang được phát triển."
-      />
-    );
-  },
+  "product-moderation": AdminProductRemovalTab,
 };
 
 export function AdminPage() {

@@ -14,6 +14,7 @@ export const APP_ROUTES = {
   admin: "/admin",
   commerceAdminShopModeration: "/admin/commerce/shops",
   commerceAdminReviewModeration: "/admin/commerce/reviews",
+  commerceAdminProductRemoval: "/admin/commerce/products",
   socialFeed: "/social",
   socialSavedPosts: "/social/saved",
   socialSearchPosts: "/social/search",

@@ -33,6 +33,7 @@ import { commerceSellerShipmentHandlers } from "./commerceSellerShipmentHandlers
 import { commerceSellerShopReviewsHandlers } from "./commerceSellerShopReviewsHandlers";
 import { commerceAdminShopModerationHandlers } from "./commerceAdminShopModerationHandlers";
 import { commerceAdminReviewModerationHandlers } from "./commerceAdminReviewModerationHandlers";
+import { commerceAdminProductRemovalHandlers } from "./commerceAdminProductRemovalHandlers";
 
 export const handlers = [
   ...authHandlers,
@@ -70,5 +71,6 @@ export const handlers = [
   ...commerceSellerShopReviewsHandlers,
   ...commerceAdminShopModerationHandlers,
   ...commerceAdminReviewModerationHandlers,
+  ...commerceAdminProductRemovalHandlers,
 ];
 

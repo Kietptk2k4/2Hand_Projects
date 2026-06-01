@@ -41,6 +41,7 @@ import { CommerceSellerShipmentDetailPage } from "../../features/commerce/pages/
 import { CommerceSellerShopReviewsPage } from "../../features/commerce/pages/CommerceSellerShopReviewsPage";
 import { CommerceAdminShopModerationPage } from "../../features/commerce/pages/CommerceAdminShopModerationPage";
 import { CommerceAdminReviewModerationPage } from "../../features/commerce/pages/CommerceAdminReviewModerationPage";
+import { CommerceAdminProductRemovalPage } from "../../features/commerce/pages/CommerceAdminProductRemovalPage";
 
 function HomePage() {
   return (
@@ -97,6 +98,10 @@ export const router = createBrowserRouter([
           {
             path: APP_ROUTES.commerceAdminReviewModeration.slice(1),
             element: <CommerceAdminReviewModerationPage />,
+          },
+          {
+            path: APP_ROUTES.commerceAdminProductRemoval.slice(1),
+            element: <CommerceAdminProductRemovalPage />,
           },
           { path: APP_ROUTES.socialFeed.slice(1), element: <SocialFeedPage /> },
           { path: APP_ROUTES.socialSavedPosts.slice(1), element: <SocialSavedPostsPage /> },
