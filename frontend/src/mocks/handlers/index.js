@@ -13,6 +13,7 @@ import { socialSearchHashtagHandlers } from "./socialSearchHashtagHandlers";
 import { socialCommentWriteHandlers } from "./socialCommentWriteHandlers";
 import { socialPostHandlers } from "./socialPostHandlers";
 import { commerceProductListHandlers } from "./commerceProductListHandlers";
+import { commerceCategoryProductsHandlers } from "./commerceCategoryProductsHandlers";
 
 export const handlers = [
   ...authHandlers,
@@ -30,5 +31,6 @@ export const handlers = [
   ...socialFollowHandlers,
   ...socialRelationsHandlers,
   ...commerceProductListHandlers,
+  ...commerceCategoryProductsHandlers,
 ];
 
