@@ -38,6 +38,7 @@ import { CommerceSellerProductFormPage } from "../../features/commerce/pages/Com
 import { CommerceSellerOrderListPage } from "../../features/commerce/pages/CommerceSellerOrderListPage";
 import { CommerceSellerShipmentListPage } from "../../features/commerce/pages/CommerceSellerShipmentListPage";
 import { CommerceSellerShipmentDetailPage } from "../../features/commerce/pages/CommerceSellerShipmentDetailPage";
+import { CommerceSellerShopReviewsPage } from "../../features/commerce/pages/CommerceSellerShopReviewsPage";
 
 function HomePage() {
   return (
@@ -150,6 +151,10 @@ export const router = createBrowserRouter([
           {
             path: APP_ROUTES.commerceSellerShipmentDetail.slice(1),
             element: <CommerceSellerShipmentDetailPage />,
+          },
+          {
+            path: APP_ROUTES.commerceSellerReviews.slice(1),
+            element: <CommerceSellerShopReviewsPage />,
           },
         ],
       },

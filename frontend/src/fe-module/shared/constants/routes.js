@@ -40,5 +40,6 @@ export const APP_ROUTES = {
   commerceSellerOrders: "/commerce/seller/orders",
   commerceSellerShipments: "/commerce/seller/shipments",
   commerceSellerShipmentDetail: "/commerce/seller/shipments/:shipmentId",
+  commerceSellerReviews: "/commerce/seller/reviews",
 };
 

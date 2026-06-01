@@ -42,6 +42,13 @@ const SIDEBAR_LINKS = [
     route: APP_ROUTES.commerceSellerShipments,
     requiresAuth: true,
   },
+  {
+    id: "seller-reviews",
+    icon: "rate_review",
+    label: "Đánh giá",
+    route: APP_ROUTES.commerceSellerReviews,
+    requiresAuth: true,
+  },
   { id: "analytics", icon: "analytics", label: "Thống kê", comingSoon: true },
   {
     id: "settings",
@@ -91,6 +98,12 @@ function isLinkActive(link, pathname) {
     return (
       pathname === APP_ROUTES.commerceSellerShipments ||
       pathname.startsWith(`${APP_ROUTES.commerceSellerShipments}/`)
+    );
+  }
+  if (link.id === "seller-reviews") {
+    return (
+      pathname === APP_ROUTES.commerceSellerReviews ||
+      pathname.startsWith(`${APP_ROUTES.commerceSellerReviews}/`)
     );
   }
   return pathname === link.route || pathname.startsWith(`${link.route}/`);
