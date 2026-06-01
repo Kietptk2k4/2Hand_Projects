@@ -4,13 +4,19 @@ import { FeedToast } from "../../social/components/FeedToast";
 import { CommerceShell } from "../components/CommerceShell";
 import { ProductDetailActionCard } from "../components/ProductDetailActionCard";
 import { ProductDetailDescription } from "../components/ProductDetailDescription";
+import { ProductDetailReviewsPreview } from "../components/ProductDetailReviewsPreview";
 import { ProductDetailInfo } from "../components/ProductDetailInfo";
 import { ProductDetailShopCard } from "../components/ProductDetailShopCard";
 import { ProductDetailSkeleton } from "../components/ProductDetailSkeleton";
 import { ProductMediaGallery } from "../components/ProductMediaGallery";
 import { ShopVacationBanner } from "../components/ShopVacationBanner";
 import { useProductDetail } from "../hooks/useProductDetail";
-import { buildCommerceCategoryPath, buildCommerceShopPath } from "../utils/commerceRoutes";
+import { useProductReviewsPreview } from "../hooks/useProductReviewsPreview";
+import {
+  buildCommerceCategoryPath,
+  buildCommerceProductReviewsPath,
+  buildCommerceShopPath,
+} from "../utils/commerceRoutes";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
 const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
@@ -21,6 +27,16 @@ export function CommerceProductDetailPage() {
   const [toastMessage, setToastMessage] = useState("");
   const { product, isLoading, isNotFound, isError, errorMessage, retry } =
     useProductDetail(productId);
+
+  const {
+    reviews: previewReviews,
+    ratingSummary: previewRatingSummary,
+    isLoading: isReviewsPreviewLoading,
+    isEmpty: isReviewsPreviewEmpty,
+    hasMoreReviews,
+    errorMessage: reviewsPreviewError,
+    retry: retryReviewsPreview,
+  } = useProductReviewsPreview(productId);
 
   const showComingSoon = useCallback(() => {
     setToastMessage(COMING_SOON_MESSAGE);
@@ -38,8 +54,21 @@ export function CommerceProductDetailPage() {
     [navigate]
   );
 
+  const openReviews = useCallback(() => {
+    if (!productId) return;
+    navigate(buildCommerceProductReviewsPath(productId));
+  }, [navigate, productId]);
+
+  const viewAllReviews = useCallback(
+    (targetProductId) => {
+      if (!targetProductId) return;
+      navigate(buildCommerceProductReviewsPath(targetProductId));
+    },
+    [navigate]
+  );
+
   return (
-    <CommerceShell onComingSoon={showComingSoon} showHomeSidebar={false}>
+    <CommerceShell onComingSoon={showComingSoon}>
       <div className="mx-auto w-full max-w-[1280px]">
         {isLoading ? <ProductDetailSkeleton /> : null}
 
@@ -111,8 +140,22 @@ export function CommerceProductDetailPage() {
 
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10">
               <div className="flex flex-col gap-8 lg:col-span-8">
-                <ProductDetailInfo product={product} />
+                <ProductDetailInfo
+                  product={product}
+                  onOpenReviews={product.ratingCount > 0 ? openReviews : undefined}
+                />
                 <ProductDetailDescription product={product} />
+                <ProductDetailReviewsPreview
+                  ratingSummary={previewRatingSummary}
+                  reviews={previewReviews}
+                  isLoading={isReviewsPreviewLoading}
+                  isEmpty={isReviewsPreviewEmpty}
+                  hasMoreReviews={hasMoreReviews}
+                  errorMessage={reviewsPreviewError}
+                  onViewAll={openReviews}
+                  onRetry={retryReviewsPreview}
+                  onComingSoon={showComingSoon}
+                />
               </div>
 
               <div className="lg:col-span-4">
@@ -120,7 +163,7 @@ export function CommerceProductDetailPage() {
                 <ProductDetailShopCard
                   product={product}
                   onVisitShop={visitShop}
-                  onComingSoon={showComingSoon}
+                  onViewAllReviews={viewAllReviews}
                 />
               </div>
             </div>

@@ -1,6 +1,6 @@
 import { ShopVacationBanner } from "./ShopVacationBanner";
 
-export function ProductDetailShopCard({ product, onVisitShop, onComingSoon }) {
+export function ProductDetailShopCard({ product, onVisitShop, onViewAllReviews }) {
   if (!product?.shop) return null;
 
   const { shop } = product;
@@ -46,7 +46,7 @@ export function ProductDetailShopCard({ product, onVisitShop, onComingSoon }) {
 
       <button
         type="button"
-        onClick={onComingSoon}
+        onClick={() => onViewAllReviews?.(product.productId)}
         className="mt-2 w-full rounded-lg py-2 text-label-md text-primary hover:underline"
       >
         Xem tất cả đánh giá

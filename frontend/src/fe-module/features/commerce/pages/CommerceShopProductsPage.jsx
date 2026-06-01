@@ -59,7 +59,7 @@ export function CommerceShopProductsPage() {
   );
 
   return (
-    <CommerceShell onComingSoon={showComingSoon} showHomeSidebar={false}>
+    <CommerceShell onComingSoon={showComingSoon}>
       <div className="mx-auto w-full max-w-[1280px]">
         <nav
           className="mb-6 flex flex-wrap items-center text-body-sm text-on-surface-variant"

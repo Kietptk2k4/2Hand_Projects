@@ -29,7 +29,8 @@ export function CategoryProductsSidebar({
   const navigate = useNavigate();
 
   return (
-    <aside className="hidden space-y-6 lg:col-span-3 lg:block">
+    <aside className="hidden lg:col-span-3 lg:block">
+      <div className="sticky top-16 z-20 max-h-[calc(100vh-4rem)] space-y-6 overflow-y-auto overscroll-contain pr-1">
       <CategoryBreadcrumb categoryName={categoryName} />
 
       <div className="rounded-lg border border-outline-variant bg-surface p-4">
@@ -79,6 +80,7 @@ export function CategoryProductsSidebar({
           />
           <span className="text-body-sm text-on-surface-variant">Bao gồm danh mục con</span>
         </label>
+      </div>
       </div>
     </aside>
   );

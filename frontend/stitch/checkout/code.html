@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>2Hands - Checkout</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#003fa4",
+                        "surface-dim": "#cfdaf2",
+                        "secondary-fixed": "#e1e0ff",
+                        "inverse-primary": "#b3c5ff",
+                        "on-error": "#ffffff",
+                        "surface": "#f9f9ff",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "on-tertiary-fixed": "#191c1e",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#111c2d",
+                        "on-secondary-container": "#fffbff",
+                        "on-secondary-fixed": "#07006c",
+                        "outline": "#727687",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "surface-container-low": "#f0f3ff",
+                        "surface-tint": "#0054d6",
+                        "primary": "#0050cb",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "surface-container-highest": "#d8e3fb",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "surface-container": "#e7eeff",
+                        "on-tertiary-container": "#f6f8fa",
+                        "on-surface-variant": "#424656",
+                        "on-background": "#111c2d",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#6f7274",
+                        "on-primary-fixed": "#001849",
+                        "on-primary-container": "#f8f7ff",
+                        "surface-container-high": "#dee8ff",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "primary-fixed": "#dae1ff",
+                        "on-tertiary": "#ffffff",
+                        "surface-bright": "#f9f9ff",
+                        "on-primary": "#ffffff",
+                        "surface-variant": "#d8e3fb",
+                        "error": "#ba1a1a",
+                        "error-container": "#ffdad6",
+                        "outline-variant": "#c2c6d8",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#ecf1ff",
+                        "tertiary": "#565a5b",
+                        "primary-container": "#0066ff",
+                        "secondary-container": "#6063ee",
+                        "secondary": "#4648d4",
+                        "background": "#f9f9ff",
+                        "tertiary-fixed": "#e0e3e5",
+                        "inverse-surface": "#263143"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "lg": "40px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "xl": "64px",
+                        "sm": "12px",
+                        "md": "24px",
+                        "base": "8px",
+                        "margin-desktop": "32px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-xl-mobile": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-xl-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-xl": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<!-- TopAppBar (Transactional - Hidden Navigation Links based on Semantic Shell Mandate) -->
+<header class="bg-surface dark:bg-inverse-surface shadow-sm sticky top-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto h-[72px]">
+<div class="flex items-center gap-md">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim cursor-pointer">2Hands</span>
+<span class="font-body-md text-body-md text-on-surface-variant hidden md:inline-block border-l border-outline-variant pl-md ml-sm">Secure Checkout</span>
+</div>
+<div class="flex items-center gap-sm">
+<button aria-label="Help" class="p-base hover:bg-surface-variant rounded-full transition-colors text-on-surface">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-high border border-outline-variant overflow-hidden flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">person</span>
+</div>
+</div>
+</header>
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-lg grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Left Column: Checkout Form -->
+<div class="lg:col-span-8 flex flex-col gap-lg">
+<section class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md md:p-lg shadow-sm">
+<div class="flex items-center justify-between mb-md">
+<h2 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">location_on</span>
+                        Shipping Address
+                    </h2>
+<button class="font-label-md text-label-md text-primary hover:underline">Add New</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- Address Card 1 (Selected) -->
+<label class="cursor-pointer relative rounded-lg border-2 border-primary p-md bg-surface-container-low transition-colors block">
+<input checked="" class="sr-only" name="address" type="radio"/>
+<div class="flex justify-between items-start mb-sm">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Home</span>
+<span class="material-symbols-outlined text-primary" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface mb-xs">John Doe</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">123 Professional Way, Suite 400</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Metropolis, NY 10001</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-sm">+1 (555) 123-4567</p>
+</label>
+<!-- Address Card 2 -->
+<label class="cursor-pointer relative rounded-lg border border-outline-variant p-md bg-surface-container-lowest hover:bg-surface-container-low transition-colors block">
+<input class="sr-only" name="address" type="radio"/>
+<div class="flex justify-between items-start mb-sm">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Office</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface mb-xs">John Doe</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">456 Corporate Blvd, Floor 12</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Business City, NY 10002</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-sm">+1 (555) 987-6543</p>
+</label>
+</div>
+</section>
+<section class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md md:p-lg shadow-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-sm mb-md">
+<span class="material-symbols-outlined text-primary">local_shipping</span>
+                    Shipment Type
+                </h2>
+<div class="flex flex-col gap-sm">
+<!-- Standard -->
+<label class="cursor-pointer flex items-center justify-between p-md border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-md">
+<input checked="" class="w-5 h-5 text-primary border-outline-variant focus:ring-primary" name="shipping" type="radio"/>
+<div>
+<span class="block font-label-md text-label-md font-semibold text-on-surface">Standard Delivery</span>
+<span class="block font-body-sm text-body-sm text-on-surface-variant">3-5 Business Days</span>
+</div>
+</div>
+<span class="font-body-md text-body-md font-semibold text-on-surface">Free</span>
+</label>
+<!-- Express -->
+<label class="cursor-pointer flex items-center justify-between p-md border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-md">
+<input class="w-5 h-5 text-primary border-outline-variant focus:ring-primary" name="shipping" type="radio"/>
+<div>
+<span class="block font-label-md text-label-md font-semibold text-on-surface">Express Delivery</span>
+<span class="block font-body-sm text-body-sm text-on-surface-variant">1-2 Business Days</span>
+</div>
+</div>
+<span class="font-body-md text-body-md font-semibold text-on-surface">$15.00</span>
+</label>
+<!-- Same Day -->
+<label class="cursor-pointer flex items-center justify-between p-md border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-md">
+<input class="w-5 h-5 text-primary border-outline-variant focus:ring-primary" name="shipping" type="radio"/>
+<div>
+<span class="block font-label-md text-label-md font-semibold text-on-surface">Same Day Delivery</span>
+<span class="block font-body-sm text-body-sm text-on-surface-variant">Delivery today before 8 PM</span>
+</div>
+</div>
+<span class="font-body-md text-body-md font-semibold text-on-surface">$35.00</span>
+</label>
+</div>
+</section>
+<section class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md md:p-lg shadow-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-sm mb-md">
+<span class="material-symbols-outlined text-primary">payments</span>
+                    Payment Method
+                </h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- PayOS -->
+<label class="cursor-pointer relative rounded-lg border-2 border-primary p-md bg-surface-container-low transition-colors block">
+<input checked="" class="sr-only" name="payment" type="radio"/>
+<div class="flex justify-between items-start mb-sm">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" data-weight="fill" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">PayOS Secure</span>
+</div>
+<span class="material-symbols-outlined text-primary" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Pay securely online via PayOS gateway.</p>
+</label>
+<!-- COD -->
+<label class="cursor-pointer relative rounded-lg border border-outline-variant p-md bg-surface-container-lowest hover:bg-surface-container-low transition-colors block">
+<input class="sr-only" name="payment" type="radio"/>
+<div class="flex justify-between items-start mb-sm">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant">local_atm</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Cash on Delivery</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Pay when you receive the order.</p>
+</label>
+</div>
+</section>
+</div>
+<!-- Right Column: Order Summary (Sticky) -->
+<div class="lg:col-span-4">
+<div class="sticky top-[104px] bg-surface-container-lowest border border-outline-variant rounded-lg p-md shadow-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-md">Order Review</h2>
+<!-- Line Items -->
+<div class="flex flex-col gap-md mb-md max-h-[300px] overflow-y-auto pr-sm">
+<div class="flex gap-md">
+<div class="w-16 h-16 bg-surface-variant rounded-md flex-shrink-0"></div>
+<div class="flex-grow">
+<h3 class="font-label-md text-label-md font-semibold text-on-surface line-clamp-2">Premium Consulting Package</h3>
+<div class="flex justify-between items-center mt-xs">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Qty: 1</span>
+<span class="font-body-md text-body-md font-medium text-on-surface">$1,200.00</span>
+</div>
+</div>
+</div>
+<div class="flex gap-md">
+<div class="w-16 h-16 bg-surface-variant rounded-md flex-shrink-0"></div>
+<div class="flex-grow">
+<h3 class="font-label-md text-label-md font-semibold text-on-surface line-clamp-2">Detailed Market Analysis Report</h3>
+<div class="flex justify-between items-center mt-xs">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Qty: 2</span>
+<span class="font-body-md text-body-md font-medium text-on-surface">$300.00</span>
+</div>
+</div>
+</div>
+</div>
+<hr class="border-outline-variant mb-md"/>
+<!-- Calculations -->
+<div class="flex flex-col gap-sm mb-md">
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">Subtotal</span>
+<span class="font-body-md text-body-md text-on-surface font-medium">$1,800.00</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">Shipping Fee</span>
+<span class="font-body-md text-body-md text-on-surface font-medium">$0.00</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">Taxes (8.5%)</span>
+<span class="font-body-md text-body-md text-on-surface font-medium">$153.00</span>
+</div>
+</div>
+<hr class="border-outline-variant mb-md"/>
+<!-- Total -->
+<div class="flex justify-between items-center mb-lg">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">Total</span>
+<span class="font-headline-sm text-headline-sm font-bold text-primary">$1,953.00</span>
+</div>
+<!-- Action -->
+<button class="w-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-bold py-sm px-md rounded-full shadow-sm transition-colors flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-sm">lock</span>
+                    Place Order
+                </button>
+<p class="font-body-sm text-body-sm text-on-surface-variant text-center mt-sm">By placing this order, you agree to our Terms of Service.</p>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low dark:bg-surface-container-lowest border-t border-outline-variant w-full py-md px-margin-mobile md:px-margin-desktop mt-auto">
+<div class="flex flex-col md:flex-row justify-between items-center max-w-container-max mx-auto gap-md">
+<div class="font-headline-sm text-headline-sm font-bold text-on-surface">2Hands</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant text-center md:text-left">
+                © 2024 2Hands Professional Marketplace. All rights reserved.
+            </div>
+<div class="flex gap-md">
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:underline decoration-primary" href="#">Privacy Policy</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:underline decoration-primary" href="#">Terms of Service</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:underline decoration-primary" href="#">Shipping Info</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:underline decoration-primary" href="#">Contact Support</a>
+</div>
+</div>
+</footer>
+</body></html>

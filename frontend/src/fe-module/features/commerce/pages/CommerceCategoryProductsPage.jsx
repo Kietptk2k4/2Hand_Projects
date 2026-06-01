@@ -62,7 +62,7 @@ export function CommerceCategoryProductsPage() {
   );
 
   return (
-    <CommerceShell onComingSoon={showComingSoon} showHomeSidebar={false}>
+    <CommerceShell onComingSoon={showComingSoon}>
       <div className="mx-auto w-full max-w-[1280px] lg:grid lg:grid-cols-12 lg:gap-6">
         <CategoryProductsSidebar
           activeCategoryId={categoryId}

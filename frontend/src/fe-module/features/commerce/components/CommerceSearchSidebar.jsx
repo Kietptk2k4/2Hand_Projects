@@ -26,7 +26,8 @@ export function CommerceSearchSidebar({ onSelectKeyword, refreshKey = 0, onComin
   };
 
   return (
-    <aside className="hidden flex-col gap-6 lg:flex lg:w-64 lg:shrink-0">
+    <aside className="hidden lg:block lg:w-64 lg:shrink-0">
+      <div className="sticky top-16 z-20 flex max-h-[calc(100vh-4rem)] flex-col gap-6 overflow-y-auto overscroll-contain pr-1">
       <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-sm font-medium uppercase tracking-wider text-on-surface">
@@ -76,6 +77,7 @@ export function CommerceSearchSidebar({ onSelectKeyword, refreshKey = 0, onComin
         >
           Tính năng đang phát triển
         </button>
+      </div>
       </div>
     </aside>
   );

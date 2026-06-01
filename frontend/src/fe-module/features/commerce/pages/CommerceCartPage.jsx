@@ -62,7 +62,7 @@ export function CommerceCartPage() {
   );
 
   return (
-    <CommerceShell showHomeSidebar={false}>
+    <CommerceShell onComingSoon={showComingSoon}>
       <header className="mb-6">
         <h1 className="text-headline-lg-mobile font-semibold text-on-surface md:text-headline-lg">
           Giỏ hàng
