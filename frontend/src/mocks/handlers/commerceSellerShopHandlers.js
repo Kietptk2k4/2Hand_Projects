@@ -1,5 +1,10 @@
 import { delay, http, HttpResponse } from "msw";
-import { createShopForUser } from "../data/commerceSellerShopData";
+import {
+  createShopForUser,
+  getMyShopForSeller,
+  updateShopProfileForSeller,
+  updateShopVacationForSeller,
+} from "../data/commerceSellerShopData";
 import { getUserByToken } from "../utils/socialMockAuth";
 import { apiError, apiSuccess } from "../utils/response";
 
@@ -15,7 +20,77 @@ function requireAuth(request) {
   return { user };
 }
 
+function mapError(result) {
+  const payload = apiError(result.error, result.message || "Co loi xay ra.");
+  if (result.data) {
+    payload.data = result.data;
+  }
+  return HttpResponse.json(payload, { status: result.status });
+}
+
 export const commerceSellerShopHandlers = [
+  /** FE-only until backend exposes GET /seller/shop */
+  http.get("*/commerce/api/v1/seller/shop", async ({ request }) => {
+    await delay(300);
+    const auth = requireAuth(request);
+    if (auth.error) return auth.error;
+
+    const result = getMyShopForSeller(auth.user.id);
+    if (result.error) return mapError(result);
+
+    return HttpResponse.json(
+      apiSuccess(200, "Lay thong tin shop thanh cong.", result.data),
+      { status: 200 },
+    );
+  }),
+
+  http.patch("*/commerce/api/v1/seller/shop/vacation", async ({ request }) => {
+    await delay(350);
+    const auth = requireAuth(request);
+    if (auth.error) return auth.error;
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return HttpResponse.json(apiError("COMMERCE-400-VALIDATION", "Du lieu khong hop le."), {
+        status: 400,
+      });
+    }
+
+    const result = updateShopVacationForSeller(auth.user.id, body);
+    if (result.error) return mapError(result);
+
+    const message = result.data.is_vacation
+      ? "Bat che do nghi shop thanh cong."
+      : "Tat che do nghi shop thanh cong.";
+
+    return HttpResponse.json(apiSuccess(200, message, result.data), { status: 200 });
+  }),
+
+  http.patch("*/commerce/api/v1/seller/shop", async ({ request }) => {
+    await delay(400);
+    const auth = requireAuth(request);
+    if (auth.error) return auth.error;
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return HttpResponse.json(apiError("COMMERCE-400-VALIDATION", "Du lieu khong hop le."), {
+        status: 400,
+      });
+    }
+
+    const result = updateShopProfileForSeller(auth.user.id, body);
+    if (result.error) return mapError(result);
+
+    return HttpResponse.json(
+      apiSuccess(200, "Cap nhat thong tin shop thanh cong.", result.data),
+      { status: 200 },
+    );
+  }),
+
   http.post("*/commerce/api/v1/seller/shop", async ({ request }) => {
     await delay(450);
     const auth = requireAuth(request);
@@ -31,13 +106,7 @@ export const commerceSellerShopHandlers = [
     }
 
     const result = createShopForUser(auth.user.id, body);
-    if (result.error) {
-      const payload = apiError(result.error, result.message || "Co loi xay ra.");
-      if (result.data) {
-        payload.data = result.data;
-      }
-      return HttpResponse.json(payload, { status: result.status });
-    }
+    if (result.error) return mapError(result);
 
     const { data } = result;
     return HttpResponse.json(

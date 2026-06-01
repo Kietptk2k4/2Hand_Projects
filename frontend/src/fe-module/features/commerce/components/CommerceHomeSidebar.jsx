@@ -22,7 +22,13 @@ const SIDEBAR_LINKS = [
     requiresAuth: true,
   },
   { id: "analytics", icon: "analytics", label: "Thống kê", comingSoon: true },
-  { id: "settings", icon: "settings", label: "Cài đặt", comingSoon: true },
+  {
+    id: "settings",
+    icon: "settings",
+    label: "Cài đặt",
+    route: APP_ROUTES.commerceShopSettings,
+    requiresAuth: true,
+  },
 ];
 
 function isLinkActive(link, pathname) {
@@ -41,6 +47,12 @@ function isLinkActive(link, pathname) {
   }
   if (link.id === "create-shop") {
     return pathname === APP_ROUTES.commerceCreateShop;
+  }
+  if (link.id === "settings") {
+    return (
+      pathname === APP_ROUTES.commerceShopSettings ||
+      pathname.startsWith(`${APP_ROUTES.commerceShopSettings}/`)
+    );
   }
   return pathname === link.route || pathname.startsWith(`${link.route}/`);
 }

@@ -33,5 +33,6 @@ export const APP_ROUTES = {
   commerceCheckoutSuccess: "/commerce/checkout/success",
   commerceCheckoutPaymentResult: "/commerce/checkout/payment-result",
   commerceCreateShop: "/commerce/seller/shop/create",
+  commerceShopSettings: "/commerce/seller/shop/settings",
 };
 

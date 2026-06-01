@@ -1,6 +1,34 @@
 import { commerceApiClient } from "../../../services/http/commerceApiClient";
 import { mapAxiosError, unwrapResponse } from "./commerceApiResponse";
 
+/** FE-only GET until backend exposes seller shop detail — MSW implements. */
+export async function fetchMyShop() {
+  try {
+    const response = await commerceApiClient.get("/commerce/api/v1/seller/shop");
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function updateShopProfile(patch) {
+  try {
+    const response = await commerceApiClient.patch("/commerce/api/v1/seller/shop", patch);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function updateShopVacation(body) {
+  try {
+    const response = await commerceApiClient.patch("/commerce/api/v1/seller/shop/vacation", body);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export async function createShop({ shopName, description, avatarUrl, coverUrl, pickupProfile }) {
   try {
     const body = {

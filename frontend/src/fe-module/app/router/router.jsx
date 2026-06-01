@@ -32,6 +32,7 @@ import { CommerceShipmentTrackingPage } from "../../features/commerce/pages/Comm
 import { CommerceProductReviewsPage } from "../../features/commerce/pages/CommerceProductReviewsPage";
 import { CommerceWriteEditReviewPage } from "../../features/commerce/pages/CommerceWriteEditReviewPage";
 import { CommerceCreateShopPage } from "../../features/commerce/pages/CommerceCreateShopPage";
+import { CommerceShopSettingsPage } from "../../features/commerce/pages/CommerceShopSettingsPage";
 
 function HomePage() {
   return (
@@ -116,6 +117,10 @@ export const router = createBrowserRouter([
           {
             path: APP_ROUTES.commerceCreateShop.slice(1),
             element: <CommerceCreateShopPage />,
+          },
+          {
+            path: APP_ROUTES.commerceShopSettings.slice(1),
+            element: <CommerceShopSettingsPage />,
           },
         ],
       },

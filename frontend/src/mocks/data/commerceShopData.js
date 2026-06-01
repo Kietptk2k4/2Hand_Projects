@@ -108,9 +108,28 @@ export function registerShopFromCreate(data) {
     rating_avg: 0,
     rating_count: 0,
     shop_vacation: Boolean(data.is_vacation),
-    vacation_message: null,
+    vacation_message: data.vacation_message ?? null,
     status: data.status || "ACTIVE",
   };
   shopById.set(shop.shop_id, shop);
   return shop;
+}
+
+/** Sync public storefront after seller updates profile or vacation (rating/status unchanged). */
+export function updatePublicShopFromSellerRecord(record) {
+  const shop = shopById.get(record.shop_id);
+  if (!shop) return null;
+
+  const updated = {
+    ...shop,
+    shop_name: record.shop_name,
+    description: record.description ?? "",
+    avatar_url: record.avatar_url || "",
+    cover_url: record.cover_url || "",
+    shop_vacation: Boolean(record.is_vacation),
+    vacation_message: record.is_vacation ? record.vacation_message ?? null : null,
+  };
+
+  shopById.set(record.shop_id, updated);
+  return updated;
 }
