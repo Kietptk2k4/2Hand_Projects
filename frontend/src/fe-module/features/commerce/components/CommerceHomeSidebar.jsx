@@ -21,6 +21,13 @@ const SIDEBAR_LINKS = [
     route: APP_ROUTES.commerceCreateShop,
     requiresAuth: true,
   },
+  {
+    id: "seller-products",
+    icon: "inventory_2",
+    label: "Sản phẩm",
+    route: APP_ROUTES.commerceSellerProducts,
+    requiresAuth: true,
+  },
   { id: "analytics", icon: "analytics", label: "Thống kê", comingSoon: true },
   {
     id: "settings",
@@ -52,6 +59,12 @@ function isLinkActive(link, pathname) {
     return (
       pathname === APP_ROUTES.commerceShopSettings ||
       pathname.startsWith(`${APP_ROUTES.commerceShopSettings}/`)
+    );
+  }
+  if (link.id === "seller-products") {
+    return (
+      pathname === APP_ROUTES.commerceSellerProducts ||
+      pathname.startsWith(`${APP_ROUTES.commerceSellerProducts}/`)
     );
   }
   return pathname === link.route || pathname.startsWith(`${link.route}/`);

@@ -34,5 +34,7 @@ export const APP_ROUTES = {
   commerceCheckoutPaymentResult: "/commerce/checkout/payment-result",
   commerceCreateShop: "/commerce/seller/shop/create",
   commerceShopSettings: "/commerce/seller/shop/settings",
+  commerceSellerProducts: "/commerce/seller/products",
+  commerceSellerProductCreate: "/commerce/seller/products/new",
 };
 

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Thêm Sản Phẩm Mới - 2Hands</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-container": "#f8f7ff",
+                    "tertiary-fixed": "#e0e3e5",
+                    "on-error": "#ffffff",
+                    "on-surface": "#111c2d",
+                    "on-secondary-fixed": "#07006c",
+                    "on-secondary": "#ffffff",
+                    "surface-dim": "#cfdaf2",
+                    "surface-container-highest": "#d8e3fb",
+                    "primary": "#0050cb",
+                    "surface-tint": "#0054d6",
+                    "secondary-fixed": "#e1e0ff",
+                    "on-background": "#111c2d",
+                    "inverse-surface": "#263143",
+                    "error-container": "#ffdad6",
+                    "outline-variant": "#c2c6d8",
+                    "primary-fixed-dim": "#b3c5ff",
+                    "on-secondary-container": "#fffbff",
+                    "secondary-container": "#6063ee",
+                    "surface-bright": "#f9f9ff",
+                    "inverse-primary": "#b3c5ff",
+                    "on-secondary-fixed-variant": "#2f2ebe",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed": "#001849",
+                    "primary-container": "#0066ff",
+                    "surface": "#f9f9ff",
+                    "secondary-fixed-dim": "#c0c1ff",
+                    "on-tertiary-container": "#f6f8fa",
+                    "on-tertiary": "#ffffff",
+                    "outline": "#727687",
+                    "surface-variant": "#d8e3fb",
+                    "tertiary-fixed-dim": "#c4c7c9",
+                    "surface-container-low": "#f0f3ff",
+                    "tertiary-container": "#6f7274",
+                    "surface-container": "#e7eeff",
+                    "on-primary-fixed-variant": "#003fa4",
+                    "primary-fixed": "#dae1ff",
+                    "on-tertiary-fixed": "#191c1e",
+                    "tertiary": "#565a5b",
+                    "surface-container-high": "#dee8ff",
+                    "secondary": "#4648d4",
+                    "error": "#ba1a1a",
+                    "on-primary": "#ffffff",
+                    "background": "#f9f9ff",
+                    "on-tertiary-fixed-variant": "#444749",
+                    "on-surface-variant": "#424656",
+                    "inverse-on-surface": "#ecf1ff",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "md": "24px",
+                    "gutter": "24px",
+                    "xl": "64px",
+                    "margin-desktop": "32px",
+                    "lg": "40px",
+                    "container-max": "1280px",
+                    "sm": "12px",
+                    "margin-mobile": "16px",
+                    "base": "8px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "body-sm": ["Inter"],
+                    "headline-xl-mobile": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-xl": ["Inter"],
+                    "headline-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface-container-low text-on-surface font-body-md antialiased min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim font-body-md text-body-md docked full-width top-0 border-b border-outline-variant dark:border-outline flat no shadows flex justify-between items-center px-margin-desktop w-full h-16 sticky top-0 z-50">
+<div class="flex items-center gap-xl">
+<!-- Brand Logo -->
+<div class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed">
+                2Hands Seller Dashboard
+            </div>
+<!-- Navigation Links -->
+<nav class="hidden md:flex items-center gap-md h-full">
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors flex items-center h-full" href="#">
+                    Dashboard
+                </a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors flex items-center h-full" href="#">
+                    Orders
+                </a>
+<!-- Active Link -->
+<a class="text-primary dark:text-primary-fixed border-b-2 border-primary font-bold pb-1 hover:text-primary dark:hover:text-primary-fixed transition-colors Active: opacity-80 flex items-center h-full mt-[2px]" href="#">
+                    Products
+                </a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors flex items-center h-full" href="#">
+                    Analytics
+                </a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<!-- Trailing Icons -->
+<button class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+<!-- Profile Avatar -->
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-variant border border-outline-variant ml-sm">
+<img alt="Seller Profile Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a business seller against a clean, minimal office background. The lighting is bright and high-key, complementing a modern corporate light-mode UI aesthetic. The subject is smiling confidently, exuding reliability and trust." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVla0dO-O5Xhr7GBvzEQLCjIWDr8uLtplu24ucUSvAnmpCV1PtdvSCP9CYgjFsyhmgfxXNffnrauLrypqsyTcZWsSkkQ7Wfwx2Tf8m2fDxk3eXoe5ICXV8P3Li2NV6IEU_e5-9NX45SIyQu2tabq89Jlg9Kputg22YEKpfAZolqjCiOst9brQ9PY8yUDAdOQAmcPNo202PUntW7_cREk-7gNt8uOrSwSz2C3IexV8AkIUysgOtQd0qWzB3sHalFE5eNUeom-8nCKw"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col items-center py-xl px-margin-desktop w-full">
+<!-- Page Header -->
+<div class="w-full max-w-4xl mb-lg text-center">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Thêm Sản Phẩm Mới</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-base">Hoàn thành các bước dưới đây để đăng bán sản phẩm của bạn.</p>
+</div>
+<!-- Stepper Component -->
+<div class="w-full max-w-3xl mb-xl">
+<div class="flex items-center justify-between relative">
+<!-- Connecting Line Background -->
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[2px] bg-outline-variant -z-10"></div>
+<!-- Step 1 (Active) -->
+<div class="flex flex-col items-center relative z-10 bg-surface-container-low px-sm">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-md text-label-md ring-4 ring-surface-container-low">
+                        1
+                    </div>
+<span class="font-label-md text-label-md text-primary mt-sm whitespace-nowrap">Thông tin</span>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col items-center relative z-10 bg-surface-container-low px-sm">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-label-md text-label-md ring-4 ring-surface-container-low">
+                        2
+                    </div>
+<span class="font-label-md text-label-md text-on-surface-variant mt-sm whitespace-nowrap">Giá &amp; Kho</span>
+</div>
+<!-- Step 3 -->
+<div class="flex flex-col items-center relative z-10 bg-surface-container-low px-sm">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-label-md text-label-md ring-4 ring-surface-container-low">
+                        3
+                    </div>
+<span class="font-label-md text-label-md text-on-surface-variant mt-sm whitespace-nowrap">Hình ảnh</span>
+</div>
+<!-- Step 4 -->
+<div class="flex flex-col items-center relative z-10 bg-surface-container-low px-sm">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-label-md text-label-md ring-4 ring-surface-container-low">
+                        4
+                    </div>
+<span class="font-label-md text-label-md text-on-surface-variant mt-sm whitespace-nowrap">Xem lại</span>
+</div>
+</div>
+</div>
+<!-- Central Form Card -->
+<div class="w-full max-w-3xl bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1)] overflow-hidden">
+<div class="p-lg border-b border-outline-variant bg-surface-bright">
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" data-icon="info">info</span>
+                    Thông tin cơ bản
+                </h2>
+</div>
+<div class="p-lg flex flex-col gap-lg">
+<!-- Field: Tên sản phẩm -->
+<div class="flex flex-col gap-base">
+<label class="font-label-md text-label-md text-on-surface" for="product_title">Tên sản phẩm <span class="text-error">*</span></label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-sm py-[10px] font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow" id="product_title" placeholder="Nhập tên sản phẩm (tối đa 500 ký tự)" type="text"/>
+<div class="flex justify-end font-label-sm text-label-sm text-outline">0 / 500</div>
+</div>
+<!-- Field: Danh mục & Tình trạng (Row) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="flex flex-col gap-base">
+<label class="font-label-md text-label-md text-on-surface" for="product_category">Danh mục <span class="text-error">*</span></label>
+<div class="relative">
+<select class="w-full bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-sm py-[10px] pr-10 font-body-md text-body-md text-on-surface appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow cursor-pointer" id="product_category">
+<option disabled="" selected="" value="">Chọn danh mục phù hợp</option>
+<option value="electronics">Điện tử &amp; Công nghệ</option>
+<option value="fashion">Thời trang &amp; Phụ kiện</option>
+<option value="home">Nhà cửa &amp; Đời sống</option>
+</select>
+<span class="material-symbols-outlined absolute right-sm top-1/2 -translate-y-1/2 text-outline pointer-events-none" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+<div class="flex flex-col gap-base">
+<label class="font-label-md text-label-md text-on-surface" for="product_condition">Tình trạng <span class="text-error">*</span></label>
+<div class="relative">
+<select class="w-full bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-sm py-[10px] pr-10 font-body-md text-body-md text-on-surface appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow cursor-pointer" id="product_condition">
+<option value="new">Mới</option>
+<option value="used_like_new">Đã qua sử dụng - Như mới</option>
+<option value="used_good">Đã qua sử dụng - Tốt</option>
+<option value="used_fair">Đã qua sử dụng - Chấp nhận được</option>
+</select>
+<span class="material-symbols-outlined absolute right-sm top-1/2 -translate-y-1/2 text-outline pointer-events-none" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Field: Mô tả (Rich Text Fake) -->
+<div class="flex flex-col gap-base">
+<label class="font-label-md text-label-md text-on-surface">Mô tả sản phẩm <span class="text-error">*</span></label>
+<div class="border border-outline-variant rounded-DEFAULT overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-shadow">
+<!-- Toolbar -->
+<div class="bg-surface-variant px-sm py-xs border-b border-outline-variant flex items-center gap-xs">
+<button class="p-1 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[20px]" data-icon="format_bold">format_bold</span></button>
+<button class="p-1 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[20px]" data-icon="format_italic">format_italic</span></button>
+<button class="p-1 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[20px]" data-icon="format_underlined">format_underlined</span></button>
+<div class="w-[1px] h-4 bg-outline-variant mx-1"></div>
+<button class="p-1 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[20px]" data-icon="format_list_bulleted">format_list_bulleted</span></button>
+<button class="p-1 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[20px]" data-icon="format_list_numbered">format_list_numbered</span></button>
+</div>
+<!-- Text Area -->
+<textarea class="w-full bg-surface-container-lowest p-sm font-body-md text-body-md text-on-surface placeholder:text-outline border-none focus:ring-0 resize-y min-h-[120px]" placeholder="Mô tả chi tiết về tính năng, thông số kỹ thuật và ưu điểm của sản phẩm..." rows="6"></textarea>
+</div>
+</div>
+<!-- Field: Cân nặng -->
+<div class="flex flex-col gap-base w-full md:w-1/2">
+<label class="font-label-md text-label-md text-on-surface" for="product_weight">Cân nặng (sau khi đóng gói) <span class="text-error">*</span></label>
+<div class="relative flex items-center">
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-DEFAULT pl-sm pr-12 py-[10px] font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow" id="product_weight" placeholder="0" type="number"/>
+<span class="absolute right-sm text-outline-variant font-body-md text-body-md pointer-events-none">gram</span>
+</div>
+<p class="font-label-sm text-label-sm text-outline">Sử dụng để tính toán phí vận chuyển tự động.</p>
+</div>
+</div>
+<!-- Actions Footer -->
+<div class="p-md border-t border-outline-variant bg-surface-bright flex justify-end gap-md items-center">
+<button class="px-md py-[10px] rounded-DEFAULT font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high transition-colors" type="button">
+                    Hủy
+                </button>
+<button class="px-lg py-[10px] rounded-DEFAULT font-label-md text-label-md bg-primary hover:bg-primary-fixed-variant text-on-primary transition-colors flex items-center gap-xs shadow-[0px_2px_4px_-1px_rgba(0,0,0,0.1)]" type="button">
+                    Tiếp theo
+                    <span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface dark:bg-surface-dim font-label-sm text-label-sm full-width border-t border-outline-variant flat no shadows flex justify-between items-center px-margin-desktop py-md w-full mt-auto">
+<div class="font-body-sm text-body-sm text-primary">
+            © 2024 2Hands Marketplace. Professional Seller Tools.
+        </div>
+<div class="flex items-center gap-md">
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors cursor-pointer" href="#">Terms of Service</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors cursor-pointer" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors cursor-pointer" href="#">Seller Guide</a>
+</div>
+</footer>
+</body></html>

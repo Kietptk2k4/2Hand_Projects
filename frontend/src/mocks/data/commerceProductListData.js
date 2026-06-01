@@ -274,3 +274,20 @@ export const mockCommerceProducts = [
     created_at: "2026-05-05T16:30:00Z",
   }),
 ];
+
+/** Sync seller-published product into buyer discovery list (MSW). */
+export function upsertDiscoveryProduct(item) {
+  const index = mockCommerceProducts.findIndex((row) => row.product_id === item.product_id);
+  if (index >= 0) {
+    mockCommerceProducts[index] = item;
+  } else {
+    mockCommerceProducts.unshift(item);
+  }
+}
+
+export function removeDiscoveryProduct(productId) {
+  const index = mockCommerceProducts.findIndex((row) => row.product_id === productId);
+  if (index >= 0) {
+    mockCommerceProducts.splice(index, 1);
+  }
+}

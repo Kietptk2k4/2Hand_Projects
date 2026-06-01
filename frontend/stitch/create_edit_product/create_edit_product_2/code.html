@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>2Hands Seller Dashboard - Media &amp; Attributes</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Hide scrollbar for clean UI */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c2c6d8;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#f8f7ff",
+                        "tertiary-fixed": "#e0e3e5",
+                        "on-error": "#ffffff",
+                        "on-surface": "#111c2d",
+                        "on-secondary-fixed": "#07006c",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#cfdaf2",
+                        "surface-container-highest": "#d8e3fb",
+                        "primary": "#0050cb",
+                        "surface-tint": "#0054d6",
+                        "secondary-fixed": "#e1e0ff",
+                        "on-background": "#111c2d",
+                        "inverse-surface": "#263143",
+                        "error-container": "#ffdad6",
+                        "outline-variant": "#c2c6d8",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "on-secondary-container": "#fffbff",
+                        "secondary-container": "#6063ee",
+                        "surface-bright": "#f9f9ff",
+                        "inverse-primary": "#b3c5ff",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#001849",
+                        "primary-container": "#0066ff",
+                        "surface": "#f9f9ff",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "on-tertiary-container": "#f6f8fa",
+                        "on-tertiary": "#ffffff",
+                        "outline": "#727687",
+                        "surface-variant": "#d8e3fb",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "surface-container-low": "#f0f3ff",
+                        "tertiary-container": "#6f7274",
+                        "surface-container": "#e7eeff",
+                        "on-primary-fixed-variant": "#003fa4",
+                        "primary-fixed": "#dae1ff",
+                        "on-tertiary-fixed": "#191c1e",
+                        "tertiary": "#565a5b",
+                        "surface-container-high": "#dee8ff",
+                        "secondary": "#4648d4",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "background": "#f9f9ff",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "on-surface-variant": "#424656",
+                        "inverse-on-surface": "#ecf1ff",
+                        "on-error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "24px",
+                        "gutter": "24px",
+                        "xl": "64px",
+                        "margin-desktop": "32px",
+                        "lg": "40px",
+                        "container-max": "1280px",
+                        "sm": "12px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "headline-xl-mobile": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "headline-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-xl-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-xl": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-sm min-h-screen flex antialiased">
+<!-- SideNavBar -->
+<nav class="bg-surface-container-low flex flex-col h-screen w-64 py-lg px-md gap-base border-r border-outline-variant hidden md:flex sticky top-0 shrink-0">
+<div class="mb-lg px-base">
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">New Product</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">Draft saved 2m ago</p>
+</div>
+<ul class="flex flex-col gap-xs flex-1">
+<!-- Product Info -->
+<li>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined font-label-md text-label-md">info</span>
+<span class="font-label-md text-label-md">Product Info</span>
+</a>
+</li>
+<!-- Pricing -->
+<li>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined font-label-md text-label-md">payments</span>
+<span class="font-label-md text-label-md">Pricing</span>
+</a>
+</li>
+<!-- Media (ACTIVE) -->
+<li>
+<a class="flex items-center gap-sm px-sm py-sm text-primary font-bold bg-surface-bright rounded-lg scale-95 transition-all" href="#">
+<span class="material-symbols-outlined font-label-md text-label-md">image</span>
+<span class="font-label-md text-label-md">Media</span>
+</a>
+</li>
+<!-- Attributes -->
+<li>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined font-label-md text-label-md">tune</span>
+<span class="font-label-md text-label-md">Attributes</span>
+</a>
+</li>
+<!-- Review -->
+<li>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined font-label-md text-label-md">check_circle</span>
+<span class="font-label-md text-label-md">Review</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto flex flex-col gap-base">
+<button class="w-full bg-outline-variant/20 text-on-surface font-label-md text-label-md py-sm rounded-lg hover:bg-outline-variant/30 transition-colors">Save Draft</button>
+<div class="h-px bg-outline-variant w-full my-sm"></div>
+<ul class="flex flex-col gap-xs">
+<li>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined font-label-md text-label-md">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined font-label-md text-label-md">contact_support</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col min-w-0">
+<!-- TopAppBar -->
+<header class="bg-surface border-b border-outline-variant flex justify-between items-center px-margin-desktop w-full h-16 sticky top-0 z-50">
+<div class="flex items-center gap-lg">
+<!-- Mobile Menu Button (hidden on desktop) -->
+<button class="md:hidden text-on-surface">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="font-headline-sm text-headline-sm font-bold text-primary">2Hands Seller Dashboard</div>
+<nav class="hidden lg:flex gap-md">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#">Dashboard</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#">Orders</a>
+<a class="text-primary border-b-2 border-primary font-bold pb-1 font-body-md text-body-md opacity-80" href="#">Products</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#">Analytics</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden border border-outline-variant">
+<img alt="Seller Profile Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDw-vK2KPn104NNEzdilecU5rr6LHTWlUQz75lbAyhWMIx7tWLnkdyIyeZqOMySh8FZW9MZ-JPaZ9vRW6EFn3uUS8AWw2BDDAju0V-7O7_AV1ulQqEg1RvS-XHzt41mTqW7OUgdD8aJQEaaVJFaWlhL04FFwSfgUe1sZIwh47ZNByqpB9Ihp3qdOJpv056a6fsP8Kz52UBcWOmAlOrL5U3B87BIXbdAB2ywRBXCbU99JsC-WAE8BQTNdazlU-bwJvWB9Lsu37iXSu4"/>
+</div>
+</div>
+</header>
+<!-- Scrollable Canvas -->
+<main class="flex-1 overflow-y-auto p-margin-mobile md:p-margin-desktop bg-surface">
+<div class="max-w-container-max mx-auto">
+<!-- Page Header -->
+<div class="mb-lg flex flex-col md:flex-row md:items-end justify-between gap-md">
+<div>
+<div class="text-primary font-label-md text-label-md mb-xs tracking-wider uppercase">Step 3 of 5</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Media &amp; Attributes</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-sm max-w-2xl">Upload high-quality images and define structured data to help buyers find and understand your product.</p>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-gutter">
+<!-- Left Column: Media (Spans 8 cols) -->
+<section class="xl:col-span-8 flex flex-col gap-gutter">
+<!-- Image Upload Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="p-md border-b border-outline-variant/50 bg-surface-container-low/30 flex justify-between items-center">
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">photo_library</span>
+                                    Product Images
+                                </h3>
+<span class="text-on-surface-variant font-label-sm text-label-sm bg-surface-variant px-sm py-xs rounded-full">MinIO: 2hands-commerce-product</span>
+</div>
+<div class="p-md">
+<!-- Main Upload Area -->
+<div class="group relative border-2 border-dashed border-outline-variant hover:border-primary rounded-lg bg-surface-container-low/50 transition-colors flex flex-col items-center justify-center p-xl cursor-pointer min-h-[300px]">
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg pointer-events-none"></div>
+<span class="material-symbols-outlined text-4xl text-outline mb-md group-hover:text-primary transition-colors" style="font-size: 48px;">cloud_upload</span>
+<p class="font-headline-sm text-headline-sm text-on-surface mb-xs group-hover:text-primary transition-colors">Tải ảnh lên</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant text-center max-w-sm">Kéo thả ảnh vào đây hoặc click để chọn file. Kích thước khuyến nghị 1200x1200px (Tối đa 5MB/ảnh).</p>
+<button class="mt-md bg-white border border-outline-variant text-on-surface font-label-md text-label-md px-md py-sm rounded-full shadow-sm hover:bg-surface-container-lowest pointer-events-none">Browse Files</button>
+</div>
+<!-- Thumbnail Grid -->
+<div class="mt-md grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-sm">
+<!-- Uploaded Image 1 (Main) -->
+<div class="relative aspect-square rounded-lg border border-outline-variant overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10 flex flex-col justify-end p-sm">
+<button class="text-white hover:text-error self-end"><span class="material-symbols-outlined font-label-md">delete</span></button>
+</div>
+<div class="absolute top-2 left-2 bg-primary text-on-primary font-label-sm text-label-sm px-sm py-xs rounded-full z-10 shadow-sm">Ảnh chính</div>
+<div class="w-full h-full bg-surface-variant" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100%\' height=\'100%\'%3E%3Crect width=\'100%\' height=\'100%\' fill=\'%23e7eeff\'/%3E%3C/svg%3E');">
+<!-- Placeholder for visual purposes -->
+<div class="w-full h-full flex items-center justify-center text-outline">IMG_1</div>
+</div>
+</div>
+<!-- Upload Slot -->
+<div class="aspect-square rounded-lg border-2 border-dashed border-outline-variant flex items-center justify-center cursor-pointer hover:bg-surface-container-low hover:border-primary transition-colors text-outline hover:text-primary">
+<span class="material-symbols-outlined">add</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Column: Attributes & Tip (Spans 4 cols) -->
+<section class="xl:col-span-4 flex flex-col gap-gutter">
+<!-- Tip Alert -->
+<div class="bg-surface-container-high border border-outline-variant/30 rounded-xl p-md flex gap-sm items-start shadow-sm">
+<span class="material-symbols-outlined text-tertiary mt-xs">lightbulb</span>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface mb-xs">Data Snapshot</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Attributes added here are permanently snapshotted when a customer completes checkout to ensure order integrity.</p>
+</div>
+</div>
+<!-- Attributes Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden flex-1 flex flex-col">
+<div class="p-md border-b border-outline-variant/50 bg-surface-container-low/30">
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary">label</span>
+                                    Structured Data
+                                </h3>
+</div>
+<div class="p-md flex-1 flex flex-col gap-md">
+<!-- Existing Attributes List -->
+<div class="flex flex-col gap-sm">
+<!-- Item 1 -->
+<div class="flex items-center justify-between p-sm border border-outline-variant/50 rounded-lg bg-surface hover:border-outline transition-colors group">
+<div class="flex gap-md items-center">
+<span class="font-label-md text-label-md text-on-surface-variant min-w-[80px]">Màu sắc</span>
+<span class="font-body-md text-body-md text-on-surface">Đen nhám</span>
+</div>
+<button class="text-outline hover:text-error opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined font-label-md text-label-md">close</span>
+</button>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center justify-between p-sm border border-outline-variant/50 rounded-lg bg-surface hover:border-outline transition-colors group">
+<div class="flex gap-md items-center">
+<span class="font-label-md text-label-md text-on-surface-variant min-w-[80px]">Kích thước</span>
+<span class="font-body-md text-body-md text-on-surface">XL</span>
+</div>
+<button class="text-outline hover:text-error opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined font-label-md text-label-md">close</span>
+</button>
+</div>
+<!-- Item 3 -->
+<div class="flex items-center justify-between p-sm border border-outline-variant/50 rounded-lg bg-surface hover:border-outline transition-colors group">
+<div class="flex gap-md items-center">
+<span class="font-label-md text-label-md text-on-surface-variant min-w-[80px]">Chất liệu</span>
+<span class="font-body-md text-body-md text-on-surface">Cotton 100%</span>
+</div>
+<button class="text-outline hover:text-error opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined font-label-md text-label-md">close</span>
+</button>
+</div>
+</div>
+<!-- Add New Attribute Form -->
+<div class="mt-auto pt-md border-t border-outline-variant/50">
+<h4 class="font-label-md text-label-md text-on-surface mb-sm">Add Attribute</h4>
+<div class="flex flex-col gap-sm">
+<div class="flex gap-sm">
+<input class="w-1/3 bg-surface border border-outline-variant rounded-lg px-sm py-sm font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="Tên (VD: Thương hiệu)" type="text"/>
+<input class="w-2/3 bg-surface border border-outline-variant rounded-lg px-sm py-sm font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="Giá trị (VD: Nike)" type="text"/>
+</div>
+<button class="w-full flex items-center justify-center gap-xs border border-primary text-primary font-label-md text-label-md py-sm rounded-lg hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined font-label-md text-label-md">add</span>
+                                            Thêm thuộc tính
+                                        </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Bottom Action Bar -->
+<div class="mt-xl pt-lg border-t border-outline-variant flex flex-col-reverse sm:flex-row justify-between items-center gap-md pb-xl">
+<button class="w-full sm:w-auto text-on-surface-variant font-label-md text-label-md py-sm px-lg rounded-lg hover:bg-surface-container-high transition-colors">
+                        Quay lại
+                    </button>
+<div class="flex flex-col sm:flex-row w-full sm:w-auto gap-md">
+<button class="w-full sm:w-auto border border-outline-variant text-on-surface font-label-md text-label-md py-sm px-lg rounded-lg hover:bg-surface-container-low transition-colors shadow-sm">
+                            Lưu nháp
+                        </button>
+<button class="w-full sm:w-auto bg-primary text-on-primary font-label-md text-label-md py-sm px-xl rounded-lg hover:bg-surface-tint transition-colors shadow-sm flex items-center justify-center gap-xs">
+                            Tiếp theo
+                            <span class="material-symbols-outlined font-label-md text-label-md">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
