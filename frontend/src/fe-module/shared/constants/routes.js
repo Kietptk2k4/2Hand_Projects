@@ -12,6 +12,7 @@ export const APP_ROUTES = {
   changePassword: "/account/change-password",
   sessionExpired: "/auth/session-expired",
   admin: "/admin",
+  commerceAdminShopModeration: "/admin/commerce/shops",
   socialFeed: "/social",
   socialSavedPosts: "/social/saved",
   socialSearchPosts: "/social/search",

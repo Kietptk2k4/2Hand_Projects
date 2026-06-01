@@ -1,6 +1,14 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { AdminShopModerationTab } from "../../commerce/components/AdminShopModerationTab";
+import {
+  buildAdminSearchParams,
+  parseAdminSection,
+  parseAdminTab,
+} from "../admin/adminUrlParams.js";
 import { AdminNestedNav } from "../admin/components/AdminNestedNav.jsx";
 import { AdminPageLayout } from "../admin/components/AdminPageLayout.jsx";
+import { AdminCommerceModerationPlaceholderTab } from "../admin/commerceModeration/components/AdminCommerceModerationPlaceholderTab.jsx";
 import { AdminUserTargetBar } from "../admin/loginSession/components/AdminUserTargetBar.jsx";
 import { AssignRoleTab } from "../admin/rolePermission/components/AssignRoleTab.jsx";
 import { RevokeRoleTab } from "../admin/rolePermission/components/RevokeRoleTab.jsx";
@@ -24,47 +32,94 @@ const LOGIN_SESSION_TAB_COMPONENTS = {
   "user-sessions": AdminUserSessionsTab,
 };
 
+const COMMERCE_MODERATION_TAB_COMPONENTS = {
+  "shop-moderation": AdminShopModerationTab,
+  "review-moderation": function AdminReviewModerationPlaceholder() {
+    return (
+      <AdminCommerceModerationPlaceholderTab
+        title="Kiểm duyệt đánh giá"
+        description="ModerateReview — đang được phát triển."
+      />
+    );
+  },
+  "product-moderation": function AdminProductModerationPlaceholder() {
+    return (
+      <AdminCommerceModerationPlaceholderTab
+        title="Kiểm duyệt sản phẩm"
+        description="RemoveProductByAdmin — đang được phát triển."
+      />
+    );
+  },
+};
+
 export function AdminPage() {
-  const [adminTopTab, setAdminTopTab] = useState("rolePermission");
-  const [rolePermissionTab, setRolePermissionTab] = useState("role-list");
-  const [loginSessionTab, setLoginSessionTab] = useState("login-history");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const adminTopTab = parseAdminSection(searchParams);
+  const activeChildTab = parseAdminTab(searchParams, adminTopTab);
+
   const [selectedInvestigationUserId, setSelectedInvestigationUserId] = useState("");
   const [selectedRoleId, setSelectedRoleId] = useState("");
   const [alert, setAlert] = useState(null);
 
-  const activeChildTab = adminTopTab === "rolePermission" ? rolePermissionTab : loginSessionTab;
+  useEffect(() => {
+    if (!searchParams.get("section")) {
+      setSearchParams(
+        buildAdminSearchParams({ section: "rolePermission", tab: "role-list" }),
+        { replace: true },
+      );
+    }
+  }, [searchParams, setSearchParams]);
 
   const onNotify = useCallback((nextAlert) => {
     setAlert(nextAlert);
   }, []);
 
-  const handleSectionChange = useCallback((sectionId) => {
-    setAdminTopTab(sectionId);
-    setAlert(null);
-  }, []);
+  const handleSectionChange = useCallback(
+    (sectionId) => {
+      const defaultTab = parseAdminTab(new URLSearchParams(), sectionId);
+      setSearchParams(buildAdminSearchParams({ section: sectionId, tab: defaultTab }), {
+        replace: true,
+      });
+      setAlert(null);
+    },
+    [setSearchParams],
+  );
 
   const handleChildTabChange = useCallback(
     (childId) => {
-      if (adminTopTab === "rolePermission") {
-        setRolePermissionTab(childId);
-      } else {
-        setLoginSessionTab(childId);
-      }
+      setSearchParams(
+        buildAdminSearchParams({
+          section: adminTopTab,
+          tab: childId,
+          preserve: searchParams,
+        }),
+        { replace: true },
+      );
       setAlert(null);
     },
-    [adminTopTab]
+    [adminTopTab, searchParams, setSearchParams],
   );
 
-  const onViewRolePermissions = useCallback((roleId) => {
-    setAdminTopTab("rolePermission");
-    setSelectedRoleId(roleId);
-    setRolePermissionTab("role-permissions");
-    setAlert(null);
-  }, []);
+  const onViewRolePermissions = useCallback(
+    (roleId) => {
+      setSelectedRoleId(roleId);
+      setSearchParams(
+        buildAdminSearchParams({
+          section: "rolePermission",
+          tab: "role-permissions",
+        }),
+        { replace: true },
+      );
+      setAlert(null);
+    },
+    [setSearchParams],
+  );
 
-  const RoleTabComponent = ROLE_PERMISSION_TAB_COMPONENTS[rolePermissionTab] || RoleListTab;
+  const RoleTabComponent = ROLE_PERMISSION_TAB_COMPONENTS[activeChildTab] || RoleListTab;
   const LoginSessionTabComponent =
-    LOGIN_SESSION_TAB_COMPONENTS[loginSessionTab] || AdminLoginHistoryTab;
+    LOGIN_SESSION_TAB_COMPONENTS[activeChildTab] || AdminLoginHistoryTab;
+  const CommerceTabComponent =
+    COMMERCE_MODERATION_TAB_COMPONENTS[activeChildTab] || AdminShopModerationTab;
 
   const roleTabProps = {
     onNotify,
@@ -78,6 +133,26 @@ export function AdminPage() {
     userId: selectedInvestigationUserId,
     onNotify,
   };
+
+  const mainContent = useMemo(() => {
+    if (adminTopTab === "rolePermission") {
+      return <RoleTabComponent {...roleTabProps} />;
+    }
+    if (adminTopTab === "loginSession") {
+      return <LoginSessionTabComponent {...loginSessionTabProps} />;
+    }
+    if (adminTopTab === "commerceModeration") {
+      return <CommerceTabComponent />;
+    }
+    return null;
+  }, [
+    CommerceTabComponent,
+    LoginSessionTabComponent,
+    RoleTabComponent,
+    adminTopTab,
+    loginSessionTabProps,
+    roleTabProps,
+  ]);
 
   return (
     <AdminPageLayout
@@ -93,7 +168,13 @@ export function AdminPage() {
       {alert ? (
         <AuthAlert
           variant={alert.variant}
-          title={alert.variant === "success" ? "Thành công" : alert.variant === "error" ? "Lỗi" : undefined}
+          title={
+            alert.variant === "success"
+              ? "Thành công"
+              : alert.variant === "error"
+                ? "Lỗi"
+                : undefined
+          }
           message={alert.message}
           onDismiss={() => setAlert(null)}
         />
@@ -106,8 +187,7 @@ export function AdminPage() {
         />
       ) : null}
 
-      {adminTopTab === "rolePermission" ? <RoleTabComponent {...roleTabProps} /> : null}
-      {adminTopTab === "loginSession" ? <LoginSessionTabComponent {...loginSessionTabProps} /> : null}
+      {mainContent}
     </AdminPageLayout>
   );
 }

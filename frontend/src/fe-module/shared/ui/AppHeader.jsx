@@ -14,6 +14,7 @@ const NAV_LINKS = [
   { label: "Dashboard", to: APP_ROUTES.home },
   { label: "Social", to: APP_ROUTES.socialFeed },
   { label: "Commerce", to: APP_ROUTES.commerceHome },
+  { label: "Admin", to: APP_ROUTES.admin },
   { label: "Services", to: "#services" },
   { label: "My Bookings", to: "#bookings" },
 ];

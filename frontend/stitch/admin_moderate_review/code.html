@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>2Hands Admin - Kiểm duyệt Đánh giá</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#fffbff",
+                        "primary-container": "#0066ff",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "outline-variant": "#c2c6d8",
+                        "surface-container-low": "#f0f3ff",
+                        "error": "#ba1a1a",
+                        "secondary": "#4648d4",
+                        "on-tertiary-fixed": "#191c1e",
+                        "surface-bright": "#f9f9ff",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "on-surface-variant": "#424656",
+                        "background": "#f9f9ff",
+                        "tertiary-fixed": "#e0e3e5",
+                        "surface-variant": "#d8e3fb",
+                        "secondary-container": "#6063ee",
+                        "secondary-fixed": "#e1e0ff",
+                        "surface-dim": "#cfdaf2",
+                        "surface-container-high": "#dee8ff",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "on-primary-container": "#f8f7ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "surface-container": "#e7eeff",
+                        "on-error": "#ffffff",
+                        "primary": "#0050cb",
+                        "on-primary-fixed-variant": "#003fa4",
+                        "inverse-primary": "#b3c5ff",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "primary-fixed": "#dae1ff",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "on-primary-fixed": "#001849",
+                        "inverse-on-surface": "#ecf1ff",
+                        "surface-tint": "#0054d6",
+                        "on-background": "#111c2d",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#6f7274",
+                        "surface-container-highest": "#d8e3fb",
+                        "on-tertiary-container": "#f6f8fa",
+                        "on-surface": "#111c2d",
+                        "outline": "#727687",
+                        "inverse-surface": "#263143",
+                        "surface": "#f9f9ff",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#07006c",
+                        "tertiary": "#565a5b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "24px",
+                        "xl": "64px",
+                        "lg": "40px",
+                        "xs": "4px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "32px",
+                        "container-max": "1280px",
+                        "sm": "12px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-xl-mobile": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "headline-xl-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-xl": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex">
+<!-- SideNavBar Component -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-surface-container-low flex flex-col py-lg px-sm gap-base z-40 border-r border-outline-variant">
+<!-- Header -->
+<div class="px-md mb-md">
+<div class="flex items-center gap-sm mb-xs">
+<div class="w-8 h-8 rounded bg-primary flex items-center justify-center text-on-primary font-bold">2H</div>
+<h1 class="text-headline-md font-headline-md font-black text-primary">Admin Console</h1>
+</div>
+<p class="text-label-md font-label-md text-on-surface-variant">Management Portal</p>
+</div>
+<!-- System Status CTA -->
+<div class="px-md mb-md">
+<div class="bg-surface-container-highest rounded-lg p-sm flex items-center gap-sm">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="text-label-sm font-label-sm text-on-surface">System Status: Healthy</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 flex flex-col gap-xs overflow-y-auto">
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">storefront</span>
+<span class="text-label-md font-label-md">Shop Moderation</span>
+</a>
+<!-- Active State -->
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-primary font-bold bg-surface-container-highest scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">rate_review</span>
+<span class="text-label-md font-label-md">Review Moderation</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">gavel</span>
+<span class="text-label-md font-label-md">Disputes</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span class="text-label-md font-label-md">User Management</span>
+</a>
+</nav>
+<!-- Footer Links -->
+<div class="mt-auto flex flex-col gap-xs pt-md border-t border-outline-variant">
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="text-label-md font-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-error hover:bg-error-container transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span class="text-label-md font-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="ml-64 flex-1 flex flex-col min-h-screen">
+<!-- TopNavBar Component -->
+<header class="bg-surface-container-lowest flex justify-between items-center w-full px-margin-desktop h-16 sticky top-0 z-30 border-b border-outline-variant shadow-sm">
+<!-- Left: Product Name / Search -->
+<div class="flex items-center gap-xl flex-1">
+<span class="text-headline-sm font-headline-sm font-bold text-primary">2Hands Admin</span>
+<div class="relative w-full max-w-md hidden md:block">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="w-full h-10 pl-10 pr-sm bg-surface rounded-lg border border-outline-variant text-body-sm font-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-shadow" placeholder="Search orders, users, reviews..." type="text"/>
+</div>
+</div>
+<!-- Right: Actions -->
+<div class="flex items-center gap-md">
+<button class="w-10 h-10 rounded-full hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+<img alt="Administrator Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a corporate administrator, representing a user profile image. The lighting is bright and even, set against a neutral studio background, suitable for a light-mode dashboard interface. The subject is well-dressed and conveys a sense of trust and authority." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPVQ3bWaXM6cOqIWUAIbikA5o9ZT04FA8d92hWFh0fAErjlwZjXI2CubjFtfLlljJfDTup4xCQkWqDO__xgIWPB-IFzHmmpOVIl1zNnJI5YUPbqvPbzQ60fzb3_DjzLV_4nvekvatmBQbdO62y3KSnRT2YkQV4aUQKU5OQg96TOrJ9XNOjRjcu9bNNo-r_3sCxDan0sW9Ccvr1pc8oaiDmHW13qrWkVu7-aODTpOQkDEIPUGDofnRoV8PECfVH6exDEpMOeoExDJA"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<main class="flex-1 p-margin-desktop bg-surface">
+<!-- Page Header -->
+<div class="mb-lg">
+<h2 class="text-headline-lg font-headline-lg text-on-surface mb-xs">Kiểm duyệt Đánh giá</h2>
+<p class="text-body-md font-body-md text-on-surface-variant">Manage and moderate user reviews across the marketplace.</p>
+</div>
+<!-- Filters Bento Section -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)] border border-outline-variant p-md mb-lg">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-md">
+<!-- Tabs -->
+<div class="flex bg-surface-container-low rounded-lg p-xs">
+<button class="px-md py-sm rounded-md bg-primary-container text-on-primary-container text-label-md font-label-md font-bold shadow-sm transition-all">Tất cả</button>
+<button class="px-md py-sm rounded-md text-on-surface-variant hover:bg-surface-container-highest text-label-md font-label-md transition-all">Công khai (VISIBLE)</button>
+<button class="px-md py-sm rounded-md text-on-surface-variant hover:bg-surface-container-highest text-label-md font-label-md transition-all">Bị ẩn (HIDDEN)</button>
+</div>
+<!-- Additional Filters -->
+<div class="flex items-center gap-sm w-full md:w-auto">
+<div class="relative w-full md:w-48">
+<select class="w-full h-10 px-sm bg-surface rounded-lg border border-outline-variant text-body-sm font-body-sm text-on-surface appearance-none focus:border-primary focus:ring-1 focus:ring-primary outline-none cursor-pointer">
+<option value="">Tất cả số sao</option>
+<option value="5">5 Sao</option>
+<option value="4">4 Sao</option>
+<option value="3">3 Sao</option>
+<option value="2">2 Sao</option>
+<option value="1">1 Sao</option>
+</select>
+<span class="material-symbols-outlined absolute right-sm top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+<div class="relative w-full md:w-64">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">tag</span>
+<input class="w-full h-10 pl-9 pr-sm bg-surface rounded-lg border border-outline-variant text-body-sm font-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="Tìm theo Order ID..." type="text"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Data Table Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)] border border-outline-variant overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">
+<th class="px-md py-sm font-semibold">SẢN PHẨM</th>
+<th class="px-md py-sm font-semibold">NGƯỜI MUA</th>
+<th class="px-md py-sm font-semibold w-1/3">ĐÁNH GIÁ</th>
+<th class="px-md py-sm font-semibold">TRẠNG THÁI</th>
+<th class="px-md py-sm font-semibold">NGÀY TẠO</th>
+<th class="px-md py-sm font-semibold text-right">THAO TÁC</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant bg-surface-container-lowest">
+<!-- Row 1: Visible, 5 Star -->
+<tr class="hover:bg-surface transition-colors group">
+<td class="px-md py-md align-top">
+<div class="flex items-start gap-sm">
+<div class="w-12 h-12 rounded-lg bg-surface-container overflow-hidden shrink-0 border border-outline-variant">
+<img alt="Product Thumbnail" class="w-full h-full object-cover" data-alt="A close-up product shot of a sleek, modern smartwatch resting on a clean, light-colored surface. The lighting is studio-quality, highlighting the texture of the watch band and the polished face, fitting for an e-commerce catalog image in a bright, modern UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdmHUyU6YmKUSp-1CrdiNQ72G4pVCwTbbE8GuT-qQb7WVtYspLNrOF0aTcEKismKwYCWSA8dmhY267HqUx6EabStHazMjYJ89_KwpXeQxivXy3N59DqkKp7kwcQFIx1rAQLpPNULA6F9wNR1a28zF43x38N9W1Mw80m_XLhVMP0EIdZ5rU5UksdocEhgQ0pJ4dJKC8Cgo5WaL0UGwrJRvsMnw0nLhPLxF42Uj5Sx-3v-Agw5e6KmHY5uFMQ9jUvrAHRpkMj6LeRyc"/>
+</div>
+<div>
+<p class="text-label-md font-label-md text-on-surface line-clamp-1">Apple Watch Series 8</p>
+<p class="text-body-sm font-body-sm text-on-surface-variant">ID: #ORD-2024-901</p>
+</div>
+</div>
+</td>
+<td class="px-md py-md align-top">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center text-label-sm font-bold shrink-0">
+                                            TH
+                                        </div>
+<span class="text-body-sm font-body-sm text-on-surface font-medium">Trần Hải</span>
+</div>
+</td>
+<td class="px-md py-md align-top">
+<div class="flex text-primary mb-xs">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface line-clamp-2">Sản phẩm tuyệt vời, giao hàng nhanh chóng. Đóng gói rất cẩn thận. Sẽ ủng hộ shop thêm nhiều lần nữa.</p>
+</td>
+<td class="px-md py-md align-top">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#E6F4EA] text-[#137333] text-[11px] font-bold tracking-wide">
+<span class="w-1.5 h-1.5 rounded-full bg-[#137333]"></span>
+                                        VISIBLE
+                                    </span>
+</td>
+<td class="px-md py-md align-top">
+<p class="text-body-sm font-body-sm text-on-surface">24/10/2024</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">14:30 PM</p>
+</td>
+<td class="px-md py-md align-top text-right">
+<button class="px-sm py-1.5 rounded border border-outline text-label-md font-label-md text-on-surface hover:bg-surface-container-high transition-colors">
+                                        Kiểm duyệt
+                                    </button>
+</td>
+</tr>
+<!-- Row 2: Hidden, 1 Star -->
+<tr class="hover:bg-surface transition-colors group">
+<td class="px-md py-md align-top">
+<div class="flex items-start gap-sm">
+<div class="w-12 h-12 rounded-lg bg-surface-container overflow-hidden shrink-0 border border-outline-variant">
+<img alt="Product Thumbnail" class="w-full h-full object-cover" data-alt="A minimalist photograph of a high-end pair of wireless headphones resting on a light-colored wooden table. The composition is clean with ample negative space, utilizing soft, diffused lighting that enhances the premium feel of the product, perfect for a modern marketplace aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYozkceI29WJeiuTxXTygTjPiEP6s7KHnhRTsKbPwEMrXKcIJecYcJt_GoVyguNw-DKf719nlF7YouJbxYha5gy29DID1PQopjiVf_aPfHM3oq_p2_QezY_atZ7SRzpyZgkuDl5xqjSDgeV_cCXaeGh6Xjfna8j9RRCFpxNPqwUGYima8Ne83rC4cusBEda7b6ppbvWFbLmB7_EVKO1lOtiHbzrQaO1kcCK93fySykEfO_GIZo5Ft4DS3GCsbiJb6o40wnEaSVxtE"/>
+</div>
+<div>
+<p class="text-label-md font-label-md text-on-surface line-clamp-1">Sony WH-1000XM5</p>
+<p class="text-body-sm font-body-sm text-on-surface-variant">ID: #ORD-2024-882</p>
+</div>
+</div>
+</td>
+<td class="px-md py-md align-top">
+<div class="flex items-center gap-sm">
+<img alt="Buyer Avatar" class="w-8 h-8 rounded-full object-cover border border-outline-variant shrink-0" data-alt="A casual portrait of a young man smiling slightly, serving as a user profile avatar. The background is a soft, blurred outdoor setting, keeping the focus entirely on the subject's face. The lighting is natural and bright." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0vnjne6KR8siUeaWmf_womCaVv-73ARLjwZG8eYSUJUsd7VzqjG14w_NX1og-wZg_6tHdiFtuI1a206eGWfXthfy957Bac7zEFGZWyMzY550KOISJ2l6JsUo4OZcuFzeLhrx2wGvB-fKGR5lwKw2anFuaETMe1do5n24g9xGiVJU7nVNpIeKL7ftyQM9oQ7xZbsTTYQY-1IJQAlT6qZnysIYORp0YMxkV8K2z1YVXpllgtldKve-VTKoahhnl9nnnFZLSBwodBxQ"/>
+<span class="text-body-sm font-body-sm text-on-surface font-medium">Lê Minh</span>
+</div>
+</td>
+<td class="px-md py-md align-top">
+<div class="flex text-outline-variant mb-xs">
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]">star</span>
+<span class="material-symbols-outlined text-[16px]">star</span>
+<span class="material-symbols-outlined text-[16px]">star</span>
+<span class="material-symbols-outlined text-[16px]">star</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface line-clamp-2 italic text-error">"Shop lừa đảo, giao hàng cũ hỏng nhưng báo là hàng mới. Yêu cầu hoàn tiền ngay lập tức!"</p>
+</td>
+<td class="px-md py-md align-top">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-error-container text-on-error-container text-[11px] font-bold tracking-wide">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                                        HIDDEN
+                                    </span>
+</td>
+<td class="px-md py-md align-top">
+<p class="text-body-sm font-body-sm text-on-surface">23/10/2024</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">09:15 AM</p>
+</td>
+<td class="px-md py-md align-top text-right">
+<button class="px-sm py-1.5 rounded border border-primary text-primary text-label-md font-label-md hover:bg-surface-container transition-colors">
+                                        Xem xét lại
+                                    </button>
+</td>
+</tr>
+<!-- Row 3: Visible, 4 Star -->
+<tr class="hover:bg-surface transition-colors group">
+<td class="px-md py-md align-top">
+<div class="flex items-start gap-sm">
+<div class="w-12 h-12 rounded-lg bg-surface-container overflow-hidden shrink-0 border border-outline-variant">
+<img alt="Product Thumbnail" class="w-full h-full object-cover" data-alt="A dynamic product shot of a single bright red sneaker isolated against a solid background. The vibrant color contrasts sharply with the minimalist setting, emphasizing the shoe's design details and texture in a contemporary retail style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBeV6TC7EVqECZ8dXmPzGYeJTsJ1RU_priHReboT1VJZe2vnVuWj6nmjLgttreffbYY0Z2tO4V6xF4lg0Ak-T41MnDwyPic6vPXa7LTXdZSEhNlBvu-1i2LTvKYJvl6Yh4qI1mGIdYqzHNEh99svD-uk6JXr7_xWumHKbyM0YUluUXvhhfF2Hsc3zsh3MdHq-itsckYc19j1WXQ6RP1xGKLVyDgYo36p5zuJrdkcl0d5zW2B5Y58gwetq7XgRhALp6MxBvdwlpEd5s"/>
+</div>
+<div>
+<p class="text-label-md font-label-md text-on-surface line-clamp-1">Nike Air Max 270</p>
+<p class="text-body-sm font-body-sm text-on-surface-variant">ID: #ORD-2024-754</p>
+</div>
+</div>
+</td>
+<td class="px-md py-md align-top">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center text-label-sm font-bold shrink-0">
+                                            PA
+                                        </div>
+<span class="text-body-sm font-body-sm text-on-surface font-medium">Phạm Anh</span>
+</div>
+</td>
+<td class="px-md py-md align-top">
+<div class="flex text-primary mb-xs">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px] text-outline-variant">star</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface line-clamp-2">Giày đẹp, mang êm chân. Tuy nhiên hộp lúc giao tới hơi móp một chút. Nhìn chung vẫn hài lòng.</p>
+</td>
+<td class="px-md py-md align-top">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#E6F4EA] text-[#137333] text-[11px] font-bold tracking-wide">
+<span class="w-1.5 h-1.5 rounded-full bg-[#137333]"></span>
+                                        VISIBLE
+                                    </span>
+</td>
+<td class="px-md py-md align-top">
+<p class="text-body-sm font-body-sm text-on-surface">22/10/2024</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">16:45 PM</p>
+</td>
+<td class="px-md py-md align-top text-right">
+<button class="px-sm py-1.5 rounded border border-outline text-label-md font-label-md text-on-surface hover:bg-surface-container-high transition-colors">
+                                        Kiểm duyệt
+                                    </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="p-md border-t border-outline-variant flex items-center justify-between bg-surface-container-lowest">
+<p class="text-body-sm font-body-sm text-on-surface-variant">Hiển thị 1-3 của 128 đánh giá</p>
+<div class="flex gap-xs">
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-on-primary text-label-sm font-bold">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface hover:bg-surface-container-high text-label-sm">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface hover:bg-surface-container-high text-label-sm">3</button>
+<span class="w-8 h-8 flex items-center justify-center text-on-surface-variant">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface hover:bg-surface-container-high">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Component -->
+<footer class="w-full py-md px-margin-desktop flex justify-between items-center mt-auto bg-surface border-t border-outline-variant">
+<p class="text-body-sm font-body-sm text-secondary">© 2024 2Hands Marketplace Moderation Terminal</p>
+<div class="flex gap-md">
+<a class="text-label-sm font-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="text-label-sm font-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Audit Protocols</a>
+<a class="text-label-sm font-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Support</a>
+</div>
+</footer>
+</div>
+</body></html>

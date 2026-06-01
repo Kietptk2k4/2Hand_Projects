@@ -9,4 +9,9 @@ export const ADMIN_TOP_TABS = [
     labelVn: "Đăng nhập & phiên",
     labelEn: "Login & Session",
   },
+  {
+    id: "commerceModeration",
+    labelVn: "Commerce moderation",
+    labelEn: "Commerce Moderation",
+  },
 ];

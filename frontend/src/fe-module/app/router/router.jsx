@@ -39,6 +39,7 @@ import { CommerceSellerOrderListPage } from "../../features/commerce/pages/Comme
 import { CommerceSellerShipmentListPage } from "../../features/commerce/pages/CommerceSellerShipmentListPage";
 import { CommerceSellerShipmentDetailPage } from "../../features/commerce/pages/CommerceSellerShipmentDetailPage";
 import { CommerceSellerShopReviewsPage } from "../../features/commerce/pages/CommerceSellerShopReviewsPage";
+import { CommerceAdminShopModerationPage } from "../../features/commerce/pages/CommerceAdminShopModerationPage";
 
 function HomePage() {
   return (
@@ -88,6 +89,10 @@ export const router = createBrowserRouter([
           { path: APP_ROUTES.accountPassword.slice(1), element: <AccountPasswordPage /> },
           { path: APP_ROUTES.changePassword.slice(1), element: <ChangePasswordPage /> },
           { path: APP_ROUTES.admin.slice(1), element: <AdminPage /> },
+          {
+            path: APP_ROUTES.commerceAdminShopModeration.slice(1),
+            element: <CommerceAdminShopModerationPage />,
+          },
           { path: APP_ROUTES.socialFeed.slice(1), element: <SocialFeedPage /> },
           { path: APP_ROUTES.socialSavedPosts.slice(1), element: <SocialSavedPostsPage /> },
           { path: APP_ROUTES.socialSearchPosts.slice(1), element: <SocialSearchPostsPage /> },

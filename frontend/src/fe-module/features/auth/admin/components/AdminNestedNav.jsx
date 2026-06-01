@@ -1,10 +1,12 @@
 import { ADMIN_TOP_TABS } from "../adminTabs.js";
+import { COMMERCE_MODERATION_TABS } from "../commerceModeration/commerceModerationTabs.js";
 import { LOGIN_SESSION_TABS } from "../loginSession/loginSessionTabs.js";
 import { ROLE_PERMISSION_TABS } from "../rolePermission/rolePermissionTabs.js";
 
 const SECTION_CHILDREN = {
   rolePermission: ROLE_PERMISSION_TABS,
   loginSession: LOGIN_SESSION_TABS,
+  commerceModeration: COMMERCE_MODERATION_TABS,
 };
 
 function ParentNavIcon({ sectionId, active }) {
@@ -18,6 +20,19 @@ function ParentNavIcon({ sectionId, active }) {
           strokeLinecap="round"
           strokeLinejoin="round"
         />
+      </svg>
+    );
+  }
+
+  if (sectionId === "commerceModeration") {
+    return (
+      <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path d="M9 22V12h6v10" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
   }
@@ -64,6 +79,27 @@ function ChildNavIcon({ name, active }) {
     sessions: (
       <path
         d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ),
+    shop: (
+      <path
+        d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ),
+    review: (
+      <path
+        d="M7 8h10M7 12h6m-6 4h8M5 4h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ),
+    product: (
+      <path
+        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
