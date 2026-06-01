@@ -1,4 +1,5 @@
 import { findAddressForUser } from "./commerceAddressData";
+import { registerOrderFromCheckout } from "./commerceOrderListData";
 import { registerPaymentFromCheckout } from "./commercePaymentData";
 import {
   getOrCreateCartForUser,
@@ -210,6 +211,29 @@ export function processCheckout(userId, body) {
   }
 
   const resolved = resolveCartItems(userId, cartItemIds);
+  if (!resolved.error) {
+    const previewItem = resolved.items[0];
+    const itemCount = resolved.items.reduce((sum, item) => sum + item.quantity, 0);
+
+    registerOrderFromCheckout(
+      userId,
+      {
+        order_id: orderId,
+        payment_id: paymentId,
+        payment_method: paymentMethod,
+        payment_status: result.payment_status,
+        order_status: result.order_status,
+        final_amount: result.final_amount,
+      },
+      {
+        total_amount: quoteResult.data.total_amount,
+        item_count: itemCount,
+        preview_product_name: previewItem?.product_name,
+        preview_image_url: previewItem?.image_url,
+      }
+    );
+  }
+
   if (resolved.cart) {
     resolved.cart.items = resolved.cart.items.filter(
       (item) => !cartItemIds.includes(item.cart_item_id)

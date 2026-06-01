@@ -7,7 +7,13 @@ const SIDEBAR_LINKS = [
   { id: "home", icon: "home", label: "Trang chủ", route: APP_ROUTES.commerceHome },
   { id: "cart", icon: "shopping_cart", label: "Giỏ hàng", route: APP_ROUTES.commerceCart, requiresAuth: true },
   { id: "marketplace", icon: "storefront", label: "Marketplace", comingSoon: true },
-  { id: "orders", icon: "receipt_long", label: "Đơn hàng", comingSoon: true },
+  {
+    id: "orders",
+    icon: "receipt_long",
+    label: "Đơn hàng",
+    route: APP_ROUTES.commerceOrders,
+    requiresAuth: true,
+  },
   { id: "analytics", icon: "analytics", label: "Thống kê", comingSoon: true },
   { id: "settings", icon: "settings", label: "Cài đặt", comingSoon: true },
 ];
@@ -19,6 +25,9 @@ function isLinkActive(link, pathname) {
   }
   if (link.id === "cart") {
     return pathname === APP_ROUTES.commerceCart;
+  }
+  if (link.id === "orders") {
+    return pathname === APP_ROUTES.commerceOrders;
   }
   return pathname === link.route || pathname.startsWith(`${link.route}/`);
 }
@@ -79,7 +88,11 @@ export function CommerceHomeSidebar({ onComingSoon }) {
             >
               <span
                 className="material-symbols-outlined"
-                style={link.id === "cart" && active ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                style={
+                  (link.id === "cart" || link.id === "orders") && active
+                    ? { fontVariationSettings: "'FILL' 1" }
+                    : undefined
+                }
                 aria-hidden="true"
               >
                 {link.icon}
