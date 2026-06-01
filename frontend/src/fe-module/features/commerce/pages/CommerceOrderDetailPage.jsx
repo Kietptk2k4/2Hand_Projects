@@ -137,7 +137,7 @@ export function CommerceOrderDetailPage() {
             <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
               <div className="flex flex-col gap-6 lg:col-span-8">
                 <OrderDetailItemsSection items={order.items} />
-                <OrderDetailShipmentsSection shipments={order.shipments} />
+                <OrderDetailShipmentsSection orderId={order.orderId} shipments={order.shipments} />
               </div>
 
               <aside className="flex flex-col gap-6 lg:col-span-4 lg:sticky lg:top-20">

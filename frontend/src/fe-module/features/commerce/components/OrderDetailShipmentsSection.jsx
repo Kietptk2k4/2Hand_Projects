@@ -1,8 +1,10 @@
 import { useCallback, useState } from "react";
+import { Link } from "react-router-dom";
 import { formatOrderDate } from "../utils/formatOrderDate";
 import { SHIPMENT_STATUS_BADGE_CLASS, SHIPMENT_STATUS_LABELS } from "../constants/orderDetailConstants";
+import { APP_ROUTES } from "../../../shared/constants/routes";
 
-export function OrderDetailShipmentsSection({ shipments }) {
+export function OrderDetailShipmentsSection({ orderId, shipments }) {
   const [copiedId, setCopiedId] = useState(null);
 
   const copyTracking = useCallback(async (shipmentId, trackingNumber) => {
@@ -86,6 +88,20 @@ export function OrderDetailShipmentsSection({ shipments }) {
                   </div>
                 ) : null}
               </dl>
+
+              {shipment.shipmentId && orderId ? (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Link
+                    to={APP_ROUTES.commerceShipmentTracking
+                      .replace(":orderId", orderId)
+                      .replace(":shipmentId", shipment.shipmentId)}
+                    className="rounded-lg border border-primary px-4 py-2 text-label-md font-medium text-primary hover:bg-surface-container-low"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    Theo dõi vận chuyển
+                  </Link>
+                </div>
+              ) : null}
             </div>
           );
         })}
