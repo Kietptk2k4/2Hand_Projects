@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { FeedToast } from "../../social/components/FeedToast";
 import { CommerceHomeHero } from "../components/CommerceHomeHero";
 import { CommerceShell } from "../components/CommerceShell";
@@ -17,6 +18,7 @@ const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
 
 export function CommerceHomePage() {
   const navigate = useNavigate();
+  const { user } = useAuthSession();
   const [toastMessage, setToastMessage] = useState("");
   const {
     items,
@@ -62,6 +64,14 @@ export function CommerceHomePage() {
     [navigate]
   );
 
+  const goToCart = useCallback(() => {
+    if (user) {
+      navigate(APP_ROUTES.commerceCart);
+      return;
+    }
+    navigate(APP_ROUTES.login);
+  }, [navigate, user]);
+
   const handleSearchSubmit = useCallback(
     (rawQuery) => {
       const normalized = normalizeSearchKeyword(rawQuery);
@@ -91,7 +101,7 @@ export function CommerceHomePage() {
         </button>
         <button
           type="button"
-          onClick={showComingSoon}
+          onClick={goToCart}
           className="rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary"
           aria-label="Giỏ hàng"
         >

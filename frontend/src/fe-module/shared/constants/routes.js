@@ -22,5 +22,6 @@ export const APP_ROUTES = {
   commerceCategoryProducts: "/commerce/categories/:categoryId",
   commerceShopProducts: "/commerce/shops/:shopId",
   commerceProductDetail: "/commerce/products/:productId",
+  commerceCart: "/commerce/cart",
 };
 

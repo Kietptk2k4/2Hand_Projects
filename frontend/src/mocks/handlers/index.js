@@ -17,6 +17,7 @@ import { commerceCategoryProductsHandlers } from "./commerceCategoryProductsHand
 import { commerceProductSearchHandlers } from "./commerceProductSearchHandlers";
 import { commerceShopProductsHandlers } from "./commerceShopProductsHandlers";
 import { commerceProductDetailHandlers } from "./commerceProductDetailHandlers";
+import { commerceCartHandlers } from "./commerceCartHandlers";
 
 export const handlers = [
   ...authHandlers,
@@ -38,5 +39,6 @@ export const handlers = [
   ...commerceProductSearchHandlers,
   ...commerceShopProductsHandlers,
   ...commerceProductDetailHandlers,
+  ...commerceCartHandlers,
 ];
 

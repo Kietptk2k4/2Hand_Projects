@@ -22,6 +22,7 @@ import { CommerceProductDetailPage } from "../../features/commerce/pages/Commerc
 import { CommerceCategoryProductsPage } from "../../features/commerce/pages/CommerceCategoryProductsPage";
 import { CommerceSearchPage } from "../../features/commerce/pages/CommerceSearchPage";
 import { CommerceShopProductsPage } from "../../features/commerce/pages/CommerceShopProductsPage";
+import { CommerceCartPage } from "../../features/commerce/pages/CommerceCartPage";
 
 function HomePage() {
   return (
@@ -72,6 +73,7 @@ export const router = createBrowserRouter([
           { path: APP_ROUTES.socialSearchPosts.slice(1), element: <SocialSearchPostsPage /> },
           { path: APP_ROUTES.socialHashtagPosts.slice(1), element: <SocialHashtagPostsPage /> },
           { path: APP_ROUTES.socialProfile.slice(1), element: <SocialProfilePage /> },
+          { path: APP_ROUTES.commerceCart.slice(1), element: <CommerceCartPage /> },
         ],
       },
     ],

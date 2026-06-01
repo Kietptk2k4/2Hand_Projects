@@ -1,12 +1,47 @@
+import { useCallback } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
+import { APP_ROUTES } from "../../../shared/constants/routes";
+
 const SIDEBAR_LINKS = [
-  { icon: "home", label: "Trang chủ", active: true },
-  { icon: "storefront", label: "Marketplace" },
-  { icon: "receipt_long", label: "Đơn hàng" },
-  { icon: "analytics", label: "Thống kê" },
-  { icon: "settings", label: "Cài đặt" },
+  { id: "home", icon: "home", label: "Trang chủ", route: APP_ROUTES.commerceHome },
+  { id: "cart", icon: "shopping_cart", label: "Giỏ hàng", route: APP_ROUTES.commerceCart, requiresAuth: true },
+  { id: "marketplace", icon: "storefront", label: "Marketplace", comingSoon: true },
+  { id: "orders", icon: "receipt_long", label: "Đơn hàng", comingSoon: true },
+  { id: "analytics", icon: "analytics", label: "Thống kê", comingSoon: true },
+  { id: "settings", icon: "settings", label: "Cài đặt", comingSoon: true },
 ];
 
+function isLinkActive(link, pathname) {
+  if (!link.route) return false;
+  if (link.id === "home") {
+    return pathname === APP_ROUTES.commerceHome;
+  }
+  return pathname === link.route || pathname.startsWith(`${link.route}/`);
+}
+
 export function CommerceHomeSidebar({ onComingSoon }) {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const { user } = useAuthSession();
+
+  const handleLinkClick = useCallback(
+    (link) => {
+      if (link.comingSoon) {
+        onComingSoon?.();
+        return;
+      }
+      if (link.requiresAuth && !user) {
+        navigate(APP_ROUTES.login);
+        return;
+      }
+      if (link.route) {
+        navigate(link.route);
+      }
+    },
+    [navigate, onComingSoon, user]
+  );
+
   return (
     <aside className="hidden w-64 shrink-0 border-r border-outline-variant px-3 py-6 lg:flex lg:flex-col">
       <div className="mb-8 px-3">
@@ -24,26 +59,32 @@ export function CommerceHomeSidebar({ onComingSoon }) {
       </div>
 
       <nav className="flex flex-1 flex-col gap-1">
-        {SIDEBAR_LINKS.map((link) => (
-          <button
-            key={link.label}
-            type="button"
-            onClick={() => {
-              if (!link.active) onComingSoon?.();
-            }}
-            className={[
-              "flex items-center gap-3 rounded-lg px-4 py-3 text-left text-label-md transition-colors",
-              link.active
-                ? "bg-primary text-on-primary"
-                : "text-on-surface-variant hover:bg-surface-container-high",
-            ].join(" ")}
-          >
-            <span className="material-symbols-outlined" aria-hidden="true">
-              {link.icon}
-            </span>
-            {link.label}
-          </button>
-        ))}
+        {SIDEBAR_LINKS.map((link) => {
+          const active = isLinkActive(link, pathname);
+
+          return (
+            <button
+              key={link.id}
+              type="button"
+              onClick={() => handleLinkClick(link)}
+              className={[
+                "flex items-center gap-3 rounded-lg px-4 py-3 text-left text-label-md transition-colors",
+                active
+                  ? "bg-primary text-on-primary"
+                  : "text-on-surface-variant hover:bg-surface-container-high",
+              ].join(" ")}
+            >
+              <span
+                className="material-symbols-outlined"
+                style={link.id === "cart" && active ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                aria-hidden="true"
+              >
+                {link.icon}
+              </span>
+              {link.label}
+            </button>
+          );
+        })}
       </nav>
     </aside>
   );
