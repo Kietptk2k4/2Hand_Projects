@@ -24,6 +24,43 @@ export async function fetchSellerProductDetail(productId) {
   }
 }
 
+export async function updateProduct(productId, payload) {
+  try {
+    const response = await commerceApiClient.patch(
+      `/commerce/api/v1/seller/products/${productId}`,
+      payload,
+    );
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function updateProductAttributes(productId, payload) {
+  try {
+    const response = await commerceApiClient.put(
+      `/commerce/api/v1/seller/products/${productId}/attributes`,
+      payload,
+    );
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+/** FE-only MSW — media upload chính thức sẽ thay endpoint sau */
+export async function updateProductMedia(productId, payload) {
+  try {
+    const response = await commerceApiClient.patch(
+      `/commerce/api/v1/seller/products/${productId}/media`,
+      payload,
+    );
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export async function createProduct(payload) {
   try {
     const response = await commerceApiClient.post("/commerce/api/v1/seller/products", payload);

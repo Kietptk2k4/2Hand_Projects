@@ -1,6 +1,7 @@
 import axios from "axios";
+import { resolveServiceBaseUrl } from "./resolveServiceBaseUrl";
 
-const AUTH_BASE_URL = import.meta.env.VITE_AUTH_SERVICE_BASE_URL || "";
+const AUTH_BASE_URL = resolveServiceBaseUrl(import.meta.env.VITE_AUTH_SERVICE_BASE_URL);
 const DEFAULT_SESSION_EXPIRED_MESSAGE = "Phien dang nhap da het han, vui long dang nhap lai.";
 
 let handlers = {

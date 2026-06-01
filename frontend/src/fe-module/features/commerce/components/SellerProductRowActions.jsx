@@ -1,5 +1,6 @@
-export function SellerProductRowActions({ product, disabled, onAction, onComingSoon }) {
+export function SellerProductRowActions({ product, disabled, onAction, onEdit }) {
   const status = product.status;
+  const isArchived = status === "ARCHIVED";
 
   const actions = [];
 
@@ -22,10 +23,10 @@ export function SellerProductRowActions({ product, disabled, onAction, onComingS
     <div className="flex flex-wrap justify-end gap-1">
       <button
         type="button"
-        disabled={disabled}
-        onClick={() => onComingSoon?.()}
-        className="rounded p-1 text-on-surface-variant hover:bg-surface-container-low"
-        title="Chỉnh sửa (sắp có)"
+        disabled={disabled || isArchived}
+        onClick={() => onEdit?.(product)}
+        className="rounded p-1 text-on-surface-variant hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-40"
+        title={isArchived ? "Không thể chỉnh sửa sản phẩm đã lưu trữ" : "Chỉnh sửa"}
         aria-label="Chỉnh sửa"
       >
         <span className="material-symbols-outlined text-[20px]" aria-hidden="true">

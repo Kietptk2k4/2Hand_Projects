@@ -36,5 +36,6 @@ export const APP_ROUTES = {
   commerceShopSettings: "/commerce/seller/shop/settings",
   commerceSellerProducts: "/commerce/seller/products",
   commerceSellerProductCreate: "/commerce/seller/products/new",
+  commerceSellerProductEdit: "/commerce/seller/products/:productId/edit",
 };
 

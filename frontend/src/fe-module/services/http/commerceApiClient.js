@@ -1,7 +1,8 @@
 import axios from "axios";
 import { getStoredAccessToken, refreshAccessTokenOnce } from "./authRefreshService";
+import { resolveServiceBaseUrl } from "./resolveServiceBaseUrl";
 
-const COMMERCE_BASE_URL = import.meta.env.VITE_COMMERCE_SERVICE_BASE_URL || "";
+const COMMERCE_BASE_URL = resolveServiceBaseUrl(import.meta.env.VITE_COMMERCE_SERVICE_BASE_URL);
 
 export const commerceApiClient = axios.create({
   baseURL: COMMERCE_BASE_URL,

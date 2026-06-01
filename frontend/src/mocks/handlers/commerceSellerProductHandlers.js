@@ -7,7 +7,10 @@ import {
   pauseProductForSeller,
   publishProductForSeller,
   setProductMedia,
+  updateProductAttributesForSeller,
+  updateProductForSeller,
   updateProductInventoryForSeller,
+  updateProductMediaForSeller,
   updateProductPriceForSeller,
 } from "../data/commerceSellerProductData";
 import { getUserByToken } from "../utils/socialMockAuth";
@@ -90,6 +93,76 @@ export const commerceSellerProductHandlers = [
 
     return HttpResponse.json(
       apiSuccess(200, "Tao san pham draft thanh cong.", result.data),
+      { status: 200 },
+    );
+  }),
+
+  http.patch("*/commerce/api/v1/seller/products/:productId", async ({ params, request }) => {
+    await delay(350);
+    const auth = requireAuth(request);
+    if (auth.error) return auth.error;
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return HttpResponse.json(apiError("COMMERCE-400-VALIDATION", "Du lieu khong hop le."), {
+        status: 400,
+      });
+    }
+
+    const result = updateProductForSeller(auth.user.id, params.productId, body);
+    if (result.error) return mapError(result);
+
+    return HttpResponse.json(
+      apiSuccess(200, "Cap nhat san pham thanh cong.", result.data),
+      { status: 200 },
+    );
+  }),
+
+  http.put("*/commerce/api/v1/seller/products/:productId/attributes", async ({ params, request }) => {
+    await delay(350);
+    const auth = requireAuth(request);
+    if (auth.error) return auth.error;
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return HttpResponse.json(apiError("COMMERCE-400-VALIDATION", "Du lieu khong hop le."), {
+        status: 400,
+      });
+    }
+
+    const result = updateProductAttributesForSeller(auth.user.id, params.productId, body);
+    if (result.error) return mapError(result);
+
+    return HttpResponse.json(
+      apiSuccess(200, "Cap nhat thuoc tinh san pham thanh cong.", result.data),
+      { status: 200 },
+    );
+  }),
+
+  /** FE-only media — chờ API upload chính thức */
+  http.patch("*/commerce/api/v1/seller/products/:productId/media", async ({ params, request }) => {
+    await delay(300);
+    const auth = requireAuth(request);
+    if (auth.error) return auth.error;
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return HttpResponse.json(apiError("COMMERCE-400-VALIDATION", "Du lieu khong hop le."), {
+        status: 400,
+      });
+    }
+
+    const result = updateProductMediaForSeller(auth.user.id, params.productId, body);
+    if (result.error) return mapError(result);
+
+    return HttpResponse.json(
+      apiSuccess(200, "Cap nhat hinh anh san pham thanh cong.", result.data),
       { status: 200 },
     );
   }),

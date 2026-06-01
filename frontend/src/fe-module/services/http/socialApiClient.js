@@ -2,8 +2,9 @@ import axios from "axios";
 import { isSuspendedWriteError } from "../../features/social/utils/socialWriteErrors";
 import { notifySuspendedWrite } from "../../features/social/utils/socialWriteBlockBridge";
 import { getStoredAccessToken, refreshAccessTokenOnce } from "./authRefreshService";
+import { resolveServiceBaseUrl } from "./resolveServiceBaseUrl";
 
-const SOCIAL_BASE_URL = import.meta.env.VITE_SOCIAL_SERVICE_BASE_URL || "";
+const SOCIAL_BASE_URL = resolveServiceBaseUrl(import.meta.env.VITE_SOCIAL_SERVICE_BASE_URL);
 
 export const socialApiClient = axios.create({
   baseURL: SOCIAL_BASE_URL,

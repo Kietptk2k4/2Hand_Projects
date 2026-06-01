@@ -16,6 +16,13 @@ export const MOCK_SELLER_PRODUCT_OOS = "c2000000-0000-4000-8000-000000000103";
 export const MOCK_SELLER_PRODUCT_DRAFT = "c2000000-0000-4000-8000-000000000104";
 export const MOCK_SELLER_PRODUCT_PAUSED = "c2000000-0000-4000-8000-000000000105";
 export const MOCK_SELLER_PRODUCT_ARCHIVED = "c2000000-0000-4000-8000-000000000106";
+/** DRAFT đủ giá + tồn kho, thiếu media — test publish fail COMMERCE-400-MEDIA-URL */
+export const MOCK_SELLER_PRODUCT_DRAFT_NO_MEDIA = "c2000000-0000-4000-8000-000000000107";
+/** DRAFT đủ điều kiện publish */
+export const MOCK_SELLER_PRODUCT_DRAFT_READY = "c2000000-0000-4000-8000-000000000108";
+
+const ATTRIBUTE_NAME_MAX = 255;
+const ATTRIBUTE_VALUE_MAX = 500;
 
 const productsById = new Map();
 const productIdsBySellerId = new Map();
@@ -90,6 +97,33 @@ function syncDiscovery(record) {
   } else {
     removeDiscoveryProduct(record.product_id);
   }
+}
+
+function computeDetailFlags(record) {
+  const hasMedia =
+    (record.thumbnail_url && String(record.thumbnail_url).startsWith("http")) ||
+    (Array.isArray(record.media_urls) && record.media_urls.length > 0);
+  return {
+    has_price: Boolean(record.price_id && record.effective_price != null),
+    has_inventory: Boolean(record.has_inventory),
+    has_media: hasMedia,
+  };
+}
+
+function toDetailItem(record) {
+  const flags = computeDetailFlags(record);
+  return {
+    ...toListItem(record),
+    brand_id: record.brand_id,
+    attributes: (record.attributes || []).map((attr) => ({
+      attribute_name: attr.attribute_name,
+      attribute_value: attr.attribute_value,
+    })),
+    media_urls: record.media_urls || [],
+    price_id: record.price_id,
+    reserved_quantity: record.reserved_quantity ?? 0,
+    ...flags,
+  };
 }
 
 function toListItem(record) {
@@ -204,7 +238,7 @@ export function getSellerProductForUser(userId, productId) {
   if (!record || record.seller_id !== userId) {
     return { error: "COMMERCE-404-PRODUCT", status: 404 };
   }
-  return { data: toListItem(record) };
+  return { data: toDetailItem(record) };
 }
 
 export function createProductForSeller(userId, body) {
@@ -267,21 +301,151 @@ export function createProductForSeller(userId, body) {
     published_at: null,
     paused_at: null,
     archived_at: null,
+    attributes: [],
+    has_price: false,
   };
 
   registerProduct(record);
-  return { data: toListItem(record) };
+  return { data: toDetailItem(record) };
 }
 
 export function setProductMedia(userId, productId, thumbnailUrl) {
+  return updateProductMediaForSeller(userId, productId, {
+    thumbnail_url: thumbnailUrl,
+    media_urls: thumbnailUrl ? [thumbnailUrl] : [],
+  });
+}
+
+/** FE-only / MSW — chờ API media chính thức (MinIO presigned) */
+export function updateProductMediaForSeller(userId, productId, body) {
   const record = productsById.get(productId);
   if (!record || record.seller_id !== userId) {
     return { error: "COMMERCE-404-PRODUCT", status: 404 };
   }
-  record.thumbnail_url = thumbnailUrl;
-  record.media_urls = thumbnailUrl ? [thumbnailUrl] : [];
+
+  if (record.status === "ARCHIVED") {
+    return { error: "COMMERCE-409-PRODUCT-STATUS", status: 409 };
+  }
+
+  const urls = Array.isArray(body?.media_urls)
+    ? body.media_urls.filter((u) => typeof u === "string" && u.startsWith("http"))
+    : [];
+
+  if (body?.thumbnail_url && typeof body.thumbnail_url === "string") {
+    record.thumbnail_url = body.thumbnail_url;
+  } else if (urls.length > 0) {
+    record.thumbnail_url = urls[0];
+  } else {
+    record.thumbnail_url = null;
+  }
+
+  record.media_urls = urls.length > 0 ? urls : record.thumbnail_url ? [record.thumbnail_url] : [];
   record.updated_at = new Date().toISOString();
-  return { data: record };
+  syncDiscovery(record);
+
+  return { data: toDetailItem(record) };
+}
+
+export function updateProductForSeller(userId, productId, body) {
+  const record = productsById.get(productId);
+  if (!record || record.seller_id !== userId) {
+    return { error: "COMMERCE-404-PRODUCT", status: 404 };
+  }
+
+  if (record.status === "ARCHIVED") {
+    return { error: "COMMERCE-409-PRODUCT-STATUS", status: 409 };
+  }
+
+  const shopRecord = getShopBySellerId(userId);
+  const publicShop = shopRecord ? getShopById(shopRecord.shop_id) : null;
+  if (!shopRecord || publicShop?.status === "SUSPENDED" || shopRecord.status === "SUSPENDED") {
+    return { error: "COMMERCE-409-SHOP-STATUS", status: 409 };
+  }
+
+  const allowed = ["DRAFT", "ACTIVE", "PAUSED", "OUT_OF_STOCK"];
+  if (!allowed.includes(record.status)) {
+    return { error: "COMMERCE-409-PRODUCT-STATUS", status: 409 };
+  }
+
+  const category = getCategoryById(body?.category_id);
+  if (!category || !category.is_active) {
+    return { error: "COMMERCE-404-CATEGORY", status: 404 };
+  }
+
+  const title = body?.title?.trim();
+  const description = body?.description?.trim();
+  const weight = Number(body?.weight_gram);
+
+  if (!body?.product_type || !body?.condition || !title || !description) {
+    return { error: "COMMERCE-400-VALIDATION", status: 400 };
+  }
+
+  if (title.length > TITLE_MAX || !Number.isInteger(weight) || weight <= 0) {
+    return { error: "COMMERCE-400-VALIDATION", status: 400 };
+  }
+
+  record.product_type = body.product_type;
+  record.category_id = category.category_id;
+  record.category_name = category.category_name;
+  record.brand_id = body.brand_id || null;
+  record.condition = body.condition;
+  record.title = title;
+  record.description = description;
+  record.weight_gram = weight;
+  record.updated_at = new Date().toISOString();
+
+  syncDiscovery(record);
+  return { data: toDetailItem(record) };
+}
+
+export function updateProductAttributesForSeller(userId, productId, body) {
+  const record = productsById.get(productId);
+  if (!record || record.seller_id !== userId) {
+    return { error: "COMMERCE-404-PRODUCT", status: 404 };
+  }
+
+  if (record.status === "ARCHIVED") {
+    return { error: "COMMERCE-409-PRODUCT-STATUS", status: 409 };
+  }
+
+  const attrs = body?.attributes;
+  if (!Array.isArray(attrs)) {
+    return { error: "COMMERCE-400-VALIDATION", status: 400 };
+  }
+
+  const names = new Set();
+  const normalized = [];
+
+  for (const item of attrs) {
+    const name = item?.attribute_name?.trim();
+    const value = item?.attribute_value?.trim();
+    if (!name || !value) {
+      return { error: "COMMERCE-400-VALIDATION", status: 400 };
+    }
+    if (name.length > ATTRIBUTE_NAME_MAX || value.length > ATTRIBUTE_VALUE_MAX) {
+      return { error: "COMMERCE-400-VALIDATION", status: 400 };
+    }
+    const key = name.toLowerCase();
+    if (names.has(key)) {
+      return { error: "COMMERCE-400-VALIDATION", status: 400 };
+    }
+    names.add(key);
+    normalized.push({ attribute_name: name, attribute_value: value });
+  }
+
+  record.attributes = normalized;
+  record.updated_at = new Date().toISOString();
+  syncDiscovery(record);
+
+  return {
+    data: {
+      product_id: productId,
+      seller_id: record.seller_id,
+      shop_id: record.shop_id,
+      status: record.status,
+      attributes: normalized,
+    },
+  };
 }
 
 export function updateProductPriceForSeller(userId, productId, body) {
@@ -304,6 +468,7 @@ export function updateProductPriceForSeller(userId, productId, body) {
   record.sale_price = salePrice;
   record.effective_price = salePrice != null ? salePrice : price;
   record.price_id = `price-${productId}`;
+  record.has_price = true;
   record.updated_at = new Date().toISOString();
   syncDiscovery(record);
 
@@ -538,6 +703,8 @@ function buildSeedProduct(overrides) {
     low_stock_threshold: 3,
     reserved_quantity: 0,
     media_urls: [],
+    attributes: [],
+    has_price: false,
     ...overrides,
     category_name: category?.category_name || "",
     created_at: overrides.created_at || now,
@@ -658,12 +825,52 @@ function seedDemoSellerProducts() {
       weight_gram: 300,
       sku_code: "SKU-DEMO-106",
       thumbnail_url: "https://picsum.photos/seed/seller-demo-106/400/300",
+      media_urls: ["https://picsum.photos/seed/seller-demo-106/400/300"],
       price: 120000,
       effective_price: 120000,
       price_id: "price-106",
       stock_quantity: 0,
       has_inventory: true,
       archived_at: "2026-05-18T08:00:00Z",
+    }),
+    buildSeedProduct({
+      ...base,
+      product_id: MOCK_SELLER_PRODUCT_DRAFT_NO_MEDIA,
+      status: "DRAFT",
+      category_id: MOCK_CATEGORY_DRILL_ID,
+      condition: "NEW",
+      title: "Máy cắt nháp — thiếu ảnh (test publish fail)",
+      description: "Draft có giá và tồn kho nhưng chưa có media.",
+      weight_gram: 1500,
+      sku_code: "SKU-DEMO-107",
+      thumbnail_url: null,
+      media_urls: [],
+      price: 450000,
+      effective_price: 450000,
+      price_id: "price-107",
+      stock_quantity: 5,
+      has_inventory: true,
+      has_price: true,
+    }),
+    buildSeedProduct({
+      ...base,
+      product_id: MOCK_SELLER_PRODUCT_DRAFT_READY,
+      status: "DRAFT",
+      category_id: MOCK_CATEGORY_TOOLS_ID,
+      condition: "NEW",
+      title: "Cờ lê điện nháp — sẵn sàng đăng bán",
+      description: "Draft đủ giá, tồn kho và ảnh.",
+      weight_gram: 900,
+      sku_code: "SKU-DEMO-108",
+      thumbnail_url: "https://picsum.photos/seed/seller-demo-108/400/300",
+      media_urls: ["https://picsum.photos/seed/seller-demo-108/400/300"],
+      price: 320000,
+      effective_price: 320000,
+      price_id: "price-108",
+      stock_quantity: 12,
+      has_inventory: true,
+      has_price: true,
+      attributes: [{ attribute_name: "Điện áp", attribute_value: "20V" }],
     }),
   ];
 

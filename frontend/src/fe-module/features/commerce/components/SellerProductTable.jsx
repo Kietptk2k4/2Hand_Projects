@@ -3,7 +3,7 @@ import { formatProductUpdatedAt } from "../utils/sellerProductMapper";
 import { SellerProductRowActions } from "./SellerProductRowActions";
 import { SellerProductStatusBadge } from "./SellerProductStatusBadge";
 
-export function SellerProductTable({ items, disabled, onAction, onComingSoon }) {
+export function SellerProductTable({ items, disabled, onAction, onEdit }) {
   return (
     <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
       <div className="overflow-x-auto">
@@ -92,7 +92,7 @@ export function SellerProductTable({ items, disabled, onAction, onComingSoon }) 
                       product={product}
                       disabled={disabled}
                       onAction={onAction}
-                      onComingSoon={onComingSoon}
+                      onEdit={onEdit}
                     />
                   </td>
                 </tr>

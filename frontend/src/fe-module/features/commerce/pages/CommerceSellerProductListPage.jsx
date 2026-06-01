@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FeedToast } from "../../social/components/FeedToast";
 import { CommerceShell } from "../components/CommerceShell";
 import { SellerProductConfirmDialog } from "../components/SellerProductConfirmDialog";
@@ -12,6 +12,7 @@ import { useSellerProductList } from "../hooks/useSellerProductList";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
 export function CommerceSellerProductListPage() {
+  const navigate = useNavigate();
   const [toastMessage, setToastMessage] = useState("");
 
   const {
@@ -51,9 +52,16 @@ export function CommerceSellerProductListPage() {
     confirmAction,
   } = useSellerProductActions({ onSuccess: handleActionSuccess });
 
-  const showComingSoon = useCallback(() => {
-    setToastMessage("Tính năng chỉnh sửa sẽ có trong bản cập nhật.");
-  }, []);
+  const handleEdit = useCallback(
+    (product) => {
+      const path = APP_ROUTES.commerceSellerProductEdit.replace(
+        ":productId",
+        product.productId,
+      );
+      navigate(path);
+    },
+    [navigate],
+  );
 
   const dismissToast = useCallback(() => setToastMessage(""), []);
 
@@ -152,7 +160,7 @@ export function CommerceSellerProductListPage() {
                   items={items}
                   disabled={isActing}
                   onAction={requestAction}
-                  onComingSoon={showComingSoon}
+                  onEdit={handleEdit}
                 />
 
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-4 text-body-sm text-on-surface-variant">

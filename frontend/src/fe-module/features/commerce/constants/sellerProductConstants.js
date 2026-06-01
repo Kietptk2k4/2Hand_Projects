@@ -35,6 +35,21 @@ export const STATUS_BADGE_CLASS = {
   ARCHIVED: "bg-surface-container-high text-outline",
 };
 
+export const WIZARD_STEPS = [
+  { id: 1, label: "Thông tin", icon: "info" },
+  { id: 2, label: "Giá & Kho", icon: "payments" },
+  { id: 3, label: "Hình ảnh & Thuộc tính", icon: "image" },
+  { id: 4, label: "Xem lại", icon: "check_circle" },
+];
+
+export const ATTRIBUTE_NAME_MAX = 255;
+export const ATTRIBUTE_VALUE_MAX = 500;
+export const EMPTY_PRODUCT_ATTRIBUTES = [];
+
+export const WIZARD_SESSION_KEY = "commerce-seller-product-wizard-id";
+
+export const READ_ONLY_STATUSES = ["ARCHIVED"];
+
 export const EMPTY_CREATE_PRODUCT_FORM = {
   productType: "PHYSICAL",
   categoryId: "",
@@ -42,9 +57,10 @@ export const EMPTY_CREATE_PRODUCT_FORM = {
   title: "",
   description: "",
   weightGram: "",
-  thumbnailUrl: "",
   price: "",
   salePrice: "",
+  saleStartAt: "",
+  saleEndAt: "",
   stockQuantity: "",
   lowStockThreshold: "3",
 };

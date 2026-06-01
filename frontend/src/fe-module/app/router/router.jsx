@@ -34,7 +34,7 @@ import { CommerceWriteEditReviewPage } from "../../features/commerce/pages/Comme
 import { CommerceCreateShopPage } from "../../features/commerce/pages/CommerceCreateShopPage";
 import { CommerceShopSettingsPage } from "../../features/commerce/pages/CommerceShopSettingsPage";
 import { CommerceSellerProductListPage } from "../../features/commerce/pages/CommerceSellerProductListPage";
-import { CommerceSellerProductCreatePage } from "../../features/commerce/pages/CommerceSellerProductCreatePage";
+import { CommerceSellerProductFormPage } from "../../features/commerce/pages/CommerceSellerProductFormPage";
 
 function HomePage() {
   return (
@@ -130,7 +130,11 @@ export const router = createBrowserRouter([
           },
           {
             path: APP_ROUTES.commerceSellerProductCreate.slice(1),
-            element: <CommerceSellerProductCreatePage />,
+            element: <CommerceSellerProductFormPage mode="create" />,
+          },
+          {
+            path: APP_ROUTES.commerceSellerProductEdit.slice(1),
+            element: <CommerceSellerProductFormPage mode="edit" />,
           },
         ],
       },

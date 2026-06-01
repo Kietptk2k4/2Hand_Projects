@@ -58,6 +58,77 @@ export function mapSellerProductListItem(item) {
   };
 }
 
+export function mapSellerProductDetailResponse(data) {
+  if (!data) return null;
+
+  const item = mapSellerProductListItem(data);
+  if (!item) return null;
+
+  return {
+    ...item,
+    brandId: pick(data, "brandId", "brand_id"),
+    attributes: (data.attributes || []).map((attr) => ({
+      name: attr.attribute_name ?? attr.name,
+      value: attr.attribute_value ?? attr.value,
+    })),
+    mediaUrls: data.media_urls ?? data.mediaUrls ?? [],
+    priceId: pick(data, "priceId", "price_id"),
+    reservedQuantity: data.reserved_quantity ?? data.reservedQuantity,
+    hasPrice: Boolean(data.has_price ?? data.hasPrice),
+    hasInventory: Boolean(data.has_inventory ?? data.hasInventory),
+    hasMedia: Boolean(data.has_media ?? data.hasMedia),
+  };
+}
+
+export function detailToFormState(detail) {
+  if (!detail) return null;
+
+  return {
+    productType: detail.productType || "PHYSICAL",
+    categoryId: detail.categoryId || "",
+    condition: detail.condition || "NEW",
+    title: detail.title || "",
+    description: detail.description || "",
+    weightGram: detail.weightGram != null ? String(detail.weightGram) : "",
+    price: detail.price != null ? String(detail.price) : "",
+    salePrice: detail.salePrice != null ? String(detail.salePrice) : "",
+    saleStartAt: "",
+    saleEndAt: "",
+    stockQuantity: detail.stockQuantity != null ? String(detail.stockQuantity) : "",
+    lowStockThreshold:
+      detail.lowStockThreshold != null ? String(detail.lowStockThreshold) : "3",
+  };
+}
+
+export function mapUpdateProductPayload(form) {
+  return {
+    product_type: form.productType,
+    category_id: form.categoryId,
+    brand_id: null,
+    condition: form.condition,
+    title: form.title.trim(),
+    description: form.description.trim(),
+    weight_gram: Number(form.weightGram),
+  };
+}
+
+export function mapUpdateProductAttributesPayload(attributes) {
+  return {
+    attributes: attributes.map((attr) => ({
+      attribute_name: attr.name.trim(),
+      attribute_value: attr.value.trim(),
+    })),
+  };
+}
+
+export function mapUpdateProductMediaPayload(mediaUrls) {
+  const urls = (mediaUrls || []).filter(Boolean);
+  return {
+    media_urls: urls,
+    thumbnail_url: urls[0] || null,
+  };
+}
+
 export function mapCreateProductPayload(form) {
   const body = {
     product_type: form.productType,
@@ -68,10 +139,6 @@ export function mapCreateProductPayload(form) {
     weight_gram: Number(form.weightGram),
   };
 
-  if (form.thumbnailUrl?.trim()) {
-    body.thumbnail_url = form.thumbnailUrl.trim();
-  }
-
   return body;
 }
 
@@ -80,11 +147,24 @@ export function mapCreateProductResponse(data) {
 }
 
 export function mapUpdatePricePayload(form) {
-  return {
+  const payload = {
     price: Number(form.price),
     sale_price: form.salePrice !== "" ? Number(form.salePrice) : undefined,
-    start_at: new Date().toISOString(),
+    start_at: form.saleStartAt?.trim() || new Date().toISOString(),
   };
+
+  if (form.saleEndAt?.trim()) {
+    payload.end_at = form.saleEndAt.trim();
+  }
+
+  return payload;
+}
+
+export function formatVnd(amount) {
+  if (amount == null || amount === "") return "—";
+  const n = Number(amount);
+  if (!Number.isFinite(n)) return "—";
+  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
 }
 
 export function mapUpdateInventoryPayload(form) {

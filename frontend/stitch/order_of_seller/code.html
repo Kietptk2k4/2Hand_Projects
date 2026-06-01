@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>2Hands Seller Dashboard - Orders</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                            "on-secondary-container": "#fffbff",
+                            "surface": "#f9f9ff",
+                            "surface-variant": "#d8e3fb",
+                            "inverse-primary": "#b3c5ff",
+                            "tertiary-fixed-dim": "#c4c7c9",
+                            "on-surface-variant": "#424656",
+                            "on-error": "#ffffff",
+                            "surface-bright": "#f9f9ff",
+                            "surface-container-lowest": "#ffffff",
+                            "on-tertiary": "#ffffff",
+                            "on-primary-container": "#f8f7ff",
+                            "primary-fixed-dim": "#b3c5ff",
+                            "outline-variant": "#c2c6d8",
+                            "surface-dim": "#cfdaf2",
+                            "secondary-container": "#6063ee",
+                            "on-primary-fixed-variant": "#003fa4",
+                            "tertiary-container": "#6f7274",
+                            "surface-container-highest": "#d8e3fb",
+                            "outline": "#727687",
+                            "tertiary-fixed": "#e0e3e5",
+                            "primary-fixed": "#dae1ff",
+                            "primary": "#0050cb",
+                            "on-secondary": "#ffffff",
+                            "on-tertiary-fixed": "#191c1e",
+                            "secondary": "#4648d4",
+                            "on-surface": "#111c2d",
+                            "on-secondary-fixed-variant": "#2f2ebe",
+                            "error-container": "#ffdad6",
+                            "primary-container": "#0066ff",
+                            "on-primary": "#ffffff",
+                            "error": "#ba1a1a",
+                            "surface-container-low": "#f0f3ff",
+                            "tertiary": "#565a5b",
+                            "on-primary-fixed": "#001849",
+                            "on-tertiary-fixed-variant": "#444749",
+                            "on-tertiary-container": "#f6f8fa",
+                            "surface-container-high": "#dee8ff",
+                            "on-secondary-fixed": "#07006c",
+                            "secondary-fixed": "#e1e0ff",
+                            "surface-container": "#e7eeff",
+                            "surface-tint": "#0054d6",
+                            "secondary-fixed-dim": "#c0c1ff",
+                            "inverse-surface": "#263143",
+                            "inverse-on-surface": "#ecf1ff",
+                            "background": "#f9f9ff",
+                            "on-error-container": "#93000a",
+                            "on-background": "#111c2d"
+                    },
+                    "borderRadius": {
+                            "DEFAULT": "0.25rem",
+                            "lg": "0.5rem",
+                            "xl": "0.75rem",
+                            "full": "9999px"
+                    },
+                    "spacing": {
+                            "md": "24px",
+                            "base": "8px",
+                            "sm": "12px",
+                            "margin-desktop": "32px",
+                            "container-max": "1280px",
+                            "gutter": "24px",
+                            "xs": "4px",
+                            "margin-mobile": "16px",
+                            "lg": "40px",
+                            "xl": "64px"
+                    },
+                    "fontFamily": {
+                            "headline-xl-mobile": ["Inter"],
+                            "headline-lg": ["Inter"],
+                            "body-lg": ["Inter"],
+                            "label-sm": ["Inter"],
+                            "label-md": ["Inter"],
+                            "headline-lg-mobile": ["Inter"],
+                            "body-md": ["Inter"],
+                            "headline-xl": ["Inter"],
+                            "headline-sm": ["Inter"],
+                            "headline-md": ["Inter"],
+                            "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                            "headline-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                            "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                            "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                            "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                            "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                            "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                            "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                            "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                            "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                            "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                            "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim font-body-md text-body-md docked full-width top-0 border-b border-outline-variant dark:border-outline flat no shadows flex justify-between items-center px-margin-desktop w-full h-16 sticky top-0 z-50">
+<div class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed">
+            2Hands Seller Dashboard
+        </div>
+<!-- Navigation Links for Desktop -->
+<nav class="hidden md:flex gap-md">
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Dashboard</a>
+<a class="text-primary dark:text-primary-fixed border-b-2 border-primary font-bold pb-1 opacity-80" href="#">Orders</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Products</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Analytics</a>
+</nav>
+<div class="flex items-center gap-sm text-primary dark:text-primary-fixed">
+<button class="p-xs hover:text-primary dark:hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-xs hover:text-primary dark:hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+<img alt="Seller Profile Avatar" class="w-8 h-8 rounded-full ml-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvS7HzSh-SLKHrUksNSTvUbubctaEvxyjJO4cbAIOAchBCk7yWKHvqgmmcYXI5L04VZGEMMeOYItTWsdkBy8Fm5IyGz_XHp8SgI5Y7o1yvBp-C2sjITzQwaT8vvcP_iLIRDMBqYydTQE2HP6tSZfNr1s4PcVRXYTroeSazIRJikcBU7-0etuc_LAhopO8rIifY70fZTRMq6P28xtePEPrAgNj8aSqilV3o5btBcxr6BCdmfGv-0-XdkJyL57Mxj-ccV08wjhWpEpI"/>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- SideNavBar -->
+<aside class="hidden md:flex bg-surface-container-low dark:bg-surface-container font-label-md text-label-md docked left-0 h-screen w-64 bg-surface-container-low dark:bg-surface-container flat no shadows flex flex-col h-full py-lg px-md gap-base border-r border-outline-variant z-40 relative">
+<div class="mb-lg">
+<div class="flex items-center gap-sm mb-sm">
+<img alt="Marketplace Logo" class="w-10 h-10 rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnOSpkxmDllfP-d3uB7ydC6eYGm7TLJGMbImZSi6hbbBEeiSo-BkjNfvrZxhXwifVApDnqS76euiQlwiqD6-zG3iXruu9oa_mDJGgKyAHfl8D837f8dgGKsFRqAsIRecUnqMDg41z1SBE5Y-NAGP7sLf0OQLWLpuhrObJo-j2jXRGXGsfMteo1PMkwzsUs7BjZWezG76ZMqN6vG62RapJcOD5qRvCGYgtHQDi9Ela69uu2BnZ9GUvVJUZeEU0d_y2JRqoK0EfKFls"/>
+<div>
+<div class="font-headline-md text-headline-md font-bold text-on-surface">New Product</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Draft saved 2m ago</div>
+</div>
+</div>
+<button class="w-full py-sm bg-primary-container text-on-primary font-label-md rounded-lg hover:brightness-90 transition-all flex justify-center items-center">
+                    Save Draft
+                </button>
+</div>
+<nav class="flex-1 flex flex-col gap-xs">
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant transition-all flex items-center gap-sm px-sm py-sm rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="info">info</span> Product Info
+                </a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant transition-all flex items-center gap-sm px-sm py-sm rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span> Pricing
+                </a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant transition-all flex items-center gap-sm px-sm py-sm rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="image">image</span> Media
+                </a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant transition-all flex items-center gap-sm px-sm py-sm rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="tune">tune</span> Attributes
+                </a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant transition-all flex items-center gap-sm px-sm py-sm rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span> Review
+                </a>
+</nav>
+<div class="mt-auto pt-md border-t border-outline-variant flex flex-col gap-xs">
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant transition-all flex items-center gap-sm px-sm py-sm rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span> Settings
+                </a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant transition-all flex items-center gap-sm px-sm py-sm rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="contact_support">contact_support</span> Support
+                </a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto p-margin-desktop bg-surface-container-low">
+<div class="max-w-container-max mx-auto">
+<!-- Header & Actions -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-md gap-sm">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Orders Management</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">Manage and process your recent sales.</p>
+</div>
+<div class="flex gap-sm w-full md:w-auto">
+<div class="relative flex-1 md:w-64">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-lg pr-sm py-2 bg-surface border border-outline-variant rounded-lg font-body-md text-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="Search Order ID or Product..." type="text"/>
+</div>
+<button class="bg-primary-container text-on-primary px-md py-2 rounded-lg font-label-md hover:brightness-90 transition-all flex items-center gap-xs shadow-sm">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+                            Xác nhận chuẩn bị hàng
+                        </button>
+</div>
+</div>
+<!-- Tabs -->
+<div class="flex overflow-x-auto border-b border-outline-variant mb-md no-scrollbar">
+<button class="px-md py-sm font-label-md text-primary border-b-2 border-primary whitespace-nowrap">Tất cả</button>
+<button class="px-md py-sm font-label-md text-on-surface-variant hover:text-primary transition-colors whitespace-nowrap">Chờ xử lý</button>
+<button class="px-md py-sm font-label-md text-on-surface-variant hover:text-primary transition-colors whitespace-nowrap">Đang chuẩn bị</button>
+<button class="px-md py-sm font-label-md text-on-surface-variant hover:text-primary transition-colors whitespace-nowrap">Đang giao</button>
+<button class="px-md py-sm font-label-md text-on-surface-variant hover:text-primary transition-colors whitespace-nowrap">Đã giao</button>
+<button class="px-md py-sm font-label-md text-on-surface-variant hover:text-primary transition-colors whitespace-nowrap">Đã hủy</button>
+</div>
+<!-- Data Table Container -->
+<div class="bg-surface rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[800px]">
+<thead class="bg-surface-container-low font-label-sm text-on-surface-variant uppercase tracking-wider">
+<tr>
+<th class="p-sm w-10 text-center"><input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/></th>
+<th class="p-sm font-semibold">Mã đơn hàng</th>
+<th class="p-sm font-semibold">Sản phẩm</th>
+<th class="p-sm font-semibold">Số lượng</th>
+<th class="p-sm font-semibold">Tổng tiền</th>
+<th class="p-sm font-semibold">Trạng thái đơn</th>
+<th class="p-sm font-semibold">Vận chuyển</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-on-surface divide-y divide-outline-variant">
+<!-- Row 1 (Pending) -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="p-sm text-center"><input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="p-sm"><a class="text-primary hover:underline font-label-md" href="#">#ORD-0012A</a></td>
+<td class="p-sm">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 bg-surface-variant rounded flex-shrink-0" data-alt="A sleek, professional product photography shot of a single modern running shoe against a bright, minimalist studio background. The lighting is crisp and even, highlighting the textures of the fabric and the pristine condition of the item. The scene conveys a sense of high-end e-commerce quality suitable for a reliable marketplace dashboard." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAA5wIiV9alEoBgMUV1_mChCGscpCutam4DOFUUVXM8o-xlbIJrLtgdpdt9GwDp7cSr7ynjb_Usw__WXRtq65OYJzb5YbVfQNN2i1ccC8xlYfOrfl5z-bvmxzf2zT2PcF4t5VH2dR6DWv-AOM1vi3gqrD9VxevV2LboB-hXwfEXoXdBdyBbp4YVFeaDtiWrpPltj6xbXxJbRq52Pe0Wfdyp4aoGoeD3z44zPjXqgGWx1374vVz3DcpCr5nhxcHnjaM4PbTeIE_oKDg'); background-size: cover;"></div>
+<span class="truncate max-w-[150px]" title="Vintage Denim Jacket">Vintage Denim Jacket</span>
+</div>
+</td>
+<td class="p-sm text-center">1</td>
+<td class="p-sm font-label-md">550,000đ</td>
+<td class="p-sm">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold bg-secondary-container/20 text-on-secondary-fixed-variant">PENDING</span>
+</td>
+<td class="p-sm text-on-surface-variant">-</td>
+</tr>
+<!-- Row 2 (Processing) -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="p-sm text-center"><input class="rounded border-outline-variant text-primary focus:ring-primary" disabled="" type="checkbox"/></td>
+<td class="p-sm"><a class="text-primary hover:underline font-label-md" href="#">#ORD-0011B</a></td>
+<td class="p-sm">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 bg-surface-variant rounded flex-shrink-0" data-alt="A clean, brightly lit e-commerce product image featuring a neatly folded cotton t-shirt. The background is pure white, emphasizing the minimalist and professional aesthetic of the marketplace platform. Soft, diffused lighting creates gentle shadows, highlighting the garment's fresh and pristine condition." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDA_s8bsrC5mtyZOHOK2foK2mxhC4E1oDX1cnk1SDYUkn7U_aUBHqHLe2uZrxaWHrYUa6r_VznZH21jhviFze5evrIkNYZT6cvflqkSxT5lH6msMGbZnkqVkjAAwmbKRWoSx4R2pW9nYCNxgBC3AyLkxeJiKJnvnYBCzuS40-O1IuW2ks8_xnE795OYibdl-qim59sN7f5UH97c69E75rE3IAIOLOXJFwOeZ6xsem5ISmgggh0Dj2_dyh9-3Xf9KZJujLhFSUEof5A'); background-size: cover;"></div>
+<span class="truncate max-w-[150px]" title="Classic White Tee">Classic White Tee</span>
+</div>
+</td>
+<td class="p-sm text-center">3</td>
+<td class="p-sm font-label-md">450,000đ</td>
+<td class="p-sm">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold bg-primary-container/20 text-on-primary-fixed-variant">PROCESSING</span>
+</td>
+<td class="p-sm text-on-surface-variant">Chờ lấy hàng</td>
+</tr>
+<!-- Row 3 (Shipped) -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="p-sm text-center"><input class="rounded border-outline-variant text-primary focus:ring-primary" disabled="" type="checkbox"/></td>
+<td class="p-sm"><a class="text-primary hover:underline font-label-md" href="#">#ORD-0010C</a></td>
+<td class="p-sm">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 bg-surface-variant rounded flex-shrink-0" data-alt="A beautifully styled professional photograph of a leather satchel bag resting on a clean, light grey surface. The composition is minimalistic, with ample negative space to convey a premium, trustworthy e-commerce experience. Natural-looking light casts a soft shadow, accentuating the bag's quality material." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDufx0ctsSAQ3RVOOgg5D0fhb7711yJUUSz7uBKwzatPdWeq2XeML_FsfXMh7YOEL_pKS9OPwdTIYBNZRFnBh0Bq6o-ys1lpCBQboAqakBD1f2HxFZzd8NehV1L6mE2kNW7N_HKXwfs3fj7mIwRSVGvnFf7zT5WBlYHr_pdiscRiqQegnAU_tanpZY6-xnbN2MDtccEItNgRXZDV1sdA1G-Rc_GAaanF2dN0nRrf27EHoXGj7QSPghNIl3TIYbfEkQhokNRxgp8wIE'); background-size: cover;"></div>
+<span class="truncate max-w-[150px]" title="Leather Satchel">Leather Satchel</span>
+</div>
+</td>
+<td class="p-sm text-center">1</td>
+<td class="p-sm font-label-md">1,200,000đ</td>
+<td class="p-sm">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold bg-surface-dim text-on-surface-variant">COMPLETED</span>
+</td>
+<td class="p-sm text-primary font-label-md">SHIPPED</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-md py-sm border-t border-outline-variant bg-surface flex items-center justify-between">
+<span class="font-body-sm text-on-surface-variant">Showing 1 to 3 of 15 entries</span>
+<div class="flex gap-1">
+<button class="px-2 py-1 rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container-low disabled:opacity-50" disabled="">&lt;</button>
+<button class="px-2 py-1 rounded bg-primary text-on-primary font-label-sm">1</button>
+<button class="px-2 py-1 rounded border border-outline-variant text-on-surface hover:bg-surface-container-low font-label-sm">2</button>
+<button class="px-2 py-1 rounded border border-outline-variant text-on-surface hover:bg-surface-container-low font-label-sm">3</button>
+<button class="px-2 py-1 rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container-low">&gt;</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="bg-surface dark:bg-surface-dim font-label-sm text-label-sm full-width border-t border-outline-variant flat no shadows flex justify-between items-center px-margin-desktop py-md w-full mt-auto">
+<div class="font-body-sm text-body-sm text-primary">
+            © 2024 2Hands Marketplace. Professional Seller Tools.
+        </div>
+<div class="flex gap-md cursor-pointer">
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors" href="#">Seller Guide</a>
+</div>
+</footer>
+</body></html>
