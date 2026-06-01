@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Shop Reviews - Seller Dashboard</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#565a5b",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "on-primary-fixed-variant": "#003fa4",
+                        "tertiary-container": "#6f7274",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "on-tertiary-container": "#f6f8fa",
+                        "secondary-container": "#6063ee",
+                        "on-secondary-fixed": "#07006c",
+                        "on-secondary-container": "#fffbff",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#e0e3e5",
+                        "surface-container-highest": "#d8e3fb",
+                        "surface-container": "#e7eeff",
+                        "surface-container-high": "#dee8ff",
+                        "on-primary-container": "#f8f7ff",
+                        "inverse-on-surface": "#ecf1ff",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "inverse-surface": "#263143",
+                        "surface": "#f9f9ff",
+                        "inverse-primary": "#b3c5ff",
+                        "surface-variant": "#d8e3fb",
+                        "background": "#f9f9ff",
+                        "error": "#ba1a1a",
+                        "secondary-fixed": "#e1e0ff",
+                        "surface-bright": "#f9f9ff",
+                        "primary": "#0050cb",
+                        "on-surface-variant": "#424656",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "primary-fixed": "#dae1ff",
+                        "on-primary-fixed": "#001849",
+                        "outline-variant": "#c2c6d8",
+                        "surface-dim": "#cfdaf2",
+                        "secondary": "#4648d4",
+                        "surface-container-low": "#f0f3ff",
+                        "on-tertiary-fixed": "#191c1e",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "outline": "#727687",
+                        "on-background": "#111c2d",
+                        "on-error": "#ffffff",
+                        "primary-container": "#0066ff",
+                        "on-surface": "#111c2d",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#0054d6",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "32px",
+                        "xl": "64px",
+                        "md": "24px",
+                        "sm": "12px",
+                        "xs": "4px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "container-max": "1280px",
+                        "lg": "40px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-xl-mobile": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-xl-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-xl": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-surface-dim font-Inter text-body-md fixed top-0 w-full z-50 bg-surface-container-low dark:bg-surface-container-low shadow-sm">
+<div class="flex justify-between items-center w-full px-margin-desktop h-16 max-w-container-max mx-auto">
+<!-- Brand -->
+<div class="flex items-center gap-sm">
+<span class="font-headline-md font-bold text-primary dark:text-primary-fixed-dim">2Hands</span>
+</div>
+<!-- Search Bar (on_right logic applied to flex order) -->
+<div class="flex-1 max-w-md mx-auto hidden md:flex items-center">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-full py-2 pl-10 pr-4 text-body-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="Search orders, products..." type="text"/>
+</div>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-md">
+<button class="text-on-surface-variant hover:bg-surface-variant/50 transition-colors p-2 rounded-full cursor-pointer active:scale-95 transition-transform flex items-center justify-center">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-variant/50 transition-colors p-2 rounded-full cursor-pointer active:scale-95 transition-transform flex items-center justify-center">
+<img alt="Seller Profile Avatar" class="w-8 h-8 rounded-full object-cover border border-outline-variant" data-alt="A professional headshot of a mature male with a short beard and short hair, wearing a dark blue button-down shirt. The background is slightly blurred and bright, suggesting an outdoor or brightly lit office setting. The mood is approachable and professional, suitable for a corporate profile. The lighting is soft and natural." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1sDYEK63tmPekwTHleQf3kKNOaNlO4oIblgLdQbxvCYssHzo5ASoE8HnIveUDVNJp4iXLerdIIYSGOrFFeNcdkCSo7EeHaxxMw4Y8QLpxCzjnpHQqyKRinpN-aWz3seIxCKT3D05hNn2xXwScm2SUDeI1fVSIz6hSpk5Ha8O4FEVFc9BQfJzj8FkdR9B1x9XVpkunghnkKHKvxgHtwNBxA2vLDJYfNxhi6juEeh9B2FwFdGtcWiYWnCNbCIYknBWMzjZ28wfoff4"/>
+</button>
+</div>
+</div>
+</header>
+<div class="flex flex-1 pt-16 h-full">
+<!-- SideNavBar -->
+<aside class="bg-surface dark:bg-surface-dim font-Inter text-label-md hidden md:flex flex-col fixed left-0 top-16 bottom-0 w-64 p-sm space-y-xs border-r border-outline-variant z-40">
+<!-- Header Area -->
+<div class="p-4 mb-4 border-b border-outline-variant flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-primary-container flex items-center justify-center text-primary font-bold">
+                    2H
+                </div>
+<div>
+<h2 class="font-headline-sm font-bold text-primary">Seller Center</h2>
+<p class="text-label-sm text-on-surface-variant">Manage your shop</p>
+</div>
+</div>
+<!-- Nav Links -->
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span>Products</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span>Orders</span>
+</a>
+<!-- ACTIVE NAV ITEM -->
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container font-semibold rounded-lg duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">rate_review</span>
+<span>Reviews</span>
+</a>
+</nav>
+<!-- CTA -->
+<div class="p-4 mt-auto">
+<button class="w-full bg-primary text-on-primary font-label-md py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors shadow-sm flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                    Add Product
+                </button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 md:ml-64 bg-surface-container-low min-h-[calc(100vh-64px)]">
+<div class="max-w-container-max mx-auto p-margin-mobile md:p-margin-desktop space-y-md">
+<!-- Page Header & Stats -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+<div>
+<h1 class="font-headline-lg text-on-background">Shop Reviews</h1>
+<p class="font-body-md text-on-surface-variant mt-1">Manage and respond to customer feedback.</p>
+</div>
+<!-- Aggregate Stats Bento Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex items-center gap-6 shadow-sm">
+<div class="flex flex-col">
+<span class="font-label-sm text-on-surface-variant uppercase tracking-wider">Average Rating</span>
+<div class="flex items-end gap-2">
+<span class="font-headline-xl text-primary">4.6</span>
+<span class="font-body-sm text-on-surface-variant mb-1">/ 5</span>
+</div>
+</div>
+<div class="h-10 w-px bg-outline-variant"></div>
+<div class="flex flex-col">
+<span class="font-label-sm text-on-surface-variant uppercase tracking-wider">Total Reviews</span>
+<span class="font-headline-md text-on-background mt-1">128</span>
+</div>
+<div class="hidden sm:flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined filled text-yellow-400" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined filled text-yellow-400" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined filled text-yellow-400" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined filled text-yellow-400" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-yellow-400" style="font-variation-settings: 'FILL' 1; clip-path: inset(0 40% 0 0);">star</span>
+</div>
+</div>
+</div>
+<!-- Content Area -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden flex flex-col">
+<!-- Tabs -->
+<div class="flex border-b border-outline-variant px-6 pt-4 gap-6 bg-surface">
+<button class="font-label-md text-primary border-b-2 border-primary pb-3 px-2">Tất cả (128)</button>
+<button class="font-label-md text-on-surface-variant hover:text-on-background border-b-2 border-transparent pb-3 px-2 transition-colors">Chưa trả lời (12)</button>
+<button class="font-label-md text-on-surface-variant hover:text-on-background border-b-2 border-transparent pb-3 px-2 transition-colors">Đã trả lời (116)</button>
+</div>
+<!-- Filters/Search (Optional Context) -->
+<div class="p-4 border-b border-outline-variant bg-surface-bright flex items-center justify-between gap-4">
+<div class="relative max-w-sm w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+<input class="w-full bg-surface border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-body-sm focus:outline-none focus:border-primary transition-colors" placeholder="Search by product or order ID..." type="text"/>
+</div>
+<button class="flex items-center gap-2 text-label-md text-on-surface-variant border border-outline-variant rounded-lg px-4 py-2 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                            Filter
+                        </button>
+</div>
+<!-- Review List (High Density) -->
+<div class="divide-y divide-outline-variant">
+<!-- Review Item 1 (Unreplied, Good Rating) -->
+<div class="p-6 hover:bg-surface-container-lowest/50 transition-colors flex flex-col lg:flex-row gap-6">
+<!-- Product Snapshot -->
+<div class="w-full lg:w-1/4 flex gap-4 min-w-[200px]">
+<img alt="Product Image" class="w-16 h-16 rounded-md object-cover border border-outline-variant" data-alt="A clean, minimalist product shot of a sleek white smartwatch with a white wristband resting on a plain, light grey background. The lighting is soft and even, highlighting the smooth texture of the watch face and band. The composition is centered and simple, typical of modern e-commerce electronics photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOuwXVGbN1wQm8PjTxpkmDC65WnnKgaAvFvv8CrAdu68Y3mjaVVzErZlmlUuMVab44ICeqxIo_SIRsLRG-cZRD7vF394YDxbBAF7JLVy-NE8eFO9pIVlmI_ggBKCWhS_x9dUyuNKze7HKsuWGijzPaTceMNPJbR50dWg_Y_vDPVuAeXIXoHuUGEn1iY1wihB1fR9aMmJlbnw3s6nr612MO0HFtigtnx52_nJTkTAwUv4G7L2aaxbPe9JHEC6YUwp_ldBV_vQ-3X14"/>
+<div>
+<h3 class="font-label-md text-on-background line-clamp-2">Minimalist Smartwatch Series 7 - White</h3>
+<p class="font-body-sm text-on-surface-variant mt-1">Ord: #ORD-9821</p>
+</div>
+</div>
+<!-- Review Content -->
+<div class="w-full lg:w-2/4 flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-1 text-yellow-500">
+<span class="material-symbols-outlined filled text-[18px]">star</span>
+<span class="material-symbols-outlined filled text-[18px]">star</span>
+<span class="material-symbols-outlined filled text-[18px]">star</span>
+<span class="material-symbols-outlined filled text-[18px]">star</span>
+<span class="material-symbols-outlined filled text-[18px]">star</span>
+</div>
+<span class="font-body-sm text-outline">Oct 24, 2023</span>
+</div>
+<p class="font-body-sm text-on-background leading-relaxed">
+                                    Sản phẩm tuyệt vời! Giao hàng nhanh và đóng gói rất cẩn thận. Mình rất ưng ý với thiết kế và chất lượng. Sẽ ủng hộ shop thêm.
+                                </p>
+<div class="flex items-center gap-2 mt-1">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-[10px]">Quality: Excellent</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-[10px]">Shipping: Fast</span>
+</div>
+</div>
+<!-- Status & Action -->
+<div class="w-full lg:w-1/4 flex flex-col justify-between items-start lg:items-end gap-4 border-t lg:border-t-0 border-outline-variant pt-4 lg:pt-0">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+<span class="font-label-sm text-on-surface-variant uppercase">Visible</span>
+</div>
+<button class="w-full lg:w-auto bg-primary-container text-on-primary-container font-label-md px-4 py-2 rounded-lg hover:bg-primary hover:text-on-primary transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">reply</span>
+                                    Phản hồi
+                                </button>
+</div>
+</div>
+<!-- Review Item 2 (Replied, Bad Rating) -->
+<div class="p-6 hover:bg-surface-container-lowest/50 transition-colors flex flex-col lg:flex-row gap-6 bg-error-container/10">
+<!-- Product Snapshot -->
+<div class="w-full lg:w-1/4 flex gap-4 min-w-[200px]">
+<img alt="Product Image" class="w-16 h-16 rounded-md object-cover border border-outline-variant" data-alt="A pair of premium black over-ear wireless headphones shown from a slightly elevated angle against a vibrant solid yellow background. The lighting creates sharp contrast, emphasizing the matte black texture of the earcups and headband. The aesthetic is bold, modern, and product-focused, suitable for high-end consumer audio equipment marketing." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAybFLkjH3PUm6ZZBk1045sthWDUQTTHsadBIIhzlLwT1G4zy2JMJDmBBP9ywiveZzXMxF05K9LjuA6mx7j0wmOfeqbacLnfrCEoxb_eM-kmM_NfXzydqrr_PubpKjsnnVx5jRo5ZMocOZ9DGD3UhTpq6ulLwLXXaOTaf3jxvCIO_ty1CDfOY4R5PjvhGA8_DIx0beBpO144pk3tzJxj4ExTtF3A6WlWPwxyYfA0qB5nFxcAaqJHwpqZrjUkDA8XMfMfaS7kN4niqA"/>
+<div>
+<h3 class="font-label-md text-on-background line-clamp-2">Premium Over-Ear Noise Cancelling Headphones</h3>
+<p class="font-body-sm text-on-surface-variant mt-1">Ord: #ORD-9805</p>
+</div>
+</div>
+<!-- Review Content -->
+<div class="w-full lg:w-2/4 flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-1 text-yellow-500">
+<span class="material-symbols-outlined filled text-[18px]">star</span>
+<span class="material-symbols-outlined filled text-[18px]">star</span>
+<span class="material-symbols-outlined text-outline text-[18px]">star</span>
+<span class="material-symbols-outlined text-outline text-[18px]">star</span>
+<span class="material-symbols-outlined text-outline text-[18px]">star</span>
+</div>
+<span class="font-body-sm text-outline">Oct 22, 2023</span>
+</div>
+<p class="font-body-sm text-on-background leading-relaxed">
+                                    Hộp bị móp méo khi nhận hàng. Tai nghe dùng tạm được nhưng không đúng màu mình chọn. Rất thất vọng về khâu đóng gói.
+                                </p>
+<!-- Seller Reply -->
+<div class="mt-2 bg-surface-container rounded-lg p-3 border-l-2 border-primary">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-primary text-[16px]">storefront</span>
+<span class="font-label-sm text-primary">Phản hồi từ Shop</span>
+</div>
+<p class="font-body-sm text-on-surface-variant">Chào bạn, shop rất xin lỗi về sự cố đóng gói và nhầm màu. Shop đã liên hệ qua tin nhắn để hỗ trợ đổi trả miễn phí cho bạn. Mong bạn thông cảm!</p>
+</div>
+</div>
+<!-- Status & Action -->
+<div class="w-full lg:w-1/4 flex flex-col justify-between items-start lg:items-end gap-4 border-t lg:border-t-0 border-outline-variant pt-4 lg:pt-0">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+<span class="font-label-sm text-outline uppercase">Hidden</span>
+</div>
+<button class="w-full lg:w-auto border border-outline-variant text-on-surface-variant font-label-md px-4 py-2 rounded-lg hover:bg-surface-container-high transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+                                    Sửa phản hồi
+                                </button>
+</div>
+</div>
+</div>
+<!-- Pagination (Simple Footer) -->
+<div class="p-4 border-t border-outline-variant flex items-center justify-between bg-surface">
+<span class="font-body-sm text-on-surface-variant">Showing 1 to 2 of 128 entries</span>
+<div class="flex gap-1">
+<button class="p-1 rounded hover:bg-surface-container-high text-outline disabled:opacity-50" disabled=""><span class="material-symbols-outlined text-[20px]">chevron_left</span></button>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-background"><span class="material-symbols-outlined text-[20px]">chevron_right</span></button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

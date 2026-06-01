@@ -35,6 +35,13 @@ const SIDEBAR_LINKS = [
     route: APP_ROUTES.commerceSellerOrders,
     requiresAuth: true,
   },
+  {
+    id: "seller-shipments",
+    icon: "local_shipping",
+    label: "Vận chuyển",
+    route: APP_ROUTES.commerceSellerShipments,
+    requiresAuth: true,
+  },
   { id: "analytics", icon: "analytics", label: "Thống kê", comingSoon: true },
   {
     id: "settings",
@@ -78,6 +85,12 @@ function isLinkActive(link, pathname) {
     return (
       pathname === APP_ROUTES.commerceSellerOrders ||
       pathname.startsWith(`${APP_ROUTES.commerceSellerOrders}/`)
+    );
+  }
+  if (link.id === "seller-shipments") {
+    return (
+      pathname === APP_ROUTES.commerceSellerShipments ||
+      pathname.startsWith(`${APP_ROUTES.commerceSellerShipments}/`)
     );
   }
   return pathname === link.route || pathname.startsWith(`${link.route}/`);

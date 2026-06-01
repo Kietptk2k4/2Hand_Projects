@@ -223,9 +223,9 @@ function seedSellerOrderItems() {
       final_price: 890000,
       shipment_summary: {
         shipment_id: "sh-seller-000110",
-        status: "PICKING_UP",
-        carrier: "GHN",
-        tracking_number: null,
+        status: "PENDING",
+        carrier: "MANUAL",
+        tracking_number: "MAN-LOCAL-001",
         delivery_address_summary: "Quận 10, TP. Hồ Chí Minh",
       },
     }),
@@ -377,11 +377,44 @@ function toListRow(record) {
   };
 }
 
-function findSellerOrderItem(userId, orderItemId) {
+export function findSellerOrderItem(userId, orderItemId) {
   const record = sellerOrderItems.find(
     (row) => row.order_item_id === orderItemId && row.seller_id === userId,
   );
   return record || null;
+}
+
+export function getAllSellerOrderItemRecords(userId) {
+  return sellerOrderItems.filter((row) => row.seller_id === userId);
+}
+
+export function findSellerOrderItemsByIds(userId, orderItemIds) {
+  return (orderItemIds || [])
+    .map((id) => findSellerOrderItem(userId, id))
+    .filter(Boolean);
+}
+
+export function attachShipmentToOrderItems(userId, orderItemIds, shipmentId, shipmentSummary) {
+  const now = new Date().toISOString();
+  for (const id of orderItemIds) {
+    const record = findSellerOrderItem(userId, id);
+    if (!record) continue;
+    record.shipment_summary = {
+      ...shipmentSummary,
+      shipment_id: shipmentId,
+    };
+    record.item_updated_at = now;
+  }
+}
+
+export function setSellerOrderItemsStatus(userId, orderItemIds, status) {
+  const now = new Date().toISOString();
+  for (const id of orderItemIds) {
+    const record = findSellerOrderItem(userId, id);
+    if (!record) continue;
+    record.item_status = status;
+    record.item_updated_at = now;
+  }
 }
 
 export function countPendingSellerOrderItems(userId) {

@@ -1,4 +1,6 @@
+import { Link } from "react-router-dom";
 import { formatVndPrice } from "../../social/utils/formatPrice";
+import { APP_ROUTES } from "../../../shared/constants/routes";
 import { formatOrderPaymentSubline } from "../constants/sellerOrderConstants";
 import { formatShortOrderId } from "../utils/formatOrderDate";
 import { SellerOrderItemStatusBadge } from "./SellerOrderItemStatusBadge";
@@ -13,6 +15,15 @@ export function SellerOrderTableRow({
   isProcessing,
 }) {
   const canSelect = item.itemStatus === "PENDING";
+  const canCreateShipment =
+    item.itemStatus === "PROCESSING" &&
+    !item.shipmentSummary?.shipmentId &&
+    item.orderStatus === "PROCESSING" &&
+    (item.orderPaymentMethod === "COD" ||
+      item.orderPaymentStatus === "PAID");
+  const createShipmentHref = canCreateShipment
+    ? `${APP_ROUTES.commerceSellerShipments}?create=1&orderId=${encodeURIComponent(item.orderId)}&orderItemIds=${encodeURIComponent(item.orderItemId)}`
+    : null;
   const shortId = formatShortOrderId(item.orderId);
   const paymentSubline = formatOrderPaymentSubline(item.orderPaymentStatus, item.orderPaymentMethod);
   const isPaid = item.orderPaymentStatus === "PAID";
@@ -100,6 +111,13 @@ export function SellerOrderTableRow({
           >
             Chuẩn bị
           </button>
+        ) : canCreateShipment ? (
+          <Link
+            to={createShipmentHref}
+            className="inline-block rounded-lg border border-secondary px-2 py-1 text-label-sm font-medium text-secondary hover:bg-secondary/5"
+          >
+            Tạo vận đơn
+          </Link>
         ) : (
           <span className="text-on-surface-variant">—</span>
         )}
