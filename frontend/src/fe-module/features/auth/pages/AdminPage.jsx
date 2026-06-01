@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { AdminReviewModerationTab } from "../../commerce/components/AdminReviewModerationTab";
 import { AdminShopModerationTab } from "../../commerce/components/AdminShopModerationTab";
 import {
   buildAdminSearchParams,
@@ -34,14 +35,7 @@ const LOGIN_SESSION_TAB_COMPONENTS = {
 
 const COMMERCE_MODERATION_TAB_COMPONENTS = {
   "shop-moderation": AdminShopModerationTab,
-  "review-moderation": function AdminReviewModerationPlaceholder() {
-    return (
-      <AdminCommerceModerationPlaceholderTab
-        title="Kiểm duyệt đánh giá"
-        description="ModerateReview — đang được phát triển."
-      />
-    );
-  },
+  "review-moderation": AdminReviewModerationTab,
   "product-moderation": function AdminProductModerationPlaceholder() {
     return (
       <AdminCommerceModerationPlaceholderTab

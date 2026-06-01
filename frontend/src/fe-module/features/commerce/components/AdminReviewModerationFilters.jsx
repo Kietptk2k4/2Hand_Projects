@@ -1,0 +1,82 @@
+import {
+  RATING_FILTER_OPTIONS,
+  REVIEW_STATUS_FILTER_TABS,
+} from "../constants/adminReviewModerationConstants";
+
+export function AdminReviewModerationFilters({
+  activeStatusTabId,
+  onStatusChange,
+  ratingFilter,
+  onRatingChange,
+  searchInput,
+  onSearchInputChange,
+  onSearchSubmit,
+  disabled,
+}) {
+  return (
+    <div className="flex flex-col gap-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-wrap gap-2">
+        {REVIEW_STATUS_FILTER_TABS.map((tab) => {
+          const active = tab.id === activeStatusTabId;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              disabled={disabled}
+              onClick={() => onStatusChange(tab.id)}
+              className={[
+                "rounded-full border px-4 py-1.5 text-label-sm transition-colors disabled:opacity-50",
+                active
+                  ? "border-primary bg-primary/10 font-medium text-primary"
+                  : "border-outline-variant text-on-surface-variant hover:border-primary/50 hover:text-primary",
+              ].join(" ")}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <form
+          className="relative min-w-[220px] flex-1"
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSearchSubmit?.();
+          }}
+        >
+          <span
+            className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-on-surface-variant"
+            aria-hidden="true"
+          >
+            search
+          </span>
+          <input
+            type="search"
+            value={searchInput}
+            onChange={(e) => onSearchInputChange(e.target.value)}
+            disabled={disabled}
+            placeholder="Tìm theo Order ID..."
+            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest py-2 pl-10 pr-3 text-body-sm disabled:opacity-50"
+          />
+        </form>
+
+        <select
+          value={ratingFilter ?? ""}
+          onChange={(e) =>
+            onRatingChange(e.target.value ? Number(e.target.value) : null)
+          }
+          disabled={disabled}
+          className="min-w-[140px] rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm disabled:opacity-50"
+          aria-label="Lọc theo số sao"
+        >
+          {RATING_FILTER_OPTIONS.map((opt) => (
+            <option key={opt.value || "all"} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+}
