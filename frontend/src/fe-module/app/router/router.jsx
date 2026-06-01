@@ -17,6 +17,8 @@ import { SocialProfilePage } from "../../features/social/pages/SocialProfilePage
 import { SocialSavedPostsPage } from "../../features/social/pages/SocialSavedPostsPage";
 import { SocialSearchPostsPage } from "../../features/social/pages/SocialSearchPostsPage";
 import { SocialHashtagPostsPage } from "../../features/social/pages/SocialHashtagPostsPage";
+import { CommerceHomePage } from "../../features/commerce/pages/CommerceHomePage";
+import { CommerceProductPlaceholderPage } from "../../features/commerce/pages/CommerceProductPlaceholderPage";
 
 function HomePage() {
   return (
@@ -40,6 +42,11 @@ export const router = createBrowserRouter([
       { path: APP_ROUTES.forgotPassword.slice(1), element: <ForgotPasswordPage /> },
       { path: APP_ROUTES.verifyEmail.slice(1), element: <VerifyEmailPage /> },
       { path: APP_ROUTES.sessionExpired.slice(1), element: <SessionExpiredPage /> },
+      { path: APP_ROUTES.commerceHome.slice(1), element: <CommerceHomePage /> },
+      {
+        path: APP_ROUTES.commerceProductDetail.slice(1),
+        element: <CommerceProductPlaceholderPage />,
+      },
       {
         element: <AuthGuard />,
         children: [

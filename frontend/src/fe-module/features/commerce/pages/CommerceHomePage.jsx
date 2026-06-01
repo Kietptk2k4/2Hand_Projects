@@ -1,0 +1,147 @@
+import { useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { FeedToast } from "../../social/components/FeedToast";
+import { CommerceHomeHero } from "../components/CommerceHomeHero";
+import { CommerceHomeSidebar } from "../components/CommerceHomeSidebar";
+import { ProductCard } from "../components/ProductCard";
+import { ProductListSkeleton } from "../components/ProductListSkeleton";
+import { ProductListSortSelect } from "../components/ProductListSortSelect";
+import { useProductList } from "../hooks/useProductList";
+import { APP_ROUTES } from "../../../shared/constants/routes";
+
+const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
+
+export function CommerceHomePage() {
+  const navigate = useNavigate();
+  const [toastMessage, setToastMessage] = useState("");
+  const {
+    items,
+    sort,
+    changeSort,
+    isInitialLoading,
+    isLoadingMore,
+    hasNext,
+    errorMessage,
+    loadMore,
+    retry,
+  } = useProductList();
+
+  const showComingSoon = useCallback(() => {
+    setToastMessage(COMING_SOON_MESSAGE);
+  }, []);
+
+  const dismissToast = useCallback(() => {
+    setToastMessage("");
+  }, []);
+
+  const openProduct = useCallback(
+    (productId) => {
+      if (!productId) return;
+      navigate(APP_ROUTES.commerceProductDetail.replace(":productId", productId));
+    },
+    [navigate]
+  );
+
+  return (
+    <div className="flex w-full bg-surface-container-lowest">
+      <CommerceHomeSidebar onComingSoon={showComingSoon} />
+
+      <div className="flex-1 px-4 py-8 md:px-8">
+        <div className="mb-6 flex items-center justify-end gap-2 lg:hidden">
+          <button
+            type="button"
+            onClick={showComingSoon}
+            className="relative rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary"
+            aria-label="Thông báo"
+          >
+            <span className="material-symbols-outlined" aria-hidden="true">
+              notifications
+            </span>
+            <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-error" />
+          </button>
+          <button
+            type="button"
+            onClick={showComingSoon}
+            className="rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary"
+            aria-label="Giỏ hàng"
+          >
+            <span className="material-symbols-outlined" aria-hidden="true">
+              shopping_cart
+            </span>
+          </button>
+        </div>
+
+        <CommerceHomeHero onSearchSubmit={showComingSoon} onCategoryClick={showComingSoon} />
+
+        <section>
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-headline-md font-semibold text-on-surface">Sản phẩm nổi bật</h2>
+            <ProductListSortSelect
+              value={sort}
+              onChange={changeSort}
+              disabled={isInitialLoading}
+            />
+          </div>
+
+          {isInitialLoading ? <ProductListSkeleton /> : null}
+
+          {!isInitialLoading && errorMessage ? (
+            <div className="rounded-xl border border-error/30 bg-error-container/40 p-6 text-center">
+              <p className="text-sm text-on-error-container">{errorMessage}</p>
+              <button
+                type="button"
+                onClick={retry}
+                className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-on-primary hover:bg-[#0050cb]"
+              >
+                Thử lại
+              </button>
+            </div>
+          ) : null}
+
+          {!isInitialLoading && !errorMessage && items.length === 0 ? (
+            <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-8 text-center shadow-sm">
+              <span className="material-symbols-outlined mb-2 text-4xl text-outline" aria-hidden="true">
+                inventory_2
+              </span>
+              <p className="text-sm text-on-surface-variant">Chưa có sản phẩm nào để hiển thị.</p>
+            </div>
+          ) : null}
+
+          {!isInitialLoading && !errorMessage && items.length > 0 ? (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {items.map((product) => (
+                <ProductCard
+                  key={product.productId}
+                  product={product}
+                  onOpenProduct={openProduct}
+                  onComingSoon={showComingSoon}
+                />
+              ))}
+            </div>
+          ) : null}
+
+          {!isInitialLoading && !errorMessage && hasNext ? (
+            <div className="mt-10 flex justify-center">
+              {isLoadingMore ? (
+                <div
+                  className="h-8 w-8 animate-spin rounded-full border-4 border-[#d8e3fb] border-t-primary"
+                  aria-label="Đang tải thêm"
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={loadMore}
+                  className="rounded-md border-2 border-primary px-8 py-3 text-label-md font-bold text-primary transition-colors hover:bg-primary hover:text-on-primary"
+                >
+                  Tải thêm sản phẩm
+                </button>
+              )}
+            </div>
+          ) : null}
+        </section>
+      </div>
+
+      <FeedToast message={toastMessage} onDismiss={dismissToast} />
+    </div>
+  );
+}

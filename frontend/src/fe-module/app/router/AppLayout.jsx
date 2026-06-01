@@ -17,10 +17,14 @@ export function AppLayout() {
   const isSocialRoute =
     location.pathname === APP_ROUTES.socialFeed ||
     location.pathname.startsWith(`${APP_ROUTES.socialFeed}/`);
+  const isCommerceRoute =
+    location.pathname === APP_ROUTES.commerceHome ||
+    location.pathname.startsWith(`${APP_ROUTES.commerceHome}/`);
   const isWideLayoutRoute =
     location.pathname.startsWith(APP_ROUTES.account) ||
     location.pathname.startsWith(APP_ROUTES.admin) ||
-    isSocialRoute;
+    isSocialRoute ||
+    isCommerceRoute;
   const isSensitiveRoute = location.pathname.startsWith(APP_ROUTES.account);
   const allowClose = !isSensitiveRoute;
 
@@ -63,9 +67,9 @@ export function AppLayout() {
       <main
         className={[
           "mx-auto w-full flex-1",
-          isSocialRoute ? "max-w-none p-0" : "px-4 py-8",
-          !isSocialRoute && isWideLayoutRoute ? "max-w-[1280px]" : "",
-          !isSocialRoute && !isWideLayoutRoute ? "max-w-6xl" : "",
+          isSocialRoute || isCommerceRoute ? "max-w-none p-0" : "px-4 py-8",
+          !isSocialRoute && !isCommerceRoute && isWideLayoutRoute ? "max-w-[1280px]" : "",
+          !isSocialRoute && !isCommerceRoute && !isWideLayoutRoute ? "max-w-6xl" : "",
         ]
           .filter(Boolean)
           .join(" ")}

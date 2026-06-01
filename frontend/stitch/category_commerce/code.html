@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ProMarket - IT Consulting</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "inverse-surface": "#263143",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "on-background": "#111c2d",
+                        "inverse-on-surface": "#ecf1ff",
+                        "error": "#ba1a1a",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#c2c6d8",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#111c2d",
+                        "surface-container-high": "#dee8ff",
+                        "secondary": "#4648d4",
+                        "primary-fixed": "#dae1ff",
+                        "on-secondary-container": "#fffbff",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "on-tertiary-fixed": "#191c1e",
+                        "on-tertiary-container": "#f6f8fa",
+                        "secondary-container": "#6063ee",
+                        "outline": "#727687",
+                        "surface-tint": "#0054d6",
+                        "on-primary-fixed": "#001849",
+                        "primary": "#0050cb",
+                        "tertiary-container": "#6f7274",
+                        "secondary-fixed": "#e1e0ff",
+                        "inverse-primary": "#b3c5ff",
+                        "on-primary-fixed-variant": "#003fa4",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "surface-container-highest": "#d8e3fb",
+                        "primary-container": "#0066ff",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f0f3ff",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#f9f9ff",
+                        "on-surface-variant": "#424656",
+                        "on-primary-container": "#f8f7ff",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "on-secondary-fixed": "#07006c",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "on-error-container": "#93000a",
+                        "error-container": "#ffdad6",
+                        "surface": "#f9f9ff",
+                        "surface-dim": "#cfdaf2",
+                        "tertiary-fixed": "#e0e3e5",
+                        "tertiary": "#565a5b",
+                        "surface-variant": "#d8e3fb",
+                        "surface-container": "#e7eeff",
+                        "background": "#f9f9ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "24px",
+                        "margin-desktop": "32px",
+                        "lg": "40px",
+                        "container-max": "1280px",
+                        "xs": "4px",
+                        "sm": "12px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "xl": "64px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-xl-mobile": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-xl": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-xl-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-xl": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .service-card {
+            box-shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="bg-surface border-b border-outline-variant w-full top-0 sticky z-50">
+<div class="flex justify-between items-center px-margin-desktop max-w-container-max mx-auto h-16">
+<div class="flex items-center gap-xl">
+<a class="font-headline-md text-headline-md font-bold text-primary" href="#">ProMarket</a>
+<div class="hidden md:flex gap-md">
+<a class="text-primary border-b-2 border-primary font-bold pb-1 font-Inter text-body-md transition-colors" href="#">Browse</a>
+<a class="text-on-surface-variant hover:text-primary font-Inter text-body-md transition-colors cursor-pointer active:opacity-80" href="#">Network</a>
+<a class="text-on-surface-variant hover:text-primary font-Inter text-body-md transition-colors cursor-pointer active:opacity-80" href="#">Inbox</a>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative hidden lg:block w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-sm text-body-sm text-on-surface" placeholder="Search services..." type="text"/>
+</div>
+<button aria-label="Notifications" class="text-on-surface-variant hover:bg-surface-container transition-colors rounded-full p-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+<button aria-label="Settings" class="text-on-surface-variant hover:bg-surface-container transition-colors rounded-full p-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden cursor-pointer hover:opacity-80 transition-opacity border border-outline-variant">
+<img alt="User profile photo" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVzNcyuWnRm-Xh6O-rfnW7cDWsdXpuhGiHqQ0eGDaT0qJUKtE3WU1yvcZ-_Vg1NE6s-AOiZ2lqQy_zrwEvIHB1XqX2GRPEZYbIGZGWNL4RZG2wVvnK0GnpJGKJbEQiMoVGNkqEnBnPmvGW5DSwlSVNVrN3YIoUPGBFm_fUvHK-oHIAsIQa52u7-Fr7pPnjGj3fH6LM57KB8BIMGxdtRB7Fkc-948olDvA2-xT5Kgpen4WNPjJAr3PwG2yIZtCw7y4BZZ4QhQjFabc"/>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Layout Grid -->
+<div class="flex-1 max-w-container-max mx-auto w-full px-margin-mobile md:px-margin-desktop py-md lg:py-lg grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Sidebar Navigation & Filters -->
+<aside class="hidden lg:block lg:col-span-3 space-y-lg">
+<!-- Breadcrumbs -->
+<nav class="flex items-center text-body-sm font-body-sm text-on-surface-variant mb-md">
+<a class="hover:text-primary transition-colors" href="#">Home</a>
+<span class="material-symbols-outlined text-[16px] mx-xs">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Professional Services</a>
+<span class="material-symbols-outlined text-[16px] mx-xs">chevron_right</span>
+<span class="text-on-surface font-medium">IT Consulting</span>
+</nav>
+<div class="bg-surface rounded-lg border border-outline-variant p-md">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-sm">Categories</h3>
+<ul class="space-y-2">
+<li>
+<a class="flex items-center justify-between text-body-md font-body-md text-primary font-medium py-xs" href="#">
+<span>Cloud Architecture</span>
+<span class="text-label-sm font-label-sm bg-surface-container-low px-2 py-1 rounded-full text-on-surface-variant">142</span>
+</a>
+</li>
+<li>
+<a class="flex items-center justify-between text-body-md font-body-md text-on-surface-variant hover:text-primary transition-colors py-xs" href="#">
+<span>Cybersecurity Audits</span>
+<span class="text-label-sm font-label-sm bg-surface-container-low px-2 py-1 rounded-full text-outline">89</span>
+</a>
+</li>
+<li>
+<a class="flex items-center justify-between text-body-md font-body-md text-on-surface-variant hover:text-primary transition-colors py-xs" href="#">
+<span>DevOps Integration</span>
+<span class="text-label-sm font-label-sm bg-surface-container-low px-2 py-1 rounded-full text-outline">215</span>
+</a>
+</li>
+<li>
+<a class="flex items-center justify-between text-body-md font-body-md text-on-surface-variant hover:text-primary transition-colors py-xs" href="#">
+<span>Data Migration</span>
+<span class="text-label-sm font-label-sm bg-surface-container-low px-2 py-1 rounded-full text-outline">64</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="bg-surface rounded-lg border border-outline-variant p-md">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-md">Filters</h3>
+<div class="mb-md">
+<h4 class="font-label-md text-label-md text-on-surface mb-sm">Service Tier</h4>
+<div class="space-y-sm">
+<label class="flex items-center gap-sm cursor-pointer">
+<input class="rounded border-outline text-primary focus:ring-primary w-4 h-4" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Enterprise (100+ users)</span>
+</label>
+<label class="flex items-center gap-sm cursor-pointer">
+<input checked="" class="rounded border-outline text-primary focus:ring-primary w-4 h-4" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Mid-Market (50-99 users)</span>
+</label>
+<label class="flex items-center gap-sm cursor-pointer">
+<input class="rounded border-outline text-primary focus:ring-primary w-4 h-4" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Small Business (&lt;50 users)</span>
+</label>
+</div>
+</div>
+<div class="mb-md">
+<h4 class="font-label-md text-label-md text-on-surface mb-sm">Rating</h4>
+<div class="space-y-sm">
+<label class="flex items-center gap-sm cursor-pointer">
+<input class="border-outline text-primary focus:ring-primary w-4 h-4" name="rating" type="radio"/>
+<span class="flex items-center text-primary"><span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span><span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span><span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span><span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span><span class="material-symbols-outlined text-[16px]">star</span></span>
+<span class="font-body-sm text-body-sm text-on-surface-variant ml-xs">4.0 &amp; Up</span>
+</label>
+<label class="flex items-center gap-sm cursor-pointer">
+<input class="border-outline text-primary focus:ring-primary w-4 h-4" name="rating" type="radio"/>
+<span class="flex items-center text-primary"><span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span><span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span><span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span><span class="material-symbols-outlined text-[16px]">star</span><span class="material-symbols-outlined text-[16px]">star</span></span>
+<span class="font-body-sm text-body-sm text-on-surface-variant ml-xs">3.0 &amp; Up</span>
+</label>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="col-span-1 lg:col-span-9">
+<header class="flex flex-col md:flex-row md:items-end justify-between mb-lg gap-md">
+<div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface font-bold">IT Consulting</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 max-w-2xl">Expert guidance for scalable cloud infrastructure, cybersecurity resilience, and seamless digital transformation tailored for your organizational needs.</p>
+</div>
+<div class="flex items-center gap-sm shrink-0">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Sort by:</span>
+<select class="bg-surface border border-outline-variant rounded-md font-body-sm text-body-sm text-on-surface py-1.5 pl-3 pr-8 focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+<option>Recommended</option>
+<option>Price: Low to High</option>
+<option>Price: High to Low</option>
+<option>Highest Rated</option>
+</select>
+</div>
+</header>
+<!-- Product Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-md mb-xl">
+<!-- Card 1 -->
+<article class="service-card bg-surface rounded-lg flex flex-col overflow-hidden border border-surface-variant group hover:-translate-y-1 transition-transform duration-300">
+<div class="relative h-48 w-full bg-surface-container-low">
+<div class="absolute top-sm left-sm z-10 bg-[#e6f4ea] text-[#137333] px-2 py-0.5 rounded-full font-label-sm text-label-sm flex items-center gap-1 border border-[#ceead6]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#1e8e3e]"></span>
+                            ACTIVE
+                        </div>
+<img alt="Cloud Architecture Service" class="w-full h-full object-cover" data-alt="A macro shot of glowing blue fiber optic cables against a dark background, representing high-speed network infrastructure. The lighting is dramatic and technological, fitting a modern corporate IT aesthetic. The colors are predominantly deep blues and cool whites, conveying efficiency and reliability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPtWw-BvZtl-kO1pwxQMZkzFaPzlkfGj7AJYlWekimE4k-v1eP1Daq6HI5OAzGXp3dSgE4qaSYMF0VFGt6ilet6xRK1vkDi7riVNJp3v-LUVW4vI5ZSRs2XDwLGJ85AP7LnERmrG7_q-QgT8Qd1yHNEvrV7OPugjof0Mn8FCfjrS73eBJlUdRdfqAzWEkiQjpRIvIjM20WFDZ046GMi6Htg6T1jzhb7LhTAZJdV3vOcd4-tg-VO7FCZ-oNw9oeAat0XPh9KqzCcRY"/>
+</div>
+<div class="p-4 flex flex-col flex-1">
+<div class="flex items-start justify-between mb-2">
+<h2 class="font-label-md text-label-md text-on-surface font-semibold line-clamp-2 group-hover:text-primary transition-colors">AWS Cloud Migration Strategy &amp; Implementation</h2>
+<button aria-label="Save service" class="text-outline-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-3">TechNova Solutions</p>
+<div class="flex items-center gap-1 mb-auto">
+<span class="material-symbols-outlined text-[16px] text-[#f4b400]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm text-on-surface">4.9</span>
+<span class="font-body-sm text-body-sm text-outline">(128)</span>
+</div>
+<div class="mt-4 pt-3 border-t border-surface-variant flex items-baseline gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">$2,400</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/project</span>
+</div>
+</div>
+</article>
+<!-- Card 2 -->
+<article class="service-card bg-surface rounded-lg flex flex-col overflow-hidden border border-surface-variant group hover:-translate-y-1 transition-transform duration-300">
+<div class="relative h-48 w-full bg-surface-container-low">
+<div class="absolute top-sm left-sm z-10 bg-[#e6f4ea] text-[#137333] px-2 py-0.5 rounded-full font-label-sm text-label-sm flex items-center gap-1 border border-[#ceead6]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#1e8e3e]"></span>
+                            ACTIVE
+                        </div>
+<img alt="Cybersecurity Audit" class="w-full h-full object-cover" data-alt="A close-up of a computer monitor displaying lines of green code on a black background, suggesting cybersecurity analysis or penetration testing. The image is crisp and modern, with a slight blur in the foreground to draw focus to the central code structure. It aligns with a sleek, professional tech-service visual identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDf1xbBOsjynKYIc0nze0Cn4p-Lu8-aY9gQBhoPYUzGfeviQcgog6SEkjvFhDWPpiCVSQPXcfS--WFGhqsEciiCRS2VtNPbxsEjVJJH8f90J-ddt2Jf_HWntakO2jIeThmqhADXisNMrR_ncHuBtC4mc4crgCFepShJkVNvglsT690aXJXU-FBlX9oyE0N2vj21jqTJqD371hVlx-XxdQPUlv02oKjq3yrg9pQbeKs3NxkfpN04gEljNbwMFLUy-vfMtIzpM3QMvbw"/>
+</div>
+<div class="p-4 flex flex-col flex-1">
+<div class="flex items-start justify-between mb-2">
+<h2 class="font-label-md text-label-md text-on-surface font-semibold line-clamp-2 group-hover:text-primary transition-colors">Comprehensive Penetration Testing &amp; Security Audit</h2>
+<button aria-label="Save service" class="text-outline-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-3">DefendIT Corp</p>
+<div class="flex items-center gap-1 mb-auto">
+<span class="material-symbols-outlined text-[16px] text-[#f4b400]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm text-on-surface">4.7</span>
+<span class="font-body-sm text-body-sm text-outline">(56)</span>
+</div>
+<div class="mt-4 pt-3 border-t border-surface-variant flex items-baseline gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">$1,850</span>
+<span class="font-body-sm text-body-sm text-outline line-through">$2,100</span>
+</div>
+</div>
+</article>
+<!-- Card 3 -->
+<article class="service-card bg-surface rounded-lg flex flex-col overflow-hidden border border-surface-variant group hover:-translate-y-1 transition-transform duration-300 opacity-75">
+<div class="relative h-48 w-full bg-surface-container-low">
+<div class="absolute inset-0 bg-surface/50 z-0"></div>
+<div class="absolute top-sm left-sm z-10 bg-error-container text-on-error-container px-2 py-0.5 rounded-full font-label-sm text-label-sm flex items-center gap-1 border border-[#ffb4ab]">
+<span class="material-symbols-outlined text-[14px]">block</span>
+                            OUT_OF_STOCK
+                        </div>
+<img alt="DevOps Workshop" class="w-full h-full object-cover grayscale" data-alt="A modern office workspace showing multiple monitors displaying complex data dashboards and project management timelines. The environment is well-lit, clean, and organized, representing professional DevOps planning. The overall tone is productive and analytical, fitting a corporate minimal style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvPiJGKGW9AGxWGDozlYcpkgN2qpqUmxKQntwZdsVJYEMNcEGRSBkprkjED5xy-70zTbVP6ZcSBqLtR4RY9A1VLVWdHv0Iis8AF9bg4t_iZ7YyOGr5USYmNCq6aRBXVqaX84aL84URTM49aLFQUMUFuNDS6ooziLfqnWpmEaxWnQ_QKubz6lui3T-i3Xb9M3WXykw9gGqgAAKP_Nu2FVv-3pLedZ1fK3beoq80XfQDvG7ER3p-Wyr6-5si7BAtShlchsBANCnwWNs"/>
+</div>
+<div class="p-4 flex flex-col flex-1">
+<div class="flex items-start justify-between mb-2">
+<h2 class="font-label-md text-label-md text-on-surface font-semibold line-clamp-2">Enterprise DevOps Pipeline Optimization Workshop</h2>
+<button aria-label="Save service" class="text-outline-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-3">AgileFlow Systems</p>
+<div class="flex items-center gap-1 mb-auto">
+<span class="material-symbols-outlined text-[16px] text-[#f4b400]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm text-on-surface">5.0</span>
+<span class="font-body-sm text-body-sm text-outline">(12)</span>
+</div>
+<div class="mt-4 pt-3 border-t border-surface-variant flex items-baseline gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface-variant">Unavailable</span>
+</div>
+</div>
+</article>
+<!-- Card 4 -->
+<article class="service-card bg-surface rounded-lg flex flex-col overflow-hidden border border-surface-variant group hover:-translate-y-1 transition-transform duration-300">
+<div class="relative h-48 w-full bg-surface-container-low">
+<div class="absolute top-sm left-sm z-10 bg-[#e6f4ea] text-[#137333] px-2 py-0.5 rounded-full font-label-sm text-label-sm flex items-center gap-1 border border-[#ceead6]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#1e8e3e]"></span>
+                            ACTIVE
+                        </div>
+<img alt="Data Lake Setup" class="w-full h-full object-cover" data-alt="A stark, minimalist visualization of data points connecting in a vast digital network, rendered in subtle silvers and blues. It conveys structured data migration and data lake architecture. The lighting is pristine and clinical, perfect for a high-end enterprise B2B platform aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmbIr3sAzgX9uojng8KcKpBI3oGNDvnH4Tgn8eF3mj3Qq9LxsXv_PwWlZVtQLynNkAwjMH1XfQLl06ujcTlFxt2acr7kYC8yS2ZV7wULZikbHHRcEjdEfLZm1E1J5W2rTILGOXTPa1NnMErdPAVaTJnUBW2QhUSDQGFOqNgST3QoAW2HeKGBza97PNpEx6OXvGK8YXlPAAelHL128advDLrBNPj5WEOjiX0Cpg23jAfUZmYDvXgEo99T3V9O3AO8asEIpQa96UMCQ"/>
+</div>
+<div class="p-4 flex flex-col flex-1">
+<div class="flex items-start justify-between mb-2">
+<h2 class="font-label-md text-label-md text-on-surface font-semibold line-clamp-2 group-hover:text-primary transition-colors">Snowflake Data Warehouse Migration &amp; Modeling</h2>
+<button aria-label="Save service" class="text-outline-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-3">DataCrafters LLC</p>
+<div class="flex items-center gap-1 mb-auto">
+<span class="material-symbols-outlined text-[16px] text-[#f4b400]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm text-on-surface">4.8</span>
+<span class="font-body-sm text-body-sm text-outline">(89)</span>
+</div>
+<div class="mt-4 pt-3 border-t border-surface-variant flex items-baseline gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">$3,200</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/project</span>
+</div>
+</div>
+</article>
+</div>
+<!-- Pagination -->
+<div class="flex items-center justify-center gap-2 mt-xl">
+<button class="w-10 h-10 flex items-center justify-center rounded-md border border-outline-variant text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-md bg-primary text-on-primary font-label-md font-medium transition-colors">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-md border border-outline-variant text-on-surface hover:bg-surface-container hover:text-primary font-label-md font-medium transition-colors">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-md border border-outline-variant text-on-surface hover:bg-surface-container hover:text-primary font-label-md font-medium transition-colors">3</button>
+<span class="text-outline-variant px-1">...</span>
+<button class="w-10 h-10 flex items-center justify-center rounded-md border border-outline-variant text-on-surface hover:bg-surface-container hover:text-primary font-label-md font-medium transition-colors">12</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-md border border-outline-variant text-on-surface hover:bg-surface-container hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="bg-surface-container-low w-full mt-xl border-t border-outline-variant">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-desktop py-md max-w-container-max mx-auto">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface mb-4 md:mb-0">ProMarket</span>
+<div class="flex flex-wrap justify-center gap-md mb-4 md:mb-0">
+<a class="font-Inter text-label-md text-on-surface-variant hover:text-primary transition-colors inline-block" href="#">Terms of Service</a>
+<a class="font-Inter text-label-md text-on-surface-variant hover:text-primary transition-colors inline-block" href="#">Privacy Policy</a>
+<a class="font-Inter text-label-md text-on-surface-variant hover:text-primary transition-colors inline-block" href="#">Help Center</a>
+<a class="font-Inter text-label-md text-on-surface-variant hover:text-primary transition-colors inline-block" href="#">Careers</a>
+</div>
+<p class="font-Inter text-label-md text-on-surface-variant">© 2024 ProMarket Inc. All rights reserved.</p>
+</div>
+</footer>
+</body></html>

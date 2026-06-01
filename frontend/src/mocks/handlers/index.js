@@ -12,6 +12,7 @@ import { socialSearchPostsHandlers } from "./socialSearchPostsHandlers";
 import { socialSearchHashtagHandlers } from "./socialSearchHashtagHandlers";
 import { socialCommentWriteHandlers } from "./socialCommentWriteHandlers";
 import { socialPostHandlers } from "./socialPostHandlers";
+import { commerceProductListHandlers } from "./commerceProductListHandlers";
 
 export const handlers = [
   ...authHandlers,
@@ -28,5 +29,6 @@ export const handlers = [
   ...socialProfileHandlers,
   ...socialFollowHandlers,
   ...socialRelationsHandlers,
+  ...commerceProductListHandlers,
 ];
 

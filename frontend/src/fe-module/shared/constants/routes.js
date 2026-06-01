@@ -17,5 +17,7 @@ export const APP_ROUTES = {
   socialSearchPosts: "/social/search",
   socialHashtagPosts: "/social/tags/:hashtag",
   socialProfile: "/social/users/:userId",
+  commerceHome: "/commerce",
+  commerceProductDetail: "/commerce/products/:productId",
 };
 
