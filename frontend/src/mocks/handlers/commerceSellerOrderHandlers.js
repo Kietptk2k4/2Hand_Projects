@@ -1,6 +1,7 @@
 import { delay, http, HttpResponse } from "msw";
 import {
   listSellerOrdersForUser,
+  processSellerOrderItemsForUser,
   validateSellerOrderListQuery,
 } from "../data/commerceSellerOrderData";
 import { getUserByToken } from "../utils/socialMockAuth";
@@ -45,6 +46,29 @@ export const commerceSellerOrderHandlers = [
 
     return HttpResponse.json(
       apiSuccess(200, "Lay danh sach don seller thanh cong.", result.data),
+      { status: 200 },
+    );
+  }),
+
+  http.post("*/commerce/api/v1/seller/order-items/process", async ({ request }) => {
+    await delay(400);
+    const auth = requireAuth(request);
+    if (auth.error) return auth.error;
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return HttpResponse.json(apiError("COMMERCE-400-VALIDATION", "Du lieu khong hop le."), {
+        status: 400,
+      });
+    }
+
+    const result = processSellerOrderItemsForUser(auth.user.id, body?.order_item_ids);
+    if (result.error) return mapError(result);
+
+    return HttpResponse.json(
+      apiSuccess(200, "Danh dau chuan bi hang thanh cong.", result.data),
       { status: 200 },
     );
   }),

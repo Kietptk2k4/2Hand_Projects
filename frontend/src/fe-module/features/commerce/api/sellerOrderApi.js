@@ -1,6 +1,17 @@
 import { commerceApiClient } from "../../../services/http/commerceApiClient";
 import { mapAxiosError, unwrapResponse } from "./commerceApiResponse";
 
+export async function processSellerOrderItems(orderItemIds) {
+  try {
+    const response = await commerceApiClient.post("/commerce/api/v1/seller/order-items/process", {
+      order_item_ids: orderItemIds,
+    });
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export async function fetchSellerOrderList({ page, limit, status, shipmentStatus }) {
   try {
     const params = { page, limit };

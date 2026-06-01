@@ -4,6 +4,8 @@ export function SellerOrderListHeader({
   onSearchChange,
   onBulkPrepare,
   bulkDisabled,
+  bulkLabel,
+  isProcessing,
   searchDisabled,
 }) {
   return (
@@ -26,14 +28,21 @@ export function SellerOrderListHeader({
 
         <button
           type="button"
-          disabled={bulkDisabled}
+          disabled={bulkDisabled || isProcessing}
           onClick={onBulkPrepare}
           className="inline-flex items-center gap-1 rounded-lg bg-primary px-4 py-2.5 text-label-md font-medium text-on-primary hover:bg-[#0050cb] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
-            inventory_2
-          </span>
-          Xác nhận chuẩn bị hàng
+          {isProcessing ? (
+            <span
+              className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-on-primary border-t-transparent"
+              aria-hidden="true"
+            />
+          ) : (
+            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+              inventory_2
+            </span>
+          )}
+          {isProcessing ? "Đang xử lý..." : bulkLabel}
         </button>
       </div>
 

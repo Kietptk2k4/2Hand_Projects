@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { FeedToast } from "../../social/components/FeedToast";
 import { CommerceShell } from "../components/CommerceShell";
@@ -6,15 +6,19 @@ import { SellerOrderListEmptyState } from "../components/SellerOrderListEmptySta
 import { SellerOrderListHeader } from "../components/SellerOrderListHeader";
 import { SellerOrderListSkeleton } from "../components/SellerOrderListSkeleton";
 import { SellerOrderPagination } from "../components/SellerOrderPagination";
+import { SellerOrderProcessConfirmDialog } from "../components/SellerOrderProcessConfirmDialog";
 import { SellerOrderShipmentFilter } from "../components/SellerOrderShipmentFilter";
 import { SellerOrderStatusTabs } from "../components/SellerOrderStatusTabs";
 import { SellerOrderTable } from "../components/SellerOrderTable";
+import { buildProcessSuccessToast } from "../constants/sellerOrderConstants";
+import { useProcessSellerOrderItems } from "../hooks/useProcessSellerOrderItems";
 import { useSellerOrderList } from "../hooks/useSellerOrderList";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
 export function CommerceSellerOrderListPage() {
   const [toastMessage, setToastMessage] = useState("");
   const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [confirmItems, setConfirmItems] = useState(null);
 
   const {
     filteredItems,
@@ -38,7 +42,43 @@ export function CommerceSellerOrderListPage() {
     retry,
     clientSearch,
     setClientSearch,
+    pendingCount,
   } = useSellerOrderList();
+
+  const handleProcessSuccess = useCallback(
+    (result) => {
+      setSelectedIds(new Set());
+      setConfirmItems(null);
+      retry();
+
+      if (activeTabId === "pending" && result.newlyProcessedCount > 0) {
+        changeStatusFilter("PROCESSING");
+      }
+
+      setToastMessage(
+        buildProcessSuccessToast({
+          newlyProcessedCount: result.newlyProcessedCount,
+          alreadyProcessingCount: result.alreadyProcessingCount,
+        }),
+      );
+    },
+    [activeTabId, changeStatusFilter, retry],
+  );
+
+  const { isProcessing, processError, process, clearError } = useProcessSellerOrderItems({
+    onSuccess: handleProcessSuccess,
+  });
+
+  const pendingSelectedCount = useMemo(() => {
+    return [...selectedIds].filter((id) =>
+      filteredItems.some((item) => item.orderItemId === id && item.itemStatus === "PENDING"),
+    ).length;
+  }, [filteredItems, selectedIds]);
+
+  const bulkLabel =
+    pendingSelectedCount > 0
+      ? `Xác nhận chuẩn bị hàng (${pendingSelectedCount})`
+      : "Xác nhận chuẩn bị hàng";
 
   const showComingSoon = useCallback((message) => {
     setToastMessage(message || "Tính năng đang được phát triển.");
@@ -53,21 +93,67 @@ export function CommerceSellerOrderListPage() {
     });
   }, []);
 
-  const handleBulkPrepare = useCallback(() => {
-    showComingSoon("Xác nhận chuẩn bị hàng sẽ có trong bản cập nhật (ProcessSellerOrderItem).");
-  }, [showComingSoon]);
+  const handleToggleSelectAllPending = useCallback((pendingIds, selectAll) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (selectAll) {
+        pendingIds.forEach((id) => next.add(id));
+      } else {
+        pendingIds.forEach((id) => next.delete(id));
+      }
+      return next;
+    });
+  }, []);
 
-  const disabled = isLoading || noShop;
+  const openConfirmForItems = useCallback(
+    (items) => {
+      const pending = items.filter((item) => item.itemStatus === "PENDING");
+      if (pending.length === 0) return;
+      clearError();
+      setConfirmItems(pending);
+    },
+    [clearError],
+  );
+
+  const handleBulkPrepare = useCallback(() => {
+    const pending = filteredItems.filter(
+      (item) => selectedIds.has(item.orderItemId) && item.itemStatus === "PENDING",
+    );
+    openConfirmForItems(pending);
+  }, [filteredItems, openConfirmForItems, selectedIds]);
+
+  const handlePrepareRow = useCallback(
+    (item) => {
+      openConfirmForItems([item]);
+    },
+    [openConfirmForItems],
+  );
+
+  const handleConfirmProcess = useCallback(async () => {
+    if (!confirmItems?.length) return;
+    const ids = confirmItems.map((item) => item.orderItemId);
+    await process(ids);
+  }, [confirmItems, process]);
+
+  const handleCancelConfirm = useCallback(() => {
+    if (isProcessing) return;
+    setConfirmItems(null);
+    clearError();
+  }, [clearError, isProcessing]);
+
+  const disabled = isLoading || noShop || isProcessing;
 
   return (
-    <CommerceShell showHomeSidebar={false} onComingSoon={showComingSoon}>
+    <CommerceShell onComingSoon={showComingSoon}>
       <div className="mx-auto w-full max-w-[1280px]">
         <SellerOrderListHeader
           totalItems={totalItems}
           clientSearch={clientSearch}
           onSearchChange={setClientSearch}
           onBulkPrepare={handleBulkPrepare}
-          bulkDisabled={disabled || selectedIds.size === 0}
+          bulkDisabled={disabled || pendingSelectedCount === 0}
+          bulkLabel={bulkLabel}
+          isProcessing={isProcessing}
           searchDisabled={disabled}
         />
 
@@ -87,6 +173,7 @@ export function CommerceSellerOrderListPage() {
 
         <SellerOrderStatusTabs
           activeTabId={activeTabId}
+          pendingCount={pendingCount}
           onChange={changeStatusFilter}
           disabled={disabled}
         />
@@ -124,7 +211,10 @@ export function CommerceSellerOrderListPage() {
               items={filteredItems}
               disabled={disabled}
               selectedIds={selectedIds}
+              isProcessing={isProcessing}
               onToggleSelect={handleToggleSelect}
+              onToggleSelectAllPending={handleToggleSelectAllPending}
+              onPrepareRow={handlePrepareRow}
             />
             <SellerOrderPagination
               page={page}
@@ -140,6 +230,15 @@ export function CommerceSellerOrderListPage() {
           </>
         ) : null}
       </div>
+
+      <SellerOrderProcessConfirmDialog
+        open={Boolean(confirmItems?.length)}
+        items={confirmItems || []}
+        isProcessing={isProcessing}
+        errorMessage={processError}
+        onCancel={handleCancelConfirm}
+        onConfirm={handleConfirmProcess}
+      />
 
       <FeedToast message={toastMessage} onDismiss={() => setToastMessage("")} />
     </CommerceShell>

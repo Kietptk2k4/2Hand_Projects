@@ -69,5 +69,31 @@ export function mapSellerOrderListResponse(data) {
   return {
     items: (data.items || []).map(mapSellerOrderListItem).filter(Boolean),
     pagination,
+    pendingCount: data.summary?.pending_count ?? data.summary?.pendingCount ?? 0,
+  };
+}
+
+export function mapProcessSellerOrderItemsResponse(data) {
+  if (!data) {
+    return {
+      items: [],
+      newlyProcessedCount: 0,
+      alreadyProcessingCount: 0,
+      processedAt: null,
+    };
+  }
+
+  return {
+    items: (data.items || []).map((item) => ({
+      orderItemId: pick(item, "orderItemId", "order_item_id"),
+      orderId: pick(item, "orderId", "order_id"),
+      status: item.status,
+      productNameSnapshot: pick(item, "productNameSnapshot", "product_name_snapshot"),
+      quantity: item.quantity,
+      newlyProcessed: Boolean(item.newly_processed ?? item.newlyProcessed),
+    })),
+    newlyProcessedCount: data.newly_processed_count ?? data.newlyProcessedCount ?? 0,
+    alreadyProcessingCount: data.already_processing_count ?? data.alreadyProcessingCount ?? 0,
+    processedAt: data.processed_at ?? data.processedAt,
   };
 }

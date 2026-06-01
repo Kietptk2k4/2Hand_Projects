@@ -7,6 +7,12 @@ export const MOCK_SELLER_ORDER_ITEM_PROCESSING = "so2000000-0000-4000-8000-00000
 export const MOCK_SELLER_ORDER_ITEM_SHIPPED = "so2000000-0000-4000-8000-000000000003";
 export const MOCK_SELLER_ORDER_ITEM_DELIVERED = "so2000000-0000-4000-8000-000000000004";
 export const MOCK_SELLER_ORDER_ITEM_COMPLETED = "so2000000-0000-4000-8000-000000000005";
+/** PENDING + COD + order PROCESSING — process success */
+export const MOCK_SELLER_ORDER_ITEM_PENDING_COD = "so2000000-0000-4000-8000-000000000013";
+/** PENDING + PayOS + payment PENDING — 409 PAYMENT-STATE */
+export const MOCK_SELLER_ORDER_ITEM_PENDING_PAYOS_UNPAID = "so2000000-0000-4000-8000-000000000014";
+/** PENDING + order AWAITING_PAYMENT — 409 ORDER-PROCESSING */
+export const MOCK_SELLER_ORDER_ITEM_PENDING_ORDER_NOT_READY = "so2000000-0000-4000-8000-000000000015";
 
 const VALID_ITEM_STATUSES = [
   "PENDING",
@@ -256,6 +262,63 @@ function seedSellerOrderItems() {
       item_created_at: daysAgoIso(9),
       final_price: 890000,
     }),
+    buildSellerItem({
+      order_item_id: MOCK_SELLER_ORDER_ITEM_PENDING_COD,
+      order_id: "o2000000-0000-4000-8000-000000000113",
+      product_id: "c2000000-0000-4000-8000-000000000108",
+      product_name_snapshot: "Cờ lê điện — COD chờ chuẩn bị",
+      item_status: "PENDING",
+      order_status: "PROCESSING",
+      order_payment_method: "COD",
+      order_payment_status: "PENDING",
+      payment: {
+        payment_id: "p2000000-0000-4000-8000-000000000113",
+        status: "PENDING",
+        payment_method: "COD",
+        amount: 350000,
+        currency: "VND",
+      },
+      item_created_at: daysAgoIso(0),
+      final_price: 320000,
+    }),
+    buildSellerItem({
+      order_item_id: MOCK_SELLER_ORDER_ITEM_PENDING_PAYOS_UNPAID,
+      order_id: "o2000000-0000-4000-8000-000000000114",
+      product_id: "c2000000-0000-4000-8000-000000000102",
+      product_name_snapshot: "Bộ tuốc lực — PayOS chưa thanh toán",
+      item_status: "PENDING",
+      order_status: "PROCESSING",
+      order_payment_method: "PAYOS",
+      order_payment_status: "PENDING",
+      payment: {
+        payment_id: "p2000000-0000-4000-8000-000000000114",
+        status: "PENDING",
+        payment_method: "PAYOS",
+        amount: 1100000,
+        currency: "VND",
+      },
+      item_created_at: daysAgoIso(0),
+      final_price: 1100000,
+    }),
+    buildSellerItem({
+      order_item_id: MOCK_SELLER_ORDER_ITEM_PENDING_ORDER_NOT_READY,
+      order_id: "o2000000-0000-4000-8000-000000000115",
+      product_id: "c2000000-0000-4000-8000-000000000101",
+      product_name_snapshot: "Máy khoan — đơn chưa sẵn sàng xử lý",
+      item_status: "PENDING",
+      order_status: "AWAITING_PAYMENT",
+      order_payment_method: "PAYOS",
+      order_payment_status: "PENDING",
+      payment: {
+        payment_id: "p2000000-0000-4000-8000-000000000115",
+        status: "PENDING",
+        payment_method: "PAYOS",
+        amount: 890000,
+        currency: "VND",
+      },
+      item_created_at: daysAgoIso(0),
+      final_price: 890000,
+    }),
   ];
 
   sellerOrderItems.push(...seeds);
@@ -314,6 +377,97 @@ function toListRow(record) {
   };
 }
 
+function findSellerOrderItem(userId, orderItemId) {
+  const record = sellerOrderItems.find(
+    (row) => row.order_item_id === orderItemId && row.seller_id === userId,
+  );
+  return record || null;
+}
+
+export function countPendingSellerOrderItems(userId) {
+  return sellerOrderItems.filter(
+    (row) => row.seller_id === userId && row.item_status === "PENDING",
+  ).length;
+}
+
+export function processSellerOrderItemsForUser(userId, orderItemIds) {
+  const shop = getShopBySellerId(userId);
+  if (!shop) {
+    return { error: "COMMERCE-409-SELLER-SHOP", status: 409, message: "Seller chua co shop." };
+  }
+
+  if (!Array.isArray(orderItemIds) || orderItemIds.length === 0) {
+    return {
+      error: "COMMERCE-400-VALIDATION",
+      status: 400,
+      message: "order_item_ids khong duoc trong.",
+    };
+  }
+
+  const uniqueIds = [...new Set(orderItemIds.map((id) => String(id).trim()).filter(Boolean))];
+  if (uniqueIds.length !== orderItemIds.length) {
+    return { error: "COMMERCE-400-VALIDATION", status: 400 };
+  }
+
+  const records = [];
+  for (const id of uniqueIds) {
+    const record = findSellerOrderItem(userId, id);
+    if (!record) {
+      return { error: "COMMERCE-404-ORDER-ITEM", status: 404 };
+    }
+    records.push(record);
+  }
+
+  for (const record of records) {
+    if (record.order_status !== "PROCESSING") {
+      return { error: "COMMERCE-409-ORDER-PROCESSING", status: 409 };
+    }
+
+    const method = record.order_payment_method || record.payment?.payment_method;
+    if (method === "PAYOS" && record.order_payment_status !== "PAID") {
+      return { error: "COMMERCE-409-PAYMENT-STATE", status: 409 };
+    }
+
+    if (!["PENDING", "PROCESSING"].includes(record.item_status)) {
+      return { error: "COMMERCE-409-ORDER-ITEM-PROCESS", status: 409 };
+    }
+  }
+
+  const now = new Date().toISOString();
+  let newlyProcessedCount = 0;
+  let alreadyProcessingCount = 0;
+  const items = [];
+
+  for (const record of records) {
+    const wasPending = record.item_status === "PENDING";
+    if (wasPending) {
+      record.item_status = "PROCESSING";
+      record.item_updated_at = now;
+      newlyProcessedCount += 1;
+    } else {
+      alreadyProcessingCount += 1;
+    }
+
+    items.push({
+      order_item_id: record.order_item_id,
+      order_id: record.order_id,
+      status: record.item_status,
+      product_name_snapshot: record.product_name_snapshot,
+      quantity: record.quantity,
+      newly_processed: wasPending,
+    });
+  }
+
+  return {
+    data: {
+      items,
+      newly_processed_count: newlyProcessedCount,
+      already_processing_count: alreadyProcessingCount,
+      processed_at: now,
+    },
+  };
+}
+
 export function listSellerOrdersForUser(userId, { page, limit, status, shipment_status }) {
   const shop = getShopBySellerId(userId);
   if (!shop) {
@@ -346,6 +500,9 @@ export function listSellerOrdersForUser(userId, { page, limit, status, shipment_
         total_items: totalItems,
         total_pages: totalPages,
         has_next: page < totalPages,
+      },
+      summary: {
+        pending_count: countPendingSellerOrderItems(userId),
       },
     },
   };

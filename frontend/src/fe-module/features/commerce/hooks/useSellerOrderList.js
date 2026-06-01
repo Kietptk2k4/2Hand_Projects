@@ -51,6 +51,7 @@ export function useSellerOrderList() {
   const [errorMessage, setErrorMessage] = useState("");
   const [noShop, setNoShop] = useState(false);
   const [clientSearch, setClientSearch] = useState("");
+  const [pendingCount, setPendingCount] = useState(0);
   const requestIdRef = useRef(0);
 
   const loadPage = useCallback(
@@ -81,6 +82,7 @@ export function useSellerOrderList() {
         const data = mapSellerOrderListResponse(raw);
         setItems(data.items);
         setPagination(data.pagination);
+        setPendingCount(data.pendingCount ?? 0);
         setPage(targetPage);
       } catch (error) {
         if (requestId !== requestIdRef.current) return;
@@ -215,5 +217,6 @@ export function useSellerOrderList() {
     retry,
     clientSearch,
     setClientSearch,
+    pendingCount,
   };
 }

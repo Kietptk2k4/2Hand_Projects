@@ -72,6 +72,18 @@ export const ORDER_PAYMENT_STATUS_LABELS = {
   EXPIRED: "Hết hạn",
 };
 
+export const PAYMENT_METHOD_LABELS = {
+  PAYOS: "PayOS",
+  COD: "COD",
+};
+
+export function formatOrderPaymentSubline(orderPaymentStatus, orderPaymentMethod) {
+  if (orderPaymentMethod === "COD") return "COD";
+  if (orderPaymentStatus === "PAID") return "Đã thanh toán";
+  if (orderPaymentStatus === "PENDING") return "Chờ thanh toán";
+  return ORDER_PAYMENT_STATUS_LABELS[orderPaymentStatus] || orderPaymentStatus || "";
+}
+
 export const SHIPMENT_FILTER_OPTIONS = [
   { value: "", label: "Tất cả vận chuyển" },
   ...VALID_SHIPMENT_STATUSES.map((status) => ({
@@ -83,11 +95,23 @@ export const SHIPMENT_FILTER_OPTIONS = [
 export const SELLER_ORDER_ERROR_MESSAGES = {
   "COMMERCE-401": "Phiên đăng nhập không hợp lệ.",
   "COMMERCE-400-PAGINATION": "Tham số phân trang không hợp lệ.",
-  "COMMERCE-400-VALIDATION": "Bộ lọc không hợp lệ.",
+  "COMMERCE-400-VALIDATION": "Chưa chọn mục đơn hoặc dữ liệu không hợp lệ.",
+  "COMMERCE-404-ORDER-ITEM": "Một hoặc nhiều mục đơn không tồn tại.",
+  "COMMERCE-409-ORDER-PROCESSING": "Đơn hàng chưa sẵn sàng xử lý.",
+  "COMMERCE-409-PAYMENT-STATE": "Thanh toán PayOS chưa hoàn tất.",
+  "COMMERCE-409-ORDER-ITEM-PROCESS": "Trạng thái mục đơn không cho phép thao tác này.",
   "COMMERCE-409-SELLER-SHOP": "Bạn chưa có cửa hàng. Hãy tạo shop trước khi xem đơn bán.",
 };
 
 export function mapSellerOrderApiError(error) {
   const code = String(error?.code ?? "");
   return SELLER_ORDER_ERROR_MESSAGES[code] || error?.message || "Có lỗi xảy ra. Vui lòng thử lại.";
+}
+
+export function buildProcessSuccessToast({ newlyProcessedCount, alreadyProcessingCount }) {
+  let message = `Đã xác nhận chuẩn bị ${newlyProcessedCount} mục đơn`;
+  if (alreadyProcessingCount > 0) {
+    message += ` (${alreadyProcessingCount} mục đã ở trạng thái chuẩn bị)`;
+  }
+  return message;
 }

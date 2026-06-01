@@ -1,13 +1,21 @@
 import { formatVndPrice } from "../../social/utils/formatPrice";
-import { ORDER_PAYMENT_STATUS_LABELS } from "../constants/sellerOrderConstants";
+import { formatOrderPaymentSubline } from "../constants/sellerOrderConstants";
 import { formatShortOrderId } from "../utils/formatOrderDate";
 import { SellerOrderItemStatusBadge } from "./SellerOrderItemStatusBadge";
 import { SellerOrderShipmentCell } from "./SellerOrderShipmentCell";
 
-export function SellerOrderTableRow({ item, selected, onToggleSelect, disabled }) {
+export function SellerOrderTableRow({
+  item,
+  selected,
+  onToggleSelect,
+  onPrepareRow,
+  disabled,
+  isProcessing,
+}) {
   const canSelect = item.itemStatus === "PENDING";
   const shortId = formatShortOrderId(item.orderId);
-  const paymentLabel = ORDER_PAYMENT_STATUS_LABELS[item.orderPaymentStatus] || item.orderPaymentStatus;
+  const paymentSubline = formatOrderPaymentSubline(item.orderPaymentStatus, item.orderPaymentMethod);
+  const isPaid = item.orderPaymentStatus === "PAID";
 
   const handleCopyOrderId = () => {
     if (!item.orderId) return;
@@ -15,7 +23,12 @@ export function SellerOrderTableRow({ item, selected, onToggleSelect, disabled }
   };
 
   return (
-    <tr className="border-b border-outline-variant/60 hover:bg-surface-container-low/50">
+    <tr
+      className={[
+        "border-b border-outline-variant/60 transition-colors",
+        selected ? "bg-surface-container-low" : "hover:bg-surface-container-low/50",
+      ].join(" ")}
+    >
       <td className="px-3 py-3">
         <input
           type="checkbox"
@@ -27,19 +40,14 @@ export function SellerOrderTableRow({ item, selected, onToggleSelect, disabled }
         />
       </td>
       <td className="px-3 py-3">
-        <div>
-          <button
-            type="button"
-            onClick={handleCopyOrderId}
-            className="font-mono text-label-md font-semibold text-primary hover:underline"
-            title="Sao chép mã đơn"
-          >
-            {shortId}
-          </button>
-          {paymentLabel ? (
-            <p className="mt-0.5 text-[11px] text-on-surface-variant">TT: {paymentLabel}</p>
-          ) : null}
-        </div>
+        <button
+          type="button"
+          onClick={handleCopyOrderId}
+          className="font-mono text-label-md font-semibold text-primary hover:underline"
+          title="Sao chép mã đơn"
+        >
+          {shortId}
+        </button>
       </td>
       <td className="px-3 py-3">
         <div className="flex min-w-0 items-center gap-3">
@@ -64,10 +72,37 @@ export function SellerOrderTableRow({ item, selected, onToggleSelect, disabled }
         {formatVndPrice(item.finalPrice)}
       </td>
       <td className="px-3 py-3">
-        <SellerOrderItemStatusBadge status={item.itemStatus} />
+        <div className="flex flex-col gap-1">
+          <SellerOrderItemStatusBadge status={item.itemStatus} />
+          <div className="flex items-center gap-1 text-[11px] text-on-surface-variant">
+            {isPaid ? (
+              <span
+                className="material-symbols-outlined text-[14px] text-emerald-600"
+                aria-hidden="true"
+              >
+                verified
+              </span>
+            ) : null}
+            <span>{paymentSubline}</span>
+          </div>
+        </div>
       </td>
       <td className="px-3 py-3">
         <SellerOrderShipmentCell shipmentSummary={item.shipmentSummary} />
+      </td>
+      <td className="px-3 py-3 text-right">
+        {canSelect ? (
+          <button
+            type="button"
+            disabled={disabled || isProcessing}
+            onClick={() => onPrepareRow?.(item)}
+            className="rounded-lg border border-primary px-2 py-1 text-label-sm font-medium text-primary hover:bg-surface-container-low disabled:opacity-50"
+          >
+            Chuẩn bị
+          </button>
+        ) : (
+          <span className="text-on-surface-variant">—</span>
+        )}
       </td>
     </tr>
   );
