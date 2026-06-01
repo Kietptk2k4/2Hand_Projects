@@ -4,6 +4,18 @@ export function isCartItemInvalid(item) {
   return !item?.inStock || Boolean(item?.unavailableReason);
 }
 
+export function isCartItemCheckoutEligible(item) {
+  return item?.status === "ACTIVE" && item?.inStock && !item?.unavailableReason;
+}
+
+export function getEligibleCartItems(cart) {
+  return (cart?.items || []).filter(isCartItemCheckoutEligible);
+}
+
+export function getEligibleCartItemIds(cart) {
+  return getEligibleCartItems(cart).map((item) => item.cartItemId);
+}
+
 export function getLineTotal(item) {
   return (item?.effectivePrice || 0) * (item?.quantity || 0);
 }

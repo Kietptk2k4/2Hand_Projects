@@ -1,8 +1,9 @@
 import { formatVndPrice } from "../../social/utils/formatPrice";
 import { getLineTotal, isCartItemInvalid } from "../utils/cartDisplay";
 
-export function CartOrderSummary({ cart, onCheckout, isMutating = false }) {
+export function CartOrderSummary({ cart, onCheckout, isMutating = false, canCheckout }) {
   const summary = cart?.summary;
+  const checkoutEnabled = canCheckout ?? summary?.canCheckout;
   const items = cart?.items || [];
   const invalidItems = items.filter(isCartItemInvalid);
   const invalidDisplayTotal = invalidItems.reduce((sum, item) => sum + getLineTotal(item), 0);
@@ -46,7 +47,7 @@ export function CartOrderSummary({ cart, onCheckout, isMutating = false }) {
 
       <button
         type="button"
-        disabled={!summary?.canCheckout || isMutating}
+        disabled={!checkoutEnabled || isMutating}
         onClick={onCheckout}
         className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary-container py-3 text-sm font-bold text-on-primary shadow-sm transition-colors hover:bg-[#0050cb] disabled:cursor-not-allowed disabled:opacity-50"
       >

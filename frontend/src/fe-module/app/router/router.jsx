@@ -23,6 +23,9 @@ import { CommerceCategoryProductsPage } from "../../features/commerce/pages/Comm
 import { CommerceSearchPage } from "../../features/commerce/pages/CommerceSearchPage";
 import { CommerceShopProductsPage } from "../../features/commerce/pages/CommerceShopProductsPage";
 import { CommerceCartPage } from "../../features/commerce/pages/CommerceCartPage";
+import { CommerceCheckoutPage } from "../../features/commerce/pages/CommerceCheckoutPage";
+import { CommerceCheckoutSuccessPage } from "../../features/commerce/pages/CommerceCheckoutSuccessPage";
+import { CommerceCheckoutPaymentResultPage } from "../../features/commerce/pages/CommerceCheckoutPaymentResultPage";
 import { CommerceProductReviewsPage } from "../../features/commerce/pages/CommerceProductReviewsPage";
 
 function HomePage() {
@@ -79,6 +82,15 @@ export const router = createBrowserRouter([
           { path: APP_ROUTES.socialHashtagPosts.slice(1), element: <SocialHashtagPostsPage /> },
           { path: APP_ROUTES.socialProfile.slice(1), element: <SocialProfilePage /> },
           { path: APP_ROUTES.commerceCart.slice(1), element: <CommerceCartPage /> },
+          { path: APP_ROUTES.commerceCheckout.slice(1), element: <CommerceCheckoutPage /> },
+          {
+            path: APP_ROUTES.commerceCheckoutPaymentResult.slice(1),
+            element: <CommerceCheckoutPaymentResultPage />,
+          },
+          {
+            path: APP_ROUTES.commerceCheckoutSuccess.slice(1),
+            element: <CommerceCheckoutSuccessPage />,
+          },
         ],
       },
     ],

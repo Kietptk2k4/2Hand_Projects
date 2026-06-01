@@ -8,10 +8,12 @@ import { CartSkeleton } from "../components/CartSkeleton";
 import { CartWarningsBanner } from "../components/CartWarningsBanner";
 import { CommerceShell } from "../components/CommerceShell";
 import { useCart } from "../hooks/useCart";
-import { getCartItemCountLabel, isCartItemInvalid } from "../utils/cartDisplay";
+import {
+  getCartItemCountLabel,
+  getEligibleCartItems,
+  isCartItemInvalid,
+} from "../utils/cartDisplay";
 import { APP_ROUTES } from "../../../shared/constants/routes";
-
-const COMING_SOON_MESSAGE = "Tính năng thanh toán đang được phát triển.";
 
 export function CommerceCartPage() {
   const navigate = useNavigate();
@@ -29,8 +31,21 @@ export function CommerceCartPage() {
   } = useCart();
 
   const showComingSoon = useCallback(() => {
-    setToastMessage(COMING_SOON_MESSAGE);
+    setToastMessage("Tính năng đang được phát triển.");
   }, []);
+
+  const goToCheckout = useCallback(() => {
+    if (!cart) return;
+    const eligible = getEligibleCartItems(cart);
+    if (!eligible.length) return;
+
+    navigate(APP_ROUTES.commerceCheckout, {
+      state: {
+        cartItemIds: eligible.map((item) => item.cartItemId),
+        cartItemsCache: eligible,
+      },
+    });
+  }, [cart, navigate]);
 
   const dismissToast = useCallback(() => {
     setToastMessage("");
@@ -60,6 +75,8 @@ export function CommerceCartPage() {
     },
     [updateQuantity]
   );
+
+  const eligibleCartItems = cart ? getEligibleCartItems(cart) : [];
 
   return (
     <CommerceShell onComingSoon={showComingSoon}>
@@ -112,7 +129,8 @@ export function CommerceCartPage() {
               <CartOrderSummary
                 cart={cart}
                 isMutating={isMutating}
-                onCheckout={showComingSoon}
+                canCheckout={eligibleCartItems.length > 0}
+                onCheckout={goToCheckout}
               />
             </div>
           </div>

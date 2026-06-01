@@ -24,5 +24,8 @@ export const APP_ROUTES = {
   commerceProductDetail: "/commerce/products/:productId",
   commerceProductReviews: "/commerce/products/:productId/reviews",
   commerceCart: "/commerce/cart",
+  commerceCheckout: "/commerce/checkout",
+  commerceCheckoutSuccess: "/commerce/checkout/success",
+  commerceCheckoutPaymentResult: "/commerce/checkout/payment-result",
 };
 
