@@ -17,6 +17,10 @@ import {
   mapShippingFeeResponse,
 } from "../utils/checkoutMapper";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
+import { useValidateCartItems } from "./useValidateCartItems";
+
+const CHECKOUT_VALIDATE_ERROR =
+  "Một hoặc nhiều sản phẩm không còn hợp lệ. Vui lòng quay lại giỏ hàng.";
 
 function isUnauthorizedError(error) {
   const code = String(error?.code ?? "");
@@ -38,6 +42,7 @@ export function clearCheckoutIdempotencyKey() {
 
 export function useCheckout(cartItemIds) {
   const { showSessionExpired } = useAuthSession();
+  const { validate } = useValidateCartItems();
 
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
@@ -103,6 +108,17 @@ export function useCheckout(cartItemIds) {
     setQuoteError("");
 
     try {
+      const validation = await validate(cartItemIds);
+      if (requestId !== requestIdRef.current) return;
+
+      if (!validation?.canCheckout) {
+        setQuote(null);
+        setShippingFee(null);
+        setQuoteError(CHECKOUT_VALIDATE_ERROR);
+        setStatus("ready");
+        return;
+      }
+
       const [quoteRaw, shippingRaw] = await Promise.all([
         fetchCheckoutQuote({
           cartItemIds,
@@ -134,7 +150,7 @@ export function useCheckout(cartItemIds) {
       setQuoteError(error?.message || "Không tính được tổng tiền. Vui lòng thử lại.");
       setStatus("ready");
     }
-  }, [cartItemIds, selectedAddressId, shipmentType, showSessionExpired]);
+  }, [cartItemIds, selectedAddressId, shipmentType, showSessionExpired, validate]);
 
   useEffect(() => {
     if (!addressesLoaded || !selectedAddressId || !cartItemIds?.length) return;
@@ -243,7 +259,8 @@ export function useCheckout(cartItemIds) {
     canSubmit:
       Boolean(selectedAddressId && quote && cartItemIds?.length) &&
       !isSubmitting &&
-      !isLoadingQuote,
+      !isLoadingQuote &&
+      !quoteError,
     selectAddress,
     selectShipment,
     selectPayment,

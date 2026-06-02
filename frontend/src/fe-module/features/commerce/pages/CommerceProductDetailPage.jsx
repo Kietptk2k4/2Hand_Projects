@@ -10,6 +10,7 @@ import { ProductDetailShopCard } from "../components/ProductDetailShopCard";
 import { ProductDetailSkeleton } from "../components/ProductDetailSkeleton";
 import { ProductMediaGallery } from "../components/ProductMediaGallery";
 import { ShopVacationBanner } from "../components/ShopVacationBanner";
+import { useCommerceAddToCart } from "../hooks/useCommerceAddToCart";
 import { useProductDetail } from "../hooks/useProductDetail";
 import { useProductReviewsPreview } from "../hooks/useProductReviewsPreview";
 import {
@@ -41,6 +42,16 @@ export function CommerceProductDetailPage() {
   const showComingSoon = useCallback(() => {
     setToastMessage(COMING_SOON_MESSAGE);
   }, []);
+
+  const { addToCart, isAddingToCart } = useCommerceAddToCart({
+    onSuccess: (message) => setToastMessage(message),
+    onError: (message) => setToastMessage(message),
+  });
+
+  const onAddToCart = useCallback(() => {
+    if (!product?.productId) return;
+    addToCart(product.productId, 1);
+  }, [addToCart, product?.productId]);
 
   const dismissToast = useCallback(() => {
     setToastMessage("");
@@ -156,7 +167,17 @@ export function CommerceProductDetailPage() {
               </div>
 
               <div className="lg:col-span-4">
-                <ProductDetailActionCard product={product} onComingSoon={showComingSoon} />
+                <ProductDetailActionCard
+                  product={product}
+                  onComingSoon={showComingSoon}
+                  onAddToCart={onAddToCart}
+                  isAddingToCart={isAddingToCart}
+                />
+                <p className="mt-2 text-center text-xs text-on-surface-variant">
+                  <Link to={APP_ROUTES.commerceCart} className="text-primary hover:underline">
+                    Xem giỏ hàng
+                  </Link>
+                </p>
                 <ProductDetailShopCard
                   product={product}
                   onVisitShop={visitShop}

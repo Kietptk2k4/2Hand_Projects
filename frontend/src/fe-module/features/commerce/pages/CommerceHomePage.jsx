@@ -7,6 +7,7 @@ import { CommerceShell } from "../components/CommerceShell";
 import { ProductCard } from "../components/ProductCard";
 import { ProductListSkeleton } from "../components/ProductListSkeleton";
 import { ProductListSortSelect } from "../components/ProductListSortSelect";
+import { useCommerceAddToCart } from "../hooks/useCommerceAddToCart";
 import { useProductList } from "../hooks/useProductList";
 import { buildCommerceCategoryPath, buildCommerceShopPath } from "../utils/commerceRoutes";
 import { buildCommerceSearchPath } from "../utils/commerceSearchRoutes";
@@ -35,6 +36,11 @@ export function CommerceHomePage() {
   const showComingSoon = useCallback(() => {
     setToastMessage(COMING_SOON_MESSAGE);
   }, []);
+
+  const { addToCart, isAddingProduct } = useCommerceAddToCart({
+    onSuccess: (message) => setToastMessage(message),
+    onError: (message) => setToastMessage(message),
+  });
 
   const dismissToast = useCallback(() => {
     setToastMessage("");
@@ -152,6 +158,8 @@ export function CommerceHomePage() {
                   onOpenProduct={openProduct}
                   onOpenShop={openShop}
                   onComingSoon={showComingSoon}
+                  onAddToCart={addToCart}
+                  isAddingToCart={isAddingProduct(product.productId)}
                 />
             ))}
           </div>

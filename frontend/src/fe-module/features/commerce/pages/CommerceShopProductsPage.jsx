@@ -8,6 +8,7 @@ import { ShopProductsHeader } from "../components/ShopProductsHeader";
 import { ShopStorefrontHero } from "../components/ShopStorefrontHero";
 import { ShopStorefrontHeroSkeleton } from "../components/ShopStorefrontHeroSkeleton";
 import { ShopVacationBanner } from "../components/ShopVacationBanner";
+import { useCommerceAddToCart } from "../hooks/useCommerceAddToCart";
 import { useShopProducts } from "../hooks/useShopProducts";
 import { buildCommerceShopPath } from "../utils/commerceRoutes";
 import { APP_ROUTES } from "../../../shared/constants/routes";
@@ -37,6 +38,11 @@ export function CommerceShopProductsPage() {
   const showComingSoon = useCallback(() => {
     setToastMessage(COMING_SOON_MESSAGE);
   }, []);
+
+  const { addToCart, isAddingProduct } = useCommerceAddToCart({
+    onSuccess: (message) => setToastMessage(message),
+    onError: (message) => setToastMessage(message),
+  });
 
   const dismissToast = useCallback(() => {
     setToastMessage("");
@@ -148,6 +154,8 @@ export function CommerceShopProductsPage() {
                     onOpenProduct={openProduct}
                     onOpenShop={openShop}
                     onComingSoon={showComingSoon}
+                    onAddToCart={addToCart}
+                    isAddingToCart={isAddingProduct(product.productId)}
                     disabledActions={shop?.shopVacation}
                   />
                 ))}

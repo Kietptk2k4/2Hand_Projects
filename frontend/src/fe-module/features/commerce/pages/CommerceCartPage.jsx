@@ -2,12 +2,14 @@ import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FeedToast } from "../../social/components/FeedToast";
 import { CartEmptyState } from "../components/CartEmptyState";
+import { CartInvalidItemsBanner } from "../components/CartInvalidItemsBanner";
 import { CartItemRow } from "../components/CartItemRow";
 import { CartOrderSummary } from "../components/CartOrderSummary";
 import { CartSkeleton } from "../components/CartSkeleton";
 import { CartWarningsBanner } from "../components/CartWarningsBanner";
 import { CommerceShell } from "../components/CommerceShell";
 import { useCart } from "../hooks/useCart";
+import { useValidateCartItems } from "../hooks/useValidateCartItems";
 import {
   getCartItemCountLabel,
   getEligibleCartItems,
@@ -15,9 +17,13 @@ import {
 } from "../utils/cartDisplay";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
+const CHECKOUT_BLOCKED_TOAST = "Không thể thanh toán. Vui lòng kiểm tra lại giỏ hàng.";
+
 export function CommerceCartPage() {
   const navigate = useNavigate();
   const [toastMessage, setToastMessage] = useState("");
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const { validate, isValidating } = useValidateCartItems();
   const {
     cart,
     isLoading,
@@ -28,24 +34,47 @@ export function CommerceCartPage() {
     updateQuantity,
     removeItem,
     retry,
+    revalidate,
   } = useCart();
 
   const showComingSoon = useCallback(() => {
     setToastMessage("Tính năng đang được phát triển.");
   }, []);
 
-  const goToCheckout = useCallback(() => {
+  const goToCheckout = useCallback(async () => {
     if (!cart) return;
-    const eligible = getEligibleCartItems(cart);
-    if (!eligible.length) return;
 
-    navigate(APP_ROUTES.commerceCheckout, {
-      state: {
-        cartItemIds: eligible.map((item) => item.cartItemId),
-        cartItemsCache: eligible,
-      },
-    });
-  }, [cart, navigate]);
+    const eligible = getEligibleCartItems(cart);
+    if (!eligible.length) {
+      setToastMessage(CHECKOUT_BLOCKED_TOAST);
+      return;
+    }
+
+    setIsCheckingOut(true);
+    try {
+      const eligibleIds = eligible.map((item) => item.cartItemId);
+      const result = await validate(eligibleIds);
+      if (!result?.canCheckout) {
+        await revalidate(eligibleIds);
+        setToastMessage(CHECKOUT_BLOCKED_TOAST);
+        return;
+      }
+
+      const validIds = result.validItems.map((entry) => entry.cartItemId);
+      const validItems = cart.items.filter((item) => validIds.includes(item.cartItemId));
+
+      navigate(APP_ROUTES.commerceCheckout, {
+        state: {
+          cartItemIds: validIds,
+          cartItemsCache: validItems,
+        },
+      });
+    } catch {
+      setToastMessage(CHECKOUT_BLOCKED_TOAST);
+    } finally {
+      setIsCheckingOut(false);
+    }
+  }, [cart, navigate, revalidate, validate]);
 
   const dismissToast = useCallback(() => {
     setToastMessage("");
@@ -77,6 +106,9 @@ export function CommerceCartPage() {
   );
 
   const eligibleCartItems = cart ? getEligibleCartItems(cart) : [];
+  const canCheckout = Boolean(
+    cart?.summary?.canCheckout && eligibleCartItems.length > 0 && !isValidating
+  );
 
   return (
     <CommerceShell onComingSoon={showComingSoon}>
@@ -109,6 +141,7 @@ export function CommerceCartPage() {
       {!isLoading && !errorMessage && cart && !isEmpty ? (
         <>
           <CartWarningsBanner warnings={cart.summary.warnings} />
+          <CartInvalidItemsBanner items={cart.items} />
 
           <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
             <div className="flex flex-col gap-4 lg:col-span-8">
@@ -128,8 +161,8 @@ export function CommerceCartPage() {
             <div className="lg:col-span-4">
               <CartOrderSummary
                 cart={cart}
-                isMutating={isMutating}
-                canCheckout={eligibleCartItems.length > 0}
+                isMutating={isMutating || isCheckingOut || isValidating}
+                canCheckout={canCheckout}
                 onCheckout={goToCheckout}
               />
             </div>

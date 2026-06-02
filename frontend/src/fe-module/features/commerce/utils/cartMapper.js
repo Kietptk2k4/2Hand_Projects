@@ -1,3 +1,53 @@
+function pick(obj, snakeKey, camelKey) {
+  return obj?.[snakeKey] ?? obj?.[camelKey];
+}
+
+function mapCartProductSnapshot(product) {
+  if (!product) return null;
+
+  return {
+    productId: pick(product, "product_id", "productId"),
+    sellerId: pick(product, "seller_id", "sellerId"),
+    shopId: pick(product, "shop_id", "shopId"),
+    productName: pick(product, "product_name", "productName"),
+    imageUrl: pick(product, "image_url", "imageUrl"),
+    price: product.price,
+    salePrice: pick(product, "sale_price", "salePrice"),
+    effectivePrice: pick(product, "effective_price", "effectivePrice"),
+    inStock: pick(product, "in_stock", "inStock"),
+    availableQuantity: pick(product, "available_quantity", "availableQuantity"),
+  };
+}
+
+export function mapAddProductToCartResponse(data) {
+  if (!data) return null;
+
+  return {
+    cartId: pick(data, "cart_id", "cartId"),
+    cartItemId: pick(data, "cart_item_id", "cartItemId"),
+    productId: pick(data, "product_id", "productId"),
+    quantity: data.quantity,
+    status: data.status,
+    product: mapCartProductSnapshot(data.product),
+  };
+}
+
+export function mapValidateCartItemsResponse(data) {
+  if (!data) return null;
+
+  const mapEntry = (entry) => ({
+    cartItemId: pick(entry, "cart_item_id", "cartItemId"),
+    reason: entry.reason,
+    currentStatus: pick(entry, "current_status", "currentStatus"),
+  });
+
+  return {
+    validItems: (data.valid_items ?? data.validItems ?? []).map(mapEntry),
+    invalidItems: (data.invalid_items ?? data.invalidItems ?? []).map(mapEntry),
+    canCheckout: Boolean(data.can_checkout ?? data.canCheckout),
+  };
+}
+
 export function mapCartResponse(data) {
   if (!data) return null;
 

@@ -14,7 +14,7 @@ export function CartItemRow({
   const isOutOfStock =
     !item.inStock || item.unavailableReason === "OUT_OF_STOCK";
   const isVacation = item.unavailableReason === "SHOP_ON_VACATION";
-  const unavailableLabel = getUnavailableLabel(item);
+  const unavailableLabel = item.validateMessage || getUnavailableLabel(item);
   const lineTotal = getLineTotal(item);
 
   const borderClass = isOutOfStock

@@ -2,7 +2,12 @@ import { getConditionLabel } from "../constants/productDetailConstants";
 import { formatVndPrice } from "../../social/utils/formatPrice";
 import { getStockLabel, isAddToCartDisabled, isProductOnSale } from "../utils/productDetailDisplay";
 
-export function ProductDetailActionCard({ product, onComingSoon }) {
+export function ProductDetailActionCard({
+  product,
+  onComingSoon,
+  onAddToCart,
+  isAddingToCart = false,
+}) {
   if (!product) return null;
 
   const addDisabled = isAddToCartDisabled(product);
@@ -35,13 +40,13 @@ export function ProductDetailActionCard({ product, onComingSoon }) {
 
       <button
         type="button"
-        disabled={addDisabled}
+        disabled={addDisabled || isAddingToCart}
         onClick={() => {
-          if (!addDisabled) onComingSoon?.();
+          if (!addDisabled && !isAddingToCart) onAddToCart?.();
         }}
         className="mb-3 w-full rounded-lg bg-primary py-3 text-label-md font-semibold text-on-primary transition-colors hover:bg-[#0050cb] disabled:cursor-not-allowed disabled:opacity-50"
       >
-        Thêm vào giỏ
+        {isAddingToCart ? "Đang thêm..." : "Thêm vào giỏ"}
       </button>
 
       <div className="flex gap-2">

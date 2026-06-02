@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import { fetchCart, removeCartItem, updateCartItemQuantity } from "../api/cartApi";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { mapCartResponse } from "../utils/cartMapper";
+import { applyValidationToCart } from "../utils/cartValidationMerge";
 import { isCartItemInvalid } from "../utils/cartDisplay";
+import { useValidateCartItems } from "./useValidateCartItems";
 
 function isUnauthorizedError(error) {
   const code = String(error?.code ?? "");
@@ -11,11 +13,33 @@ function isUnauthorizedError(error) {
 
 export function useCart() {
   const { showSessionExpired } = useAuthSession();
+  const { validate } = useValidateCartItems();
   const [cart, setCart] = useState(null);
+  const [validation, setValidation] = useState(null);
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [isMutating, setIsMutating] = useState(false);
   const [mutatingItemId, setMutatingItemId] = useState(null);
+
+  const syncCart = useCallback(
+    async (raw, { cartItemIds } = {}) => {
+      let mapped = mapCartResponse(raw);
+      if (!mapped?.items?.length) {
+        setValidation(null);
+        setCart(mapped);
+        return mapped;
+      }
+
+      const result = await validate(cartItemIds);
+      if (result) {
+        mapped = applyValidationToCart(mapped, result);
+        setValidation(result);
+      }
+      setCart(mapped);
+      return mapped;
+    },
+    [validate]
+  );
 
   const load = useCallback(async () => {
     setStatus("loading");
@@ -23,7 +47,7 @@ export function useCart() {
 
     try {
       const raw = await fetchCart();
-      setCart(mapCartResponse(raw));
+      await syncCart(raw);
       setStatus("ready");
     } catch (error) {
       if (isUnauthorizedError(error)) {
@@ -33,7 +57,7 @@ export function useCart() {
       setStatus("error");
       setErrorMessage(error?.message || "Không tải được giỏ hàng. Vui lòng thử lại.");
     }
-  }, [showSessionExpired]);
+  }, [showSessionExpired, syncCart]);
 
   useEffect(() => {
     load();
@@ -54,7 +78,7 @@ export function useCart() {
 
       try {
         const raw = await updateCartItemQuantity(cartItemId, quantity);
-        setCart(mapCartResponse(raw));
+        await syncCart(raw);
       } catch (error) {
         if (isUnauthorizedError(error)) {
           showSessionExpired(error?.message);
@@ -67,7 +91,7 @@ export function useCart() {
         setMutatingItemId(null);
       }
     },
-    [cart?.items, load, showSessionExpired]
+    [cart?.items, load, showSessionExpired, syncCart]
   );
 
   const removeItem = useCallback(
@@ -78,7 +102,7 @@ export function useCart() {
 
       try {
         const raw = await removeCartItem(cartItemId);
-        setCart(mapCartResponse(raw));
+        await syncCart(raw);
       } catch (error) {
         if (isUnauthorizedError(error)) {
           showSessionExpired(error?.message);
@@ -91,11 +115,29 @@ export function useCart() {
         setMutatingItemId(null);
       }
     },
-    [load, showSessionExpired]
+    [load, showSessionExpired, syncCart]
+  );
+
+  const revalidate = useCallback(
+    async (cartItemIds) => {
+      if (!cart?.items?.length) return null;
+      try {
+        const result = await validate(cartItemIds);
+        if (result) {
+          setCart((prev) => (prev ? applyValidationToCart(prev, result) : prev));
+          setValidation(result);
+        }
+        return result;
+      } catch {
+        return null;
+      }
+    },
+    [cart?.items?.length, validate]
   );
 
   return {
     cart,
+    validation,
     status,
     errorMessage,
     isLoading: status === "loading",
@@ -106,5 +148,6 @@ export function useCart() {
     removeItem,
     retry: load,
     refetch: load,
+    revalidate,
   };
 }

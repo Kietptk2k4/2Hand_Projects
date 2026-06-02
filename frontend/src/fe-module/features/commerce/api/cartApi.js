@@ -10,6 +10,28 @@ export async function fetchCart() {
   }
 }
 
+export async function addProductToCart({ productId, quantity }) {
+  try {
+    const response = await commerceApiClient.post("/commerce/api/v1/cart/items", {
+      product_id: productId,
+      quantity,
+    });
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function validateCartItems(cartItemIds) {
+  try {
+    const body = cartItemIds?.length ? { cart_item_ids: cartItemIds } : {};
+    const response = await commerceApiClient.post("/commerce/api/v1/cart/validate", body);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export async function updateCartItemQuantity(cartItemId, quantity) {
   try {
     const response = await commerceApiClient.patch(`/commerce/api/v1/cart/items/${cartItemId}`, {

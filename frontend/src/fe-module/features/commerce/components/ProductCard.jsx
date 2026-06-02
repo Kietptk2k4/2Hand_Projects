@@ -15,6 +15,8 @@ export function ProductCard({
   onOpenProduct,
   onOpenShop,
   onComingSoon,
+  onAddToCart,
+  isAddingToCart = false,
   disabledActions = false,
 }) {
   const isOnSale =
@@ -22,7 +24,7 @@ export function ProductCard({
     product.price != null &&
     Number(product.salePrice) < Number(product.price);
   const isOutOfStock = !product.inStock || product.status === "OUT_OF_STOCK";
-  const addDisabled = disabledActions || isOutOfStock;
+  const addDisabled = disabledActions || isOutOfStock || isAddingToCart;
 
   const canOpenProduct = Boolean(product?.productId && onOpenProduct);
 
@@ -165,14 +167,16 @@ export function ProductCard({
             disabled={addDisabled}
             onClick={(event) => {
               event.stopPropagation();
-              onComingSoon?.();
+              if (!isOutOfStock && !disabledActions) {
+                onAddToCart?.(product.productId);
+              }
             }}
             className="relative z-10 flex items-center gap-1 rounded-md bg-primary-container px-3 py-1.5 text-label-md text-on-primary-container transition-colors hover:bg-primary hover:text-on-primary disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
               add_shopping_cart
             </span>
-            Thêm
+            {isAddingToCart ? "..." : "Thêm"}
           </button>
         </div>
       </div>
