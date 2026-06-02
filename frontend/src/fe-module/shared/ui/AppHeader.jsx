@@ -11,7 +11,6 @@ import { HeaderAccountMenu } from "./HeaderAccountMenu.jsx";
 const DEFAULT_AVATAR_URL = "https://i.pravatar.cc/96?img=11";
 
 const NAV_LINKS = [
-  { label: "Dashboard", to: APP_ROUTES.home },
   { label: "Social", to: APP_ROUTES.socialFeed },
   { label: "Commerce", to: APP_ROUTES.commerceHome },
   { label: "Admin", to: APP_ROUTES.admin },
@@ -160,7 +159,7 @@ export function AppHeader({ className = "" }) {
     >
       <div className="mx-auto flex h-16 w-full max-w-[1280px] items-center justify-between gap-3 px-4 md:gap-6 md:px-8">
         <div className="flex min-w-0 flex-1 items-center gap-4 md:gap-6">
-          <Link to={APP_ROUTES.home} className="shrink-0 text-xl font-bold text-header-brand md:text-2xl">
+          <Link to={APP_ROUTES.socialFeed} className="shrink-0 text-xl font-bold text-header-brand md:text-2xl">
             2Hands
           </Link>
 

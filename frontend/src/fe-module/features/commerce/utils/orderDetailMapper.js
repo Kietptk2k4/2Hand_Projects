@@ -73,6 +73,35 @@ function mapShipments(shipments) {
   }));
 }
 
+function pick(obj, camel, snake) {
+  return obj?.[camel] ?? obj?.[snake];
+}
+
+export function mapCancelOrderResponse(data) {
+  if (!data) return null;
+
+  return {
+    orderId: pick(data, "orderId", "order_id"),
+    status: data.status,
+    cancelledAt: pick(data, "cancelledAt", "cancelled_at"),
+    alreadyCancelled: Boolean(data.already_cancelled ?? data.alreadyCancelled),
+  };
+}
+
+export function mapConfirmOrderReceivedResponse(data) {
+  if (!data) return null;
+
+  return {
+    orderId: pick(data, "orderId", "order_id"),
+    orderStatus: pick(data, "orderStatus", "order_status"),
+    paymentStatus: pick(data, "paymentStatus", "payment_status"),
+    itemsCompleted: data.items_completed ?? data.itemsCompleted ?? 0,
+    paymentMarkedPaid: Boolean(data.payment_marked_paid ?? data.paymentMarkedPaid),
+    orderCompleted: Boolean(data.order_completed ?? data.orderCompleted),
+    alreadyConfirmed: Boolean(data.already_confirmed ?? data.alreadyConfirmed),
+  };
+}
+
 export function mapOrderDetailResponse(data) {
   if (!data) return null;
 

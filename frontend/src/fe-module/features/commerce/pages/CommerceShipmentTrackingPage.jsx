@@ -1,18 +1,26 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { FeedToast } from "../../social/components/FeedToast";
 import { CommerceShell } from "../components/CommerceShell";
+import { ConfirmOrderReceivedDialog } from "../components/ConfirmOrderReceivedDialog";
 import { OrderDetailShippingAddress } from "../components/OrderDetailShippingAddress";
 import { ShipmentTrackingHero } from "../components/ShipmentTrackingHero";
 import { ShipmentTrackingItemsSection } from "../components/ShipmentTrackingItemsSection";
 import { ShipmentTrackingSkeleton } from "../components/ShipmentTrackingSkeleton";
 import { ShipmentTrackingSummary } from "../components/ShipmentTrackingSummary";
 import { ShipmentTrackingTimeline } from "../components/ShipmentTrackingTimeline";
+import { buildConfirmOrderReceivedSuccessToast } from "../constants/orderActionConstants";
+import { useConfirmOrderReceived } from "../hooks/useConfirmOrderReceived";
+import { useOrderDetail } from "../hooks/useOrderDetail";
 import { useShipmentTrackingPage } from "../hooks/useShipmentTrackingPage";
+import { canConfirmOrderReceived } from "../utils/orderActionDisplay";
 import { formatShortOrderId } from "../utils/formatOrderDate";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
 export function CommerceShipmentTrackingPage() {
   const { orderId, shipmentId } = useParams();
+  const [toastMessage, setToastMessage] = useState("");
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const {
     detail,
@@ -29,15 +37,45 @@ export function CommerceShipmentTrackingPage() {
     retry,
   } = useShipmentTrackingPage(orderId, shipmentId);
 
+  const { order, retry: retryOrder } = useOrderDetail(orderId);
+
+  const handleRefreshAll = useCallback(() => {
+    refresh();
+    retryOrder();
+  }, [refresh, retryOrder]);
+
+  const handleConfirmSuccess = useCallback(
+    (result) => {
+      setShowConfirmDialog(false);
+      setToastMessage(buildConfirmOrderReceivedSuccessToast(result));
+      handleRefreshAll();
+    },
+    [handleRefreshAll],
+  );
+
+  const {
+    isConfirming,
+    errorMessage: confirmError,
+    confirm,
+    clearError: clearConfirmError,
+  } = useConfirmOrderReceived({ onSuccess: handleConfirmSuccess });
+
   const orderDetailPath = APP_ROUTES.commerceOrderDetail.replace(":orderId", orderId || "");
   const carrier = detail?.carrier || tracking?.carrier;
   const subtitleParts = [carrier, orderId ? formatShortOrderId(orderId) : null].filter(Boolean);
 
-  const handleRefresh = useCallback(() => {
-    refresh();
-  }, [refresh]);
+  const showConfirmBanner = shipmentDelivered && !orderCompleted && canConfirmOrderReceived(order);
 
-  const showDisclaimer = shipmentDelivered && !orderCompleted;
+  const handleCloseConfirmDialog = useCallback(() => {
+    if (isConfirming) return;
+    setShowConfirmDialog(false);
+    clearConfirmError();
+  }, [clearConfirmError, isConfirming]);
+
+  const handleSubmitConfirm = useCallback(async () => {
+    if (!orderId) return;
+    await confirm(orderId);
+  }, [confirm, orderId]);
 
   return (
     <CommerceShell>
@@ -114,8 +152,8 @@ export function CommerceShipmentTrackingPage() {
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
-                    onClick={handleRefresh}
-                    disabled={isRefreshing}
+                    onClick={handleRefreshAll}
+                    disabled={isRefreshing || isConfirming}
                     className="rounded-lg border border-outline-variant px-4 py-2 text-label-md text-on-surface hover:bg-surface-container-low disabled:opacity-60"
                   >
                     {isRefreshing ? "Đang làm mới..." : "Làm mới"}
@@ -130,12 +168,23 @@ export function CommerceShipmentTrackingPage() {
               </div>
             </header>
 
-            {showDisclaimer ? (
+            {showConfirmBanner ? (
               <div
-                className="mb-6 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-body-sm text-on-surface"
+                className="mb-6 flex flex-col gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                 role="status"
               >
-                Hàng đã được giao. Vui lòng xác nhận đã nhận hàng tại trang chi tiết đơn.
+                <p className="text-body-sm text-on-surface">
+                  Hàng đã được giao. Xác nhận đã nhận đủ hàng để hoàn tất đơn và có thể đánh giá
+                  sản phẩm.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmDialog(true)}
+                  disabled={isConfirming}
+                  className="shrink-0 rounded-lg bg-primary px-4 py-2 text-label-md font-medium text-on-primary hover:bg-[#0050cb] disabled:opacity-60"
+                >
+                  Xác nhận đã nhận hàng
+                </button>
               </div>
             ) : null}
 
@@ -160,6 +209,16 @@ export function CommerceShipmentTrackingPage() {
           </>
         ) : null}
       </div>
+
+      <ConfirmOrderReceivedDialog
+        open={showConfirmDialog}
+        isSubmitting={isConfirming}
+        submitError={confirmError}
+        onClose={handleCloseConfirmDialog}
+        onConfirm={handleSubmitConfirm}
+      />
+
+      <FeedToast message={toastMessage} onDismiss={() => setToastMessage("")} />
     </CommerceShell>
   );
 }

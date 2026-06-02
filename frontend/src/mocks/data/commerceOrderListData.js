@@ -1,4 +1,7 @@
 import { MOCK_CART_DEMO_USER_ID } from "./commerceCartData";
+
+/** QA: PROCESSING + PAID + shipment DELIVERED — test confirm-received */
+export const MOCK_ORDER_CONFIRM_RECEIVED_ID = "o2000000-0000-4000-8000-000000000009";
 import { buildDetailFromSummary } from "./commerceOrderDetailData";
 import { mockCommerceProducts } from "./commerceProductListData";
 import { hasReviewForOrderItem } from "./commerceProductReviewIndex";
@@ -230,6 +233,26 @@ function seedDemoOrders() {
         currency: "VND",
       },
     }),
+    buildOrder({
+      orderId: MOCK_ORDER_CONFIRM_RECEIVED_ID,
+      buyerId: userId,
+      orderStatus: "PROCESSING",
+      orderPaymentStatus: "PAID",
+      paymentMethod: "PAYOS",
+      totalAmount: 1650000,
+      finalAmount: 1680000,
+      createdAt: daysAgoIso(6),
+      itemCount: 2,
+      productIndex: 9,
+      payment: {
+        payment_id: "p2000000-0000-4000-8000-000000000009",
+        status: "PAID",
+        payment_method: "PAYOS",
+        amount: 1680000,
+        currency: "VND",
+      },
+      shipmentSummary: { shipment_count: 1, statuses: ["DELIVERED"] },
+    }),
   ];
 
   ordersByUserId.set(userId, orders);
@@ -309,6 +332,18 @@ export function validateOrderListQuery({ page, limit, status }) {
 export function findOrderSummaryForUser(userId, orderId) {
   const list = ordersByUserId.get(userId) || [];
   return list.find((order) => order.order_id === orderId) || null;
+}
+
+export function updateOrderSummaryForUser(userId, orderId, updater) {
+  const list = ordersByUserId.get(userId) || [];
+  const index = list.findIndex((order) => order.order_id === orderId);
+  if (index < 0) return null;
+
+  const current = list[index];
+  const next = typeof updater === "function" ? updater(current) : { ...current, ...updater };
+  list[index] = { ...next, updated_at: new Date().toISOString() };
+  ordersByUserId.set(userId, list);
+  return list[index];
 }
 
 export function getOrdersForUser(userId, { page, limit, status }) {

@@ -42,7 +42,7 @@ export function LoginPage() {
   const redirectUrl = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const value = params.get("redirectUrl");
-    return isSafeRedirectUrl(value) ? value : APP_ROUTES.home;
+    return isSafeRedirectUrl(value) ? value : APP_ROUTES.socialFeed;
   }, [location.search]);
 
   useEffect(() => {

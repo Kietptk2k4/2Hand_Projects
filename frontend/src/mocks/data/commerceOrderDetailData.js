@@ -1,4 +1,7 @@
-import { findOrderSummaryForUser } from "./commerceOrderListData";
+import {
+  findOrderSummaryForUser,
+  updateOrderSummaryForUser,
+} from "./commerceOrderListData";
 import { mockCommerceProducts } from "./commerceProductListData";
 import { getReviewIdForOrderItem } from "./commerceProductReviewIndex";
 
@@ -353,4 +356,155 @@ export function getOrderTrackStatusForUser(userId, orderId) {
     return { error: "COMMERCE-404-ORDER", status: 404 };
   }
   return { data: buildTrackStatusFromSummary(summary) };
+}
+
+const CANCELLABLE_ORDER_STATUSES = new Set(["CREATED", "AWAITING_PAYMENT"]);
+const INACTIVE_SHIPMENT_STATUSES = new Set(["PENDING", "CANCELLED"]);
+const BLOCKING_SHIPMENT_STATUSES = new Set([
+  "PICKING_UP",
+  "READY_TO_SHIP",
+  "SHIPPED",
+  "DELIVERED",
+  "IN_TRANSIT",
+  "OUT_FOR_DELIVERY",
+]);
+
+function hasBlockingShipment(summary) {
+  const statuses = summary.shipment_summary?.statuses || [];
+  return statuses.some((status) => BLOCKING_SHIPMENT_STATUSES.has(status));
+}
+
+export function cancelOrderForUser(userId, orderId, reason) {
+  const summary = findOrderSummaryForUser(userId, orderId);
+  if (!summary) {
+    return { error: "COMMERCE-404-ORDER", status: 404 };
+  }
+
+  if (summary.order_status === "CANCELLED") {
+    return {
+      data: {
+        order_id: summary.order_id,
+        status: "CANCELLED",
+        cancelled_at: summary.updated_at || summary.created_at,
+        already_cancelled: true,
+      },
+      message: "Don hang da duoc huy truoc do.",
+    };
+  }
+
+  if (
+    !CANCELLABLE_ORDER_STATUSES.has(summary.order_status) ||
+    summary.order_payment_status !== "PENDING" ||
+    hasBlockingShipment(summary)
+  ) {
+    return { error: "COMMERCE-409-ORDER-NOT-CANCELLABLE", status: 409 };
+  }
+
+  const cancelledAt = new Date().toISOString();
+  const auditNote = String(reason ?? "").trim() || "BUYER_CANCELLED";
+
+  updateOrderSummaryForUser(userId, orderId, (order) => ({
+    ...order,
+    order_status: "CANCELLED",
+    order_payment_status: "CANCELLED",
+    completed_at: null,
+    payment: order.payment
+      ? { ...order.payment, status: "CANCELLED" }
+      : null,
+    shipment_summary: order.shipment_summary?.shipment_count
+      ? {
+          shipment_count: order.shipment_summary.shipment_count,
+          statuses: order.shipment_summary.statuses.map(() => "CANCELLED"),
+        }
+      : { shipment_count: 0, statuses: [] },
+    _cancel_note: auditNote,
+  }));
+
+  return {
+    data: {
+      order_id: orderId,
+      status: "CANCELLED",
+      cancelled_at: cancelledAt,
+    },
+    message: "Huy don hang thanh cong.",
+  };
+}
+
+export function confirmOrderReceivedForUser(userId, orderId) {
+  const summary = findOrderSummaryForUser(userId, orderId);
+  if (!summary) {
+    return { error: "COMMERCE-404-ORDER", status: 404 };
+  }
+
+  if (summary.order_status === "CANCELLED") {
+    return { error: "COMMERCE-409-ORDER-NOT-CANCELLABLE", status: 409 };
+  }
+
+  if (summary.order_status === "COMPLETED") {
+    return {
+      data: {
+        order_id: summary.order_id,
+        order_status: "COMPLETED",
+        payment_status: summary.order_payment_status,
+        items_completed: 0,
+        payment_marked_paid: false,
+        order_completed: true,
+        already_confirmed: true,
+      },
+      message: "Don hang da duoc xac nhan nhan hang truoc do.",
+    };
+  }
+
+  const detail = buildDetailFromSummary(summary);
+  const deliveredItems = detail.items.filter((item) => item.status === "DELIVERED");
+
+  if (!deliveredItems.length) {
+    return { error: "COMMERCE-409-ORDER-ITEMS", status: 409 };
+  }
+
+  const isCod = summary.payment_method === "COD";
+  const paymentPending =
+    summary.order_payment_status === "PENDING" || summary.payment?.status === "PENDING";
+
+  if (!isCod && summary.order_payment_status !== "PAID") {
+    return { error: "COMMERCE-409-PAYMENT-STATE", status: 409 };
+  }
+
+  const now = new Date().toISOString();
+  let paymentMarkedPaid = false;
+
+  updateOrderSummaryForUser(userId, orderId, (order) => {
+    const nextPayment =
+      isCod && paymentPending
+        ? {
+            ...(order.payment || {}),
+            status: "PAID",
+          }
+        : order.payment;
+
+    paymentMarkedPaid = Boolean(isCod && paymentPending);
+
+    return {
+      ...order,
+      order_payment_status: "PAID",
+      payment: nextPayment,
+      order_status: "COMPLETED",
+      completed_at: now,
+      shipment_summary: order.shipment_summary,
+    };
+  });
+
+  const itemsCompleted = deliveredItems.length;
+
+  return {
+    data: {
+      order_id: orderId,
+      order_status: "COMPLETED",
+      payment_status: "PAID",
+      items_completed: itemsCompleted,
+      payment_marked_paid: paymentMarkedPaid,
+      order_completed: true,
+    },
+    message: "Xac nhan da nhan hang thanh cong.",
+  };
 }

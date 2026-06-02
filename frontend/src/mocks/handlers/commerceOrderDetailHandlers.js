@@ -1,5 +1,7 @@
 import { delay, http, HttpResponse } from "msw";
 import {
+  cancelOrderForUser,
+  confirmOrderReceivedForUser,
   getOrderDetailForUser,
   getOrderTrackStatusForUser,
 } from "../data/commerceOrderDetailData";
@@ -68,4 +70,63 @@ export const commerceOrderDetailHandlers = [
       status: 200,
     });
   }),
+
+  http.post("*/commerce/api/v1/orders/:orderId/cancel", async ({ params, request }) => {
+    await delay(350);
+    const auth = requireAuth(request);
+    if (auth.error) return auth.error;
+
+    const orderId = params.orderId;
+    if (!isValidOrderId(orderId)) {
+      return notFoundOrder();
+    }
+
+    let body = {};
+    try {
+      const text = await request.text();
+      if (text) body = JSON.parse(text);
+    } catch {
+      return HttpResponse.json(apiError("COMMERCE-400-VALIDATION", "Du lieu khong hop le."), {
+        status: 400,
+      });
+    }
+
+    const result = cancelOrderForUser(auth.user.id, orderId, body?.reason);
+    if (result.error) {
+      return HttpResponse.json(apiError(result.error, "Khong the huy don hang."), {
+        status: result.status,
+      });
+    }
+
+    return HttpResponse.json(apiSuccess(200, result.message, result.data), { status: 200 });
+  }),
+
+  http.post(
+    "*/commerce/api/v1/orders/:orderId/confirm-received",
+    async ({ params, request }) => {
+      await delay(350);
+      const auth = requireAuth(request);
+      if (auth.error) return auth.error;
+
+      const orderId = params.orderId;
+      if (!isValidOrderId(orderId)) {
+        return notFoundOrder();
+      }
+
+      const result = confirmOrderReceivedForUser(auth.user.id, orderId);
+      if (result.error) {
+        const messages = {
+          "COMMERCE-409-ORDER-ITEMS": "Khong co san pham nao dang cho xac nhan nhan hang.",
+          "COMMERCE-409-PAYMENT-STATE": "Thanh toan chua hoan tat. Khong the xac nhan nhan hang.",
+          "COMMERCE-409-ORDER-NOT-CANCELLABLE": "Don hang da bi huy.",
+        };
+        return HttpResponse.json(
+          apiError(result.error, messages[result.error] || "Khong the xac nhan nhan hang."),
+          { status: result.status },
+        );
+      }
+
+      return HttpResponse.json(apiSuccess(200, result.message, result.data), { status: 200 });
+    },
+  ),
 ];

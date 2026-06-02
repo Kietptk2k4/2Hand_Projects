@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import { APP_ROUTES } from "../../shared/constants/routes";
 import { AppLayout } from "./AppLayout";
 import { AuthGuard } from "./AuthGuard";
@@ -43,23 +43,12 @@ import { CommerceAdminShopModerationPage } from "../../features/commerce/pages/C
 import { CommerceAdminReviewModerationPage } from "../../features/commerce/pages/CommerceAdminReviewModerationPage";
 import { CommerceAdminProductRemovalPage } from "../../features/commerce/pages/CommerceAdminProductRemovalPage";
 
-function HomePage() {
-  return (
-    <section className="rounded-2xl border border-outline-variant/40 bg-surface-container p-6">
-      <h1 className="text-2xl font-semibold text-on-surface">Frontend Module Scaffold Ready</h1>
-      <p className="mt-2 text-sm text-on-surface-variant">
-        Bat dau implement tung flow auth theo `docs/api-FE_behavior/*`.
-      </p>
-    </section>
-  );
-}
-
 export const router = createBrowserRouter([
   {
     path: APP_ROUTES.home,
     element: <AppLayout />,
     children: [
-      { index: true, element: <HomePage /> },
+      { index: true, element: <Navigate to={APP_ROUTES.socialFeed} replace /> },
       { path: APP_ROUTES.login.slice(1), element: <LoginPage /> },
       { path: APP_ROUTES.register.slice(1), element: <RegisterPage /> },
       { path: APP_ROUTES.forgotPassword.slice(1), element: <ForgotPasswordPage /> },
