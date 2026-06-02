@@ -6,7 +6,7 @@ import { CheckoutPaymentMethod } from "../components/CheckoutPaymentMethod";
 import { CheckoutQuoteSummary } from "../components/CheckoutQuoteSummary";
 import { CheckoutShipmentOptions } from "../components/CheckoutShipmentOptions";
 import { CheckoutSkeleton } from "../components/CheckoutSkeleton";
-import { CreateUserAddressModal } from "../components/CreateUserAddressModal";
+import { UserAddressFormModal } from "../components/UserAddressFormModal";
 import { CommerceShell } from "../components/CommerceShell";
 import { QUOTE_DISCLAIMER } from "../constants/checkoutConstants";
 import { useCheckout } from "../hooks/useCheckout";
@@ -208,7 +208,8 @@ export function CommerceCheckoutPage() {
         ) : null}
       </div>
 
-      <CreateUserAddressModal
+      <UserAddressFormModal
+        mode="create"
         open={isAddressModalOpen}
         onClose={closeAddressModal}
         onSubmit={handleCreateAddress}

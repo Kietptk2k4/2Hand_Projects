@@ -29,6 +29,7 @@ export const APP_ROUTES = {
   commerceReviewCreate: "/commerce/reviews/new",
   commerceReviewEdit: "/commerce/reviews/:reviewId/edit",
   commerceCart: "/commerce/cart",
+  commerceAddresses: "/commerce/addresses",
   commerceOrders: "/commerce/orders",
   commerceOrderDetail: "/commerce/orders/:orderId",
   commerceShipmentTracking: "/commerce/orders/:orderId/shipments/:shipmentId",

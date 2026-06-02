@@ -23,6 +23,7 @@ import { CommerceCategoryProductsPage } from "../../features/commerce/pages/Comm
 import { CommerceSearchPage } from "../../features/commerce/pages/CommerceSearchPage";
 import { CommerceShopProductsPage } from "../../features/commerce/pages/CommerceShopProductsPage";
 import { CommerceCartPage } from "../../features/commerce/pages/CommerceCartPage";
+import { CommerceUserAddressesPage } from "../../features/commerce/pages/CommerceUserAddressesPage";
 import { CommerceCheckoutPage } from "../../features/commerce/pages/CommerceCheckoutPage";
 import { CommerceCheckoutSuccessPage } from "../../features/commerce/pages/CommerceCheckoutSuccessPage";
 import { CommerceCheckoutPaymentResultPage } from "../../features/commerce/pages/CommerceCheckoutPaymentResultPage";
@@ -98,6 +99,7 @@ export const router = createBrowserRouter([
           { path: APP_ROUTES.socialHashtagPosts.slice(1), element: <SocialHashtagPostsPage /> },
           { path: APP_ROUTES.socialProfile.slice(1), element: <SocialProfilePage /> },
           { path: APP_ROUTES.commerceCart.slice(1), element: <CommerceCartPage /> },
+          { path: APP_ROUTES.commerceAddresses.slice(1), element: <CommerceUserAddressesPage /> },
           { path: APP_ROUTES.commerceOrders.slice(1), element: <CommerceOrderListPage /> },
           {
             path: APP_ROUTES.commerceOrderDetail.slice(1),

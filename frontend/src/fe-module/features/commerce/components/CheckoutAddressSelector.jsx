@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+import { APP_ROUTES } from "../../../shared/constants/routes";
 import { formatAddressHeader, formatAddressLine } from "../utils/formatAddressLine";
 
 export function CheckoutAddressSelector({
@@ -8,15 +10,23 @@ export function CheckoutAddressSelector({
 }) {
   return (
     <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
-      <div className="mb-4 flex items-center justify-between gap-2">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-headline-sm font-semibold text-on-surface">Địa chỉ giao hàng</h2>
-        <button
-          type="button"
-          onClick={onAddNew}
-          className="text-sm font-medium text-primary hover:underline"
-        >
-          Thêm địa chỉ mới
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            to={APP_ROUTES.commerceAddresses}
+            className="text-sm font-medium text-on-surface-variant hover:text-primary hover:underline"
+          >
+            Quản lý địa chỉ
+          </Link>
+          <button
+            type="button"
+            onClick={onAddNew}
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            Thêm địa chỉ mới
+          </button>
+        </div>
       </div>
 
       {addresses.length === 0 ? (

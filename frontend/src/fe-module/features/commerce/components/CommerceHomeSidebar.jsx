@@ -15,6 +15,13 @@ const SIDEBAR_LINKS = [
     requiresAuth: true,
   },
   {
+    id: "addresses",
+    icon: "location_on",
+    label: "Địa chỉ giao hàng",
+    route: APP_ROUTES.commerceAddresses,
+    requiresAuth: true,
+  },
+  {
     id: "create-shop",
     icon: "store",
     label: "Tạo shop",
@@ -72,6 +79,9 @@ function isLinkActive(link, pathname) {
       pathname === APP_ROUTES.commerceOrders ||
       pathname.startsWith(`${APP_ROUTES.commerceOrders}/`)
     );
+  }
+  if (link.id === "addresses") {
+    return pathname === APP_ROUTES.commerceAddresses;
   }
   if (link.id === "create-shop") {
     return pathname === APP_ROUTES.commerceCreateShop;
