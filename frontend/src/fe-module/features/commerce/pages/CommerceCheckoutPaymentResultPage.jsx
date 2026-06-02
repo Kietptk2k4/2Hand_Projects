@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { createPayOsCheckoutUrl } from "../api/paymentApi";
 import { CommerceShell } from "../components/CommerceShell";
 import { PaymentStatusPanel } from "../components/PaymentStatusPanel";
-import { PAYMENT_STATUS } from "../constants/paymentConstants";
+import { canRetryPayment } from "../constants/paymentStatusLabels";
 import { usePaymentStatus } from "../hooks/usePaymentStatus";
 import { mapPayOsCheckoutUrlResponse } from "../utils/paymentMapper";
 import { APP_ROUTES } from "../../../shared/constants/routes";
@@ -16,6 +16,8 @@ export function CommerceCheckoutPaymentResultPage() {
   const [searchParams] = useSearchParams();
   const paymentId = searchParams.get("paymentId")?.trim() || "";
   const mockPaid = searchParams.get("mockPaid") === "1";
+  const mockFailed = searchParams.get("mockFailed") === "1";
+  const mockExpired = searchParams.get("mockExpired") === "1";
   const [isRetrying, setIsRetrying] = useState(false);
 
   const isValidPaymentId = useMemo(() => UUID_REGEX.test(paymentId), [paymentId]);
@@ -41,7 +43,14 @@ export function CommerceCheckoutPaymentResultPage() {
   } = usePaymentStatus(isValidPaymentId ? paymentId : null, {
     poll: true,
     mockPaid,
+    mockFailed,
+    mockExpired,
   });
+
+  const showRetry = useMemo(
+    () => canRetryPayment({ paymentStatus: status, orderStatus }),
+    [status, orderStatus]
+  );
 
   const handleRetryPayment = useCallback(async () => {
     if (!paymentId) return;
@@ -69,11 +78,6 @@ export function CommerceCheckoutPaymentResultPage() {
     return null;
   }
 
-  const showRetry =
-    status === PAYMENT_STATUS.PENDING ||
-    status === PAYMENT_STATUS.EXPIRED ||
-    status === PAYMENT_STATUS.FAILED;
-
   return (
     <CommerceShell showHomeSidebar={false}>
       <div className="mx-auto max-w-lg rounded-xl border border-outline-variant bg-surface-container-lowest p-8 text-center shadow-sm">
@@ -87,6 +91,7 @@ export function CommerceCheckoutPaymentResultPage() {
           orderPaymentStatus={orderPaymentStatus}
           isLoading={isLoading}
           error={error}
+          showRetry={showRetry}
           onRetryPayment={showRetry ? handleRetryPayment : undefined}
           isRetrying={isRetrying}
         />

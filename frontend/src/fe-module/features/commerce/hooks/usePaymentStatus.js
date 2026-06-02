@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchPaymentStatus } from "../api/paymentApi";
 import {
+  isTerminalPaymentStatus,
   PAYMENT_STATUS,
   PAYMENT_STATUS_POLL_INTERVAL_MS,
   PAYMENT_STATUS_POLL_MAX_ATTEMPTS,
@@ -13,28 +14,40 @@ function isUnauthorizedError(error) {
   return code === "401" || code.includes("401");
 }
 
-export function usePaymentStatus(paymentId, { poll = false, mockPaid = false } = {}) {
+export function usePaymentStatus(
+  paymentId,
+  { poll = false, mockPaid = false, mockFailed = false, mockExpired = false } = {}
+) {
   const { showSessionExpired } = useAuthSession();
   const [payment, setPayment] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const pollAttemptsRef = useRef(0);
   const mockPaidSentRef = useRef(false);
+  const mockFailedSentRef = useRef(false);
+  const mockExpiredSentRef = useRef(false);
 
   const refresh = useCallback(
-    async ({ applyMockPaid = false } = {}) => {
+    async ({ applyMocks = false } = {}) => {
       if (!paymentId) return null;
 
       setIsLoading(true);
       setError("");
 
-      const shouldMockPaid = applyMockPaid && mockPaid && !mockPaidSentRef.current;
+      const shouldMockPaid = applyMocks && mockPaid && !mockPaidSentRef.current;
+      const shouldMockFailed = applyMocks && mockFailed && !mockFailedSentRef.current;
+      const shouldMockExpired = applyMocks && mockExpired && !mockExpiredSentRef.current;
 
       try {
-        const raw = await fetchPaymentStatus(paymentId, { mockPaid: shouldMockPaid });
-        if (shouldMockPaid) {
-          mockPaidSentRef.current = true;
-        }
+        const raw = await fetchPaymentStatus(paymentId, {
+          mockPaid: shouldMockPaid,
+          mockFailed: shouldMockFailed,
+          mockExpired: shouldMockExpired,
+        });
+        if (shouldMockPaid) mockPaidSentRef.current = true;
+        if (shouldMockFailed) mockFailedSentRef.current = true;
+        if (shouldMockExpired) mockExpiredSentRef.current = true;
+
         const mapped = mapPaymentStatusResponse(raw);
         setPayment(mapped);
         return mapped;
@@ -49,19 +62,21 @@ export function usePaymentStatus(paymentId, { poll = false, mockPaid = false } =
         setIsLoading(false);
       }
     },
-    [paymentId, mockPaid, showSessionExpired]
+    [paymentId, mockPaid, mockFailed, mockExpired, showSessionExpired]
   );
 
   useEffect(() => {
     if (!paymentId) return;
     pollAttemptsRef.current = 0;
     mockPaidSentRef.current = false;
-    refresh({ applyMockPaid: true });
+    mockFailedSentRef.current = false;
+    mockExpiredSentRef.current = false;
+    refresh({ applyMocks: true });
   }, [paymentId, refresh]);
 
   useEffect(() => {
     if (!poll || !paymentId) return;
-    if (payment?.status !== PAYMENT_STATUS.PENDING) return;
+    if (isTerminalPaymentStatus(payment?.status)) return;
 
     const intervalId = setInterval(async () => {
       if (pollAttemptsRef.current >= PAYMENT_STATUS_POLL_MAX_ATTEMPTS) {
@@ -71,7 +86,7 @@ export function usePaymentStatus(paymentId, { poll = false, mockPaid = false } =
       pollAttemptsRef.current += 1;
       const latest = await refresh();
       if (
-        latest?.status !== PAYMENT_STATUS.PENDING ||
+        isTerminalPaymentStatus(latest?.status) ||
         pollAttemptsRef.current >= PAYMENT_STATUS_POLL_MAX_ATTEMPTS
       ) {
         clearInterval(intervalId);

@@ -1,13 +1,85 @@
+import { updateOrderSummaryForUser } from "./commerceOrderListData";
+import { syncSellerItemsForBuyerOrderStatus } from "./commerceSellerOrderData";
+
 const paymentsById = new Map();
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const FAILURE_VARIANTS = {
+  FAILED: { paymentStatus: "FAILED", orderPaymentStatus: "FAILED" },
+  CANCELLED: { paymentStatus: "CANCELLED", orderPaymentStatus: "CANCELLED" },
+  EXPIRED: { paymentStatus: "EXPIRED", orderPaymentStatus: "EXPIRED" },
+};
 
 function buildMockPayOsUrl(paymentId) {
   if (typeof window !== "undefined" && window.location?.origin) {
     return `${window.location.origin}/commerce/checkout/payment-result?paymentId=${paymentId}`;
   }
   return `https://pay.payos.vn/web/mock?paymentId=${paymentId}`;
+}
+
+function syncOrderForPaymentFailure(userId, orderId, { orderPaymentStatus, paymentStatus }) {
+  if (!orderId) return;
+
+  updateOrderSummaryForUser(userId, orderId, (order) => ({
+    ...order,
+    order_status: "CANCELLED",
+    order_payment_status: orderPaymentStatus,
+    payment: order.payment
+      ? {
+          ...order.payment,
+          status: paymentStatus,
+        }
+      : order.payment,
+    shipment_summary: order.shipment_summary?.shipment_count
+      ? {
+          ...order.shipment_summary,
+          statuses: order.shipment_summary.statuses.map(() => "CANCELLED"),
+        }
+      : { shipment_count: 0, statuses: [] },
+  }));
+
+  syncSellerItemsForBuyerOrderStatus(orderId, {
+    orderStatus: "CANCELLED",
+    orderPaymentStatus,
+    paymentStatus,
+    itemStatus: "CANCELLED",
+  });
+}
+
+/** Alias theo tên use case AutoCancel / HandlePaymentFailure. */
+export function applyPaymentFailure(paymentId, userId, terminalStatus = "EXPIRED") {
+  return applyPaymentFailureForQa(paymentId, userId, { variant: terminalStatus });
+}
+
+/**
+ * Mô phỏng HandlePaymentFailure / AutoCancelUnpaidOrder outcome cho MSW QA.
+ */
+export function applyPaymentFailureForQa(paymentId, userId, { variant = "FAILED" } = {}) {
+  const payment = findPayment(paymentId, userId);
+  if (!payment) return null;
+
+  const mapping = FAILURE_VARIANTS[variant] || FAILURE_VARIANTS.FAILED;
+
+  if (payment.status === "PENDING") {
+    payment.status = mapping.paymentStatus;
+    payment.order_status = "CANCELLED";
+    payment.order_payment_status = mapping.orderPaymentStatus;
+    payment.payos_checkout_url = null;
+    payment.checkout_url_expired_at = null;
+    syncOrderForPaymentFailure(userId, payment.order_id, {
+      orderPaymentStatus: mapping.orderPaymentStatus,
+      paymentStatus: mapping.paymentStatus,
+    });
+  }
+
+  return payment;
+}
+
+/** @deprecated Dùng applyPaymentFailureForQa */
+export function markPaymentFailedForQa(paymentId, userId) {
+  return applyPaymentFailureForQa(paymentId, userId, { variant: "FAILED" });
 }
 
 export function registerPaymentFromCheckout(userId, checkoutResult) {
@@ -94,7 +166,11 @@ export function createOrGetPayOsUrl(paymentId, userId) {
   };
 }
 
-export function getPaymentStatus(paymentId, userId, { mockPaid = false } = {}) {
+export function getPaymentStatus(
+  paymentId,
+  userId,
+  { mockPaid = false, mockFailed = false, mockExpired = false } = {}
+) {
   const payment = findPayment(paymentId, userId);
   if (!payment) {
     return { error: "COMMERCE-404-PAYMENT", status: 404 };
@@ -107,46 +183,50 @@ export function getPaymentStatus(paymentId, userId, { mockPaid = false } = {}) {
     payment.order_payment_status = "PAID";
     payment.payos_checkout_url = null;
     payment.checkout_url_expired_at = null;
+    updateOrderSummaryForUser(userId, payment.order_id, (order) => ({
+      ...order,
+      order_status: "PROCESSING",
+      order_payment_status: "PAID",
+      payment: order.payment ? { ...order.payment, status: "PAID" } : order.payment,
+    }));
+  } else if (mockFailed && payment.status === "PENDING") {
+    applyPaymentFailureForQa(paymentId, userId, { variant: "FAILED" });
+  } else if (mockExpired && payment.status === "PENDING") {
+    applyPaymentFailureForQa(paymentId, userId, { variant: "EXPIRED" });
   }
+
+  const current = findPayment(paymentId, userId) || payment;
 
   let payosCheckoutUrl = null;
   const now = Date.now();
-  const urlExpiry = payment.checkout_url_expired_at
-    ? new Date(payment.checkout_url_expired_at).getTime()
+  const urlExpiry = current.checkout_url_expired_at
+    ? new Date(current.checkout_url_expired_at).getTime()
     : 0;
 
   if (
-    payment.status === "PENDING" &&
-    payment.payment_method === "PAYOS" &&
-    payment.payos_checkout_url &&
+    current.status === "PENDING" &&
+    current.payment_method === "PAYOS" &&
+    current.payos_checkout_url &&
     urlExpiry > now
   ) {
-    payosCheckoutUrl = payment.payos_checkout_url;
+    payosCheckoutUrl = current.payos_checkout_url;
   }
 
   return {
     data: {
-      payment_id: payment.payment_id,
-      order_id: payment.order_id,
-      payment_method: payment.payment_method,
-      amount: payment.amount,
-      currency: payment.currency,
-      status: payment.status,
-      paid_at: payment.paid_at,
-      expired_at: payment.expired_at,
+      payment_id: current.payment_id,
+      order_id: current.order_id,
+      payment_method: current.payment_method,
+      amount: current.amount,
+      currency: current.currency,
+      status: current.status,
+      paid_at: current.paid_at,
+      expired_at: current.expired_at,
       payos_checkout_url: payosCheckoutUrl,
-      order_status: payment.order_status,
-      order_payment_status: payment.order_payment_status,
+      order_status: current.order_status,
+      order_payment_status: current.order_payment_status,
     },
   };
-}
-
-export function markPaymentFailedForQa(paymentId, userId) {
-  const payment = findPayment(paymentId, userId);
-  if (!payment) return null;
-  payment.status = "FAILED";
-  payment.payos_checkout_url = null;
-  return payment;
 }
 
 export { UUID_REGEX };

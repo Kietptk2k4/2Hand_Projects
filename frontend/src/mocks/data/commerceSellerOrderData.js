@@ -501,6 +501,30 @@ export function processSellerOrderItemsForUser(userId, orderItemIds) {
   };
 }
 
+/** Keep seller rows aligned when buyer payment fails / auto-cancel (no new FE API). */
+export function syncSellerItemsForBuyerOrderStatus(
+  orderId,
+  { orderStatus, orderPaymentStatus, paymentStatus, itemStatus = "CANCELLED" },
+) {
+  const now = new Date().toISOString();
+  for (const row of sellerOrderItems) {
+    if (row.order_id !== orderId) continue;
+    row.order_status = orderStatus;
+    row.order_payment_status = orderPaymentStatus;
+    row.item_status = itemStatus;
+    row.item_updated_at = now;
+    if (row.payment) {
+      row.payment = { ...row.payment, status: paymentStatus };
+    }
+    if (row.shipment_summary) {
+      row.shipment_summary = {
+        ...row.shipment_summary,
+        status: "CANCELLED",
+      };
+    }
+  }
+}
+
 export function listSellerOrdersForUser(userId, { page, limit, status, shipment_status }) {
   const shop = getShopBySellerId(userId);
   if (!shop) {

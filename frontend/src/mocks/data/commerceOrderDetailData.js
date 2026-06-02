@@ -140,6 +140,14 @@ function buildPaymentTimeline(summary, createdAt) {
     });
   }
 
+  if (summary.order_payment_status === "EXPIRED") {
+    events.push({
+      old_status: "PENDING",
+      new_status: "EXPIRED",
+      occurred_at: offsetIso(createdAt, 2),
+    });
+  }
+
   return events;
 }
 

@@ -73,8 +73,14 @@ export const commercePaymentHandlers = [
 
     const url = new URL(request.url);
     const mockPaid = url.searchParams.get("mockPaid") === "1";
+    const mockFailed = url.searchParams.get("mockFailed") === "1";
+    const mockExpired = url.searchParams.get("mockExpired") === "1";
 
-    const result = getPaymentStatus(paymentId, auth.user.id, { mockPaid });
+    const result = getPaymentStatus(paymentId, auth.user.id, {
+      mockPaid,
+      mockFailed,
+      mockExpired,
+    });
     if (result.error) return errorResponse(result);
 
     return HttpResponse.json(

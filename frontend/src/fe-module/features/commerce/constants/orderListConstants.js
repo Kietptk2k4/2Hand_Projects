@@ -28,6 +28,7 @@ export const ORDER_PAYMENT_STATUS_LABELS = {
   PENDING: "Chờ thanh toán",
   PAID: "Đã thanh toán",
   FAILED: "Thất bại",
+  CANCELLED: "Đã hủy",
   EXPIRED: "Hết hạn",
 };
 
@@ -48,5 +49,6 @@ export const PAYMENT_STATUS_BADGE_CLASS = {
   PENDING: "bg-amber-50 text-amber-800",
   PAID: "bg-emerald-50 text-emerald-800",
   FAILED: "bg-error-container/60 text-on-error-container",
+  CANCELLED: "bg-error-container/60 text-on-error-container",
   EXPIRED: "bg-surface-container-high text-on-surface-variant",
 };

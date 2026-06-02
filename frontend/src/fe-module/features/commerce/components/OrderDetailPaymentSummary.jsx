@@ -4,9 +4,15 @@ import {
   PAYMENT_METHOD_LABELS,
   PAYMENT_STATUS_BADGE_CLASS,
 } from "../constants/orderListConstants";
+import { isOrderCancelledDueToPayment } from "../constants/paymentStatusLabels";
 
 export function OrderDetailPaymentSummary({ order, shipments }) {
   if (!order) return null;
+
+  const showPaymentFailureNotice = isOrderCancelledDueToPayment(
+    order.orderStatus,
+    order.orderPaymentStatus
+  );
 
   const shippingFee =
     shipments?.reduce((sum, shipment) => sum + (shipment.shippingFee || 0), 0) ??
@@ -23,6 +29,12 @@ export function OrderDetailPaymentSummary({ order, shipments }) {
   return (
     <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm md:p-6">
       <h2 className="mb-4 text-headline-sm font-semibold text-on-surface">Tóm tắt thanh toán</h2>
+
+      {showPaymentFailureNotice ? (
+        <p className="mb-4 rounded-lg border border-error/20 bg-error-container/15 px-3 py-2 text-body-sm text-on-surface">
+          Đơn đã hủy do thanh toán không hoàn tất.
+        </p>
+      ) : null}
 
       <dl className="space-y-2 text-body-sm">
         <div className="flex justify-between text-on-surface-variant">
