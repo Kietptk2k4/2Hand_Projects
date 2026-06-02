@@ -49,6 +49,33 @@ export async function createProductReview({ orderItemId, rating, comment }) {
   }
 }
 
+export async function uploadReviewMedia(reviewId, files) {
+  const formData = new FormData();
+  files.forEach((file) => {
+    formData.append("files", file);
+  });
+
+  try {
+    const response = await commerceApiClient.post(
+      `/commerce/api/v1/reviews/${reviewId}/media`,
+      formData,
+      {
+        transformRequest: [
+          (data, headers) => {
+            if (headers) {
+              delete headers["Content-Type"];
+            }
+            return data;
+          },
+        ],
+      },
+    );
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export async function updateProductReview(reviewId, patch) {
   try {
     const body = {};

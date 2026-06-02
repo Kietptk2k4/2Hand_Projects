@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { StarRatingPicker } from "./StarRatingPicker";
+import { ReviewMediaPicker } from "./ReviewMediaPicker";
+import { MAX_REVIEW_MEDIA } from "../constants/reviewMediaConstants";
 import {
   MAX_COMMENT_LENGTH,
   RATING_MAX,
@@ -13,13 +15,18 @@ export function ProductReviewForm({
   mode = "create",
   initialRating = 0,
   initialComment = "",
+  existingMediaCount = 0,
+  maxMedia = MAX_REVIEW_MEDIA,
+  reviewStatus = "VISIBLE",
   onSubmit,
   onCancel,
   isSubmitting = false,
+  isUploading = false,
   apiError = "",
 }) {
   const [rating, setRating] = useState(initialRating);
   const [comment, setComment] = useState(initialComment);
+  const [pendingFiles, setPendingFiles] = useState([]);
   const [ratingError, setRatingError] = useState("");
   const [noChangesMessage, setNoChangesMessage] = useState("");
 
@@ -29,11 +36,16 @@ export function ProductReviewForm({
   }, [initialRating, initialComment]);
 
   const isEdit = mode === "edit";
+  const isBusy = isSubmitting || isUploading;
+  const canUploadMedia = reviewStatus === "VISIBLE";
 
-  const hasChanges = useMemo(() => {
+  const hasTextChanges = useMemo(() => {
     if (!isEdit) return true;
     return rating !== initialRating || comment !== initialComment;
   }, [comment, initialComment, initialRating, isEdit, rating]);
+
+  const hasPendingMedia = pendingFiles.length > 0;
+  const hasChanges = hasTextChanges || hasPendingMedia;
 
   const validate = useCallback(() => {
     if (!rating || rating < RATING_MIN || rating > RATING_MAX) {
@@ -63,12 +75,23 @@ export function ProductReviewForm({
           }
         : { rating, comment: comment.trim() || undefined };
 
-      await onSubmit?.(payload);
+      await onSubmit?.({ payload, pendingFiles });
     },
-    [comment, hasChanges, initialComment, initialRating, isEdit, onSubmit, rating, validate],
+    [
+      comment,
+      hasChanges,
+      initialComment,
+      initialRating,
+      isEdit,
+      onSubmit,
+      pendingFiles,
+      rating,
+      validate,
+    ],
   );
 
   const submitLabel = isEdit ? "Lưu thay đổi" : "Gửi đánh giá";
+  const submitDisabled = isBusy || (isEdit && !hasChanges);
 
   return (
     <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm md:p-6 lg:p-8">
@@ -88,7 +111,7 @@ export function ProductReviewForm({
           <label className="mb-2 block text-label-md font-medium text-on-surface">
             Đánh giá tổng thể <span className="text-error">*</span>
           </label>
-          <StarRatingPicker value={rating} onChange={setRating} disabled={isSubmitting} />
+          <StarRatingPicker value={rating} onChange={setRating} disabled={isBusy} />
           {ratingError ? <p className="mt-1 text-xs text-error">{ratingError}</p> : null}
         </div>
 
@@ -101,7 +124,7 @@ export function ProductReviewForm({
             rows={5}
             value={comment}
             onChange={(e) => setComment(e.target.value.slice(0, MAX_COMMENT_LENGTH))}
-            disabled={isSubmitting}
+            disabled={isBusy}
             placeholder="Bạn thích hoặc chưa hài lòng điều gì? Sản phẩm có đúng mô tả không?"
             className={textareaClass}
           />
@@ -117,16 +140,17 @@ export function ProductReviewForm({
           <label className="mb-2 block text-label-md font-medium text-on-surface">
             Ảnh / video đính kèm
           </label>
-          <div
-            className="relative rounded-lg border-2 border-dashed border-outline-variant bg-surface-container-low p-8 text-center opacity-60"
-            title="Tính năng upload ảnh/video sẽ có trong bản cập nhật"
-          >
-            <span className="material-symbols-outlined mb-2 text-4xl text-on-surface-variant" aria-hidden="true">
-              cloud_upload
-            </span>
-            <p className="text-label-md text-on-surface">Tính năng upload ảnh/video sẽ có trong bản cập nhật</p>
-            <p className="mt-1 text-body-sm text-on-surface-variant">Sắp có</p>
-          </div>
+          <ReviewMediaPicker
+            existingMediaCount={existingMediaCount}
+            maxMedia={maxMedia}
+            disabled={isBusy || !canUploadMedia}
+            onFilesChange={setPendingFiles}
+          />
+          {!canUploadMedia ? (
+            <p className="mt-2 text-body-sm text-error">
+              Đánh giá đã bị ẩn — không thể thêm ảnh/video.
+            </p>
+          ) : null}
         </div>
 
         {apiError ? (
@@ -145,17 +169,17 @@ export function ProductReviewForm({
           <button
             type="button"
             onClick={onCancel}
-            disabled={isSubmitting}
+            disabled={isBusy}
             className="rounded-lg px-4 py-2.5 text-label-md text-on-surface-variant hover:bg-surface-container-low disabled:opacity-50"
           >
             Hủy
           </button>
           <button
             type="submit"
-            disabled={isSubmitting || (isEdit && !hasChanges)}
+            disabled={submitDisabled}
             className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-label-md font-medium text-on-primary hover:bg-[#0050cb] disabled:opacity-50"
           >
-            {isSubmitting ? (
+            {isBusy ? (
               <span className="h-5 w-5 animate-spin rounded-full border-2 border-on-primary border-t-transparent" />
             ) : (
               submitLabel

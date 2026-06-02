@@ -146,6 +146,8 @@ export function useReviewFormPage({ mode, reviewId }) {
     orderItemId: context?.orderItemId || orderItemId,
     productId: context?.productId,
     orderId: context?.orderId,
+    reviewStatus: context?.status ?? "VISIBLE",
+    existingMediaCount: context?.mediaCount ?? 0,
     isLoading: status === "loading",
     isError: status === "error",
     errorMessage,

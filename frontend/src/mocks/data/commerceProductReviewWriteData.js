@@ -27,6 +27,13 @@ import {
 } from "./commerceProductReviewIndex";
 
 const reviewsById = new Map();
+const mediaByReviewId = new Map();
+
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm"];
+const MAX_REVIEW_MEDIA = 10;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
 
 function toPublicListReview(review) {
   return {
@@ -156,6 +163,83 @@ export function getMyReviewForProduct(userId, productId) {
   };
 }
 
+export function getMediaCountForReview(reviewId) {
+  return (mediaByReviewId.get(reviewId) || []).length;
+}
+
+function resolveMediaType(mimeType) {
+  if (ALLOWED_IMAGE_TYPES.includes(mimeType)) return "IMAGE";
+  if (ALLOWED_VIDEO_TYPES.includes(mimeType)) return "VIDEO";
+  return null;
+}
+
+function validateMockFile(file) {
+  const type = file?.type;
+  const size = file?.size ?? 0;
+  const mediaType = resolveMediaType(type);
+
+  if (!mediaType) {
+    return { error: "COMMERCE-400-MEDIA-TYPE", status: 400 };
+  }
+  if (size <= 0) {
+    return { error: "COMMERCE-400-VALIDATION", status: 400 };
+  }
+  if (mediaType === "IMAGE" && size > MAX_IMAGE_BYTES) {
+    return { error: "COMMERCE-400-MEDIA-SIZE", status: 400 };
+  }
+  if (mediaType === "VIDEO" && size > MAX_VIDEO_BYTES) {
+    return { error: "COMMERCE-400-MEDIA-SIZE", status: 400 };
+  }
+
+  return { mediaType };
+}
+
+export function uploadReviewMediaForBuyer(userId, reviewId, files) {
+  const review = reviewsById.get(reviewId);
+  if (!review || review.buyer_id !== userId) {
+    return { error: "COMMERCE-404-REVIEW", status: 404 };
+  }
+
+  if (review.status !== "VISIBLE") {
+    return { error: "COMMERCE-409-REVIEW-VISIBLE", status: 409 };
+  }
+
+  const list = files || [];
+  if (!list.length) {
+    return { error: "COMMERCE-400-VALIDATION", status: 400 };
+  }
+
+  const existing = mediaByReviewId.get(reviewId) || [];
+  if (existing.length + list.length > MAX_REVIEW_MEDIA) {
+    return { error: "COMMERCE-409-REVIEW-MEDIA", status: 409 };
+  }
+
+  const uploaded = [];
+
+  for (const file of list) {
+    const check = validateMockFile(file);
+    if (check.error) {
+      return check;
+    }
+
+    const mediaId = `rm-${crypto.randomUUID().replace(/-/g, "").slice(0, 12)}`;
+    const seed = mediaId.slice(-6);
+    const isVideo = check.mediaType === "VIDEO";
+
+    uploaded.push({
+      id: mediaId,
+      url: isVideo
+        ? `https://picsum.photos/seed/review-vid-${seed}/320/240`
+        : `https://picsum.photos/seed/review-img-${seed}/320/240`,
+      type: check.mediaType,
+    });
+  }
+
+  mediaByReviewId.set(reviewId, [...existing, ...uploaded]);
+
+  return { data: { media: uploaded } };
+}
+
 export function getReviewForBuyer(userId, reviewId) {
   const review = reviewsById.get(reviewId);
   if (!review || review.buyer_id !== userId) {
@@ -180,6 +264,7 @@ export function getReviewForBuyer(userId, reviewId) {
       status: review.status,
       created_at: review.created_at,
       updated_at: review.updated_at,
+      media_count: getMediaCountForReview(reviewId),
       product_name_snapshot: item.product_name_snapshot,
       image_snapshot: item.image_snapshot,
       shop_name_snapshot: item.shop_name_snapshot,

@@ -5,9 +5,11 @@ import { CommerceShell } from "../components/CommerceShell";
 import { ProductReviewForm } from "../components/ProductReviewForm";
 import { ProductReviewFormSkeleton } from "../components/ProductReviewFormSkeleton";
 import { ProductReviewSummaryAside } from "../components/ProductReviewSummaryAside";
+import { REVIEW_MEDIA_TOAST } from "../constants/reviewMediaConstants";
 import { useCreateProductReview } from "../hooks/useCreateProductReview";
 import { useReviewFormPage } from "../hooks/useReviewFormPage";
 import { useUpdateProductReview } from "../hooks/useUpdateProductReview";
+import { useUploadReviewMedia } from "../hooks/useUploadReviewMedia";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
 export function CommerceWriteEditReviewPage() {
@@ -26,6 +28,8 @@ export function CommerceWriteEditReviewPage() {
     orderItemId,
     productId,
     orderId,
+    reviewStatus,
+    existingMediaCount,
     isLoading,
     isError,
     errorMessage,
@@ -34,6 +38,7 @@ export function CommerceWriteEditReviewPage() {
 
   const { submit: submitCreate, isSubmitting: isCreating } = useCreateProductReview();
   const { submit: submitUpdate, isSubmitting: isUpdating } = useUpdateProductReview();
+  const { upload, isUploading } = useUploadReviewMedia();
 
   const [apiError, setApiError] = useState("");
   const [toastMessage, setToastMessage] = useState("");
@@ -53,6 +58,13 @@ export function CommerceWriteEditReviewPage() {
     return APP_ROUTES.commerceOrders;
   }, [orderId, productId, returnTo]);
 
+  const reviewsPath = useMemo(() => {
+    if (productId) {
+      return APP_ROUTES.commerceProductReviews.replace(":productId", productId);
+    }
+    return backPath;
+  }, [backPath, productId]);
+
   const handleCancel = useCallback(() => {
     if (window.history.length > 1) {
       navigate(-1);
@@ -61,9 +73,16 @@ export function CommerceWriteEditReviewPage() {
     navigate(backPath);
   }, [backPath, navigate]);
 
+  const navigateAfterSuccess = useCallback(() => {
+    setTimeout(() => {
+      navigate(reviewsPath, { replace: true });
+    }, 600);
+  }, [navigate, reviewsPath]);
+
   const handleSubmit = useCallback(
-    async (payload) => {
+    async ({ payload, pendingFiles }) => {
       setApiError("");
+
       try {
         if (mode === "create") {
           const targetOrderItemId = orderItemId || orderItemIdFromQuery;
@@ -78,38 +97,53 @@ export function CommerceWriteEditReviewPage() {
             comment: payload.comment,
           });
 
-          setToastMessage("Đánh giá của bạn đã được gửi thành công.");
+          let toast = "Đánh giá của bạn đã được gửi thành công.";
 
-          const reviewsPath = productId
-            ? APP_ROUTES.commerceProductReviews.replace(":productId", productId)
-            : backPath;
+          if (pendingFiles?.length && result?.reviewId) {
+            try {
+              await upload(result.reviewId, pendingFiles);
+              toast = `${toast} ${REVIEW_MEDIA_TOAST.uploadSuccess}`;
+            } catch {
+              toast = REVIEW_MEDIA_TOAST.uploadPartialFail;
+            }
+          }
 
-          setTimeout(() => {
-            navigate(reviewsPath, { replace: true });
-          }, 600);
-          void result;
+          setToastMessage(toast);
+          navigateAfterSuccess();
           return;
         }
 
-        await submitUpdate(reviewIdParam, payload);
-        setToastMessage("Đã cập nhật đánh giá.");
-        setTimeout(() => {
-          navigate(backPath, { replace: true });
-        }, 600);
+        const hasPatch = payload && Object.keys(payload).length > 0;
+
+        if (hasPatch) {
+          await submitUpdate(reviewIdParam, payload);
+        }
+
+        if (pendingFiles?.length) {
+          await upload(reviewIdParam, pendingFiles);
+          setToastMessage(
+            hasPatch
+              ? `Đã cập nhật đánh giá. ${REVIEW_MEDIA_TOAST.uploadSuccess}`
+              : REVIEW_MEDIA_TOAST.uploadSuccess,
+          );
+        } else if (hasPatch) {
+          setToastMessage("Đã cập nhật đánh giá.");
+        }
+
+        navigateAfterSuccess();
       } catch (error) {
         setApiError(error?.message || "Không thể lưu đánh giá. Vui lòng thử lại.");
       }
     },
     [
-      backPath,
       mode,
-      navigate,
+      navigateAfterSuccess,
       orderItemId,
       orderItemIdFromQuery,
-      productId,
       reviewIdParam,
       submitCreate,
       submitUpdate,
+      upload,
     ],
   );
 
@@ -155,9 +189,12 @@ export function CommerceWriteEditReviewPage() {
                 mode={mode}
                 initialRating={initialRating}
                 initialComment={initialComment}
+                existingMediaCount={existingMediaCount}
+                reviewStatus={reviewStatus}
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
                 isSubmitting={isSubmitting}
+                isUploading={isUploading}
                 apiError={apiError}
               />
             </div>

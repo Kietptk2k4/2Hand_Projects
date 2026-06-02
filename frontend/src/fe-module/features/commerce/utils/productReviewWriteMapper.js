@@ -38,6 +38,7 @@ export function mapReviewForEditResponse(data) {
     shopNameSnapshot: pick(data, "shopNameSnapshot", "shop_name_snapshot"),
     finalPrice: pick(data, "finalPrice", "final_price"),
     completedAt: pick(data, "completedAt", "completed_at"),
+    mediaCount: pick(data, "mediaCount", "media_count") ?? 0,
   };
 }
 
@@ -82,5 +83,17 @@ export function mapUpdateReviewResponse(data) {
     rating: data.rating,
     comment: data.comment,
     ratingChanged: Boolean(data.rating_changed ?? data.ratingChanged),
+  };
+}
+
+export function mapUploadReviewMediaResponse(data) {
+  if (!data) return { media: [] };
+
+  return {
+    media: (data.media || []).map((item) => ({
+      id: item.id,
+      url: item.url,
+      type: item.type,
+    })),
   };
 }

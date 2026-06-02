@@ -5,6 +5,7 @@ import {
   getReviewContextForOrderItem,
   getReviewForBuyer,
   updateReviewForBuyer,
+  uploadReviewMediaForBuyer,
 } from "../data/commerceProductReviewWriteData";
 import { getUserByToken } from "../utils/socialMockAuth";
 import { apiError, apiSuccess } from "../utils/response";
@@ -110,6 +111,36 @@ export const commerceProductReviewWriteHandlers = [
 
     return HttpResponse.json(
       apiSuccess(200, "Tao danh gia san pham thanh cong.", result.data),
+      { status: 200 },
+    );
+  }),
+
+  http.post("*/commerce/api/v1/reviews/:reviewId/media", async ({ params, request }) => {
+    await delay(400);
+    const auth = requireAuth(request);
+    if (auth.error) return auth.error;
+
+    const reviewId = params.reviewId;
+    let formData;
+    try {
+      formData = await request.formData();
+    } catch {
+      return HttpResponse.json(apiError("COMMERCE-400-VALIDATION", "Du lieu khong hop le."), {
+        status: 400,
+      });
+    }
+
+    const files = formData.getAll("files").map((entry) => ({
+      type: entry.type,
+      size: entry.size,
+      name: entry.name,
+    }));
+
+    const result = uploadReviewMediaForBuyer(auth.user.id, reviewId, files);
+    if (result.error) return mapError(result);
+
+    return HttpResponse.json(
+      apiSuccess(200, "Upload media danh gia thanh cong.", result.data),
       { status: 200 },
     );
   }),
