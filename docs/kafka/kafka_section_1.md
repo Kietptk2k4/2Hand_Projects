@@ -117,13 +117,14 @@ docker compose up -d kafka kafka-ui
 
 | Hạng mục | Nội dung |
 |----------|----------|
-| 2 | Bật Kafka consumer notification + social |
-| 2+ | SMTP, email gửi thật, verify-email API |
-| 2+ | Retry outbox qua Kafka DLQ (tùy thiết kế) |
+| [2A](kafka_section_2.md) | Notification consume auth + process events (đã document; code có sẵn) |
+| 2B | SMTP / MailHog, email gửi thật |
+| 2+ | Social consumer E2E, DLQ (tùy thiết kế) |
 
 ---
 
 ## Liên kết
 
 - [kafka_section_0.md](kafka_section_0.md) — Docker broker, auto-create topic
+- [kafka_section_2.md](kafka_section_2.md) — Notification consume + process (2A)
 - [event-driven-architecture.md](../architecture/event-driven-architecture.md)

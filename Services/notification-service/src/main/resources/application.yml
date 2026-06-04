@@ -43,6 +43,18 @@ spring:
   jackson:
     time-zone: Asia/Ho_Chi_Minh
 
+  mail:
+    host: ${SPRING_MAIL_HOST:localhost}
+    port: ${SPRING_MAIL_PORT:1025}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH:false}
+          starttls:
+            enable: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE:false}
+
 jwt:
   access-secret: ${JWT_ACCESS_SECRET}
   refresh-secret: ${JWT_REFRESH_SECRET}
@@ -95,6 +107,7 @@ notification:
       enabled: ${NOTIFICATION_FCM_ENABLED:false}
     email:
       enabled: ${NOTIFICATION_EMAIL_ENABLED:false}
+      provider: ${NOTIFICATION_EMAIL_PROVIDER:logging}
       from-address: ${NOTIFICATION_EMAIL_FROM:noreply@2hands.vn}
       from-name: ${NOTIFICATION_EMAIL_FROM_NAME:2Hands}
       verification-link-base-url: ${NOTIFICATION_EMAIL_VERIFICATION_LINK_BASE_URL:https://2hands.vn/verify-email}

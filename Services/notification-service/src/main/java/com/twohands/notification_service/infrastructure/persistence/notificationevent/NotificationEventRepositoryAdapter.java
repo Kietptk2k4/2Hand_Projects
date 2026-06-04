@@ -94,7 +94,7 @@ public class NotificationEventRepositoryAdapter implements NotificationEventRepo
                        actor_id, recipient_user_id, payload, status, retry_count, max_retry_count, last_error,
                        locked_at, locked_by, created_at, processed_at
                 FROM notification_events
-                WHERE status = :status
+                WHERE status = CAST(:status AS notification_event_status)
                   AND retry_count < max_retry_count
                 ORDER BY created_at ASC
                 LIMIT :batchSize
@@ -131,7 +131,7 @@ public class NotificationEventRepositoryAdapter implements NotificationEventRepo
                        actor_id, recipient_user_id, payload, status, retry_count, max_retry_count, last_error,
                        locked_at, locked_by, created_at, processed_at
                 FROM notification_events
-                WHERE status = :status
+                WHERE status = CAST(:status AS notification_event_status)
                 ORDER BY created_at ASC
                 LIMIT :batchSize
                 FOR UPDATE SKIP LOCKED
@@ -153,7 +153,7 @@ public class NotificationEventRepositoryAdapter implements NotificationEventRepo
         Instant lockedAt = Instant.now();
         String markProcessingSql = """
                 UPDATE notification_events
-                SET status = :processingStatus,
+                SET status = CAST(:processingStatus AS notification_event_status),
                     locked_at = :lockedAt,
                     locked_by = :lockedBy
                 WHERE id IN (:ids)

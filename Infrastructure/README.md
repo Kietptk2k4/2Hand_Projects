@@ -16,6 +16,15 @@ cd Infrastructure
 docker compose up -d kafka kafka-ui
 ```
 
+Kafka + MailHog (hạng mục 2B — email SMTP dev):
+
+```bash
+cd Infrastructure
+docker compose up -d kafka kafka-ui mailhog
+```
+
+Web UI MailHog: http://localhost:8025 (SMTP `localhost:1025`).
+
 Dừng:
 
 ```bash
@@ -36,5 +45,6 @@ docker compose down
 | MinIO | `minio` | 9000 / 9001 | Object storage (API / console) |
 | **Kafka** | `kafka` | **9092** | Broker — app trên host: `localhost:9092` |
 | **Kafka UI** | `kafka-ui` | **8080** | Debug topic/message — http://localhost:8080 |
+| **MailHog** | `mailhog` | **1025** / **8025** | SMTP dev / Web UI — http://localhost:8025 |
 
-Chi tiết Kafka: [`docs/kafka/kafka_section_0.md`](../docs/kafka/kafka_section_0.md)
+Chi tiết Kafka: [`docs/kafka/kafka_section_0.md`](../docs/kafka/kafka_section_0.md) · Email SMTP dev: [`docs/kafka/kafka_section_2.md`](../docs/kafka/kafka_section_2.md) (2B)

@@ -8,11 +8,18 @@ import com.twohands.notification_service.domain.email.EmailProviderException;
 import com.twohands.notification_service.domain.email.EmailProviderSendResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
 @Component
+@ConditionalOnProperty(
+        prefix = "notification.integrations.email",
+        name = "provider",
+        havingValue = "logging",
+        matchIfMissing = true
+)
 public class LoggingEmailNotificationProvider implements EmailNotificationProvider {
 
     private static final Logger log = LoggerFactory.getLogger(LoggingEmailNotificationProvider.class);

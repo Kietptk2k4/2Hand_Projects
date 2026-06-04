@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class NotificationEmailProperties {
 
     private boolean enabled;
+    private String provider = "logging";
     private String fromAddress = "noreply@2hands.vn";
     private String fromName = "2Hands";
     private String verificationLinkBaseUrl;
@@ -17,6 +18,14 @@ public class NotificationEmailProperties {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String provider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
     }
 
     public String fromAddress() {

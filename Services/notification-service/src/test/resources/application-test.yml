@@ -17,8 +17,20 @@ spring:
     init:
       mode: always
       schema-locations: classpath:schema-test.sql
+  mail:
+    host: localhost
+    port: 1025
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
 
 notification:
+  integrations:
+    email:
+      provider: logging
   ingest:
     internal-enabled: true
     internal-api-key: test-internal-key

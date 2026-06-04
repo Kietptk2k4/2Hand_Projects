@@ -149,6 +149,13 @@ services:
     depends_on:
       - kafka
 
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
 volumes:
   postgres_auth_data:
   postgres_social_data:
