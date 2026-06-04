@@ -27,8 +27,12 @@ public class UserFollowedOutboxService {
 
     public OutboxEvent build(UUID followerId, UUID followeeId, FollowStatus status, Instant now) {
         Map<String, Object> payload = new HashMap<>();
-        payload.put("follower_id", followerId.toString());
-        payload.put("followee_id", followeeId.toString());
+        String follower = followerId.toString();
+        String followee = followeeId.toString();
+        payload.put("actor_id", follower);
+        payload.put("followed_user_id", followee);
+        payload.put("follower_id", follower);
+        payload.put("followee_id", followee);
         payload.put("status", status.name());
 
         String payloadJson;

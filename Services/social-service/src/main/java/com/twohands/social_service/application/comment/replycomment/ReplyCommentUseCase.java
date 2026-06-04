@@ -86,7 +86,7 @@ public class ReplyCommentUseCase {
 
         Comment saved = commentRepository.save(reply);
         postRepository.incrementReplyCount(parent.postId());
-        outboxEventRepository.save(commentCreatedOutboxService.build(saved, now));
+        outboxEventRepository.save(commentCreatedOutboxService.build(saved, post.authorId(), now));
 
         return toResult(saved);
     }

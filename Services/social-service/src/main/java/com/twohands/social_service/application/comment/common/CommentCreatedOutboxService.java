@@ -25,11 +25,14 @@ public class CommentCreatedOutboxService {
         this.objectMapper = objectMapper;
     }
 
-    public OutboxEvent build(Comment comment, Instant now) {
+    public OutboxEvent build(Comment comment, String postAuthorId, Instant now) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("comment_id", comment.id());
         payload.put("post_id", comment.postId());
-        payload.put("author_id", comment.authorId());
+        String actor = comment.authorId();
+        payload.put("actor_id", actor);
+        payload.put("author_id", actor);
+        putIfPresent(payload, "post_author_id", postAuthorId);
         if (comment.parentCommentId() != null) {
             payload.put("parent_comment_id", comment.parentCommentId());
         }
@@ -52,5 +55,11 @@ public class CommentCreatedOutboxService {
                 null,
                 null
         );
+    }
+
+    private void putIfPresent(Map<String, Object> payload, String key, String value) {
+        if (value != null && !value.isBlank()) {
+            payload.put(key, value);
+        }
     }
 }

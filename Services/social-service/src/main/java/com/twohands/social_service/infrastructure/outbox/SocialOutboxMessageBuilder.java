@@ -9,6 +9,7 @@ import com.twohands.social_service.exception.ErrorCode;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -32,7 +33,9 @@ public class SocialOutboxMessageBuilder {
         envelope.put("aggregate_id", event.aggregateId());
         envelope.put("source", SOURCE);
         envelope.put("occurred_at", event.createdAt().toString());
-        envelope.put("payload", parsePayload(event.payload()));
+        Object payload = parsePayload(event.payload());
+        envelope.put("payload", payload);
+        applyEnvelopeRouting(envelope, payload);
         return envelope;
     }
 
@@ -42,6 +45,49 @@ public class SocialOutboxMessageBuilder {
         } catch (JsonProcessingException ex) {
             throw new AppException(ErrorCode.INTERNAL_ERROR, "Cannot serialize social outbox envelope: " + ex.getMessage());
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void applyEnvelopeRouting(Map<String, Object> envelope, Object payload) {
+        if (!(payload instanceof Map<?, ?> payloadMap)) {
+            return;
+        }
+        Map<String, Object> map = (Map<String, Object>) payloadMap;
+
+        String actorId = firstNonBlank(
+                text(map.get("actor_id")),
+                text(map.get("user_id")),
+                text(map.get("follower_id"))
+        );
+        if (actorId != null) {
+            envelope.put("actor_id", actorId);
+        }
+
+        String recipientId = firstNonBlank(
+                text(map.get("post_author_id")),
+                text(map.get("followed_user_id")),
+                text(map.get("followee_id"))
+        );
+        if (recipientId != null) {
+            envelope.put("recipient_user_ids", List.of(recipientId));
+        }
+    }
+
+    private String text(Object value) {
+        if (value == null) {
+            return null;
+        }
+        String text = value.toString().trim();
+        return text.isEmpty() ? null : text;
+    }
+
+    private String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
     }
 
     private Object parsePayload(String payload) {

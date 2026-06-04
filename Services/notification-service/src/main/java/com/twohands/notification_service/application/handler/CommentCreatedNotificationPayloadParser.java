@@ -25,7 +25,8 @@ public class CommentCreatedNotificationPayloadParser {
 
         UUID actorId = firstUuid(
                 event.actorId(),
-                textField(payload, "actor_id")
+                textField(payload, "actor_id"),
+                textField(payload, "author_id")
         );
         UUID postAuthorId = firstUuid(
                 event.recipientUserId(),
@@ -82,11 +83,17 @@ public class CommentCreatedNotificationPayloadParser {
         return null;
     }
 
-    private UUID firstUuid(UUID primary, String fallbackText) {
+    private UUID firstUuid(UUID primary, String... fallbacks) {
         if (primary != null) {
             return primary;
         }
-        return parseUuid(fallbackText);
+        for (String fallback : fallbacks) {
+            UUID parsed = parseUuid(fallback);
+            if (parsed != null) {
+                return parsed;
+            }
+        }
+        return null;
     }
 
     private UUID parseUuid(String rawValue) {

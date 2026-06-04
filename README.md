@@ -142,7 +142,7 @@ docker compose up -d
 | `kafka` | 9092 | Event broker (KRaft) — app host: `localhost:9092` |
 | `kafka-ui` | 8080 | Debug Kafka — http://localhost:8080 |
 
-Chi tiết Kafka: [hạng mục 0 — hạ tầng](docs/kafka/kafka_section_0.md) · [hạng mục 1 — outbox publisher](docs/kafka/kafka_section_1.md) · [hạng mục 2A — auth → notification](docs/kafka/kafka_section_2.md) · [hạng mục 3A — auth → social projection](docs/kafka/kafka_section_3.md)
+Chi tiết Kafka: [hạng mục 0](docs/kafka/kafka_section_0.md) · [1 — outbox](docs/kafka/kafka_section_1.md) · [2A — auth → notification](docs/kafka/kafka_section_2.md) · [3A — auth → social](docs/kafka/kafka_section_3.md) · [4A — social → notification](docs/kafka/kafka_section_4.md)
 
 > Hạng mục **1**: bật `*_KAFKA_PRODUCER_ENABLED` + `*_OUTBOX_PUBLISH_ENABLED` (auth publish). **2A**: bật thêm `NOTIFICATION_KAFKA_CONSUMER_ENABLED` + `NOTIFICATION_PROCESS_EVENTS_ENABLED` — xem [kafka_section_2.md](docs/kafka/kafka_section_2.md).
 

@@ -24,11 +24,24 @@ public class PostLikedOutboxService {
         this.objectMapper = objectMapper;
     }
 
-    public OutboxEvent build(String postId, UUID userId, Instant now) {
+    public OutboxEvent build(String postId, UUID actorId, String postAuthorId, Instant now) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("post_id", postId);
-        payload.put("user_id", userId.toString());
+        String actor = actorId.toString();
+        payload.put("actor_id", actor);
+        payload.put("user_id", actor);
+        putIfPresent(payload, "post_author_id", postAuthorId);
 
+        return toOutboxEvent(postId, payload, now);
+    }
+
+    private void putIfPresent(Map<String, Object> payload, String key, String value) {
+        if (value != null && !value.isBlank()) {
+            payload.put(key, value);
+        }
+    }
+
+    private OutboxEvent toOutboxEvent(String aggregateId, Map<String, Object> payload, Instant now) {
         String payloadJson;
         try {
             payloadJson = objectMapper.writeValueAsString(payload);
@@ -39,7 +52,7 @@ public class PostLikedOutboxService {
         return new OutboxEvent(
                 UUID.randomUUID(),
                 POST_LIKED_EVENT_TYPE,
-                postId,
+                aggregateId,
                 payloadJson,
                 OutboxStatus.PENDING,
                 0,

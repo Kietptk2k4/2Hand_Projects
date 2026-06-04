@@ -57,7 +57,12 @@ public class LikeUnlikePostUseCase {
         } else {
             postLikeRepository.save(command.postId(), command.userId());
             postRepository.incrementLikeCount(command.postId());
-            outboxEventRepository.save(postLikedOutboxService.build(command.postId(), command.userId(), now));
+            outboxEventRepository.save(postLikedOutboxService.build(
+                    command.postId(),
+                    command.userId(),
+                    post.authorId(),
+                    now
+            ));
         }
 
         Post updated = postRepository.findById(command.postId()).orElse(post);

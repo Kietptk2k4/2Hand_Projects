@@ -3,8 +3,6 @@ package com.twohands.notification_service.infrastructure.persistence.usernotific
 import com.twohands.notification_service.domain.usernotification.NotificationDeliveryStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -54,8 +52,8 @@ public class UserNotificationEntity {
     @Column(name = "metadata", nullable = false, columnDefinition = "jsonb")
     private String metadata;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "delivery_status", nullable = false, length = 50)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "delivery_status", nullable = false, columnDefinition = "notification_delivery_status")
     private NotificationDeliveryStatus deliveryStatus;
 
     @Column(name = "created_at", nullable = false)

@@ -120,7 +120,8 @@ docker compose up -d kafka kafka-ui
 | [2A](kafka_section_2.md) | Notification consume auth + process events (đã document; code có sẵn) |
 | 2B | SMTP / MailHog, email gửi thật |
 | [3A](kafka_section_3.md) | Social consume Auth user projection (`user_projections`) |
-| 3+ | Admin enforcement E2E, profile sync 3C, DLQ |
+| [4A](kafka_section_4.md) | Social publish engagement → Notification in-app + push |
+| 4+ | Social payload 4B, E2E 4C, FCM prod, DLQ |
 
 ---
 
@@ -129,4 +130,5 @@ docker compose up -d kafka kafka-ui
 - [kafka_section_0.md](kafka_section_0.md) — Docker broker, auto-create topic
 - [kafka_section_2.md](kafka_section_2.md) — Notification consume + process (2A)
 - [kafka_section_3.md](kafka_section_3.md) — Auth → Social user projection (3A)
+- [kafka_section_4.md](kafka_section_4.md) — Social → Notification engagement (4A)
 - [event-driven-architecture.md](../architecture/event-driven-architecture.md)

@@ -22,11 +22,13 @@ public class UserFollowedNotificationPayloadParser {
 
         UUID actorId = firstUuid(
                 event.actorId(),
-                textField(payload, "actor_id")
+                textField(payload, "actor_id"),
+                textField(payload, "follower_id")
         );
         UUID followedUserId = firstUuid(
                 event.recipientUserId(),
-                textField(payload, "followed_user_id")
+                textField(payload, "followed_user_id"),
+                textField(payload, "followee_id")
         );
 
         if (followedUserId == null) {
@@ -60,11 +62,17 @@ public class UserFollowedNotificationPayloadParser {
         return null;
     }
 
-    private UUID firstUuid(UUID primary, String fallbackText) {
+    private UUID firstUuid(UUID primary, String... fallbacks) {
         if (primary != null) {
             return primary;
         }
-        return parseUuid(fallbackText);
+        for (String fallback : fallbacks) {
+            UUID parsed = parseUuid(fallback);
+            if (parsed != null) {
+                return parsed;
+            }
+        }
+        return null;
     }
 
     private UUID parseUuid(String rawValue) {

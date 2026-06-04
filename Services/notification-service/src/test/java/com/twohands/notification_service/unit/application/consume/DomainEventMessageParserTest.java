@@ -28,6 +28,33 @@ class DomainEventMessageParserTest {
     }
 
     @Test
+    void parse_postLiked_prefersRecipientUserIdsOverPayloadUserId() {
+        UUID eventId = UUID.randomUUID();
+        UUID actorId = UUID.randomUUID();
+        UUID postAuthorId = UUID.randomUUID();
+
+        String json = """
+                {
+                  "event_id": "%s",
+                  "event_type": "POST_LIKED",
+                  "actor_id": "%s",
+                  "recipient_user_ids": ["%s"],
+                  "payload": {
+                    "post_id": "post-id",
+                    "user_id": "%s",
+                    "actor_id": "%s",
+                    "post_author_id": "%s"
+                  }
+                }
+                """.formatted(eventId, actorId, postAuthorId, actorId, actorId, postAuthorId);
+
+        var command = parser.parse(json, "social.post.liked");
+
+        assertEquals(postAuthorId, command.recipientUserId());
+        assertEquals(actorId, command.actorId());
+    }
+
+    @Test
     void parse_validEnvelopeFromSocialTopic() {
         UUID eventId = UUID.randomUUID();
         UUID actorId = UUID.randomUUID();

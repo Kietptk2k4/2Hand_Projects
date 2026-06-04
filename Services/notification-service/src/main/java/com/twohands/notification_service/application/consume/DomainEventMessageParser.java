@@ -119,11 +119,19 @@ public class DomainEventMessageParser {
         if (recipient != null) {
             return recipient;
         }
-        recipient = firstUuid(root, payload, "target_user_id");
+        recipient = firstRecipientFromArray(root, payload);
         if (recipient != null) {
             return recipient;
         }
-        recipient = firstUuid(root, payload, "user_id");
+        recipient = firstUuid(root, payload, "post_author_id");
+        if (recipient != null) {
+            return recipient;
+        }
+        recipient = firstUuid(root, payload, "followed_user_id");
+        if (recipient != null) {
+            return recipient;
+        }
+        recipient = firstUuid(root, payload, "target_user_id");
         if (recipient != null) {
             return recipient;
         }
@@ -147,6 +155,11 @@ public class DomainEventMessageParser {
         if (recipient != null) {
             return recipient;
         }
+        recipient = firstUuid(root, payload, "user_id");
+        return recipient;
+    }
+
+    private UUID firstRecipientFromArray(JsonNode root, JsonNode payload) {
         JsonNode recipients = root.get("recipient_user_ids");
         if (recipients == null || recipients.isNull()) {
             recipients = payload.get("recipient_user_ids");
