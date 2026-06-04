@@ -32,6 +32,16 @@ public class UserAccountOutboxService {
         return build("USER_UPDATED", payload, now);
     }
 
+    public OutboxEvent userActivatedAfterEmailVerification(UUID userId, String email, Instant now) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("user_id", userId.toString());
+        payload.put("email", email);
+        payload.put("status", "ACTIVE");
+        payload.put("email_verified", true);
+        payload.put("verified_at", now.toString());
+        return build("USER_UPDATED", payload, now);
+    }
+
     public OutboxEvent userDeleted(UUID userId, String email, Instant now) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("user_id", userId.toString());

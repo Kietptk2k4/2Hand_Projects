@@ -14,6 +14,8 @@ public enum ErrorCode {
             "Ban thao tac qua nhanh, vui long thu lai sau."),
     RESEND_EMAIL_VERIFICATION_RATE_LIMITED("AUTH-429-RESEND-EMAIL-VERIFICATION", HttpStatus.TOO_MANY_REQUESTS,
             "Ban thao tac qua nhanh, vui long thu lai sau."),
+    INVALID_EMAIL_VERIFICATION_TOKEN("AUTH-400-INVALID-EMAIL-VERIFICATION-TOKEN", HttpStatus.BAD_REQUEST,
+            "Token xac thuc khong hop le hoac da het han."),
     AVATAR_UPLOAD_RATE_LIMITED("AUTH-429-AVATAR-UPLOAD", HttpStatus.TOO_MANY_REQUESTS,
             "Ban thao tac qua nhanh, vui long thu lai sau."),
     OBJECT_STORAGE_UNAVAILABLE("AUTH-503-OBJECT-STORAGE", HttpStatus.SERVICE_UNAVAILABLE,

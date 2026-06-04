@@ -24,4 +24,6 @@ public interface UserRepository {
     void updateStatusDeleted(UUID userId, Instant deletedAt);
 
     void updateStatus(UUID userId, UserStatus status, Instant updatedAt);
+
+    int markEmailVerifiedAndActive(UUID userId, Instant updatedAt);
 }

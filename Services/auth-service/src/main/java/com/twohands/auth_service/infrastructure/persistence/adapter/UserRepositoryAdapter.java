@@ -160,4 +160,23 @@ public class UserRepositoryAdapter implements UserRepository {
                 .addValue("status", status.name())
                 .addValue("updatedAt", JdbcTimestamps.from(updatedAt)));
     }
+
+    @Override
+    public int markEmailVerifiedAndActive(UUID userId, Instant updatedAt) {
+        String activeStatus = sqlDialect.castEnum("status", JdbcPgEnumTypes.USER_STATUS);
+        String pendingStatus = sqlDialect.castEnum("pendingStatus", JdbcPgEnumTypes.USER_STATUS);
+        String sql = """
+                UPDATE users
+                SET email_verified = TRUE,
+                    status = %s,
+                    updated_at = :updatedAt
+                WHERE id = :id
+                  AND status = %s
+                """.formatted(activeStatus, pendingStatus);
+        return jdbcTemplate.update(sql, new MapSqlParameterSource()
+                .addValue("id", userId)
+                .addValue("status", UserStatus.ACTIVE.name())
+                .addValue("pendingStatus", UserStatus.PENDING_VERIFICATION.name())
+                .addValue("updatedAt", JdbcTimestamps.from(updatedAt)));
+    }
 }
