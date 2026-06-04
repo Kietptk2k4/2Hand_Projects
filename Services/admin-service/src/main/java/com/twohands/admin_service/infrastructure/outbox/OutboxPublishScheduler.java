@@ -23,7 +23,7 @@ public class OutboxPublishScheduler {
 		this.enabled = enabled;
 	}
 
-	@Scheduled(cron = "${admin.outbox.publish.cron:0/10 * * * * *}")
+	@Scheduled(cron = "${admin.outbox.publish.cron:0/1 * * * * *}")
 	public void runPublishJob() {
 		if (!enabled) {
 			return;

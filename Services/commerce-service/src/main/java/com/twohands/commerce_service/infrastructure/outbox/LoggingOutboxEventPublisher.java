@@ -4,9 +4,11 @@ import com.twohands.commerce_service.application.outbox.OutboxEventPublisher;
 import com.twohands.commerce_service.domain.outbox.OutboxEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnProperty(prefix = "commerce.kafka.producer", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class LoggingOutboxEventPublisher implements OutboxEventPublisher {
 
     private static final Logger log = LoggerFactory.getLogger(LoggingOutboxEventPublisher.class);

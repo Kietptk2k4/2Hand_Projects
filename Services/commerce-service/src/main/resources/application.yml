@@ -64,10 +64,15 @@ commerce:
     shop-bucket: ${COMMERCE_MINIO_BUCKET_SHOP:2hands-commerce-shop}
     product-bucket: ${COMMERCE_MINIO_BUCKET_PRODUCT:2hands-commerce-product}
     review-bucket: ${COMMERCE_MINIO_BUCKET_REVIEW:2hands-commerce-review}
+  kafka:
+    producer:
+      enabled: ${COMMERCE_KAFKA_PRODUCER_ENABLED:false}
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+      send-timeout-ms: ${COMMERCE_KAFKA_PRODUCER_SEND_TIMEOUT_MS:10000}
   outbox:
     publish:
       enabled: ${COMMERCE_OUTBOX_PUBLISH_ENABLED:false}
-      cron: ${COMMERCE_OUTBOX_PUBLISH_CRON:0/10 * * * * *}
+      cron: ${COMMERCE_OUTBOX_PUBLISH_CRON:0/1 * * * * *}
       max-retries: ${COMMERCE_OUTBOX_PUBLISH_MAX_RETRIES:5}
       batch-size: ${COMMERCE_OUTBOX_PUBLISH_BATCH_SIZE:50}
     retry:

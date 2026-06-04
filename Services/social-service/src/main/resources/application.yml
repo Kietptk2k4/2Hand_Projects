@@ -75,6 +75,10 @@ social:
         max-attempts: ${SOCIAL_POST_MEDIA_UPLOAD_RATE_LIMIT_MAX:30}
         window-seconds: ${SOCIAL_POST_MEDIA_UPLOAD_RATE_LIMIT_WINDOW_SECONDS:60}
   kafka:
+    producer:
+      enabled: ${SOCIAL_KAFKA_PRODUCER_ENABLED:false}
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+      send-timeout-ms: ${SOCIAL_KAFKA_PRODUCER_SEND_TIMEOUT_MS:10000}
     consumer:
       enabled: ${SOCIAL_KAFKA_CONSUMER_ENABLED:false}
       bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
@@ -94,7 +98,7 @@ social:
   outbox:
     publish:
       enabled: ${SOCIAL_OUTBOX_PUBLISH_ENABLED:false}
-      cron: ${SOCIAL_OUTBOX_PUBLISH_CRON:0/10 * * * * *}
+      cron: ${SOCIAL_OUTBOX_PUBLISH_CRON:0/1 * * * * *}
       max-retries: ${SOCIAL_OUTBOX_PUBLISH_MAX_RETRIES:5}
       batch-size: ${SOCIAL_OUTBOX_PUBLISH_BATCH_SIZE:50}
     retry:

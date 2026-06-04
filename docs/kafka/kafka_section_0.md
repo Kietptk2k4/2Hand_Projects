@@ -203,14 +203,15 @@ Topic `dev.smoke.test` sẽ xuất hiện trong UI sau lệnh producer.
 
 ---
 
-## Việc chưa làm (hạng mục 1+)
+## Việc chưa làm (hạng mục 2+)
 
 | Hạng mục | Nội dung |
 |----------|----------|
-| 1 | Kafka publisher thật (thay `LoggingOutboxEventPublisher`), bật outbox worker |
-| 1 | Bật consumer Social / Notification |
-| 1+ | SMTP, email verification flow end-to-end qua Kafka |
-| 1+ | Verify-email API + event `EMAIL_VERIFICATION_REQUESTED` publish |
+| 2 | Bật consumer Social / Notification |
+| 2+ | SMTP, email verification flow end-to-end qua Kafka |
+| 2+ | Verify-email API + event `EMAIL_VERIFICATION_REQUESTED` consume |
+
+**Hạng mục 1 (outbox publisher):** đã triển khai — xem [kafka_section_1.md](kafka_section_1.md).
 
 ---
 

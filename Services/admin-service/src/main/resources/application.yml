@@ -64,10 +64,15 @@ admin:
   auth:
     login:
       gateway-enabled: ${ADMIN_AUTH_LOGIN_GATEWAY_ENABLED:false}
+  kafka:
+    producer:
+      enabled: ${ADMIN_KAFKA_PRODUCER_ENABLED:false}
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+      send-timeout-ms: ${ADMIN_KAFKA_PRODUCER_SEND_TIMEOUT_MS:10000}
   outbox:
     publish:
       enabled: ${ADMIN_OUTBOX_PUBLISH_ENABLED:false}
-      cron: ${ADMIN_OUTBOX_PUBLISH_CRON:0/10 * * * * *}
+      cron: ${ADMIN_OUTBOX_PUBLISH_CRON:0/1 * * * * *}
       max-retries: ${ADMIN_OUTBOX_PUBLISH_MAX_RETRIES:5}
       batch-size: ${ADMIN_OUTBOX_PUBLISH_BATCH_SIZE:50}
     retry:

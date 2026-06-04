@@ -142,9 +142,9 @@ docker compose up -d
 | `kafka` | 9092 | Event broker (KRaft) — app host: `localhost:9092` |
 | `kafka-ui` | 8080 | Debug Kafka — http://localhost:8080 |
 
-Chi tiết Kafka local: [`docs/kafka/kafka_section_0.md`](docs/kafka/kafka_section_0.md)
+Chi tiết Kafka: [hạng mục 0 — hạ tầng](docs/kafka/kafka_section_0.md) · [hạng mục 1 — outbox publisher](docs/kafka/kafka_section_1.md)
 
-> Consumer/outbox publisher mặc định **tắt** (`*_KAFKA_*_ENABLED=false`). Broker đã sẵn sàng; bật publisher/consumer ở hạng mục 1.
+> Kafka producer/consumer mặc định **tắt**. Bật `*_KAFKA_PRODUCER_ENABLED` + `*_OUTBOX_PUBLISH_ENABLED` để publish outbox (xem hạng mục 1).
 
 ### 2. Backend service (ví dụ)
 
@@ -183,7 +183,7 @@ npm run dev
 | [`business_flow/`](docs/business_flow/) | Luồng nghiệp vụ end-to-end |
 | [`use_cases/`](docs/use_cases/) | Use case theo actor |
 | [`engineering_rules/`](docs/engineering_rules/) | API standard, naming, backend/frontend convention |
-| [`kafka/`](docs/kafka/) | Hạ tầng Kafka local (hạng mục 0+) |
+| [`kafka/`](docs/kafka/) | Kafka local: hạng mục 0 (infra), hạng mục 1 (outbox publisher) |
 
 **Quy tắc implement (Cursor):** `.cursor/rules/{admin,commerce,social}/` — Clean Architecture, Outbox, JWT, cấu trúc package, bắt buộc doc API behavior khi thêm endpoint.
 
@@ -236,7 +236,7 @@ Ma trận event: [`docs/architecture/event-driven-architecture.md`](docs/archite
 ## Roadmap / giới hạn hiện tại
 
 - **Api_gateway:** thư mục trống — client dev gọi thẳng port service.
-- **Kafka local:** broker + UI trong Docker Compose — xem [`docs/kafka/kafka_section_0.md`](docs/kafka/kafka_section_0.md). Publisher/consumer app chưa bật.
+- **Kafka:** broker + UI (hạng mục 0); outbox publisher Java sẵn sàng, tắt mặc định (hạng mục 1). Consumer notification/social → hạng mục 2.
 - **notification-service vs admin-service:** trùng port 3004 — chỉnh port khi dev full stack.
 - **Packages / Scripts:** chưa dùng.
 

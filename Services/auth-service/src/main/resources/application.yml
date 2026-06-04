@@ -159,10 +159,16 @@ auth:
         max-attempts: ${AUTH_AVATAR_UPLOAD_RATE_LIMIT_MAX_ATTEMPTS:30}
         window-seconds: ${AUTH_AVATAR_UPLOAD_RATE_LIMIT_WINDOW_SECONDS:3600}
 
+  kafka:
+    producer:
+      enabled: ${AUTH_KAFKA_PRODUCER_ENABLED:false}
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+      send-timeout-ms: ${AUTH_KAFKA_PRODUCER_SEND_TIMEOUT_MS:10000}
+
   outbox:
     publish:
       enabled: ${AUTH_OUTBOX_PUBLISH_ENABLED:false}
-      cron: ${AUTH_OUTBOX_PUBLISH_CRON:0/10 * * * * *}
+      cron: ${AUTH_OUTBOX_PUBLISH_CRON:0/1 * * * * *}
       max-retries: ${AUTH_OUTBOX_PUBLISH_MAX_RETRIES:5}
       batch-size: ${AUTH_OUTBOX_PUBLISH_BATCH_SIZE:50}
     retry:
