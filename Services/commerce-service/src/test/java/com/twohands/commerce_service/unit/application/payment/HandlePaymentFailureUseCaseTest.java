@@ -86,6 +86,7 @@ class HandlePaymentFailureUseCaseTest {
         LockedPaymentContext paid = new LockedPaymentContext(
                 paymentId,
                 orderId,
+                UUID.randomUUID(),
                 "PAID",
                 "PAYOS",
                 "PROCESSING",
@@ -125,6 +126,7 @@ class HandlePaymentFailureUseCaseTest {
         return new LockedPaymentContext(
                 paymentId,
                 orderId,
+                UUID.randomUUID(),
                 "PENDING",
                 "PAYOS",
                 "AWAITING_PAYMENT",

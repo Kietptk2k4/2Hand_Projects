@@ -25,6 +25,8 @@ import com.twohands.commerce_service.application.review.common.ReviewHiddenOutbo
 import com.twohands.commerce_service.application.review.common.ReviewRepliedOutboxService;
 import com.twohands.commerce_service.application.review.common.ReviewRestoredOutboxService;
 import com.twohands.commerce_service.application.shipment.common.ShipmentCreatedOutboxService;
+import com.twohands.commerce_service.application.shipment.common.ShipmentDeliveredOutboxService;
+import com.twohands.commerce_service.application.shipment.common.ShipmentShippedOutboxService;
 import com.twohands.commerce_service.application.shipment.common.ShipmentStatusChangedOutboxService;
 import com.twohands.commerce_service.application.shop.common.ShopClosedOutboxService;
 import com.twohands.commerce_service.application.shop.common.ShopCreatedOutboxService;
@@ -63,6 +65,10 @@ class CommerceOutboxTopicResolverTest {
                 .isEqualTo("commerce.shipment.created");
         assertThat(resolver.resolve(ShipmentStatusChangedOutboxService.EVENT_TYPE))
                 .isEqualTo("commerce.shipment.status_changed");
+        assertThat(resolver.resolve(ShipmentShippedOutboxService.EVENT_TYPE))
+                .isEqualTo("commerce.shipment.shipped");
+        assertThat(resolver.resolve(ShipmentDeliveredOutboxService.EVENT_TYPE))
+                .isEqualTo("commerce.shipment.delivered");
         assertThat(resolver.resolve(InventoryReservedOutboxService.EVENT_TYPE))
                 .isEqualTo("commerce.inventory.reserved");
         assertThat(resolver.resolve(InventoryReleasedOutboxService.EVENT_TYPE))

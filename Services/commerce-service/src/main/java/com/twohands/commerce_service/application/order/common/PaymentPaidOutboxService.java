@@ -25,12 +25,25 @@ public class PaymentPaidOutboxService {
         this.objectMapper = objectMapper;
     }
 
-    public OutboxEvent build(UUID paymentId, UUID orderId, String reason, Instant paidAt) {
+    public OutboxEvent build(
+            UUID paymentId,
+            UUID orderId,
+            UUID buyerId,
+            String reason,
+            Instant paidAt,
+            String orderCode
+    ) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("payment_id", paymentId.toString());
         payload.put("order_id", orderId.toString());
+        payload.put("buyer_id", buyerId.toString());
         payload.put("reason", reason);
         payload.put("paid_at", paidAt.toString());
+
+        String resolvedOrderCode = orderCode != null && !orderCode.isBlank()
+                ? orderCode.trim()
+                : orderId.toString();
+        payload.put("order_code", resolvedOrderCode);
 
         return new OutboxEvent(
                 UUID.randomUUID(),

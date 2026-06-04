@@ -96,7 +96,7 @@ public class OrderCompletionRepositoryAdapter implements OrderCompletionReposito
 
         insertOrderStatusHistory(orderId, order.status, reason, changedBy, now);
         outboxEventRepository.save(
-                orderCompletedOutboxService.build(orderId, reason, completedByOutbox, now)
+                orderCompletedOutboxService.build(orderId, order.buyerId, reason, completedByOutbox, now)
         );
 
         return new CompleteOrderResult(CompleteOrderOutcome.COMPLETED, orderId, now);
@@ -104,7 +104,7 @@ public class OrderCompletionRepositoryAdapter implements OrderCompletionReposito
 
     private OrderRow lockOrder(UUID orderId) {
         String sql = """
-                SELECT id, status, payment_status
+                SELECT id, status, payment_status, buyer_id
                 FROM orders
                 WHERE id = :orderId
                 FOR UPDATE
@@ -178,7 +178,8 @@ public class OrderCompletionRepositoryAdapter implements OrderCompletionReposito
         return new OrderRow(
                 UUID.fromString(rs.getString("id")),
                 rs.getString("status"),
-                rs.getString("payment_status")
+                rs.getString("payment_status"),
+                UUID.fromString(rs.getString("buyer_id"))
         );
     }
 
@@ -191,7 +192,7 @@ public class OrderCompletionRepositoryAdapter implements OrderCompletionReposito
         );
     }
 
-    private record OrderRow(UUID id, String status, String paymentStatus) {
+    private record OrderRow(UUID id, String status, String paymentStatus, UUID buyerId) {
     }
 
     private record PaymentRow(UUID id, UUID orderId, String status, String paymentMethod) {

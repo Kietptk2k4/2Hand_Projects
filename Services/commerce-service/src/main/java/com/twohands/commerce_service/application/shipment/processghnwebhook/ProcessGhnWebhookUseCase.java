@@ -3,6 +3,7 @@ package com.twohands.commerce_service.application.shipment.processghnwebhook;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.commerce_service.application.shipment.common.ShipmentLifecycleOutboxEmitter;
 import com.twohands.commerce_service.application.shipment.common.ShipmentStatusChangedOutboxService;
 import com.twohands.commerce_service.domain.outbox.OutboxEventRepository;
 import com.twohands.commerce_service.domain.shipment.GhnShipmentStatusMapper;
@@ -32,6 +33,7 @@ public class ProcessGhnWebhookUseCase {
     private final ProcessGhnWebhookRepository processGhnWebhookRepository;
     private final OutboxEventRepository outboxEventRepository;
     private final ShipmentStatusChangedOutboxService shipmentStatusChangedOutboxService;
+    private final ShipmentLifecycleOutboxEmitter shipmentLifecycleOutboxEmitter;
     private final ObjectMapper objectMapper;
     private final Clock clock;
 
@@ -41,6 +43,7 @@ public class ProcessGhnWebhookUseCase {
             ProcessGhnWebhookRepository processGhnWebhookRepository,
             OutboxEventRepository outboxEventRepository,
             ShipmentStatusChangedOutboxService shipmentStatusChangedOutboxService,
+            ShipmentLifecycleOutboxEmitter shipmentLifecycleOutboxEmitter,
             ObjectMapper objectMapper,
             Clock clock
     ) {
@@ -49,6 +52,7 @@ public class ProcessGhnWebhookUseCase {
         this.processGhnWebhookRepository = processGhnWebhookRepository;
         this.outboxEventRepository = outboxEventRepository;
         this.shipmentStatusChangedOutboxService = shipmentStatusChangedOutboxService;
+        this.shipmentLifecycleOutboxEmitter = shipmentLifecycleOutboxEmitter;
         this.objectMapper = objectMapper;
         this.clock = clock;
     }
@@ -146,6 +150,13 @@ public class ProcessGhnWebhookUseCase {
                 newStatus,
                 occurredAt
         ));
+
+        shipmentLifecycleOutboxEmitter.emitDedicatedNotificationEvents(
+                shipment,
+                newStatus,
+                occurredAt,
+                null
+        );
 
         ghnWebhookLogRepository.markProcessed(logId);
         return ProcessGhnWebhookResult.updated(

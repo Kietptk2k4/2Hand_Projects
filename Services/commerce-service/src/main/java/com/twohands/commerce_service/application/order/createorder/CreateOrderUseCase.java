@@ -20,7 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -82,6 +85,7 @@ public class CreateOrderUseCase {
         outboxEventRepository.save(orderCreatedOutboxService.build(
                 orderId,
                 command.buyerId(),
+                distinctSellerIds(orderItems),
                 command.finalAmount(),
                 command.paymentMethod().name(),
                 command.occurredAt()
@@ -101,6 +105,16 @@ public class CreateOrderUseCase {
 
     public OrderStatus resolveInitialOrderStatus(PaymentMethod paymentMethod) {
         return paymentMethod == PaymentMethod.PAYOS ? OrderStatus.AWAITING_PAYMENT : OrderStatus.PROCESSING;
+    }
+
+    private List<UUID> distinctSellerIds(List<CreateOrderItemResult> orderItems) {
+        Set<UUID> sellerIds = new LinkedHashSet<>();
+        for (CreateOrderItemResult item : orderItems) {
+            if (item.sellerId() != null) {
+                sellerIds.add(item.sellerId());
+            }
+        }
+        return new ArrayList<>(sellerIds);
     }
 
     private void validateAmounts(BigDecimal totalAmount, BigDecimal finalAmount) {

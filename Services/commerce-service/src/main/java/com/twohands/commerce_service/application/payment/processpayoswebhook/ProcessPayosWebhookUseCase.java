@@ -9,11 +9,15 @@ import com.twohands.commerce_service.domain.payment.HandlePaymentFailureResult;
 import com.twohands.commerce_service.domain.payment.PaymentFailureOutcome;
 import com.twohands.commerce_service.domain.payment.PaymentStatus;
 import com.twohands.commerce_service.domain.payment.PaymentWebhookLogRepository;
+import com.twohands.commerce_service.domain.payment.ProcessPayosPaymentSuccessRepository;
+import com.twohands.commerce_service.domain.payment.ProcessPayosPaymentSuccessResult;
 import com.twohands.commerce_service.infrastructure.payos.PayosWebhookSignatureVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Clock;
 
 @Service
 public class ProcessPayosWebhookUseCase {
@@ -24,19 +28,25 @@ public class ProcessPayosWebhookUseCase {
 
     private final PayosWebhookSignatureVerifier signatureVerifier;
     private final PaymentWebhookLogRepository paymentWebhookLogRepository;
+    private final ProcessPayosPaymentSuccessRepository processPayosPaymentSuccessRepository;
     private final HandlePaymentFailureUseCase handlePaymentFailureUseCase;
     private final ObjectMapper objectMapper;
+    private final Clock clock;
 
     public ProcessPayosWebhookUseCase(
             PayosWebhookSignatureVerifier signatureVerifier,
             PaymentWebhookLogRepository paymentWebhookLogRepository,
+            ProcessPayosPaymentSuccessRepository processPayosPaymentSuccessRepository,
             HandlePaymentFailureUseCase handlePaymentFailureUseCase,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            Clock clock
     ) {
         this.signatureVerifier = signatureVerifier;
         this.paymentWebhookLogRepository = paymentWebhookLogRepository;
+        this.processPayosPaymentSuccessRepository = processPayosPaymentSuccessRepository;
         this.handlePaymentFailureUseCase = handlePaymentFailureUseCase;
         this.objectMapper = objectMapper;
+        this.clock = clock;
     }
 
     @Transactional
@@ -63,9 +73,20 @@ public class ProcessPayosWebhookUseCase {
         }
 
         if (SUCCESS_CODE.equals(webhookBody.path("code").asText())) {
-            log.info("PayOS success webhook acknowledged without handler for orderCode={}", payosOrderCode);
+            ProcessPayosPaymentSuccessResult successResult = processPayosPaymentSuccessRepository.markPaidByPayosOrderCode(
+                    payosOrderCode,
+                    "PAYOS_WEBHOOK_PAID",
+                    CHANGED_BY,
+                    clock.instant()
+            );
             paymentWebhookLogRepository.markProcessed(eventType, payosOrderCode);
-            return ProcessPayosWebhookResult.acknowledgedSuccess(eventType, payosOrderCode);
+            log.info(
+                    "PayOS success webhook outcome={} orderCode={} paymentId={}",
+                    successResult.outcome(),
+                    payosOrderCode,
+                    successResult.paymentId()
+            );
+            return ProcessPayosWebhookResult.processedSuccess(eventType, payosOrderCode, successResult.outcome());
         }
 
         PaymentStatus terminalStatus = mapFailureStatus(webhookBody);

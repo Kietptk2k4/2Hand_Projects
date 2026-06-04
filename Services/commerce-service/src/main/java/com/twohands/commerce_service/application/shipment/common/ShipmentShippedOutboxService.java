@@ -1,4 +1,4 @@
-package com.twohands.commerce_service.application.order.common;
+package com.twohands.commerce_service.application.shipment.common;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,75 +8,54 @@ import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Component
-public class OrderCreatedOutboxService {
+public class ShipmentShippedOutboxService {
 
-    public static final String EVENT_TYPE = "COMMERCE_ORDER_CREATED";
+    public static final String EVENT_TYPE = "COMMERCE_SHIPMENT_SHIPPED";
     private static final String SOURCE = "commerce";
 
     private final ObjectMapper objectMapper;
 
-    public OrderCreatedOutboxService(ObjectMapper objectMapper) {
+    public ShipmentShippedOutboxService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
     public OutboxEvent build(
+            UUID shipmentId,
             UUID orderId,
             UUID buyerId,
-            List<UUID> sellerIds,
-            BigDecimal finalAmount,
-            String paymentMethod,
-            Instant createdAt
+            UUID sellerId,
+            String trackingCode,
+            Instant shippedAt
     ) {
         Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("shipment_id", shipmentId.toString());
         payload.put("order_id", orderId.toString());
         payload.put("buyer_id", buyerId.toString());
-        payload.put("order_code", orderId.toString());
-        payload.put("final_amount", finalAmount);
-        payload.put("payment_method", paymentMethod);
-        payload.put("created_at", createdAt.toString());
-
-        List<String> distinctSellerIds = distinctSellerIdStrings(sellerIds);
-        if (!distinctSellerIds.isEmpty()) {
-            payload.put("seller_ids", distinctSellerIds);
+        payload.put("seller_id", sellerId.toString());
+        payload.put("shipped_at", shippedAt.toString());
+        if (trackingCode != null && !trackingCode.isBlank()) {
+            payload.put("tracking_code", trackingCode);
         }
 
         return new OutboxEvent(
                 UUID.randomUUID(),
                 EVENT_TYPE,
-                "order:" + orderId + ":created",
-                orderId,
+                "shipment:" + shipmentId + ":shipped",
+                shipmentId,
                 SOURCE,
                 serialize(payload),
                 OutboxStatus.PENDING,
                 0,
-                createdAt,
+                shippedAt,
                 null,
                 null
         );
-    }
-
-    private List<String> distinctSellerIdStrings(List<UUID> sellerIds) {
-        if (sellerIds == null || sellerIds.isEmpty()) {
-            return List.of();
-        }
-        Set<String> distinct = new LinkedHashSet<>();
-        for (UUID sellerId : sellerIds) {
-            if (sellerId != null) {
-                distinct.add(sellerId.toString());
-            }
-        }
-        return new ArrayList<>(distinct);
     }
 
     private String serialize(Map<String, Object> payload) {

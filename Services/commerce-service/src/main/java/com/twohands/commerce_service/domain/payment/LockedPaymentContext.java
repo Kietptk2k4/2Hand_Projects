@@ -5,6 +5,7 @@ import java.util.UUID;
 public record LockedPaymentContext(
         UUID paymentId,
         UUID orderId,
+        UUID buyerId,
         String paymentStatus,
         String paymentMethod,
         String orderStatus,

@@ -101,6 +101,8 @@ Social consumer (`SocialKafkaConsumerProperties`): `auth.user.created`, `auth.us
 | `COMMERCE_PAYMENT_EXPIRED` | `commerce.payment.expired` |
 | `COMMERCE_SHIPMENT_CREATED` | `commerce.shipment.created` |
 | `COMMERCE_SHIPMENT_STATUS_CHANGED` | `commerce.shipment.status_changed` |
+| `COMMERCE_SHIPMENT_SHIPPED` | `commerce.shipment.shipped` |
+| `COMMERCE_SHIPMENT_DELIVERED` | `commerce.shipment.delivered` |
 | `COMMERCE_INVENTORY_RESERVED` | `commerce.inventory.reserved` |
 | `COMMERCE_INVENTORY_RELEASED` | `commerce.inventory.released` |
 | `COMMERCE_PRODUCT_*` | `commerce.product.*` (created, updated, published, …) |

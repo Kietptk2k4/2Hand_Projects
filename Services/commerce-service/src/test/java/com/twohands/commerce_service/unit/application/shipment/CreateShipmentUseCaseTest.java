@@ -175,7 +175,7 @@ class CreateShipmentUseCaseTest {
                 .thenReturn(Optional.of(pickupAddress()));
         when(createShipmentRepository.findBuyerDeliveryAddress(buyerId))
                 .thenReturn(Optional.of(buyerAddress()));
-        when(createShipmentTransactionService.createLocal(any(CreateShipmentDraft.class), eq(now)))
+        when(createShipmentTransactionService.createLocal(any(CreateShipmentDraft.class), any(UUID.class), eq(now)))
                 .thenReturn(created);
     }
 

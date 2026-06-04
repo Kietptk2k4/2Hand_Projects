@@ -55,6 +55,29 @@ class ShipmentShippedNotificationPayloadParserTest {
     }
 
     @Test
+    void parse_acceptsCommerceUuidShipmentPayload() {
+        UUID shipmentId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+
+        ShipmentShippedNotificationContext context = parser.parse(event(
+                """
+                        {
+                          "buyer_id":"%s",
+                          "shipment_id":"%s",
+                          "order_id":"%s",
+                          "tracking_code":"GHN-TRK-001",
+                          "shipped_at":"2026-06-04T11:00:00Z"
+                        }
+                        """.formatted(BUYER_ID, shipmentId, orderId)
+        ));
+
+        assertEquals(BUYER_ID, context.buyerId());
+        assertEquals(shipmentId.toString(), context.shipmentId());
+        assertEquals(orderId.toString(), context.orderId());
+        assertEquals("GHN-TRK-001", context.trackingCode());
+    }
+
+    @Test
     void parse_throwsWhenShipmentIdMissing() {
         assertThrows(IllegalArgumentException.class, () -> parser.parse(eventWithoutShipmentAggregate(
                 """

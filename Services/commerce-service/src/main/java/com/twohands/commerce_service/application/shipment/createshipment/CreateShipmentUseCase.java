@@ -145,7 +145,7 @@ public class CreateShipmentUseCase {
                 deliveryAddress
         );
 
-        CreateShipmentResult created = createShipmentTransactionService.createLocal(draft, now);
+        CreateShipmentResult created = createShipmentTransactionService.createLocal(draft, order.buyerId(), now);
 
         if (carrier == ShipmentCarrier.GHN) {
             created = registerGhnShipment(created, pickup, deliveryAddress, totalWeightGram, codAmount, now);

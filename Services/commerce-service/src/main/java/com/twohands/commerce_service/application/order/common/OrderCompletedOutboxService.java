@@ -25,16 +25,14 @@ public class OrderCompletedOutboxService {
         this.objectMapper = objectMapper;
     }
 
-    public OutboxEvent build(UUID orderId, String reason, Instant completedAt) {
-        return build(orderId, reason, "SYSTEM", completedAt);
-    }
-
-    public OutboxEvent build(UUID orderId, String reason, String completedBy, Instant completedAt) {
+    public OutboxEvent build(UUID orderId, UUID buyerId, String reason, String completedBy, Instant completedAt) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("order_id", orderId.toString());
+        payload.put("buyer_id", buyerId.toString());
         payload.put("reason", reason);
         payload.put("completed_at", completedAt.toString());
         payload.put("completed_by", completedBy);
+        payload.put("order_code", orderId.toString());
 
         return new OutboxEvent(
                 UUID.randomUUID(),

@@ -76,7 +76,7 @@ class CreateOrderUseCaseTest {
                         BigDecimal.valueOf(1_000_000),
                         "VND"
                 ));
-        when(orderCreatedOutboxService.build(any(), any(), any(), any(), any())).thenReturn(new OutboxEvent(
+        when(orderCreatedOutboxService.build(any(), any(), any(), any(), any(), any())).thenReturn(new OutboxEvent(
                 UUID.randomUUID(),
                 OrderCreatedOutboxService.EVENT_TYPE,
                 "order:created",
@@ -119,7 +119,7 @@ class CreateOrderUseCaseTest {
                         BigDecimal.valueOf(1_000_000),
                         "VND"
                 ));
-        when(orderCreatedOutboxService.build(any(), any(), any(), any(), any())).thenReturn(new OutboxEvent(
+        when(orderCreatedOutboxService.build(any(), any(), any(), any(), any(), any())).thenReturn(new OutboxEvent(
                 UUID.randomUUID(),
                 OrderCreatedOutboxService.EVENT_TYPE,
                 "order:created",

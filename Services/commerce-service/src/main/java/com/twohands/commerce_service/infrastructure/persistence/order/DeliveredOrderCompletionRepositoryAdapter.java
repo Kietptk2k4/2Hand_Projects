@@ -177,7 +177,7 @@ public class DeliveredOrderCompletionRepositoryAdapter
         PaymentRow payment = lockPaymentByOrderId(order.id);
         boolean paymentMarkedPaid = false;
         if (payment != null && "COD".equals(payment.paymentMethod) && "PENDING".equals(payment.status)) {
-            paymentMarkedPaid = markCodPaymentPaid(payment, context.reason(), now);
+            paymentMarkedPaid = markCodPaymentPaid(payment, order, context.reason(), now);
             if (paymentMarkedPaid) {
                 syncOrderPaymentStatusPaid(order.id, now);
             }
@@ -327,7 +327,7 @@ public class DeliveredOrderCompletionRepositoryAdapter
                 .addValue("now", Timestamp.from(now)));
     }
 
-    private boolean markCodPaymentPaid(PaymentRow payment, String reason, Instant now) {
+    private boolean markCodPaymentPaid(PaymentRow payment, OrderRow order, String reason, Instant now) {
         String sql = """
                 UPDATE payments
                 SET status = 'PAID',
@@ -346,8 +346,10 @@ public class DeliveredOrderCompletionRepositoryAdapter
         outboxEventRepository.save(paymentPaidOutboxService.build(
                 payment.id,
                 payment.orderId,
+                order.buyerId,
                 reason,
-                now
+                now,
+                order.id.toString()
         ));
         return true;
     }

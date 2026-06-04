@@ -51,6 +51,31 @@ class CommerceOutboxMessageBuilderTest {
     }
 
     @Test
+    void shouldSetRecipientUserIdsFromBuyerIdInPayload() {
+        UUID buyerId = UUID.randomUUID();
+        UUID aggregateId = UUID.randomUUID();
+        OutboxEvent event = new OutboxEvent(
+                UUID.randomUUID(),
+                "COMMERCE_PAYMENT_PAID",
+                "payment:paid",
+                aggregateId,
+                "commerce",
+                "{\"order_id\":\"" + aggregateId + "\",\"buyer_id\":\"" + buyerId + "\"}",
+                OutboxStatus.PENDING,
+                0,
+                Instant.now(),
+                null,
+                null
+        );
+
+        Map<String, Object> envelope = builder.buildEnvelope(event);
+
+        @SuppressWarnings("unchecked")
+        java.util.List<String> recipients = (java.util.List<String>) envelope.get("recipient_user_ids");
+        assertThat(recipients).containsExactly(buyerId.toString());
+    }
+
+    @Test
     void shouldSerializeEnvelopeToJson() {
         UUID eventId = UUID.randomUUID();
         UUID aggregateId = UUID.randomUUID();

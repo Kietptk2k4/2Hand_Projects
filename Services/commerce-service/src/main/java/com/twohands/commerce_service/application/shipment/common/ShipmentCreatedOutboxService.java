@@ -8,6 +8,7 @@ import com.twohands.commerce_service.domain.shipment.ShipmentCarrier;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -30,18 +31,24 @@ public class ShipmentCreatedOutboxService {
     public OutboxEvent build(
             UUID shipmentId,
             UUID orderId,
+            UUID buyerId,
             UUID sellerId,
             ShipmentCarrier carrier,
             List<UUID> orderItemIds,
+            String trackingCode,
             Instant createdAt
     ) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("shipment_id", shipmentId.toString());
         payload.put("order_id", orderId.toString());
+        payload.put("buyer_id", buyerId.toString());
         payload.put("seller_id", sellerId.toString());
         payload.put("carrier", carrier.name());
         payload.put("order_item_ids", orderItemIds.stream().map(UUID::toString).toList());
         payload.put("created_at", createdAt.toString());
+        if (StringUtils.hasText(trackingCode)) {
+            payload.put("tracking_code", trackingCode.trim());
+        }
 
         return new OutboxEvent(
                 UUID.randomUUID(),

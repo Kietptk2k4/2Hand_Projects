@@ -21,6 +21,8 @@ public class CommerceOutboxTopicResolver {
             Map.entry("COMMERCE_PAYMENT_EXPIRED", "commerce.payment.expired"),
             Map.entry("COMMERCE_SHIPMENT_CREATED", "commerce.shipment.created"),
             Map.entry("COMMERCE_SHIPMENT_STATUS_CHANGED", "commerce.shipment.status_changed"),
+            Map.entry("COMMERCE_SHIPMENT_SHIPPED", "commerce.shipment.shipped"),
+            Map.entry("COMMERCE_SHIPMENT_DELIVERED", "commerce.shipment.delivered"),
             Map.entry("COMMERCE_INVENTORY_RESERVED", "commerce.inventory.reserved"),
             Map.entry("COMMERCE_INVENTORY_RELEASED", "commerce.inventory.released"),
             Map.entry("COMMERCE_PRODUCT_CREATED", "commerce.product.created"),

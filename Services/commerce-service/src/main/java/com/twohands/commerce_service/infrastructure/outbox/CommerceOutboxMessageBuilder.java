@@ -9,6 +9,7 @@ import com.twohands.commerce_service.exception.ErrorCode;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -28,8 +29,30 @@ public class CommerceOutboxMessageBuilder {
         envelope.put("aggregate_id", event.aggregateId().toString());
         envelope.put("source", event.source());
         envelope.put("occurred_at", event.createdAt().toString());
-        envelope.put("payload", parsePayload(event.payload()));
+        Object payload = parsePayload(event.payload());
+        envelope.put("payload", payload);
+        applyEnvelopeRouting(envelope, payload);
         return envelope;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void applyEnvelopeRouting(Map<String, Object> envelope, Object payload) {
+        if (!(payload instanceof Map<?, ?> payloadMap)) {
+            return;
+        }
+        Map<String, Object> map = (Map<String, Object>) payloadMap;
+        String buyerId = text(map.get("buyer_id"));
+        if (buyerId != null) {
+            envelope.put("recipient_user_ids", List.of(buyerId));
+        }
+    }
+
+    private String text(Object value) {
+        if (value == null) {
+            return null;
+        }
+        String text = value.toString().trim();
+        return text.isEmpty() ? null : text;
     }
 
     public String buildEnvelopeJson(OutboxEvent event) {

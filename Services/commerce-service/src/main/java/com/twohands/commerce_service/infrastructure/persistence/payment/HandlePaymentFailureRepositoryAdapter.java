@@ -149,6 +149,7 @@ public class HandlePaymentFailureRepositoryAdapter implements HandlePaymentFailu
         String sql = """
                 SELECT p.id AS payment_id,
                        p.order_id,
+                       o.buyer_id,
                        p.status::text AS payment_status,
                        p.payment_method::text AS payment_method,
                        o.status::text AS order_status,
@@ -328,7 +329,13 @@ public class HandlePaymentFailureRepositoryAdapter implements HandlePaymentFailu
     ) {
         switch (terminalStatus) {
             case FAILED -> outboxEventRepository.save(
-                    paymentFailedOutboxService.build(payment.paymentId(), payment.orderId(), reason, occurredAt)
+                    paymentFailedOutboxService.build(
+                            payment.paymentId(),
+                            payment.orderId(),
+                            payment.buyerId(),
+                            reason,
+                            occurredAt
+                    )
             );
             case CANCELLED -> outboxEventRepository.save(
                     paymentCancelledOutboxService.build(payment.paymentId(), payment.orderId(), reason, occurredAt)
@@ -363,6 +370,7 @@ public class HandlePaymentFailureRepositoryAdapter implements HandlePaymentFailu
         return new LockedPaymentContext(
                 UUID.fromString(rs.getString("payment_id")),
                 UUID.fromString(rs.getString("order_id")),
+                UUID.fromString(rs.getString("buyer_id")),
                 rs.getString("payment_status"),
                 rs.getString("payment_method"),
                 rs.getString("order_status"),

@@ -30,14 +30,16 @@ public class CreateShipmentTransactionService {
     }
 
     @Transactional
-    public CreateShipmentResult createLocal(CreateShipmentDraft draft, Instant occurredAt) {
+    public CreateShipmentResult createLocal(CreateShipmentDraft draft, UUID buyerId, Instant occurredAt) {
         CreateShipmentResult created = createShipmentRepository.createShipment(draft, occurredAt);
         outboxEventRepository.save(shipmentCreatedOutboxService.build(
                 created.shipmentId(),
                 created.orderId(),
+                buyerId,
                 created.sellerId(),
                 created.carrier(),
                 created.orderItemIds(),
+                draft.trackingNumber(),
                 occurredAt
         ));
         return created;
