@@ -310,7 +310,8 @@ class StoreNotificationEventUseCaseTest {
         verify(notificationEventRepository).save(captor.capture());
         String storedPayload = captor.getValue().payload();
         assertTrue(storedPayload.contains("recipient_email"));
-        assertTrue(storedPayload.contains("verification_link"));
+        assertTrue(storedPayload.contains("verification_code"));
+        assertFalse(storedPayload.contains("verification_link"));
         assertFalse(storedPayload.contains("\"verification_token\""));
     }
 

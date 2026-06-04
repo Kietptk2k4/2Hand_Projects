@@ -7,6 +7,7 @@ import com.twohands.notification_service.application.worker.ProcessNotificationE
 import com.twohands.notification_service.application.worker.ProcessNotificationEventOutcome;
 import com.twohands.notification_service.application.worker.ProcessNotificationEventUseCase;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
+import com.twohands.notification_service.domain.notificationevent.NotificationEventPayloadCodec;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventRepository;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventStatus;
 import com.twohands.notification_service.domain.notificationevent.NotificationSourceService;
@@ -302,15 +303,15 @@ class SystemAnnouncementFanOutNotificationIntegrationTest {
     }
 
     private String queryMetadata(UUID eventId, UUID userId) {
-        return jdbcTemplate.queryForObject(
+        return NotificationEventPayloadCodec.decode(jdbcTemplate.queryForObject(
                 """
-                        SELECT metadata::text FROM user_notifications
+                        SELECT metadata FROM user_notifications
                         WHERE notification_event_id = ? AND user_id = ?
                         """,
                 String.class,
                 eventId,
                 userId
-        );
+        ));
     }
 
     private String queryEventStatus(UUID eventId) {

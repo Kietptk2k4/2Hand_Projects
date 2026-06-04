@@ -8,6 +8,7 @@ import com.twohands.notification_service.application.push.RetryFailedPushNotific
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
 import com.twohands.notification_service.domain.delivery.PushDeliveryRetryPolicy;
 import com.twohands.notification_service.domain.delivery.PushDeliveryRetryState;
+import com.twohands.notification_service.domain.notificationevent.NotificationEventPayloadCodec;
 import com.twohands.notification_service.domain.usernotification.NotificationDeliveryStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -194,10 +195,10 @@ class RetryFailedPushNotificationIntegrationTest {
     }
 
     private String queryMetadata(UUID notificationId) {
-        return jdbcTemplate.queryForObject(
+        return NotificationEventPayloadCodec.decode(jdbcTemplate.queryForObject(
                 "SELECT metadata FROM user_notifications WHERE id = ?",
                 String.class,
                 notificationId
-        );
+        ));
     }
 }

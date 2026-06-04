@@ -1,6 +1,7 @@
 package com.twohands.notification_service.infrastructure.persistence.notificationevent;
 
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
+import com.twohands.notification_service.domain.notificationevent.NotificationEventPayloadCodec;
 
 final class NotificationEventMapper {
 
@@ -18,7 +19,7 @@ final class NotificationEventMapper {
                 entity.getAggregateId(),
                 entity.getActorId(),
                 entity.getRecipientUserId(),
-                entity.getPayload(),
+                NotificationEventPayloadCodec.decode(entity.getPayload()),
                 entity.getStatus(),
                 entity.getRetryCount(),
                 entity.getMaxRetryCount(),

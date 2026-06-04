@@ -96,7 +96,10 @@ export function LoginPage() {
       });
 
       const isPendingVerification = loginData?.user?.status === "PENDING_VERIFICATION";
-      navigate(isPendingVerification ? APP_ROUTES.verifyEmail : redirectUrl, { replace: true });
+      navigate(isPendingVerification ? APP_ROUTES.verifyEmail : redirectUrl, {
+        replace: true,
+        state: isPendingVerification ? { email: normalizedForm.email } : undefined,
+      });
     } catch (error) {
       const serverFieldErrors = resolveFieldErrors(error?.errors);
       if (error?.code === 400 && Object.keys(serverFieldErrors).length > 0) {

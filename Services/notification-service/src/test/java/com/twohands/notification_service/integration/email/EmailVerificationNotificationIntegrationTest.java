@@ -26,10 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@TestPropertySource(properties = {
-        "notification.integrations.email.enabled=true",
-        "notification.integrations.email.verification-link-base-url=https://2hands.vn/verify-email"
-})
+@TestPropertySource(properties = "notification.integrations.email.enabled=true")
 class EmailVerificationNotificationIntegrationTest {
 
     @Autowired
@@ -53,7 +50,7 @@ class EmailVerificationNotificationIntegrationTest {
     @Test
     void process_sendsVerificationEmailFromAuthStylePayload() {
         UUID userId = UUID.randomUUID();
-        UUID eventId = ingestAuthVerificationEvent(userId, "user@example.com", "verify-token-abc");
+        UUID eventId = ingestAuthVerificationEvent(userId, "user@example.com", "123456");
 
         var result = processNotificationEventUseCase.execute(new ProcessNotificationEventCommand(eventId));
 
@@ -62,7 +59,8 @@ class EmailVerificationNotificationIntegrationTest {
 
         NotificationEvent stored = notificationEventRepository.findById(eventId).orElseThrow();
         assertTrue(stored.payload().contains("recipient_email"));
-        assertTrue(stored.payload().contains("verification_link"));
+        assertTrue(stored.payload().contains("verification_code"));
+        assertFalse(stored.payload().contains("verification_link"));
         assertFalse(stored.payload().contains("\"verification_token\""));
     }
 
@@ -85,8 +83,11 @@ class EmailVerificationNotificationIntegrationTest {
                 String.class,
                 eventId
         );
-        assertTrue(lastError.contains("verification_link") || lastError.contains("verification"));
-        assertFalse(lastError.contains("secret-token"));
+        assertTrue(
+                lastError != null
+                        && (lastError.contains("verification_code")
+                        || lastError.toLowerCase().contains("verification"))
+        );
     }
 
     @Test

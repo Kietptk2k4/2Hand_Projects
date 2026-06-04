@@ -94,7 +94,7 @@ class SendEmailNotificationUseCaseTest {
         )).thenReturn(new NotificationDeliveryDecision(false, false, true));
         when(emailNotificationPayloadExtractor.extract(any())).thenReturn(Map.of(
                 "recipient_email", "user@example.com",
-                "verification_link", "https://2hands.vn/verify"
+                "verification_code", "123456"
         ));
         when(emailNotificationProvider.send(any(EmailNotificationContent.class)))
                 .thenReturn(new EmailProviderSendResult("msg-1"));
@@ -103,7 +103,7 @@ class SendEmailNotificationUseCaseTest {
                 USER_ID,
                 "EMAIL_VERIFICATION_REQUESTED",
                 """
-                        {"recipient_email":"user@example.com","verification_link":"https://2hands.vn/verify"}
+                        {"recipient_email":"user@example.com","verification_code":"123456"}
                         """
         ));
 

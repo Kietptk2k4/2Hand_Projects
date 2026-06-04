@@ -23,23 +23,58 @@ class AuthSecurityEmailNotificationPayloadNormalizerTest {
     }
 
     @Test
-    void normalizeForStorage_mapsAuthVerificationPayloadWithoutRawTokenField() {
+    void normalizeForStorage_mapsAuthVerificationPayloadToOtpCodeWithoutLink() {
         String result = normalizer.normalizeForStorage(
                 "EMAIL_VERIFICATION_REQUESTED",
                 """
                         {
                           "user_id": "11111111-1111-1111-1111-111111111111",
                           "email": "user@example.com",
-                          "verification_token": "raw-verify-token",
+                          "verification_code": "123456",
+                          "verification_token": "123456",
                           "verification_token_type": "EMAIL_VERIFY"
                         }
                         """
         );
 
         assertTrue(result.contains("\"recipient_email\":\"user@example.com\""));
-        assertTrue(result.contains("verification_link"));
-        assertTrue(result.contains("token=raw-verify-token"));
+        assertTrue(result.contains("\"verification_code\":\"123456\""));
+        assertFalse(result.contains("verification_link"));
         assertFalse(result.contains("\"verification_token\""));
+    }
+
+    @Test
+    void normalizeForStorage_mapsLegacyVerificationTokenFieldToCode() {
+        String result = normalizer.normalizeForStorage(
+                "EMAIL_VERIFICATION_REQUESTED",
+                """
+                        {
+                          "email": "user@example.com",
+                          "verification_token": "654321"
+                        }
+                        """
+        );
+
+        assertTrue(result.contains("\"verification_code\":\"654321\""));
+        assertFalse(result.contains("verification_link"));
+        assertFalse(result.contains("\"verification_token\""));
+    }
+
+    @Test
+    void normalizeForStorage_stripsVerificationLinkFromEmailVerificationPayload() {
+        String result = normalizer.normalizeForStorage(
+                "EMAIL_VERIFICATION_REQUESTED",
+                """
+                        {
+                          "recipient_email": "user@example.com",
+                          "verification_link": "https://2hands.vn/verify?token=abc",
+                          "verification_code": "123456"
+                        }
+                        """
+        );
+
+        assertTrue(result.contains("\"verification_code\":\"123456\""));
+        assertFalse(result.contains("verification_link"));
     }
 
     @Test

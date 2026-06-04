@@ -189,22 +189,51 @@ export const authHandlers = [
     return HttpResponse.json(apiSuccess(200, "Doi mat khau thanh cong.", null), { status: 200 });
   }),
 
+  http.post("*/api/v1/auth/resend-email-verification", async ({ request }) => {
+    await delay(400);
+    const body = await request.json();
+
+    if (!body?.email) {
+      return HttpResponse.json(
+        apiError(400, "Validation failed", [{ field: "email", reason: "Email is required" }]),
+        { status: 400 }
+      );
+    }
+
+    if (body.email === DEVICE_RATE_LIMIT_EMAIL) {
+      return HttpResponse.json(apiError(429, "Ban thao tac qua nhanh, vui long thu lai sau."), {
+        status: 429,
+      });
+    }
+
+    return HttpResponse.json(
+      apiSuccess(200, "Da gui lai ma OTP xac thuc email.", {
+        email: body.email,
+      }),
+      { status: 200 }
+    );
+  }),
+
   http.post("*/api/v1/auth/verify-email", async ({ request }) => {
     await delay(400);
     const body = await request.json();
-    if (!body?.token || body.token === "expired-token") {
+    const token = body?.token?.trim() || "";
+    const isSixDigitOtp = /^\d{6}$/.test(token);
+
+    if (!isSixDigitOtp || token === "000000") {
       return HttpResponse.json(
-        apiError(400, "Token xac thuc khong hop le hoac da het han.", [
-          { field: "token", reason: "INVALID_OR_EXPIRED" }
+        apiError(400, "Ma OTP khong hop le hoac da het han.", [
+          { field: "token", reason: "INVALID_OR_EXPIRED" },
         ]),
         { status: 400 }
       );
     }
+
     return HttpResponse.json(
       apiSuccess(200, "Xac thuc email thanh cong.", {
         user_id: crypto.randomUUID(),
         email_verified: true,
-        status: "ACTIVE"
+        status: "ACTIVE",
       }),
       { status: 200 }
     );

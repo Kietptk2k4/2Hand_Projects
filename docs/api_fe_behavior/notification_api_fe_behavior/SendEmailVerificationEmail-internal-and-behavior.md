@@ -2,7 +2,7 @@
 
 ## 1. Business Goal
 
-Gửi email xác minh khi Auth Service publish `EMAIL_VERIFICATION_REQUESTED`. Notification Service chỉ deliver link/code từ payload — không tạo verification token.
+Gửi email xác minh khi Auth Service publish `EMAIL_VERIFICATION_REQUESTED`. Notification Service chỉ deliver **mã OTP 6 chữ số** từ payload Auth — không tạo OTP, **không** build verification link.
 
 ## 2. Trigger
 
@@ -11,9 +11,9 @@ Gửi email xác minh khi Auth Service publish `EMAIL_VERIFICATION_REQUESTED`. N
 
 ## 3. Flow
 
-1. **Ingest:** `AuthSecurityEmailNotificationPayloadNormalizer` map payload Auth (`email`, `verification_token`) → `recipient_email` + `verification_link` (hoặc `verification_code` nếu không cấu hình base URL), rồi `JacksonNotificationEventPayloadSanitizer` redact sensitive keys.
-2. **Worker:** `EmailVerificationNotificationEventHandler` (@Order 49) resolve `user_id` / `recipient_user_id`, gọi `SendEmailNotificationUseCase`.
-3. **Delivery:** Critical override bật email dù user tắt `allow_email`; template `Verify your 2Hands email`.
+1. **Ingest:** `AuthSecurityEmailNotificationPayloadNormalizer` map payload Auth (`email`, `verification_code` / `verification_token`) → `recipient_email` + `verification_code` (6 digit). **Không** gọi `buildLink()` / không set `verification_link` cho event type này. Sau đó `JacksonNotificationEventPayloadSanitizer` redact sensitive keys.
+2. **Worker:** `EmailVerificationNotificationEventHandler` resolve `user_id` / `recipient_user_id`, gọi `SendEmailNotificationUseCase`.
+3. **Delivery:** Critical override bật email dù user tắt `allow_email`; template `Verify your 2Hands email` với `{{verification_code}}`.
 
 ## 4. Auth Payload (producer)
 
@@ -21,25 +21,29 @@ Gửi email xác minh khi Auth Service publish `EMAIL_VERIFICATION_REQUESTED`. N
 {
   "user_id": "<uuid>",
   "email": "user@example.com",
-  "verification_token": "<raw-token-from-auth>",
+  "verification_code": "123456",
+  "verification_token": "123456",
   "verification_token_type": "EMAIL_VERIFY"
 }
 ```
 
-Aliases đã hỗ trợ khi producer gửi sẵn: `recipient_email`, `verification_link`, `verify_link`, `verification_code`.
+- `verification_token`: tên field legacy trên envelope Kafka; **giá trị là OTP 6 chữ số**, không phải link token dài.
+- Notification persist/display: `recipient_email` + `verification_code` only.
+
+Aliases khi producer gửi sẵn: `recipient_email`, `verification_code`.
 
 ## 5. Outcomes
 
 | Outcome | Ý nghĩa |
 |---------|---------|
 | Event `COMPLETED` | Email provider chấp nhận |
-| Event `FAILED` + `PERMANENT` | Thiếu email/link/code, email invalid, template lỗi |
+| Event `FAILED` + `PERMANENT` | Thiếu email/OTP, email invalid, template lỗi |
 | Event `FAILED` + `RETRYABLE` | Thiếu recipient user id, DB settings lỗi, provider timeout |
 | `NO_OP` / skip | `NOTIFICATION_EMAIL_ENABLED=false` |
 
 ## 6. Security
 
-- Raw `verification_token` không lưu DB sau ingest; không log token/link trong `last_error`.
+- Raw `verification_token` / OTP không lưu DB sau ingest; không log OTP trong `last_error`.
 - Log email dạng masked (`u***@example.com`).
 
 ## 7. Configuration
@@ -49,12 +53,12 @@ notification:
   integrations:
     email:
       enabled: ${NOTIFICATION_EMAIL_ENABLED:false}
-      verification-link-base-url: ${NOTIFICATION_EMAIL_VERIFICATION_LINK_BASE_URL:https://2hands.vn/verify-email}
 ```
 
-Base URL hỗ trợ placeholder `{{token}}` hoặc append `?token=` / `&token=`.
+Flow email verify **OTP-only** — không cần `NOTIFICATION_EMAIL_VERIFICATION_LINK_BASE_URL`. Password reset vẫn dùng `password-reset-link-base-url` riêng (`PASSWORD_RESET_REQUESTED`).
 
 ## 8. FE / Client
 
 - Client không gọi trực tiếp flow này.
-- User nhận email và submit token qua Auth `POST /api/v1/auth/verify-email`.
+- User nhận email, nhập OTP trên màn Verify Email, gọi Auth `POST /api/v1/auth/verify-email` với `{ "token": "123456" }`.
+- Resend OTP: `POST /api/v1/auth/resend-email-verification` (xem FR Resend).

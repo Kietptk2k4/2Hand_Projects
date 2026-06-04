@@ -14,12 +14,12 @@ public final class EmailNotificationTemplatePolicy {
                             """
                                     Hello,
 
-                                    Please verify your email using this link:
-                                    {{verification_link}}
+                                    Mã xác thực của bạn: {{verification_code}}
 
+                                    Mã có hiệu lực trong 15 phút.
                                     If you did not request this, you can ignore this message.
                                     """,
-                            Set.of("recipient_email", "verification_link")
+                            Set.of("recipient_email", "verification_code")
                     )
             ),
             Map.entry(

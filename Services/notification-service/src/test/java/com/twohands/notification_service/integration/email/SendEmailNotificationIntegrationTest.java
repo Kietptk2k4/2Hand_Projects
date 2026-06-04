@@ -41,7 +41,7 @@ class SendEmailNotificationIntegrationTest {
                 """
                         {
                           "recipient_email": "user@example.com",
-                          "verification_link": "https://2hands.vn/verify?token=abc"
+                          "verification_code": "123456"
                         }
                         """
         ));

@@ -1,7 +1,7 @@
 # Functional Requirement (FR) - Đăng ký tài khoản bằng Email
 
 ## 1. Feature Overview
-Chức năng cho phép người dùng (khách) tạo mới một tài khoản trên hệ thống 2Hands bằng địa chỉ email cá nhân. Sau khi đăng ký thành công, tài khoản sẽ ở trạng thái chờ xác thực (PENDING_VERIFICATION) và hệ thống sẽ gửi một email chứa mã OTP hoặc link để kích hoạt tài khoản.
+Chức năng cho phép người dùng (khách) tạo mới một tài khoản trên hệ thống 2Hands bằng địa chỉ email cá nhân. Sau khi đăng ký thành công, tài khoản sẽ ở trạng thái chờ xác thực (`PENDING_VERIFICATION`) và hệ thống sẽ gửi email chứa **mã OTP 6 chữ số** để kích hoạt tài khoản (không dùng verification link).
 
 ## 2. Actors
 * **Guest (Khách):** Người dùng chưa xác thực, có nhu cầu tham gia vào hệ thống.
@@ -69,7 +69,8 @@ Thực thi transaction ghi vào các bảng (PostgreSQL):
 1. **USERS:** Insert dòng mới `(id, email, password_hash, status='PENDING_VERIFICATION', email_verified=false, created_at)`.
 2. **USER_PROFILES:** Insert dòng mới `(user_id, display_name)`.
 3. **USER_SETTINGS:** Insert dòng mới `(user_id, appearance_mode='SYSTEM')`.
-4. **OUTBOX_EVENTS:** Insert dòng mới `(id, event_type='EMAIL_VERIFICATION_REQUESTED', payload=..., status='PENDING')`.
+4. **OUTBOX_EVENTS:** Insert dòng mới `(id, event_type='EMAIL_VERIFICATION_REQUESTED', payload=..., status='PENDING')`. Payload gồm `verification_code` (OTP 6 chữ số; có thể kèm field legacy `verification_token` cùng giá trị OTP cho tương thích Kafka).
+5. **VERIFICATION_TOKENS:** Insert bản ghi `EMAIL_VERIFY` với `token_hash` (hash OTP, không lưu plaintext).
 
 ## 9. Event Flow
 1. API Gateway nhận Request và chuyển tới Auth Service.
@@ -80,7 +81,7 @@ Thực thi transaction ghi vào các bảng (PostgreSQL):
 6. Insert event `EMAIL_VERIFICATION_REQUESTED` vào `OUTBOX_EVENTS`.
 7. Commit DB Transaction.
 8. Trả Response 201 cho Frontend.
-9. (Asynchronous) Worker của Auth Service đọc `OUTBOX_EVENTS` và đẩy vào Message Broker (RabbitMQ/Kafka) để Notification Service gửi OTP.
+9. (Asynchronous) Worker của Auth Service đọc `OUTBOX_EVENTS` và đẩy vào Message Broker (Kafka) để Notification Service gửi email chứa **mã OTP** (không build verification link).
 
 ## 10. Edge Cases
 * **Email đã đăng ký nhưng chưa verify (PENDING_VERIFICATION) và OTP đã hết hạn:** Hệ thống xử lý thế nào? (Giải pháp: Có thể overwrite tài khoản cũ hoặc hướng dẫn người dùng qua màn hình Resend OTP).

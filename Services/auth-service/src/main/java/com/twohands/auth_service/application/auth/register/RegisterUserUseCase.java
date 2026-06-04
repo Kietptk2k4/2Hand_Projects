@@ -1,5 +1,6 @@
 package com.twohands.auth_service.application.auth.register;
 
+import com.twohands.auth_service.application.auth.common.EmailVerificationOtpGenerator;
 import com.twohands.auth_service.application.auth.common.EmailVerificationOutboxService;
 import com.twohands.auth_service.application.auth.common.UserCreatedOutboxService;
 import com.twohands.auth_service.domain.outbox.OutboxEventRepository;
@@ -23,7 +24,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -42,7 +42,7 @@ public class RegisterUserUseCase {
     private final RegisterRateLimitService registerRateLimitService;
     private final UserCreatedOutboxService userCreatedOutboxService;
     private final EmailVerificationOutboxService emailVerificationOutboxService;
-    private final SecureRandom secureRandom;
+    private final EmailVerificationOtpGenerator emailVerificationOtpGenerator;
     private final long verificationTtlSeconds;
 
     public RegisterUserUseCase(
@@ -56,6 +56,7 @@ public class RegisterUserUseCase {
             RegisterRateLimitService registerRateLimitService,
             UserCreatedOutboxService userCreatedOutboxService,
             EmailVerificationOutboxService emailVerificationOutboxService,
+            EmailVerificationOtpGenerator emailVerificationOtpGenerator,
             @Value("${auth.register.verify-token-ttl-seconds:900}") long verificationTtlSeconds
     ) {
         this.userRepository = userRepository;
@@ -68,7 +69,7 @@ public class RegisterUserUseCase {
         this.registerRateLimitService = registerRateLimitService;
         this.userCreatedOutboxService = userCreatedOutboxService;
         this.emailVerificationOutboxService = emailVerificationOutboxService;
-        this.secureRandom = new SecureRandom();
+        this.emailVerificationOtpGenerator = emailVerificationOtpGenerator;
         this.verificationTtlSeconds = verificationTtlSeconds;
     }
 
@@ -100,7 +101,7 @@ public class RegisterUserUseCase {
             userProfileRepository.save(UserProfile.createDefault(userId, displayName, now));
             userSettingsRepository.save(UserSettings.createDefault(userId, now));
 
-            String verificationTokenRaw = generateVerificationToken();
+            String verificationTokenRaw = emailVerificationOtpGenerator.generate();
             VerificationToken verificationToken = new VerificationToken(
                     UUID.randomUUID(),
                     userId,
@@ -130,16 +131,6 @@ public class RegisterUserUseCase {
             }
             throw new AppException(ErrorCode.INTERNAL_ERROR, ErrorCode.INTERNAL_ERROR.defaultMessage(), ex);
         }
-    }
-
-    private String generateVerificationToken() {
-        byte[] bytes = new byte[16];
-        secureRandom.nextBytes(bytes);
-        StringBuilder sb = new StringBuilder(bytes.length * 2);
-        for (byte b : bytes) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
     }
 
     private String buildDefaultDisplayName(String normalizedEmail) {

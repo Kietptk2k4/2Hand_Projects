@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -87,6 +88,14 @@ class RegisterIntegrationTest {
         assertEquals(1, tokens);
         assertEquals(1, userCreatedOutbox);
         assertEquals(1, verificationOutbox);
+
+        String verificationPayload = jdbcTemplate.queryForObject(
+                "SELECT payload FROM outbox_events WHERE event_type = 'EMAIL_VERIFICATION_REQUESTED' LIMIT 1",
+                String.class
+        );
+        assertTrue(verificationPayload.contains("\"verification_code\":\""));
+        assertTrue(verificationPayload.matches("(?s).*\"verification_code\":\"\\d{6}\".*"));
+        assertTrue(!verificationPayload.contains("verification_link"));
     }
 
     @Test

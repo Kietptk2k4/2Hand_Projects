@@ -35,10 +35,6 @@ public final class EmailNotificationVariablesPolicy {
                 rawValues.get("verification_token")
         ));
 
-        if (!variables.containsKey("verification_link") && variables.containsKey("verification_code")) {
-            variables.put("verification_link", variables.get("verification_code"));
-        }
-
         putTextVariable(variables, "reset_link", firstNonBlank(
                 rawValues.get("reset_link"),
                 rawValues.get("password_reset_link")

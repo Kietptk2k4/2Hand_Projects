@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -26,13 +27,14 @@ class EmailNotificationVariablesPolicyTest {
     }
 
     @Test
-    void extract_usesVerificationCodeWhenLinkMissing() {
+    void extract_keepsVerificationCodeWithoutSynthesizingLink() {
         var variables = EmailNotificationVariablesPolicy.extract(Map.of(
                 "recipient_email", "user@example.com",
                 "verification_code", "123456"
         ));
 
-        assertEquals("123456", variables.get("verification_link"));
+        assertEquals("123456", variables.get("verification_code"));
+        assertFalse(variables.containsKey("verification_link"));
     }
 
     @Test

@@ -2,6 +2,7 @@ package com.twohands.notification_service.infrastructure.persistence.usernotific
 
 import com.twohands.notification_service.domain.common.PageResult;
 import com.twohands.notification_service.domain.idempotency.UserNotificationIdempotencyKey;
+import com.twohands.notification_service.domain.notificationevent.NotificationEventPayloadCodec;
 import com.twohands.notification_service.domain.usernotification.UserNotification;
 import com.twohands.notification_service.domain.usernotification.UserNotificationListQuery;
 import com.twohands.notification_service.domain.usernotification.UserNotificationRepository;
@@ -227,7 +228,7 @@ public class UserNotificationRepositoryAdapter implements UserNotificationReposi
                 entity.getReferenceId(),
                 entity.isRead(),
                 entity.isDeleted(),
-                entity.getMetadata(),
+                NotificationEventPayloadCodec.decode(entity.getMetadata()),
                 entity.getDeliveryStatus(),
                 entity.getCreatedAt(),
                 entity.getReadAt()
@@ -250,7 +251,7 @@ public class UserNotificationRepositoryAdapter implements UserNotificationReposi
                 rs.getString("reference_id"),
                 rs.getBoolean("is_read"),
                 rs.getBoolean("is_deleted"),
-                rs.getString("metadata"),
+                NotificationEventPayloadCodec.decode(rs.getString("metadata")),
                 com.twohands.notification_service.domain.usernotification.NotificationDeliveryStatus.valueOf(
                         rs.getString("delivery_status")
                 ),

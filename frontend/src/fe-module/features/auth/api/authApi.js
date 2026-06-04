@@ -93,6 +93,15 @@ export async function verifyEmail(payload) {
   }
 }
 
+export async function resendEmailVerification(payload) {
+  try {
+    const response = await httpClient.post("/api/v1/auth/resend-email-verification", payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export async function logoutWithRefreshToken(refreshToken) {
   try {
     const response = await httpClient.post("/api/v1/auth/logout", {

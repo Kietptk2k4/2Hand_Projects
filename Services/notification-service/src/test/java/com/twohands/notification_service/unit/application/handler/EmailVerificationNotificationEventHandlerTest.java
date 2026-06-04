@@ -1,5 +1,7 @@
 package com.twohands.notification_service.unit.application.handler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.notification_service.application.email.AuthSecurityEmailNotificationPayloadNormalizer;
 import com.twohands.notification_service.application.email.SendEmailNotificationCommand;
 import com.twohands.notification_service.application.email.SendEmailNotificationOutcome;
 import com.twohands.notification_service.application.email.SendEmailNotificationResult;
@@ -8,6 +10,7 @@ import com.twohands.notification_service.application.handler.EmailVerificationNo
 import com.twohands.notification_service.application.handler.HandlerOutcome;
 import com.twohands.notification_service.application.handler.NotificationRecipientResolver;
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
+import com.twohands.notification_service.config.NotificationEmailProperties;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventStatus;
 import com.twohands.notification_service.domain.notificationevent.NotificationSourceService;
@@ -43,7 +46,15 @@ class EmailVerificationNotificationEventHandlerTest {
 
     @BeforeEach
     void setUp() {
-        handler = new EmailVerificationNotificationEventHandler(recipientResolver, sendEmailNotificationUseCase);
+        NotificationEmailProperties properties = new NotificationEmailProperties();
+        properties.setVerificationLinkBaseUrl("https://2hands.vn/verify-email");
+        AuthSecurityEmailNotificationPayloadNormalizer normalizer =
+                new AuthSecurityEmailNotificationPayloadNormalizer(new ObjectMapper(), properties);
+        handler = new EmailVerificationNotificationEventHandler(
+                recipientResolver,
+                sendEmailNotificationUseCase,
+                normalizer
+        );
     }
 
     @Test
@@ -80,7 +91,7 @@ class EmailVerificationNotificationEventHandlerTest {
         when(sendEmailNotificationUseCase.execute(any(SendEmailNotificationCommand.class)))
                 .thenReturn(SendEmailNotificationResult.failed(
                         NotificationFailurePolicy.PERMANENT,
-                        "Missing required template variable: verification_link"
+                        "Missing required template variable: verification_code"
                 ));
 
         var result = handler.handle(sampleEvent());
@@ -102,8 +113,8 @@ class EmailVerificationNotificationEventHandlerTest {
                 RECIPIENT_ID,
                 """
                         {
-                          "recipient_email": "user@example.com",
-                          "verification_link": "https://2hands.vn/verify-email?token=abc"
+                          "email": "user@example.com",
+                          "verification_token": "123456"
                         }
                         """,
                 NotificationEventStatus.PROCESSING,

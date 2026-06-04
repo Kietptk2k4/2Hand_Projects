@@ -54,7 +54,7 @@ class VerifyEmailIntegrationTest {
 
     @Test
     void validTokenShouldActivatePendingUserAndMarkTokenUsed() throws Exception {
-        String rawToken = "a1b2c3d4e5f6789012345678901234567";
+        String rawToken = "123456";
         UUID userId = insertUser("verify_pending@example.com", "PENDING_VERIFICATION", false);
         insertVerificationToken(userId, passwordHashingService.hash(rawToken).value());
 
@@ -97,11 +97,11 @@ class VerifyEmailIntegrationTest {
     @Test
     void invalidTokenShouldReturn400WithoutChangingUser() throws Exception {
         UUID userId = insertUser("verify_invalid@example.com", "PENDING_VERIFICATION", false);
-        insertVerificationToken(userId, passwordHashingService.hash("other-token").value());
+        insertVerificationToken(userId, passwordHashingService.hash("111111").value());
 
         mockMvc.perform(post("/api/v1/auth/verify-email")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(buildRequest("wrong-token"))))
+                        .content(objectMapper.writeValueAsString(buildRequest("999999"))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.errors[0].field").value("token"))
@@ -117,7 +117,7 @@ class VerifyEmailIntegrationTest {
 
     @Test
     void alreadyActiveUserWithUsedTokenShouldReturn200Idempotent() throws Exception {
-        String rawToken = "used-verify-token-1234567890abcd";
+        String rawToken = "654321";
         UUID userId = insertUser("verify_active@example.com", "ACTIVE", true);
         insertUsedVerificationToken(userId, passwordHashingService.hash(rawToken).value());
 
@@ -131,6 +131,15 @@ class VerifyEmailIntegrationTest {
 
         Integer outboxCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM outbox_events", Integer.class);
         assertEquals(0, outboxCount);
+    }
+
+    @Test
+    void nonSixDigitTokenShouldReturn400Validation() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/verify-email")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildRequest("abcdef"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
     }
 
     @Test

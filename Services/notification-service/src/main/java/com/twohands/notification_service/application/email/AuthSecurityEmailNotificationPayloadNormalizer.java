@@ -89,24 +89,22 @@ public class AuthSecurityEmailNotificationPayloadNormalizer {
     }
 
     private void normalizeVerificationDelivery(ObjectNode payload) {
-        if (hasText(payload, "verification_link") || hasText(payload, "verification_code")) {
+        if (hasText(payload, "verification_code")) {
+            payload.remove("verification_link");
             return;
         }
 
-        String token = firstNonBlank(
+        String code = firstNonBlank(
                 textValue(payload, "verification_token"),
                 textValue(payload, "verify_token")
         );
-        if (token == null) {
+        if (code == null) {
+            payload.remove("verification_link");
             return;
         }
 
-        String link = buildLink(notificationEmailProperties.verificationLinkBaseUrl(), token);
-        if (link != null) {
-            payload.put("verification_link", link);
-        } else {
-            payload.put("verification_code", token);
-        }
+        payload.put("verification_code", code);
+        payload.remove("verification_link");
     }
 
     private void normalizePasswordResetDelivery(ObjectNode payload) {

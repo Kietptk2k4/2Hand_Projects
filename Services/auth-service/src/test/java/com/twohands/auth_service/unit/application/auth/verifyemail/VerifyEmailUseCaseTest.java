@@ -18,6 +18,7 @@ import com.twohands.auth_service.domain.user.VerificationTokenRepository;
 import com.twohands.auth_service.domain.user.VerificationTokenType;
 import com.twohands.auth_service.exception.AppException;
 import com.twohands.auth_service.exception.ErrorCode;
+import com.twohands.auth_service.infrastructure.security.ratelimit.NoopVerifyEmailRateLimitService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -52,8 +53,13 @@ class VerifyEmailUseCaseTest {
                 outboxEventRepository,
                 new VerifyEmailValidationService(),
                 passwordHashingService,
-                new UserAccountOutboxService(new ObjectMapper())
+                new UserAccountOutboxService(new ObjectMapper()),
+                new NoopVerifyEmailRateLimitService()
         );
+    }
+
+    private VerifyEmailCommand command(String token) {
+        return new VerifyEmailCommand(token, "127.0.0.1");
     }
 
     @Test
@@ -74,12 +80,12 @@ class VerifyEmailUseCaseTest {
 
         when(verificationTokenRepository.findUnusedByType(eq(VerificationTokenType.EMAIL_VERIFY), any(Instant.class)))
                 .thenReturn(List.of(token));
-        when(passwordHashingService.matches(eq("valid-token"), any(PasswordHash.class))).thenReturn(true);
+        when(passwordHashingService.matches(eq("123456"), any(PasswordHash.class))).thenReturn(true);
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(verificationTokenRepository.markUsedById(eq(tokenId), any(Instant.class))).thenReturn(1);
         when(userRepository.markEmailVerifiedAndActive(eq(userId), any(Instant.class))).thenReturn(1);
 
-        VerifyEmailResult result = useCase.execute(new VerifyEmailCommand("valid-token"));
+        VerifyEmailResult result = useCase.execute(command("123456"));
 
         assertEquals(userId.toString(), result.userId());
         assertEquals(UserStatus.ACTIVE.name(), result.status());
@@ -106,10 +112,10 @@ class VerifyEmailUseCaseTest {
         when(verificationTokenRepository.findUnusedByType(any(), any())).thenReturn(List.of());
         when(verificationTokenRepository.findUsedByType(VerificationTokenType.EMAIL_VERIFY))
                 .thenReturn(List.of(usedToken));
-        when(passwordHashingService.matches(eq("used-token"), any(PasswordHash.class))).thenReturn(true);
+        when(passwordHashingService.matches(eq("654321"), any(PasswordHash.class))).thenReturn(true);
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
-        VerifyEmailResult result = useCase.execute(new VerifyEmailCommand("used-token"));
+        VerifyEmailResult result = useCase.execute(command("654321"));
 
         assertEquals("Tai khoan da duoc xac thuc truoc do.", result.message());
         verify(userRepository, never()).markEmailVerifiedAndActive(any(), any());
@@ -120,11 +126,19 @@ class VerifyEmailUseCaseTest {
     void shouldThrowWhenTokenDoesNotMatch() {
         when(verificationTokenRepository.findUnusedByType(any(), any())).thenReturn(List.of());
 
-        AppException ex = assertThrows(AppException.class, () -> useCase.execute(new VerifyEmailCommand("bad-token")));
+        AppException ex = assertThrows(AppException.class, () -> useCase.execute(command("999999")));
 
         assertEquals(ErrorCode.INVALID_EMAIL_VERIFICATION_TOKEN, ex.getErrorCode());
         assertEquals("token", ex.getField());
         assertEquals("INVALID_OR_EXPIRED", ex.getReason());
+    }
+
+    @Test
+    void shouldRejectInvalidOtpFormatBeforeLookup() {
+        AppException ex = assertThrows(AppException.class, () -> useCase.execute(command("12ab56")));
+
+        assertEquals(ErrorCode.VALIDATION_ERROR, ex.getErrorCode());
+        verify(verificationTokenRepository, never()).findUnusedByType(any(), any());
     }
 
     private User buildUser(UUID userId, UserStatus status, boolean emailVerified) {

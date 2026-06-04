@@ -103,7 +103,13 @@ export function RegisterPage() {
       const nextRoute =
         registerData?.status === "PENDING_VERIFICATION" ? APP_ROUTES.verifyEmail : APP_ROUTES.login;
       redirectTimerRef.current = window.setTimeout(() => {
-        navigate(nextRoute, { replace: true });
+        navigate(nextRoute, {
+          replace: true,
+          state:
+            registerData?.status === "PENDING_VERIFICATION"
+              ? { email: normalizedForm.email }
+              : undefined,
+        });
       }, 900);
     } catch (error) {
       const serverFieldErrors = resolveFieldErrors(error?.errors);

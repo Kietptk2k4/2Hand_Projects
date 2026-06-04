@@ -104,10 +104,12 @@ export function validateForgotPasswordForm(form) {
   };
 }
 
+const VERIFY_OTP_PATTERN = /^\d{6}$/;
+
 export function validateVerifyToken(token) {
   const normalized = token?.trim() || "";
-  if (!normalized) return "Vui lòng nhập mã xác thực.";
-  if (normalized.length < 6) return "Mã xác thực không hợp lệ.";
+  if (!normalized) return "Vui lòng nhập mã OTP.";
+  if (!VERIFY_OTP_PATTERN.test(normalized)) return "Mã OTP 6 chữ số không hợp lệ.";
   return "";
 }
 

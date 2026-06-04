@@ -1,6 +1,7 @@
 package com.twohands.auth_service.unit.application.auth.resendemailverification;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.auth_service.application.auth.common.EmailVerificationOtpGenerator;
 import com.twohands.auth_service.application.auth.common.EmailVerificationOutboxService;
 import com.twohands.auth_service.application.auth.register.PasswordHashingService;
 import com.twohands.auth_service.application.auth.resendemailverification.ResendEmailVerificationCommand;
@@ -37,6 +38,8 @@ class ResendEmailVerificationUseCaseTest {
     private final ResendEmailVerificationRateLimitService rateLimitService =
             Mockito.mock(ResendEmailVerificationRateLimitService.class);
     private final PasswordHashingService passwordHashingService = Mockito.mock(PasswordHashingService.class);
+    private final EmailVerificationOtpGenerator emailVerificationOtpGenerator =
+            Mockito.mock(EmailVerificationOtpGenerator.class);
 
     private ResendEmailVerificationUseCase useCase;
 
@@ -50,9 +53,11 @@ class ResendEmailVerificationUseCaseTest {
                 rateLimitService,
                 new EmailVerificationOutboxService(new ObjectMapper()),
                 passwordHashingService,
+                emailVerificationOtpGenerator,
                 900
         );
         when(passwordHashingService.hash(any())).thenReturn(PasswordHash.of("hashed-token"));
+        when(emailVerificationOtpGenerator.generate()).thenReturn("123456");
     }
 
     @Test

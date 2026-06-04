@@ -1,5 +1,6 @@
 package com.twohands.notification_service.application.handler;
 
+import com.twohands.notification_service.application.email.AuthSecurityEmailNotificationPayloadNormalizer;
 import com.twohands.notification_service.application.email.SendEmailNotificationCommand;
 import com.twohands.notification_service.application.email.SendEmailNotificationOutcome;
 import com.twohands.notification_service.application.email.SendEmailNotificationResult;
@@ -20,13 +21,16 @@ public class EmailVerificationNotificationEventHandler implements NotificationEv
 
     private final NotificationRecipientResolver recipientResolver;
     private final SendEmailNotificationUseCase sendEmailNotificationUseCase;
+    private final AuthSecurityEmailNotificationPayloadNormalizer authSecurityEmailPayloadNormalizer;
 
     public EmailVerificationNotificationEventHandler(
             NotificationRecipientResolver recipientResolver,
-            SendEmailNotificationUseCase sendEmailNotificationUseCase
+            SendEmailNotificationUseCase sendEmailNotificationUseCase,
+            AuthSecurityEmailNotificationPayloadNormalizer authSecurityEmailPayloadNormalizer
     ) {
         this.recipientResolver = recipientResolver;
         this.sendEmailNotificationUseCase = sendEmailNotificationUseCase;
+        this.authSecurityEmailPayloadNormalizer = authSecurityEmailPayloadNormalizer;
     }
 
     @Override
@@ -47,9 +51,14 @@ public class EmailVerificationNotificationEventHandler implements NotificationEv
         int sentCount = 0;
         int skippedCount = 0;
 
+        String deliveryPayload = authSecurityEmailPayloadNormalizer.normalizeForStorage(
+                event.eventType(),
+                event.payload()
+        );
+
         for (UUID recipientId : recipients) {
             SendEmailNotificationResult result = sendEmailNotificationUseCase.execute(
-                    new SendEmailNotificationCommand(recipientId, event.eventType(), event.payload())
+                    new SendEmailNotificationCommand(recipientId, event.eventType(), deliveryPayload)
             );
 
             if (result.outcome() == SendEmailNotificationOutcome.FAILED) {

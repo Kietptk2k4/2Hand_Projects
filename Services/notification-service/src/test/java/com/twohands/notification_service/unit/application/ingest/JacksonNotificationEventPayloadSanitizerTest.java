@@ -33,6 +33,17 @@ class JacksonNotificationEventPayloadSanitizerTest {
     }
 
     @Test
+    void sanitize_preservesVerificationCodeField() {
+        String result = sanitizer.sanitize("""
+                {"recipient_email":"user@example.com","verification_code":"123456","verification_token":"secret"}
+                """);
+
+        assertTrue(result.contains("\"verification_code\":\"123456\""));
+        assertTrue(result.contains("***REDACTED***"));
+        assertFalse(result.contains("secret"));
+    }
+
+    @Test
     void sanitize_redactsSensitiveFields() {
         String result = sanitizer.sanitize("""
                 {"actorName":"Alice","access_token":"abc","nested":{"otp_code":"123456"}}

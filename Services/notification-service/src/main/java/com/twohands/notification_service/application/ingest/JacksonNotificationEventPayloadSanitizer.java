@@ -19,6 +19,11 @@ public class JacksonNotificationEventPayloadSanitizer implements NotificationEve
     private static final int MAX_JSON_LENGTH = 16_000;
     private static final int MAX_DEPTH = 6;
     private static final int MAX_FIELDS_PER_OBJECT = 50;
+    private static final Set<String> NON_SECRET_KEYS = Set.of(
+            "verification_code",
+            "reset_code"
+    );
+
     private static final Set<String> SENSITIVE_KEYS = Set.of(
             "password",
             "token",
@@ -118,6 +123,9 @@ public class JacksonNotificationEventPayloadSanitizer implements NotificationEve
             return false;
         }
         String normalized = key.toLowerCase().replace('-', '_');
+        if (NON_SECRET_KEYS.contains(normalized)) {
+            return false;
+        }
         return SENSITIVE_KEYS.stream().anyMatch(normalized::contains);
     }
 

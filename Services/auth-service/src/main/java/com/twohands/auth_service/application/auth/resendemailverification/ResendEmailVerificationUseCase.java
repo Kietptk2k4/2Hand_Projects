@@ -1,5 +1,6 @@
 package com.twohands.auth_service.application.auth.resendemailverification;
 
+import com.twohands.auth_service.application.auth.common.EmailVerificationOtpGenerator;
 import com.twohands.auth_service.application.auth.common.EmailVerificationOutboxService;
 import com.twohands.auth_service.application.auth.register.PasswordHashingService;
 import com.twohands.auth_service.domain.outbox.OutboxEventRepository;
@@ -15,7 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -33,7 +33,7 @@ public class ResendEmailVerificationUseCase {
     private final ResendEmailVerificationRateLimitService rateLimitService;
     private final EmailVerificationOutboxService emailVerificationOutboxService;
     private final PasswordHashingService passwordHashingService;
-    private final SecureRandom secureRandom;
+    private final EmailVerificationOtpGenerator emailVerificationOtpGenerator;
     private final long verificationTtlSeconds;
 
     public ResendEmailVerificationUseCase(
@@ -44,6 +44,7 @@ public class ResendEmailVerificationUseCase {
             ResendEmailVerificationRateLimitService rateLimitService,
             EmailVerificationOutboxService emailVerificationOutboxService,
             PasswordHashingService passwordHashingService,
+            EmailVerificationOtpGenerator emailVerificationOtpGenerator,
             @Value("${auth.register.verify-token-ttl-seconds:900}") long verificationTtlSeconds
     ) {
         this.userRepository = userRepository;
@@ -53,7 +54,7 @@ public class ResendEmailVerificationUseCase {
         this.rateLimitService = rateLimitService;
         this.emailVerificationOutboxService = emailVerificationOutboxService;
         this.passwordHashingService = passwordHashingService;
-        this.secureRandom = new SecureRandom();
+        this.emailVerificationOtpGenerator = emailVerificationOtpGenerator;
         this.verificationTtlSeconds = verificationTtlSeconds;
     }
 
@@ -74,7 +75,7 @@ public class ResendEmailVerificationUseCase {
                 now
         );
 
-        String verificationTokenRaw = generateVerificationToken();
+        String verificationTokenRaw = emailVerificationOtpGenerator.generate();
         VerificationToken verificationToken = new VerificationToken(
                 UUID.randomUUID(),
                 user.id(),
@@ -94,13 +95,4 @@ public class ResendEmailVerificationUseCase {
         return SUCCESS_MESSAGE;
     }
 
-    private String generateVerificationToken() {
-        byte[] bytes = new byte[16];
-        secureRandom.nextBytes(bytes);
-        StringBuilder sb = new StringBuilder(bytes.length * 2);
-        for (byte b : bytes) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
-    }
 }

@@ -24,7 +24,7 @@ public class EmailNotificationPayloadExtractor {
         }
 
         try {
-            JsonNode root = objectMapper.readTree(payloadJson);
+            JsonNode root = unwrapTextualJson(objectMapper.readTree(payloadJson));
             if (root.isObject()) {
                 collectObjectValues(root, values);
             }
@@ -32,6 +32,21 @@ public class EmailNotificationPayloadExtractor {
             // Missing variables are validated later.
         }
         return values;
+    }
+
+    private JsonNode unwrapTextualJson(JsonNode node) {
+        if (node == null || !node.isTextual()) {
+            return node;
+        }
+        String text = node.asText();
+        if (text == null || text.isBlank()) {
+            return objectMapper.createObjectNode();
+        }
+        try {
+            return unwrapTextualJson(objectMapper.readTree(text));
+        } catch (Exception ex) {
+            return node;
+        }
     }
 
     private void collectObjectValues(JsonNode node, Map<String, String> values) {

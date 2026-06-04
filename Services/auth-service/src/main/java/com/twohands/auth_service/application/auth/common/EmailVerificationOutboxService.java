@@ -27,11 +27,16 @@ public class EmailVerificationOutboxService {
         this.objectMapper = objectMapper;
     }
 
-    public OutboxEvent build(User user, String verificationTokenRaw, Instant now) {
+    /**
+     * OTP-only email verify payload. {@code verification_code} is the canonical field for Notification.
+     * {@code verification_token} duplicates the same 6-digit OTP for Kafka/envelope backward compatibility.
+     */
+    public OutboxEvent build(User user, String verificationOtpRaw, Instant now) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("user_id", user.id().toString());
         payload.put("email", user.email().normalizedValue());
-        payload.put("verification_token", verificationTokenRaw);
+        payload.put("verification_code", verificationOtpRaw);
+        payload.put("verification_token", verificationOtpRaw);
         payload.put("verification_token_type", VerificationTokenType.EMAIL_VERIFY.name());
 
         String payloadJson;

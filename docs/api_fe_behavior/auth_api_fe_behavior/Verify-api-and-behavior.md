@@ -1,36 +1,29 @@
 # Verify Email - API and Behavior Spec
 
 ## 1. Scope
-This document defines backend API contract and frontend behavior for `Verify Email` in Auth Service.
+Backend API contract và frontend behavior cho **Verify Email** (Auth Service) — **chỉ OTP 6 chữ số**, không verification link.
 
 In scope:
-- Accept verification token from user
-- Validate token by hash, type, expiry, and usage status
-- Activate user account
-- Mark verification token as used
-- Write outbox event after successful activation
+- Nhận OTP 6 chữ số từ user (API field `token`)
+- Validate OTP (format, hash, type, expiry, usage)
+- Kích hoạt tài khoản `PENDING_VERIFICATION` → `ACTIVE`
+- Đánh dấu verification token đã dùng
+- Ghi outbox sau kích hoạt thành công
 
 Out of scope:
-- Resend verification token
-- Register/login/refresh/logout endpoints
+- Resend OTP (API riêng)
+- Register / login / refresh / logout
+- Verify qua link trên email
 
 ## 2. Source Docs
-- `docs/feature-requirements/auth/FR_Verify_Email.md`
+- `docs/feature_requirements/auth/FR_Verify_Email.md`
+- `docs/feature_requirements/auth/FR_ResendEmailVerification.md`
 - `docs/use-cases/uc-user-authentication.md`
 - `docs/business-spec/auth-service-spec.md`
-- `docs/business-flow/authentication-lifecycle-flow.md`
-- `docs/database/auth_schema.md`
-- `docs/engineering-rules/api-standard.md`
+- `docs/kafka/kafka_section_email_otp.md`
 
-## 3. Current Code Alignment
-- Register flow already creates `verification_tokens` with `type = EMAIL_VERIFY` and stores `token_hash`.
-- Register flow already emits `EMAIL_VERIFICATION_REQUESTED` outbox event.
-- Domain already has `VerificationToken` model and expiry/used rules.
-- Current codebase does not yet expose `POST /api/v1/auth/verify-email` endpoint.
+## 3. API Contract
 
-This spec is the target behavior that fits current architecture and existing data model.
-
-## 4. API Contract
 ### Endpoint
 - Method: `POST`
 - Path: `/api/v1/auth/verify-email`
@@ -39,12 +32,12 @@ This spec is the target behavior that fits current architecture and existing dat
 ### Request Body
 ```json
 {
-  "token": "verify_token_or_otp"
+  "token": "123456"
 }
 ```
 
 ### Validation
-- `token`: required, non-empty
+- `token`: required, đúng **6 chữ số** (`/^\d{6}$/`)
 
 ### Success Response (200)
 ```json
@@ -63,7 +56,8 @@ This spec is the target behavior that fits current architecture and existing dat
 ```
 
 ### Error Responses
-- `400` invalid/expired/used token
+- `400` OTP invalid format, sai hash, hết hạn, đã dùng
+- `429` verify rate limited (theo IP)
 - `500` internal error
 
 Example 400:
@@ -83,87 +77,54 @@ Example 400:
 }
 ```
 
-## 5. Backend Behavior (Authoritative)
-### Main Flow
-1. Validate request payload.
-2. Hash input `token` using same strategy as register flow (BCrypt hash service used in project for verification token compare flow).
-3. Find verification token record by:
-- `type = EMAIL_VERIFY`
-- token match strategy consistent with current hashing approach
-4. Validate token business conditions:
-- not used (`used_at is null`)
-- not expired (`expires_at > now`)
-5. Load user by `user_id` from token.
-6. Validate user status:
-- expected `PENDING_VERIFICATION`
-7. In one transaction:
-- mark token `used_at = now`
-- update user:
-  - `email_verified = true`
-  - `status = ACTIVE`
-  - `updated_at = now`
-- create outbox event (`USER_CREATED` or `USER_UPDATED` per project convention)
-8. Return 200 success.
+## 4. Backend Behavior (Authoritative)
 
-### Idempotency Recommendation
-- If user already ACTIVE and email_verified=true, may return 200 with safe message instead of hard failure.
-- Keep behavior consistent across FE for better UX.
+1. Validate payload (`token` = 6 digits).
+2. Rate limit verify attempt (IP).
+3. Hash input `token`, so khớp `VERIFICATION_TOKENS` (`type = EMAIL_VERIFY`, chưa dùng, chưa hết hạn).
+4. Load user; yêu cầu `PENDING_VERIFICATION`.
+5. Transaction: mark token used, `email_verified=true`, `status=ACTIVE`, outbox user activation event.
+6. Return 200 (idempotent nếu user đã ACTIVE + đã verify).
 
-## 6. Database Impact
-- `verification_tokens`:
-- update `used_at`
-- `users`:
-- update `email_verified`, `status`, `updated_at`
-- `outbox_events`:
-- insert user activation event with `status = PENDING`
+## 5. Database Impact
+- `verification_tokens`: `used_at`
+- `users`: `email_verified`, `status`, `updated_at`
+- `outbox_events`: user activation event
 
-## 7. Transaction and Consistency
-- Token update + user update + outbox insert must be in one ACID transaction.
-- Any failure rolls back all writes.
-- Prevent concurrent verify race:
-- lock token row or use conditional update (`used_at IS NULL`) and verify affected rows.
+## 6. Security Rules
+- Không log raw OTP.
+- Generic 400 cho OTP sai/hết hạn (anti-enumeration).
+- Rate limit verify theo IP.
+- HTTPS only.
 
-## 8. Security Rules
-- Never log raw token value.
-- Keep generic 400 error for invalid/expired/used token.
-- Apply rate limiting for verify endpoint to reduce brute-force attempts.
-- Use TLS/HTTPS only.
+## 7. FE Behavior
 
-## 9. FE Behavior (for Stitch/UI generation)
 ### Verify Screen
-- Input: token/OTP
-- CTA: `Verify email`
-- Optional link: `Resend code`
+- Input: **OTP 6 chữ số** (`inputMode=numeric`, `maxLength=6`)
+- CTA: Xác thực email
+- **Gửi lại mã OTP** → `POST /api/v1/auth/resend-email-verification`; countdown **60–120s** (khuyến nghị 90s) sau mỗi lần resend thành công
 
 ### UX States
-- Inline validation for empty/invalid token format
-- Loading state on submit
-- On 200:
-- show success toast/message
-- redirect to Login (or Home by product decision)
-- On 400:
-- show "Token khong hop le hoac da het han."
-- keep user on verify screen
-- On 500:
-- show generic retry message
+- Inline validation: `/^\d{6}$/`
+- Loading on submit
+- `200`: success toast → redirect Login
+- `400`: "Mã OTP không hợp lệ hoặc đã hết hạn."
+- `429`: thông báo thao tác quá nhanh
+- Không dùng `?token=` URL làm luồng chính
 
-### UI Notes
-- Keep flow simple and mobile-friendly
-- Accessibility: labeled input, error text, keyboard submit
+## 8. Acceptance Criteria
+- OTP hợp lệ + user pending → ACTIVE, token marked used
+- OTP sai/hết hạn → 400, user không đổi
+- Outbox cùng transaction verify thành công
+- OTP không có trong logs
 
-## 10. Acceptance Criteria
-- Valid token + pending user -> user activated and token marked used.
-- Invalid/expired/used token -> 400 and no user state change.
-- Successful verify writes outbox event in same transaction.
-- Sensitive token is never written to logs.
-
-## 11. Prompt for Stitch (UI only)
+## 9. Prompt for Stitch (UI only)
 ```text
 Generate a Verify Email screen for 2Hands:
-- Token input + Verify button
-- Optional Resend Code link
+- OTP input (6 digits, numeric keyboard) + Verify button
+- Resend OTP button with 60-120s cooldown after success
 - Inline validation and loading state
-- Success path: show success message and redirect to Login
-- Error path: invalid/expired token message
-- Responsive and accessible layout
+- Success: message then redirect to Login
+- Error: invalid/expired OTP message
+- Mobile-friendly, accessible
 ```

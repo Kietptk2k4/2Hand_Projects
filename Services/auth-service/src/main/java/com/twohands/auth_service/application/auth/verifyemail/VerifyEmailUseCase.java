@@ -35,6 +35,7 @@ public class VerifyEmailUseCase {
     private final VerifyEmailValidationService validationService;
     private final PasswordHashingService passwordHashingService;
     private final UserAccountOutboxService userAccountOutboxService;
+    private final VerifyEmailRateLimitService rateLimitService;
 
     public VerifyEmailUseCase(
             UserRepository userRepository,
@@ -42,7 +43,8 @@ public class VerifyEmailUseCase {
             OutboxEventRepository outboxEventRepository,
             VerifyEmailValidationService validationService,
             PasswordHashingService passwordHashingService,
-            UserAccountOutboxService userAccountOutboxService
+            UserAccountOutboxService userAccountOutboxService,
+            VerifyEmailRateLimitService rateLimitService
     ) {
         this.userRepository = userRepository;
         this.verificationTokenRepository = verificationTokenRepository;
@@ -50,10 +52,12 @@ public class VerifyEmailUseCase {
         this.validationService = validationService;
         this.passwordHashingService = passwordHashingService;
         this.userAccountOutboxService = userAccountOutboxService;
+        this.rateLimitService = rateLimitService;
     }
 
     @Transactional
     public VerifyEmailResult execute(VerifyEmailCommand command) {
+        rateLimitService.validateAttempt(command.ipAddress());
         String rawToken = validationService.validateAndNormalizeToken(command.token());
         Instant now = Instant.now();
 

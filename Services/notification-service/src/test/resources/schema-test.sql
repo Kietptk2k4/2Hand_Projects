@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS notification_events (
     aggregate_id VARCHAR(100),
     actor_id UUID,
     recipient_user_id UUID,
-    payload VARCHAR(4000) NOT NULL DEFAULT '{}',
+    payload JSON NOT NULL,
     status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
     retry_count INTEGER NOT NULL DEFAULT 0,
     max_retry_count INTEGER NOT NULL DEFAULT 5,
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS user_notifications (
     reference_id VARCHAR(100) NOT NULL DEFAULT '',
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
-    metadata VARCHAR(4000) NOT NULL DEFAULT '{}',
+    metadata JSON NOT NULL,
     delivery_status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
     created_at TIMESTAMP NOT NULL,
     read_at TIMESTAMP

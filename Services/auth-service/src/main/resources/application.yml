@@ -141,6 +141,11 @@ auth:
       max-attempts: ${AUTH_RESEND_EMAIL_VERIFICATION_RATE_LIMIT_MAX_ATTEMPTS:3}
       window-seconds: ${AUTH_RESEND_EMAIL_VERIFICATION_RATE_LIMIT_WINDOW_SECONDS:900}
 
+  verify-email:
+    rate-limit:
+      max-attempts: ${AUTH_VERIFY_EMAIL_RATE_LIMIT_MAX_ATTEMPTS:10}
+      window-seconds: ${AUTH_VERIFY_EMAIL_RATE_LIMIT_WINDOW_SECONDS:900}
+
   object-storage:
     enabled: ${AUTH_MINIO_ENABLED:false}
     endpoint: ${AUTH_MINIO_ENDPOINT:http://localhost:9000}
