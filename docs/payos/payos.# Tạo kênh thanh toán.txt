@@ -1,0 +1,31 @@
+# Tạo kênh thanh toán
+
+### Trước khi bắt đầu[​](#trước-khi-bắt-đầu "Đường dẫn trực tiếp đến Trước khi bắt đầu")
+
+* Bạn cần có tài khoản đăng nhập vào hệ thống payOS.
+* Tổ chức của bạn đã được xác thực. Nếu chưa được xác thực, vui lòng tham khảo Mục [Xác thực Tổ chức](/docs/huong-dan-su-dung/xac-thuc-to-chuc.md)
+* Bạn đã liên kết ít nhất một tài khoản ngân hàng vào payOS. Nếu chưa liên kết tài khoản, vui lòng tham khảo phần [Kết nối tài khoản ngân hàng](/docs/huong-dan-su-dung/ket-noi-tai-khoan-ngan-hang.md)
+
+Sau khi xác thực Tổ chức thành công, bạn cần thực hiện theo các bước sau để tạo một kênh thanh toán mới.
+
+**Bước 1:** Tại menu **Kênh thanh toán**, nhấn nút **Tạo kênh thanh toán**.
+
+**Bước 2:** Điền thông tin Tên của kênh, tải lên Logo cho kênh thanh toán. Sau khi đã nhập đầy đủ thông tin, nhấn nút **Tiếp tục**.
+
+![Example banner](/docs/assets/images/channel-input-731f8e68026a6a78dabaaf74b3eb2a1b.png)
+
+**Bước 3:** Chọn ngân hàng chính cho kênh, ấn chọn **Tạo kênh thanh toán và tích hợp**.
+
+![Example banner](/docs/assets/images/create-channel-and-integration-3ce0234bc0d969667fa6cf374aba0b60.png)
+
+**Bước 4:** Giao diện Tạo kênh thanh toán thành công, tích hợp vào web/app của bạn bằng các key (Client ID, API Key, Checksum Key). Ấn **Hoàn tất** để kết thúc.
+
+![Example banner](/docs/assets/images/integration-7826ebc91a70eb2122e92f2b29a7f89f.png)
+
+Thông tin
+
+Vào Kênh thanh toán, ấn chọn Kênh thanh toán để thêm webhookURL để nhận thông tin về các đơn hàng được thanh toán thành công.
+Beta
+0 / 0
+used queries
+1

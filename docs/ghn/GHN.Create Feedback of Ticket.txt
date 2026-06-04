@@ -1,0 +1,66 @@
+Create Feedback of Ticket
+API Create Feedback of Ticket
+ 
+Reply Feedback of Ticket
+
+Caution : The API Order Info need to infusion token in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/ticket/reply
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/ticket/reply
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/ticket/reply' \
+--header 'Token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+--header 'Content-Type: multipart/form-data; boundary=--------------------------137463283036362119883479' \
+--form 'attachments=@Desktop/Screenshot 2020-03-17 at 11.45.20.png' \
+--form 'description=Tech test' \
+--form 'ticket_id=1615263'
+
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+ticket_id	Int	
+The ticket ID is returned when calling api to create a ticket
+
+attachments	File	
+Image , excel , csv
+
+description	String	
+Description of requirement
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":{
+    "body":"Tech test" 
+    "created_at":"2020-05-29T15:42:13Z" 
+    "from_email":"\"Email Support Khách hàng GHN\" <cskh@ghn.vn>" 
+    "updated_at":"2020-05-29T15:24:15Z" 
+    "user_id":2043022891177  
+     }
+}
+Structure Response
+Field	Description
+Body	
+Content
+
+CreatedAt	
+Created At
+
+FromEmail	
+From Email
+
+UpdatedAt	
+Updated At
+
+Error-Response
+{
+    "code": 404,
+    "message": "Key: 'myRequest.TicketID' Error:Field validation for 'TicketID' failed on the 'required' tag",
+    "data": null
+}

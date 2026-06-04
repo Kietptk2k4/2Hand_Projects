@@ -1,0 +1,20 @@
+# Tạo tài khoản payOS
+
+Bước 1: Vào trang <https://my.payos.vn/login> để đăng nhập.
+
+![Example banner](/docs/assets/images/login-9364db57634f3bf87e59d689d12ad0da.png)
+
+Bước 2: Nếu chưa có tài khoản đăng nhập bạn chọn **Đăng ký** và điền thông tin đầy đủ vào các trường ở trang đăng ký => Ấn **Tạo tài khoản**
+
+![Example banner](/docs/assets/images/register-35b589f91fb0a1002f3c3d0932f3f986.png)
+
+Bước 3: payOS sẽ gửi vào địa chỉ email bạn đăng ký, ấn **Xác thực** để xác thực tài khoản.
+
+![Example banner](/docs/assets/images/email-authentication-31e77d73b9b2fbefb21cc3aeeee00b9c.png)
+
+Bước 4: Giao diện sau khi tạo tài khoản thành công:
+
+![Example banner](/docs/assets/images/login-success-2a8bb9de5e049b83bb70350fce2af046.png)
+Beta
+0 / 0
+used queries

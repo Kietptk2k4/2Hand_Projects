@@ -8,6 +8,8 @@ import { CreateShopStepper } from "../components/CreateShopStepper";
 import { useCreateShop } from "../hooks/useCreateShop";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
+const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
+
 export function CommerceCreateShopPage() {
   const navigate = useNavigate();
   const [toastMessage, setToastMessage] = useState("");
@@ -53,12 +55,16 @@ export function CommerceCreateShopPage() {
     setToastMessage("");
   }, []);
 
+  const showComingSoon = useCallback(() => {
+    setToastMessage(COMING_SOON_MESSAGE);
+  }, []);
+
   const existingShopPath = existingShopId
     ? APP_ROUTES.commerceShopProducts.replace(":shopId", existingShopId)
     : null;
 
   return (
-    <CommerceShell showHomeSidebar={false}>
+    <CommerceShell onComingSoon={showComingSoon}>
       <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-8 md:px-8">
         <header className="mb-8 text-center">
           <h1 className="text-headline-lg-mobile font-bold text-primary md:text-headline-lg">

@@ -4,6 +4,9 @@ import com.twohands.auth_service.domain.session.RefreshTokenSession;
 import com.twohands.auth_service.domain.session.RefreshTokenSessionPage;
 import com.twohands.auth_service.domain.session.RefreshTokenSessionRepository;
 import com.twohands.auth_service.domain.session.SessionStatus;
+import com.twohands.auth_service.infrastructure.persistence.JdbcPgEnumTypes;
+import com.twohands.auth_service.infrastructure.persistence.JdbcSqlDialect;
+import com.twohands.auth_service.infrastructure.persistence.JdbcTimestamps;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -19,9 +22,11 @@ import java.util.UUID;
 public class RefreshTokenSessionRepositoryAdapter implements RefreshTokenSessionRepository {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final JdbcSqlDialect sqlDialect;
 
-    public RefreshTokenSessionRepositoryAdapter(NamedParameterJdbcTemplate jdbcTemplate) {
+    public RefreshTokenSessionRepositoryAdapter(NamedParameterJdbcTemplate jdbcTemplate, JdbcSqlDialect sqlDialect) {
         this.jdbcTemplate = jdbcTemplate;
+        this.sqlDialect = sqlDialect;
     }
 
     @Override
@@ -53,9 +58,9 @@ public class RefreshTokenSessionRepositoryAdapter implements RefreshTokenSession
         String sql = """
                 SELECT id, user_id, token_hash, device_id, ip_address, user_agent, expires_at, status, created_at, updated_at
                 FROM refresh_token_sessions
-                WHERE user_id = :userId AND status = :status
+                WHERE user_id = :userId AND status = %s
                 ORDER BY created_at DESC
-                """;
+                """.formatted(sqlDialect.castEnum("status", JdbcPgEnumTypes.REFRESH_TOKEN_STATUS));
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("userId", userId)
                 .addValue("status", status.name());
@@ -69,7 +74,9 @@ public class RefreshTokenSessionRepositoryAdapter implements RefreshTokenSession
                 .addValue("limit", limit)
                 .addValue("offset", offset);
 
-        String statusClause = statusFilter == null ? "" : " AND status = :status ";
+        String statusClause = statusFilter == null
+                ? ""
+                : " AND status = " + sqlDialect.castEnum("status", JdbcPgEnumTypes.REFRESH_TOKEN_STATUS) + " ";
         if (statusFilter != null) {
             params.addValue("status", statusFilter.name());
         }
@@ -105,9 +112,9 @@ public class RefreshTokenSessionRepositoryAdapter implements RefreshTokenSession
                     id, user_id, token_hash, device_id, ip_address, user_agent, expires_at, status, created_at, updated_at
                 )
                 VALUES (
-                    :id, :userId, :tokenHash, :deviceId, :ipAddress, :userAgent, :expiresAt, :status, :createdAt, :updatedAt
+                    :id, :userId, :tokenHash, :deviceId, :ipAddress, :userAgent, :expiresAt, %s, :createdAt, :updatedAt
                 )
-                """;
+                """.formatted(sqlDialect.castEnum("status", JdbcPgEnumTypes.REFRESH_TOKEN_STATUS));
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("id", session.id())
                 .addValue("userId", session.userId())
@@ -115,10 +122,10 @@ public class RefreshTokenSessionRepositoryAdapter implements RefreshTokenSession
                 .addValue("deviceId", session.deviceId())
                 .addValue("ipAddress", session.ipAddress())
                 .addValue("userAgent", session.userAgent())
-                .addValue("expiresAt", session.expiresAt())
+                .addValue("expiresAt", JdbcTimestamps.from(session.expiresAt()))
                 .addValue("status", session.status().name())
-                .addValue("createdAt", session.createdAt())
-                .addValue("updatedAt", session.updatedAt());
+                .addValue("createdAt", JdbcTimestamps.from(session.createdAt()))
+                .addValue("updatedAt", JdbcTimestamps.from(session.updatedAt()));
 
         jdbcTemplate.update(sql, params);
         return session;
@@ -128,12 +135,15 @@ public class RefreshTokenSessionRepositoryAdapter implements RefreshTokenSession
     public int markLoggedOutIfActive(UUID sessionId, Instant updatedAt) {
         String sql = """
                 UPDATE refresh_token_sessions
-                SET status = :loggedOutStatus, updated_at = :updatedAt
-                WHERE id = :sessionId AND status = :activeStatus
-                """;
+                SET status = %s, updated_at = :updatedAt
+                WHERE id = :sessionId AND status = %s
+                """.formatted(
+                sqlDialect.castEnum("loggedOutStatus", JdbcPgEnumTypes.REFRESH_TOKEN_STATUS),
+                sqlDialect.castEnum("activeStatus", JdbcPgEnumTypes.REFRESH_TOKEN_STATUS)
+        );
         return jdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("loggedOutStatus", SessionStatus.LOGGED_OUT.name())
-                .addValue("updatedAt", updatedAt)
+                .addValue("updatedAt", JdbcTimestamps.from(updatedAt))
                 .addValue("sessionId", sessionId)
                 .addValue("activeStatus", SessionStatus.ACTIVE.name()));
     }
@@ -142,12 +152,15 @@ public class RefreshTokenSessionRepositoryAdapter implements RefreshTokenSession
     public int markRevokedIfActive(UUID sessionId, Instant updatedAt) {
         String sql = """
                 UPDATE refresh_token_sessions
-                SET status = :revokedStatus, updated_at = :updatedAt
-                WHERE id = :sessionId AND status = :activeStatus
-                """;
+                SET status = %s, updated_at = :updatedAt
+                WHERE id = :sessionId AND status = %s
+                """.formatted(
+                sqlDialect.castEnum("revokedStatus", JdbcPgEnumTypes.REFRESH_TOKEN_STATUS),
+                sqlDialect.castEnum("activeStatus", JdbcPgEnumTypes.REFRESH_TOKEN_STATUS)
+        );
         return jdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("revokedStatus", SessionStatus.REVOKED.name())
-                .addValue("updatedAt", updatedAt)
+                .addValue("updatedAt", JdbcTimestamps.from(updatedAt))
                 .addValue("sessionId", sessionId)
                 .addValue("activeStatus", SessionStatus.ACTIVE.name()));
     }
@@ -156,9 +169,12 @@ public class RefreshTokenSessionRepositoryAdapter implements RefreshTokenSession
     public int revokeAllByUserId(UUID userId) {
         String sql = """
                 UPDATE refresh_token_sessions
-                SET status = :revokedStatus, updated_at = CURRENT_TIMESTAMP
-                WHERE user_id = :userId AND status = :activeStatus
-                """;
+                SET status = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE user_id = :userId AND status = %s
+                """.formatted(
+                sqlDialect.castEnum("revokedStatus", JdbcPgEnumTypes.REFRESH_TOKEN_STATUS),
+                sqlDialect.castEnum("activeStatus", JdbcPgEnumTypes.REFRESH_TOKEN_STATUS)
+        );
         return jdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("revokedStatus", SessionStatus.REVOKED.name())
                 .addValue("activeStatus", SessionStatus.ACTIVE.name())

@@ -2,6 +2,7 @@ package com.twohands.auth_service.infrastructure.persistence.adapter;
 
 import com.twohands.auth_service.domain.rbac.Role;
 import com.twohands.auth_service.domain.rbac.RoleRepository;
+import com.twohands.auth_service.infrastructure.persistence.JdbcTimestamps;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -103,8 +104,8 @@ public class RoleRepositoryAdapter implements RoleRepository {
                 .addValue("id", role.id())
                 .addValue("code", role.code())
                 .addValue("name", role.name())
-                .addValue("createdAt", role.createdAt())
-                .addValue("updatedAt", role.updatedAt()));
+                .addValue("createdAt", JdbcTimestamps.from(role.createdAt()))
+                .addValue("updatedAt", JdbcTimestamps.from(role.updatedAt())));
 
         String deletePermissionsSql = "DELETE FROM role_permissions WHERE role_id = :roleId";
         jdbcTemplate.update(deletePermissionsSql, new MapSqlParameterSource("roleId", role.id()));
@@ -119,8 +120,8 @@ public class RoleRepositoryAdapter implements RoleRepository {
                 jdbcTemplate.update(insertPermissionSql, new MapSqlParameterSource()
                         .addValue("roleId", role.id())
                         .addValue("permissionId", permissionId)
-                        .addValue("createdAt", now)
-                        .addValue("updatedAt", now));
+                        .addValue("createdAt", JdbcTimestamps.from(now))
+                        .addValue("updatedAt", JdbcTimestamps.from(now)));
             }
         }
 

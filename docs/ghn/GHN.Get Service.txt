@@ -1,0 +1,80 @@
+Get Service
+API Get Service
+ 
+Use to get list of available services from district pick up items and to district drop off items (Full information)
+
+Caution : The API Order Info need to infusion token in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/available-services
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/available-services
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/available-services' \
+--header 'token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+	"shop_id":885,
+	"from_district": 1447,
+	"to_district": 1442
+}'
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+from_district	Int	
+DistrictID provide to GHN
+
+to_district	Int	
+DistrictID provide to GHN
+
+shop_id	Int	
+Manage information for shop/seller
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":[
+    {
+    "service_id":53319
+    "short_name":"Nhanh"
+    "service_type_id":1
+    },
+     {
+    "service_id":53320
+    "short_name":"Chuẩn"
+    "service_type_id":2
+    },
+     {
+    "service_id":53330
+    "short_name":""
+    "service_type_id":0
+    },
+     {
+    "service_id":53321
+    "short_name":"Tiết kiệm"
+    "service_type_id":3
+    },
+    ]
+}
+Structure Response
+Field	Description
+service_id	
+Service id
+
+short_name	
+Short name
+
+service_type_id	
+Service type id
+
+Error-Response
+{
+    "code": 400,
+    "message": "code=400, message=Syntax error: offset=30, error=invalid character '}' after array element, internal=invalid character '}' after array element",
+    "data": null
+    "code_message": "USER_ERR_COMMON"
+}

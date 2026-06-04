@@ -1,7 +1,9 @@
 import { authorAvatarUrl, authorDisplayName } from "../utils/authorDisplay";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
+import { enrichProductTags } from "../utils/enrichProductTag";
 import { PostCaption } from "./PostCaption";
 import { PostOptionsMenu } from "./PostOptionsMenu";
+import { PostProductTagsBlock } from "./PostProductTagsBlock";
 
 const PLACEHOLDER_IMAGE =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect fill='%23dee8ff' width='400' height='300'/%3E%3C/svg%3E";
@@ -20,6 +22,7 @@ export function HashtagPostCard({
   onOpenComments,
   onViewProfile,
   onHashtagClick,
+  onViewProduct,
   onEdit,
   onDeletePost,
   onToggleSavePost,
@@ -32,6 +35,7 @@ export function HashtagPostCard({
   const mediaUrl = post.media?.[0]?.url || PLACEHOLDER_IMAGE;
   const displayName = authorDisplayName(post.authorId);
   const avatarUrl = authorAvatarUrl(post.authorId);
+  const enrichedProductTags = enrichProductTags(post.productTags);
 
   const handleOpenPost = () => onOpenPost?.(post.postId);
   const handleOpenComments = (event) => {
@@ -92,6 +96,13 @@ export function HashtagPostCard({
             onCaptionClick={handleOpenPost}
             onHashtagClick={onHashtagClick}
           />
+          {enrichedProductTags.length > 0 ? (
+            <PostProductTagsBlock
+              tags={enrichedProductTags}
+              variant="compact"
+              onViewProduct={onViewProduct}
+            />
+          ) : null}
         </div>
 
         <div className="flex items-center gap-4 border-t border-outline-variant pt-3 text-sm text-on-surface-variant">

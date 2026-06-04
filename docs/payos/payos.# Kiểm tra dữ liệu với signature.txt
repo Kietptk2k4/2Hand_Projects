@@ -1,0 +1,526 @@
+# xử lý dữ liệu thanh toán.Kiểm tra dữ liệu với signature
+
+## Kiểm tra thông tin bằng chữ ký (payment-requests)[​](#kiểm-tra-thông-tin-bằng-chữ-ký-payment-requests "Đường dẫn trực tiếp đến Kiểm tra thông tin bằng chữ ký (payment-requests)")
+
+Giá trị `signature` được dùng để kiểm tra tính chính xác của dữ liệu.
+
+### Cách tạo signature[​](#cách-tạo-signature "Đường dẫn trực tiếp đến Cách tạo signature")
+
+* Sử dụng thuật toán HMAC\_SHA256 để tạo signature.
+* data tạo signature dạng: key1=value1\&key2=value2... (key1: tên field, value1 = giá trị của key1).
+* Dữ liệu tạo signature sắp xếp theo key thứ tự alphabet.
+* Cấu trúc: hash\_hmac("sha256", string $data , string $checksum\_key)
+
+Lưu ý:
+
+Checksum Key được tạo ra sau khi tạo cổng thanh toán thành công
+
+<!-- -->
+
+### Code mẫu kiểm tra chính xác dữ liệu[​](#code-mẫu-kiểm-tra-chính-xác-dữ-liệu "Đường dẫn trực tiếp đến Code mẫu kiểm tra chính xác dữ liệu")
+
+* PHP
+* Javascript
+* Python
+* Java
+
+```
+    <?php
+      $checksum_key = "1a54716c8f0efb2744fb28b6e38b25da7f67a925d98bc1c18bd8faaecadd7675";
+      $webhookData = array(
+          "code" => "00",
+          "desc" => "success",
+          "success" => true,
+          "data" => array(
+              "orderCode"           => 123,
+              "amount"              => 3000,
+              "description"         => "VQRIO123",
+              "accountNumber"       => "12345678",
+              "reference"           => "TF230204212323",
+              "transactionDateTime" => "2023-02-04 18:25:00",
+              "currency"            => "VND",
+              "paymentLinkId"       => "124c33293c43417ab7879e14c8d9eb18",
+              "code"                => "00",
+              "desc"                => "Thành công",
+              "counterAccountBankId"    => "",
+              "counterAccountBankName"  => "",
+              "counterAccountName"      => "",
+              "counterAccountNumber"    => "",
+              "virtualAccountName"      => "",
+              "virtualAccountNumber"    => ""
+          ),
+          "signature"             => "412e915d2871504ed31be63c8f62a149a4410d34c4c42affc9006ef9917eaa03"
+      );
+
+      function isValidData($transaction, $transaction_signature, $checksum_key)
+      {
+          ksort($transaction);
+          $transaction_str_arr = [];
+          foreach ($transaction as $key => $value) {
+              if (in_array($value, ["undefined", "null"]) || gettype($value) == "NULL") {
+                  $value = "";
+              }
+
+              if (is_array($value)) {
+                  $valueSortedElementObj = array_map(function ($ele) {
+                      ksort($ele);
+                      return $ele;
+                  }, $value);
+                  $value = json_encode($valueSortedElementObj, JSON_UNESCAPED_UNICODE);
+              }
+              $transaction_str_arr[] = $key . "=" . $value;
+          }
+          $transaction_str = implode("&", $transaction_str_arr);
+          dump($transaction_str);
+          $signature = hash_hmac("sha256", $transaction_str, $checksum_key);
+          dump($signature);
+          return $signature == $transaction_signature;
+      }
+
+      isValidData($webhookData['data'], $webhookData['signature'], $checksum_key);
+```
+
+```
+import { createHmac } from 'crypto';
+
+const checksumKey = '1a54716c8f0efb2744fb28b6e38b25da7f67a925d98bc1c18bd8faaecadd7675';
+const webhookData = {
+  code: '00',
+  desc: 'success',
+  success: true,
+  data: {
+    orderCode: 123,
+    amount: 3000,
+    description: 'VQRIO123',
+    accountNumber: '12345678',
+    reference: 'TF230204212323',
+    transactionDateTime: '2023-02-04 18:25:00',
+    currency: 'VND',
+    paymentLinkId: '124c33293c43417ab7879e14c8d9eb18',
+    code: '00',
+    desc: 'Thành công',
+    counterAccountBankId: '',
+    counterAccountBankName: '',
+    counterAccountName: '',
+    counterAccountNumber: '',
+    virtualAccountName: '',
+    virtualAccountNumber: '',
+  },
+  signature: '412e915d2871504ed31be63c8f62a149a4410d34c4c42affc9006ef9917eaa03',
+};
+
+function sortObjDataByKey(object) {
+  const orderedObject = Object.keys(object)
+    .sort()
+    .reduce((obj, key) => {
+      obj[key] = object[key];
+      return obj;
+    }, {});
+  return orderedObject;
+}
+
+function convertObjToQueryStr(object) {
+  return Object.keys(object)
+    .filter((key) => object[key] !== undefined)
+    .map((key) => {
+      let value = object[key];
+      // Sort nested object
+      if (value && Array.isArray(value)) {
+        value = JSON.stringify(value.map((val) => sortObjDataByKey(val)));
+      }
+      // Set empty string if null
+      if ([null, undefined, 'undefined', 'null'].includes(value)) {
+        value = '';
+      }
+
+      return `${key}=${value}`;
+    })
+    .join('&');
+}
+
+function isValidData(data, currentSignature, checksumKey) {
+  const sortedDataByKey = sortObjDataByKey(data);
+  const dataQueryStr = convertObjToQueryStr(sortedDataByKey);
+  const dataToSignature = createHmac('sha256', checksumKey).update(dataQueryStr).digest('hex');
+  return dataToSignature == currentSignature;
+}
+
+return isValidData(webhookData.data, webhookData.signature, checksumKey);
+```
+
+```
+    // Python3
+    import hmac
+    import hashlib
+
+    checksum_key = "1a54716c8f0efb2744fb28b6e38b25da7f67a925d98bc1c18bd8faaecadd7675"
+    webhook_data = {
+      "code": '00',
+      "desc": 'success',
+      "success": True,
+      "data": {
+          "orderCode": 123,
+          "amount": 3000,
+          "description": 'VQRIO123',
+          "accountNumber": '12345678',
+          "reference": 'TF230204212323',
+          "transactionDateTime": '2023-02-04 18:25:00',
+          "currency": 'VND',
+          "paymentLinkId": '124c33293c43417ab7879e14c8d9eb18',
+          "code": '00',
+          "desc": 'Thành công',
+          "counterAccountBankId": '',
+          "counterAccountBankName": '',
+          "counterAccountName": '',
+          "counterAccountNumber": '',
+          "virtualAccountName": '',
+          "virtualAccountNumber": '',
+      },
+      "signature": '412e915d2871504ed31be63c8f62a149a4410d34c4c42affc9006ef9917eaa03'
+    }
+
+    def convertObjToQueryStr(obj: dict) -> str:
+        query_string = []
+
+        for key, value in obj.items():
+            value_as_string = ""
+            if isinstance(value, (int, float, bool)):
+                value_as_string = str(value)
+            elif value in [None, 'null', 'NULL']:
+                value_as_string = ""
+            elif isinstance(value, list):
+                value_as_string = json.dumps([sortObjDataByKey(item) for item in value], separators=(',', ':')).replace('None', 'null')
+            else:
+                value_as_string = str(value)
+            query_string.append(f"{key}={value_as_string}")
+
+        return "&".join(query_string)
+
+    def sortObjDataByKey(obj: dict) -> dict:
+        return dict(sorted(obj.items()))
+
+    def isValidData(data,signature,key):
+        sorted_data_by_key = sortObjDataByKey(data)
+        data_query_str = convertObjToQueryStr(sorted_data_by_key)
+        print(data_query_str)
+        data_to_signature =  hmac.new(key.encode("utf-8"), msg=data_query_str.encode("utf-8"), digestmod=hashlib.sha256).hexdigest()
+
+        return data_to_signature == signature
+```
+
+```
+    import java.util.*;
+
+    import org.apache.commons.codec.digest.HmacUtils;
+    import org.json.JSONObject;
+
+    public class Main {
+
+        static String checksumKey = "1a54716c8f0efb2744fb28b6e38b25da7f67a925d98bc1c18bd8faaecadd7675";
+
+        static String transaction = "{'orderCode':123,'amount':3000,'description':'VQRIO123','accountNumber':'12345678','reference':'TF230204212323','transactionDateTime':'2023-02-04 18:25:00','currency':'VND','paymentLinkId':'124c33293c43417ab7879e14c8d9eb18','code':'00','desc':'Thành công','counterAccountBankId':'','counterAccountBankName':'','counterAccountName':'','counterAccountNumber':'','virtualAccountName':'','virtualAccountNumber':''}";
+
+        static String transactionSignature = "412e915d2871504ed31be63c8f62a149a4410d34c4c42affc9006ef9917eaa03";
+
+        public static Boolean isValidData(String transaction, String transactionSignature) {
+            try {
+                JSONObject jsonObject = new JSONObject(transaction);
+                Iterator<String> sortedIt = sortedIterator(jsonObject.keys(), (a, b) -> a.compareTo(b));
+
+                StringBuilder transactionStr = new StringBuilder();
+                while (sortedIt.hasNext()) {
+                    String key = sortedIt.next();
+                    String value = jsonObject.get(key).toString();
+                    transactionStr.append(key);
+                    transactionStr.append('=');
+                    transactionStr.append(value);
+                    if (sortedIt.hasNext()) {
+                        transactionStr.append('&');
+                    }
+                }
+
+                String signature = new HmacUtils("HmacSHA256", checksumKey).hmacHex(transactionStr.toString());
+                return signature.equals(transactionSignature);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return false;
+        }
+
+        public static Iterator<String> sortedIterator(Iterator<?> it, Comparator<String> comparator) {
+            List<String> list = new ArrayList<String>();
+            while (it.hasNext()) {
+                list.add((String) it.next());
+            }
+
+            Collections.sort(list, comparator);
+            return list.iterator();
+        }
+
+        public static void main(String[] args) {
+            System.out.println(isValidData(transaction, transactionSignature));
+        }
+    }
+```
+
+Xem chi tiết về API [tại đây](/docs/api/.md#tag/payment-webhook/operation/confirm-webhook).
+
+## Thông tin dữ liệu mẫu webhook link thanh toán[​](#thông-tin-dữ-liệu-mẫu-webhook-link-thanh-toán "Đường dẫn trực tiếp đến Thông tin dữ liệu mẫu webhook link thanh toán")
+
+<!-- -->
+
+|                   |                                                                                                                                    |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| coderequired      | stringMã lỗi                                                                                                                       |
+| descrequired      | stringThông tin lỗi                                                                                                                |
+| successrequired   | boolean                                                                                                                            |
+| datarequired      | object                                                                                                                             |
+| signaturerequired | stringChữ kí để kiểm tra thông tin, [chi tiết dữ liệu mẫu](https://payos.vn/docs/tich-hop-webhook/kiem-tra-du-lieu-voi-signature/) |
+
+Copy
+
+Expand all  Collapse all
+
+`{
+"code": "00",
+"desc": "success",
+"success": true,
+"data": {
+"orderCode": 123,
+"amount": 3000,
+"description": "VQRIO123",
+"accountNumber": "12345678",
+"reference": "TF230204212323",
+"transactionDateTime": "2023-02-04 18:25:00",
+"currency": "VND",
+"paymentLinkId": "124c33293c43417ab7879e14c8d9eb18",
+"code": "00",
+"desc": "Thành công",
+"counterAccountBankId": "",
+"counterAccountBankName": "",
+"counterAccountName": "",
+"counterAccountNumber": "",
+"virtualAccountName": "",
+"virtualAccountNumber": ""
+},
+"signature": "8d8640d802576397a1ce45ebda7f835055768ac7ad2e0bfb77f9b8f12cca4c7f"
+}`
+
+## Kiểm tra thông tin bằng chữ ký (payouts)[​](#kiểm-tra-thông-tin-bằng-chữ-ký-payouts "Đường dẫn trực tiếp đến Kiểm tra thông tin bằng chữ ký (payouts)")
+
+### Cách tạo và cấu trúc của signature[​](#cách-tạo-và-cấu-trúc-của-signature "Đường dẫn trực tiếp đến Cách tạo và cấu trúc của signature")
+
+* Sử dụng thuật toán HMAC\_SHA256 để tạo signature.
+* data tạo signature dạng: key1=value1\&key2=value2... (key1: tên field, value1 = **encodeURI(giá trị của key1)**).
+* Giá trị của key nếu là `null` hay `undefined` sẽ là chuỗi rỗng `""`
+* Dữ liệu tạo signature sắp xếp theo key thứ tự alphabet, thứ tự các phần từ trong mảng giữ nguyên.
+* Cấu trúc: hash\_hmac("sha256", string $data , string $checksum\_key)
+
+Lưu ý:
+
+Checksum key được tạo ra khi tạo kênh chuyển tiền thành công và có thể thay đổi trên [my.payos.vn](https://my.payos.vn)
+
+cảnh báo
+
+Chữ ký dùng cho API `payouts` **KHÁC** với chữ ký dùng cho API `payment-requests`
+
+### Code mẫu kiểm tra chính xác dữ liệu[​](#code-mẫu-kiểm-tra-chính-xác-dữ-liệu-1 "Đường dẫn trực tiếp đến Code mẫu kiểm tra chính xác dữ liệu")
+
+* Javascript
+
+```
+/**
+ * Deep sort object with optional array sorting
+ * @param obj Object data
+ * @param sortArrays Whether to sort arrays or maintain their order
+ * @returns Sorted object data
+ */
+function deepSortObj(obj, sortArrays = false) {
+  return Object.keys(obj)
+    .sort()
+    .reduce((acc, key) => {
+      const value = obj[key];
+
+      if (Array.isArray(value)) {
+        if (sortArrays) {
+          // Sort array elements
+          acc[key] = value
+            .map((item) =>
+              typeof item === 'object' && item !== null ? deepSortObj(item, sortArrays) : item,
+            )
+            .sort((a, b) => {
+              // Sort primitive values
+              if (typeof a !== 'object' && typeof b !== 'object') {
+                return String(a).localeCompare(String(b));
+              }
+              // For objects, sort by JSON string representation
+              return JSON.stringify(a).localeCompare(JSON.stringify(b));
+            });
+        } else {
+          // Maintain array order, but sort objects within arrays
+          acc[key] = value.map((item) =>
+            typeof item === 'object' && item !== null ? deepSortObj(item, sortArrays) : item,
+          );
+        }
+      } else if (typeof value === 'object' && value !== null) {
+        acc[key] = deepSortObj(value, sortArrays);
+      } else {
+        acc[key] = value;
+      }
+
+      return acc;
+    }, {});
+}
+
+/**
+ * Create HMAC SHA-256 signature using Web Crypto API (browser-compatible)
+ *
+ * @param {string} secretKey - Secret key for HMAC signature generation
+ * @param {object} jsonData - JSON object data to be signed
+ * @returns {Promise<string>} HMAC signature in hexadecimal format
+ *
+ * @example
+ * // Basic usage
+ * const signature = await createSignatureBrowser('secret', { name: 'John', age: 30 });
+ */
+async function createSignatureBrowser(secretKey, jsonData) {
+  const sortedData = deepSortObj(jsonData, false);
+
+  const queryString = Object.keys(sortedData)
+    .map((key) => {
+      let value = sortedData[key];
+
+      // Handle arrays by JSON stringify them
+      if (Array.isArray(value)) {
+        value = JSON.stringify(value);
+      }
+      // Handle nested objects
+      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        value = JSON.stringify(value);
+      }
+      // Handle null/undefined values
+      if (value === null || value === undefined) {
+        value = '';
+      }
+
+      return `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`;
+    })
+    .join('&');
+
+  // Web Crypto API implementation
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secretKey);
+  const messageData = encoder.encode(queryString);
+
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, messageData);
+  const hashArray = Array.from(new Uint8Array(signature));
+  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+
+  return hashHex;
+}
+
+/**
+ * Verify signature using Web Crypto API
+ *
+ * @param {string} secretKey - Secret key used for signature generation
+ * @param {object} jsonData - JSON object data that was signed
+ * @param {string} expectedSignature - Expected signature to verify against
+ * @returns {Promise<boolean>} true if signatures match, false otherwise
+ */
+async function verifySignatureBrowser(secretKey, jsonData, expectedSignature) {
+  const computedSignature = await createSignatureBrowser(secretKey, jsonData);
+  return computedSignature.toLowerCase() === expectedSignature.toLowerCase();
+}
+
+const payoutChecksumKey = '6e91f59952acc8918c49c4a8e380136d66d1fbbf3375926840a8a7e434d4b325';
+
+const expectedSignature = '34d500c4e17feaad8fab528ac3ae089353e276ca9fb4c6654c06ffdfbd88cc5d';
+
+const payoutData = {
+  code: '00',
+  desc: 'success',
+  data: {
+    payouts: [
+      {
+        id: 'batch_8f9520b9341144f38b9f5fbfa317db8e',
+        referenceId: 'payout_1753061728877',
+        transactions: [
+          {
+            id: 'batch_txn_fdb348c0570a4cb99009da22f9504898',
+            referenceId: 'payout_1753061728877_0',
+            amount: 2000,
+            description: 'batch payout',
+            toBin: '970422',
+            toAccountNumber: '0123456789',
+            toAccountName: 'NGUYEN VAN A',
+            reference: '103269845',
+            transactionDatetime: '2025-07-21T08:35:40+07:00',
+            errorMessage: null,
+            errorCode: null,
+            state: 'SUCCEEDED',
+          },
+          {
+            id: 'batch_txn_d94d371c079f4fc0ab7154e1576629d8',
+            referenceId: 'payout_1753061728877_1',
+            amount: 2000,
+            description: 'batch payout',
+            toBin: '970422',
+            toAccountNumber: '0123456789',
+            toAccountName: 'NGUYEN VAN A',
+            reference: '103269846',
+            transactionDatetime: '2025-07-21T08:35:44+07:00',
+            errorMessage: null,
+            errorCode: null,
+            state: 'SUCCEEDED',
+          },
+          {
+            id: 'batch_txn_71eb922201f3442d93ec5a3c77347e9f',
+            referenceId: 'payout_1753061728877_2',
+            amount: 2000,
+            description: 'batch payout',
+            toBin: '970422',
+            toAccountNumber: '0123456789',
+            toAccountName: 'NGUYEN VAN A',
+            reference: '103269847',
+            transactionDatetime: '2025-07-21T08:35:47+07:00',
+            errorMessage: null,
+            errorCode: null,
+            state: 'SUCCEEDED',
+          },
+        ],
+        category: ['salary'],
+        approvalState: 'COMPLETED',
+        createdAt: '2025-07-21T08:35:34+07:00',
+      },
+    ],
+    pagination: {
+      limit: 10,
+      offset: 0,
+      total: 1,
+      count: 1,
+      hasMore: false,
+    },
+  },
+};
+
+(async () => {
+  const result = await verifySignatureBrowser(
+    payoutChecksumKey,
+    payoutData.data,
+    expectedSignature,
+  );
+
+  console.log('Signature payout validation result:', result);
+})();
+```
+Beta
+0 / 0
+used queries

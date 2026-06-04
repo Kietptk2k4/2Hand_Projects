@@ -4,6 +4,9 @@ import com.twohands.auth_service.domain.user.User;
 import com.twohands.auth_service.domain.user.PasswordHash;
 import com.twohands.auth_service.domain.user.UserRepository;
 import com.twohands.auth_service.domain.user.UserStatus;
+import com.twohands.auth_service.infrastructure.persistence.JdbcPgEnumTypes;
+import com.twohands.auth_service.infrastructure.persistence.JdbcSqlDialect;
+import com.twohands.auth_service.infrastructure.persistence.JdbcTimestamps;
 import com.twohands.auth_service.infrastructure.persistence.mapper.UserJdbcMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -18,10 +21,16 @@ public class UserRepositoryAdapter implements UserRepository {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final UserJdbcMapper jdbcMapper;
+    private final JdbcSqlDialect sqlDialect;
 
-    public UserRepositoryAdapter(NamedParameterJdbcTemplate jdbcTemplate, UserJdbcMapper jdbcMapper) {
+    public UserRepositoryAdapter(
+            NamedParameterJdbcTemplate jdbcTemplate,
+            UserJdbcMapper jdbcMapper,
+            JdbcSqlDialect sqlDialect
+    ) {
         this.jdbcTemplate = jdbcTemplate;
         this.jdbcMapper = jdbcMapper;
+        this.sqlDialect = sqlDialect;
     }
 
     @Override
@@ -63,8 +72,8 @@ public class UserRepositoryAdapter implements UserRepository {
     public User save(User user) {
         String sql = """
                 INSERT INTO users(id, email, email_normalized, password_hash, status, email_verified, phone_verified, created_at, updated_at)
-                VALUES (:id, :email, :emailNormalized, :passwordHash, :status, :emailVerified, :phoneVerified, :createdAt, :updatedAt)
-                """;
+                VALUES (:id, :email, :emailNormalized, :passwordHash, %s, :emailVerified, :phoneVerified, :createdAt, :updatedAt)
+                """.formatted(sqlDialect.castEnum("status", JdbcPgEnumTypes.USER_STATUS));
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("id", user.id())
                 .addValue("email", user.email().value())
@@ -73,8 +82,8 @@ public class UserRepositoryAdapter implements UserRepository {
                 .addValue("status", user.status().name())
                 .addValue("emailVerified", user.emailVerified())
                 .addValue("phoneVerified", user.phoneVerified())
-                .addValue("createdAt", user.createdAt())
-                .addValue("updatedAt", user.updatedAt());
+                .addValue("createdAt", JdbcTimestamps.from(user.createdAt()))
+                .addValue("updatedAt", JdbcTimestamps.from(user.updatedAt()));
 
         jdbcTemplate.update(sql, params);
         return user;
@@ -87,8 +96,10 @@ public class UserRepositoryAdapter implements UserRepository {
 
     @Override
     public int countByStatus(UserStatus status) {
+        String sql = "SELECT COUNT(*) FROM users WHERE status = "
+                + sqlDialect.castEnum("status", JdbcPgEnumTypes.USER_STATUS);
         Integer count = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM users WHERE status = :status",
+                sql,
                 new MapSqlParameterSource("status", status.name()),
                 Integer.class
         );
@@ -100,8 +111,8 @@ public class UserRepositoryAdapter implements UserRepository {
         String sql = "UPDATE users SET last_login_at = :lastLoginAt, updated_at = :updatedAt WHERE id = :id";
         jdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("id", userId)
-                .addValue("lastLoginAt", lastLoginAt)
-                .addValue("updatedAt", lastLoginAt));
+                .addValue("lastLoginAt", JdbcTimestamps.from(lastLoginAt))
+                .addValue("updatedAt", JdbcTimestamps.from(lastLoginAt)));
     }
 
     @Override
@@ -116,37 +127,37 @@ public class UserRepositoryAdapter implements UserRepository {
         jdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("id", userId)
                 .addValue("passwordHash", passwordHash.value())
-                .addValue("passwordChangedAt", passwordChangedAt)
-                .addValue("updatedAt", passwordChangedAt));
+                .addValue("passwordChangedAt", JdbcTimestamps.from(passwordChangedAt))
+                .addValue("updatedAt", JdbcTimestamps.from(passwordChangedAt)));
     }
 
     @Override
     public void updateStatusDeleted(UUID userId, Instant deletedAt) {
         String sql = """
                 UPDATE users
-                SET status = :status,
+                SET status = %s,
                     deleted_at = :deletedAt,
                     updated_at = :updatedAt
                 WHERE id = :id
-                """;
+                """.formatted(sqlDialect.castEnum("status", JdbcPgEnumTypes.USER_STATUS));
         jdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("id", userId)
                 .addValue("status", "DELETED")
-                .addValue("deletedAt", deletedAt)
-                .addValue("updatedAt", deletedAt));
+                .addValue("deletedAt", JdbcTimestamps.from(deletedAt))
+                .addValue("updatedAt", JdbcTimestamps.from(deletedAt)));
     }
 
     @Override
     public void updateStatus(UUID userId, UserStatus status, Instant updatedAt) {
         String sql = """
                 UPDATE users
-                SET status = :status,
+                SET status = %s,
                     updated_at = :updatedAt
                 WHERE id = :id
-                """;
+                """.formatted(sqlDialect.castEnum("status", JdbcPgEnumTypes.USER_STATUS));
         jdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("id", userId)
                 .addValue("status", status.name())
-                .addValue("updatedAt", updatedAt));
+                .addValue("updatedAt", JdbcTimestamps.from(updatedAt)));
     }
 }

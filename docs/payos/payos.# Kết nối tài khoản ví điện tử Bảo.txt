@@ -1,0 +1,45 @@
+# Kết nối tài khoản ví điện tử Bảo kim
+
+Hướng dẫn kết nối Ví điện tử Bảo kim vào payOS.
+
+### Trước khi bắt đầu[​](#trước-khi-bắt-đầu "Đường dẫn trực tiếp đến Trước khi bắt đầu")
+
+* Bạn đã có tài khoản trên <https://my.payos.vn> chưa? [Hướng dẫn tạo tài khoản my.payos.vn](/docs/huong-dan-su-dung/tao-tai-khoan-payos.md).
+* Bạn đã xác thực một tổ chức trên payOS chưa? [Hướng dẫn xác thực tổ chức](/docs/huong-dan-su-dung/xac-thuc-to-chuc.md).
+* Bạn đã có tài khoản Ví Bảo Kim chưa? [Hướng dẫn tạo tài khoản Ví Bảo Kim](https://payos.vn/huong-dan-tao-tai-khoan-bao-kim-bao-kim-e-wallet/).
+
+### Kết nỗi tài khoản[​](#kết-nỗi-tài-khoản "Đường dẫn trực tiếp đến Kết nỗi tài khoản")
+
+* Đăng nhập vào tài khoản payOS, tại trang **Ngân hàng**, chọn **Thêm tài khoản** => **Tài khoản chi** và chọn thêm **Ví Bảo Kim**.
+
+  ![payOS select Baokim account page](/docs/assets/images/select-link-baokim-9fbacca6e7cb7cf1438cd828d39a10fb.png)
+
+thông tin
+
+Vui lòng chọn loại tài khoản Cá nhân hoặc Doanh nghiệp tương ứng với tài khoản payOS đã xác thực. Nếu là Hộ kinh doanh, hãy chọn và liên kết tài khoản Cá nhân.
+
+Lưu ý
+
+Chỉ liên kết tài khoản Ví Bảo kim có trùng tên với tổ chức đã xác thực trên payOS
+
+* Tại giao diện liên kết ví, ấn **Tiếp tục**
+
+  ![payOS select Baokim account page](/docs/assets/images/baokim-cas-intro-517fcbce0857d0cc1f8b2078c9fbbb81.png)
+
+* Thực hiện kết nối tài khoản **Ví Bảo Kim** thông qua Cas (Có thể quét mã QR trên app để thao tác hoặc bấm vào "Kết nối trước - Cas sau")
+
+thông tin
+
+Tên tài khoản là tên tài khoản **Ví Bảo Kim**, **có dấu**
+
+![payOS select Baokim account page](/docs/assets/images/fill-info-d306c9cc2a057a640e884fd25e203c50.png)
+
+* Ấn **Liên kết**, nhập OTP được gửi về SĐT đăng ký ví
+* Màn hình trạng thái hiển thị liên kết thành công
+
+thông tin
+
+Đối với tài khoản **Doanh nghiệp**, sau khi liên kết thành công với payOS, vui lòng đợi **1-2 ngày** để **Ví Bảo Kim** tiến hành xác thực tài khoản.
+Beta
+0 / 0
+used queries

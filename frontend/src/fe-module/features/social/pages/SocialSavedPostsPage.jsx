@@ -12,6 +12,7 @@ import { useEditPostModal } from "../hooks/useEditPostModal";
 import { usePostActions } from "../hooks/usePostActions";
 import { usePostDetailModal } from "../hooks/usePostDetailModal";
 import { useSavedPosts } from "../hooks/useSavedPosts";
+import { useViewCommerceProduct } from "../hooks/useViewCommerceProduct";
 import { buildSocialHashtagPath } from "../utils/socialHashtagRoutes";
 import { buildSocialProfilePath } from "../utils/socialProfileRoutes";
 
@@ -39,6 +40,8 @@ export function SocialSavedPostsPage() {
   const showComingSoon = useCallback(() => {
     setToastMessage(COMING_SOON_MESSAGE);
   }, []);
+
+  const viewProduct = useViewCommerceProduct();
 
   const viewProfile = useCallback(
     (profileUserId) => {
@@ -163,6 +166,7 @@ export function SocialSavedPostsPage() {
                   onViewProfile={viewProfile}
                   onUnsave={handleUnsave}
                   isUnsaveLoading={unsavingId === post.postId}
+                  onViewProduct={viewProduct}
                 />
               ))}
             </div>

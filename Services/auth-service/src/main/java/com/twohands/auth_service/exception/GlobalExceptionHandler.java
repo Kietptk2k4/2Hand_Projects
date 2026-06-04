@@ -1,6 +1,7 @@
 package com.twohands.auth_service.exception;
 
 import com.twohands.auth_service.common.dto.ApiResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.Instant;
 import java.util.List;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -55,6 +57,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleUnknown(Exception ex) {
+        log.error("Unhandled exception", ex);
         return buildApi(ErrorCode.INTERNAL_ERROR.status(), ErrorCode.INTERNAL_ERROR.defaultMessage(), null);
     }
 

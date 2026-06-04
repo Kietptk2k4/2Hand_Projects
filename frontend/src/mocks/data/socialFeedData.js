@@ -56,6 +56,9 @@ export const mockGlobalFeedPosts = [
         type: "IMAGE",
       },
     ],
+    productTags: [
+      { productId: "c1000000-0000-4000-8000-000000000001", price: 4500000 },
+    ],
   }),
   post({
     postId: mockPostId("02"),
@@ -67,6 +70,10 @@ export const mockGlobalFeedPosts = [
     replyCount: 89,
     createdAt: "2026-05-28T14:30:00Z",
     updatedAt: "2026-05-28T14:30:00Z",
+    productTags: [
+      { productId: "c1000000-0000-4000-8000-000000000001", price: 4500000 },
+      { productId: "c1000000-0000-4000-8000-000000000002", price: 935000 },
+    ],
   }),
   post({
     postId: mockPostId("03"),

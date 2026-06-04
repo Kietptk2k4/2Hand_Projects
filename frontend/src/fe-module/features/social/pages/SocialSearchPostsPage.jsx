@@ -13,6 +13,7 @@ import { useEditPostModal } from "../hooks/useEditPostModal";
 import { usePostActions } from "../hooks/usePostActions";
 import { usePostDetailModal } from "../hooks/usePostDetailModal";
 import { useSearchPosts } from "../hooks/useSearchPosts";
+import { useViewCommerceProduct } from "../hooks/useViewCommerceProduct";
 import { buildSocialHashtagPath } from "../utils/socialHashtagRoutes";
 import { buildSocialSearchPath } from "../utils/socialSearchRoutes";
 import { buildSocialProfilePath } from "../utils/socialProfileRoutes";
@@ -94,6 +95,8 @@ export function SocialSearchPostsPage() {
     },
     [navigate]
   );
+
+  const viewProduct = useViewCommerceProduct();
 
   const viewHashtag = useCallback(
     (tag) => {
@@ -182,6 +185,7 @@ export function SocialSearchPostsPage() {
                   isDeletingPost={isDeletingPost(post.postId)}
                   onViewProfile={viewProfile}
                   onHashtagClick={viewHashtag}
+                  onViewProduct={viewProduct}
                 />
               ))}
             </div>

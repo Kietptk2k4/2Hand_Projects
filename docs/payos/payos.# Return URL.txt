@@ -1,0 +1,24 @@
+# xử lý dữ liệu thanh toán.Return URL
+
+Sau khi thực hiện thanh toán trình duyệt sẽ điều hướng về trang mà người dùng đã khai báo ở `returnUrl` đã được khai báo trong [API tạo link thanh toán](/docs/api/.md). Ngược lại, nếu người dùng hủy thanh toán, trình duyệt sẽ điều hướng về `cancelUrl`.
+
+`returnUrl` và `cancelUrl` sẽ được gắn các query params chứa thông tin thanh toán phục vụ cho việc xử lý ở phía giao diện người dùng.
+
+### Ví dụ về Return URL:[​](#ví-dụ-về-return-url "Đường dẫn trực tiếp đến Ví dụ về Return URL:")
+
+thông tin
+
+`https://your-website.com/return-url/?code=00&id=2e4acf1083304877bf1a8c108b30cccd&cancel=true&status=CANCELLED&orderCode=803347`
+
+### Mô tả dữ liệu trả về qua Query Params:[​](#mô-tả-dữ-liệu-trả-về-qua-query-params "Đường dẫn trực tiếp đến Mô tả dữ liệu trả về qua Query Params:")
+
+| Tên       | Giá trị                          | Mô tả                 | Tập giá trị                                                                                                     |
+| --------- | -------------------------------- | --------------------- | --------------------------------------------------------------------------------------------------------------- |
+| code      | 00                               | Mã lỗi                | - 00 - Thành công<br />- 01 - Invalid Params                                                                    |
+| id        | 2e4acf1083304877bf1a8c108b30cccd | Payment Link Id       | string                                                                                                          |
+| cancel    | true                             | Trạng thái hủy        | - true - Đã hủy thanh toán<br />- false - Đã thanh toán hoặc chờ thanh toán                                     |
+| status    | CANCELLED                        | Trạng thái thanh toán | - PAID - Đã thanh toán<br />- PENDING - Chờ thanh toán<br />- PROCESSING - Đang xử lý<br />- CANCELLED - Đã hủy |
+| orderCode | 803347                           | Mã đơn hàng           | number                                                                                                          |
+Beta
+0 / 0
+used queries

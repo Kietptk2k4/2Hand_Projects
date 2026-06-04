@@ -7,6 +7,9 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -47,7 +50,8 @@ public class UserNotificationEntity {
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted;
 
-    @Column(name = "metadata", nullable = false, length = 4000)
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "metadata", nullable = false, columnDefinition = "jsonb")
     private String metadata;
 
     @Enumerated(EnumType.STRING)

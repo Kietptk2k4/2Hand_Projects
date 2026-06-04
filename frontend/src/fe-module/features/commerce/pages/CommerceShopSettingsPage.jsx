@@ -17,6 +17,8 @@ function ShopSettingsSkeleton() {
   );
 }
 
+const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
+
 export function CommerceShopSettingsPage() {
   const [toastMessage, setToastMessage] = useState("");
 
@@ -51,8 +53,12 @@ export function CommerceShopSettingsPage() {
     setToastMessage("");
   }, []);
 
+  const showComingSoon = useCallback(() => {
+    setToastMessage(COMING_SOON_MESSAGE);
+  }, []);
+
   return (
-    <CommerceShell showHomeSidebar={false}>
+    <CommerceShell onComingSoon={showComingSoon}>
       <div className="mx-auto w-full max-w-[1280px] pb-28">
         <header className="mb-8">
           <nav

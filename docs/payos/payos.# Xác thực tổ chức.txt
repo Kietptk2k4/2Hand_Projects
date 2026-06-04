@@ -1,0 +1,67 @@
+# Xác thực tổ chức
+
+Đối tượng sử dụng của payOS là bất kì mô hình kinh doanh nào: cá nhân, hộ kinh doanh , doanh nghiệp , chỉ cần có tài khoản ngân hàng, payOS đều sẽ gọi họ là **Tổ chức**. Trong đó, gồm 2 đối tượng chính:
+
+* Đã có pháp nhân (Được cấp mã số đăng ký doanh nghiệp)
+* Chưa có pháp nhân (Gọi là **kinh doanh cá thể**)
+
+payOS cần xác thực chủ sở hữu của Tổ chức để đảm bảo rằng các Tổ chức đăng kí trên payOS là hợp lệ.
+
+### Trước khi bắt đầu[​](#trước-khi-bắt-đầu "Đường dẫn trực tiếp đến Trước khi bắt đầu")
+
+Trong quá trình xác thực Tổ chức, payOS cần các thông tin sau:
+
+* Mã số thuế nếu Doanh nghiệp đã được cấp mã số thuế doanh nghiệp
+* Mã CCCD/CMND nếu Tổ chức là Cá nhân/Hộ kinh doanh
+
+Sau khi đăng nhập vào trang payOS, bạn cần tiếp tục thực hiện các bước sau để hoàn tất xác thực Tổ chức.
+
+Trong hệ thống của payOS, hiện có 2 loại tổ chức: Doanh nghiệp (có pháp nhân) và Tài khoản Cá nhân/Hộ kinh doanh. Để thực hiện xác thực chính xác, vui lòng chọn đúng loại tổ chức.
+
+Lưu ý
+
+Chỉ thêm được Tài khoản Ngân hàng trùng với tên Tổ chức đã xác thực.
+
+### Xác thực Tổ chức Doanh nghiệp[​](#xác-thực-tổ-chức-doanh-nghiệp "Đường dẫn trực tiếp đến Xác thực Tổ chức Doanh nghiệp")
+
+**Bước 1:** Ấn chọn **Doanh nghiệp (có pháp nhân)**
+
+![Example banner](/docs/assets/images/select-type-8872575b6d31b2ddc826bc11e795922c.png)
+
+**Bước 2:** Điền thông tin chi tiết MST/GPKD của doanh nghiệp, sau đó nhấn nút **Kiểm tra**. Nếu thông tin chính xác, sẽ có thông báo **Thành công** và tên doanh nghiệp sẽ được tự động điền. Ấn **Tiếp tục** để thao tác tiếp.
+
+Lưu ý
+
+Nếu CCCD/MST không tìm thấy, vui lòng thực hiện luồng xác thực thủ công: thực hiện gửi hình **2 mặt CCCD, ảnh chụp/scan giấy phép kinh doanh (có mộc đỏ)** đến email <verify@payos.vn> với tiêu đề **\[payOS] Xác thực thủ công + email dùng payOS**, payOS sẽ thực hiện xác thực thủ công cho tổ chức của bạn.
+
+![Example banner](/docs/assets/images/company-info-4d08dbac4d5179d928680252c8e23de9.png)
+
+**Bước 3:** Thực hiện chuyển khoản bằng cách quét mã QR. Sau khi hoàn tất chuyển khoản, hệ thống sẽ tự động Xác thực cho tổ chức của bạn.
+
+Lưu ý
+
+Vui lòng chuyển từ Ngân hàng trùng tên với tổ chức, không chuyển từ Ví điện tử, chuyển đúng nội dung và số tiền để hệ thống tự động xác thực.
+
+### Xác thực Tổ chức Cá nhân/Hộ kinh doanh[​](#xác-thực-tổ-chức-cá-nhânhộ-kinh-doanh "Đường dẫn trực tiếp đến Xác thực Tổ chức Cá nhân/Hộ kinh doanh")
+
+**Bước 1:** Ấn chọn **Tài khoản cá nhân/Hộ kinh doanh**
+
+![Example banner](/docs/assets/images/select-type-individual-19617cd19ce859d37aa34a3cb3c38f4d.png)
+
+**Bước 2:** Điền thông tin CMND/CCCD cá nhân và Tên của bạn, sau đó nhấn nút **Kiểm tra**. Nếu thông tin chính xác, sẽ có thông báo **Thành công**.
+
+Lưu ý
+
+Nếu CCCD/MST không tìm thấy, vui lòng thực hiện luồng xác thực thủ công: thực hiện gửi hình **2 mặt CCCD** đến email <verify@payos.vn> với tiêu đề **\[payOS] Xác thực thủ công + email dùng payOS**, payOS sẽ thực hiện xác thực thủ công cho tổ chức của bạn.
+
+![Example banner](/docs/assets/images/individual-info-1e7a1cab89b09541433d1426fe40d454.png)
+
+**Bước 3:** Thực hiện chuyển khoản bằng cách quét mã QR. Sau khi hoàn tất chuyển khoản, hệ thống sẽ tự động Xác thực cho tổ chức của bạn.
+
+Lưu ý
+
+Vui lòng chuyển từ Ngân hàng trùng tên với tổ chức, không chuyển từ Ví điện tử, chuyển đúng nội dung và số tiền để hệ thống tự động xác thực.
+Beta
+0 / 0
+used queries
+1

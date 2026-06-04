@@ -55,6 +55,7 @@ function toSavedItem(post, savedAt) {
     replyCount: post.replyCount ?? 0,
     hashtags: post.hashtags || [],
     allowComments: post.allowComments !== false,
+    productTags: post.productTags || [],
     savedAt,
     createdAt: post.createdAt,
     updatedAt: post.updatedAt,

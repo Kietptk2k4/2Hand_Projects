@@ -1,0 +1,70 @@
+API Create Store
+API Create Store
+ 
+ 
+
+Use to create new Store. Each account can have many Store and each Store is a place to help GHN know where to pick up items.
+
+ 
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shop/register
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shop/register
+Curl
+curl --location --request GET 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shop/register' \
+--header 'Token: 44d7c8ce-78b3-11ea-a40c-e2394613f465' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+	"district_id": 1550,
+    "ward_code": "420112",
+    "name": "Tin1123",
+    "phone": "0123456789",
+    "address": "35 dd p12 qtb"
+}'
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+district_id 	Int	
+DistrictID pickup parcel.Use API GetDistrict or look up from District List.
+
+Link API Get District : https://api.ghn.vn/home/docs/detail?id=78
+
+ward_code 	String	
+WardCode pickup parcel. Use API GetWards. 
+
+Link API GetWards : https://api.ghn.vn/home/docs/detail?id=61
+
+name 	String	
+The name of store
+
+phone 	String	
+The phone of store
+
+address 	String	
+The address of store will be pickup parcel.
+
+Success-Response
+{
+    "code": 200,
+    "message": "Success",
+    "data": {
+        "shop_id":72359            
+    }
+}
+Structure Response
+Field	Description
+shop_id	
+Manage information for shop/seller
+
+Error-Response
+{
+    "code": 400,
+    "message": "Create Shop failed: Ward code is invalid",
+    "data": null
+    "code_message": "WARD_IS_INVALID",
+    "code_message_value": "Phường xã không hợp lệ."
+}

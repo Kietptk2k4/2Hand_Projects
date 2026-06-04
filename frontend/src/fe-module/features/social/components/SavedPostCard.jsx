@@ -1,5 +1,7 @@
 import { authorAvatarUrl, authorDisplayName } from "../utils/authorDisplay";
+import { enrichProductTags } from "../utils/enrichProductTag";
 import { formatSavedAt } from "../utils/formatSavedAt";
+import { PostProductTagsBlock } from "./PostProductTagsBlock";
 
 const PLACEHOLDER_IMAGE =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect fill='%23dee8ff' width='400' height='300'/%3E%3C/svg%3E";
@@ -10,6 +12,7 @@ export function SavedPostCard({
   onOpenComments,
   onViewProfile,
   onUnsave,
+  onViewProduct,
   isUnsaveLoading = false,
 }) {
   const mediaUrl = post.media?.[0]?.url || PLACEHOLDER_IMAGE;
@@ -17,6 +20,7 @@ export function SavedPostCard({
   const displayName = authorDisplayName(post.authorId);
   const avatarUrl = authorAvatarUrl(post.authorId);
   const titleText = post.caption?.trim() || "Bài viết không có nội dung";
+  const enrichedProductTags = enrichProductTags(post.productTags);
 
   const handleOpenPost = () => onOpenPost?.(post.postId);
   const handleOpenComments = (event) => {
@@ -83,6 +87,16 @@ export function SavedPostCard({
         <button type="button" onClick={handleOpenPost} className="text-left">
           <h2 className="mb-1 line-clamp-2 text-lg font-semibold text-on-surface">{titleText}</h2>
         </button>
+
+        {enrichedProductTags.length > 0 ? (
+          <div className="my-3">
+            <PostProductTagsBlock
+              tags={enrichedProductTags}
+              variant="compact"
+              onViewProduct={onViewProduct}
+            />
+          </div>
+        ) : null}
 
         <div className="mt-auto flex items-center justify-between border-t border-outline-variant pt-3">
           <div className="flex items-center gap-4 text-sm text-on-surface-variant">

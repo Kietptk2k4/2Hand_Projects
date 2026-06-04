@@ -1,0 +1,112 @@
+Create Ticket
+API Create Ticket
+ 
+Create Ticket then need support your order
+
+Caution : The API Order Info need to infusion token in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/ticket/create
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/ticket/create
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/ticket/create' \
+--header 'Token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+--header 'Content-Type: application/json' \
+--form 'c_email=cskh@ghn.vn' \
+--form 'order_code=5ENLKKH' \
+--form 'attachments=@/path/to/file' \
+--form 'category=Tư vấn' \
+--form 'description=Tạo yêu cầu test'
+
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+order_code	String	
+GHN Order Code. This is tracking code.
+
+category	String	
+Reqirement
+
+Advise
+
+Exchange/Pick up/Return
+
+Change information
+
+Complain
+
+attachments	File	
+Image , excel , csv
+
+description	String	
+Description of requirement
+
+max=2000
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":{
+    "attachments":[]  
+    "client_id":"SHOP-885" 
+    "conversations":null 
+    "created_at":"2020-05-29T15:24:15Z" 
+    "created_by":2043024840333 
+    "description":"Tạo yêu cầu test" 
+    "id":1605822 
+    "order_code":"5ENLKKHD" 
+    "status":"Đang xử lý" 
+    "status_id":1 
+    "type":"Tư vấn" 
+    "updated_at":"2020-05-29T15:24:15Z"  
+     }
+}
+Structure Response
+Field	Description
+Attachments	
+File Image , excel , csv
+
+ClientID	
+Client ID
+
+Conversations	
+Conversations
+
+CreatedAt	
+Created At
+
+CreatedBy	
+Created By
+
+Description	
+Description
+
+ID	
+Ticket ID
+
+OrderCode	
+Order Code
+
+Status	
+Status
+
+StatusId	
+Status ID
+
+Type	
+Type
+
+UpdatedAt	
+Updated At
+
+Error-Response
+{
+    "code": 404,
+    "message": "Không tìm thấy thông tin đơn hàng",
+    "data": null
+}

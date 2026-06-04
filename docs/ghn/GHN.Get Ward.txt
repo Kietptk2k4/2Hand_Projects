@@ -1,0 +1,107 @@
+Get Ward
+API Get Ward
+ 
+Get GHN ward/province data. This API provides Ward Code to create shipping order.
+
+Caution : The API Get Ward need to infusion token in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id' \
+--header 'token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+--header 'Content-Type: application/json' \
+--data-raw'{"district_id":1566}'
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+district_id	Int	
+DistrictID provied by GHN.
+
+API Get DistrictID : https://api.ghn.vn/home/docs/detail?id=78
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data": {
+    "WardCode":510101 
+    "DistrictID":1566 
+    "WardName":"Phường Mỹ Bình"           
+    }
+    {
+    "WardCode":510102   
+    "DistrictID":1566 
+    "WardName":"Phường Mỹ Long"           
+    }
+    {
+    "WardCode":510103  
+    "DistrictID":1566  
+    "WardName":"Phường Đông Xuyên"   
+        
+    }
+    {
+    "WardCode":510104   
+    "DistrictID":1566 
+    "WardName":"Phường Mỹ Xuyên"   
+    
+    }
+    ....
+    
+}
+Structure Response
+Field	Description
+WardCode	
+Ward Code ID
+
+DistrictID	
+District ID
+
+WardName	
+Ward Name
+
+NameExtension	
+Name Extension
+
+CanUpdateCOD	
+Can Update COD
+
+true:Yes
+
+false:No
+
+SupportType	
+Type
+
+0:Lock
+
+1:Take/Pay
+
+2:Deliver
+
+3:Take/Deliver/Pay
+
+Status	
+Status
+
+1:Unlock
+
+2:Lock
+
+CreatedDate	
+Created Date
+
+UpdatedDate	
+Updated Date
+
+Error-Response
+{
+    "code": 404,
+    "message": "code=404, message=Not Found",
+    "data": null
+}

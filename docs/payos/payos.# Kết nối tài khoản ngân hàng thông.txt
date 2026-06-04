@@ -1,0 +1,26 @@
+# Kết nối tài khoản ngân hàng thông qua Cas
+
+### Cas là gì?[​](#cas-là-gì "Đường dẫn trực tiếp đến Cas là gì?")
+
+[Cas](https://cas.so) là sản phẩm của Casso, một hạ tầng thúc đẩy ứng dụng ngân hàng mở tại Việt Nam. Cas giúp người dùng **quản lý tập trung các tài khoản tài chính** và **phân quyền truy cập** các tài khoản này theo một tiêu chuẩn API thống nhất.
+
+### Tại sao payOS dùng Cas để kết nối tài khoản ngân hàng?[​](#tại-sao-payos-dùng-cas-để-kết-nối-tài-khoản-ngân-hàng "Đường dẫn trực tiếp đến Tại sao payOS dùng Cas để kết nối tài khoản ngân hàng?")
+
+Cas quản lý tập trung các kết nối ngân hàng mà payOS hỗ trợ, các dịch vụ cung cấp bởi payOS và mọi vấn đề liên quan đến kết nối ngân hàng.
+
+Hiện nay, Cas đã chính thức ra mắt ứng dụng cho người dùng cuối sử dụng, vì vậy bạn có thể tải app Cas để liên kết các tài khoản ngân hàng trên payOS.
+
+Trên giao diện **Ngân hàng** của phần mềm payOS, sau khi chọn ngân hàng mà bạn muốn liên kết và chọn **"Tiếp tục"**, bạn có thể **quét QR bằng app Cas** hoặc chọn **"Kết nối trước - Cas sau"** để nhập thông tin kết nối ngân hàng.
+
+Thông tin
+
+Cas tuân theo các lớp bảo mật chuẩn từ phía Ngân hàng và chuẩn mã hoá AES, SHA-256.
+
+![Example banner](/docs/assets/images/add-bank-qr-6f3a748d6bb49d1968483e703c843db9.png)
+
+Để liên kết ngân hàng vào payOS, bạn cần nhập các thông tin định danh như CCCD, SĐT, STK trên Cas.
+
+![Example banner](/docs/assets/images/add-bank-manual-88603316fea2eedbc926907e48640450.png)
+Beta
+0 / 0
+used queries

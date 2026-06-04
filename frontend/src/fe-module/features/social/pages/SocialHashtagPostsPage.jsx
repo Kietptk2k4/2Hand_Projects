@@ -14,6 +14,7 @@ import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { useCurrentUserId } from "../../auth/hooks/useCurrentUserId";
 import { usePostActions } from "../hooks/usePostActions";
 import { usePostDetailModal } from "../hooks/usePostDetailModal";
+import { useViewCommerceProduct } from "../hooks/useViewCommerceProduct";
 import { buildSocialHashtagPath } from "../utils/socialHashtagRoutes";
 import { buildSocialProfilePath } from "../utils/socialProfileRoutes";
 
@@ -64,6 +65,8 @@ export function SocialHashtagPostsPage() {
   );
 
   const displayHashtag = resolvedHashtag || hashtag;
+
+  const viewProduct = useViewCommerceProduct();
 
   const navigateToHashtag = useCallback(
     (tag) => {
@@ -170,6 +173,7 @@ export function SocialHashtagPostsPage() {
                   onToggleSavePost={onToggleSavePost}
                   isSavingPost={isSavingPost(post.postId)}
                   isDeletingPost={isDeletingPost(post.postId)}
+                  onViewProduct={viewProduct}
                 />
               ))}
             </div>

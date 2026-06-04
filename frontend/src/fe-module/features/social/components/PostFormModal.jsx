@@ -442,7 +442,7 @@ export function PostFormModal({
 
                 <div>
                   <div className="mb-3 flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-on-surface">Dịch vụ đã liên kết</h3>
+                    <h3 className="text-sm font-semibold text-on-surface">Sản phẩm đã gắn</h3>
                     <button
                       type="button"
                       onClick={() => setShowProductPicker(true)}
@@ -452,7 +452,7 @@ export function PostFormModal({
                     </button>
                   </div>
                   {productTags.length === 0 ? (
-                    <p className="text-sm text-on-surface-variant">Chưa gắn sản phẩm / dịch vụ.</p>
+                    <p className="text-sm text-on-surface-variant">Chưa gắn sản phẩm.</p>
                   ) : (
                     <ul className="space-y-2">
                       {productTags.map((tag) => (

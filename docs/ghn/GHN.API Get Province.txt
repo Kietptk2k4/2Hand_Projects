@@ -1,0 +1,84 @@
+API Get Province
+API Get Province
+ 
+Get GHN ward/province data. This API provides province to create shipping order.
+
+Caution : The API Get Province need to infusion token in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/master-data/province
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/province
+Curl
+curl --location --request GET 'https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/province'
+     --header 'Content-Type: application/json' --header 'Token: d6e3dccb-6289-11ea-8b85-c60e4edfe802 
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data": {
+    "ProvinceID":201   
+    "ProvinceName":"Hà Nội"   
+    "Code":"4"         
+    }
+    {
+    "ProvinceID":202   
+    "ProvinceName":"Hồ Chí Minh"   
+    "Code":"8"         
+    }
+    {
+    "ProvinceID":203   
+    "ProvinceName":"Đà Nẵng"   
+    "Code":"511"         
+    }
+    {
+    "ProvinceID":204   
+    "ProvinceName":"Đồng Nai"   
+    "Code":"61"         
+    }
+    ....
+    
+}
+Structure Response
+Field	Description
+ProvinceID	
+Province ID
+
+ProvinceName	
+Province Name
+
+NameExtension	
+Name Extension
+
+CreatedAt	
+Created At
+
+UpdatedAt	
+Updated At
+
+CanUpdateCOD	
+Can Update COD
+
+true:Yes
+
+false:No
+
+Status	
+Status
+
+1:Unlock
+
+2:Lock
+
+Error-Response
+{
+    "code": 401,
+    "message": "code=401, message=Token is not valid!",
+    "data": null
+}

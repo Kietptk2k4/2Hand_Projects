@@ -4,13 +4,13 @@ import com.twohands.auth_service.domain.enforcement.UserEnforcementActionType;
 import com.twohands.auth_service.domain.enforcement.UserEnforcementSnapshot;
 import com.twohands.auth_service.domain.enforcement.UserEnforcementSnapshotRepository;
 import com.twohands.auth_service.domain.enforcement.UserEnforcementSnapshotStatus;
+import com.twohands.auth_service.infrastructure.persistence.JdbcTimestamps;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -81,11 +81,11 @@ public class UserEnforcementSnapshotRepositoryAdapter implements UserEnforcement
                 .addValue("status", snapshot.status().name())
                 .addValue("reasonCode", snapshot.reasonCode())
                 .addValue("description", snapshot.description())
-                .addValue("expiresAt", snapshot.expiresAt())
+                .addValue("expiresAt", JdbcTimestamps.from(snapshot.expiresAt()))
                 .addValue("eventId", snapshot.eventId())
-                .addValue("appliedAt", snapshot.appliedAt())
-                .addValue("createdAt", snapshot.createdAt())
-                .addValue("updatedAt", snapshot.updatedAt());
+                .addValue("appliedAt", JdbcTimestamps.from(snapshot.appliedAt()))
+                .addValue("createdAt", JdbcTimestamps.from(snapshot.createdAt()))
+                .addValue("updatedAt", JdbcTimestamps.from(snapshot.updatedAt()));
         jdbcTemplate.update(sql, params);
         return snapshot;
     }
@@ -99,7 +99,7 @@ public class UserEnforcementSnapshotRepositoryAdapter implements UserEnforcement
                 """;
         return jdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("status", status.name())
-                .addValue("updatedAt", Timestamp.from(updatedAt))
+                .addValue("updatedAt", JdbcTimestamps.from(updatedAt))
                 .addValue("enforcementId", enforcementId));
     }
 
@@ -109,7 +109,7 @@ public class UserEnforcementSnapshotRepositoryAdapter implements UserEnforcement
     }
 
     private UserEnforcementSnapshot mapSnapshot(ResultSet rs) throws SQLException {
-        Timestamp expiresAt = rs.getTimestamp("expires_at");
+        java.sql.Timestamp expiresAt = rs.getTimestamp("expires_at");
         String eventId = rs.getString("event_id");
         return new UserEnforcementSnapshot(
                 UUID.fromString(rs.getString("enforcement_id")),

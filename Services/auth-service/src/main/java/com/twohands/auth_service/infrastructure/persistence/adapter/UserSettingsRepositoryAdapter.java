@@ -2,6 +2,7 @@ package com.twohands.auth_service.infrastructure.persistence.adapter;
 
 import com.twohands.auth_service.domain.user.UserSettings;
 import com.twohands.auth_service.domain.user.UserSettingsRepository;
+import com.twohands.auth_service.infrastructure.persistence.JdbcTimestamps;
 import com.twohands.auth_service.infrastructure.persistence.mapper.UserJdbcMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -44,8 +45,8 @@ public class UserSettingsRepositoryAdapter implements UserSettingsRepository {
         jdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("userId", settings.userId())
                 .addValue("appearanceMode", settings.appearanceMode().name())
-                .addValue("createdAt", settings.createdAt())
-                .addValue("updatedAt", settings.updatedAt()));
+                .addValue("createdAt", JdbcTimestamps.from(settings.createdAt()))
+                .addValue("updatedAt", JdbcTimestamps.from(settings.updatedAt())));
 
         return settings;
     }
@@ -62,7 +63,7 @@ public class UserSettingsRepositoryAdapter implements UserSettingsRepository {
         return jdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("userId", settings.userId())
                 .addValue("appearanceMode", settings.appearanceMode().name())
-                .addValue("updatedAt", settings.updatedAt()));
+                .addValue("updatedAt", JdbcTimestamps.from(settings.updatedAt())));
     }
 
     @Override

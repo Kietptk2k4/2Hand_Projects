@@ -1,0 +1,128 @@
+Get Store
+API Get Store
+ 
+Get the current Store of logged in client. One client can have many pick up addresses. Each address is a Store
+
+Caution : The API Order Info need to infusion token in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shop/all
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shop/all
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shop/all' \
+--header 'Content-Type: application/json' \
+--header 'Token: d6e3dccb-6289-11ea-8b85-c60e4edfe802' \
+--data-raw '{
+	"offset": 0,
+	"limit": 50,
+	"client_phone": ""
+}'
+
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+offset	Int	
+Default =0
+
+limit	Int	
+Maximum amount of data in API , not more than 200.
+
+clientphone	String	
+The phone number of Staff (In case you want to filter the list of store of fixed staff with phone number
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":{
+    "last_offset":60429
+    "shops"[
+    {
+    "_id":59037
+    "name":"Kinh doanh Corgi"
+    "phone":"0705099871"
+    "address":"3 Đồng Đen, Tân Bình, Hồ Chí Minh, Việt Nam"
+    "ward_code":"21410"
+    "district_id":1455
+    "client_id":2500055
+    "bank_account_id":0
+    "status":1
+    "version_no":"0730c906-1651-4171-91cd-2bddfc030a5c"
+    "updated_ip":"115.77.233.200"
+    "updated_employee":0
+    "updated_client":2500055
+    "updated_source":"shiip"
+    "updated_date":2500055
+    "updated_client":"2020-05-12T08:30:04.721Z"
+    "created_ip":""
+    "created_employee":0
+    "created_client":0
+    "created_source":""
+    "created_date":"2020-05-12T08:19:47.042Z"
+}
+    ]
+}
+Structure Response
+Field	Description
+name	
+Shop name
+
+phone	
+Shop number phone
+
+address	
+Shop address
+
+ward_code	
+Shop ward/vilage
+
+district_id	
+Shop district/town
+
+client_id	
+Client ID
+
+status	
+Status
+
+updated_ip	
+Update Ip
+
+updated_employee	
+Updated employee
+
+updated_client	
+Updated cliet
+
+updated_source	
+Updated source
+
+updated_date	
+Updated date
+
+created_ip	
+Created ip
+
+created_employee	
+Created employee
+
+created_client	
+Created client
+
+created_source	
+Create soucre
+
+created_date	
+Created date
+
+Error-Response
+{
+    "code": 400,
+    "message": "code=400, message=Syntax error: offset=30, error=invalid character '}' after array element, internal=invalid character '}' after array element",
+    "data": null
+    "code_message": "USER_ERR_COMMON"
+}

@@ -1,0 +1,166 @@
+Callback order status
+Customers please provide the following infomation to GHN config:
+Client ID
+Url webhook
+Staging or Production
+Name
+GHN' s side will send a request for order information, please return Response code=200:
+JSON format
+Method: POST
+Type: Create, Switch_status, Update_weight, Update_cod, Update_fee
+In the case of Response code other than 200, the GHN side will fire back 10 times each time 5 seconds apart.
+Document update status
+ Example Response:
+{
+    "CODAmount": 3000000,
+    "CODTransferDate": null,
+    "ClientOrderCode": "",
+    "ConvertedWeight": 200,
+    "Description": "Tạo đơn hàng",
+    "Fee": {
+    "CODFailedFee": 0,
+    "CODFee": 0,
+    "Coupon": 0,
+    "DeliverRemoteAreasFee": 0,
+    "DocumentReturn": 0,
+    "DoubleCheck": 0,
+    "Insurance": 17500,
+    "MainService": 53900,
+    "PickRemoteAreasFee": 53900,
+    "R2S": 0,
+    "Return": 0,
+    "StationDO": 0,
+    "StationPU": 0
+    "Total": 0
+    },
+    "Height": 10,
+    "IsPartialReturn": false,
+    "Length": 10,
+    "OrderCode": "Z82BS",
+    "PartialReturnCode": "",
+    "PaymentType": 1,
+    "Reason": "",
+    "ReasonCode": "",
+    "ShopID": 81558,
+    "Status":"ready_to_pick",
+    "Time":"2021-11-11T03:52:50.158Z",
+    "TotalFee":71400,
+    "Type":"create",
+    "Warehouse":"Bưu Cục 229 Quan Nhân-Q.Thanh Xuân-HN",
+    "Weight":10,
+    "Width":10
+}
+ 
+Structure Request
+Field	Description
+CODAmount	
+Amount cash to collect
+
+CODTransferDate	
+COD collection date
+
+ClientOrderCode	
+Client order code
+
+ConvertedWeight	
+Converted weight
+
+Description	
+Description of requirement
+
+Fee	
+Fee
+
+CODFailedFee	
+Amount to be collected upon delivery failure.
+
+CODFee	
+COD collection fee
+
+Coupon	
+Coupon value
+
+DeliverRemoteAreasFee	
+Delivery fee to remote areas
+
+DocumentReturn	
+Document collection fee
+
+DoubleCheck	
+Co-inspection fee
+
+Insurance	
+Insurance value
+
+MainService	
+Service fee
+
+PickRemoteAreasFee	
+Pickup fee in remote areas.
+
+R2S	
+Fee of delivery parcel again
+
+Return	
+Fee of Return to ship
+
+StationDO	
+Pickup fee at Station
+
+StationPU	
+Delivery fee at Station
+
+Total	
+total fee
+
+Height	
+Height of parcel
+
+IsPartialReturn	
+Order delivered 1 piece
+
+true:Yes
+
+false:No
+
+Length	
+Length of parcel
+
+OrderCode	
+Oder code
+
+PartialReturnCode	
+Order Code delivery 1 piece
+
+PaymentType	
+Service fee payer code
+
+Reason	
+Reason
+
+ReasonCode	
+Reason code
+
+ShopID	
+Store code
+
+Status	
+Status
+
+Time	
+Time
+
+TotalFee	
+Total fee
+
+Type	
+Type
+
+Warehouse	
+Warehouse
+
+Weight	
+Weight of parcel
+
+Width	
+Width of parcel

@@ -65,12 +65,38 @@ const EXTRA_POSTS = [
 
 const ALL_FEED_POSTS = [...mockGlobalFeedPosts, ...EXTRA_POSTS];
 
-const postProductTagsByPostId = new Map([
-  [
-    MOCK_POST_ID_SUCCESS,
-    [{ productId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", price: 500000 }],
-  ],
-]);
+const postProductTagsByPostId = new Map();
+
+function cloneTags(tags) {
+  return (tags || []).map((item) => ({ ...item }));
+}
+
+function syncFeedPostProductTags(postId, tags) {
+  const target = getMutableFeedPost(postId);
+  if (target) {
+    target.post.productTags = cloneTags(tags);
+  }
+}
+
+export function setProductTagsForPost(postId, tags) {
+  const list = cloneTags(tags);
+  if (list.length > 0) {
+    postProductTagsByPostId.set(postId, list);
+  } else {
+    postProductTagsByPostId.delete(postId);
+  }
+  syncFeedPostProductTags(postId, list);
+}
+
+function seedProductTagsFromFeed() {
+  for (const feedPost of ALL_FEED_POSTS) {
+    if (feedPost.productTags?.length) {
+      postProductTagsByPostId.set(feedPost.postId, cloneTags(feedPost.productTags));
+    }
+  }
+}
+
+seedProductTagsFromFeed();
 
 function getMutableFeedPost(postId) {
   const feedIndex = mockGlobalFeedPosts.findIndex((item) => item.postId === postId);
@@ -111,11 +137,7 @@ export function updateFeedPostInStore(postId, patch) {
     post.allowComments = patch.allowComments;
   }
   if (patch.productTags !== undefined) {
-    if (patch.productTags.length > 0) {
-      postProductTagsByPostId.set(postId, patch.productTags.map((item) => ({ ...item })));
-    } else {
-      postProductTagsByPostId.delete(postId);
-    }
+    setProductTagsForPost(postId, patch.productTags);
   }
 
   post.updatedAt = now;
@@ -178,7 +200,10 @@ export function buildPostDetail(postId, viewerUserId) {
   const author = resolveAuthor(feedPost.authorId);
   const isOwner = viewerUserId === feedPost.authorId;
 
-  const productTags = postProductTagsByPostId.get(postId) || [];
+  const productTags =
+    feedPost.productTags?.length > 0
+      ? cloneTags(feedPost.productTags)
+      : postProductTagsByPostId.get(postId) || [];
 
   return {
     postId: feedPost.postId,

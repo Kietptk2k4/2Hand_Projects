@@ -1,0 +1,104 @@
+Get Ticket List
+API Get Ticket List
+ 
+Get all ticket to created
+
+Caution : The API Order Info need to infusion token and shopidin header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/ticket/index
+Test
+https:/dev-online-gateway.ghn.vn/shiip/public-api/ticket/index
+Curl
+ccurl --location --request GET 'https://dev-online-gateway.ghn.vn/shiip/public-api/ticket/index' \
+--header 'Token: 285518-c4bb-11ea-be3a-f636b1deefb9' \
+--header 'Shopid: 885'
+
+Parameter
+Field	Type	Description
+Token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+Shopid	Int	
+Manage information for shop/seller.
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":[
+    {
+    "attachments":null, 
+    "client_id":"885" ,
+    "conversations":null ,
+    "created_at":"2020-05-29T15:24:15Z" ,
+    "created_by":2043024840333 ,
+    "description":"Tạo yêu cầu test" ,
+    "id":1605822 ,
+    "order_code":"5ENLKKHD" ,
+    "status":"Hoàn thành" ,
+    "status_id":1 ,
+    "type":"Tư vấn" ,
+    "updated_at":"2020-05-29T15:24:15Z" 
+    },
+    {
+    "attachments":null, 
+    "client_id":"885" ,
+    "conversations":null ,
+    "created_at":"2020-05-29T15:24:15Z" ,
+    "created_by":2043024840333 ,
+    "description":"Tạo yêu cầu test" ,
+    "id":1605822 ,
+    "order_code":"5ENLKKHD" ,
+    "status":"Hoàn thành" ,
+    "status_id":1 ,
+    "type":"Tư vấn" ,
+    "updated_at":"2020-05-29T15:24:15Z" 
+    }
+    ]
+}
+Structure Response
+Field	Description
+Attachments	
+File Image , excel , csv
+
+ClientID	
+Client ID
+
+Conversations	
+Conversations
+
+CreatedAt	
+Created At
+
+CreatedBy	
+CreatedBy
+
+Description	
+Description
+
+ID	
+Ticket ID
+
+OrderCode	
+Order Code
+
+Status	
+Status
+
+StatusId	
+Status ID
+
+Type	
+Type
+
+UpdatedAt	
+Updated At
+
+Error-Response
+{
+    "code": 404,
+    "message": "Không tìm thấy thông tin ticket này",
+    "data": null
+}

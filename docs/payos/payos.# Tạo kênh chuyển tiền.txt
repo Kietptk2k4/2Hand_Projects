@@ -1,0 +1,32 @@
+# Tạo kênh chuyển tiền
+
+### Trước khi bắt đầu[​](#trước-khi-bắt-đầu "Đường dẫn trực tiếp đến Trước khi bắt đầu")
+
+* Bạn cần có tài khoản đăng nhập vào hệ thống payOS.
+* Tổ chức của bạn đã được xác thực. Nếu chưa được xác thực, vui lòng tham khảo Mục [Xác thực Tổ chức](/docs/huong-dan-su-dung/xac-thuc-to-chuc.md)
+* Bạn đã liên kết ít nhất một tài khoản ngân hàng vào payOS. Nếu chưa liên kết tài khoản, vui lòng tham khảo phần [Kết nối tài khoản ngân hàng](/docs/huong-dan-su-dung/ket-noi-tai-khoan-ngan-hang.md)
+
+Sau khi xác thực Tổ chức thành công, bạn cần thực hiện theo các bước sau để tạo một kênh chuyển tiền mới.
+
+**Bước 1:** Tại menu **Kênh chuyển tiền**, nhấn nút **Thêm kênh chuyển tiền**.
+
+![Example banner](/docs/assets/images/payout-api-key-empty-33fc30e632792be33f841838cead7415.png)
+
+**Bước 2:** Điền thông tin **Tên của kênh**(tùy chọn), chọn **Ví/ngân hàng tương ứng**. Sau khi đã nhập đầy đủ thông tin, nhấn nút **Tạo kênh chuyển tiền**.
+
+![Example banner](/docs/assets/images/fill-info-bf75f3048dc5f5de77f35927867c5f2b.png) ![Example banner](/docs/assets/images/create-success-f438b9e3c0da6d680a273f1bf05a441e.png)
+
+**Bước 3:** Sau khi tạo thành công kênh chuyển tiền, ấn chọn kênh để xem các thông tin chi tiết của kênh.
+
+![Example banner](/docs/assets/images/detail-info-21b00fb7ded13277db485bb7bdc37ccd.png)
+
+**Bước 4:** Thêm địa chỉ IP cho kênh chuyển tiền, tại mục **Quản lý IP cho kênh**, ấn **Thêm IP**, điền các thông tin như **Địa chỉ IP**, **Mô tả**(tùy chọn) sau đó ấn **Thêm IP**.
+
+thông tin
+
+Có thể thêm nhiều địa chỉ IP cùng một lúc
+
+![Example banner](/docs/assets/images/ip-manager-2151c3c9528721e8ae70f2ecb58ad0a8.png) ![Example banner](/docs/assets/images/fill-ip-info-f3059ee94decafb45a3cff3ecbd45e73.png)
+Beta
+0 / 0
+used queries

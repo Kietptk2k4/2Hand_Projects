@@ -36,10 +36,12 @@ public class AdminActionLogEntity {
 	@Column(name = "target_id", nullable = false)
 	private String targetId;
 
-	@Column(name = "request_payload")
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "request_payload", columnDefinition = "jsonb")
 	private String requestPayload;
 
-	@Column(name = "response_payload")
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "response_payload", columnDefinition = "jsonb")
 	private String responsePayload;
 
 	@Column(name = "ip_address")

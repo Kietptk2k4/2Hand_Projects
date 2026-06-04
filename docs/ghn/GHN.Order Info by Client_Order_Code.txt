@@ -1,0 +1,308 @@
+Order Info by Client_Order_Code
+API Order Info by Client_Order_Code
+ 
+This API help you get all information of a order. You can know current status or the reason which make the shipment failed
+
+Caution : The API Order Info need to infusion token in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/detail-by-client-code
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/detail-by-client-code
+Curl
+url --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/detail-by-client-code' \
+--header 'Content-Type: application/json' \
+--header 'Token: f48a8928-9fcb-11ea-b2e69541627f' \
+--data-raw '{
+    "client_order_code": "Tin1234567"
+}'
+    
+    
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+client_order_code	String	
+Client order code. This is tracking code.
+
+Success 200
+{
+        "code": 200,
+        "message": "Success",
+        "data":[
+        {
+        "shop_id":855,
+        "client_id":500379,
+        "return_name":"Nguyen",
+        "return_phone":"0332190458",
+        "return_address":"39 NTT"",
+        "return_ward_code":"21413",
+        "return_district_id":1455,
+        "from_name":"Nguyen",
+        "from_phone":"0332190458",
+        "from_address":"17 dong den"",
+        "from_ward_code":"21413",
+        "from_district_id":1455,
+        "deliver_station_id":0,
+        "to_name":"TinTest124",
+        "to_phone":"0987654321",
+        "to_address":"72 Thành Thái, Phường 14, Quận 10, Hồ Chí Minh, Vietnam",
+        "to_ward_code":"20107",
+        "to_district_id":1442,
+        "weight":200,
+        "length":15,
+        "width":15,
+        "height":15,
+        "converted_weight":675,
+        "service_type_id":2,
+        "service_id":53320,
+        "payment_type_id":2,
+        "custom_service_fee":0,
+        "cod_amount":200000,
+        "cod_collect_date":null,
+        "cod_transfer_date":null,
+        "is_cod_transferred":false,
+        "is_cod_collected":false,
+        "insurance_value":2000000,
+        "order_value":0,
+        "pick_station_id":0,
+        "client_order_code":"Tin1234567",
+        "required_note":"KHONGCHOXEMHANG",
+        "content":"ABCDEF",
+        "note":"Tintest 123",
+        "employee_note":"",
+        "coupon":"",
+        "_id":"5ed11d4f1eb594a402473300",
+        "order_code":"5ENLKKHD",
+        "version_no":"c01697ec-6190-4b2a-aed9-dd5938a9cf11",
+        "updated_ip":"115.77.233.200",
+        "updated_employee":0,
+        "updated_client":500379,
+        "updated_source":"shiip",
+        "updated_date":"2020-05-29T14:52:59.485Z""",
+        "updated_warehouse":0,
+        "created_ip":"115.77.233.200""",
+        "created_employee":0,
+        "created_client":500379,
+        "created_source":"shiip",
+        "created_date":"2020-05-29T14:33:50.26Z",
+        "status":"return",
+        "pick_warehouse_id":1416,
+        "deliver_warehouse_id":1394,
+        "current_warehouse_id":1416,
+        "return_warehouse_id":1416,
+        "next_warehouse_id":0,
+        "leadtime":"2020-05-30T09:00:00Z",
+        "order_date":"2020-05-29T14:33:50Z",
+        "soc_id":"5ed121cb1eb594a402473301",
+        "finish_date":"5ed121cb1eb594a402473301",
+        "tag":[
+        "truck"
+        ]
+         "log":[
+         {
+         "status": "picking",
+         "updated_date": "2020-05-29T14:40:46.934Z"
+        },
+        {
+         "status": "picked",
+         "updated_date": "2020-05-29T14:40:59.662Z"
+        },
+        {
+         "status": "storing",
+         "updated_date": "2020-05-29T14:41:19.708Z"
+        },
+        {
+         "status": "return",
+         "updated_date": "2020-05-29T14:52:59.485Z
+        }
+        ]
+         }
+    }
+Structure Response
+Field	Description
+shop_id	
+Manage information for shop/seller
+
+client_id	
+Client info
+
+return_name	
+Name of order return
+
+return_phone	
+Return number phone
+
+return_address	
+Address return parcels
+
+return_ward_code	
+Ward Code return parcels
+
+return_district_id	
+District ID return parcels
+
+from_name	
+Sender name
+
+from_phone	
+Sender phone number
+
+from_address	
+Sender address
+
+from_ward_code	
+Sender ward/village
+
+from_district_id	
+Senders district/town
+
+deliver_station_id	
+Deliver station id
+
+to_name	
+Client name. (Customer / Buyer)
+
+to_phone	
+Recipient's phone number
+
+to_address	
+Client address.(Customer / Buyer)
+
+to_ward_code	
+Ward Code pick up parcels
+
+to_district_id	
+District ID drop off parcels
+
+weight	
+Weight of parcel
+
+length	
+Length of parcel
+
+width	
+Width of parcel
+
+height	
+Height of parcel
+
+converted_weight	
+Converted weight
+
+service_type_id	
+Sevice type id
+
+service_id	
+Service id
+
+payment_type_id	
+Choose who pay shipping fee
+
+cod_amount	
+Amount cash to collect
+
+cod_collect_date	
+COD collection date
+
+cod_transfer_date	
+COD transfer date
+
+insurance_value	
+Insurance value
+
+pick_station_id	
+The shipper not pickup parcels at shop’s address
+
+client_order_code	
+Client order code
+
+required_note	
+Note shipping order.Allowed values
+
+content	
+Content for order
+
+pickup_time	
+Expected pick up time.
+
+note	
+Client note for shipper
+
+employee_note	
+Employee note
+
+coupon	
+Coupon Code for discount
+
+order_code	
+Order code
+
+updated_ip	
+Updated ip
+
+updated_employee	
+Updated employye
+
+updated_client	
+Updated client
+
+updated_source	
+Updated source
+
+updated_date	
+Updated date
+
+updated_warehouse	
+Updated warehouse
+
+created_ip	
+Created ip
+
+created_employee	
+Created employee
+
+created_client	
+Created client
+
+created_source	
+Created source
+
+created_date	
+Created date
+
+status	
+Status
+
+pick_warehouse_id	
+Pick warehous id
+
+deliver_warehouse_id	
+Delivery warehouse id
+
+current_warehouse_id	
+Current warehouse id
+
+return_warehouse_id	
+Return warehouse id
+
+next_warehouse_id	
+Next wareshoue id
+
+leadtime	
+Expected delivery time
+
+order_date	
+Order date
+
+finish_date	
+Successful delivery date
+
+Error-Response
+{
+        "code": 400,
+        "message": "code=401, message=Token is not valid!",
+        "data": null
+    }

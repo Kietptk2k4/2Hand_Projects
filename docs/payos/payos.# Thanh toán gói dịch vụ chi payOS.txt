@@ -1,0 +1,29 @@
+# Thanh toán gói dịch vụ chi payOS
+
+### Trước khi bắt đầu[​](#trước-khi-bắt-đầu "Đường dẫn trực tiếp đến Trước khi bắt đầu")
+
+* Bạn cần có tài khoản đăng nhập vào hệ thống payOS.
+* Tổ chức của bạn đã được xác thực. Nếu chưa được xác thực, vui lòng tham khảo Mục [Xác thực Tổ chức](/docs/huong-dan-su-dung/xac-thuc-to-chuc.md)
+* Bạn đã liên kết ít nhất một tài khoản ngân hàng vào payOS. Nếu chưa liên kết tài khoản, vui lòng tham khảo phần [Kết nối tài khoản ngân hàng](/docs/huong-dan-su-dung/ket-noi-tai-khoan-ngan-hang.md)
+
+Nếu đây là lần đầu bạn thanh toán qua hệ thống, đừng lo — hướng dẫn dưới đây sẽ giúp bạn nắm rõ từng bước để hoàn tất giao dịch một cách dễ dàng, an toàn và chỉ mất vài phút. Mỗi gói dịch vụ sẽ có nhiều sự lựa chọn về số lượng giao dịch, với các mức giá khác nhau dựa trên thông số này ở mỗi gói.
+
+**Bước 1:** Tại menu **Thiết lập**, chọn **Sử dụng**, chọn tab **Chi** và chọn **Nạp tiền**.
+
+![Example banner](/docs/assets/images/step1-6468829542b7d861bfcf00fabe560049.png)
+
+**Bước 2:** Sau khi lựa chọn gói, đối với trường hợp cần hóa đơn VAT cho khoản thanh toán này thì bạn nhập các thông itn xuất hóa đơn. Bấm **Thanh toán** sẽ hiện mã QR thanh toán.
+
+thông tin
+
+Khi bắt đầu tạo tài khoản và sử dụng tính năng kênh Chi payOS, bạn sẽ có credit 100K dùng thử miễn phí
+
+Sau khi hoàn tất chuyển khoản, giao diện thông báo thanh toán thành công, hệ thống payOS sẽ tự động nâng cấp gói trong vòng vài giây và thông báo thanh toán thành công sẽ được gửi tói email.
+
+ghi chú
+
+Trong trường hợp gói dịch vụ chưa được nâng cấp sau 10 phút, hãy liên hệ với <cskh@payos.vn> hoặc hotline 19008144 để được hỗ trợ.
+Beta
+0 / 0
+used queries
+1

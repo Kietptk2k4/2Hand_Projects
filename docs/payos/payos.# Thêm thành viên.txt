@@ -1,0 +1,25 @@
+# Thêm thành viên
+
+Bước 1: Chọn Mục **Thiết lập**, chọn **Thành viên** => Ấn nút **Thêm thành viên**:
+
+![Example banner](/docs/assets/images/Step-1-3b0998d7754c771266f7bd7f7b82b8d5.png)
+
+Bước 2: Nhập mail thành viên muốn mời vào và ấn **Mời**:
+
+![Example banner](/docs/assets/images/Step-2-d4fc3e8b5a5486b017f9ef2ddc291c7a.png)
+
+Lưu ý
+
+Thành viên được mời tham gia tổ chức đã phải có tài khoản payOS.
+
+Bước 3: Ấn **Mời thành viên**:
+
+![Example banner](/docs/assets/images/Step-3-22856562c2ccb0a84fc6f1f5e75ad921.png)
+
+Kết quả: Thành viên được mời sẽ nhận được mail từ payOS, để tham gia vào tổ chức cần ấn vào link và chấp nhận tham gia.
+
+![Example banner](/docs/assets/images/Step-4-10116e12e1b9ade1f6a0e27bf6539043.png)
+Beta
+0 / 0
+used queries
+1

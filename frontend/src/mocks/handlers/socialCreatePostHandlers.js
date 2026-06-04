@@ -1,6 +1,7 @@
 import { delay, http, HttpResponse } from "msw";
 import { mockUsers } from "../data/authData";
 import { mockGlobalFeedPosts, mockPostId } from "../data/socialFeedData";
+import { setProductTagsForPost } from "../data/socialPostDetailData";
 import { getUserByToken } from "../utils/socialMockAuth";
 import { checkSocialMockUserCanWrite } from "../utils/socialMockWriteGuard";
 import { apiError, apiSuccess } from "../utils/response";
@@ -170,6 +171,7 @@ export const socialCreatePostHandlers = [
         authorId: created.authorId,
         caption: created.caption,
         media: created.media,
+        productTags: created.productTags,
         visibility: created.visibility,
         likeCount: 0,
         replyCount: 0,
@@ -178,6 +180,9 @@ export const socialCreatePostHandlers = [
         createdAt: created.createdAt,
         updatedAt: created.updatedAt,
       });
+      if (created.productTags?.length) {
+        setProductTagsForPost(created.postId, created.productTags);
+      }
     }
 
     return HttpResponse.json(apiSuccess(201, "Tao bai viet thanh cong.", created), {

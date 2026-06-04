@@ -1,0 +1,126 @@
+# SDKs.Java SDK
+
+thông tin
+
+Code demo: <https://github.com/payOSHQ/payos-demo-java-spring>
+
+<!-- -->
+
+## Tài liệu đầy đủ[​](#tài-liệu-đầy-đủ "Đường dẫn trực tiếp đến Tài liệu đầy đủ")
+
+Để biết thêm chi tiết về các phương thức, tham số và tính năng nâng cao (pagination, custom HttpClient, error handling, v.v.), vui lòng xem [GitHub Repository](https://github.com/payOSHQ/payos-lib-java).
+
+## Cài đặt[​](#cài-đặt "Đường dẫn trực tiếp đến Cài đặt")
+
+* Maven
+* Gradle
+
+Thêm dependency vào file `pom.xml`:
+
+```
+<dependency>
+  <groupId>vn.payos</groupId>
+  <artifactId>payos-java</artifactId>
+  <version>2.0.1</version>
+</dependency>
+```
+
+Thêm dependency vào file `build.gradle`:
+
+```
+implementation 'vn.payos:payos-java:2.1.0'
+```
+
+## Khởi tạo[​](#khởi-tạo "Đường dẫn trực tiếp đến Khởi tạo")
+
+Khởi tạo đối tượng PayOS từ biến môi trường hoặc truyền trực tiếp các thông số:
+
+```
+import vn.payos.PayOS;
+
+// Khởi tạo từ biến môi trường
+PayOS payOS = PayOS.fromEnv();
+
+// Hoặc khởi tạo trực tiếp
+PayOS payOS = new PayOS(
+    System.getenv("PAYOS_CLIENT_ID"),
+    System.getenv("PAYOS_API_KEY"),
+    System.getenv("PAYOS_CHECKSUM_KEY")
+);
+```
+
+## Tạo link thanh toán[​](#tạo-link-thanh-toán "Đường dẫn trực tiếp đến Tạo link thanh toán")
+
+Sử dụng phương thức `paymentRequests().create()` để tạo link thanh toán:
+
+```
+import vn.payos.model.v2.paymentRequests.CreatePaymentLinkRequest;
+
+CreatePaymentLinkRequest paymentRequest = CreatePaymentLinkRequest.builder()
+    .orderCode(System.currentTimeMillis() / 1000)
+    .amount(2000L)
+    .description("Thanh toán đơn hàng")
+    .cancelUrl("https://your-domain.com/cancel")
+    .returnUrl("https://your-domain.com/success")
+    .build();
+
+var paymentLink = payOS.paymentRequests().create(paymentRequest);
+System.out.println(paymentLink.getCheckoutUrl());
+```
+
+## Xác minh webhook[​](#xác-minh-webhook "Đường dẫn trực tiếp đến Xác minh webhook")
+
+Sử dụng phương thức `webhooks().verify()` để xác thực dữ liệu webhook:
+
+```
+import vn.payos.type.Webhook;
+
+@PostMapping("/webhook")
+public ResponseEntity<String> handleWebhook(@RequestBody Webhook webhook) {
+    try {
+        var data = payOS.webhooks().verify(webhook);
+        System.out.println("Thanh toán thành công: " + data.getOrderCode());
+        return ResponseEntity.ok("OK");
+    } catch (Exception e) {
+        System.err.println("Webhook không hợp lệ: " + e.getMessage());
+        return ResponseEntity.badRequest().body("Invalid webhook");
+    }
+}
+```
+
+## Tạo payout[​](#tạo-payout "Đường dẫn trực tiếp đến Tạo payout")
+
+Sử dụng phương thức `payouts().batch().create()` để tạo payout theo lô:
+
+```
+import vn.payos.model.v1.payouts.batch.PayoutBatchRequest;
+import vn.payos.model.v1.payouts.batch.PayoutBatchItem;
+import java.util.Arrays;
+
+String referenceId = "payout_" + System.currentTimeMillis();
+PayoutBatchRequest payoutRequest = PayoutBatchRequest.builder()
+    .referenceId(referenceId)
+    .validateDestination(false)
+    .category(Arrays.asList("salary"))
+    .payout(PayoutBatchItem.builder()
+        .referenceId(referenceId + "_1")
+        .amount(10000L)
+        .description("Thanh toán lương")
+        .toBin("970422")
+        .toAccountNumber("0123456789")
+        .build())
+    .payout(PayoutBatchItem.builder()
+        .referenceId(referenceId + "_2")
+        .amount(50000L)
+        .description("Thanh toán thưởng")
+        .toBin("970418")
+        .toAccountNumber("0987654321")
+        .build())
+    .build();
+
+var payout = payOS.payouts().batch().create(payoutRequest);
+System.out.println("Payout ID: " + payout.getReferenceId());
+```
+Beta
+0 / 0
+used queries

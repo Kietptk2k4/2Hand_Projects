@@ -1,0 +1,177 @@
+Calculate Fee
+API Calculate Fee
+ 
+This API can help Shop/Merchant get the shipping fee and provide to buyer before create shipping order by
+
+input some information such as Weight,Height,length,width ,to_district_ID, to_ward_code, Service_ID.
+
+Caution : The API Order Info need to infusion token in ShopId header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee' \
+            --header 'Content-Type: application/json' \
+            --header 'Token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+            --header 'ShopId: 885' \
+            --header 'Content-Type: text/plain' \
+            --data-raw '{
+            "from_district_id":1454,
+            "from_ward_code":"21211",
+            "service_id":53320,
+            "service_type_id":null,
+            "to_district_id":1452,
+            "to_ward_code":"21012",
+            "height":50,
+            "length":20,
+            "weight":200,
+            "width":20,
+            "insurance_value":10000,
+            "cod_failed_amount":2000,
+            "coupon": null
+            "items": [
+                {
+                  "name": "TEST1",
+                  "quantity": 1,
+                  "height": 200,
+                  "weight": 1000,
+                  "length": 200,
+                  "width": 200
+                }
+              ]
+            }'
+ 
+Parameter
+Field	Require	Type	Description
+token	X	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+shop_id	X	Int	
+Manage information for shop/seller
+
+service_id	 	Int	
+Call API SERVICE to show service.
+If not input service_type_id
+
+service_type_id	 	Int	
+Call API SERVICE to show service.
+
+Default value:  2:E-Commerce Delivery
+
+If not input service_id.
+
+insurance_value	 	Int	
+Use to declare parcel value. GHN will base on this value for compensation if any unexpected things happen (lost, broken...).
+
+Maximum 5.000.000
+
+Default value: 0
+
+coupon	 	String	
+Coupon Code for discount.
+
+cod_failed_amount	 	Int	
+Value of collect money when delivery fail
+
+from_district_id	 	Int	
+District ID pick up parcels.Use API Get District
+
+If you not input , will get information from shopid
+
+from_ward_code	 	String	
+Ward code pick up parcels.Use API Get Ward
+
+If you not input , will get information from shopid
+
+to_ward_code	X	String	
+Ward Code pick up parcels.Use API Get Ward
+
+to_district_id	X	Int	
+District ID drop off parcels.Use API Get District
+
+weight	 	Int	
+Weight (gram)
+
+length	 	Int	
+Length (cm)
+
+width	 	Int	
+width (cm)
+
+height	 	Int	
+height (cm)
+
+cod_value	 	Int	
+Amount cash to collect.
+
+Maximum 5.000.000
+
+Default value: 0
+
+Success 200
+{
+                "code": 200,
+                "message": "Success",
+                "data":{
+                "total":36300,
+                "service_fee":36300,
+                "insurance_fee":0,
+                "pick_station_fee":0,
+                "coupon_value":0,
+                "r2s_fee":0,
+                "document_return":0,
+                "double_check":0,
+                "cod_fee":0,
+                "pick_remote_areas_fee":0,
+                "deliver_remote_areas_fee":0,
+                "cod_failed_fee":0,
+                }
+            }
+Structure Response
+Field	Description
+total	
+Total service
+
+service_fee	
+Service fee
+
+insurance_fee	
+Insurance fee
+
+pick_station_fee	
+Pickup fee at Station
+
+coupon_value	
+Coupon Code for discount
+
+r2s_fee	
+Fee of delivery parcel again
+
+document_return	
+Fee of document return
+
+double_check	
+Fee of check together
+
+cod_fee	
+Fee of collection COD
+
+pick_remote_areas_fee	
+Fee of pick remote areas
+
+deliver_remote_areas_fee	
+Fee of delivery remote areas
+
+cod_failed_fee	
+Fee of collection money when delivery fail
+
+Error-Response
+{
+                "code": 400,
+                "message": "code=400, message=Syntax error: offset=30, error=invalid character '}' after array element, internal=invalid character '}' after array element",
+                "data": null
+                "code_message": "USER_ERR_COMMON"
+            }

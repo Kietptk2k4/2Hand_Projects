@@ -1,15 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
+import { useViewCommerceProduct } from "../hooks/useViewCommerceProduct";
+import { enrichProductTags } from "../utils/enrichProductTag";
 import { MAX_COMMENT_LENGTH } from "../constants/commentConstants";
 import { DEFAULT_USER_DISPLAY_NAME } from "../constants/socialUiStrings";
 import { usePostComments } from "../hooks/usePostComments";
 import { usePostDetail } from "../hooks/usePostDetail";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
-import { formatVndPrice } from "../utils/formatPrice";
 import { MediaGalleryLightbox } from "./MediaGalleryLightbox";
 import { PostCaption } from "./PostCaption";
 import { PostDetailComments } from "./PostDetailComments";
 import { PostMediaGrid } from "./PostMediaGrid";
+import { PostProductTagsBlock } from "./PostProductTagsBlock";
 import { useSocialWriteBlock } from "../context/SocialWriteBlockContext";
 import { PostOptionsMenu } from "./PostOptionsMenu";
 
@@ -36,6 +38,7 @@ export function PostDetailModal({
   onHashtagClick,
 }) {
   const { user } = useAuthSession();
+  const viewCommerceProduct = useViewCommerceProduct();
   const { isWriteBlocked, suspendMessage } = useSocialWriteBlock();
   const commentAnchorRef = useRef(null);
   const commentInputRef = useRef(null);
@@ -44,6 +47,10 @@ export function PostDetailModal({
   const [replyCountBump, setReplyCountBump] = useState(0);
 
   const { post, isLoading, isError, errorMessage, errorCode, retry } = usePostDetail(postId);
+  const enrichedProductTags = useMemo(
+    () => enrichProductTags(post?.productTags),
+    [post?.productTags]
+  );
   const [savedByMe, setSavedByMe] = useState(false);
 
   useEffect(() => {
@@ -297,29 +304,12 @@ export function PostDetailModal({
                     </div>
                   ) : null}
 
-                  {post.productTags?.length > 0 ? (
-                    <div className="mb-6 flex items-center justify-between rounded-lg border border-outline-variant bg-surface-container-low p-3 shadow-sm">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center rounded-lg bg-primary p-2 text-on-primary">
-                          <span className="material-symbols-outlined" aria-hidden="true">
-                            receipt_long
-                          </span>
-                        </div>
-                        <div>
-                          <h3 className="text-sm font-bold text-on-surface">Gói Tư vấn Thuế</h3>
-                          <p className="text-sm text-on-surface-variant">
-                            {formatVndPrice(post.productTags[0].price)}
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={showComingSoon}
-                        className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-on-primary shadow-sm hover:bg-[#0050cb]"
-                      >
-                        Đặt ngay
-                      </button>
-                    </div>
+                  {enrichedProductTags.length > 0 ? (
+                    <PostProductTagsBlock
+                      tags={enrichedProductTags}
+                      variant="detail"
+                      onViewProduct={viewCommerceProduct}
+                    />
                   ) : null}
 
                   <div className="mb-6 flex items-center gap-6 border-y border-outline-variant py-3">

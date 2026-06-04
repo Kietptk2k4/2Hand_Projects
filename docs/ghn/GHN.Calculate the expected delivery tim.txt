@@ -1,0 +1,71 @@
+Calculate the expected delivery time
+API Calculate the expected delivery time
+ 
+Accurate time will be delivered to guests
+
+Caution : The API Order Info need to infusion Token and ShopId in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/leadtime
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/leadtime
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/leadtime' \
+--header 'Content-Type: application/json' \
+--header 'ShopId: 916' \
+--header 'Token: e835a5a1-b111-11ea-aea1-7aad6bea2429' \
+--data-raw '{
+    "from_district_id": 1750,
+    "from_ward_code": "1A0706",
+    "to_district_id": 1750,
+    "to_ward_code": "511110",
+    "service_id": 53320
+}'
+
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+ShopID	Int	
+Manage information for shop/seller
+
+from_district_id	Int	
+District ID pick up parcels.Use API Get District
+
+to_district_id	Int	
+District ID drop off parcels.Use API Get District
+
+to_ward_code	String	
+Ward Code pick up parcels.Use API Get Ward
+
+service_id	Int	
+Choose which Sevice ID suitable with your shipping plan (Express, Standard or Saving). Each Service ID has different fee and leadtime.
+
+Use API Get service (if not input service_type_id)
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":{
+    "leadtime":1593187200
+    "order_date":1592981718
+    }
+}
+Structure Response
+Field	Description
+leadtime	
+Expected delivery time
+
+order_date	
+Order creation date
+
+Error-Response
+{
+    "code": 400,
+    "message": "code=400, message=Syntax error: offset=30, error=invalid character '}' after array element, internal=invalid character '}' after array element",
+    "data": null
+    "code_message": "USER_ERR_COMMON"
+}

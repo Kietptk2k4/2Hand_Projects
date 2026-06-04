@@ -1,0 +1,189 @@
+Update Order
+API Update Order
+ 
+Update information of created order. Only available when shipping status
+
+Caution : The API Order Info need to infusion token and shop_id in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/update
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/update
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/update' \
+        --header 'Content-Type: application/json' \
+        --header 'ShopId: 885' \
+        --header 'Token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+        --header 'Content-Type: text/plain' \
+        --data-raw '{"note":"nhớ gọi 30p khi giao","order_code":"5F5NH3LN"}'
+        
+        
+        
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+shop_id	Int	
+Manage information for shop/seller
+
+order_code	String	
+GHN Order Code. This is tracking code.
+
+from_name	String	
+Client name. (Shop / Seller)
+
+from_phone	String	
+Client phone. (Shop / Seller)
+
+from_address	String	
+Client address. (Shop / Seller)
+
+from_ward_code	String	
+Ward Code pick up parcels. Use API GetWards.
+
+to_name	String	
+Client name. (Shop / Seller)
+
+to_phone	String	
+Client phone number. (Shop / Seller)
+
+to_address	String	
+Client address. (Shop / Seller).
+
+to_ward_code	String	
+Ward Code return parcels. Use API Get Ward.
+
+API Get WardCode
+
+to_district_id	Int	
+District ID return parcels. Use API GetDistricts
+
+API Get District
+
+return_phone	String	
+Contact phone number to return parcels.
+
+return_address	String	
+Address return parcels.
+
+return_district_id	Int	
+District ID return parcels. Use API GetDistricts
+
+API Get District
+
+return_ward_code	String	
+Ward Code return parcels. Use API Get Ward.
+
+API Get WardCode
+
+client_order_code	String	
+External order code managed by logged client [Unique field].
+
+Default value: null
+
+cod_amount	Int	
+Amount cash to collect.
+
+Maximum 10.000.000
+
+Default value: 0
+
+content	String	
+Content for order
+
+weight	Int	
+Weight (gram)
+
+Maximum : 50.000gram
+length	Int	
+Length (cm)
+
+Maximum : 200cm
+width	Int	
+width (cm)
+
+Maximum : 200cm
+height	Int	
+height (cm)
+
+Maximum : 200cm
+pick_station_id	Int	
+The shipper not pickup parcels at shop’s address
+
+insurance_value	Int	
+Use to declare parcel value. GHN will base on this value for compensation if any unexpected things happen (lost, broken...).
+
+Maximum 5.000.000
+
+Default value: 0
+
+coupon	String	
+Coupon Code for discount.
+
+payment_type_id	Int	
+Choose who pay shipping fee.
+
+1: Shop/Seller.
+
+2: Buyer/Consignee.
+
+note	String	
+Client note for shipper.
+
+Ex: Please call before delivery
+
+required_note	String	
+Note shipping order.Allowed values: CHOTHUHANG, CHOXEMHANGKHONGTHU, KHONGCHOXEMHANG 
+
+CHOTHUHANG mean Buyer can request to see and trial goods
+CHOXEMHANGKHONGTHU mean Buyer can see goods but not allow to trial goods
+KHONGCHOXEMHANG mean Buyer not allow to see goods
+
+pick_shift	 	
+Picking shift , take API Pick Shift
+
+Items	 	
+Content for order
+
+name	String	
+Name of product
+
+code	String	
+Code of product
+
+quantity	Int	
+Quantity of product
+
+price	Int	
+Price of product
+
+length	Int	
+Length of product
+
+width	Int	
+Width of product
+
+height	Int	
+Height of product
+
+category	 	
+Category of product have 3 level,level1, level2, level3
+
+level1	String	
+Product category classification
+
+Success 200
+{
+            "code": 200,
+            "message": "Success",
+            "data":null
+        }
+Error-Response
+{
+            "code": 400,
+            "message": "code=400, message=Syntax error: offset=30, error=invalid character '}' after array element, internal=invalid character '}' after array element",
+            "data": null
+            "code_message": "USER_ERR_COMMON"
+        }

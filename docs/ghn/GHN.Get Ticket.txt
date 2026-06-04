@@ -1,0 +1,93 @@
+Get Ticket
+API Get Ticket
+ 
+Get all ticket to created
+
+Caution : The API Order Info need to infusion tokenin header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/ticket/detail
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/ticket/detail
+Curl
+curl --location --request GET 'https://dev-online-gateway.ghn.vn/shiip/public-api/ticket/detail' \
+--header 'Token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+	"ticket_id":1605822
+}'
+
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+ticket_id	Int	
+The ticket ID is returned when calling api to create a ticket
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":{
+    "attachments":[] 
+    "c_email":"cskh@ghn.vn" 
+    "c_name":"Cskh" 
+    "client_id":"SHOP-885" 
+    "conversations":[] 
+    "created_at":"2020-05-29T15:24:15Z" 
+    "created_by":2043024840333 
+    "description":"Tạo yêu cầu test" 
+    "id":1605822 
+    "order_code":"5ENLKKHD" 
+    "status":"Đang xử lý" 
+    "status_id":1 
+    "type":"Tư vấn" 
+    "updated_at":"2020-05-29T15:24:15Z" 
+     }
+}
+Structure Response
+Field	Description
+Attachments	
+File Image , excel , csv
+
+ClientID	
+Client ID
+
+Conversations	
+Conversations
+
+CreatedAt	
+Created At
+
+CreatedBy	
+CreatedBy
+
+Description	
+Description
+
+ID	
+Ticket ID
+
+OrderCode	
+Order Code
+
+Status	
+Status
+
+StatusId	
+Status ID
+
+Type	
+Type
+
+UpdatedAt	
+Updated At
+
+Error-Response
+{
+    "code": 404,
+    "message": "Không tìm thấy thông tin ticket này",
+    "data": null
+}

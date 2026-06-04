@@ -1,0 +1,62 @@
+Return Order
+API Return Order
+ 
+The purpose of changing the status of an order to delivery is only applicable where the current status of the order is: storage or waiting for delivery.
+
+Caution : The API Order Info need to infusion token and shop_id in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/switch-status/return
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/switch-status/return
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/switch-status/return' \
+--header 'token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+--header 'shop_id: 885' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+	"order_codes":["5ENLKKHD"]
+}'
+
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+shop_id	Int	
+Manage information for shop/seller
+
+order_codes	String	
+GHN Order Code. This is tracking code.
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":[
+    {
+    "order_code":"5ENLKKHD"  
+    "result":true 
+    "message":"OK" 
+}
+]
+}
+Structure Response
+Field	Description
+order_code	
+Order code
+
+result	
+Result
+
+message	
+Message
+
+Error-Response
+{
+    "code": 400,
+    "message": "code=400, message=Syntax error: offset=30, error=invalid character '}' after array element, internal=invalid character '}' after array element",
+    "data": null
+    "code_message": "USER_ERR_COMMON"
+}

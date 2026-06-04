@@ -1,0 +1,59 @@
+Print Order
+API Print Order
+ 
+ 
+
+post/get
+Note: This API needs to pass the token in the header. 
+
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/a5/gen-token
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/a5/gen-token
+After running the API Print order information to get the ABC token, it will be assigned to the link below, where ABC is the token when calling the API. Expiry time 30 minutes .
+
+ 
+
+Production
+- Print A5: https://online-gateway.ghn.vn/a5/public-api/printA5?token=ABC
+- Print 80x80: https://online-gateway.ghn.vn/a5/public-api/print80x80?token=ABC
+- Print 50x72 : https://online-gateway.ghn.vn/a5/public-api/print52x70?token=ABC
+Test
+- Print A5: https://dev-online-gateway.ghn.vn/a5/public-api/printA5?token=ABC
+- Print 80x80: https://dev-online-gateway.ghn.vn/a5/public-api/print80x80?token=ABC
+- Print 50x72 : https://dev-online-gateway.ghn.vn/a5/public-api/print52x70?token=ABC
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/a5/gen-token' \
+--header 'Token: 3b75c988-ff34-11eb-b255-166e45bc1992123' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+"order_codes":["GA99W4RREB"]
+}'
+
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+order_codes	Array 	
+GHN Order Code. This is tracking code.
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":{
+    "token":"e27db030-a1bf-11ea-b421-6a186c15e40e" 
+     }
+}
+Structure Response
+Field	Description
+token	
+This token ABC is generated to assign to the order printing URL according to the order code
+
+Error-Response
+{
+    "code": 400,
+    "message": "Lỗi gọi API: corev2_tenant_order_detail - code=404, message=Đơn hàng không tồn tại",
+    "data": null
+}

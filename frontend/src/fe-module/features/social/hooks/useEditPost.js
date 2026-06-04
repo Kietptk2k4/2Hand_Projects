@@ -11,8 +11,8 @@ import {
   POST_MEDIA_MIME_TYPES,
   VIDEO_MAX_BYTES,
 } from "../constants/createPostConstants";
-import { MOCK_PRODUCT_CATALOG } from "../constants/mockProductCatalog";
 import { buildEditPatchBody, buildPatchSnapshot } from "../utils/buildEditPatch";
+import { enrichProductTag } from "../utils/enrichProductTag";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 
 function resolveMediaKind(file) {
@@ -48,16 +48,6 @@ function mapMediaToSlots(media) {
     progress: 100,
     errorMessage: "",
   }));
-}
-
-function enrichProductTag(tag) {
-  const catalog = MOCK_PRODUCT_CATALOG.find((item) => item.productId === tag.productId);
-  return {
-    productId: tag.productId,
-    name: catalog?.name || "Sản phẩm",
-    category: catalog?.category || "",
-    price: Number(tag.price) || catalog?.defaultPrice || 0,
-  };
 }
 
 function getReadyMedia(mediaItems) {

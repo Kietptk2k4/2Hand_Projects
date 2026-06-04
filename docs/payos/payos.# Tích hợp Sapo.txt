@@ -1,0 +1,66 @@
+# Tích hợp.Tích hợp Sapo
+
+Mỗi khi phát sinh một giao dịch mới, dựa trên mã đơn hàng và số tiền người dùng đã chuyển, payOS sẽ tự động xác nhận thanh toán và chuyển trạng thái đơn hàng trực tiếp trên website Sapo.
+
+## Bước 1: Đăng kí tài khoản, thiết lập cổng trên payOS[​](#bước-1-đăng-kí-tài-khoản-thiết-lập-cổng-trên-payos "Đường dẫn trực tiếp đến Bước 1: Đăng kí tài khoản, thiết lập cổng trên payOS")
+
+Sau khi bạn hoàn thành bước này hãy vào giao diện payOS và lưu 3 keys dưới đây:
+
+![Example banner](/docs/assets/images/temp-bank-when-edit-channel-d03f0e792def52b89350ca6b499ef93e.png)
+
+## Bước 2: Lấy API Key từ sapo[​](#bước-2-lấy-api-key-từ-sapo "Đường dẫn trực tiếp đến Bước 2: Lấy API Key từ sapo")
+
+Truy cập vào admin trên trang Sapo của bạn => Ứng dụng => Ứng dụng riêng
+
+![Example banner](/docs/assets/images/sapo1-9c42238a1e8372f99328ae7be946cb87.png)
+
+Tạo ứng dụng và cấu hình ứng dụng
+
+![Example banner](/docs/assets/images/sapo2-e468d908e0c1745dd4dd2dd976bd145d.png)
+
+Nhập thông tin Tên ứng dụng + email của bạn và cho phép quyền đọc ghi trên đơn hàng.
+
+![Example banner](/docs/assets/images/sapo3-f79c665593be867bc43c734f179b9d5b.png)
+
+Sau khi tạo xong ta được giao diện Ứng dụng như dưới đây:
+
+![Example banner](/docs/assets/images/sapo4-78da1a151eb296f3f8a75edb68587445.png)
+
+## Bước 2: Cài đặt plugin payos-sapo[​](#bước-2-cài-đặt-plugin-payos-sapo "Đường dẫn trực tiếp đến Bước 2: Cài đặt plugin payos-sapo")
+
+Đường dẫn plugin payos-sapo:
+
+```
+https://github.com/payOSHQ/payos-sapo
+```
+
+Sau khi đã cài và có được đường dẫn tương tự như này, bạn có thể đến bước tiếp theo
+
+## Bước 3: Thiết lập trên giao diện sapo[​](#bước-3-thiết-lập-trên-giao-diện-sapo "Đường dẫn trực tiếp đến Bước 3: Thiết lập trên giao diện sapo")
+
+Sau khi đã deploy xong bằng plugin payos-sapo và có được đường dẫn public như bên dưới, bạn có thể tiến hành bước tiếp theo:
+
+```
+https://your_domain/checkout.js
+```
+
+Vào trang Admin của Sapo web => Cài đặt => Phương thức thanh toán. Ở phần thanh toán thủ công, ta tiến hành tạo ra phương thức thanh toán tùy chọn, sửa lại tên theo ý muốn sau đó lưu lại.
+
+Lưu ý: Tên phương thức thanh toán cần có chữ VietQR để hệ thống tự động nhận diện và cập nhật mã VietQR khi thanh toán.
+
+![Example banner](/docs/assets/images/sapo5-7995c2c7613609dec430dd9719af0577.png)
+
+Quay lại phần Cài đặt => vào Trang thanh toán. Ở mục xử lý đơn hàng ta dán đoạn code bên dưới vào trường Nội dung thông báo thêm và Lưu lại.
+
+```
+<script src="https://your_domain/checkout.js" ></script>
+```
+
+![Example banner](/docs/assets/images/sapo6-f0d9f0cefb7316c09b0f99c4c726c0d6.png)
+
+Vậy là đã hoàn tất toàn bộ các bước thiết lập, hãy cùng kiểm tra lại kết quả thôi nào:
+
+![Example banner](/docs/assets/images/sapo7-ba96cacfe9c6e73ac5663984901e1c9d.png) ![Example banner](/docs/assets/images/sapo8-9b77bce4692cd016775017082003e434.png) ![Example banner](/docs/assets/images/sapo9-b35a494733fbd569bc801d59315fc1ff.png)
+Beta
+0 / 0
+used queries

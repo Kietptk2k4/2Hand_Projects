@@ -34,6 +34,7 @@ function toHashtagItem(post) {
     replyCount: post.replyCount ?? 0,
     hashtags: post.hashtags || [],
     allowComments: post.allowComments !== false,
+    productTags: post.productTags || [],
     createdAt: post.createdAt,
     updatedAt: post.updatedAt,
   };

@@ -1,0 +1,29 @@
+Create Account and Get Token, Client_ID, ShopID
+I. Create Account in Staging and Production enviroment 
+
++ Staging : 5sao.ghn.dev
+
++ Production : khachhang.ghn.vn
+
+II. Get Token and Create Shop's address
+
++Step 1 : Login the link staging or production enviroment 
+
+
+
++Step 2 : Choose tab "Chủ cửa hàng"
+
+
+
++Step 3 : Choose button "Xem" and copy your token 
+
+
+
++Step 4 : Create Shop's Address . choose tab "Quản lý cửa hàng" -> Choose your Shop and fill in your shop address -> Click button "Cập nhật" , Finish
+
+ 
+
+ 
+
+ 
+

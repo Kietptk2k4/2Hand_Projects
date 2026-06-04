@@ -1,0 +1,30 @@
+# Thanh Toán. Cách hoạt động payOS Checkout
+
+payOS Checkout là một giao diện dựng sẵn, giúp giảm thời gian phát triển.
+
+## Luồng hoạt động[​](#luồng-hoạt-động "Đường dẫn trực tiếp đến Luồng hoạt động")
+
+* Bước 1: Khách hàng thực hiện mua hàng trên Website hoặc ứng dụng của merchant và lựa chọn thanh toán trực tuyến Napas 247 cho đơn hàng.
+* Bước 2: Website hoặc ứng dụng của merchant tiến hành gọi [tạo link thanh toán](/docs/api/.md#tag/payment-request/operation/payment-request), payOS sẽ kiểm tra dữ liệu và trả về kết quả chứa link thanh toán. Khi hệ thống của merchant nhận kết quả link thanh toán cần chuyển hướng khách hàng của bạn đến trang checkout của payOS bằng cách mở link thanh toán từ kết quả.
+* Bước 3: Khách hàng sử dụng ứng dụng ngân hàng để quét mã VietQR từ link thanh toán.
+* Bước 4: Giao dịch ghi nhận thành công tại ngân hàng, payOS sẽ trả kết quả thành công về `returnUrl` gồm: trạng thái, mã đơn hàng, mã link thanh toán, ... Từ kết quả nhận được trên `returnUrl` Website hoặc ứng dụng của merchant hiển thị giao diện thành công.
+* Bước 5: Sau khi có kết quả ở giao diện, đồng thời payOS sẽ gửi một [kết quả](/docs/tich-hop-webhook/kiem-tra-du-lieu-voi-signature.md) với đầy đủ thông tin thanh toán tới Webhook của cửa hàng được thiết lập trên <https://my.payos.vn>, sau đó merchant cập nhật trạng thái đơn hàng phù hợp.
+
+<!-- -->
+
+## Cách tích hợp payOS với hệ thống của Merchant[​](#cách-tích-hợp-payos-với-hệ-thống-của-merchant "Đường dẫn trực tiếp đến Cách tích hợp payOS với hệ thống của Merchant")
+
+* Code để [tạo link thanh toán](/docs/api/.md#tag/payment-request/operation/payment-request)
+* Code xử lý `returnUrl` và `cancelUrl` để nhận thông báo kết quả Thanh toán và Huỷ đơn hàng trên giao diện.
+* Code [webhook](https://www.redhat.com/en/topics/automation/what-is-a-webhook) để nhận kết quả thanh toán của một đơn hàng.
+
+## Low-code[​](#low-code "Đường dẫn trực tiếp đến Low-code")
+
+payOS Checkout với yêu cầu ít code và lựa chọn tốt nhất để tích hợp thanh toán bởi những tính năng có sẵn. Lựa chọn hiển thị giao diện Checkout:
+
+* [Chuyển hướng đến trang payOS Checkout](/docs/checkout/quick-start-payos-hosted-page.md)
+* [Mở dialog giao diện thanh toán](/docs/sample/react)
+* [Nhúng giao diện thanh toán](/docs/checkout/quick-start-payos-embedded-form.md) vào website hoặc ứng dụng của bạn.
+Beta
+0 / 0
+used queries

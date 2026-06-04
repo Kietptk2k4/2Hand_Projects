@@ -5,6 +5,7 @@ import com.twohands.auth_service.domain.user.LoginLogPage;
 import com.twohands.auth_service.domain.user.LoginLogQueryFilter;
 import com.twohands.auth_service.domain.user.LoginLogRepository;
 import com.twohands.auth_service.domain.user.LoginMethod;
+import com.twohands.auth_service.infrastructure.persistence.JdbcTimestamps;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -35,7 +36,7 @@ public class LoginLogRepositoryAdapter implements LoginLogRepository {
                 .addValue("ipAddress", log.ipAddress())
                 .addValue("userAgent", log.userAgent())
                 .addValue("success", log.success())
-                .addValue("createdAt", log.createdAt());
+                .addValue("createdAt", JdbcTimestamps.from(log.createdAt()));
         jdbcTemplate.update(sql, params);
         return log;
     }
@@ -74,11 +75,11 @@ public class LoginLogRepositoryAdapter implements LoginLogRepository {
         }
         if (effectiveFilter.from() != null) {
             whereClause.append(" AND created_at >= :from ");
-            params.addValue("from", effectiveFilter.from());
+            params.addValue("from", JdbcTimestamps.from(effectiveFilter.from()));
         }
         if (effectiveFilter.to() != null) {
             whereClause.append(" AND created_at <= :to ");
-            params.addValue("to", effectiveFilter.to());
+            params.addValue("to", JdbcTimestamps.from(effectiveFilter.to()));
         }
 
         String countSql = "SELECT COUNT(*) FROM login_logs " + whereClause;

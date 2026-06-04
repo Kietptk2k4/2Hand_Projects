@@ -1,0 +1,9 @@
+# Tích Hợp.Tích hợp WooCommerce với payOS
+
+[Embedded youtube](https://www.youtube.com/embed/7QsbC3oAIrs)
+
+### [Tải plugin payOS](/docs/downloads.md) và thiết lập theo hướng dẫn.[​](#tải-plugin-payos-và-thiết-lập-theo-hướng-dẫn "Đường dẫn trực tiếp đến tải-plugin-payos-và-thiết-lập-theo-hướng-dẫn")
+Beta
+0 / 0
+used queries
+1

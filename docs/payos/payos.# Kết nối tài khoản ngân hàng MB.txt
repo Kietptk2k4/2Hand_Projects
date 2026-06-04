@@ -1,0 +1,48 @@
+# Kết nối tài khoản ngân hàng MB
+
+Hướng dẫn kết nối tài khoản ngân hàng MB vào payOS.
+
+### Trước khi bắt đầu[​](#trước-khi-bắt-đầu "Đường dẫn trực tiếp đến Trước khi bắt đầu")
+
+* Bạn đã có tài khoản trên <https://my.payos.vn> chưa? [Hướng dẫn tạo tài khoản my.payos.vn](/docs/huong-dan-su-dung/tao-tai-khoan-payos.md).
+* Bạn đã xác thực một tổ chức trên payOS chưa? [Hướng dẫn xác thực tổ chức](/docs/huong-dan-su-dung/xac-thuc-to-chuc.md).
+* Bạn đã có tài khoản ngân hàng MB chưa?
+
+### Kết nối tài khoản định danh MB Cá nhân[​](#kết-nối-tài-khoản-định-danh-mb-cá-nhân "Đường dẫn trực tiếp đến Kết nối tài khoản định danh MB Cá nhân")
+
+* Đăng nhập vào tài khoản payOS và chọn thêm ngân hàng MB/VietQR Pro
+
+  ![payOS select MB bank account page](/docs/assets/images/select-link-mb-6c4cf794ecdf806a1d7cd1a267038adb.png)
+
+* Thực hiện kết nối tài khoản ngân hàng thông qua Cas (Có thể quét QR tải app để thao tác hoặc bấm vào “Kết nối trước - Cas sau”)
+
+* Điền thông tin xác thực tài khoản và tick xác nhận đã đọc và đồng ý “điều khoản và điều kiện” để đăng ký tài khoản định danh MB
+
+![payOS link MB via Cas](/docs/assets/images/fill-account-number-business-e5a08dbc283fda45c0975baca138bd23.png)
+
+* Nhấn Liên kết để hoàn thành liên kết tài khoản ngân hàng MB vào payOS
+
+thông tin
+
+Khách hàng có thể liên kết tài khoản ngân hàng MB/Open API để làm tài khoản ngân hàng dự phòng, xác nhận đơn dựa vào nội dung chuyển khoản và số tiền.
+
+### Kết nối tài khoản định danh MB Doanh nghiệp[​](#kết-nối-tài-khoản-định-danh-mb-doanh-nghiệp "Đường dẫn trực tiếp đến Kết nối tài khoản định danh MB Doanh nghiệp")
+
+* Đăng nhập vào tài khoản payOS và chọn thêm ngân hàng MB/VietQR Pro
+
+  ![payOS link MB account success](/docs/assets/images/select-link-business-4fc8552112f1e4aec7101763eb290612.png)
+
+* Thực hiện kết nối tài khoản ngân hàng thông qua Cas (Có thể quét QR tải app để thao tác hoặc bấm vào “Kết nối trước - Cas sau”)
+
+* Điền thông tin xác thực tài khoản và tick xác nhận đã đọc và đồng ý “điều khoản và điều kiện” để đăng ký tài khoản định danh MB
+
+  ![payOS link MB via Cas](/docs/assets/images/fill-account-number-business-e5a08dbc283fda45c0975baca138bd23.png)
+
+### Tích hợp kênh thanh toán cho tài khoản định danh MB vào các nền tảng[​](#tích-hợp-kênh-thanh-toán-cho-tài-khoản-định-danh-mb-vào-các-nền-tảng "Đường dẫn trực tiếp đến Tích hợp kênh thanh toán cho tài khoản định danh MB vào các nền tảng")
+
+* [Hướng dẫn tích hợp Sapo](/docs/tich-hop-webhook/sapo.md)
+* [Hướng dẫn tích hợp WooCommerce](/docs/tich-hop-webhook/woocommerce.md)
+* [Hướng dẫn tích hợp nhanh (low code)](/docs/checkout/quick-start-payos-hosted-page.md)
+Beta
+0 / 0
+used queries

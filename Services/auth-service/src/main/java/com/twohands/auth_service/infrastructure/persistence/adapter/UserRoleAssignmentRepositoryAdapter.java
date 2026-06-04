@@ -2,6 +2,7 @@ package com.twohands.auth_service.infrastructure.persistence.adapter;
 
 import com.twohands.auth_service.domain.rbac.UserRoleAssignment;
 import com.twohands.auth_service.domain.rbac.UserRoleAssignmentRepository;
+import com.twohands.auth_service.infrastructure.persistence.JdbcTimestamps;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -72,7 +73,7 @@ public class UserRoleAssignmentRepositoryAdapter implements UserRoleAssignmentRe
             jdbcTemplate.update(insertSql, new MapSqlParameterSource()
                     .addValue("userId", assignment.userId())
                     .addValue("roleId", roleId)
-                    .addValue("createdAt", createdAt));
+                    .addValue("createdAt", JdbcTimestamps.from(createdAt)));
         }
 
         return assignment;

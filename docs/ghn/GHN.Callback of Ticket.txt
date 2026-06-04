@@ -1,0 +1,101 @@
+Callback of Ticket
+Customers please provide the following infomation to GHN config
+Client_ID
+Url ticket
+Staging or Production
+Name
+The GHN side will send request type, ticket status. Customer please return Response code=200:
+JSON format
+Type: ("Tư vấn", "Hối Giao/Lấy/Trả hàng", "Thay đổi thông tin", "Khiếu nại")
+Status: ("1 - Đang xử lý", "2 - Chờ KH phản hồi", "3 - Hoàn thành")
+In the case of Response code other than 200, the GHN side will fire back 10 times each time 5 seconds apart.
+ Example Response:
+{
+        "A_Email": "",
+        "Attachments": [],
+        "C_Email": "bao@ahamove.com",
+        "C_Name": "Bao",
+        "C_Phone": "",
+        "ClientID": "102110",
+        "Conversations":
+        [
+            {
+                "Attachments": [],
+                "BccEmails": null,
+                "Body": "Anh/Chị có thể để lại thông tin tại group \"\"Tâm sự giao hàng cùng GHN\"\" để nhận được hỗ trợ sớm nhất từ GHN nhé! Tham gia group ngay tại link",
+                "CcEmails": null,
+                "CreatedAt": "2020-07-03T04:49:08Z",
+                "FromEmail": "",
+                "Private": true,
+                "UpdatedAt": "2020-07-03T04:49:08Z",
+                "UserId": 0
+            },
+            {
+                "Attachments": [],
+                "BccEmails": null,
+                "Body": "Nếu cần hỗ trợ thêm thông tin, Anh/Chị vui lòng gửi yêu cầu đến GHN qua trang",
+                "CcEmails": null,
+                "CreatedAt": "2020-07-03T07:27:27Z",
+                "FromEmail": "Email Support Khách hàng GHN 'cskh@ghn.vn'",
+                "Private": false,
+                "UpdatedAt": "2020-07-03T07:27:27Z",
+                "UserId": 2043028667538
+            }
+        ],
+        "CreatedBy": 2043068973965,
+        "CreatedAt": "2020-07-01T12:49:12Z",
+        "Description": "FFXNNRYKN  Trạng thái  Lưu kho Bưu Cục 25 Trương Định-Q.Hai Bà Trưng-HN 02 - NG yêu cầu giao lại cho NN",
+        "OrderCode": "FFXNNRYKN",
+        "Status": "Hoàn thành",
+        "StatusID": 3,
+        "TicketId": 1736806,
+        "Type":"Hối Giao/Lấy/Trả hàng",
+        "UpdatedAt":"2020-07-03T07:27:30Z",
+}
+       
+Structure Request
+Field	Description
+attachments	
+File Image , excel , csv
+
+c_email	
+Customer email
+
+c_name	
+Customer name
+
+c_phone	
+Customer phone
+
+client_id	
+Client ID
+
+conversations	
+Conversations
+
+created_at	
+Create At
+
+created_by	
+Create by
+
+description	
+Description
+
+order_code	
+Order code
+
+status	
+Status
+
+status_id	
+Status ID
+
+Id	
+Ticket id
+
+type	
+Ticket Tyoe
+
+updated_at	
+Update At

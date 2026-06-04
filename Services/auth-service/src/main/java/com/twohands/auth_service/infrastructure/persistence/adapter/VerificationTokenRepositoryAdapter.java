@@ -3,6 +3,9 @@ package com.twohands.auth_service.infrastructure.persistence.adapter;
 import com.twohands.auth_service.domain.user.VerificationToken;
 import com.twohands.auth_service.domain.user.VerificationTokenRepository;
 import com.twohands.auth_service.domain.user.VerificationTokenType;
+import com.twohands.auth_service.infrastructure.persistence.JdbcPgEnumTypes;
+import com.twohands.auth_service.infrastructure.persistence.JdbcSqlDialect;
+import com.twohands.auth_service.infrastructure.persistence.JdbcTimestamps;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -15,9 +18,11 @@ import java.util.UUID;
 public class VerificationTokenRepositoryAdapter implements VerificationTokenRepository {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final JdbcSqlDialect sqlDialect;
 
-    public VerificationTokenRepositoryAdapter(NamedParameterJdbcTemplate jdbcTemplate) {
+    public VerificationTokenRepositoryAdapter(NamedParameterJdbcTemplate jdbcTemplate, JdbcSqlDialect sqlDialect) {
         this.jdbcTemplate = jdbcTemplate;
+        this.sqlDialect = sqlDialect;
     }
 
     @Override
@@ -25,8 +30,8 @@ public class VerificationTokenRepositoryAdapter implements VerificationTokenRepo
         String sql = """
                 SELECT id, user_id, token_hash, type, expires_at, used_at, created_at
                 FROM verification_tokens
-                WHERE token_hash = :tokenHash AND type = :type
-                """;
+                WHERE token_hash = :tokenHash AND type = %s
+                """.formatted(sqlDialect.castEnum("type", JdbcPgEnumTypes.VERIFICATION_TOKEN_TYPE));
 
         return jdbcTemplate.query(sql,
                         new MapSqlParameterSource()
@@ -49,17 +54,17 @@ public class VerificationTokenRepositoryAdapter implements VerificationTokenRepo
     public VerificationToken save(VerificationToken token) {
         String sql = """
                 INSERT INTO verification_tokens(id, user_id, token_hash, type, expires_at, used_at, created_at)
-                VALUES (:id, :userId, :tokenHash, :type, :expiresAt, :usedAt, :createdAt)
-                """;
+                VALUES (:id, :userId, :tokenHash, %s, :expiresAt, :usedAt, :createdAt)
+                """.formatted(sqlDialect.castEnum("type", JdbcPgEnumTypes.VERIFICATION_TOKEN_TYPE));
 
         jdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("id", token.id())
                 .addValue("userId", token.userId())
                 .addValue("tokenHash", token.tokenHash())
                 .addValue("type", token.type().name())
-                .addValue("expiresAt", token.expiresAt())
-                .addValue("usedAt", token.usedAt())
-                .addValue("createdAt", token.createdAt()));
+                .addValue("expiresAt", JdbcTimestamps.from(token.expiresAt()))
+                .addValue("usedAt", JdbcTimestamps.from(token.usedAt()))
+                .addValue("createdAt", JdbcTimestamps.from(token.createdAt())));
 
         return token;
     }
@@ -75,11 +80,11 @@ public class VerificationTokenRepositoryAdapter implements VerificationTokenRepo
                 UPDATE verification_tokens
                 SET used_at = :usedAt
                 WHERE user_id = :userId
-                  AND type = :type
+                  AND type = %s
                   AND used_at IS NULL
-                """;
+                """.formatted(sqlDialect.castEnum("type", JdbcPgEnumTypes.VERIFICATION_TOKEN_TYPE));
         return jdbcTemplate.update(sql, new MapSqlParameterSource()
-                .addValue("usedAt", usedAt)
+                .addValue("usedAt", JdbcTimestamps.from(usedAt))
                 .addValue("userId", userId)
                 .addValue("type", type.name()));
     }

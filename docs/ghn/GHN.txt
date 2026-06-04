@@ -1,0 +1,3495 @@
+Create Account and Get Token, Client_ID, ShopID
+I. Create Account in Staging and Production enviroment 
+
++ Staging : 5sao.ghn.dev
+
++ Production : khachhang.ghn.vn
+
+II. Get Token and Create Shop's address
+
++Step 1 : Login the link staging or production enviroment 
+
+
+
++Step 2 : Choose tab "Chủ cửa hàng"
+
+
+
++Step 3 : Choose button "Xem" and copy your token 
+
+
+
++Step 4 : Create Shop's Address . choose tab "Quản lý cửa hàng" -> Choose your Shop and fill in your shop address -> Click button "Cập nhật" , Finish
+
+ 
+
+ 
+
+ 
+
+Update Order
+API Update Order
+ 
+Update information of created order. Only available when shipping status
+
+Caution : The API Order Info need to infusion token and shop_id in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/update
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/update
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/update' \
+        --header 'Content-Type: application/json' \
+        --header 'ShopId: 885' \
+        --header 'Token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+        --header 'Content-Type: text/plain' \
+        --data-raw '{"note":"nhớ gọi 30p khi giao","order_code":"5F5NH3LN"}'
+        
+        
+        
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+shop_id	Int	
+Manage information for shop/seller
+
+order_code	String	
+GHN Order Code. This is tracking code.
+
+from_name	String	
+Client name. (Shop / Seller)
+
+from_phone	String	
+Client phone. (Shop / Seller)
+
+from_address	String	
+Client address. (Shop / Seller)
+
+from_ward_code	String	
+Ward Code pick up parcels. Use API GetWards.
+
+to_name	String	
+Client name. (Shop / Seller)
+
+to_phone	String	
+Client phone number. (Shop / Seller)
+
+to_address	String	
+Client address. (Shop / Seller).
+
+to_ward_code	String	
+Ward Code return parcels. Use API Get Ward.
+
+API Get WardCode
+
+to_district_id	Int	
+District ID return parcels. Use API GetDistricts
+
+API Get District
+
+return_phone	String	
+Contact phone number to return parcels.
+
+return_address	String	
+Address return parcels.
+
+return_district_id	Int	
+District ID return parcels. Use API GetDistricts
+
+API Get District
+
+return_ward_code	String	
+Ward Code return parcels. Use API Get Ward.
+
+API Get WardCode
+
+client_order_code	String	
+External order code managed by logged client [Unique field].
+
+Default value: null
+
+cod_amount	Int	
+Amount cash to collect.
+
+Maximum 10.000.000
+
+Default value: 0
+
+content	String	
+Content for order
+
+weight	Int	
+Weight (gram)
+
+Maximum : 50.000gram
+length	Int	
+Length (cm)
+
+Maximum : 200cm
+width	Int	
+width (cm)
+
+Maximum : 200cm
+height	Int	
+height (cm)
+
+Maximum : 200cm
+pick_station_id	Int	
+The shipper not pickup parcels at shop’s address
+
+insurance_value	Int	
+Use to declare parcel value. GHN will base on this value for compensation if any unexpected things happen (lost, broken...).
+
+Maximum 5.000.000
+
+Default value: 0
+
+coupon	String	
+Coupon Code for discount.
+
+payment_type_id	Int	
+Choose who pay shipping fee.
+
+1: Shop/Seller.
+
+2: Buyer/Consignee.
+
+note	String	
+Client note for shipper.
+
+Ex: Please call before delivery
+
+required_note	String	
+Note shipping order.Allowed values: CHOTHUHANG, CHOXEMHANGKHONGTHU, KHONGCHOXEMHANG 
+
+CHOTHUHANG mean Buyer can request to see and trial goods
+CHOXEMHANGKHONGTHU mean Buyer can see goods but not allow to trial goods
+KHONGCHOXEMHANG mean Buyer not allow to see goods
+
+pick_shift	 	
+Picking shift , take API Pick Shift
+
+Items	 	
+Content for order
+
+name	String	
+Name of product
+
+code	String	
+Code of product
+
+quantity	Int	
+Quantity of product
+
+price	Int	
+Price of product
+
+length	Int	
+Length of product
+
+width	Int	
+Width of product
+
+height	Int	
+Height of product
+
+category	 	
+Category of product have 3 level,level1, level2, level3
+
+level1	String	
+Product category classification
+
+Success 200
+{
+            "code": 200,
+            "message": "Success",
+            "data":null
+        }
+Error-Response
+{
+            "code": 400,
+            "message": "code=400, message=Syntax error: offset=30, error=invalid character '}' after array element, internal=invalid character '}' after array element",
+            "data": null
+            "code_message": "USER_ERR_COMMON"
+        }
+
+
+
+Cancel Order
+API Cancel Order
+ 
+Cancel a shipping order from GHN.
+
+Caution : The API Order Info need to infusion token and shop_id in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/switch-status/cancel
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/switch-status/cancel
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/switch-status/cancel' \
+--header 'Content-Type: application/json' \
+--header 'ShopId: 885' \
+--header 'Token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+--data-raw '{"order_codes":["5E3NK3RS"]}'
+
+
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+shop_id	Int	
+Manage information for shop/seller
+
+order_codes	String	
+GHN Order Code. This is tracking code.
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":[
+    {
+    "order_code":"5E3NK3RS"  
+    "result":true 
+    "message":"OK" 
+}
+]
+}
+Structure Response
+Field	Description
+order_code	
+Code order
+
+result	
+Result
+
+message	
+Message
+
+Error-Response
+{
+    "code": 400,
+    "message": "code=400, message=Syntax error: offset=30, error=invalid character '}' after array element, internal=invalid character '}' after array element",
+    "data": null
+    "code_message": "USER_ERR_COMMON"
+}
+
+
+Return Order
+API Return Order
+ 
+The purpose of changing the status of an order to delivery is only applicable where the current status of the order is: storage or waiting for delivery.
+
+Caution : The API Order Info need to infusion token and shop_id in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/switch-status/return
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/switch-status/return
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/switch-status/return' \
+--header 'token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+--header 'shop_id: 885' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+	"order_codes":["5ENLKKHD"]
+}'
+
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+shop_id	Int	
+Manage information for shop/seller
+
+order_codes	String	
+GHN Order Code. This is tracking code.
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":[
+    {
+    "order_code":"5ENLKKHD"  
+    "result":true 
+    "message":"OK" 
+}
+]
+}
+Structure Response
+Field	Description
+order_code	
+Order code
+
+result	
+Result
+
+message	
+Message
+
+Error-Response
+{
+    "code": 400,
+    "message": "code=400, message=Syntax error: offset=30, error=invalid character '}' after array element, internal=invalid character '}' after array element",
+    "data": null
+    "code_message": "USER_ERR_COMMON"
+}
+
+
+Print Order
+API Print Order
+ 
+ 
+
+post/get
+Note: This API needs to pass the token in the header. 
+
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/a5/gen-token
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/a5/gen-token
+After running the API Print order information to get the ABC token, it will be assigned to the link below, where ABC is the token when calling the API. Expiry time 30 minutes .
+
+ 
+
+Production
+- Print A5: https://online-gateway.ghn.vn/a5/public-api/printA5?token=ABC
+- Print 80x80: https://online-gateway.ghn.vn/a5/public-api/print80x80?token=ABC
+- Print 50x72 : https://online-gateway.ghn.vn/a5/public-api/print52x70?token=ABC
+Test
+- Print A5: https://dev-online-gateway.ghn.vn/a5/public-api/printA5?token=ABC
+- Print 80x80: https://dev-online-gateway.ghn.vn/a5/public-api/print80x80?token=ABC
+- Print 50x72 : https://dev-online-gateway.ghn.vn/a5/public-api/print52x70?token=ABC
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/a5/gen-token' \
+--header 'Token: 3b75c988-ff34-11eb-b255-166e45bc1992123' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+"order_codes":["GA99W4RREB"]
+}'
+
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+order_codes	Array 	
+GHN Order Code. This is tracking code.
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":{
+    "token":"e27db030-a1bf-11ea-b421-6a186c15e40e" 
+     }
+}
+Structure Response
+Field	Description
+token	
+This token ABC is generated to assign to the order printing URL according to the order code
+
+Error-Response
+{
+    "code": 400,
+    "message": "Lỗi gọi API: corev2_tenant_order_detail - code=404, message=Đơn hàng không tồn tại",
+    "data": null
+}
+
+
+Order Info
+API Order Info
+ 
+This API help you get all information of a order. You can know current status or the reason which make the shipment failed
+
+Caution : The API Order Info need to infusion token in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/detail
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/detail
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/detail' \
+    --header 'Content-Type: application/json' \
+    --header 'Token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+    --data-raw '{
+        "order_code": "5ENLKKHD"
+    }
+    
+    
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+order_code	String	
+GHN Order Code. This is tracking code.
+
+Success 200
+{
+        "code": 200,
+        "message": "Success",
+        "data":[
+        {
+        "shop_id":855,
+        "client_id":500379,
+        "return_name":"Nguyen",
+        "return_phone":"0332190458",
+        "return_address":"39 NTT"",
+        "return_ward_code":"21413",
+        "return_district_id":1455,
+        "from_name":"Nguyen",
+        "from_phone":"0332190458",
+        "from_address":"17 dong den"",
+        "from_ward_code":"21413",
+        "from_district_id":1455,
+        "deliver_station_id":0,
+        "to_name":"TinTest124",
+        "to_phone":"0987654321",
+        "to_address":"72 Thành Thái, Phường 14, Quận 10, Hồ Chí Minh, Vietnam",
+        "to_ward_code":"20107",
+        "to_district_id":1442,
+        "weight":200,
+        "length":15,
+        "width":15,
+        "height":15,
+        "converted_weight":675,
+        "service_type_id":2,
+        "service_id":53320,
+        "payment_type_id":2,
+        "custom_service_fee":0,
+        "cod_amount":200000,
+        "cod_collect_date":null,
+        "cod_transfer_date":null,
+        "is_cod_transferred":false,
+        "is_cod_collected":false,
+        "insurance_value":2000000,
+        "order_value":0,
+        "pick_station_id":0,
+        "client_order_code":"",
+        "cod_failed_amount":0,
+        "cod_failed_collect_date":"null",
+        "required_note":"KHONGCHOXEMHANG",
+        "content":"ABCDEF",
+        "note":"Tintest 123",
+        "employee_note":"",
+        "coupon":"",
+        "_id":"5ed11d4f1eb594a402473300",
+        "order_code":"5ENLKKHD",
+        "version_no":"c01697ec-6190-4b2a-aed9-dd5938a9cf11",
+        "updated_ip":"115.77.233.200",
+        "updated_employee":0,
+        "updated_client":500379,
+        "updated_source":"shiip",
+        "updated_date":"2020-05-29T14:52:59.485Z""",
+        "updated_warehouse":0,
+        "created_ip":"115.77.233.200""",
+        "created_employee":0,
+        "created_client":500379,
+        "created_source":"shiip",
+        "created_date":"2020-05-29T14:33:50.26Z",
+        "status":"return",
+        "pick_warehouse_id":1416,
+        "deliver_warehouse_id":1394,
+        "current_warehouse_id":1416,
+        "return_warehouse_id":1416,
+        "next_warehouse_id":0,
+        "leadtime":"2020-05-30T09:00:00Z",
+        "order_date":"2020-05-29T14:33:50Z",
+        "soc_id":"5ed121cb1eb594a402473301",
+        "finish_date":"5ed121cb1eb594a402473301",
+        "tag":[
+        "truck"
+        ]
+         "log":[
+         {
+         "status": "picking",
+         "updated_date": "2020-05-29T14:40:46.934Z"
+        },
+        {
+         "status": "picked",
+         "updated_date": "2020-05-29T14:40:59.662Z"
+        },
+        {
+         "status": "storing",
+         "updated_date": "2020-05-29T14:41:19.708Z"
+        },
+        {
+         "status": "return",
+         "updated_date": "2020-05-29T14:52:59.485Z
+        }
+        ]
+         }
+    }
+Structure Response
+Field	Description
+shop_id	
+Manage information for shop/seller
+
+client_id	
+Client info
+
+return_name	
+Name of order return
+
+return_phone	
+Return number phone
+
+return_address	
+Address return parcels
+
+return_ward_code	
+Ward Code return parcels
+
+return_district_id	
+District ID return parcels
+
+from_name	
+Sender name
+
+from_phone	
+Sender phone number
+
+from_address	
+Sender address
+
+from_ward_code	
+Sender ward/village
+
+from_district_id	
+Senders district/town
+
+deliver_station_id	
+Deliver station id
+
+to_name	
+Client name. (Customer / Buyer)
+
+to_phone	
+Recipient's phone number
+
+to_address	
+Client address.(Customer / Buyer)
+
+to_ward_code	
+Ward Code pick up parcels
+
+to_district_id	
+District ID drop off parcels
+
+weight	
+Weight of parcel
+
+length	
+Length of parcel
+
+width	
+Width of parcel
+
+height	
+Height of parcel
+
+converted_weight	
+Converted weight
+
+service_type_id	
+Sevice type id
+
+service_id	
+Service id
+
+payment_type_id	
+Choose who pay shipping fee
+
+cod_amount	
+Amount cash to collect
+
+cod_collect_date	
+COD collection date
+
+cod_transfer_date	
+COD transfer date
+
+insurance_value	
+Insurance value
+
+pick_station_id	
+The shipper not pickup parcels at shop’s address
+
+client_order_code	
+Client order code
+
+required_note	
+Note shipping order.Allowed values
+
+content	
+Content for order
+
+pickup_time	
+Expected pick up time.
+
+note	
+Client note for shipper
+
+employee_note	
+Employee note
+
+coupon	
+Coupon Code for discount
+
+order_code	
+Order code
+
+updated_ip	
+Updated ip
+
+updated_employee	
+Updated employye
+
+updated_client	
+Updated client
+
+updated_source	
+Updated source
+
+updated_date	
+Updated date
+
+updated_warehouse	
+Updated warehouse
+
+created_ip	
+Created ip
+
+created_employee	
+Created employee
+
+created_client	
+Created client
+
+created_source	
+Created source
+
+created_date	
+Created date
+
+status	
+Status
+
+pick_warehouse_id	
+Pick warehous id
+
+deliver_warehouse_id	
+Delivery warehouse id
+
+current_warehouse_id	
+Current warehouse id
+
+return_warehouse_id	
+Return warehouse id
+
+next_warehouse_id	
+Next wareshoue id
+
+leadtime	
+Expected delivery time
+
+order_date	
+Order date
+
+finish_date	
+Successful delivery date
+
+cod_failed_amount	
+COD failed amount.
+
+cod_failed_collect_date	
+COD failed collection date.
+
+Error-Response
+{
+        "code": 400,
+        "message": "code=401, message=Token is not valid!",
+        "data": null
+    }
+
+
+Get Station
+API Get Station
+ 
+Get GHN Station data. This API provides station_id to create shipping order.
+
+Caution : The API Get Station need to infusion token in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/station/get
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/station/get
+Curl
+curl --location --request GET 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/station/get' \
+--header 'token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+--header 'Content-Type: application/json' \
+--data-raw'{"district_id":"1442",
+	"ward_code":"20101",
+	"offset":0,
+	"limit":1000}'
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+district_id	Int	
+DistrictID provied by GHN.
+
+API DistrictID : https://api.ghn.vn/home/docs/detail?id=78
+
+ward_code	String	
+Wardcode provide to GHN
+
+API WardCode : https://api.ghn.vn/home/docs/detail?id=61
+
+offset	Int	
+Default =0
+
+limit	Int	
+Maximum amount of data in API , not more than 1000.
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data": 
+    {
+    "address":"https://www.facebook.com/thien.hieu.tdt1" 
+    "locationCode":"1888" 
+    "locationId":1888           
+    "locationName":0 
+    "parentLocation":
+    [ 
+    "GHN_HUB/1888".
+    "REGION/1".
+    "PROVINCE/202".
+    "DISTRICT/1442".
+    "WARD/20101".
+    ]
+    }
+    ....
+    
+}
+Structure Response
+Field	Description
+address	
+Station address
+
+locationName	
+Location name
+
+REGION/1	
+Region
+
+PROVINCE/202	
+Province
+
+DISTRICT/1442	
+District/Town
+
+WARD/20101	
+Ward/Village
+
+email	
+Email
+
+latitude	
+Latitude
+
+longitude	
+Longitude
+
+wardName	
+Ward/village name
+
+districtName	
+District/town name
+
+provinceName	
+Province name
+
+iframeMap	
+Iframe map
+
+Error-Response
+{
+    "code": 400,
+    "message": "code=400, message=Syntax error: offset=24, error=invalid character '\\n' in string literal, internal=invalid character '\\n' in string literal",
+    "data": null
+    "code_message":"USER_ERR_COMMON"
+}
+
+
+Calculate the expected delivery time
+API Calculate the expected delivery time
+ 
+Accurate time will be delivered to guests
+
+Caution : The API Order Info need to infusion Token and ShopId in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/leadtime
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/leadtime
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/leadtime' \
+--header 'Content-Type: application/json' \
+--header 'ShopId: 916' \
+--header 'Token: e835a5a1-b111-11ea-aea1-7aad6bea2429' \
+--data-raw '{
+    "from_district_id": 1750,
+    "from_ward_code": "1A0706",
+    "to_district_id": 1750,
+    "to_ward_code": "511110",
+    "service_id": 53320
+}'
+
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+ShopID	Int	
+Manage information for shop/seller
+
+from_district_id	Int	
+District ID pick up parcels.Use API Get District
+
+to_district_id	Int	
+District ID drop off parcels.Use API Get District
+
+to_ward_code	String	
+Ward Code pick up parcels.Use API Get Ward
+
+service_id	Int	
+Choose which Sevice ID suitable with your shipping plan (Express, Standard or Saving). Each Service ID has different fee and leadtime.
+
+Use API Get service (if not input service_type_id)
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":{
+    "leadtime":1593187200
+    "order_date":1592981718
+    }
+}
+Structure Response
+Field	Description
+leadtime	
+Expected delivery time
+
+order_date	
+Order creation date
+
+Error-Response
+{
+    "code": 400,
+    "message": "code=400, message=Syntax error: offset=30, error=invalid character '}' after array element, internal=invalid character '}' after array element",
+    "data": null
+    "code_message": "USER_ERR_COMMON"
+}
+
+
+Create Order
+API Create Order
+ 
+Automatic send order information such as weight, address, phone number and many more to GHN system. We will process these information and start the shipment
+
+Caution : The API Create Order need to infusion token and shopid in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create' \
+                                --header 'Content-Type: application/json' \
+                                --header 'ShopId: 885' \
+                                --header 'Token: 285518-c4bb-11ea-be3a-f636b1deefb9' \
+                                --data-raw '{
+                                    "payment_type_id": 2,
+                                    "note": "Tintest 123",
+                                    "required_note": "KHONGCHOXEMHANG",
+                                    "from_name": "TinTest124",
+                                    "from_phone": "0987654321",
+                                    "from_address": "72 Thành Thái, Phường 14, Quận 10, Hồ Chí Minh, Vietnam",
+                                    "from_ward_name": "Phường 14",
+                                    "from_district_name": "Quận 10",
+                                    "from_province_name": "HCM",
+                                    "return_phone": "0332190444",
+                                    "return_address": "39 NTT",
+                                    "return_district_id": null,
+                                    "return_ward_code": "",
+                                    "client_order_code": "",
+                                    "to_name": "TinTest124",
+                                    "to_phone": "0987654321",
+                                    "to_address": "72 Thành Thái, Phường 14, Quận 10, Hồ Chí Minh, Vietnam",
+                                    "to_ward_code": "20308",
+                                    "to_district_id": 1444,
+                                    "cod_amount": 200000,
+                                    "content": "Theo New York Times",
+                                    "weight": 200,
+                                    "length": 1,
+                                    "width": 19,
+                                    "height": 10,
+                                    "pick_station_id": 1444,
+                                    "deliver_station_id": null,
+                                    "insurance_value": 10000000,
+                                    "service_id": 0,
+                                    "service_type_id":2,
+                                    "coupon":null,
+                                    "pick_shift":[2],
+                                    "items": [
+                                         {
+                                             "name":"Áo Polo",
+                                             "code":"Polo123",
+                                             "quantity": 1,
+                                             "price": 200000,
+                                             "length": 12,
+                                             "width": 12,
+                                             "height": 12,
+                                             "weight": 1200,
+                                             "category": 
+                                             {
+                                                 "level1":"Áo"
+                                             }
+                                         }
+                                         
+                                     ]
+                                }'
+                                
+Parameter
+Field	Require	Type	Data Size	Description
+token	
+X
+String	 	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+shop_id	
+X
+Int	 	
+Manage information for shop/seller
+
+to_name	
+X
+String	1024	
+Client name. (Customer / Buyer)
+
+from_name	
+X
+String	1024	
+Sender's name .
+
+In any case, if the sender information is not transmitted, the system will default to receiving information from ShopID
+from_phone	
+X
+String	 	
+Sender's phone number
+
+from_address	
+X
+String	1024	
+Sender address.
+
+from_ward_name	
+X
+String	 	
+Ward/Commune of the sender.
+
+from_district_name	
+X
+String	 	
+Sender's district
+
+from_provice_name	
+X
+String	 	
+sender's province
+
+to_phone	
+X
+String	 	
+Client phone number.(Customer / Buyer)
+
+to_address	
+X
+String	1024	
+Client address.(Customer / Buyer)
+
+to_ward_code	
+X
+String	 	
+Ward Code pick up parcels.Use API Get Ward,
+
+API Get WardCode : https://api.ghn.vn/home/docs/detail?id=61
+
+Phường/Xã của người nhận hàng.
+
+You can input to_ward_name
+
+to_district_id	
+X
+Int	 	
+District ID drop off parcels.Use API Get District
+
+API Get District : https://api.ghn.vn/home/docs/detail?id=78
+
+You can input to_district_name and to_province_name
+
+return_phone	 	String	 	
+Contact phone number to return parcels.
+
+return_address	 	String	1024	
+Address return parcels.
+
+return_district_id	 	Int	 	
+District ID return parcels. Use API GetDistricts
+
+API Get District : https://api.ghn.vn/home/docs/detail?id=78
+
+return_ward_code	 	String	 	
+Ward Code return parcels. Use API Get Ward.
+
+API Get WardCode: https://api.ghn.vn/home/docs/detail?id=61
+
+client_order_code	 	String	50	
+External order code managed by logged client [Unique field].
+
+Default value: null
+
+ Note: Client_order_code will get back the order that already has this Client_order_code
+cod_amount	 	Int	 	
+Amount cash to collect.
+
+Maximum 50.000.000
+
+Default value: 0
+
+content	 	String	2000	
+Content for order
+
+weight	
+X
+Int	 	
+Weight (gram)
+
+Maximum : 50.000gram
+length	
+X
+Int	 	
+Length (cm)
+
+Maximum : 200cm
+width	
+X
+Int	 	
+width (cm)
+
+Maximum : 200cm
+height	
+X
+Int	 	
+height (cm)
+
+Maximum : 200cm
+pick_station_id	 	Int	 	
+The shipper not pickup parcels at shop’s address
+
+Value > 0
+
+insurance_value	 	Int	 	
+Use to declare parcel value. GHN will base on this value for compensation if any unexpected things happen (lost, broken...).
+
+Maximum 5.000.000
+
+Default value: 0
+
+coupon	 	String	 	
+Coupon Code for discount.
+
+service_type_id	
+X
+Int	 	
+Call API SERVICE to show service.
+
+Default value: 2: E-commerce Delivery, 5: Traditional Delivery
+
+payment_type_id	
+X
+Int	 	
+Choose who pay shipping fee.
+
+1: Shop/Seller.
+
+2: Buyer/Consignee.
+
+note	 	String	5000	
+Client note for shipper.
+
+Ex: Please call before delivery
+
+required_note	
+X
+String	500	
+Note shipping order.Allowed values: CHOTHUHANG, CHOXEMHANGKHONGTHU, KHONGCHOXEMHANG 
+
+CHOTHUHANG mean Buyer can request to see and trial goods
+CHOXEMHANGKHONGTHU mean Buyer can see goods but not allow to trial goods
+KHONGCHOXEMHANG mean Buyer not allow to see goods
+
+pick_shift	 	 	 	
+Picking shift , take API Pick Shift
+
+Items	
+X
+ 	 	
+Content for order
+
+Required input Item when choosing a traditional delivery service
+name	
+X
+String	 	
+Name of product
+
+code	 	String	 	
+Code of product
+
+quantity	
+X
+Int	 	
+Quantity of product
+
+price	 	Int	 	
+Price of product
+
+length	 	Int	 	
+Length of product.traditional delivery service , you must input length
+
+weight 	
+X
+Int	 	
+Weight  of product
+
+If you input traditional delivery service , you must input weight
+
+width	 	Int	 	
+Width of product.traditional delivery service , you must input width
+
+height	 	Int	 	
+Height of product.traditional delivery service , you must input height
+
+category	 	 	 	
+Category of product have 3 level,level1, level2, level3
+
+level1	 	String	 	
+Product category classification
+
+Success 200
+{
+                                    "code": 200,
+                                    "message": "Success",
+                                    "data": 
+                                    {
+                                    "district_encode":"" 
+                                    "expected_delivery_time":"2020-06-03T16:00:00Z" 
+                                    "fee":
+                                    { 
+                                    coupon:0    
+                                    "insurance":11000 
+                                    "main_service":22000 
+                                    "r2s":0 
+                                    "return":0 
+                                    "station_do":0 
+                                    "station_pu":0 
+                                    },
+                                    "order_code":"FFFNL9HH"
+                                    "sort_code":"19-60-06"
+                                    "total_fee":"33000"
+                                    "trans_type":"truck"
+                                    "ward_encode":""
+                                    }
+                                }
+Structure Response
+Field	Description
+expected_delivery_time	
+Expected delivery time.
+
+fee	
+Fee.
+
+coupon	
+Coupon Code for discount.
+
+insurance	
+Insuarance value
+
+main_service	
+Service fee
+
+r2s	
+Fee of delivery parcel again
+
+return	
+Fee of Return to ship
+
+station_do	
+Pickup fee at Station
+
+station_pu	
+Delivery fee at Station
+
+order_code	
+Code order
+
+sort_code	
+Sort code
+
+total_fee	
+Total fee
+
+trans_type	
+Transportation type
+
+Error-Response
+{
+                                    "code": 400,
+                                    "message": "Sai thông tin Required Note",
+                                    "data": null
+                                    "code_message":"USER_ERR_COMMON"
+                                }
+
+
+Order Info by Client_Order_Code
+API Order Info by Client_Order_Code
+ 
+This API help you get all information of a order. You can know current status or the reason which make the shipment failed
+
+Caution : The API Order Info need to infusion token in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/detail-by-client-code
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/detail-by-client-code
+Curl
+url --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/detail-by-client-code' \
+--header 'Content-Type: application/json' \
+--header 'Token: f48a8928-9fcb-11ea-b2e69541627f' \
+--data-raw '{
+    "client_order_code": "Tin1234567"
+}'
+    
+    
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+client_order_code	String	
+Client order code. This is tracking code.
+
+Success 200
+{
+        "code": 200,
+        "message": "Success",
+        "data":[
+        {
+        "shop_id":855,
+        "client_id":500379,
+        "return_name":"Nguyen",
+        "return_phone":"0332190458",
+        "return_address":"39 NTT"",
+        "return_ward_code":"21413",
+        "return_district_id":1455,
+        "from_name":"Nguyen",
+        "from_phone":"0332190458",
+        "from_address":"17 dong den"",
+        "from_ward_code":"21413",
+        "from_district_id":1455,
+        "deliver_station_id":0,
+        "to_name":"TinTest124",
+        "to_phone":"0987654321",
+        "to_address":"72 Thành Thái, Phường 14, Quận 10, Hồ Chí Minh, Vietnam",
+        "to_ward_code":"20107",
+        "to_district_id":1442,
+        "weight":200,
+        "length":15,
+        "width":15,
+        "height":15,
+        "converted_weight":675,
+        "service_type_id":2,
+        "service_id":53320,
+        "payment_type_id":2,
+        "custom_service_fee":0,
+        "cod_amount":200000,
+        "cod_collect_date":null,
+        "cod_transfer_date":null,
+        "is_cod_transferred":false,
+        "is_cod_collected":false,
+        "insurance_value":2000000,
+        "order_value":0,
+        "pick_station_id":0,
+        "client_order_code":"Tin1234567",
+        "required_note":"KHONGCHOXEMHANG",
+        "content":"ABCDEF",
+        "note":"Tintest 123",
+        "employee_note":"",
+        "coupon":"",
+        "_id":"5ed11d4f1eb594a402473300",
+        "order_code":"5ENLKKHD",
+        "version_no":"c01697ec-6190-4b2a-aed9-dd5938a9cf11",
+        "updated_ip":"115.77.233.200",
+        "updated_employee":0,
+        "updated_client":500379,
+        "updated_source":"shiip",
+        "updated_date":"2020-05-29T14:52:59.485Z""",
+        "updated_warehouse":0,
+        "created_ip":"115.77.233.200""",
+        "created_employee":0,
+        "created_client":500379,
+        "created_source":"shiip",
+        "created_date":"2020-05-29T14:33:50.26Z",
+        "status":"return",
+        "pick_warehouse_id":1416,
+        "deliver_warehouse_id":1394,
+        "current_warehouse_id":1416,
+        "return_warehouse_id":1416,
+        "next_warehouse_id":0,
+        "leadtime":"2020-05-30T09:00:00Z",
+        "order_date":"2020-05-29T14:33:50Z",
+        "soc_id":"5ed121cb1eb594a402473301",
+        "finish_date":"5ed121cb1eb594a402473301",
+        "tag":[
+        "truck"
+        ]
+         "log":[
+         {
+         "status": "picking",
+         "updated_date": "2020-05-29T14:40:46.934Z"
+        },
+        {
+         "status": "picked",
+         "updated_date": "2020-05-29T14:40:59.662Z"
+        },
+        {
+         "status": "storing",
+         "updated_date": "2020-05-29T14:41:19.708Z"
+        },
+        {
+         "status": "return",
+         "updated_date": "2020-05-29T14:52:59.485Z
+        }
+        ]
+         }
+    }
+Structure Response
+Field	Description
+shop_id	
+Manage information for shop/seller
+
+client_id	
+Client info
+
+return_name	
+Name of order return
+
+return_phone	
+Return number phone
+
+return_address	
+Address return parcels
+
+return_ward_code	
+Ward Code return parcels
+
+return_district_id	
+District ID return parcels
+
+from_name	
+Sender name
+
+from_phone	
+Sender phone number
+
+from_address	
+Sender address
+
+from_ward_code	
+Sender ward/village
+
+from_district_id	
+Senders district/town
+
+deliver_station_id	
+Deliver station id
+
+to_name	
+Client name. (Customer / Buyer)
+
+to_phone	
+Recipient's phone number
+
+to_address	
+Client address.(Customer / Buyer)
+
+to_ward_code	
+Ward Code pick up parcels
+
+to_district_id	
+District ID drop off parcels
+
+weight	
+Weight of parcel
+
+length	
+Length of parcel
+
+width	
+Width of parcel
+
+height	
+Height of parcel
+
+converted_weight	
+Converted weight
+
+service_type_id	
+Sevice type id
+
+service_id	
+Service id
+
+payment_type_id	
+Choose who pay shipping fee
+
+cod_amount	
+Amount cash to collect
+
+cod_collect_date	
+COD collection date
+
+cod_transfer_date	
+COD transfer date
+
+insurance_value	
+Insurance value
+
+pick_station_id	
+The shipper not pickup parcels at shop’s address
+
+client_order_code	
+Client order code
+
+required_note	
+Note shipping order.Allowed values
+
+content	
+Content for order
+
+pickup_time	
+Expected pick up time.
+
+note	
+Client note for shipper
+
+employee_note	
+Employee note
+
+coupon	
+Coupon Code for discount
+
+order_code	
+Order code
+
+updated_ip	
+Updated ip
+
+updated_employee	
+Updated employye
+
+updated_client	
+Updated client
+
+updated_source	
+Updated source
+
+updated_date	
+Updated date
+
+updated_warehouse	
+Updated warehouse
+
+created_ip	
+Created ip
+
+created_employee	
+Created employee
+
+created_client	
+Created client
+
+created_source	
+Created source
+
+created_date	
+Created date
+
+status	
+Status
+
+pick_warehouse_id	
+Pick warehous id
+
+deliver_warehouse_id	
+Delivery warehouse id
+
+current_warehouse_id	
+Current warehouse id
+
+return_warehouse_id	
+Return warehouse id
+
+next_warehouse_id	
+Next wareshoue id
+
+leadtime	
+Expected delivery time
+
+order_date	
+Order date
+
+finish_date	
+Successful delivery date
+
+Error-Response
+{
+        "code": 400,
+        "message": "code=401, message=Token is not valid!",
+        "data": null
+    }
+
+
+Preview Order
+API Preview Order
+ 
+Helps preview order information without creating an order
+
+Caution : The API Create Order need to infusion token and shopid in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/preview
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/preview
+Curl
+curl --location --request POST 'https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/preview' \
+    --header 'token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+    --header 'Content-Type: application/json' \
+    --header 'ShopId: 361917' \
+    --data-raw'{
+        "payment_type_id": 2,
+        "note": "Tintest 123",
+        "required_note": "KHONGCHOXEMHANG",
+        "return_phone": "0332190458",
+        "return_address": "39 NTT",
+        "return_district_id": null,
+        "return_ward_code": "",
+        "client_order_code": "",
+        "to_name": "TinTest124",
+        "to_phone": "0987654321",
+        "to_address": "72 Thành Thái, Phường 14, Quận 10, Hồ Chí Minh, Vietnam",
+        "to_ward_code": "20107",
+        "to_district_id": 1442,
+        "cod_amount": 200000,
+        "content": "ABCDEF",
+        "weight": 200,
+        "length": 15,
+        "width": 15,
+        "height": 15,
+        "pick_station_id": 0,
+        "insurance_value": 2000000,
+        "service_id": 0,
+        "service_type_id":2,
+        "coupon":null,
+        "pick_shift":[2],
+        "items": [
+            {
+                "name":"Áo Polo",
+                "code":"Polo123",
+                "quantity": 1,
+                "price": 200000,
+                "length": 12,
+                "width": 12,
+                "height": 12,
+                "category": 
+                    {
+                        "level1":"Áo"
+                    }
+            }
+                     
+                 ]
+
+}'
+    
+Parameter
+Field	Require	Type	Data Size	Description
+token	
+X
+String	 	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+shop_id	
+X
+Int	 	
+Manage information for shop/seller
+
+to_name	
+X
+String	1024	
+Client name. (Customer / Buyer)
+
+to_phone	
+X
+String	 	
+Client phone number.(Customer / Buyer)
+
+to_address	
+X
+String	1024	
+Client address.(Customer / Buyer)
+
+to_ward_code	
+X
+String	 	
+Ward Code pick up parcels.Use API Get Ward
+
+API Get WardCode : https://api.ghn.vn/home/docs/detail?id=61
+
+to_district_id	
+X
+Int	 	
+District ID drop off parcels.Use API Get District
+
+API Get District : https://api.ghn.vn/home/docs/detail?id=78
+
+return_phone	 	String	 	
+Contact phone number to return parcels.
+
+return_address	 	String	1024	
+Address return parcels.
+
+return_district_id	 	Int	 	
+District ID return parcels. Use API GetDistricts
+
+API Get District : https://api.ghn.vn/home/docs/detail?id=78
+
+return_ward_code	 	String	 	
+Ward Code return parcels. Use API Get Ward.
+
+API Get WardCode: https://api.ghn.vn/home/docs/detail?id=61
+
+client_order_code	 	String	50	
+External order code managed by logged client [Unique field].
+
+Default value: null
+
+ Note: Client_order_code will get back the order that already has this Client_order_code
+cod_amount	 	Int	 	
+Amount cash to collect.
+
+Maximum 10.000.000
+
+Default value: 0
+
+content	 	String	2000	
+Content for order
+
+weight	
+X
+Int	 	
+Weight (gram)
+
+Maximum : 30000gram
+length	
+X
+Int	 	
+Length (cm)
+
+Maximum : 150cm
+width	
+X
+Int	 	
+width (cm)
+
+Maximum : 150cm
+height	
+X
+Int	 	
+height (cm)
+
+Maximum : 150cm
+pick_station_id	 	Int	 	
+The shipper not pickup parcels at shop’s address
+
+insurance_value	 	Int	 	
+Use to declare parcel value. GHN will base on this value for compensation if any unexpected things happen (lost, broken...).
+
+Maximum 5.000.000
+
+Default value: 0
+
+coupon	 	String	 	
+Coupon Code for discount.
+
+service_type_id	
+X
+Int	 	
+Call API SERVICE to show service.
+
+Default value: 1:Express, 2:Standard
+
+If not input service_id.
+
+service_id	
+X
+Int	 	
+Call API SERVICE  to show service.
+
+If not input service_type_id
+
+payment_type_id	
+X
+Int	 	
+Choose who pay shipping fee.
+
+1: Shop/Seller.
+
+2: Buyer/Consignee.
+
+note	 	String	5000	
+Client note for shipper.
+
+Ex: Please call before delivery
+
+required_note	
+X
+String	500	
+Note shipping order.Allowed values: CHOTHUHANG, CHOXEMHANGKHONGTHU, KHONGCHOXEMHANG 
+
+CHOTHUHANG mean Buyer can request to see and trial goods
+CHOXEMHANGKHONGTHU mean Buyer can see goods but not allow to trial goods
+KHONGCHOXEMHANG mean Buyer not allow to see goods
+
+pick_shift	 	 	 	
+Picking shift , take API Pick Shift
+
+Items	
+X
+ 	 	
+Content for order
+
+name	
+X
+String	 	
+Name of product
+
+code	 	String	 	
+Code of product
+
+quantity	
+X
+Int	 	
+Quantity of product
+
+price	 	Int	 	
+Price of product
+
+length	 	Int	 	
+Length of product
+
+weight 	
+X
+Int	 	
+Weight  of product
+
+width	 	Int	 	
+Width of product
+
+height	 	Int	 	
+Height of product
+
+category	 	 	 	
+Category of product have 3 level,level1, level2, level3
+
+level1	 	String	 	
+Product category classification
+
+Success 200
+{
+        "code": 200,
+        "message": "Success",
+        "data": {
+        "order_code".:""
+        "sort_code".:"19-60-06"
+        "trans_type".:"truck"
+        "ward_encode".:""
+        "district_encode":"" 
+        "fee":{ 
+        "main_service":22000 
+        "insurance":11000 
+        "station_do".:0 
+        "station_pu".:0 
+        "return".:0 
+        "r2s".:0 
+        coupon:0  
+        },
+        "total_fee".:"33000"
+        "expected_delivery_time":"2020-06-03T16:00:00Z" 
+        }
+    }
+Structure Response
+Field	Description
+order_code	
+Code orders
+
+sort_code	
+Sort code
+
+trans_type	
+Transportation type
+
+fee	
+Fee
+
+main_service	
+Main of service fee
+
+insurance	
+Insurance value
+
+station_do	
+Pickup fee at Station
+
+station_pu	
+Delivery fee at Station
+
+return	
+Fee of Return to ship
+
+r2s	
+Fee of delivery parcel again
+
+coupon	
+Coupon Code for discount.
+
+total_fee	
+Total fee
+
+expected_delivery_time	
+Expected delivery time
+
+Error-Response
+{
+        "code": 400,
+        "message": "Sai thông tin Required Note",
+        "data": null
+        "code_message":"USER_ERR_COMMON"
+    }
+
+
+Fee of Order Info
+API Fee of Order Info
+ 
+This API help you get all fee of a order.
+
+Caution : The API Order Info need to infusion token and shop_id in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/soc
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/soc
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/soc' \
+--header 'Content-Type: application/json' \
+--header 'ShopID: 885' \
+--header 'Token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+--data-raw '{"order_code":"5ENLKKHD"}'
+
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+shop_id	Int	
+Manage information for shop/seller
+
+order_code	String	
+GHN Order Code. This is tracking code.
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":{
+    "_id":"5ed121cb1eb594a402473301"  
+    "order_code":"S5ENLKKHD" 
+    "detail":{ 
+    "main_service":29700 
+    "insurance":11000 
+    "station_do":0 
+    "station_pu":0 
+    "return":22000 
+    "r2s":0 
+    "coupon":0
+    } 
+    "payment":[
+     { 
+    "value":40700  
+    "payment_type":2  
+    "paid_date":"0001-01-01T00:00:00Z"  
+    "created_date":"2020-05-29T14:33:51.082Z"  
+     }
+      { 
+    "value":22000  
+    "payment_type":2  
+    "paid_date":"0001-01-01T00:00:00Z"  
+    "created_date":"2020-05-29T14:52:59.484Z"  
+     }
+     ]
+     "cod_collect_date":"0001-01-01T00:00:00Z" 
+     "transaction_id":"54ca80f5-5154-4486-9fc6-8cc218086de8" 
+     "created_ip":"" 
+     "created_date":"2020-05-29T14:52:59.484Z" 
+     "updated_ip":"" 
+     "updated_client":0 
+     "updated_employee":0 
+     "updated_source":"" 
+     "updated_date":"0001-01-01T00:00:00Z" 
+     }
+     }
+}
+Structure Response
+Field	Description
+order_code	
+Order code
+
+detail	
+Detail
+
+main_service	
+Service fee
+
+insurance	
+Insurance value
+
+station_do	
+Pickup fee at Station
+
+station_pu	
+Delivery fee at Station
+
+return	
+Fee of Return to ship
+
+r2s	
+Fee of delivery parcel again
+
+coupon	
+Coupon Code for discount
+
+payment	
+Payment
+
+value	
+Total payment
+
+payment_type	
+Payment type
+
+paid_date	
+Paid date
+
+created_date	
+Created date
+
+cod_collect_date	
+COD collection date
+
+created_ip	
+Created ip
+
+created_date	
+Created date
+
+updated_ip	
+Updated ip
+
+updated_client	
+Updated client
+
+updated_employee	
+Updated employee
+
+updated_source	
+Updated source
+
+updated_date	
+Updated date
+
+Error-Response
+{
+    "code": 404,
+    "message": "Không tìm thấy thông tin đơn hàng",
+    "data": null
+}
+
+
+Calculate Fee
+API Calculate Fee
+ 
+This API can help Shop/Merchant get the shipping fee and provide to buyer before create shipping order by
+
+input some information such as Weight,Height,length,width ,to_district_ID, to_ward_code, Service_ID.
+
+Caution : The API Order Info need to infusion token in ShopId header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee' \
+            --header 'Content-Type: application/json' \
+            --header 'Token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+            --header 'ShopId: 885' \
+            --header 'Content-Type: text/plain' \
+            --data-raw '{
+            "from_district_id":1454,
+            "from_ward_code":"21211",
+            "service_id":53320,
+            "service_type_id":null,
+            "to_district_id":1452,
+            "to_ward_code":"21012",
+            "height":50,
+            "length":20,
+            "weight":200,
+            "width":20,
+            "insurance_value":10000,
+            "cod_failed_amount":2000,
+            "coupon": null
+            "items": [
+                {
+                  "name": "TEST1",
+                  "quantity": 1,
+                  "height": 200,
+                  "weight": 1000,
+                  "length": 200,
+                  "width": 200
+                }
+              ]
+            }'
+ 
+Parameter
+Field	Require	Type	Description
+token	X	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+shop_id	X	Int	
+Manage information for shop/seller
+
+service_id	 	Int	
+Call API SERVICE to show service.
+If not input service_type_id
+
+service_type_id	 	Int	
+Call API SERVICE to show service.
+
+Default value:  2:E-Commerce Delivery
+
+If not input service_id.
+
+insurance_value	 	Int	
+Use to declare parcel value. GHN will base on this value for compensation if any unexpected things happen (lost, broken...).
+
+Maximum 5.000.000
+
+Default value: 0
+
+coupon	 	String	
+Coupon Code for discount.
+
+cod_failed_amount	 	Int	
+Value of collect money when delivery fail
+
+from_district_id	 	Int	
+District ID pick up parcels.Use API Get District
+
+If you not input , will get information from shopid
+
+from_ward_code	 	String	
+Ward code pick up parcels.Use API Get Ward
+
+If you not input , will get information from shopid
+
+to_ward_code	X	String	
+Ward Code pick up parcels.Use API Get Ward
+
+to_district_id	X	Int	
+District ID drop off parcels.Use API Get District
+
+weight	 	Int	
+Weight (gram)
+
+length	 	Int	
+Length (cm)
+
+width	 	Int	
+width (cm)
+
+height	 	Int	
+height (cm)
+
+cod_value	 	Int	
+Amount cash to collect.
+
+Maximum 5.000.000
+
+Default value: 0
+
+Success 200
+{
+                "code": 200,
+                "message": "Success",
+                "data":{
+                "total":36300,
+                "service_fee":36300,
+                "insurance_fee":0,
+                "pick_station_fee":0,
+                "coupon_value":0,
+                "r2s_fee":0,
+                "document_return":0,
+                "double_check":0,
+                "cod_fee":0,
+                "pick_remote_areas_fee":0,
+                "deliver_remote_areas_fee":0,
+                "cod_failed_fee":0,
+                }
+            }
+Structure Response
+Field	Description
+total	
+Total service
+
+service_fee	
+Service fee
+
+insurance_fee	
+Insurance fee
+
+pick_station_fee	
+Pickup fee at Station
+
+coupon_value	
+Coupon Code for discount
+
+r2s_fee	
+Fee of delivery parcel again
+
+document_return	
+Fee of document return
+
+double_check	
+Fee of check together
+
+cod_fee	
+Fee of collection COD
+
+pick_remote_areas_fee	
+Fee of pick remote areas
+
+deliver_remote_areas_fee	
+Fee of delivery remote areas
+
+cod_failed_fee	
+Fee of collection money when delivery fail
+
+Error-Response
+{
+                "code": 400,
+                "message": "code=400, message=Syntax error: offset=30, error=invalid character '}' after array element, internal=invalid character '}' after array element",
+                "data": null
+                "code_message": "USER_ERR_COMMON"
+            }
+
+
+Get Service
+API Get Service
+ 
+Use to get list of available services from district pick up items and to district drop off items (Full information)
+
+Caution : The API Order Info need to infusion token in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/available-services
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/available-services
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/available-services' \
+--header 'token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+	"shop_id":885,
+	"from_district": 1447,
+	"to_district": 1442
+}'
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+from_district	Int	
+DistrictID provide to GHN
+
+to_district	Int	
+DistrictID provide to GHN
+
+shop_id	Int	
+Manage information for shop/seller
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":[
+    {
+    "service_id":53319
+    "short_name":"Nhanh"
+    "service_type_id":1
+    },
+     {
+    "service_id":53320
+    "short_name":"Chuẩn"
+    "service_type_id":2
+    },
+     {
+    "service_id":53330
+    "short_name":""
+    "service_type_id":0
+    },
+     {
+    "service_id":53321
+    "short_name":"Tiết kiệm"
+    "service_type_id":3
+    },
+    ]
+}
+Structure Response
+Field	Description
+service_id	
+Service id
+
+short_name	
+Short name
+
+service_type_id	
+Service type id
+
+Error-Response
+{
+    "code": 400,
+    "message": "code=400, message=Syntax error: offset=30, error=invalid character '}' after array element, internal=invalid character '}' after array element",
+    "data": null
+    "code_message": "USER_ERR_COMMON"
+}
+
+
+Get Store
+API Get Store
+ 
+Get the current Store of logged in client. One client can have many pick up addresses. Each address is a Store
+
+Caution : The API Order Info need to infusion token in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shop/all
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shop/all
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shop/all' \
+--header 'Content-Type: application/json' \
+--header 'Token: d6e3dccb-6289-11ea-8b85-c60e4edfe802' \
+--data-raw '{
+	"offset": 0,
+	"limit": 50,
+	"client_phone": ""
+}'
+
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+offset	Int	
+Default =0
+
+limit	Int	
+Maximum amount of data in API , not more than 200.
+
+clientphone	String	
+The phone number of Staff (In case you want to filter the list of store of fixed staff with phone number
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":{
+    "last_offset":60429
+    "shops"[
+    {
+    "_id":59037
+    "name":"Kinh doanh Corgi"
+    "phone":"0705099871"
+    "address":"3 Đồng Đen, Tân Bình, Hồ Chí Minh, Việt Nam"
+    "ward_code":"21410"
+    "district_id":1455
+    "client_id":2500055
+    "bank_account_id":0
+    "status":1
+    "version_no":"0730c906-1651-4171-91cd-2bddfc030a5c"
+    "updated_ip":"115.77.233.200"
+    "updated_employee":0
+    "updated_client":2500055
+    "updated_source":"shiip"
+    "updated_date":2500055
+    "updated_client":"2020-05-12T08:30:04.721Z"
+    "created_ip":""
+    "created_employee":0
+    "created_client":0
+    "created_source":""
+    "created_date":"2020-05-12T08:19:47.042Z"
+}
+    ]
+}
+Structure Response
+Field	Description
+name	
+Shop name
+
+phone	
+Shop number phone
+
+address	
+Shop address
+
+ward_code	
+Shop ward/vilage
+
+district_id	
+Shop district/town
+
+client_id	
+Client ID
+
+status	
+Status
+
+updated_ip	
+Update Ip
+
+updated_employee	
+Updated employee
+
+updated_client	
+Updated cliet
+
+updated_source	
+Updated source
+
+updated_date	
+Updated date
+
+created_ip	
+Created ip
+
+created_employee	
+Created employee
+
+created_client	
+Created client
+
+created_source	
+Create soucre
+
+created_date	
+Created date
+
+Error-Response
+{
+    "code": 400,
+    "message": "code=400, message=Syntax error: offset=30, error=invalid character '}' after array element, internal=invalid character '}' after array element",
+    "data": null
+    "code_message": "USER_ERR_COMMON"
+}
+
+
+API Create Store
+API Create Store
+ 
+ 
+
+Use to create new Store. Each account can have many Store and each Store is a place to help GHN know where to pick up items.
+
+ 
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shop/register
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shop/register
+Curl
+curl --location --request GET 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shop/register' \
+--header 'Token: 44d7c8ce-78b3-11ea-a40c-e2394613f465' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+	"district_id": 1550,
+    "ward_code": "420112",
+    "name": "Tin1123",
+    "phone": "0123456789",
+    "address": "35 dd p12 qtb"
+}'
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+district_id 	Int	
+DistrictID pickup parcel.Use API GetDistrict or look up from District List.
+
+Link API Get District : https://api.ghn.vn/home/docs/detail?id=78
+
+ward_code 	String	
+WardCode pickup parcel. Use API GetWards. 
+
+Link API GetWards : https://api.ghn.vn/home/docs/detail?id=61
+
+name 	String	
+The name of store
+
+phone 	String	
+The phone of store
+
+address 	String	
+The address of store will be pickup parcel.
+
+Success-Response
+{
+    "code": 200,
+    "message": "Success",
+    "data": {
+        "shop_id":72359            
+    }
+}
+Structure Response
+Field	Description
+shop_id	
+Manage information for shop/seller
+
+Error-Response
+{
+    "code": 400,
+    "message": "Create Shop failed: Ward code is invalid",
+    "data": null
+    "code_message": "WARD_IS_INVALID",
+    "code_message_value": "Phường xã không hợp lệ."
+}
+
+
+Get District
+API Get District
+ 
+Get GHN district/province data. This data is used to reference the District ID to create shipping order.
+
+Caution : The API Order Info need to infusion token in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/master-data/district
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/district
+Curl
+curl --location --request GET 'https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/district' \
+--header 'token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+	"province_id":201
+}'
+
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+province_id	Int	
+ProvinceID provied by GHN.
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":[
+    {
+    "DistrictID":1442
+    "ProvinceID":202
+    "DistrictName":"Quận 1"
+    "Code":"0201"
+    "Type":1
+    "SupportType":0
+    },
+    {
+    "DistrictID":1443
+    "ProvinceID":202
+    "DistrictName":"Quận 2"
+    "Code":"0202"
+    "Type":1
+    "SupportType":0
+    },
+    {
+    "DistrictID":1444
+    "ProvinceID":202
+    "DistrictName":"Quận 3"
+    "Code":"0203"
+    "Type":1
+    "SupportType":0
+    },
+    ...
+    ]
+}
+Structure Response
+Field	Description
+DistrictID	
+District ID
+
+ProvinceID	
+Province ID
+
+DistrictName	
+District Name
+
+SupportType	
+Support Type
+
+0:Lock
+
+1:Take/Pay
+
+2:Deliver
+
+3:Take/Deliver/Pay
+
+NameExtension	
+Extension Name
+
+CanUpdateCOD	
+Can Update COD
+
+true:Yes;
+
+false:No
+
+Status	
+Status
+
+1:Unlock
+
+2:Lock
+
+CreatedDate	
+Created Date
+
+UpdatedDate	
+Updated Date
+
+Error-Response
+{
+    "code": 400,
+    "message": "code=400, message=Syntax error: offset=30, error=invalid character '}' after array element, internal=invalid character '}' after array element",
+    "data": null
+    "code_message": "USER_ERR_COMMON"
+}
+
+
+Get Ward
+API Get Ward
+ 
+Get GHN ward/province data. This API provides Ward Code to create shipping order.
+
+Caution : The API Get Ward need to infusion token in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id' \
+--header 'token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+--header 'Content-Type: application/json' \
+--data-raw'{"district_id":1566}'
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+district_id	Int	
+DistrictID provied by GHN.
+
+API Get DistrictID : https://api.ghn.vn/home/docs/detail?id=78
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data": {
+    "WardCode":510101 
+    "DistrictID":1566 
+    "WardName":"Phường Mỹ Bình"           
+    }
+    {
+    "WardCode":510102   
+    "DistrictID":1566 
+    "WardName":"Phường Mỹ Long"           
+    }
+    {
+    "WardCode":510103  
+    "DistrictID":1566  
+    "WardName":"Phường Đông Xuyên"   
+        
+    }
+    {
+    "WardCode":510104   
+    "DistrictID":1566 
+    "WardName":"Phường Mỹ Xuyên"   
+    
+    }
+    ....
+    
+}
+Structure Response
+Field	Description
+WardCode	
+Ward Code ID
+
+DistrictID	
+District ID
+
+WardName	
+Ward Name
+
+NameExtension	
+Name Extension
+
+CanUpdateCOD	
+Can Update COD
+
+true:Yes
+
+false:No
+
+SupportType	
+Type
+
+0:Lock
+
+1:Take/Pay
+
+2:Deliver
+
+3:Take/Deliver/Pay
+
+Status	
+Status
+
+1:Unlock
+
+2:Lock
+
+CreatedDate	
+Created Date
+
+UpdatedDate	
+Updated Date
+
+Error-Response
+{
+    "code": 404,
+    "message": "code=404, message=Not Found",
+    "data": null
+}
+
+
+API Get Province
+API Get Province
+ 
+Get GHN ward/province data. This API provides province to create shipping order.
+
+Caution : The API Get Province need to infusion token in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/master-data/province
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/province
+Curl
+curl --location --request GET 'https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/province'
+     --header 'Content-Type: application/json' --header 'Token: d6e3dccb-6289-11ea-8b85-c60e4edfe802 
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data": {
+    "ProvinceID":201   
+    "ProvinceName":"Hà Nội"   
+    "Code":"4"         
+    }
+    {
+    "ProvinceID":202   
+    "ProvinceName":"Hồ Chí Minh"   
+    "Code":"8"         
+    }
+    {
+    "ProvinceID":203   
+    "ProvinceName":"Đà Nẵng"   
+    "Code":"511"         
+    }
+    {
+    "ProvinceID":204   
+    "ProvinceName":"Đồng Nai"   
+    "Code":"61"         
+    }
+    ....
+    
+}
+Structure Response
+Field	Description
+ProvinceID	
+Province ID
+
+ProvinceName	
+Province Name
+
+NameExtension	
+Name Extension
+
+CreatedAt	
+Created At
+
+UpdatedAt	
+Updated At
+
+CanUpdateCOD	
+Can Update COD
+
+true:Yes
+
+false:No
+
+Status	
+Status
+
+1:Unlock
+
+2:Lock
+
+Error-Response
+{
+    "code": 401,
+    "message": "code=401, message=Token is not valid!",
+    "data": null
+}
+
+
+Callback of Ticket
+Customers please provide the following infomation to GHN config
+Client_ID
+Url ticket
+Staging or Production
+Name
+The GHN side will send request type, ticket status. Customer please return Response code=200:
+JSON format
+Type: ("Tư vấn", "Hối Giao/Lấy/Trả hàng", "Thay đổi thông tin", "Khiếu nại")
+Status: ("1 - Đang xử lý", "2 - Chờ KH phản hồi", "3 - Hoàn thành")
+In the case of Response code other than 200, the GHN side will fire back 10 times each time 5 seconds apart.
+ Example Response:
+{
+        "A_Email": "",
+        "Attachments": [],
+        "C_Email": "bao@ahamove.com",
+        "C_Name": "Bao",
+        "C_Phone": "",
+        "ClientID": "102110",
+        "Conversations":
+        [
+            {
+                "Attachments": [],
+                "BccEmails": null,
+                "Body": "Anh/Chị có thể để lại thông tin tại group \"\"Tâm sự giao hàng cùng GHN\"\" để nhận được hỗ trợ sớm nhất từ GHN nhé! Tham gia group ngay tại link",
+                "CcEmails": null,
+                "CreatedAt": "2020-07-03T04:49:08Z",
+                "FromEmail": "",
+                "Private": true,
+                "UpdatedAt": "2020-07-03T04:49:08Z",
+                "UserId": 0
+            },
+            {
+                "Attachments": [],
+                "BccEmails": null,
+                "Body": "Nếu cần hỗ trợ thêm thông tin, Anh/Chị vui lòng gửi yêu cầu đến GHN qua trang",
+                "CcEmails": null,
+                "CreatedAt": "2020-07-03T07:27:27Z",
+                "FromEmail": "Email Support Khách hàng GHN 'cskh@ghn.vn'",
+                "Private": false,
+                "UpdatedAt": "2020-07-03T07:27:27Z",
+                "UserId": 2043028667538
+            }
+        ],
+        "CreatedBy": 2043068973965,
+        "CreatedAt": "2020-07-01T12:49:12Z",
+        "Description": "FFXNNRYKN  Trạng thái  Lưu kho Bưu Cục 25 Trương Định-Q.Hai Bà Trưng-HN 02 - NG yêu cầu giao lại cho NN",
+        "OrderCode": "FFXNNRYKN",
+        "Status": "Hoàn thành",
+        "StatusID": 3,
+        "TicketId": 1736806,
+        "Type":"Hối Giao/Lấy/Trả hàng",
+        "UpdatedAt":"2020-07-03T07:27:30Z",
+}
+       
+Structure Request
+Field	Description
+attachments	
+File Image , excel , csv
+
+c_email	
+Customer email
+
+c_name	
+Customer name
+
+c_phone	
+Customer phone
+
+client_id	
+Client ID
+
+conversations	
+Conversations
+
+created_at	
+Create At
+
+created_by	
+Create by
+
+description	
+Description
+
+order_code	
+Order code
+
+status	
+Status
+
+status_id	
+Status ID
+
+Id	
+Ticket id
+
+type	
+Ticket Tyoe
+
+updated_at	
+Update At
+
+
+Callback order status
+Customers please provide the following infomation to GHN config:
+Client ID
+Url webhook
+Staging or Production
+Name
+GHN' s side will send a request for order information, please return Response code=200:
+JSON format
+Method: POST
+Type: Create, Switch_status, Update_weight, Update_cod, Update_fee
+In the case of Response code other than 200, the GHN side will fire back 10 times each time 5 seconds apart.
+Document update status
+ Example Response:
+{
+    "CODAmount": 3000000,
+    "CODTransferDate": null,
+    "ClientOrderCode": "",
+    "ConvertedWeight": 200,
+    "Description": "Tạo đơn hàng",
+    "Fee": {
+    "CODFailedFee": 0,
+    "CODFee": 0,
+    "Coupon": 0,
+    "DeliverRemoteAreasFee": 0,
+    "DocumentReturn": 0,
+    "DoubleCheck": 0,
+    "Insurance": 17500,
+    "MainService": 53900,
+    "PickRemoteAreasFee": 53900,
+    "R2S": 0,
+    "Return": 0,
+    "StationDO": 0,
+    "StationPU": 0
+    "Total": 0
+    },
+    "Height": 10,
+    "IsPartialReturn": false,
+    "Length": 10,
+    "OrderCode": "Z82BS",
+    "PartialReturnCode": "",
+    "PaymentType": 1,
+    "Reason": "",
+    "ReasonCode": "",
+    "ShopID": 81558,
+    "Status":"ready_to_pick",
+    "Time":"2021-11-11T03:52:50.158Z",
+    "TotalFee":71400,
+    "Type":"create",
+    "Warehouse":"Bưu Cục 229 Quan Nhân-Q.Thanh Xuân-HN",
+    "Weight":10,
+    "Width":10
+}
+ 
+Structure Request
+Field	Description
+CODAmount	
+Amount cash to collect
+
+CODTransferDate	
+COD collection date
+
+ClientOrderCode	
+Client order code
+
+ConvertedWeight	
+Converted weight
+
+Description	
+Description of requirement
+
+Fee	
+Fee
+
+CODFailedFee	
+Amount to be collected upon delivery failure.
+
+CODFee	
+COD collection fee
+
+Coupon	
+Coupon value
+
+DeliverRemoteAreasFee	
+Delivery fee to remote areas
+
+DocumentReturn	
+Document collection fee
+
+DoubleCheck	
+Co-inspection fee
+
+Insurance	
+Insurance value
+
+MainService	
+Service fee
+
+PickRemoteAreasFee	
+Pickup fee in remote areas.
+
+R2S	
+Fee of delivery parcel again
+
+Return	
+Fee of Return to ship
+
+StationDO	
+Pickup fee at Station
+
+StationPU	
+Delivery fee at Station
+
+Total	
+total fee
+
+Height	
+Height of parcel
+
+IsPartialReturn	
+Order delivered 1 piece
+
+true:Yes
+
+false:No
+
+Length	
+Length of parcel
+
+OrderCode	
+Oder code
+
+PartialReturnCode	
+Order Code delivery 1 piece
+
+PaymentType	
+Service fee payer code
+
+Reason	
+Reason
+
+ReasonCode	
+Reason code
+
+ShopID	
+Store code
+
+Status	
+Status
+
+Time	
+Time
+
+TotalFee	
+Total fee
+
+Type	
+Type
+
+Warehouse	
+Warehouse
+
+Weight	
+Weight of parcel
+
+Width	
+Width of parcel
+
+
+
+Create Ticket
+API Create Ticket
+ 
+Create Ticket then need support your order
+
+Caution : The API Order Info need to infusion token in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/ticket/create
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/ticket/create
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/ticket/create' \
+--header 'Token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+--header 'Content-Type: application/json' \
+--form 'c_email=cskh@ghn.vn' \
+--form 'order_code=5ENLKKH' \
+--form 'attachments=@/path/to/file' \
+--form 'category=Tư vấn' \
+--form 'description=Tạo yêu cầu test'
+
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+order_code	String	
+GHN Order Code. This is tracking code.
+
+category	String	
+Reqirement
+
+Advise
+
+Exchange/Pick up/Return
+
+Change information
+
+Complain
+
+attachments	File	
+Image , excel , csv
+
+description	String	
+Description of requirement
+
+max=2000
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":{
+    "attachments":[]  
+    "client_id":"SHOP-885" 
+    "conversations":null 
+    "created_at":"2020-05-29T15:24:15Z" 
+    "created_by":2043024840333 
+    "description":"Tạo yêu cầu test" 
+    "id":1605822 
+    "order_code":"5ENLKKHD" 
+    "status":"Đang xử lý" 
+    "status_id":1 
+    "type":"Tư vấn" 
+    "updated_at":"2020-05-29T15:24:15Z"  
+     }
+}
+Structure Response
+Field	Description
+Attachments	
+File Image , excel , csv
+
+ClientID	
+Client ID
+
+Conversations	
+Conversations
+
+CreatedAt	
+Created At
+
+CreatedBy	
+Created By
+
+Description	
+Description
+
+ID	
+Ticket ID
+
+OrderCode	
+Order Code
+
+Status	
+Status
+
+StatusId	
+Status ID
+
+Type	
+Type
+
+UpdatedAt	
+Updated At
+
+Error-Response
+{
+    "code": 404,
+    "message": "Không tìm thấy thông tin đơn hàng",
+    "data": null
+}
+
+
+Create Feedback of Ticket
+API Create Feedback of Ticket
+ 
+Reply Feedback of Ticket
+
+Caution : The API Order Info need to infusion token in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/ticket/reply
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/ticket/reply
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/ticket/reply' \
+--header 'Token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+--header 'Content-Type: multipart/form-data; boundary=--------------------------137463283036362119883479' \
+--form 'attachments=@Desktop/Screenshot 2020-03-17 at 11.45.20.png' \
+--form 'description=Tech test' \
+--form 'ticket_id=1615263'
+
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+ticket_id	Int	
+The ticket ID is returned when calling api to create a ticket
+
+attachments	File	
+Image , excel , csv
+
+description	String	
+Description of requirement
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":{
+    "body":"Tech test" 
+    "created_at":"2020-05-29T15:42:13Z" 
+    "from_email":"\"Email Support Khách hàng GHN\" <cskh@ghn.vn>" 
+    "updated_at":"2020-05-29T15:24:15Z" 
+    "user_id":2043022891177  
+     }
+}
+Structure Response
+Field	Description
+Body	
+Content
+
+CreatedAt	
+Created At
+
+FromEmail	
+From Email
+
+UpdatedAt	
+Updated At
+
+Error-Response
+{
+    "code": 404,
+    "message": "Key: 'myRequest.TicketID' Error:Field validation for 'TicketID' failed on the 'required' tag",
+    "data": null
+}
+
+
+
+Get Ticket
+API Get Ticket
+ 
+Get all ticket to created
+
+Caution : The API Order Info need to infusion tokenin header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/ticket/detail
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/ticket/detail
+Curl
+curl --location --request GET 'https://dev-online-gateway.ghn.vn/shiip/public-api/ticket/detail' \
+--header 'Token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+	"ticket_id":1605822
+}'
+
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+ticket_id	Int	
+The ticket ID is returned when calling api to create a ticket
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":{
+    "attachments":[] 
+    "c_email":"cskh@ghn.vn" 
+    "c_name":"Cskh" 
+    "client_id":"SHOP-885" 
+    "conversations":[] 
+    "created_at":"2020-05-29T15:24:15Z" 
+    "created_by":2043024840333 
+    "description":"Tạo yêu cầu test" 
+    "id":1605822 
+    "order_code":"5ENLKKHD" 
+    "status":"Đang xử lý" 
+    "status_id":1 
+    "type":"Tư vấn" 
+    "updated_at":"2020-05-29T15:24:15Z" 
+     }
+}
+Structure Response
+Field	Description
+Attachments	
+File Image , excel , csv
+
+ClientID	
+Client ID
+
+Conversations	
+Conversations
+
+CreatedAt	
+Created At
+
+CreatedBy	
+CreatedBy
+
+Description	
+Description
+
+ID	
+Ticket ID
+
+OrderCode	
+Order Code
+
+Status	
+Status
+
+StatusId	
+Status ID
+
+Type	
+Type
+
+UpdatedAt	
+Updated At
+
+Error-Response
+{
+    "code": 404,
+    "message": "Không tìm thấy thông tin ticket này",
+    "data": null
+}
+
+
+Get Ticket List
+API Get Ticket List
+ 
+Get all ticket to created
+
+Caution : The API Order Info need to infusion token and shopidin header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/ticket/index
+Test
+https:/dev-online-gateway.ghn.vn/shiip/public-api/ticket/index
+Curl
+ccurl --location --request GET 'https://dev-online-gateway.ghn.vn/shiip/public-api/ticket/index' \
+--header 'Token: 285518-c4bb-11ea-be3a-f636b1deefb9' \
+--header 'Shopid: 885'
+
+Parameter
+Field	Type	Description
+Token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+Shopid	Int	
+Manage information for shop/seller.
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":[
+    {
+    "attachments":null, 
+    "client_id":"885" ,
+    "conversations":null ,
+    "created_at":"2020-05-29T15:24:15Z" ,
+    "created_by":2043024840333 ,
+    "description":"Tạo yêu cầu test" ,
+    "id":1605822 ,
+    "order_code":"5ENLKKHD" ,
+    "status":"Hoàn thành" ,
+    "status_id":1 ,
+    "type":"Tư vấn" ,
+    "updated_at":"2020-05-29T15:24:15Z" 
+    },
+    {
+    "attachments":null, 
+    "client_id":"885" ,
+    "conversations":null ,
+    "created_at":"2020-05-29T15:24:15Z" ,
+    "created_by":2043024840333 ,
+    "description":"Tạo yêu cầu test" ,
+    "id":1605822 ,
+    "order_code":"5ENLKKHD" ,
+    "status":"Hoàn thành" ,
+    "status_id":1 ,
+    "type":"Tư vấn" ,
+    "updated_at":"2020-05-29T15:24:15Z" 
+    }
+    ]
+}
+Structure Response
+Field	Description
+Attachments	
+File Image , excel , csv
+
+ClientID	
+Client ID
+
+Conversations	
+Conversations
+
+CreatedAt	
+Created At
+
+CreatedBy	
+CreatedBy
+
+Description	
+Description
+
+ID	
+Ticket ID
+
+OrderCode	
+Order Code
+
+Status	
+Status
+
+StatusId	
+Status ID
+
+Type	
+Type
+
+UpdatedAt	
+Updated At
+
+Error-Response
+{
+    "code": 404,
+    "message": "Không tìm thấy thông tin ticket này",
+    "data": null
+}

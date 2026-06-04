@@ -1,0 +1,368 @@
+Create Order
+API Create Order
+ 
+Automatic send order information such as weight, address, phone number and many more to GHN system. We will process these information and start the shipment
+
+Caution : The API Create Order need to infusion token and shopid in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create' \
+                                --header 'Content-Type: application/json' \
+                                --header 'ShopId: 885' \
+                                --header 'Token: 285518-c4bb-11ea-be3a-f636b1deefb9' \
+                                --data-raw '{
+                                    "payment_type_id": 2,
+                                    "note": "Tintest 123",
+                                    "required_note": "KHONGCHOXEMHANG",
+                                    "from_name": "TinTest124",
+                                    "from_phone": "0987654321",
+                                    "from_address": "72 Thành Thái, Phường 14, Quận 10, Hồ Chí Minh, Vietnam",
+                                    "from_ward_name": "Phường 14",
+                                    "from_district_name": "Quận 10",
+                                    "from_province_name": "HCM",
+                                    "return_phone": "0332190444",
+                                    "return_address": "39 NTT",
+                                    "return_district_id": null,
+                                    "return_ward_code": "",
+                                    "client_order_code": "",
+                                    "to_name": "TinTest124",
+                                    "to_phone": "0987654321",
+                                    "to_address": "72 Thành Thái, Phường 14, Quận 10, Hồ Chí Minh, Vietnam",
+                                    "to_ward_code": "20308",
+                                    "to_district_id": 1444,
+                                    "cod_amount": 200000,
+                                    "content": "Theo New York Times",
+                                    "weight": 200,
+                                    "length": 1,
+                                    "width": 19,
+                                    "height": 10,
+                                    "pick_station_id": 1444,
+                                    "deliver_station_id": null,
+                                    "insurance_value": 10000000,
+                                    "service_id": 0,
+                                    "service_type_id":2,
+                                    "coupon":null,
+                                    "pick_shift":[2],
+                                    "items": [
+                                         {
+                                             "name":"Áo Polo",
+                                             "code":"Polo123",
+                                             "quantity": 1,
+                                             "price": 200000,
+                                             "length": 12,
+                                             "width": 12,
+                                             "height": 12,
+                                             "weight": 1200,
+                                             "category": 
+                                             {
+                                                 "level1":"Áo"
+                                             }
+                                         }
+                                         
+                                     ]
+                                }'
+                                
+Parameter
+Field	Require	Type	Data Size	Description
+token	
+X
+String	 	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+shop_id	
+X
+Int	 	
+Manage information for shop/seller
+
+to_name	
+X
+String	1024	
+Client name. (Customer / Buyer)
+
+from_name	
+X
+String	1024	
+Sender's name .
+
+In any case, if the sender information is not transmitted, the system will default to receiving information from ShopID
+from_phone	
+X
+String	 	
+Sender's phone number
+
+from_address	
+X
+String	1024	
+Sender address.
+
+from_ward_name	
+X
+String	 	
+Ward/Commune of the sender.
+
+from_district_name	
+X
+String	 	
+Sender's district
+
+from_provice_name	
+X
+String	 	
+sender's province
+
+to_phone	
+X
+String	 	
+Client phone number.(Customer / Buyer)
+
+to_address	
+X
+String	1024	
+Client address.(Customer / Buyer)
+
+to_ward_code	
+X
+String	 	
+Ward Code pick up parcels.Use API Get Ward,
+
+API Get WardCode : https://api.ghn.vn/home/docs/detail?id=61
+
+Phường/Xã của người nhận hàng.
+
+You can input to_ward_name
+
+to_district_id	
+X
+Int	 	
+District ID drop off parcels.Use API Get District
+
+API Get District : https://api.ghn.vn/home/docs/detail?id=78
+
+You can input to_district_name and to_province_name
+
+return_phone	 	String	 	
+Contact phone number to return parcels.
+
+return_address	 	String	1024	
+Address return parcels.
+
+return_district_id	 	Int	 	
+District ID return parcels. Use API GetDistricts
+
+API Get District : https://api.ghn.vn/home/docs/detail?id=78
+
+return_ward_code	 	String	 	
+Ward Code return parcels. Use API Get Ward.
+
+API Get WardCode: https://api.ghn.vn/home/docs/detail?id=61
+
+client_order_code	 	String	50	
+External order code managed by logged client [Unique field].
+
+Default value: null
+
+ Note: Client_order_code will get back the order that already has this Client_order_code
+cod_amount	 	Int	 	
+Amount cash to collect.
+
+Maximum 50.000.000
+
+Default value: 0
+
+content	 	String	2000	
+Content for order
+
+weight	
+X
+Int	 	
+Weight (gram)
+
+Maximum : 50.000gram
+length	
+X
+Int	 	
+Length (cm)
+
+Maximum : 200cm
+width	
+X
+Int	 	
+width (cm)
+
+Maximum : 200cm
+height	
+X
+Int	 	
+height (cm)
+
+Maximum : 200cm
+pick_station_id	 	Int	 	
+The shipper not pickup parcels at shop’s address
+
+Value > 0
+
+insurance_value	 	Int	 	
+Use to declare parcel value. GHN will base on this value for compensation if any unexpected things happen (lost, broken...).
+
+Maximum 5.000.000
+
+Default value: 0
+
+coupon	 	String	 	
+Coupon Code for discount.
+
+service_type_id	
+X
+Int	 	
+Call API SERVICE to show service.
+
+Default value: 2: E-commerce Delivery, 5: Traditional Delivery
+
+payment_type_id	
+X
+Int	 	
+Choose who pay shipping fee.
+
+1: Shop/Seller.
+
+2: Buyer/Consignee.
+
+note	 	String	5000	
+Client note for shipper.
+
+Ex: Please call before delivery
+
+required_note	
+X
+String	500	
+Note shipping order.Allowed values: CHOTHUHANG, CHOXEMHANGKHONGTHU, KHONGCHOXEMHANG 
+
+CHOTHUHANG mean Buyer can request to see and trial goods
+CHOXEMHANGKHONGTHU mean Buyer can see goods but not allow to trial goods
+KHONGCHOXEMHANG mean Buyer not allow to see goods
+
+pick_shift	 	 	 	
+Picking shift , take API Pick Shift
+
+Items	
+X
+ 	 	
+Content for order
+
+Required input Item when choosing a traditional delivery service
+name	
+X
+String	 	
+Name of product
+
+code	 	String	 	
+Code of product
+
+quantity	
+X
+Int	 	
+Quantity of product
+
+price	 	Int	 	
+Price of product
+
+length	 	Int	 	
+Length of product.traditional delivery service , you must input length
+
+weight 	
+X
+Int	 	
+Weight  of product
+
+If you input traditional delivery service , you must input weight
+
+width	 	Int	 	
+Width of product.traditional delivery service , you must input width
+
+height	 	Int	 	
+Height of product.traditional delivery service , you must input height
+
+category	 	 	 	
+Category of product have 3 level,level1, level2, level3
+
+level1	 	String	 	
+Product category classification
+
+Success 200
+{
+                                    "code": 200,
+                                    "message": "Success",
+                                    "data": 
+                                    {
+                                    "district_encode":"" 
+                                    "expected_delivery_time":"2020-06-03T16:00:00Z" 
+                                    "fee":
+                                    { 
+                                    coupon:0    
+                                    "insurance":11000 
+                                    "main_service":22000 
+                                    "r2s":0 
+                                    "return":0 
+                                    "station_do":0 
+                                    "station_pu":0 
+                                    },
+                                    "order_code":"FFFNL9HH"
+                                    "sort_code":"19-60-06"
+                                    "total_fee":"33000"
+                                    "trans_type":"truck"
+                                    "ward_encode":""
+                                    }
+                                }
+Structure Response
+Field	Description
+expected_delivery_time	
+Expected delivery time.
+
+fee	
+Fee.
+
+coupon	
+Coupon Code for discount.
+
+insurance	
+Insuarance value
+
+main_service	
+Service fee
+
+r2s	
+Fee of delivery parcel again
+
+return	
+Fee of Return to ship
+
+station_do	
+Pickup fee at Station
+
+station_pu	
+Delivery fee at Station
+
+order_code	
+Code order
+
+sort_code	
+Sort code
+
+total_fee	
+Total fee
+
+trans_type	
+Transportation type
+
+Error-Response
+{
+                                    "code": 400,
+                                    "message": "Sai thông tin Required Note",
+                                    "data": null
+                                    "code_message":"USER_ERR_COMMON"
+                                }

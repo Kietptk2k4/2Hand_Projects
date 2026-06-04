@@ -1,0 +1,146 @@
+Fee of Order Info
+API Fee of Order Info
+ 
+This API help you get all fee of a order.
+
+Caution : The API Order Info need to infusion token and shop_id in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/soc
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/soc
+Curl
+curl --location --request POST 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/soc' \
+--header 'Content-Type: application/json' \
+--header 'ShopID: 885' \
+--header 'Token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+--data-raw '{"order_code":"5ENLKKHD"}'
+
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+shop_id	Int	
+Manage information for shop/seller
+
+order_code	String	
+GHN Order Code. This is tracking code.
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":{
+    "_id":"5ed121cb1eb594a402473301"  
+    "order_code":"S5ENLKKHD" 
+    "detail":{ 
+    "main_service":29700 
+    "insurance":11000 
+    "station_do":0 
+    "station_pu":0 
+    "return":22000 
+    "r2s":0 
+    "coupon":0
+    } 
+    "payment":[
+     { 
+    "value":40700  
+    "payment_type":2  
+    "paid_date":"0001-01-01T00:00:00Z"  
+    "created_date":"2020-05-29T14:33:51.082Z"  
+     }
+      { 
+    "value":22000  
+    "payment_type":2  
+    "paid_date":"0001-01-01T00:00:00Z"  
+    "created_date":"2020-05-29T14:52:59.484Z"  
+     }
+     ]
+     "cod_collect_date":"0001-01-01T00:00:00Z" 
+     "transaction_id":"54ca80f5-5154-4486-9fc6-8cc218086de8" 
+     "created_ip":"" 
+     "created_date":"2020-05-29T14:52:59.484Z" 
+     "updated_ip":"" 
+     "updated_client":0 
+     "updated_employee":0 
+     "updated_source":"" 
+     "updated_date":"0001-01-01T00:00:00Z" 
+     }
+     }
+}
+Structure Response
+Field	Description
+order_code	
+Order code
+
+detail	
+Detail
+
+main_service	
+Service fee
+
+insurance	
+Insurance value
+
+station_do	
+Pickup fee at Station
+
+station_pu	
+Delivery fee at Station
+
+return	
+Fee of Return to ship
+
+r2s	
+Fee of delivery parcel again
+
+coupon	
+Coupon Code for discount
+
+payment	
+Payment
+
+value	
+Total payment
+
+payment_type	
+Payment type
+
+paid_date	
+Paid date
+
+created_date	
+Created date
+
+cod_collect_date	
+COD collection date
+
+created_ip	
+Created ip
+
+created_date	
+Created date
+
+updated_ip	
+Updated ip
+
+updated_client	
+Updated client
+
+updated_employee	
+Updated employee
+
+updated_source	
+Updated source
+
+updated_date	
+Updated date
+
+Error-Response
+{
+    "code": 404,
+    "message": "Không tìm thấy thông tin đơn hàng",
+    "data": null
+}

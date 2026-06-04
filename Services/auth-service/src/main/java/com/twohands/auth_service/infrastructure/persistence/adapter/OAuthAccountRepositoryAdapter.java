@@ -3,6 +3,7 @@ package com.twohands.auth_service.infrastructure.persistence.adapter;
 import com.twohands.auth_service.domain.oauth.OAuthAccount;
 import com.twohands.auth_service.domain.oauth.OAuthAccountRepository;
 import com.twohands.auth_service.domain.oauth.OAuthProvider;
+import com.twohands.auth_service.infrastructure.persistence.JdbcTimestamps;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -61,8 +62,8 @@ public class OAuthAccountRepositoryAdapter implements OAuthAccountRepository {
                 .addValue("provider", account.provider().name())
                 .addValue("providerUserId", account.providerUserId())
                 .addValue("email", account.email())
-                .addValue("createdAt", account.createdAt())
-                .addValue("updatedAt", account.updatedAt()));
+                .addValue("createdAt", JdbcTimestamps.from(account.createdAt()))
+                .addValue("updatedAt", JdbcTimestamps.from(account.updatedAt())));
         return account;
     }
 

@@ -18,6 +18,7 @@ import { FeedTabs } from "../components/FeedTabs";
 import { FeedToast } from "../components/FeedToast";
 import { PostCard } from "../components/PostCard";
 import { PostDetailModal } from "../components/PostDetailModal";
+import { useViewCommerceProduct } from "../hooks/useViewCommerceProduct";
 import { buildSocialHashtagPath } from "../utils/socialHashtagRoutes";
 import { buildSocialProfilePath } from "../utils/socialProfileRoutes";
 
@@ -80,6 +81,8 @@ export function SocialFeedPage() {
     },
     [navigate]
   );
+
+  const viewProduct = useViewCommerceProduct();
 
   const viewHashtag = useCallback(
     (tag) => {
@@ -186,6 +189,7 @@ export function SocialFeedPage() {
                   isDeletingPost={isDeletingPost(post.postId)}
                   onViewProfile={viewProfile}
                   onHashtagClick={viewHashtag}
+                  onViewProduct={viewProduct}
                 />
               ))}
             </div>

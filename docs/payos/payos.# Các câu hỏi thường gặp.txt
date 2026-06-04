@@ -1,0 +1,53 @@
+# Các câu hỏi thường gặp
+
+Các câu hỏi thường gặp khi tích hợp payOS
+
+## 1. `signature` là gì và khi nào dùng đến?[​](#1-signature-là-gì-và-khi-nào-dùng-đến "Đường dẫn trực tiếp đến 1-signature-là-gì-và-khi-nào-dùng-đến")
+
+* `signature` là một chuỗi ký tự dùng để kiểm tra tính toàn vẹn dữ liệu trong việc truyền dữ liệu giữa hệ thống của bạn và payOS. Được tạo ra khi kết hợp `checksum_key` và các trường data tương ứng với mỗi API.
+
+* Mỗi khi bạn nhận được dữ liệu từ payOS bạn nên kiểm tra `signature` để chắc chắn dữ liệu bạn nhận được đúng với thông tin mà hệ thống payOS trả về, [chi tiết](/docs/tich-hop-webhook/kiem-tra-du-lieu-voi-signature.md#c%C3%A1ch-t%E1%BA%A1o-signature)
+
+* Các trường hợp dùng đến:
+
+  <!-- -->
+
+  * [Tạo link thanh toán](/docs/api/.md#tag/payment-request/operation/payment-request)
+  * [Nhận thông tin thanh toán](/docs/du-lieu-tra-ve/webhook.md)
+
+## 2. Tại sao tôi bị lỗi `Mã kiểm tra(signature) không hợp lệ`?[​](#2-tại-sao-tôi-bị-lỗi-mã-kiểm-trasignature-không-hợp-lệ "Đường dẫn trực tiếp đến 2-tại-sao-tôi-bị-lỗi-mã-kiểm-trasignature-không-hợp-lệ")
+
+* Kiểm tra các trường tạo `signature` đã đúng chưa, với API [tạo link thanh toán](/docs/api/.md#tag/payment-request/operation/payment-request) sẽ được tạo bằng 5 trường sau đây (amount, orderCode, description, returnUrl, cancelUrl).
+* Kiểm tra lại dữ liệu của bạn có đang truyền ở `body` và dạng JSON.
+
+## 3. Tại sao tôi nhập không đúng thông tin CCCD/CMND/MST?[​](#3-tại-sao-tôi-nhập-không-đúng-thông-tin-cccdcmndmst "Đường dẫn trực tiếp đến 3. Tại sao tôi nhập không đúng thông tin CCCD/CMND/MST?")
+
+* Bạn truy cập trang <https://masothue.com> để kiểm tra thông tin CCCD, CMND và MST đã có chưa.
+* Nếu có kết quả thì bạn quay lại payOS và dùng thông tin này để tiếp tục các bước [Xác thực doanh nghiệp](/docs/huong-dan-su-dung/xac-thuc-to-chuc.md)
+
+## 4. Tại sao tôi chuyển khoản rồi nhưng không xác thực được?[​](#4-tại-sao-tôi-chuyển-khoản-rồi-nhưng-không-xác-thực-được "Đường dẫn trực tiếp đến 4. Tại sao tôi chuyển khoản rồi nhưng không xác thực được?")
+
+* Nếu bạn chuyển khoản trong khung giờ từ 22h - 5h thì bạn vui lòng quay lại Xác thực vào sáng hôm sau(do từ hệ thống ngân hàng giao dịch chuyển trong khung giờ này được ghi nhận vào ngày hôm sau).
+* Tên chủ tài khoản chuyển khoản phải trùng với tên mà bạn xác thực trước đó. [chi tiết](/docs/huong-dan-su-dung/xac-thuc-to-chuc.md#x%C3%A1c-th%E1%BB%B1c-t%E1%BB%95-ch%E1%BB%A9c-c%C3%A1-nh%C3%A2nh%E1%BB%99-kinh-doanh)
+* Với tài khoản ngân hàng loại Doanh nghiệp có thể do tên doanh nghiệp trên hệ thống ngân hàng khác với tên trên Chi cục Thuế, với trường hợp này vui lòng liên hệ với <https://payos.vn> để được hỗ trợ.
+
+## 5. Tại sao tôi không tạo được tài khoản trên payOS?[​](#5-tại-sao-tôi-không-tạo-được-tài-khoản-trên-payos "Đường dẫn trực tiếp đến 5. Tại sao tôi không tạo được tài khoản trên payOS?")
+
+Bạn cần dùng tài khoản ngân hàng có tên tài khoản trùng với tên doanh nghiệp hoặc tên cá nhân/hộ kinh doanh đã xác thực Doanh nghiệp trước đó để thêm tài khoản.
+
+## 6. Tại sao số tài khoản trên `link thanh toán` lại không giống với số tài khoản của tôi?[​](#6-tại-sao-số-tài-khoản-trên-link-thanh-toán-lại-không-giống-với-số-tài-khoản-của-tôi "Đường dẫn trực tiếp đến 6-tại-sao-số-tài-khoản-trên-link-thanh-toán-lại-không-giống-với-số-tài-khoản-của-tôi")
+
+Nếu bạn tạo `link thanh toán` với tài khoản ngân hàng liên kết bằng [VietQR Pro](https://payos.vn/vietqr-pro/) thì số tài khoản hiển thị sẽ là Số tài khoản ảo, [xem thông tin về tài khoản ảo](https://payos.vn/tai-khoan-ao/). Một Tài khoản ảo sẽ tương ứng với một đơn hàng và số tiền, chuyển sai Số tài khoản ảo thì đơn hàng đó sẽ không được xác nhận.
+
+## 7. Khách hàng của bạn chuyển sai số tiền?[​](#7-khách-hàng-của-bạn-chuyển-sai-số-tiền "Đường dẫn trực tiếp đến 7. Khách hàng của bạn chuyển sai số tiền?")
+
+Với liên kết ngân hàng bằng [VietQR Pro](https://payos.vn/vietqr-pro/)
+
+* Chuyển khoản sẽ bị từ chối ở màn hình chuyển khoản của ngân hàng.
+* Khách hàng của bạn chuyển thành công thì sau đó hệ thống ngân hàng sẽ hoàn tiền lại vào tài khoản của khách hàng của bạn và đồng thời đơn hàng sẽ không được xác nhận.
+Beta
+0 / 0
+used queries
+
+
+1

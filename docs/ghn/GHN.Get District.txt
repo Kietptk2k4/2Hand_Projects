@@ -1,0 +1,112 @@
+Get District
+API Get District
+ 
+Get GHN district/province data. This data is used to reference the District ID to create shipping order.
+
+Caution : The API Order Info need to infusion token in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/master-data/district
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/district
+Curl
+curl --location --request GET 'https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/district' \
+--header 'token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+	"province_id":201
+}'
+
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+province_id	Int	
+ProvinceID provied by GHN.
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data":[
+    {
+    "DistrictID":1442
+    "ProvinceID":202
+    "DistrictName":"Quận 1"
+    "Code":"0201"
+    "Type":1
+    "SupportType":0
+    },
+    {
+    "DistrictID":1443
+    "ProvinceID":202
+    "DistrictName":"Quận 2"
+    "Code":"0202"
+    "Type":1
+    "SupportType":0
+    },
+    {
+    "DistrictID":1444
+    "ProvinceID":202
+    "DistrictName":"Quận 3"
+    "Code":"0203"
+    "Type":1
+    "SupportType":0
+    },
+    ...
+    ]
+}
+Structure Response
+Field	Description
+DistrictID	
+District ID
+
+ProvinceID	
+Province ID
+
+DistrictName	
+District Name
+
+SupportType	
+Support Type
+
+0:Lock
+
+1:Take/Pay
+
+2:Deliver
+
+3:Take/Deliver/Pay
+
+NameExtension	
+Extension Name
+
+CanUpdateCOD	
+Can Update COD
+
+true:Yes;
+
+false:No
+
+Status	
+Status
+
+1:Unlock
+
+2:Lock
+
+CreatedDate	
+Created Date
+
+UpdatedDate	
+Updated Date
+
+Error-Response
+{
+    "code": 400,
+    "message": "code=400, message=Syntax error: offset=30, error=invalid character '}' after array element, internal=invalid character '}' after array element",
+    "data": null
+    "code_message": "USER_ERR_COMMON"
+}

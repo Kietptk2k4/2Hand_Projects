@@ -1,8 +1,10 @@
 import { authorAvatarUrl, authorDisplayName } from "../utils/authorDisplay";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
+import { enrichProductTags } from "../utils/enrichProductTag";
 import { PostCaption } from "./PostCaption";
 import { PostMediaGrid } from "./PostMediaGrid";
 import { PostOptionsMenu } from "./PostOptionsMenu";
+import { PostProductTagsBlock } from "./PostProductTagsBlock";
 
 function formatCount(value) {
   const num = Number(value) || 0;
@@ -23,10 +25,12 @@ export function PostCard({
   isDeletingPost = false,
   onViewProfile,
   onHashtagClick,
+  onViewProduct,
   currentUserId,
 }) {
   const isOwner = Boolean(currentUserId && post.authorId === currentUserId);
   const savedByMe = post.savedByMe ?? false;
+  const enrichedProductTags = enrichProductTags(post.productTags);
   const openDetail = (options) => {
     onOpenPost?.(post.postId, options);
   };
@@ -96,6 +100,13 @@ export function PostCard({
             onComingSoon?.();
           }}
         />
+        {enrichedProductTags.length > 0 ? (
+          <PostProductTagsBlock
+            tags={enrichedProductTags}
+            variant="compact"
+            onViewProduct={onViewProduct}
+          />
+        ) : null}
       </div>
 
       <PostMediaGrid media={post.media} onMediaClick={() => openDetail()} />

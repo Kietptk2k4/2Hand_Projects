@@ -1,0 +1,111 @@
+Get Station
+API Get Station
+ 
+Get GHN Station data. This API provides station_id to create shipping order.
+
+Caution : The API Get Station need to infusion token in header
+
+post/get
+Production
+https://online-gateway.ghn.vn/shiip/public-api/v2/station/get
+Test
+https://dev-online-gateway.ghn.vn/shiip/public-api/v2/station/get
+Curl
+curl --location --request GET 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/station/get' \
+--header 'token: 637170d5-942b-11ea-9821-0281a26fb5d4' \
+--header 'Content-Type: application/json' \
+--data-raw'{"district_id":"1442",
+	"ward_code":"20101",
+	"offset":0,
+	"limit":1000}'
+Parameter
+Field	Type	Description
+token	String	
+Must be sent with all client requests. This Token helps server to validate request source. Provided by GHN.
+
+district_id	Int	
+DistrictID provied by GHN.
+
+API DistrictID : https://api.ghn.vn/home/docs/detail?id=78
+
+ward_code	String	
+Wardcode provide to GHN
+
+API WardCode : https://api.ghn.vn/home/docs/detail?id=61
+
+offset	Int	
+Default =0
+
+limit	Int	
+Maximum amount of data in API , not more than 1000.
+
+Success 200
+{
+    "code": 200,
+    "message": "Success",
+    "data": 
+    {
+    "address":"https://www.facebook.com/thien.hieu.tdt1" 
+    "locationCode":"1888" 
+    "locationId":1888           
+    "locationName":0 
+    "parentLocation":
+    [ 
+    "GHN_HUB/1888".
+    "REGION/1".
+    "PROVINCE/202".
+    "DISTRICT/1442".
+    "WARD/20101".
+    ]
+    }
+    ....
+    
+}
+Structure Response
+Field	Description
+address	
+Station address
+
+locationName	
+Location name
+
+REGION/1	
+Region
+
+PROVINCE/202	
+Province
+
+DISTRICT/1442	
+District/Town
+
+WARD/20101	
+Ward/Village
+
+email	
+Email
+
+latitude	
+Latitude
+
+longitude	
+Longitude
+
+wardName	
+Ward/village name
+
+districtName	
+District/town name
+
+provinceName	
+Province name
+
+iframeMap	
+Iframe map
+
+Error-Response
+{
+    "code": 400,
+    "message": "code=400, message=Syntax error: offset=24, error=invalid character '\\n' in string literal, internal=invalid character '\\n' in string literal",
+    "data": null
+    "code_message":"USER_ERR_COMMON"
+}

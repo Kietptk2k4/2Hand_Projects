@@ -1,0 +1,75 @@
+# SDKs
+
+Các thư viện và script giúp tích hợp nhanh payOS vào hệ thống của merchant.
+
+### Server-side SDKs[​](#server-side-sdks "Đường dẫn trực tiếp đến Server-side SDKs")
+
+<!-- -->
+
+* Node
+* Python
+* .NET Core
+* PHP
+* Golang
+
+Cài đặt với npm
+
+```
+npm install @payos/node --save
+```
+
+Cài đặt với yarn
+
+```
+yarn add @payos/node
+```
+
+Cài đặt với pip
+
+```
+# Windows
+pip install payos
+
+# Linux/macOS
+pip3 install payos
+```
+
+Cài đặt với dotnet
+
+```
+dotnet add package payOS
+```
+
+Cài đặt với composer
+
+```
+composer require payos/payos
+```
+
+Cài đặt với go
+
+```
+go get github.com/payOSHQ/payos-lib-golang/v2
+```
+
+<!-- -->
+
+### Web SDKs[​](#web-sdks "Đường dẫn trực tiếp đến Web SDKs")
+
+![payOS react](/docs/img/react.svg)![payOS react](/docs/img/react.svg) ![payOS JS](/docs/img/js.svg)![payOS JS](/docs/img/js.svg)
+
+payOS cung cấp `script-js` hỗ trợ mở link thanh toán
+
+* Javascript
+* ReactJS
+
+```
+<script src='https://cdn.payos.vn/payos-checkout/v1/stable/payos-initialize.js'></script>
+```
+
+```
+npm install payos-checkout
+```
+Beta
+0 / 0
+used queries

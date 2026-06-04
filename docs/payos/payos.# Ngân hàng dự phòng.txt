@@ -1,0 +1,42 @@
+# Ngân hàng dự phòng
+
+### Tại sao cần thiết lập ngân hàng dự phòng cho kênh thanh toán?[​](#tại-sao-cần-thiết-lập-ngân-hàng-dự-phòng-cho-kênh-thanh-toán "Đường dẫn trực tiếp đến Tại sao cần thiết lập ngân hàng dự phòng cho kênh thanh toán?")
+
+Việc **thiết lập ngân hàng dự phòng** cho kênh thanh toán giúp **tăng độ uptime và sẵn sàng hoạt động của kênh thanh toán**, đặc biệt là trong những trường hợp có xảy ra sự cố gián đoạn của hệ thống Ngân hàng cũng như gián đoạn theo lịch bảo trì hệ thống.
+
+Thực hiện thêm ngân hàng dự phòng cho một kênh thanh toán mang lại tính linh hoạt và đảm bảo liên tục trong quá trình xử lý thanh toán.
+
+* Khi ngân hàng chính gặp sự cố không thể tạo link thanh toán cho kênh, hệ thống tự động chuyển sang ngân hàng dự phòng để tiếp tục giao dịch.
+* Khi ngân hàng chính ổn định trở lại, quy trình tự động chuyển về ngân hàng gốc để duy trì tính liên kết ban đầu.
+
+Lưu ý
+
+Ngân hàng dự phòng khác với ngân hàng chính về Phương thức kết nối (VietQRPro và OpenAPI) hoặc về Ngân hàng
+
+### Hướng dẫn thiết lập ngân hàng dự phòng[​](#hướng-dẫn-thiết-lập-ngân-hàng-dự-phòng "Đường dẫn trực tiếp đến Hướng dẫn thiết lập ngân hàng dự phòng")
+
+Trước khi bắt đầu, bạn cần có Ngân hàng hàng thứ 2 khác với Ngân hàng chính hoặc khác Phương thức kết nối
+
+* **Thiết lập Ngân hàng dự phòng khi tạo kênh thanh toán:** Ở bước chọn Ngân hàng cho kênh thanh toán, sau khi chọn Ngân hàng chính thức, bạn thực hiện chọn ngân hàng dự phòng.
+
+![Example banner](/docs/assets/images/temp-bank-when-create-channel-5bbf50da7274bab734be011eab7bb78f.png)
+
+Thông tin
+
+Sau khi chọn Ngân hành chính đã có thể tạo được kênh thanh toán, có thể cài đặt Ngân hàng dự phòng để tăng độ uptime cho kênh trong quá trình tạo kênh mới hoặc sau khi đã tạo kênh thanh toán.
+
+* **Thiết lập Ngân hàng dự phòng sau khi đã tạo kênh thanh toán:** vào Kênh thanh toán, sau đó nhấn chọn Kênh thanh toán cần thêm ngân hàng dự phòng => Ấn Thêm ngân hàng dự phòng, chọn ngân hàng => Ấn cập nhật để lưu
+
+![Example banner](/docs/assets/images/temp-bank-when-edit-channel-d03f0e792def52b89350ca6b499ef93e.png)
+
+Sau khi đã thiết lập Ngân hàng dự phòng, bạn có thể thay đổi Ngân hàng dự phòng hoặc xóa Ngân hàng dự phòng:
+
+![Example banner](/docs/assets/images/edit-or-delete-temp-bank-625a264c5225670d135530b65c233e5d.png)
+
+Thông tin
+
+Đối với Doanh nghiệp hoặc Cá nhân dùng MB Bank VietQRPro có thể thêm ngân hàng dự phòng là MB Bank OpenAPI.
+Beta
+0 / 0
+used queries
+1

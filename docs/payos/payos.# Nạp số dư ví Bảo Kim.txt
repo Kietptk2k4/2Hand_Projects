@@ -1,0 +1,30 @@
+# Nạp số dư ví Bảo Kim
+
+### Trước khi bắt đầu[​](#trước-khi-bắt-đầu "Đường dẫn trực tiếp đến Trước khi bắt đầu")
+
+* Bạn cần có tài khoản đăng nhập vào hệ thống payOS.
+* Tổ chức của bạn đã được xác thực. Nếu chưa được xác thực, vui lòng tham khảo Mục [Xác thực Tổ chức](/docs/huong-dan-su-dung/xac-thuc-to-chuc.md)
+* Bạn đã liên kết ít nhất một tài khoản ngân hàng vào payOS. Nếu chưa liên kết tài khoản, vui lòng tham khảo phần [Kết nối tài khoản ngân hàng](/docs/huong-dan-su-dung/ket-noi-tai-khoan-ngan-hang.md)
+
+Để thực hiện các giao dịch chi tiền qua payOS, bạn cần **nạp tiền vào tài khoản nguồn chi**. Đây là **nguồn tiền trung gian** được sử dụng khi bạn tạo lệnh chi hoặc thanh toán cho đối tác, nhân viên, hoặc khách hàng.
+
+Khi một **lệnh chi** được khởi tạo và phê duyệt, **số tiền tương ứng sẽ được trích trực tiếp từ ví này** để thực hiện giao dịch. Việc duy trì **số dư khả dụng** trong ví giúp đảm bảo mọi giao dịch được xử lý **nhanh chóng, liên tục và không bị gián đoạn**.
+
+**Bước 1:** Chọn **Ngân hàng**, tại **Tài khoản chi** chọn **Bảo Kim**.
+
+![Example banner](/docs/assets/images/step1-a50f176397ba83993f34ef18b155465b.png)
+
+**Bước 2:** Tại giao diện chi tiết tài khoản, chọn **Nạp số dư**.
+
+![Example banner](/docs/assets/images/step2-7d43f7527e72cd6009ca92d282301f53.png)
+
+**Bước 3:** Tại giao diện nạp tiền vào tài khoản, chọn số tiền phù hợp với nhu cầu sử dụng, nhấn **Nạp tiền**. Lúc này sẽ hiện mã QR nạp số dư vào ví.
+
+![Example banner](/docs/assets/images/step3_1-95d4a22d72bca41fb7f0ab4d725cfcbc.png)
+
+Nạp số dư vài Ví Bảo Kim sau khi thành công cần đợi từ 2-5 phút để đối tác cộng số dư ví, Khách hàng có thể chủ động bấm đồng bộ số dư ví.
+
+![Example banner](/docs/assets/images/step3_2-58c182f6c64dd064942f4ee8cd714b3e.png)
+Beta
+0 / 0
+used queries
