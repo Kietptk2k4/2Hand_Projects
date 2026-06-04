@@ -160,7 +160,12 @@ class UserAccountOutboxSerializationRollbackIntegrationTest {
         UserAccountOutboxService userAccountOutboxService() {
             return new UserAccountOutboxService(new ObjectMapper()) {
                 @Override
-                public com.twohands.auth_service.domain.outbox.OutboxEvent userUpdated(UUID userId, String email, Instant now) {
+                public com.twohands.auth_service.domain.outbox.OutboxEvent userUpdated(
+                        UUID userId,
+                        String email,
+                        Instant now,
+                        com.twohands.auth_service.application.useraccount.common.UserProjectionSyncPayload sync
+                ) {
                     throw new AppException(ErrorCode.INTERNAL_ERROR, "Cannot serialize outbox payload");
                 }
             };

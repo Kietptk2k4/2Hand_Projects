@@ -2,6 +2,7 @@ package com.twohands.auth_service.application.useraccount.toggleprivacy;
 
 import com.twohands.auth_service.application.useraccount.common.UserAccountAuthContextService;
 import com.twohands.auth_service.application.useraccount.common.UserAccountOutboxService;
+import com.twohands.auth_service.application.useraccount.common.UserProjectionSyncPayload;
 import com.twohands.auth_service.domain.outbox.OutboxEventRepository;
 import com.twohands.auth_service.domain.user.User;
 import com.twohands.auth_service.domain.user.UserProfile;
@@ -54,7 +55,12 @@ public class TogglePrivacyUseCase {
         Instant now = Instant.now();
         profile.togglePrivacy(command.isPrivate(), now);
         userProfileRepository.updateByUserId(profile);
-        outboxEventRepository.save(outboxService.userUpdated(user.id(), user.email().normalizedValue(), now));
+        outboxEventRepository.save(outboxService.userUpdated(
+                user.id(),
+                user.email().normalizedValue(),
+                now,
+                UserProjectionSyncPayload.profileOnly(null, null, profile.isPrivate())
+        ));
     }
 
     public String successMessage() {

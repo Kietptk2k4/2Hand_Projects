@@ -1,6 +1,7 @@
 package com.twohands.auth_service.application.auth.oauth;
 
 import com.twohands.auth_service.application.auth.common.UserCreatedOutboxService;
+import com.twohands.auth_service.application.useraccount.common.UserProjectionSyncPayload;
 import com.twohands.auth_service.domain.oauth.OAuthAccount;
 import com.twohands.auth_service.domain.oauth.OAuthAccountRepository;
 import com.twohands.auth_service.domain.outbox.OutboxEventRepository;
@@ -83,9 +84,10 @@ public class OAuthLoginUseCase {
             UUID newUserId = UUID.randomUUID();
             User newUser = User.registerWithOAuth(newUserId, EmailAddress.of(normalizedEmail), now);
             userRepository.save(newUser);
-            userProfileRepository.save(UserProfile.rehydrate(
+            String displayName = resolveDisplayName(profile.name(), normalizedEmail);
+            UserProfile newProfile = UserProfile.rehydrate(
                     newUserId,
-                    resolveDisplayName(profile.name(), normalizedEmail),
+                    displayName,
                     profile.avatarUrl(),
                     null,
                     null,
@@ -93,14 +95,20 @@ public class OAuthLoginUseCase {
                     false,
                     now,
                     now
-            ));
+            );
+            userProfileRepository.save(newProfile);
             userSettingsRepository.save(UserSettings.createDefault(newUserId, now));
             outboxEventRepository.save(
                     userCreatedOutboxService.build(
                             newUser.id(),
                             newUser.email().normalizedValue(),
                             newUser.status().name(),
-                            now
+                            now,
+                            UserProjectionSyncPayload.profileOnly(
+                                    newProfile.displayName(),
+                                    newProfile.avatarUrl(),
+                                    newProfile.isPrivate()
+                            )
                     )
             );
             user = newUser;

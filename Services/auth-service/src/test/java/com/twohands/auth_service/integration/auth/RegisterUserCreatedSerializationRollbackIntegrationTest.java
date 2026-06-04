@@ -84,7 +84,13 @@ class RegisterUserCreatedSerializationRollbackIntegrationTest {
         UserCreatedOutboxService userCreatedOutboxService() {
             return new UserCreatedOutboxService(new ObjectMapper()) {
                 @Override
-                public OutboxEvent build(UUID userId, String email, String status, Instant now) {
+                public OutboxEvent build(
+                        UUID userId,
+                        String email,
+                        String status,
+                        Instant now,
+                        com.twohands.auth_service.application.useraccount.common.UserProjectionSyncPayload sync
+                ) {
                     throw new AppException(ErrorCode.INTERNAL_ERROR, "Cannot serialize outbox payload");
                 }
             };

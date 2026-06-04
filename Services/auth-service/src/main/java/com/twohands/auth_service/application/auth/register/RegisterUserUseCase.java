@@ -3,6 +3,7 @@ package com.twohands.auth_service.application.auth.register;
 import com.twohands.auth_service.application.auth.common.EmailVerificationOtpGenerator;
 import com.twohands.auth_service.application.auth.common.EmailVerificationOutboxService;
 import com.twohands.auth_service.application.auth.common.UserCreatedOutboxService;
+import com.twohands.auth_service.application.useraccount.common.UserProjectionSyncPayload;
 import com.twohands.auth_service.domain.outbox.OutboxEventRepository;
 import com.twohands.auth_service.domain.user.EmailAddress;
 import com.twohands.auth_service.domain.user.User;
@@ -118,7 +119,8 @@ public class RegisterUserUseCase {
                             user.id(),
                             user.email().normalizedValue(),
                             user.status().name(),
-                            now
+                            now,
+                            UserProjectionSyncPayload.profileOnly(displayName, null, false)
                     )
             );
             outboxEventRepository.save(emailVerificationOutboxService.build(user, verificationTokenRaw, now));

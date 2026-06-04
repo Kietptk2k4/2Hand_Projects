@@ -2,6 +2,7 @@ package com.twohands.auth_service.application.useraccount.updateavatar;
 
 import com.twohands.auth_service.application.useraccount.common.UserAccountAuthContextService;
 import com.twohands.auth_service.application.useraccount.common.UserAccountOutboxService;
+import com.twohands.auth_service.application.useraccount.common.UserProjectionSyncPayload;
 import com.twohands.auth_service.domain.outbox.OutboxEventRepository;
 import com.twohands.auth_service.domain.user.User;
 import com.twohands.auth_service.domain.user.UserProfile;
@@ -58,7 +59,12 @@ public class UpdateAvatarUseCase {
         Instant now = Instant.now();
         profile.updateAvatar(command.avatarUrl(), now);
         userProfileRepository.updateByUserId(profile);
-        outboxEventRepository.save(outboxService.userUpdated(user.id(), user.email().normalizedValue(), now));
+        outboxEventRepository.save(outboxService.userUpdated(
+                user.id(),
+                user.email().normalizedValue(),
+                now,
+                UserProjectionSyncPayload.profileOnly(null, profile.avatarUrl(), null)
+        ));
     }
 
     public String successMessage() {

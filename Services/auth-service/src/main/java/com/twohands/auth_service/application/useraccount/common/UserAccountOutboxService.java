@@ -25,17 +25,19 @@ public class UserAccountOutboxService {
     }
 
     public OutboxEvent userUpdated(UUID userId, String email, Instant now) {
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("user_id", userId.toString());
-        payload.put("email", email);
-        payload.put("updated_at", now.toString());
+        return userUpdated(userId, email, now, UserProjectionSyncPayload.empty());
+    }
+
+    public OutboxEvent userUpdated(UUID userId, String email, Instant now, UserProjectionSyncPayload sync) {
+        Map<String, Object> payload = basePayload(userId, email, now);
+        if (sync != null) {
+            sync.applyTo(payload);
+        }
         return build("USER_UPDATED", payload, now);
     }
 
     public OutboxEvent userActivatedAfterEmailVerification(UUID userId, String email, Instant now) {
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("user_id", userId.toString());
-        payload.put("email", email);
+        Map<String, Object> payload = basePayload(userId, email, now);
         payload.put("status", "ACTIVE");
         payload.put("email_verified", true);
         payload.put("verified_at", now.toString());
@@ -48,6 +50,14 @@ public class UserAccountOutboxService {
         payload.put("email", email);
         payload.put("deleted_at", now.toString());
         return build("USER_DELETED", payload, now);
+    }
+
+    private Map<String, Object> basePayload(UUID userId, String email, Instant now) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("user_id", userId.toString());
+        payload.put("email", email);
+        payload.put("updated_at", now.toString());
+        return payload;
     }
 
     private OutboxEvent build(String eventType, Map<String, Object> payload, Instant now) {

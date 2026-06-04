@@ -2,6 +2,7 @@ package com.twohands.auth_service.application.auth.common;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.auth_service.application.useraccount.common.UserProjectionSyncPayload;
 import com.twohands.auth_service.domain.outbox.OutboxEvent;
 import com.twohands.auth_service.domain.outbox.OutboxStatus;
 import com.twohands.auth_service.exception.AppException;
@@ -26,11 +27,18 @@ public class UserCreatedOutboxService {
     }
 
     public OutboxEvent build(UUID userId, String email, String status, Instant now) {
+        return build(userId, email, status, now, UserProjectionSyncPayload.empty());
+    }
+
+    public OutboxEvent build(UUID userId, String email, String status, Instant now, UserProjectionSyncPayload sync) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("user_id", userId.toString());
         payload.put("email", email);
         if (status != null && !status.isBlank()) {
             payload.put("status", status);
+        }
+        if (sync != null) {
+            sync.applyTo(payload);
         }
 
         String payloadJson;
