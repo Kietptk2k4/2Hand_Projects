@@ -34,6 +34,7 @@ flowchart TB
     Mongo[(MongoDB)]
     Redis[(Redis)]
     MinIO[(MinIO)]
+    Kafka[(Kafka :9092)]
   end
 
   subgraph external [Third-party]
@@ -76,7 +77,7 @@ flowchart TB
 │   ├── admin-service/
 │   ├── notification-service/
 │   └── skeleton-service/  # Template tham chiếu (auth scaffold)
-├── Infrastructure/        # docker-compose.yml — Postgres, Mongo, Redis, MinIO
+├── Infrastructure/        # docker-compose.yml — Postgres, Mongo, Redis, MinIO, Kafka
 ├── docs/                  # Spec, FR, API behavior, schema, use cases
 ├── frontend/              # React 19 + Vite + Tailwind (MSW)
 ├── .cursor/rules/         # Chuẩn implement theo domain (admin, commerce, social)
@@ -118,7 +119,7 @@ Qua **API Gateway production** (khi có): `https://api.2hands.vn/{service-name}/
 ### Yêu cầu
 
 - **JDK 21**
-- **Docker** (Postgres, Mongo, Redis, MinIO)
+- **Docker** (Postgres, Mongo, Redis, MinIO, Kafka)
 - **Gradle** (wrapper trong từng `Services/*`)
 
 ### 1. Hạ tầng
@@ -138,8 +139,12 @@ docker compose up -d
 | `mongodb` | 27017 | `social_db` (posts, comments, projections) |
 | `redis` | 6379 | Session, cart, rate limit |
 | `minio` | 9000 / 9001 | Object storage (avatar, product, post media) |
+| `kafka` | 9092 | Event broker (KRaft) — app host: `localhost:9092` |
+| `kafka-ui` | 8080 | Debug Kafka — http://localhost:8080 |
 
-> **Kafka** chưa có trong `docker-compose.yml`. Consumer/outbox publisher của social/commerce/notification mặc định **tắt** (`*_KAFKA_*_ENABLED=false`).
+Chi tiết Kafka local: [`docs/kafka/kafka_section_0.md`](docs/kafka/kafka_section_0.md)
+
+> Consumer/outbox publisher mặc định **tắt** (`*_KAFKA_*_ENABLED=false`). Broker đã sẵn sàng; bật publisher/consumer ở hạng mục 1.
 
 ### 2. Backend service (ví dụ)
 
@@ -178,6 +183,7 @@ npm run dev
 | [`business_flow/`](docs/business_flow/) | Luồng nghiệp vụ end-to-end |
 | [`use_cases/`](docs/use_cases/) | Use case theo actor |
 | [`engineering_rules/`](docs/engineering_rules/) | API standard, naming, backend/frontend convention |
+| [`kafka/`](docs/kafka/) | Hạ tầng Kafka local (hạng mục 0+) |
 
 **Quy tắc implement (Cursor):** `.cursor/rules/{admin,commerce,social}/` — Clean Architecture, Outbox, JWT, cấu trúc package, bắt buộc doc API behavior khi thêm endpoint.
 
@@ -230,7 +236,7 @@ Ma trận event: [`docs/architecture/event-driven-architecture.md`](docs/archite
 ## Roadmap / giới hạn hiện tại
 
 - **Api_gateway:** thư mục trống — client dev gọi thẳng port service.
-- **Kafka local:** chưa đóng gói trong Docker Compose; bật consumer/outbox khi đã có broker.
+- **Kafka local:** broker + UI trong Docker Compose — xem [`docs/kafka/kafka_section_0.md`](docs/kafka/kafka_section_0.md). Publisher/consumer app chưa bật.
 - **notification-service vs admin-service:** trùng port 3004 — chỉnh port khi dev full stack.
 - **Packages / Scripts:** chưa dùng.
 
@@ -240,4 +246,4 @@ Ma trận event: [`docs/architecture/event-driven-architecture.md`](docs/archite
 
 - [auth-service](Services/auth-service/README.md) · [social-service](Services/social-service/README.md) · [commerce-service](Services/commerce-service/README.md)
 - [admin-service](Services/admin-service/README.md) · [notification-service](Services/notification-service/README.md) · [skeleton-service](Services/skeleton-service/README.md) (template)
-- Docker infra: [Infrastructure/docker-compose.yml](Infrastructure/docker-compose.yml)
+- Docker infra: [Infrastructure/docker-compose.yml](Infrastructure/docker-compose.yml) · [Infrastructure/README.md](Infrastructure/README.md)
