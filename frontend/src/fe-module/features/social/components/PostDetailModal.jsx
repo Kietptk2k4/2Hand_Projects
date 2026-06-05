@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
+import { useCurrentUserAvatarUrl } from "../../auth/hooks/useCurrentUserAvatarUrl";
 import { useViewCommerceProduct } from "../hooks/useViewCommerceProduct";
 import { enrichProductTags } from "../utils/enrichProductTag";
 import { MAX_COMMENT_LENGTH } from "../constants/commentConstants";
@@ -37,7 +37,7 @@ export function PostDetailModal({
   onViewProfile,
   onHashtagClick,
 }) {
-  const { user } = useAuthSession();
+  const viewerAvatar = useCurrentUserAvatarUrl(DEFAULT_AVATAR);
   const viewCommerceProduct = useViewCommerceProduct();
   const { isWriteBlocked, suspendMessage } = useSocialWriteBlock();
   const commentAnchorRef = useRef(null);
@@ -145,9 +145,6 @@ export function PostDetailModal({
     }, 100);
     return () => window.clearTimeout(timer);
   }, [focusComments, post, commentsState.isLoading]);
-
-  const viewerAvatar =
-    user?.avatar_url || user?.profile?.avatar_url || DEFAULT_AVATAR;
 
   const openGallery = (index = 0) => {
     if (!post?.media?.length) return;

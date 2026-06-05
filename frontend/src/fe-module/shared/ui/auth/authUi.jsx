@@ -79,7 +79,7 @@ export function AccountTextInput({
         id={id}
         name={name}
         type={type}
-        value={value}
+        value={value ?? ""}
         onChange={onChange}
         onBlur={onBlur}
         placeholder={placeholder}

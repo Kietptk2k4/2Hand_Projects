@@ -37,7 +37,7 @@ export function ShopSettingsProfileSection({
             type="text"
             maxLength={SHOP_NAME_MAX}
             className={inputClass}
-            value={form.shopName}
+            value={form.shopName ?? ""}
             disabled={disabled}
             onChange={(event) => onFieldChange("shopName", event.target.value)}
           />
@@ -56,7 +56,7 @@ export function ShopSettingsProfileSection({
             rows={4}
             className={`${inputClass} resize-none`}
             placeholder="Giới thiệu cửa hàng, sản phẩm và điểm nổi bật..."
-            value={form.description}
+            value={form.description ?? ""}
             disabled={disabled}
             onChange={(event) => onFieldChange("description", event.target.value)}
           />
@@ -68,7 +68,7 @@ export function ShopSettingsProfileSection({
             hint="Nhấn để chọn ảnh"
             icon="account_circle"
             aspectHint="avatar"
-            value={form.avatarUrl}
+            value={form.avatarUrl ?? ""}
             disabled={disabled}
             onChange={(url) => onFieldChange("avatarUrl", url)}
           />
@@ -78,7 +78,7 @@ export function ShopSettingsProfileSection({
             hint="Nhấn để chọn ảnh"
             icon="wallpaper"
             aspectHint="cover"
-            value={form.coverUrl}
+            value={form.coverUrl ?? ""}
             disabled={disabled}
             onChange={(url) => onFieldChange("coverUrl", url)}
           />

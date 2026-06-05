@@ -65,7 +65,7 @@ export function mapSocialLinksToRows(socialLinks = {}) {
   if (entries.length === 0) {
     return [{ platform: "github", url: "" }];
   }
-  return entries.map(([platform, url]) => ({ platform, url }));
+  return entries.map(([platform, url]) => ({ platform, url: url ?? "" }));
 }
 
 export const AVATAR_MAX_BYTES = 5 * 1024 * 1024;

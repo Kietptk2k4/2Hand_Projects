@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
+import { useAccountProfile } from "../../auth/account/hooks/useAccountProfile";
 import { POST_MEDIA_ACCEPT, VISIBILITY_OPTIONS } from "../constants/createPostConstants";
 import { DEFAULT_WORKSPACE_LABEL } from "../constants/socialUiStrings";
 import { formatVndPrice } from "../utils/formatPrice";
@@ -20,6 +21,7 @@ export function PostFormModal({
   loadError = "",
 }) {
   const { user } = useAuthSession();
+  const { profile } = useAccountProfile();
   const { isWriteBlocked, suspendMessage } = useSocialWriteBlock();
   const fileInputRef = useRef(null);
   const [showProductPicker, setShowProductPicker] = useState(false);
@@ -59,8 +61,13 @@ export function PostFormModal({
     fieldErrors,
   } = form;
 
-  const displayName = user?.display_name || user?.email || DEFAULT_WORKSPACE_LABEL;
-  const avatarUrl = user?.avatar_url || user?.profile?.avatar_url || DEFAULT_AVATAR;
+  const displayName =
+    profile?.profile?.display_name || user?.display_name || user?.email || DEFAULT_WORKSPACE_LABEL;
+  const avatarUrl =
+    profile?.profile?.avatar_url ||
+    user?.avatar_url ||
+    user?.profile?.avatar_url ||
+    DEFAULT_AVATAR;
   const visibilityMeta = VISIBILITY_OPTIONS.find((item) => item.value === visibility);
 
   const isBusy = isSubmitting || isUploadingMedia || isLoadingInitial || isWriteBlocked;

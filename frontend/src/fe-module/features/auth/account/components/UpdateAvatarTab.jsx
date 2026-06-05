@@ -86,11 +86,15 @@ export function UpdateAvatarTab({ profile, refetch, onNotify }) {
 
       setUploadProgress(40);
 
-      await fetch(uploadMeta.upload_url, {
+      const putResponse = await fetch(uploadMeta.upload_url, {
         method: "PUT",
         headers: { "Content-Type": selectedFile.type },
         body: selectedFile,
       });
+
+      if (!putResponse.ok) {
+        throw new Error("Upload ảnh thất bại. Vui lòng thử lại.");
+      }
 
       setUploadProgress(75);
 

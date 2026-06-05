@@ -1,10 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
+import { useCurrentUserAvatarUrl } from "../../auth/hooks/useCurrentUserAvatarUrl";
 import { useCurrentUserId } from "../../auth/hooks/useCurrentUserId";
 import { useSocialWriteBlock } from "../context/SocialWriteBlockContext";
 import { buildSocialProfilePath } from "../utils/socialProfileRoutes";
-
-const DEFAULT_AVATAR_URL = "https://i.pravatar.cc/96?img=11";
 
 function ImageIcon() {
   return (
@@ -24,10 +22,9 @@ function ArticleIcon() {
 
 export function FeedComposer({ onOpenCreatePost, onOpenCreatePostWithFilePicker }) {
   const navigate = useNavigate();
-  const { user } = useAuthSession();
   const currentUserId = useCurrentUserId();
   const { isWriteBlocked, suspendMessage } = useSocialWriteBlock();
-  const avatarUrl = user?.avatar_url || user?.profile?.avatar_url || DEFAULT_AVATAR_URL;
+  const avatarUrl = useCurrentUserAvatarUrl();
   const blockedTitle = isWriteBlocked ? suspendMessage : undefined;
 
   const openModal = () => {

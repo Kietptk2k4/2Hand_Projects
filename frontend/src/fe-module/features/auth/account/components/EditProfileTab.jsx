@@ -138,7 +138,7 @@ export function EditProfileTab({ profile, refetch, onNotify }) {
             <AccountTextInput
               id="display_name"
               name="display_name"
-              value={form.display_name}
+              value={form.display_name ?? ""}
               onChange={updateField("display_name")}
               maxLength={100}
               error={errors.display_name}
@@ -152,7 +152,7 @@ export function EditProfileTab({ profile, refetch, onNotify }) {
               id="bio"
               name="bio"
               rows={4}
-              value={form.bio}
+              value={form.bio ?? ""}
               onChange={updateField("bio")}
               maxLength={500}
               className={[
@@ -171,7 +171,7 @@ export function EditProfileTab({ profile, refetch, onNotify }) {
             <AccountTextInput
               id="website"
               name="website"
-              value={form.website}
+              value={form.website ?? ""}
               onChange={updateField("website")}
               placeholder="https://example.com"
               error={errors.website}
@@ -209,7 +209,7 @@ export function EditProfileTab({ profile, refetch, onNotify }) {
                 </select>
                 <input
                   type="url"
-                  value={row.url}
+                  value={row.url ?? ""}
                   onChange={(e) => updateSocialRow(index, "url", e.target.value)}
                   placeholder="https://"
                   className="min-w-0 flex-1 rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
