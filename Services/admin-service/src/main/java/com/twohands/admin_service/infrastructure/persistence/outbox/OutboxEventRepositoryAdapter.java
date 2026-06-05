@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -31,7 +32,8 @@ public class OutboxEventRepositoryAdapter implements OutboxEventRepository {
 				)
 				VALUES (
 				    :id, :eventType, :aggregateId,
-				    CAST(:payload AS jsonb), :status, :retryCount, :createdAt, :publishedAt, :lastError
+				    CAST(:payload AS jsonb), CAST(:status AS outbox_status), :retryCount,
+				    :createdAt, :publishedAt, :lastError
 				)
 				""";
 
@@ -42,8 +44,8 @@ public class OutboxEventRepositoryAdapter implements OutboxEventRepository {
 				.addValue("payload", event.payload())
 				.addValue("status", event.status().name())
 				.addValue("retryCount", event.retryCount())
-				.addValue("createdAt", event.createdAt())
-				.addValue("publishedAt", event.publishedAt())
+				.addValue("createdAt", toTimestamp(event.createdAt()))
+				.addValue("publishedAt", toTimestamp(event.publishedAt()))
 				.addValue("lastError", event.lastError()));
 
 		return event;
@@ -55,7 +57,7 @@ public class OutboxEventRepositoryAdapter implements OutboxEventRepository {
 				SELECT id, event_type, aggregate_id, payload, status,
 				       retry_count, created_at, published_at, last_error
 				FROM outbox_events
-				WHERE status = :pendingStatus
+				WHERE status = CAST(:pendingStatus AS outbox_status)
 				  AND retry_count < :maxRetries
 				ORDER BY created_at ASC
 				LIMIT :batchSize
@@ -80,14 +82,14 @@ public class OutboxEventRepositoryAdapter implements OutboxEventRepository {
 				       retry_count, created_at, published_at, last_error
 				FROM outbox_events
 				WHERE (
-				    status = :failedStatus
+				    status = CAST(:failedStatus AS outbox_status)
 				    AND retry_count < :maxRetries
 				) OR (
-				    status = :pendingStatus
+				    status = CAST(:pendingStatus AS outbox_status)
 				    AND created_at <= :pendingTimeoutBefore
 				    AND retry_count < :maxRetries
 				) OR (
-				    status = :processingStatus
+				    status = CAST(:processingStatus AS outbox_status)
 				    AND created_at <= :pendingTimeoutBefore
 				    AND retry_count < :maxRetries
 				)
@@ -100,7 +102,7 @@ public class OutboxEventRepositoryAdapter implements OutboxEventRepository {
 				.addValue("pendingStatus", OutboxStatus.PENDING.name())
 				.addValue("processingStatus", OutboxStatus.PROCESSING.name())
 				.addValue("maxRetries", maxRetries)
-				.addValue("pendingTimeoutBefore", pendingTimeoutBefore)
+				.addValue("pendingTimeoutBefore", toTimestamp(pendingTimeoutBefore))
 				.addValue("batchSize", batchSize);
 		List<OutboxEvent> candidates = jdbcTemplate.query(selectSql, params, (rs, rowNum) -> mapOutboxEvent(rs));
 		if (candidates.isEmpty()) {
@@ -114,14 +116,14 @@ public class OutboxEventRepositoryAdapter implements OutboxEventRepository {
 	public int markPublished(UUID eventId, Instant publishedAt) {
 		String sql = """
 				UPDATE outbox_events
-				SET status = :publishedStatus,
+				SET status = CAST(:publishedStatus AS outbox_status),
 				    published_at = :publishedAt,
 				    last_error = NULL
 				WHERE id = :eventId
 				""";
 		return jdbcTemplate.update(sql, new MapSqlParameterSource()
 				.addValue("publishedStatus", OutboxStatus.PUBLISHED.name())
-				.addValue("publishedAt", publishedAt)
+				.addValue("publishedAt", toTimestamp(publishedAt))
 				.addValue("eventId", eventId));
 	}
 
@@ -129,7 +131,7 @@ public class OutboxEventRepositoryAdapter implements OutboxEventRepository {
 	public int markFailed(UUID eventId, String lastError) {
 		String sql = """
 				UPDATE outbox_events
-				SET status = :failedStatus,
+				SET status = CAST(:failedStatus AS outbox_status),
 				    retry_count = retry_count + 1,
 				    last_error = :lastError
 				WHERE id = :eventId
@@ -144,9 +146,9 @@ public class OutboxEventRepositoryAdapter implements OutboxEventRepository {
 	public int revertProcessingToFailed(UUID eventId) {
 		String sql = """
 				UPDATE outbox_events
-				SET status = :failedStatus
+				SET status = CAST(:failedStatus AS outbox_status)
 				WHERE id = :eventId
-				  AND status = :processingStatus
+				  AND status = CAST(:processingStatus AS outbox_status)
 				""";
 		return jdbcTemplate.update(sql, new MapSqlParameterSource()
 				.addValue("failedStatus", OutboxStatus.FAILED.name())
@@ -157,7 +159,7 @@ public class OutboxEventRepositoryAdapter implements OutboxEventRepository {
 	private void markProcessing(List<OutboxEvent> candidates) {
 		String markProcessingSql = """
 				UPDATE outbox_events
-				SET status = :processingStatus
+				SET status = CAST(:processingStatus AS outbox_status)
 				WHERE id IN (:ids)
 				""";
 		jdbcTemplate.update(markProcessingSql, new MapSqlParameterSource()
@@ -193,6 +195,10 @@ public class OutboxEventRepositoryAdapter implements OutboxEventRepository {
 				rs.getTimestamp("published_at") == null ? null : rs.getTimestamp("published_at").toInstant(),
 				rs.getString("last_error")
 		);
+	}
+
+	private static Timestamp toTimestamp(Instant instant) {
+		return instant == null ? null : Timestamp.from(instant);
 	}
 
 	private String truncateLastError(String lastError) {

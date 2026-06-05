@@ -511,6 +511,8 @@ Content-Type: application/json
 
 ### Test S3 — Moderate post HIDE hoặc REMOVE (bắt buộc)
 
+> Checklist chi tiết **chỉ post moderate** (không user enforcement): [kafka_section_9.md](kafka_section_9.md#6-verify-9b--e2e-adminpostmoderated--social-manual).
+
 1. **Admin API** — `postId` = Mongo `_id` của post **P** (24-char hex):
 
 ```http
