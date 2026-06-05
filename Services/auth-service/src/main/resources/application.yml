@@ -169,6 +169,16 @@ auth:
       enabled: ${AUTH_KAFKA_PRODUCER_ENABLED:false}
       bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
       send-timeout-ms: ${AUTH_KAFKA_PRODUCER_SEND_TIMEOUT_MS:10000}
+    consumer:
+      enabled: ${AUTH_KAFKA_CONSUMER_ENABLED:false}
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+      group-id: auth-user-enforcement
+      topics:
+        - admin.user.suspended
+        - admin.user.banned
+        - admin.user.restricted
+        - admin.user.enforcement_revoked
+        - admin.user.enforcement_expired
 
   outbox:
     publish:
