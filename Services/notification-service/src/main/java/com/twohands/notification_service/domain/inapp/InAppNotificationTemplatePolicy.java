@@ -93,6 +93,18 @@ public final class InAppNotificationTemplatePolicy {
                     "Shop suspended",
                     "Your shop has been suspended."
             );
+            case "SHOP_CLOSED" -> new InAppNotificationTemplate(
+                    "Shop closed",
+                    "Your shop has been closed."
+            );
+            case "USER_ENFORCEMENT_REVOKED" -> new InAppNotificationTemplate(
+                    "Account restriction lifted",
+                    "An account restriction on your profile was revoked."
+            );
+            case "USER_ENFORCEMENT_EXPIRED" -> new InAppNotificationTemplate(
+                    "Account restriction ended",
+                    "A temporary account restriction has ended."
+            );
             default -> null;
         });
     }

@@ -34,7 +34,11 @@ public class DomainEventTopicResolver {
             Map.entry("admin.product.removed", "PRODUCT_REMOVED"),
             Map.entry("admin.review.hidden", "REVIEW_HIDDEN"),
             Map.entry("admin.shop.suspended", "SHOP_SUSPENDED"),
-            Map.entry("admin.announcement.published", "SYSTEM_ANNOUNCEMENT_PUBLISHED")
+            Map.entry("admin.shop.closed", "SHOP_CLOSED"),
+            Map.entry("admin.announcement.published", "SYSTEM_ANNOUNCEMENT_PUBLISHED"),
+            Map.entry("admin.announcement.cancelled", "SYSTEM_ANNOUNCEMENT_CANCELLED"),
+            Map.entry("admin.user.enforcement_revoked", "USER_ENFORCEMENT_REVOKED"),
+            Map.entry("admin.user.enforcement_expired", "USER_ENFORCEMENT_EXPIRED")
     );
 
     public NotificationSourceService resolveSourceService(String topic, String explicitSourceService) {

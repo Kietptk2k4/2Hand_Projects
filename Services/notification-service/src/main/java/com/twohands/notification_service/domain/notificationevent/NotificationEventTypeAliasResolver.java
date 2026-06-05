@@ -17,6 +17,7 @@ public class NotificationEventTypeAliasResolver {
             Map.entry("COMMERCE_SHIPMENT_DELIVERED", "SHIPMENT_DELIVERED"),
             Map.entry("COMMERCE_REVIEW_REMINDER", "REVIEW_REMINDER"),
             Map.entry("SYSTEM_ANNOUNCEMENT_PUBLISHED", "SYSTEM_ANNOUNCEMENT_SENT")
+            // SYSTEM_ANNOUNCEMENT_CANCELLED has a dedicated handler (no alias)
     );
 
     public String resolve(String eventType) {

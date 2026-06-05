@@ -215,6 +215,19 @@ public class UserNotificationRepositoryAdapter implements UserNotificationReposi
         return jdbcTemplate.update(sql, params);
     }
 
+    @Override
+    @Transactional
+    public int softDeleteVisibleByReference(String referenceType, String referenceId) {
+        if (referenceType == null || referenceType.isBlank()
+                || referenceId == null || referenceId.isBlank()) {
+            return 0;
+        }
+        return jpaRepository.softDeleteVisibleByReference(
+                referenceType.trim(),
+                referenceId.trim()
+        );
+    }
+
     private UserNotification toDomain(UserNotificationEntity entity) {
         return new UserNotification(
                 entity.getId(),

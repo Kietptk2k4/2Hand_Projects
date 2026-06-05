@@ -1,6 +1,7 @@
 package com.twohands.admin_service.unit.announcement;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.admin_service.application.announcement.AnnouncementPublishAudienceResolver;
 import com.twohands.admin_service.application.announcement.SystemAnnouncementOutboxPayloadBuilder;
 import com.twohands.admin_service.application.announcement.publishsystemannouncement.PublishSystemAnnouncementCommand;
 import com.twohands.admin_service.application.announcement.publishsystemannouncement.PublishSystemAnnouncementUseCase;
@@ -47,6 +48,7 @@ class PublishSystemAnnouncementUseCaseTest {
 				systemAnnouncementRepository,
 				insertAdminOutboxEventUseCase,
 				new SystemAnnouncementOutboxPayloadBuilder(new ObjectMapper()),
+				new AnnouncementPublishAudienceResolver(""),
 				adminActionAuditLogger
 		);
 	}

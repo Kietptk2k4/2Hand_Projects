@@ -24,11 +24,18 @@ public class NotificationDeliveryChannelPolicy {
     private static final Set<String> DEDICATED_ADMIN_MODERATION_NOTIFICATION_EVENTS = Set.of(
             "PRODUCT_REMOVED",
             "REVIEW_HIDDEN",
-            "SHOP_SUSPENDED"
+            "SHOP_SUSPENDED",
+            "SHOP_CLOSED"
+    );
+
+    private static final Set<String> DEDICATED_ACCOUNT_ENFORCEMENT_LIFTED_EVENTS = Set.of(
+            "USER_ENFORCEMENT_REVOKED",
+            "USER_ENFORCEMENT_EXPIRED"
     );
 
     private static final Set<String> DEDICATED_SYSTEM_ANNOUNCEMENT_EVENTS = Set.of(
-            "SYSTEM_ANNOUNCEMENT_SENT"
+            "SYSTEM_ANNOUNCEMENT_SENT",
+            "SYSTEM_ANNOUNCEMENT_CANCELLED"
     );
 
     private static final Set<String> DEDICATED_COMMERCE_NOTIFICATION_EVENTS = Set.of(
@@ -80,6 +87,10 @@ public class NotificationDeliveryChannelPolicy {
 
     public boolean isDedicatedSystemAnnouncementEvent(String eventType) {
         return DEDICATED_SYSTEM_ANNOUNCEMENT_EVENTS.contains(eventType);
+    }
+
+    public boolean isDedicatedAccountEnforcementLiftedEvent(String eventType) {
+        return DEDICATED_ACCOUNT_ENFORCEMENT_LIFTED_EVENTS.contains(eventType);
     }
 
     public boolean isKnownEventType(String eventType) {

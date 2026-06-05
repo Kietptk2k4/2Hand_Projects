@@ -21,7 +21,10 @@ public class SocialKafkaConsumerProperties {
             "admin.user.enforcement_expired"
     );
     private String postModeratedGroupId = "social-post-moderated";
-    private List<String> postModeratedTopics = List.of("admin.post.moderated");
+    private List<String> postModeratedTopics = List.of(
+            "admin.post.moderated",
+            "admin.post.restored"
+    );
 
     public boolean isEnabled() {
         return enabled;

@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -92,10 +93,15 @@ public class SystemAnnouncementController {
 	@PostMapping("/{announcementId}/publish")
 	@RequireAdminPermission(AdminPermission.SYSTEM_ANNOUNCEMENT_PUBLISH)
 	public ResponseEntity<ApiResponse<PublishSystemAnnouncementResponse>> publish(
-			@PathVariable UUID announcementId
+			@PathVariable UUID announcementId,
+			@RequestBody(required = false) PublishSystemAnnouncementRequest request
 	) {
+		List<UUID> recipientUserIds = request == null || request.recipientUserIds() == null
+				? List.of()
+				: request.recipientUserIds();
+		String targetAudience = request == null ? null : request.targetAudience();
 		PublishSystemAnnouncementResult result = publishSystemAnnouncementUseCase.execute(
-				new PublishSystemAnnouncementCommand(announcementId)
+				new PublishSystemAnnouncementCommand(announcementId, recipientUserIds, targetAudience)
 		);
 
 		PublishSystemAnnouncementResponse data = new PublishSystemAnnouncementResponse(

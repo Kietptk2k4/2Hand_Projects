@@ -1,10 +1,8 @@
 package com.twohands.admin_service.application.moderation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.admin_service.application.outbox.AdminOutboxPayloadSupport;
 import com.twohands.admin_service.domain.moderation.ContentModerationLog;
-import com.twohands.admin_service.exception.AppException;
-import com.twohands.admin_service.exception.ErrorCode;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
@@ -20,18 +18,24 @@ public class ProductModerationOutboxPayloadBuilder {
 		this.objectMapper = objectMapper;
 	}
 
-	public String buildProductRemovedPayload(ContentModerationLog moderationLog, UUID productId) {
+	public String buildProductRemovedPayload(
+			ContentModerationLog moderationLog,
+			UUID productId,
+			UUID sellerUserId
+	) {
 		Map<String, Object> payload = baseProductModerationPayload(moderationLog, productId);
+		AdminOutboxPayloadSupport.putUuid(payload, "seller_user_id", sellerUserId);
+		AdminOutboxPayloadSupport.putIfPresent(payload, "removal_reason", moderationLog.reason());
 		payload.put("removed_by", moderationLog.adminId().toString());
 		payload.put("removed_at", moderationLog.createdAt().toString());
-		return serialize(payload);
+		return AdminOutboxPayloadSupport.serialize(objectMapper, payload);
 	}
 
 	public String buildProductRestoredPayload(ContentModerationLog moderationLog, UUID productId) {
 		Map<String, Object> payload = baseProductModerationPayload(moderationLog, productId);
 		payload.put("restored_by", moderationLog.adminId().toString());
 		payload.put("restored_at", moderationLog.createdAt().toString());
-		return serialize(payload);
+		return AdminOutboxPayloadSupport.serialize(objectMapper, payload);
 	}
 
 	private Map<String, Object> baseProductModerationPayload(ContentModerationLog moderationLog, UUID productId) {
@@ -39,15 +43,7 @@ public class ProductModerationOutboxPayloadBuilder {
 		payload.put("product_id", productId.toString());
 		payload.put("moderation_log_id", moderationLog.id().toString());
 		payload.put("action", moderationLog.action().name());
-		payload.put("reason", moderationLog.reason());
+		AdminOutboxPayloadSupport.putIfPresent(payload, "reason", moderationLog.reason());
 		return payload;
-	}
-
-	private String serialize(Map<String, Object> payload) {
-		try {
-			return objectMapper.writeValueAsString(payload);
-		} catch (JsonProcessingException ex) {
-			throw new AppException(ErrorCode.INTERNAL_ERROR, "Failed to build outbox payload");
-		}
 	}
 }

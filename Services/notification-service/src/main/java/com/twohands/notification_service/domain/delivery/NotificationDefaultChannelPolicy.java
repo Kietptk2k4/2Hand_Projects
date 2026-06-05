@@ -28,7 +28,11 @@ public final class NotificationDefaultChannelPolicy {
             Map.entry("PRODUCT_REMOVED", new DefaultChannelFlags(true, true, false)),
             Map.entry("REVIEW_HIDDEN", new DefaultChannelFlags(true, false, false)),
             Map.entry("SHOP_SUSPENDED", new DefaultChannelFlags(true, true, true)),
-            Map.entry("SYSTEM_ANNOUNCEMENT_SENT", new DefaultChannelFlags(true, true, false))
+            Map.entry("SHOP_CLOSED", new DefaultChannelFlags(true, true, true)),
+            Map.entry("SYSTEM_ANNOUNCEMENT_SENT", new DefaultChannelFlags(true, true, false)),
+            Map.entry("SYSTEM_ANNOUNCEMENT_CANCELLED", new DefaultChannelFlags(false, false, false)),
+            Map.entry("USER_ENFORCEMENT_REVOKED", new DefaultChannelFlags(true, true, false)),
+            Map.entry("USER_ENFORCEMENT_EXPIRED", new DefaultChannelFlags(true, true, false))
     );
 
     private NotificationDefaultChannelPolicy() {

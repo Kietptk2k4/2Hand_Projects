@@ -2,7 +2,8 @@ package com.twohands.social_service.domain.post;
 
 public enum PostModerationAction {
     HIDE,
-    REMOVE;
+    REMOVE,
+    RESTORE;
 
     public static PostModerationAction fromValue(String value) {
         if (value == null || value.isBlank()) {

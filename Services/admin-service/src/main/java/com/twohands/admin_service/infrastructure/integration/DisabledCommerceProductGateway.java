@@ -19,4 +19,14 @@ public class DisabledCommerceProductGateway implements CommerceProductGateway {
 	public void ensureProductExists(UUID productId) {
 		// Product existence is validated when Commerce integration is enabled.
 	}
+
+	@Override
+	public java.util.Optional<UUID> findSellerUserId(UUID productId) {
+		return java.util.Optional.empty();
+	}
+
+	@Override
+	public void removeProduct(UUID productId, UUID adminId, String reason) {
+		// No-op when Commerce integration is disabled.
+	}
 }

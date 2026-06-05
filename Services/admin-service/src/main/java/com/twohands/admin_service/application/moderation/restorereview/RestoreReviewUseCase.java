@@ -8,6 +8,7 @@ import com.twohands.admin_service.constant.AdminPermission;
 import com.twohands.admin_service.domain.audit.AdminActionStatus;
 import com.twohands.admin_service.domain.audit.AdminActionTargetType;
 import com.twohands.admin_service.domain.auth.AdminAuthorizationService;
+import com.twohands.admin_service.domain.integration.CommerceReviewGateway;
 import com.twohands.admin_service.domain.moderation.ContentModerationAction;
 import com.twohands.admin_service.domain.moderation.ContentModerationLog;
 import com.twohands.admin_service.domain.moderation.ContentModerationLogRepository;
@@ -15,6 +16,7 @@ import com.twohands.admin_service.domain.moderation.ContentModerationTargetType;
 import com.twohands.admin_service.domain.moderation.ProductModerationPolicy;
 import com.twohands.admin_service.domain.outbox.OutboxEvent;
 import com.twohands.admin_service.exception.AppException;
+import com.twohands.admin_service.exception.ErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,7 @@ public class RestoreReviewUseCase {
 
 	private final AdminAuthorizationService adminAuthorizationService;
 	private final ContentModerationLogRepository contentModerationLogRepository;
+	private final CommerceReviewGateway commerceReviewGateway;
 	private final InsertAdminOutboxEventUseCase insertAdminOutboxEventUseCase;
 	private final ReviewModerationOutboxPayloadBuilder outboxPayloadBuilder;
 	private final AdminActionAuditLogger adminActionAuditLogger;
@@ -42,12 +45,14 @@ public class RestoreReviewUseCase {
 	public RestoreReviewUseCase(
 			AdminAuthorizationService adminAuthorizationService,
 			ContentModerationLogRepository contentModerationLogRepository,
+			CommerceReviewGateway commerceReviewGateway,
 			InsertAdminOutboxEventUseCase insertAdminOutboxEventUseCase,
 			ReviewModerationOutboxPayloadBuilder outboxPayloadBuilder,
 			AdminActionAuditLogger adminActionAuditLogger
 	) {
 		this.adminAuthorizationService = adminAuthorizationService;
 		this.contentModerationLogRepository = contentModerationLogRepository;
+		this.commerceReviewGateway = commerceReviewGateway;
 		this.insertAdminOutboxEventUseCase = insertAdminOutboxEventUseCase;
 		this.outboxPayloadBuilder = outboxPayloadBuilder;
 		this.adminActionAuditLogger = adminActionAuditLogger;
@@ -64,6 +69,18 @@ public class RestoreReviewUseCase {
 		String reason = command.reason() == null ? null : command.reason().trim();
 		String note = ProductModerationPolicy.normalizeOptionalNote(command.note());
 		ProductModerationPolicy.validateRestoreRequest(reason, note);
+
+		UUID reviewAuthorId = null;
+		UUID sellerUserId = null;
+		if (commerceReviewGateway.isEnabled()) {
+			CommerceReviewGateway.CommerceReviewParties parties = commerceReviewGateway.findReviewParties(command.reviewId())
+					.orElseThrow(() -> new AppException(
+							ErrorCode.RESOURCE_NOT_FOUND,
+							ErrorCode.RESOURCE_NOT_FOUND.defaultMessage()
+					));
+			reviewAuthorId = parties.reviewAuthorId();
+			sellerUserId = parties.sellerUserId();
+		}
 
 		Instant restoredAt = Instant.now();
 		UUID moderationLogId = UUID.randomUUID();
@@ -89,7 +106,12 @@ public class RestoreReviewUseCase {
 			OutboxEvent outboxEvent = insertAdminOutboxEventUseCase.execute(new InsertAdminOutboxEventCommand(
 					OUTBOX_EVENT_TYPE,
 					command.reviewId(),
-					outboxPayloadBuilder.buildReviewRestoredPayload(moderationLog, command.reviewId())
+					outboxPayloadBuilder.buildReviewRestoredPayload(
+							moderationLog,
+							command.reviewId(),
+							reviewAuthorId,
+							sellerUserId
+					)
 			));
 
 			Map<String, Object> afterSummary = new LinkedHashMap<>();

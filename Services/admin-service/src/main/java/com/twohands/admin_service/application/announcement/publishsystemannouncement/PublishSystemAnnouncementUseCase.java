@@ -1,5 +1,6 @@
 package com.twohands.admin_service.application.announcement.publishsystemannouncement;
 
+import com.twohands.admin_service.application.announcement.AnnouncementPublishAudienceResolver;
 import com.twohands.admin_service.application.announcement.SystemAnnouncementOutboxPayloadBuilder;
 import com.twohands.admin_service.application.audit.AdminActionAuditLogger;
 import com.twohands.admin_service.application.outbox.enqueue.InsertAdminOutboxEventCommand;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -37,6 +39,7 @@ public class PublishSystemAnnouncementUseCase {
 	private final SystemAnnouncementRepository systemAnnouncementRepository;
 	private final InsertAdminOutboxEventUseCase insertAdminOutboxEventUseCase;
 	private final SystemAnnouncementOutboxPayloadBuilder outboxPayloadBuilder;
+	private final AnnouncementPublishAudienceResolver announcementPublishAudienceResolver;
 	private final AdminActionAuditLogger adminActionAuditLogger;
 
 	public PublishSystemAnnouncementUseCase(
@@ -44,12 +47,14 @@ public class PublishSystemAnnouncementUseCase {
 			SystemAnnouncementRepository systemAnnouncementRepository,
 			InsertAdminOutboxEventUseCase insertAdminOutboxEventUseCase,
 			SystemAnnouncementOutboxPayloadBuilder outboxPayloadBuilder,
+			AnnouncementPublishAudienceResolver announcementPublishAudienceResolver,
 			AdminActionAuditLogger adminActionAuditLogger
 	) {
 		this.adminAuthorizationService = adminAuthorizationService;
 		this.systemAnnouncementRepository = systemAnnouncementRepository;
 		this.insertAdminOutboxEventUseCase = insertAdminOutboxEventUseCase;
 		this.outboxPayloadBuilder = outboxPayloadBuilder;
+		this.announcementPublishAudienceResolver = announcementPublishAudienceResolver;
 		this.adminActionAuditLogger = adminActionAuditLogger;
 	}
 
@@ -88,10 +93,17 @@ public class PublishSystemAnnouncementUseCase {
 					sentAt
 			));
 
+			List<UUID> recipientUserIds = announcementPublishAudienceResolver.resolveRecipients(
+					command.recipientUserIds()
+			);
+			String targetAudience = command.targetAudience() == null || command.targetAudience().isBlank()
+					? null
+					: command.targetAudience().trim();
+
 			OutboxEvent outboxEvent = insertAdminOutboxEventUseCase.execute(new InsertAdminOutboxEventCommand(
 					OUTBOX_EVENT_TYPE,
 					published.id(),
-					outboxPayloadBuilder.buildPublishedPayload(published)
+					outboxPayloadBuilder.buildPublishedPayload(published, recipientUserIds, targetAudience)
 			));
 
 			Map<String, Object> beforeSummary = new LinkedHashMap<>();

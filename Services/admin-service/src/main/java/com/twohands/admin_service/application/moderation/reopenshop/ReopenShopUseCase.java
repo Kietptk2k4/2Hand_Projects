@@ -8,6 +8,7 @@ import com.twohands.admin_service.constant.AdminPermission;
 import com.twohands.admin_service.domain.audit.AdminActionStatus;
 import com.twohands.admin_service.domain.audit.AdminActionTargetType;
 import com.twohands.admin_service.domain.auth.AdminAuthorizationService;
+import com.twohands.admin_service.domain.integration.CommerceShopGateway;
 import com.twohands.admin_service.domain.moderation.ContentModerationAction;
 import com.twohands.admin_service.domain.moderation.ContentModerationLog;
 import com.twohands.admin_service.domain.moderation.ContentModerationLogRepository;
@@ -15,6 +16,7 @@ import com.twohands.admin_service.domain.moderation.ContentModerationTargetType;
 import com.twohands.admin_service.domain.moderation.ProductModerationPolicy;
 import com.twohands.admin_service.domain.outbox.OutboxEvent;
 import com.twohands.admin_service.exception.AppException;
+import com.twohands.admin_service.exception.ErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,7 @@ public class ReopenShopUseCase {
 
 	private final AdminAuthorizationService adminAuthorizationService;
 	private final ContentModerationLogRepository contentModerationLogRepository;
+	private final CommerceShopGateway commerceShopGateway;
 	private final InsertAdminOutboxEventUseCase insertAdminOutboxEventUseCase;
 	private final ShopModerationOutboxPayloadBuilder outboxPayloadBuilder;
 	private final AdminActionAuditLogger adminActionAuditLogger;
@@ -42,12 +45,14 @@ public class ReopenShopUseCase {
 	public ReopenShopUseCase(
 			AdminAuthorizationService adminAuthorizationService,
 			ContentModerationLogRepository contentModerationLogRepository,
+			CommerceShopGateway commerceShopGateway,
 			InsertAdminOutboxEventUseCase insertAdminOutboxEventUseCase,
 			ShopModerationOutboxPayloadBuilder outboxPayloadBuilder,
 			AdminActionAuditLogger adminActionAuditLogger
 	) {
 		this.adminAuthorizationService = adminAuthorizationService;
 		this.contentModerationLogRepository = contentModerationLogRepository;
+		this.commerceShopGateway = commerceShopGateway;
 		this.insertAdminOutboxEventUseCase = insertAdminOutboxEventUseCase;
 		this.outboxPayloadBuilder = outboxPayloadBuilder;
 		this.adminActionAuditLogger = adminActionAuditLogger;
@@ -64,6 +69,15 @@ public class ReopenShopUseCase {
 		String reason = command.reason() == null ? null : command.reason().trim();
 		String note = ProductModerationPolicy.normalizeOptionalNote(command.note());
 		ProductModerationPolicy.validateReopenRequest(reason, note);
+
+		UUID shopOwnerId = null;
+		if (commerceShopGateway.isEnabled()) {
+			shopOwnerId = commerceShopGateway.findShopOwnerId(command.shopId())
+					.orElseThrow(() -> new AppException(
+							ErrorCode.RESOURCE_NOT_FOUND,
+							ErrorCode.RESOURCE_NOT_FOUND.defaultMessage()
+					));
+		}
 
 		Instant reopenedAt = Instant.now();
 		UUID moderationLogId = UUID.randomUUID();
@@ -89,7 +103,7 @@ public class ReopenShopUseCase {
 			OutboxEvent outboxEvent = insertAdminOutboxEventUseCase.execute(new InsertAdminOutboxEventCommand(
 					OUTBOX_EVENT_TYPE,
 					command.shopId(),
-					outboxPayloadBuilder.buildShopRestoredPayload(moderationLog, command.shopId())
+					outboxPayloadBuilder.buildShopRestoredPayload(moderationLog, command.shopId(), shopOwnerId)
 			));
 
 			Map<String, Object> afterSummary = new LinkedHashMap<>();

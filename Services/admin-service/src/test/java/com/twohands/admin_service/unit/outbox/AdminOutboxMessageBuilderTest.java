@@ -45,4 +45,47 @@ class AdminOutboxMessageBuilderTest {
 		assertNotNull(envelope.get("event_key"));
 		assertNotNull(envelope.get("payload"));
 	}
+
+	@Test
+	void buildEnvelope_setsRecipientUserIdsFromSellerUserId() {
+		UUID sellerUserId = UUID.randomUUID();
+		UUID aggregateId = UUID.randomUUID();
+		OutboxEvent event = new OutboxEvent(
+				UUID.randomUUID(),
+				"PRODUCT_REMOVED",
+				aggregateId,
+				"{\"product_id\":\"" + aggregateId + "\",\"seller_user_id\":\"" + sellerUserId + "\"}",
+				OutboxStatus.PENDING,
+				0,
+				Instant.parse("2026-05-19T10:00:00Z"),
+				null,
+				null
+		);
+
+		@SuppressWarnings("unchecked")
+		java.util.List<String> recipients = (java.util.List<String>) builder.buildEnvelope(event).get("recipient_user_ids");
+
+		assertEquals(sellerUserId.toString(), recipients.get(0));
+	}
+
+	@Test
+	void buildEnvelope_setsRecipientUserIdsFromUserIdForEnforcement() {
+		UUID userId = UUID.randomUUID();
+		OutboxEvent event = new OutboxEvent(
+				UUID.randomUUID(),
+				"USER_SUSPENDED",
+				userId,
+				"{\"user_id\":\"" + userId + "\",\"enforcement_id\":\"" + UUID.randomUUID() + "\"}",
+				OutboxStatus.PENDING,
+				0,
+				Instant.parse("2026-05-19T10:00:00Z"),
+				null,
+				null
+		);
+
+		@SuppressWarnings("unchecked")
+		java.util.List<String> recipients = (java.util.List<String>) builder.buildEnvelope(event).get("recipient_user_ids");
+
+		assertEquals(userId.toString(), recipients.get(0));
+	}
 }

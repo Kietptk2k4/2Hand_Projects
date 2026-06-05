@@ -16,6 +16,7 @@ import com.twohands.admin_service.domain.moderation.ContentModerationTargetType;
 import com.twohands.admin_service.domain.moderation.ProductModerationPolicy;
 import com.twohands.admin_service.domain.outbox.OutboxEvent;
 import com.twohands.admin_service.exception.AppException;
+import com.twohands.admin_service.exception.ErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -66,8 +67,15 @@ public class RemoveProductUseCase {
 		String note = ProductModerationPolicy.normalizeOptionalNote(command.note());
 		ProductModerationPolicy.validateRemoveRequest(reason, note);
 
+		UUID sellerUserId = null;
 		if (commerceProductGateway.isEnabled()) {
 			commerceProductGateway.ensureProductExists(command.productId());
+			sellerUserId = commerceProductGateway.findSellerUserId(command.productId())
+					.orElseThrow(() -> new AppException(
+							ErrorCode.RESOURCE_NOT_FOUND,
+							ErrorCode.RESOURCE_NOT_FOUND.defaultMessage()
+					));
+			commerceProductGateway.removeProduct(command.productId(), adminId, reason);
 		}
 
 		Instant removedAt = Instant.now();
@@ -94,7 +102,7 @@ public class RemoveProductUseCase {
 			OutboxEvent outboxEvent = insertAdminOutboxEventUseCase.execute(new InsertAdminOutboxEventCommand(
 					OUTBOX_EVENT_TYPE,
 					command.productId(),
-					outboxPayloadBuilder.buildProductRemovedPayload(moderationLog, command.productId())
+					outboxPayloadBuilder.buildProductRemovedPayload(moderationLog, command.productId(), sellerUserId)
 			));
 
 			Map<String, Object> afterSummary = new LinkedHashMap<>();

@@ -93,6 +93,7 @@ class RemoveProductUseCaseTest {
 
 		when(adminAuthorizationService.requireCurrentAdminId()).thenReturn(adminId);
 		when(commerceProductGateway.isEnabled()).thenReturn(true);
+		when(commerceProductGateway.findSellerUserId(productId)).thenReturn(java.util.Optional.of(UUID.randomUUID()));
 		when(contentModerationLogRepository.save(any(ContentModerationLog.class)))
 				.thenAnswer(invocation -> invocation.getArgument(0));
 		when(insertAdminOutboxEventUseCase.execute(any(InsertAdminOutboxEventCommand.class)))
@@ -101,6 +102,7 @@ class RemoveProductUseCaseTest {
 		useCase.execute(new RemoveProductCommand(productId, "Policy violation", null));
 
 		verify(commerceProductGateway).ensureProductExists(productId);
+		verify(commerceProductGateway).removeProduct(productId, adminId, "Policy violation");
 	}
 
 	@Test

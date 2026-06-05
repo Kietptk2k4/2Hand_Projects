@@ -100,6 +100,39 @@ class HandlePostModeratedEventUseCaseTest {
     }
 
     @Test
+    void shouldRestoreHiddenPost() {
+        UUID eventId = UUID.randomUUID();
+        UUID moderationLogId = UUID.randomUUID();
+        String postId = "507f1f77bcf86cd799439014";
+        Post post = buildPost(postId, PostStatus.ACTIVE, PostModerationStatus.HIDDEN, null);
+
+        when(processedDomainEventRepository.existsByEventId(eventId)).thenReturn(false);
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(postRepository.save(any(Post.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        useCase.execute(new HandlePostModeratedEventCommand(
+                eventId,
+                postId,
+                moderationLogId,
+                PostModerationAction.RESTORE,
+                "Appeal accepted",
+                UUID.randomUUID(),
+                Instant.parse("2026-05-24T10:00:00Z")
+        ));
+
+        verify(postRepository).save(org.mockito.ArgumentMatchers.argThat(saved ->
+                saved.status() == PostStatus.ACTIVE
+                        && saved.moderationStatusOrDefault() == PostModerationStatus.NONE
+                        && saved.deletedAt() == null
+        ));
+        verify(processedDomainEventRepository).markProcessed(
+                eventId,
+                HandlePostModeratedEventUseCase.CONSUMER_NAME,
+                "POST_RESTORED"
+        );
+    }
+
+    @Test
     void shouldSkipDuplicateEventId() {
         UUID eventId = UUID.randomUUID();
         when(processedDomainEventRepository.existsByEventId(eventId)).thenReturn(true);

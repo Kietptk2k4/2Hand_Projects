@@ -9,6 +9,7 @@ import com.twohands.admin_service.application.outbox.enqueue.InsertAdminOutboxEv
 import com.twohands.admin_service.application.outbox.enqueue.InsertAdminOutboxEventUseCase;
 import com.twohands.admin_service.constant.AdminPermission;
 import com.twohands.admin_service.domain.auth.AdminAuthorizationService;
+import com.twohands.admin_service.domain.integration.CommerceShopGateway;
 import com.twohands.admin_service.domain.moderation.ContentModerationAction;
 import com.twohands.admin_service.domain.moderation.ContentModerationLog;
 import com.twohands.admin_service.domain.moderation.ContentModerationLogRepository;
@@ -35,6 +36,7 @@ class ReopenShopUseCaseTest {
 
 	private final AdminAuthorizationService adminAuthorizationService = mock(AdminAuthorizationService.class);
 	private final ContentModerationLogRepository contentModerationLogRepository = mock(ContentModerationLogRepository.class);
+	private final CommerceShopGateway commerceShopGateway = mock(CommerceShopGateway.class);
 	private final InsertAdminOutboxEventUseCase insertAdminOutboxEventUseCase = mock(InsertAdminOutboxEventUseCase.class);
 	private final AdminActionAuditLogger adminActionAuditLogger = mock(AdminActionAuditLogger.class);
 
@@ -45,10 +47,12 @@ class ReopenShopUseCaseTest {
 		useCase = new ReopenShopUseCase(
 				adminAuthorizationService,
 				contentModerationLogRepository,
+				commerceShopGateway,
 				insertAdminOutboxEventUseCase,
 				new ShopModerationOutboxPayloadBuilder(new ObjectMapper()),
 				adminActionAuditLogger
 		);
+		when(commerceShopGateway.isEnabled()).thenReturn(false);
 	}
 
 	@Test

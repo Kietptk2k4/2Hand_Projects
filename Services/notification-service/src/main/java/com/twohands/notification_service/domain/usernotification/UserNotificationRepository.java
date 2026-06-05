@@ -38,4 +38,6 @@ public interface UserNotificationRepository {
     );
 
     int softDeleteByIds(List<UUID> notificationIds);
+
+    int softDeleteVisibleByReference(String referenceType, String referenceId);
 }

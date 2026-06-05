@@ -1,10 +1,8 @@
 package com.twohands.admin_service.application.moderation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.admin_service.application.outbox.AdminOutboxPayloadSupport;
 import com.twohands.admin_service.domain.moderation.ContentModerationLog;
-import com.twohands.admin_service.exception.AppException;
-import com.twohands.admin_service.exception.ErrorCode;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
@@ -20,25 +18,47 @@ public class ReviewModerationOutboxPayloadBuilder {
 		this.objectMapper = objectMapper;
 	}
 
-	public String buildReviewHiddenPayload(ContentModerationLog moderationLog, UUID reviewId) {
+	public String buildReviewHiddenPayload(
+			ContentModerationLog moderationLog,
+			UUID reviewId,
+			UUID reviewAuthorId,
+			UUID sellerUserId
+	) {
 		Map<String, Object> payload = baseReviewModerationPayload(moderationLog, reviewId);
+		AdminOutboxPayloadSupport.putUuid(payload, "review_author_id", reviewAuthorId);
+		AdminOutboxPayloadSupport.putUuid(payload, "seller_user_id", sellerUserId);
+		AdminOutboxPayloadSupport.putIfPresent(payload, "hidden_reason", moderationLog.reason());
 		payload.put("hidden_by", moderationLog.adminId().toString());
 		payload.put("hidden_at", moderationLog.createdAt().toString());
-		return serialize(payload);
+		return AdminOutboxPayloadSupport.serialize(objectMapper, payload);
 	}
 
-	public String buildReviewRemovedPayload(ContentModerationLog moderationLog, UUID reviewId) {
+	public String buildReviewRemovedPayload(
+			ContentModerationLog moderationLog,
+			UUID reviewId,
+			UUID reviewAuthorId,
+			UUID sellerUserId
+	) {
 		Map<String, Object> payload = baseReviewModerationPayload(moderationLog, reviewId);
+		AdminOutboxPayloadSupport.putUuid(payload, "review_author_id", reviewAuthorId);
+		AdminOutboxPayloadSupport.putUuid(payload, "seller_user_id", sellerUserId);
 		payload.put("removed_by", moderationLog.adminId().toString());
 		payload.put("removed_at", moderationLog.createdAt().toString());
-		return serialize(payload);
+		return AdminOutboxPayloadSupport.serialize(objectMapper, payload);
 	}
 
-	public String buildReviewRestoredPayload(ContentModerationLog moderationLog, UUID reviewId) {
+	public String buildReviewRestoredPayload(
+			ContentModerationLog moderationLog,
+			UUID reviewId,
+			UUID reviewAuthorId,
+			UUID sellerUserId
+	) {
 		Map<String, Object> payload = baseReviewModerationPayload(moderationLog, reviewId);
+		AdminOutboxPayloadSupport.putUuid(payload, "review_author_id", reviewAuthorId);
+		AdminOutboxPayloadSupport.putUuid(payload, "seller_user_id", sellerUserId);
 		payload.put("restored_by", moderationLog.adminId().toString());
 		payload.put("restored_at", moderationLog.createdAt().toString());
-		return serialize(payload);
+		return AdminOutboxPayloadSupport.serialize(objectMapper, payload);
 	}
 
 	private Map<String, Object> baseReviewModerationPayload(ContentModerationLog moderationLog, UUID reviewId) {
@@ -46,15 +66,7 @@ public class ReviewModerationOutboxPayloadBuilder {
 		payload.put("review_id", reviewId.toString());
 		payload.put("moderation_log_id", moderationLog.id().toString());
 		payload.put("action", moderationLog.action().name());
-		payload.put("reason", moderationLog.reason());
+		AdminOutboxPayloadSupport.putIfPresent(payload, "reason", moderationLog.reason());
 		return payload;
-	}
-
-	private String serialize(Map<String, Object> payload) {
-		try {
-			return objectMapper.writeValueAsString(payload);
-		} catch (JsonProcessingException ex) {
-			throw new AppException(ErrorCode.INTERNAL_ERROR, "Failed to build outbox payload");
-		}
 	}
 }

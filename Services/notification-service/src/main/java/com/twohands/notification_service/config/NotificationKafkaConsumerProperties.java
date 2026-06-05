@@ -35,7 +35,11 @@ public class NotificationKafkaConsumerProperties {
             "admin.product.removed",
             "admin.review.hidden",
             "admin.shop.suspended",
-            "admin.announcement.published"
+            "admin.shop.closed",
+            "admin.announcement.published",
+            "admin.announcement.cancelled",
+            "admin.user.enforcement_revoked",
+            "admin.user.enforcement_expired"
     );
 
     public boolean isEnabled() {

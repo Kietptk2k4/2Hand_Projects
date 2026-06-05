@@ -1,15 +1,15 @@
 package com.twohands.admin_service.application.announcement;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.admin_service.application.outbox.AdminOutboxPayloadSupport;
 import com.twohands.admin_service.domain.announcement.SystemAnnouncement;
-import com.twohands.admin_service.exception.AppException;
-import com.twohands.admin_service.exception.ErrorCode;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 public class SystemAnnouncementOutboxPayloadBuilder {
@@ -20,8 +20,15 @@ public class SystemAnnouncementOutboxPayloadBuilder {
 		this.objectMapper = objectMapper;
 	}
 
-	public String buildPublishedPayload(SystemAnnouncement announcement) {
-		return toJson(buildCommonPayload(announcement));
+	public String buildPublishedPayload(
+			SystemAnnouncement announcement,
+			List<UUID> recipientUserIds,
+			String targetAudience
+	) {
+		Map<String, Object> payload = buildCommonPayload(announcement);
+		AdminOutboxPayloadSupport.putRecipientUserIds(payload, recipientUserIds);
+		AdminOutboxPayloadSupport.putIfPresent(payload, "target_audience", targetAudience);
+		return AdminOutboxPayloadSupport.serialize(objectMapper, payload);
 	}
 
 	public String buildCancelledPayload(
@@ -32,7 +39,7 @@ public class SystemAnnouncementOutboxPayloadBuilder {
 		Map<String, Object> payload = buildCommonPayload(announcement);
 		payload.put("previous_status", previousStatus);
 		payload.put("cancelled_at", cancelledAt.toString());
-		return toJson(payload);
+		return AdminOutboxPayloadSupport.serialize(objectMapper, payload);
 	}
 
 	private Map<String, Object> buildCommonPayload(SystemAnnouncement announcement) {
@@ -44,16 +51,12 @@ public class SystemAnnouncementOutboxPayloadBuilder {
 		payload.put("is_pinned", announcement.pinned());
 		payload.put("dismissible", announcement.dismissible());
 		payload.put("status", announcement.status().name());
-		payload.put("sent_at", announcement.sentAt() != null ? announcement.sentAt().toString() : null);
+		AdminOutboxPayloadSupport.putIfPresent(
+				payload,
+				"sent_at",
+				announcement.sentAt() != null ? announcement.sentAt().toString() : null
+		);
 		payload.put("created_by", announcement.createdBy().toString());
 		return payload;
-	}
-
-	private String toJson(Map<String, Object> payload) {
-		try {
-			return objectMapper.writeValueAsString(payload);
-		} catch (JsonProcessingException ex) {
-			throw new AppException(ErrorCode.INTERNAL_ERROR, "Failed to build outbox payload");
-		}
 	}
 }

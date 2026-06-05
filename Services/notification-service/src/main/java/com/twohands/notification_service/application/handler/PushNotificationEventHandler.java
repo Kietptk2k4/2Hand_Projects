@@ -41,6 +41,7 @@ public class PushNotificationEventHandler implements NotificationEventHandler {
                 && !deliveryChannelPolicy.isDedicatedSocialNotificationEvent(eventType)
                 && !deliveryChannelPolicy.isDedicatedCommerceNotificationEvent(eventType)
                 && !deliveryChannelPolicy.isDedicatedAccountEnforcementNotificationEvent(eventType)
+                && !deliveryChannelPolicy.isDedicatedAccountEnforcementLiftedEvent(eventType)
                 && !deliveryChannelPolicy.isDedicatedAdminModerationNotificationEvent(eventType)
                 && !deliveryChannelPolicy.isDedicatedSystemAnnouncementEvent(eventType)
                 && !"USER_CREATED".equals(eventType);

@@ -41,4 +41,17 @@ public interface UserNotificationJpaRepository extends JpaRepository<UserNotific
             String referenceType,
             String referenceId
     );
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            UPDATE UserNotificationEntity n
+            SET n.deleted = true
+            WHERE n.referenceType = :referenceType
+              AND n.referenceId = :referenceId
+              AND n.deleted = false
+            """)
+    int softDeleteVisibleByReference(
+            @Param("referenceType") String referenceType,
+            @Param("referenceId") String referenceId
+    );
 }

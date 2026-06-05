@@ -47,10 +47,13 @@ public class PostModeratedEventMessageParser {
             UUID moderationLogId = uuid(payload, "moderation_log_id");
             PostModerationAction action = PostModerationAction.fromValue(text(payload, "action"));
             if (action == null) {
-                throw new InvalidPostModeratedEventException("action must be HIDE or REMOVE");
+                throw new InvalidPostModeratedEventException("action must be HIDE, REMOVE, or RESTORE");
             }
 
             Instant moderatedAt = instant(payload, "moderated_at");
+            if (moderatedAt == null) {
+                moderatedAt = instant(payload, "restored_at");
+            }
             if (moderatedAt == null) {
                 moderatedAt = instant(root, "occurred_at");
             }

@@ -20,7 +20,8 @@ import java.util.UUID;
 public class HandlePostModeratedEventUseCase {
 
     public static final String CONSUMER_NAME = "social-post-moderated";
-    private static final String EVENT_TYPE = "POST_MODERATED";
+    private static final String EVENT_TYPE_MODERATED = "POST_MODERATED";
+    private static final String EVENT_TYPE_RESTORED = "POST_RESTORED";
 
     private static final Logger log = LoggerFactory.getLogger(HandlePostModeratedEventUseCase.class);
 
@@ -98,6 +99,7 @@ public class HandlePostModeratedEventUseCase {
         Post updated = switch (command.action()) {
             case HIDE -> applyHide(post, command, moderatedAt);
             case REMOVE -> applyRemove(post, command, moderatedAt);
+            case RESTORE -> applyRestore(post, command, moderatedAt);
         };
 
         postRepository.save(updated);
@@ -134,7 +136,7 @@ public class HandlePostModeratedEventUseCase {
 
     private void requireAction(PostModerationAction action) {
         if (action == null) {
-            throw new InvalidPostModeratedEventException("action must be HIDE or REMOVE");
+            throw new InvalidPostModeratedEventException("action must be HIDE, REMOVE, or RESTORE");
         }
     }
 
@@ -148,6 +150,8 @@ public class HandlePostModeratedEventUseCase {
         return switch (command.action()) {
             case HIDE -> post.moderationStatusOrDefault() == PostModerationStatus.HIDDEN;
             case REMOVE -> post.status() == PostStatus.DELETED;
+            case RESTORE -> post.status() == PostStatus.ACTIVE
+                    && post.moderationStatusOrDefault() == PostModerationStatus.NONE;
         };
     }
 
@@ -195,11 +199,41 @@ public class HandlePostModeratedEventUseCase {
         );
     }
 
+    private Post applyRestore(Post post, HandlePostModeratedEventCommand command, Instant restoredAt) {
+        return new Post(
+                post.id(),
+                post.authorId(),
+                post.caption(),
+                post.media(),
+                post.productTags(),
+                PostStatus.ACTIVE,
+                post.visibility(),
+                post.likeCount(),
+                post.replyCount(),
+                post.hashtags(),
+                post.allowComments(),
+                PostModerationStatus.NONE,
+                null,
+                moderationLogId(command),
+                post.createdAt(),
+                restoredAt,
+                null
+        );
+    }
+
     private String moderationLogId(HandlePostModeratedEventCommand command) {
         return command.moderationLogId() != null ? command.moderationLogId().toString() : null;
     }
 
     private void markProcessed(HandlePostModeratedEventCommand command) {
-        processedDomainEventRepository.markProcessed(command.eventId(), CONSUMER_NAME, EVENT_TYPE);
+        processedDomainEventRepository.markProcessed(
+                command.eventId(),
+                CONSUMER_NAME,
+                resolveProcessedEventType(command.action())
+        );
+    }
+
+    private String resolveProcessedEventType(PostModerationAction action) {
+        return action == PostModerationAction.RESTORE ? EVENT_TYPE_RESTORED : EVENT_TYPE_MODERATED;
     }
 }

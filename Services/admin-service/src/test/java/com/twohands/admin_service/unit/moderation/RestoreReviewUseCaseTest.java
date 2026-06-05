@@ -9,6 +9,7 @@ import com.twohands.admin_service.application.outbox.enqueue.InsertAdminOutboxEv
 import com.twohands.admin_service.application.outbox.enqueue.InsertAdminOutboxEventUseCase;
 import com.twohands.admin_service.constant.AdminPermission;
 import com.twohands.admin_service.domain.auth.AdminAuthorizationService;
+import com.twohands.admin_service.domain.integration.CommerceReviewGateway;
 import com.twohands.admin_service.domain.moderation.ContentModerationAction;
 import com.twohands.admin_service.domain.moderation.ContentModerationLog;
 import com.twohands.admin_service.domain.moderation.ContentModerationLogRepository;
@@ -35,6 +36,7 @@ class RestoreReviewUseCaseTest {
 
 	private final AdminAuthorizationService adminAuthorizationService = mock(AdminAuthorizationService.class);
 	private final ContentModerationLogRepository contentModerationLogRepository = mock(ContentModerationLogRepository.class);
+	private final CommerceReviewGateway commerceReviewGateway = mock(CommerceReviewGateway.class);
 	private final InsertAdminOutboxEventUseCase insertAdminOutboxEventUseCase = mock(InsertAdminOutboxEventUseCase.class);
 	private final AdminActionAuditLogger adminActionAuditLogger = mock(AdminActionAuditLogger.class);
 
@@ -45,10 +47,12 @@ class RestoreReviewUseCaseTest {
 		useCase = new RestoreReviewUseCase(
 				adminAuthorizationService,
 				contentModerationLogRepository,
+				commerceReviewGateway,
 				insertAdminOutboxEventUseCase,
 				new ReviewModerationOutboxPayloadBuilder(new ObjectMapper()),
 				adminActionAuditLogger
 		);
+		when(commerceReviewGateway.isEnabled()).thenReturn(false);
 	}
 
 	@Test

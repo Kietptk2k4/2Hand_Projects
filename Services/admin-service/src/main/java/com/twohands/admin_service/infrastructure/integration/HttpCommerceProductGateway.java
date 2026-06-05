@@ -9,11 +9,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
+import java.util.Map;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -26,7 +28,7 @@ public class HttpCommerceProductGateway implements CommerceProductGateway {
 
 	public HttpCommerceProductGateway(@Value("${admin.integrations.commerce.base-url}") String baseUrl) {
 		this.restClient = RestClient.builder()
-				.baseUrl(trimTrailingSlash(baseUrl))
+				.baseUrl(CommerceIntegrationJsonSupport.trimTrailingSlash(baseUrl))
 				.build();
 	}
 
@@ -37,31 +39,62 @@ public class HttpCommerceProductGateway implements CommerceProductGateway {
 
 	@Override
 	public void ensureProductExists(UUID productId) {
+		fetchProductOwnerNode(productId);
+	}
+
+	@Override
+	public Optional<UUID> findSellerUserId(UUID productId) {
+		JsonNode data = fetchProductOwnerNode(productId);
+		return Optional.ofNullable(CommerceIntegrationJsonSupport.parseUuid(data, "seller_id"));
+	}
+
+	@Override
+	public void removeProduct(UUID productId, UUID adminId, String reason) {
 		try {
-			JsonNode root = restClient.get()
-					.uri("/commerce/api/v1/products/{productId}", productId)
-					.accept(MediaType.APPLICATION_JSON)
+			JsonNode root = restClient.post()
+					.uri("/commerce/api/v1/internal/moderation/products/{productId}/remove", productId)
+					.contentType(MediaType.APPLICATION_JSON)
+					.body(Map.of(
+							"removed_by_admin_id", adminId.toString(),
+							"reason", reason
+					))
 					.retrieve()
 					.body(JsonNode.class);
-			if (root == null || !root.path("success").asBoolean(false)) {
-				throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND.defaultMessage());
-			}
+			CommerceIntegrationJsonSupport.requireSuccess(root);
 		} catch (RestClientResponseException ex) {
 			if (ex.getStatusCode().value() == 404) {
 				throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND.defaultMessage());
 			}
-			log.warn("Commerce product lookup failed: status={}, message={}", ex.getStatusCode(), ex.getMessage());
+			log.warn("Commerce product remove failed: status={}, message={}", ex.getStatusCode(), ex.getMessage());
 			throw new AppException(ErrorCode.SERVICE_UNAVAILABLE, "Commerce Service is unavailable");
 		} catch (RestClientException ex) {
-			log.warn("Commerce product lookup failed: {}", ex.getMessage());
+			log.warn("Commerce product remove failed: {}", ex.getMessage());
 			throw new AppException(ErrorCode.SERVICE_UNAVAILABLE, "Commerce Service is unavailable");
 		}
 	}
 
-	private String trimTrailingSlash(String baseUrl) {
-		if (baseUrl == null || baseUrl.isBlank()) {
-			return "http://localhost:3003";
+	private JsonNode fetchProductOwnerNode(UUID productId) {
+		try {
+			JsonNode root = restClient.get()
+					.uri("/commerce/api/v1/internal/moderation/products/{productId}", productId)
+					.accept(MediaType.APPLICATION_JSON)
+					.retrieve()
+					.body(JsonNode.class);
+			CommerceIntegrationJsonSupport.requireSuccess(root);
+			JsonNode data = root.path("data");
+			if (data.isMissingNode() || data.isNull()) {
+				throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND.defaultMessage());
+			}
+			return data;
+		} catch (RestClientResponseException ex) {
+			if (ex.getStatusCode().value() == 404) {
+				throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND.defaultMessage());
+			}
+			log.warn("Commerce product owner lookup failed: status={}, message={}", ex.getStatusCode(), ex.getMessage());
+			throw new AppException(ErrorCode.SERVICE_UNAVAILABLE, "Commerce Service is unavailable");
+		} catch (RestClientException ex) {
+			log.warn("Commerce product owner lookup failed: {}", ex.getMessage());
+			throw new AppException(ErrorCode.SERVICE_UNAVAILABLE, "Commerce Service is unavailable");
 		}
-		return baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
 	}
 }

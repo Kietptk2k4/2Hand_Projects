@@ -45,6 +45,15 @@ public final class PushNotificationTemplatePolicy {
             case "PRODUCT_REMOVED" -> new PushNotificationTemplate("Product removed", "One of your products was removed.");
             case "REVIEW_HIDDEN" -> new PushNotificationTemplate("Review hidden", "One of your reviews was hidden.");
             case "SHOP_SUSPENDED" -> new PushNotificationTemplate("Shop suspended", "Your shop has been suspended.");
+            case "SHOP_CLOSED" -> new PushNotificationTemplate("Shop closed", "Your shop has been closed.");
+            case "USER_ENFORCEMENT_REVOKED" -> new PushNotificationTemplate(
+                    "Account restriction lifted",
+                    "An account restriction was revoked."
+            );
+            case "USER_ENFORCEMENT_EXPIRED" -> new PushNotificationTemplate(
+                    "Account restriction ended",
+                    "A temporary account restriction has ended."
+            );
             case "SYSTEM_ANNOUNCEMENT_SENT" -> new PushNotificationTemplate("System announcement", "You have a new announcement.");
             default -> null;
         });

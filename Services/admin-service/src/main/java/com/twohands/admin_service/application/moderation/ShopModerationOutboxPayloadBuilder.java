@@ -1,10 +1,8 @@
 package com.twohands.admin_service.application.moderation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.admin_service.application.outbox.AdminOutboxPayloadSupport;
 import com.twohands.admin_service.domain.moderation.ContentModerationLog;
-import com.twohands.admin_service.exception.AppException;
-import com.twohands.admin_service.exception.ErrorCode;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
@@ -20,25 +18,33 @@ public class ShopModerationOutboxPayloadBuilder {
 		this.objectMapper = objectMapper;
 	}
 
-	public String buildShopSuspendedPayload(ContentModerationLog moderationLog, UUID shopId) {
+	public String buildShopSuspendedPayload(
+			ContentModerationLog moderationLog,
+			UUID shopId,
+			UUID shopOwnerId
+	) {
 		Map<String, Object> payload = baseShopModerationPayload(moderationLog, shopId);
+		AdminOutboxPayloadSupport.putUuid(payload, "shop_owner_id", shopOwnerId);
+		AdminOutboxPayloadSupport.putIfPresent(payload, "suspension_reason", moderationLog.reason());
 		payload.put("suspended_by", moderationLog.adminId().toString());
 		payload.put("suspended_at", moderationLog.createdAt().toString());
-		return serialize(payload);
+		return AdminOutboxPayloadSupport.serialize(objectMapper, payload);
 	}
 
-	public String buildShopClosedPayload(ContentModerationLog moderationLog, UUID shopId) {
+	public String buildShopClosedPayload(ContentModerationLog moderationLog, UUID shopId, UUID shopOwnerId) {
 		Map<String, Object> payload = baseShopModerationPayload(moderationLog, shopId);
+		AdminOutboxPayloadSupport.putUuid(payload, "shop_owner_id", shopOwnerId);
 		payload.put("closed_by", moderationLog.adminId().toString());
 		payload.put("closed_at", moderationLog.createdAt().toString());
-		return serialize(payload);
+		return AdminOutboxPayloadSupport.serialize(objectMapper, payload);
 	}
 
-	public String buildShopRestoredPayload(ContentModerationLog moderationLog, UUID shopId) {
+	public String buildShopRestoredPayload(ContentModerationLog moderationLog, UUID shopId, UUID shopOwnerId) {
 		Map<String, Object> payload = baseShopModerationPayload(moderationLog, shopId);
+		AdminOutboxPayloadSupport.putUuid(payload, "shop_owner_id", shopOwnerId);
 		payload.put("restored_by", moderationLog.adminId().toString());
 		payload.put("restored_at", moderationLog.createdAt().toString());
-		return serialize(payload);
+		return AdminOutboxPayloadSupport.serialize(objectMapper, payload);
 	}
 
 	private Map<String, Object> baseShopModerationPayload(ContentModerationLog moderationLog, UUID shopId) {
@@ -46,15 +52,7 @@ public class ShopModerationOutboxPayloadBuilder {
 		payload.put("shop_id", shopId.toString());
 		payload.put("moderation_log_id", moderationLog.id().toString());
 		payload.put("action", moderationLog.action().name());
-		payload.put("reason", moderationLog.reason());
+		AdminOutboxPayloadSupport.putIfPresent(payload, "reason", moderationLog.reason());
 		return payload;
-	}
-
-	private String serialize(Map<String, Object> payload) {
-		try {
-			return objectMapper.writeValueAsString(payload);
-		} catch (JsonProcessingException ex) {
-			throw new AppException(ErrorCode.INTERNAL_ERROR, "Failed to build outbox payload");
-		}
 	}
 }
