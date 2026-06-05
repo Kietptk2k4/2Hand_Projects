@@ -56,4 +56,30 @@ class AuthOutboxMessageBuilderTest {
         assertEquals(now.toString(), envelope.get("occurred_at"));
         assertTrue(envelope.get("payload") instanceof Map);
     }
+
+    @Test
+    void buildEnvelope_emailVerificationUsesOutboxIdAsEventKey() {
+        UUID outboxId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.parse("2026-06-04T08:00:00Z");
+        String payloadJson = """
+                {"user_id":"%s","email":"user@example.com","verification_code":"123456"}
+                """.formatted(userId);
+
+        OutboxEvent event = new OutboxEvent(
+                outboxId,
+                "EMAIL_VERIFICATION_REQUESTED",
+                "auth-service",
+                payloadJson,
+                OutboxStatus.PENDING,
+                0,
+                now,
+                null,
+                null
+        );
+
+        Map<String, Object> envelope = messageBuilder.buildEnvelope(event);
+
+        assertEquals(outboxId.toString(), envelope.get("event_key"));
+    }
 }

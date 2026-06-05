@@ -37,9 +37,7 @@ public class DomainEventMessageParser {
 
         try {
             JsonNode root = objectMapper.readTree(rawMessage);
-            JsonNode payload = root.hasNonNull("payload") && root.get("payload").isObject()
-                    ? root.get("payload")
-                    : root;
+            JsonNode payload = resolvePayloadNode(root);
 
             UUID eventId = firstUuid(root, payload, "event_id");
             if (eventId == null) {
@@ -67,7 +65,7 @@ public class DomainEventMessageParser {
 
             NotificationSourceService sourceService = topicResolver.resolveSourceService(
                     topic,
-                    text(root, "source_service")
+                    firstNonBlankText(root, "source_service", "source")
             );
 
             String eventKey = text(root, "event_key");
@@ -178,11 +176,46 @@ public class DomainEventMessageParser {
         return value != null ? value : uuid(secondary, field);
     }
 
+    private JsonNode resolvePayloadNode(JsonNode root) {
+        if (root == null || !root.has("payload") || root.get("payload").isNull()) {
+            return root;
+        }
+        JsonNode payloadNode = root.get("payload");
+        if (payloadNode.isObject() || payloadNode.isArray()) {
+            return payloadNode;
+        }
+        if (payloadNode.isTextual()) {
+            String payloadText = payloadNode.asText();
+            if (payloadText == null || payloadText.isBlank()) {
+                return objectMapper.createObjectNode();
+            }
+            try {
+                JsonNode parsed = objectMapper.readTree(payloadText);
+                if (parsed.isObject() || parsed.isArray()) {
+                    return parsed;
+                }
+            } catch (JsonProcessingException ex) {
+                throw new InvalidDomainEventException("payload must be valid JSON");
+            }
+        }
+        return root;
+    }
+
     private String serializePayload(JsonNode payload) throws JsonProcessingException {
         if (payload == null || payload.isNull()) {
             return "{}";
         }
         return objectMapper.writeValueAsString(payload);
+    }
+
+    private String firstNonBlankText(JsonNode node, String... fields) {
+        for (String field : fields) {
+            String value = text(node, field);
+            if (value != null) {
+                return value;
+            }
+        }
+        return null;
     }
 
     private String text(JsonNode node, String field) {

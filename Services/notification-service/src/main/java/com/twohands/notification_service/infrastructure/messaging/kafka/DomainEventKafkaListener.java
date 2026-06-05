@@ -35,8 +35,16 @@ public class DomainEventKafkaListener {
                 acknowledgment.acknowledge();
             }
             if (result.duplicate()) {
-                log.debug(
+                log.info(
                         "Duplicate domain event acknowledged. topic={}, partition={}, offset={}, notificationEventId={}",
+                        topic,
+                        record.partition(),
+                        record.offset(),
+                        result.notificationEventId()
+                );
+            } else {
+                log.info(
+                        "Domain event ingested from Kafka. topic={}, partition={}, offset={}, notificationEventId={}",
                         topic,
                         record.partition(),
                         record.offset(),

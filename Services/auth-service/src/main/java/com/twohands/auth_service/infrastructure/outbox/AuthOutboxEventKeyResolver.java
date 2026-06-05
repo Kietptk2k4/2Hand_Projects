@@ -11,6 +11,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuthOutboxEventKeyResolver {
 
+    private static final String EMAIL_VERIFICATION_REQUESTED = "EMAIL_VERIFICATION_REQUESTED";
+    private static final String PASSWORD_RESET_REQUESTED = "PASSWORD_RESET_REQUESTED";
+
     private final ObjectMapper objectMapper;
 
     public AuthOutboxEventKeyResolver(ObjectMapper objectMapper) {
@@ -18,12 +21,23 @@ public class AuthOutboxEventKeyResolver {
     }
 
     public String resolve(OutboxEvent event) {
+        if (requiresUniqueKeyPerOutboxEvent(event.eventType())) {
+            return event.id().toString();
+        }
         String userId = extractUserId(event.payload());
         if (userId != null && !userId.isBlank()) {
             String normalizedType = event.eventType().trim().toLowerCase().replace('_', '.');
             return "auth." + normalizedType + ":" + userId;
         }
         return event.id().toString();
+    }
+
+    private static boolean requiresUniqueKeyPerOutboxEvent(String eventType) {
+        if (eventType == null || eventType.isBlank()) {
+            return false;
+        }
+        return EMAIL_VERIFICATION_REQUESTED.equals(eventType.trim())
+                || PASSWORD_RESET_REQUESTED.equals(eventType.trim());
     }
 
     private String extractUserId(String payloadJson) {

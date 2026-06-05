@@ -69,7 +69,7 @@ Dev vẫn có thể ingest qua `POST /internal/events` khi consumer tắt — 2A
 |------|------------|---------|
 | `NOTIFICATION_KAFKA_CONSUMER_ENABLED` | `true` | Bật `@KafkaListener` |
 | `NOTIFICATION_KAFKA_BOOTSTRAP_SERVERS` | `localhost:9092` | Broker (host) |
-| `NOTIFICATION_KAFKA_CONSUMER_GROUP_ID` | `notification-domain-events` | Consumer group |
+| `NOTIFICATION_KAFKA_CONSUMER_GROUP_ID` | `notification-domain-events-local` (dev: **mỗi máy một group**) | Consumer group |
 | `NOTIFICATION_PROCESS_EVENTS_ENABLED` | `true` | Scheduler xử lý `PENDING` |
 | `NOTIFICATION_EMAIL_ENABLED` | `true` | Cho phép gửi email (logging provider) |
 | `NOTIFICATION_RETRY_EVENTS_ENABLED` | `true` | Retry event `FAILED` (khuyến nghị dev) |
@@ -131,7 +131,8 @@ docker compose up -d kafka kafka-ui postgres-auth postgres-notification redis
 | Triệu chứng | Kiểm tra |
 |-------------|----------|
 | Không có topic/message | Auth: `AUTH_OUTBOX_PUBLISH_ENABLED`, Kafka up |
-| `notification_events` không có row | `NOTIFICATION_KAFKA_CONSUMER_ENABLED`, bootstrap `localhost:9092` |
+| `notification_events` không có row | `NOTIFICATION_KAFKA_CONSUMER_ENABLED`, bootstrap `localhost:9092`, consumer group **riêng** (tránh instance khác ACK), log `Invalid domain event` / `Domain event ingested from Kafka` |
+| Resend OTP không tạo row mới (cùng user) | `event_key` trùng — auth dùng `outboxEventId` làm key cho `EMAIL_VERIFICATION_REQUESTED` |
 | `PENDING` mãi | `NOTIFICATION_PROCESS_EVENTS_ENABLED=true` |
 | `FAILED` + thiếu `verification_code` | Payload OTP — [kafka_section_email_otp.md](kafka_section_email_otp.md) |
 | `SKIPPED` email | `NOTIFICATION_EMAIL_ENABLED=true` |

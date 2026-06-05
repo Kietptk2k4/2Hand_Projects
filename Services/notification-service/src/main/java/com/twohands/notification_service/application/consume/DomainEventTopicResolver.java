@@ -43,6 +43,10 @@ public class DomainEventTopicResolver {
 
     public NotificationSourceService resolveSourceService(String topic, String explicitSourceService) {
         if (explicitSourceService != null && !explicitSourceService.isBlank()) {
+            NotificationSourceService resolved = resolveExplicitSourceService(explicitSourceService);
+            if (resolved != null) {
+                return resolved;
+            }
             try {
                 return NotificationSourceService.valueOf(explicitSourceService.trim().toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException ex) {
@@ -68,5 +72,21 @@ public class DomainEventTopicResolver {
             return null;
         }
         return TOPIC_TO_EVENT_TYPE.get(topic);
+    }
+
+    /**
+     * Maps broker envelope {@code source} / {@code source_service} strings to enum values.
+     * Auth/commerce envelopes use short or {@code *-service} forms instead of enum names.
+     */
+    private NotificationSourceService resolveExplicitSourceService(String explicitSourceService) {
+        String normalized = explicitSourceService.trim().toLowerCase(Locale.ROOT);
+        return switch (normalized) {
+            case "auth", "auth-service" -> NotificationSourceService.AUTH;
+            case "social", "social-service" -> NotificationSourceService.SOCIAL;
+            case "commerce", "commerce-service" -> NotificationSourceService.COMMERCE;
+            case "admin", "admin-service" -> NotificationSourceService.ADMIN;
+            case "system", "system-service" -> NotificationSourceService.SYSTEM;
+            default -> null;
+        };
     }
 }

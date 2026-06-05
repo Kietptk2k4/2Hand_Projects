@@ -39,6 +39,7 @@ class DomainEventKafkaListenerTest {
         listener.onDomainEvent(record, acknowledgment);
 
         verify(acknowledgment).acknowledge();
+        verify(consumeDomainEventUseCase).execute("{}", "social.post.liked");
     }
 
     @Test

@@ -29,6 +29,35 @@ class ConsumeDomainEventIntegrationTest {
     }
 
     @Test
+    void execute_storesPendingAuthEmailVerificationFromKafkaEnvelope() {
+        UUID eventId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        String message = """
+                {
+                  "event_id": "%s",
+                  "event_type": "EMAIL_VERIFICATION_REQUESTED",
+                  "event_key": "%s",
+                  "source": "auth",
+                  "occurred_at": "2026-06-05T10:33:44.808Z",
+                  "payload": {
+                    "user_id": "%s",
+                    "email": "user@example.com",
+                    "verification_code": "123456",
+                    "verification_token": "123456",
+                    "verification_token_type": "EMAIL_VERIFY"
+                  }
+                }
+                """.formatted(eventId, eventId, userId);
+
+        var result = consumeDomainEventUseCase.execute(message, "auth.email.verification_requested");
+
+        assertFalse(result.duplicate());
+        assertEquals(1, countEvents());
+        assertEquals("PENDING", queryStatus(eventId));
+        assertEquals("EMAIL_VERIFICATION_REQUESTED", queryEventType(eventId));
+    }
+
+    @Test
     void execute_storesPendingEventFromBrokerEnvelope() {
         UUID eventId = UUID.randomUUID();
         String message = """

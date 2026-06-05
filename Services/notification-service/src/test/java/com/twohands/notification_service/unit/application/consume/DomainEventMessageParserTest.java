@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DomainEventMessageParserTest {
 
@@ -350,5 +351,75 @@ class DomainEventMessageParserTest {
     @Test
     void parse_rejectsMissingEventId() {
         assertThrows(InvalidDomainEventException.class, () -> parser.parse("{}", "social.post.liked"));
+    }
+
+    @Test
+    void parse_authEmailVerificationEnvelopeFromAuthOutbox() {
+        UUID eventId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        String json = """
+                {
+                  "event_id": "%s",
+                  "event_type": "EMAIL_VERIFICATION_REQUESTED",
+                  "event_key": "%s",
+                  "source": "auth",
+                  "occurred_at": "2026-06-05T10:33:44.808Z",
+                  "payload": {
+                    "user_id": "%s",
+                    "email": "user@example.com",
+                    "verification_code": "123456",
+                    "verification_token": "123456",
+                    "verification_token_type": "EMAIL_VERIFY"
+                  }
+                }
+                """.formatted(eventId, eventId, userId);
+
+        var command = parser.parse(json, "auth.email.verification_requested");
+
+        assertEquals(eventId, command.eventId());
+        assertEquals("EMAIL_VERIFICATION_REQUESTED", command.eventType());
+        assertEquals(NotificationSourceService.AUTH, command.sourceService());
+        assertEquals(userId, command.recipientUserId());
+        assertEquals(eventId.toString(), command.eventKey());
+        assertTrue(command.payloadJson().contains("\"verification_code\":\"123456\""));
+    }
+
+    @Test
+    void parse_authEnvelopeResolvesSourceServiceAlias() {
+        UUID eventId = UUID.randomUUID();
+
+        String json = """
+                {
+                  "event_id": "%s",
+                  "event_type": "EMAIL_VERIFICATION_REQUESTED",
+                  "source_service": "auth-service",
+                  "payload": {"user_id": "%s", "email": "a@b.com", "verification_code": "654321"}
+                }
+                """.formatted(eventId, UUID.randomUUID());
+
+        var command = parser.parse(json, "auth.email.verification_requested");
+
+        assertEquals(NotificationSourceService.AUTH, command.sourceService());
+    }
+
+    @Test
+    void parse_stringPayloadJson() {
+        UUID eventId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        String json = """
+                {
+                  "event_id": "%s",
+                  "event_type": "EMAIL_VERIFICATION_REQUESTED",
+                  "source": "auth",
+                  "payload": "{\\"user_id\\":\\"%s\\",\\"email\\":\\"user@example.com\\",\\"verification_code\\":\\"999999\\"}"
+                }
+                """.formatted(eventId, userId);
+
+        var command = parser.parse(json, "auth.email.verification_requested");
+
+        assertEquals(userId, command.recipientUserId());
+        assertTrue(command.payloadJson().contains("999999"));
     }
 }

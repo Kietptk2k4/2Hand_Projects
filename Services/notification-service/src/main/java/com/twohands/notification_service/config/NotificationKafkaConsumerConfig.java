@@ -9,6 +9,8 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
@@ -20,6 +22,8 @@ import java.util.Map;
 @EnableKafka
 @ConditionalOnProperty(prefix = "notification.kafka.consumer", name = "enabled", havingValue = "true")
 public class NotificationKafkaConsumerConfig {
+
+    private static final Logger log = LoggerFactory.getLogger(NotificationKafkaConsumerConfig.class);
 
     @Bean
     public String[] domainEventTopics(NotificationKafkaConsumerProperties properties) {
@@ -46,7 +50,16 @@ public class NotificationKafkaConsumerConfig {
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(domainEventConsumerFactory);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
-        factory.setCommonErrorHandler(new DefaultErrorHandler(new FixedBackOff(1000L, 3L)));
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(new FixedBackOff(1000L, 3L));
+        errorHandler.setRetryListeners((record, ex, deliveryAttempt) -> log.warn(
+                "Kafka domain event consume failed, retrying. topic={}, partition={}, offset={}, attempt={}, error={}",
+                record.topic(),
+                record.partition(),
+                record.offset(),
+                deliveryAttempt,
+                ex.getMessage()
+        ));
+        factory.setCommonErrorHandler(errorHandler);
         return factory;
     }
 }
