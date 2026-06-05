@@ -142,6 +142,37 @@ class ConsumeAuthUserEventsUseCaseTest {
     }
 
     @Test
+    void shouldActivateOnEnforcementRevoked() {
+        UUID eventId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        when(processedDomainEventRepository.existsByEventId(eventId)).thenReturn(false);
+        when(userProjectionRepository.findByUserId(userId)).thenReturn(Optional.of(
+                new UserProjection(userId.toString(), "SUSPENDED", "User A", null, false)
+        ));
+        when(userProjectionRepository.upsert(any(UserProjection.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var result = useCase.execute(new ConsumeAuthUserEventCommand(
+                eventId,
+                AuthUserEventType.USER_ENFORCEMENT_REVOKED,
+                userId,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        ));
+
+        assertThat(result.appliedStatus()).isEqualTo("ACTIVE");
+        verify(processedDomainEventRepository).markProcessed(
+                eventId,
+                ConsumeAuthUserEventsUseCase.CONSUMER_NAME,
+                "USER_ENFORCEMENT_REVOKED"
+        );
+    }
+
+    @Test
     void shouldSkipDuplicateEvent() {
         UUID eventId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
