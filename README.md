@@ -169,6 +169,97 @@ npm run dev
 - Dev server: **http://localhost:5173**
 - Stack: React 19, Vite 5, Tailwind 4, React Router 7, MSW (mock API)
 
+### 4. Chia sẻ data dev giữa máy (dump / restore)
+
+Mỗi dev mặc định có **stack Docker riêng** — data test (user, post, avatar MinIO…) **không tự sync** qua git. Để đồng nghiệp dùng chung bộ data local, export dump rồi gửi file (Drive/OneDrive/Slack). **Không commit** thư mục `dev-dumps/` (đã có trong `.gitignore`).
+
+**Cần dump:** PostgreSQL ×5, MongoDB `social_db`, MinIO buckets (avatar, post media, commerce media). **Không cần:** Redis (session/cart), Kafka.
+
+**Yêu cầu:** Docker infra đang chạy; [MinIO Client `mc`](https://min.io/docs/minio/linux/reference/minio-mc.html) (`winget install MinIO.mc`) hoặc dùng image `minio/mc` qua Docker.
+
+#### Export (máy có data)
+
+```powershell
+cd Infrastructure
+docker compose up -d
+
+$DATE = Get-Date -Format "yyyy-MM-dd"
+$DUMP = "..\dev-dumps\$DATE"
+New-Item -ItemType Directory -Force -Path $DUMP | Out-Null
+Set-Location $DUMP
+
+docker exec postgres-auth         pg_dump -U postgres -Fc auth_db         > auth_db.dump
+docker exec postgres-social       pg_dump -U postgres -Fc social_db       > social_db.dump
+docker exec postgres-commerce     pg_dump -U postgres -Fc commerce_db     > commerce_db.dump
+docker exec postgres-admin        pg_dump -U postgres -Fc admin_db        > admin_db.dump
+docker exec postgres-notification pg_dump -U postgres -Fc notification_db > notification_db.dump
+
+docker exec mongodb mongodump --db=social_db --archive=/tmp/social_db.archive
+docker cp mongodb:/tmp/social_db.archive ./social_db.archive
+
+mc alias set local http://localhost:9000 admin password123
+New-Item -ItemType Directory -Force -Path .\minio | Out-Null
+mc mirror local/2hands-avatar           .\minio\2hands-avatar
+mc mirror local/2hands-social-post      .\minio\2hands-social-post
+mc mirror local/2hands-commerce-product .\minio\2hands-commerce-product
+mc mirror local/2hands-commerce-review  .\minio\2hands-commerce-review
+mc mirror local/2hands-commerce-shop    .\minio\2hands-commerce-shop
+
+Set-Location ..
+Compress-Archive -Path $DATE -DestinationPath "2hands-dev-dump-$DATE.zip"
+```
+
+Bucket MinIO trống → thư mục tương ứng rỗng; vẫn restore được.
+
+#### Restore (máy đồng nghiệp)
+
+1. Giải nén vào `dev-dumps/<ngày>/`.
+2. Tắt các service backend (`bootRun`).
+3. Infra + bucket MinIO:
+
+```powershell
+cd Infrastructure
+docker compose up -d
+docker compose run --rm minio-init
+```
+
+4. Restore (đổi `<ngày>` cho đúng):
+
+```powershell
+cd ..\dev-dumps\<ngày>
+
+docker cp auth_db.dump postgres-auth:/tmp/auth_db.dump
+docker exec postgres-auth pg_restore -U postgres -d auth_db --clean --if-exists /tmp/auth_db.dump
+
+docker cp social_db.dump postgres-social:/tmp/social_db.dump
+docker exec postgres-social pg_restore -U postgres -d social_db --clean --if-exists /tmp/social_db.dump
+
+docker cp commerce_db.dump postgres-commerce:/tmp/commerce_db.dump
+docker exec postgres-commerce pg_restore -U postgres -d commerce_db --clean --if-exists /tmp/commerce_db.dump
+
+docker cp admin_db.dump postgres-admin:/tmp/admin_db.dump
+docker exec postgres-admin pg_restore -U postgres -d admin_db --clean --if-exists /tmp/admin_db.dump
+
+docker cp notification_db.dump postgres-notification:/tmp/notification_db.dump
+docker exec postgres-notification pg_restore -U postgres -d notification_db --clean --if-exists /tmp/notification_db.dump
+
+docker cp social_db.archive mongodb:/tmp/social_db.archive
+docker exec mongodb mongorestore --db=social_db --drop --archive=/tmp/social_db.archive
+
+mc alias set local http://localhost:9000 admin password123
+mc mirror .\minio\2hands-avatar           local/2hands-avatar
+mc mirror .\minio\2hands-social-post      local/2hands-social-post
+mc mirror .\minio\2hands-commerce-product local/2hands-commerce-product
+mc mirror .\minio\2hands-commerce-review  local/2hands-commerce-review
+mc mirror .\minio\2hands-commerce-shop    local/2hands-commerce-shop
+```
+
+5. Chạy lại backend + FE; **đăng nhập lại** (token/Redis không nằm trong dump).
+
+**Lưu ý:** `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` trong `.env` các service nên **giống nhau** giữa người export và import (hoặc chỉ dùng login mới sau restore). URL media dạng `http://localhost:9000/...` hoạt động nếu cùng port infra local.
+
+Chi tiết MinIO init: [Infrastructure/README.md](Infrastructure/README.md).
+
 ---
 
 ## Tài liệu (`docs/`)
