@@ -15,6 +15,10 @@ public class CommerceProductMediaUrlValidator {
         this.properties = properties;
     }
 
+    public int maxProductMediaCount() {
+        return properties.getProductMediaMaxCount();
+    }
+
     public void validateRequiredProductMedia(String mediaUrl) {
         if (!properties.isEnabled()) {
             return;
@@ -26,6 +30,15 @@ public class CommerceProductMediaUrlValidator {
             );
         }
         validateProductBucketUrl(mediaUrl);
+    }
+
+    public void validateProductMediaUrls(java.util.List<String> mediaUrls) {
+        if (!properties.isEnabled()) {
+            return;
+        }
+        for (String mediaUrl : mediaUrls) {
+            validateProductBucketUrl(mediaUrl);
+        }
     }
 
     private void validateProductBucketUrl(String url) {

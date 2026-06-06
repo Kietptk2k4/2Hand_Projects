@@ -15,6 +15,11 @@ import com.twohands.commerce_service.application.product.updateproduct.UpdatePro
 import com.twohands.commerce_service.application.product.updateproduct.UpdateProductUseCase;
 import com.twohands.commerce_service.application.product.updateproductattributes.UpdateProductAttributesCommand;
 import com.twohands.commerce_service.application.product.updateproductattributes.UpdateProductAttributesUseCase;
+import com.twohands.commerce_service.application.product.updateproductmedia.UpdateProductMediaCommand;
+import com.twohands.commerce_service.application.product.updateproductmedia.UpdateProductMediaUseCase;
+import com.twohands.commerce_service.application.product.uploadproductmedia.CreateProductMediaUploadUrlCommand;
+import com.twohands.commerce_service.application.product.uploadproductmedia.CreateProductMediaUploadUrlResult;
+import com.twohands.commerce_service.application.product.uploadproductmedia.CreateProductMediaUploadUrlUseCase;
 import com.twohands.commerce_service.application.product.updateproductinventory.UpdateProductInventoryCommand;
 import com.twohands.commerce_service.application.product.updateproductinventory.UpdateProductInventoryUseCase;
 import com.twohands.commerce_service.application.product.updateproductprice.UpdateProductPriceCommand;
@@ -34,6 +39,7 @@ import com.twohands.commerce_service.domain.product.ViewSellerProductsResult;
 import com.twohands.commerce_service.domain.product.CreateProductResult;
 import com.twohands.commerce_service.domain.product.ProductAttributeItem;
 import com.twohands.commerce_service.domain.product.UpdateProductAttributesResult;
+import com.twohands.commerce_service.domain.product.UpdateProductMediaResult;
 import com.twohands.commerce_service.domain.product.UpdateProductInventoryResult;
 import com.twohands.commerce_service.domain.product.UpdateProductPriceResult;
 import com.twohands.commerce_service.domain.product.UpdateProductResult;
@@ -66,6 +72,8 @@ public class SellerProductController {
     private final ArchiveProductUseCase archiveProductUseCase;
     private final UpdateProductUseCase updateProductUseCase;
     private final UpdateProductAttributesUseCase updateProductAttributesUseCase;
+    private final UpdateProductMediaUseCase updateProductMediaUseCase;
+    private final CreateProductMediaUploadUrlUseCase createProductMediaUploadUrlUseCase;
     private final UpdateProductInventoryUseCase updateProductInventoryUseCase;
     private final UpdateProductPriceUseCase updateProductPriceUseCase;
     private final ViewSellerProductsUseCase viewSellerProductsUseCase;
@@ -78,6 +86,8 @@ public class SellerProductController {
             ArchiveProductUseCase archiveProductUseCase,
             UpdateProductUseCase updateProductUseCase,
             UpdateProductAttributesUseCase updateProductAttributesUseCase,
+            UpdateProductMediaUseCase updateProductMediaUseCase,
+            CreateProductMediaUploadUrlUseCase createProductMediaUploadUrlUseCase,
             UpdateProductInventoryUseCase updateProductInventoryUseCase,
             UpdateProductPriceUseCase updateProductPriceUseCase,
             ViewSellerProductsUseCase viewSellerProductsUseCase,
@@ -89,6 +99,8 @@ public class SellerProductController {
         this.archiveProductUseCase = archiveProductUseCase;
         this.updateProductUseCase = updateProductUseCase;
         this.updateProductAttributesUseCase = updateProductAttributesUseCase;
+        this.updateProductMediaUseCase = updateProductMediaUseCase;
+        this.createProductMediaUploadUrlUseCase = createProductMediaUploadUrlUseCase;
         this.updateProductInventoryUseCase = updateProductInventoryUseCase;
         this.updateProductPriceUseCase = updateProductPriceUseCase;
         this.viewSellerProductsUseCase = viewSellerProductsUseCase;
@@ -153,6 +165,58 @@ public class SellerProductController {
                 HttpStatus.OK.value(),
                 createProductUseCase.successMessage(),
                 toCreateResponse(result)
+        ));
+    }
+
+    @PostMapping("/{productId}/media/upload-url")
+    public ResponseEntity<ApiResponse<CreateShopMediaUploadUrlResponse>> createProductMediaUploadUrl(
+            @PathVariable UUID productId,
+            @RequestBody @Valid CreateShopMediaUploadUrlRequest request,
+            Authentication authentication
+    ) {
+        UUID sellerId = resolveUserId(authentication);
+        CreateProductMediaUploadUrlResult result = createProductMediaUploadUrlUseCase.execute(
+                new CreateProductMediaUploadUrlCommand(
+                        sellerId,
+                        productId,
+                        request.contentType(),
+                        request.fileSizeBytes(),
+                        request.mediaKind()
+                )
+        );
+
+        CreateShopMediaUploadUrlResponse response = new CreateShopMediaUploadUrlResponse(
+                result.uploadUrl(),
+                result.objectKey(),
+                result.mediaUrl(),
+                result.mediaKind(),
+                result.expiresAt(),
+                result.maxFileSizeBytes(),
+                result.allowedContentTypes()
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                createProductMediaUploadUrlUseCase.successMessage(),
+                response
+        ));
+    }
+
+    @PatchMapping("/{productId}/media")
+    public ResponseEntity<ApiResponse<UpdateProductMediaResponse>> updateProductMedia(
+            @PathVariable UUID productId,
+            @RequestBody @Valid UpdateProductMediaRequest request,
+            Authentication authentication
+    ) {
+        UUID sellerId = resolveUserId(authentication);
+        UpdateProductMediaResult result = updateProductMediaUseCase.execute(
+                new UpdateProductMediaCommand(sellerId, productId, request.mediaUrls())
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                updateProductMediaUseCase.successMessage(),
+                toMediaResponse(result)
         ));
     }
 
@@ -423,6 +487,18 @@ public class SellerProductController {
                 result.reservedQuantity(),
                 result.cartItemsSynced(),
                 result.updatedAt()
+        );
+    }
+
+    private UpdateProductMediaResponse toMediaResponse(UpdateProductMediaResult result) {
+        return new UpdateProductMediaResponse(
+                result.productId(),
+                result.sellerId(),
+                result.shopId(),
+                result.status(),
+                result.thumbnailUrl(),
+                result.mediaUrls(),
+                result.hasMedia()
         );
     }
 

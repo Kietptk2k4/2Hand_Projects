@@ -47,7 +47,49 @@ export async function updateProductAttributes(productId, payload) {
   }
 }
 
-/** FE-only MSW — media upload chính thức sẽ thay endpoint sau */
+function mapProductMediaUploadUrlResponse(data) {
+  return {
+    uploadUrl: data.upload_url,
+    objectKey: data.object_key,
+    mediaUrl: data.media_url,
+    mediaKind: data.media_kind,
+    expiresAt: data.expires_at,
+    maxFileSizeBytes: data.max_file_size_bytes,
+    allowedContentTypes: data.allowed_content_types,
+  };
+}
+
+export async function requestProductMediaUploadUrl(productId, { contentType, fileSizeBytes, mediaKind }) {
+  try {
+    const response = await commerceApiClient.post(
+      `/commerce/api/v1/seller/products/${productId}/media/upload-url`,
+      {
+        content_type: contentType,
+        file_size_bytes: fileSizeBytes,
+        media_kind: mediaKind,
+      },
+    );
+    return mapProductMediaUploadUrlResponse(unwrapResponse(response));
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function uploadProductMediaFile(uploadUrl, file) {
+  const response = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": file.type },
+    body: file,
+  });
+
+  if (!response.ok) {
+    throw {
+      code: response.status,
+      message: "Upload ảnh thất bại. Vui lòng thử lại.",
+    };
+  }
+}
+
 export async function updateProductMedia(productId, payload) {
   try {
     const response = await commerceApiClient.patch(

@@ -16,8 +16,15 @@ public class CommerceObjectStorageProperties {
     private String productBucket = "2hands-commerce-product";
     private String reviewBucket = "2hands-commerce-review";
     private long shopMediaMaxFileSizeBytes = 5_242_880L;
+    private long productMediaMaxFileSizeBytes = 5_242_880L;
+    private int productMediaMaxCount = 10;
     private int presignedUrlTtlSeconds = 900;
     private List<String> allowedShopMediaContentTypes = List.of(
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+    );
+    private List<String> allowedProductMediaContentTypes = List.of(
             "image/jpeg",
             "image/png",
             "image/webp"
@@ -109,5 +116,29 @@ public class CommerceObjectStorageProperties {
 
     public void setAllowedShopMediaContentTypes(List<String> allowedShopMediaContentTypes) {
         this.allowedShopMediaContentTypes = allowedShopMediaContentTypes;
+    }
+
+    public long getProductMediaMaxFileSizeBytes() {
+        return productMediaMaxFileSizeBytes;
+    }
+
+    public void setProductMediaMaxFileSizeBytes(long productMediaMaxFileSizeBytes) {
+        this.productMediaMaxFileSizeBytes = productMediaMaxFileSizeBytes;
+    }
+
+    public int getProductMediaMaxCount() {
+        return productMediaMaxCount;
+    }
+
+    public void setProductMediaMaxCount(int productMediaMaxCount) {
+        this.productMediaMaxCount = productMediaMaxCount;
+    }
+
+    public List<String> getAllowedProductMediaContentTypes() {
+        return allowedProductMediaContentTypes;
+    }
+
+    public void setAllowedProductMediaContentTypes(List<String> allowedProductMediaContentTypes) {
+        this.allowedProductMediaContentTypes = allowedProductMediaContentTypes;
     }
 }

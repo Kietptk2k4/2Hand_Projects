@@ -2,6 +2,7 @@ import { ProductAttributesEditor } from "./ProductAttributesEditor";
 import { ProductMediaUploadGrid } from "./ProductMediaUploadGrid";
 
 export function SellerProductMediaAttributesStep({
+  productId,
   mediaUrls,
   attributes,
   fieldErrors,
@@ -17,6 +18,7 @@ export function SellerProductMediaAttributesStep({
           Tải ít nhất một ảnh để có thể đăng bán. Ảnh đầu tiên là ảnh chính.
         </p>
         <ProductMediaUploadGrid
+          productId={productId}
           mediaUrls={mediaUrls}
           disabled={disabled}
           onChange={onMediaChange}

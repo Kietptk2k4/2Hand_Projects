@@ -151,6 +151,7 @@ export function CommerceSellerProductFormPage({ mode: modeProp }) {
 
         {step === 3 ? (
           <SellerProductMediaAttributesStep
+            productId={productId}
             mediaUrls={mediaUrls}
             attributes={attributes}
             fieldErrors={fieldErrors}

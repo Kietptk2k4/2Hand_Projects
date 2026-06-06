@@ -1,0 +1,108 @@
+package com.twohands.commerce_service.infrastructure.objectstorage;
+
+import com.twohands.commerce_service.application.product.uploadproductmedia.ProductMediaUploadIntent;
+import com.twohands.commerce_service.application.product.uploadproductmedia.ProductMediaUploadStoragePort;
+import com.twohands.commerce_service.config.CommerceObjectStorageProperties;
+import com.twohands.commerce_service.exception.AppException;
+import com.twohands.commerce_service.exception.ErrorCode;
+import io.minio.GetPresignedObjectUrlArgs;
+import io.minio.MinioClient;
+import io.minio.http.Method;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.stereotype.Component;
+
+import java.time.Instant;
+import java.util.Map;
+import java.util.UUID;
+
+@Component
+@ConditionalOnBean(MinioClient.class)
+public class MinioProductMediaUploadStorageAdapter implements ProductMediaUploadStoragePort {
+
+    private static final Logger log = LoggerFactory.getLogger(MinioProductMediaUploadStorageAdapter.class);
+
+    private final MinioClient minioClient;
+    private final CommerceObjectStorageProperties properties;
+
+    public MinioProductMediaUploadStorageAdapter(
+            MinioClient minioClient,
+            CommerceObjectStorageProperties properties
+    ) {
+        this.minioClient = minioClient;
+        this.properties = properties;
+    }
+
+    @Override
+    public ProductMediaUploadIntent createUploadIntent(
+            UUID sellerId,
+            UUID productId,
+            String contentType,
+            String mediaKind,
+            Instant expiresAt
+    ) {
+        String extension = resolveExtension(contentType);
+        String objectKey = buildObjectKey(sellerId, productId, extension);
+        String bucket = properties.getProductBucket();
+        String mediaUrl = buildPublicUrl(bucket, objectKey);
+
+        try {
+            String uploadUrl = minioClient.getPresignedObjectUrl(
+                    GetPresignedObjectUrlArgs.builder()
+                            .method(Method.PUT)
+                            .bucket(bucket)
+                            .object(objectKey)
+                            .expiry(properties.getPresignedUrlTtlSeconds())
+                            .extraHeaders(Map.of("Content-Type", contentType))
+                            .build()
+            );
+
+            log.info(
+                    "Product media upload URL issued. sellerId={}, productId={}, mediaKind={}, objectKey={}, expiresAt={}",
+                    sellerId,
+                    productId,
+                    mediaKind,
+                    objectKey,
+                    expiresAt
+            );
+
+            return new ProductMediaUploadIntent(uploadUrl, objectKey, mediaUrl, mediaKind, expiresAt);
+        } catch (Exception ex) {
+            throw new AppException(
+                    ErrorCode.OBJECT_STORAGE_UNAVAILABLE,
+                    ErrorCode.OBJECT_STORAGE_UNAVAILABLE.defaultMessage(),
+                    ex
+            );
+        }
+    }
+
+    private String buildObjectKey(UUID sellerId, UUID productId, String extension) {
+        String fileName = UUID.randomUUID() + "." + extension;
+        return "products/" + sellerId + "/" + productId + "/images/" + fileName;
+    }
+
+    private String buildPublicUrl(String bucket, String objectKey) {
+        String base = trimTrailingSlash(properties.getPublicUrl());
+        return base + "/" + bucket + "/" + objectKey;
+    }
+
+    private String resolveExtension(String contentType) {
+        return switch (contentType) {
+            case "image/jpeg" -> "jpg";
+            case "image/png" -> "png";
+            case "image/webp" -> "webp";
+            default -> throw new AppException(
+                    ErrorCode.INVALID_MEDIA_TYPE,
+                    "Media type is not allowed"
+            );
+        };
+    }
+
+    private String trimTrailingSlash(String value) {
+        if (value == null || value.isBlank()) {
+            return "";
+        }
+        return value.endsWith("/") ? value.substring(0, value.length() - 1) : value;
+    }
+}
