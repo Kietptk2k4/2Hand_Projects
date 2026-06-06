@@ -1,8 +1,8 @@
 export const CONDITION_LABELS = {
-  NEW: "Mới",
   LIKE_NEW: "Như mới",
   GOOD: "Tốt",
   FAIR: "Khá",
+  USED: "Đã qua sử dụng",
 };
 
 export function getConditionLabel(condition) {

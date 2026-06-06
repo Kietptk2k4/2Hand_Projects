@@ -2,12 +2,17 @@
 
 Commerce Service la service so huu toan bo nghiep vu mua ban trong 2Hands: shop, product, inventory, cart, checkout, order, payment, shipment va review. Tai lieu nay la source-of-truth de AI/engineer co the doc va tu hieu domain, logic trang thai, boundary va cac rule quan trong truoc khi code.
 
+**MVP product vertical:** thoi trang second-hand C2C (closet marketplace). Doc truoc khi implement catalog/seller/FE mock:
+
+- `docs/product-vision/fashion-secondhand-vertical.md` — quyet dinh business
+- `docs/database/commerce-catalog-seed.md` — UUID category/brand seed
+
 ## 1. Service Ownership
 
 Commerce Service own cac aggregate va data sau:
 
 - Seller shop va shop settings.
-- Product catalog: category, product, media, price, attributes.
+- Product catalog: brand, category, product, media, price, attributes.
 - Inventory va stock reservation.
 - Cart va cart item.
 - Buyer address book va shipping address snapshot.
@@ -55,6 +60,22 @@ Auth avatar dung bucket riêng `2hands-avatar` — khong gop voi commerce.
 - Storage OK + DB fail → cleanup orphan object khi co the.
 - Out of scope: quan ly bucket policy IaC chi tiet; khong doi schema Postgres (giu cot URL hien tai).
 
+## 1.2 MVP Vertical - Fashion Second-hand (tom tat)
+
+Kien truc Commerce van generic multi-vendor. Vertical duoc cau hinh bang data + rule:
+
+| Domain | Quy uoc MVP |
+|--------|-------------|
+| Category | Chi cay **Thoi trang** (seed V3); seller chon leaf category khi listing |
+| Brand | Bang `brands` (V2); `products.brand_id`; fallback **Khac** |
+| Condition | `LIKE_NEW`, `GOOD`, `FAIR`, `USED` — khong `NEW` mac dinh |
+| Product type | `PHYSICAL` |
+| Inventory | `stock_quantity` 0 hoac 1 (1 listing = 1 mon unique) |
+| Attributes | Chuan hoa: `size`, `color`, `gender`, `material`, `defects`, ... |
+| Discovery | Product list/search/category + Social tag san pham |
+
+Chi tiet day du: `docs/product-vision/fashion-secondhand-vertical.md`.
+
 ## 2. Actors
 
 ### Buyer
@@ -72,7 +93,7 @@ Nguoi mua san pham. Buyer co the:
 
 ### Seller
 
-Nguoi ban co shop trong Commerce Service. Seller co the:
+Chu closet / shop nho (1 shop/user). Seller co the:
 
 - Tao/cap nhat shop.
 - Quan ly vacation mode.
@@ -127,6 +148,14 @@ Meaning:
 - `ARCHIVED`: seller ngung ban, soft delete theo nghiep vu.
 - `REMOVED`: admin/system remove do vi pham.
 
+**Vertical fields (fashion second-hand):**
+
+- `product_type`: `PHYSICAL` (MVP).
+- `condition`: `LIKE_NEW` | `GOOD` | `FAIR` | `USED` (enforce o create/update/publish).
+- `brand_id`: optional FK -> `brands` (sau migration V2).
+- `category_id`: leaf category trong cay thoi trang (seed V3).
+- `product_attributes`: dictionary chuan — xem vertical doc (`size`, `color`, `defects`, ...).
+
 ### Inventory
 
 Inventory duoc quan ly theo product. MVP can phan biet:
@@ -151,6 +180,8 @@ stock_quantity += quantity
 ```
 
 Neu dung ten business `available_stock`, no tuong ung voi `stock_quantity` trong schema MVP.
+
+**Vertical second-hand:** moi listing thuong co `stock_quantity` in {0, 1}. Publish mac dinh `stock_quantity = 1`, `low_stock_threshold = 0`. Khong ban so luong > 1 cho cung listing (application validation).
 
 ### Cart
 
@@ -786,6 +817,7 @@ Snapshot giup order lich su khong bi thay doi khi product/shop/address sau nay t
 - Moi user co toi da mot cart.
 - Moi user co toi da mot seller shop trong MVP.
 - Khong service nao doc/ghi truc tiep DB cua service khac.
+- Fashion vertical: condition chi nhan 4 gia tri; inventory listing second-hand chi 0 hoac 1.
 
 ## 13. MVP Out Of Scope
 
@@ -796,4 +828,7 @@ Snapshot giup order lich su khong bi thay doi khi product/shop/address sau nay t
 - Realtime search engine rieng.
 - Complex return/refund workflow.
 - Full reconciliation voi GHN/payOS ngoai cac log/status MVP.
+- Da nganh hang (dien tu, cong cu, xay dung, ...).
+- Luxury authentication / size chart theo brand.
+- Faceted search (loc size/color tren API search).
 

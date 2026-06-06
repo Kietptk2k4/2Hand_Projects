@@ -15,6 +15,7 @@ public enum ErrorCode {
     ADDRESS_DEFAULT_CONFLICT("COMMERCE-409-ADDRESS-DEFAULT", HttpStatus.CONFLICT, "Default address conflict"),
     PRODUCT_NOT_FOUND("COMMERCE-404-PRODUCT", HttpStatus.NOT_FOUND, "Product not found"),
     CATEGORY_NOT_FOUND("COMMERCE-404-CATEGORY", HttpStatus.NOT_FOUND, "Product category not found"),
+    BRAND_NOT_FOUND("COMMERCE-404-BRAND", HttpStatus.NOT_FOUND, "Product brand not found"),
     SELLER_SHOP_NOT_FOUND("COMMERCE-409-SELLER-SHOP", HttpStatus.CONFLICT, "Seller does not have a shop"),
     SHOP_ALREADY_EXISTS("COMMERCE-409-SHOP-EXISTS", HttpStatus.CONFLICT, "Seller already has a shop"),
     INVALID_MEDIA_URL("COMMERCE-400-MEDIA-URL", HttpStatus.BAD_REQUEST, "Media URL is invalid"),

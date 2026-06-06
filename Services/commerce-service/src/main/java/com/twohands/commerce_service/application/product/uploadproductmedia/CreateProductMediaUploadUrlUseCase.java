@@ -36,8 +36,8 @@ public class CreateProductMediaUploadUrlUseCase {
 
     public CreateProductMediaUploadUrlResult execute(CreateProductMediaUploadUrlCommand command) {
         String mediaKind = validationService.validateMediaKind(command.mediaKind());
-        String contentType = validationService.validateContentType(command.contentType());
-        validationService.validateFileSize(command.fileSizeBytes());
+        String contentType = validationService.validateContentType(command.contentType(), mediaKind);
+        validationService.validateFileSize(command.fileSizeBytes(), contentType);
 
         UpdateProductMediaProductRef product = updateProductMediaRepository
                 .findProductByIdAndSellerId(command.productId(), command.sellerId())
@@ -74,7 +74,7 @@ public class CreateProductMediaUploadUrlUseCase {
                 intent.mediaUrl(),
                 intent.mediaKind(),
                 intent.expiresAt().toString(),
-                objectStorageProperties.getProductMediaMaxFileSizeBytes(),
+                validationService.maxFileSizeBytesForContentType(contentType),
                 validationService.allowedContentTypes()
         );
     }

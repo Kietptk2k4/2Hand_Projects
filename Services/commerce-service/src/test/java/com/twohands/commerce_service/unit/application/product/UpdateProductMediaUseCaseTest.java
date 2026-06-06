@@ -4,10 +4,12 @@ import com.twohands.commerce_service.application.product.common.ProductMediaUpda
 import com.twohands.commerce_service.application.product.updateproductmedia.UpdateProductMediaCommand;
 import com.twohands.commerce_service.application.product.updateproductmedia.UpdateProductMediaUseCase;
 import com.twohands.commerce_service.common.media.CommerceProductMediaUrlValidator;
+import com.twohands.commerce_service.common.media.ProductMediaContentValidator;
 import com.twohands.commerce_service.config.CommerceObjectStorageProperties;
 import com.twohands.commerce_service.domain.outbox.OutboxEvent;
 import com.twohands.commerce_service.domain.outbox.OutboxEventRepository;
 import com.twohands.commerce_service.domain.product.ProductMediaItem;
+import com.twohands.commerce_service.domain.product.ProductMediaType;
 import com.twohands.commerce_service.domain.product.ProductStatus;
 import com.twohands.commerce_service.domain.product.UpdateProductMediaProductRef;
 import com.twohands.commerce_service.domain.product.UpdateProductMediaRepository;
@@ -31,7 +33,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,7 +50,7 @@ class UpdateProductMediaUseCaseTest {
     private ProductMediaUpdatedOutboxService productMediaUpdatedOutboxService;
 
     private CommerceProductMediaUrlValidator productMediaUrlValidator;
-
+    private ProductMediaContentValidator productMediaContentValidator;
     private UpdateProductMediaUseCase useCase;
 
     private final UUID sellerId = UUID.randomUUID();
@@ -63,13 +64,15 @@ class UpdateProductMediaUseCaseTest {
         properties.setEnabled(true);
         properties.setProductBucket("2hands-commerce-product");
         properties.setPublicUrl("http://localhost:9000");
-        productMediaUrlValidator = new CommerceProductMediaUrlValidator(properties);
+        productMediaContentValidator = new ProductMediaContentValidator(properties);
+        productMediaUrlValidator = new CommerceProductMediaUrlValidator(properties, productMediaContentValidator);
 
         useCase = new UpdateProductMediaUseCase(
                 updateProductMediaRepository,
                 outboxEventRepository,
                 productMediaUpdatedOutboxService,
                 productMediaUrlValidator,
+                productMediaContentValidator,
                 Clock.fixed(now, ZoneOffset.UTC)
         );
     }
@@ -80,7 +83,7 @@ class UpdateProductMediaUseCaseTest {
         when(updateProductMediaRepository.findProductByIdAndSellerId(productId, sellerId))
                 .thenReturn(Optional.of(productRef(ProductStatus.DRAFT)));
         when(updateProductMediaRepository.replaceMedia(eq(productId), any()))
-                .thenReturn(List.of(new ProductMediaItem(mediaUrl, UpdateProductMediaUseCase.MEDIA_TYPE_IMAGE, 0)));
+                .thenReturn(List.of(new ProductMediaItem(mediaUrl, ProductMediaType.IMAGE.name(), 0)));
         when(productMediaUpdatedOutboxService.build(any(), any(), any(), any(), eq(1), any()))
                 .thenReturn(sampleOutboxEvent());
 
@@ -97,14 +100,55 @@ class UpdateProductMediaUseCaseTest {
     }
 
     @Test
+    void shouldUseFirstImageAsThumbnailWhenVideoPresent() {
+        String imageUrl = "http://localhost:9000/2hands-commerce-product/products/a/b/images/1.jpg";
+        String videoUrl = "http://localhost:9000/2hands-commerce-product/products/a/b/videos/1.mp4";
+        when(updateProductMediaRepository.findProductByIdAndSellerId(productId, sellerId))
+                .thenReturn(Optional.of(productRef(ProductStatus.DRAFT)));
+        when(updateProductMediaRepository.replaceMedia(eq(productId), any()))
+                .thenReturn(List.of(
+                        new ProductMediaItem(imageUrl, ProductMediaType.IMAGE.name(), 0),
+                        new ProductMediaItem(videoUrl, ProductMediaType.VIDEO.name(), 1)
+                ));
+        when(productMediaUpdatedOutboxService.build(any(), any(), any(), any(), eq(2), any()))
+                .thenReturn(sampleOutboxEvent());
+
+        UpdateProductMediaResult result = useCase.execute(new UpdateProductMediaCommand(
+                sellerId,
+                productId,
+                List.of(imageUrl, videoUrl)
+        ));
+
+        assertThat(result.thumbnailUrl()).isEqualTo(imageUrl);
+        assertThat(result.mediaUrls()).containsExactly(imageUrl, videoUrl);
+    }
+
+    @Test
+    void shouldRejectVideoOnlyMediaList() {
+        String videoUrl = "http://localhost:9000/2hands-commerce-product/products/a/b/videos/1.mp4";
+
+        assertThatThrownBy(() -> useCase.execute(new UpdateProductMediaCommand(
+                sellerId,
+                productId,
+                List.of(videoUrl)
+        )))
+                .isInstanceOf(AppException.class)
+                .extracting(ex -> ((AppException) ex).getErrorCode())
+                .isEqualTo(ErrorCode.VALIDATION_ERROR);
+
+        verify(updateProductMediaRepository, never()).replaceMedia(any(), any());
+    }
+
+    @Test
     void shouldRejectRemovedProduct() {
+        String mediaUrl = "http://localhost:9000/2hands-commerce-product/products/a/b/images/1.jpg";
         when(updateProductMediaRepository.findProductByIdAndSellerId(productId, sellerId))
                 .thenReturn(Optional.of(productRef(ProductStatus.REMOVED)));
 
         assertThatThrownBy(() -> useCase.execute(new UpdateProductMediaCommand(
                 sellerId,
                 productId,
-                List.of("http://example.com/a.jpg")
+                List.of(mediaUrl)
         )))
                 .isInstanceOf(AppException.class)
                 .extracting(ex -> ((AppException) ex).getErrorCode())
@@ -115,9 +159,6 @@ class UpdateProductMediaUseCaseTest {
 
     @Test
     void shouldRejectInvalidBucketUrlWhenMinioEnabled() {
-        when(updateProductMediaRepository.findProductByIdAndSellerId(productId, sellerId))
-                .thenReturn(Optional.of(productRef(ProductStatus.DRAFT)));
-
         assertThatThrownBy(() -> useCase.execute(new UpdateProductMediaCommand(
                 sellerId,
                 productId,

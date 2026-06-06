@@ -30,17 +30,17 @@ const BUYERS = [
 const PRODUCTS = [
   {
     product_id: "c2000000-0000-4000-8000-000000000101",
-    product_title: "Máy khoan pin 18V",
+    product_title: "Ao khoac denim demo",
     product_thumbnail_url: "https://picsum.photos/seed/admin-rev-prod-101/64/64",
   },
   {
     product_id: "c2000000-0000-4000-8000-000000000102",
-    product_title: "Bộ tuốc lực điện 20V",
+    product_title: "Vay midi H&M demo",
     product_thumbnail_url: "https://picsum.photos/seed/admin-rev-prod-102/64/64",
   },
   {
     product_id: "c2000000-0000-4000-8000-000000000108",
-    product_title: "Cờ lê điện nháp",
+    product_title: "Hoodie nhap san sang dang ban",
     product_thumbnail_url: "https://picsum.photos/seed/admin-rev-prod-108/64/64",
   },
 ];

@@ -1,6 +1,8 @@
 package com.twohands.commerce_service.unit.application.product;
 
+import com.twohands.commerce_service.application.product.common.ProductCatalogValidationService;
 import com.twohands.commerce_service.application.product.common.ProductCreatedOutboxService;
+import com.twohands.commerce_service.domain.catalog.BrandRepository;
 import com.twohands.commerce_service.application.product.createproduct.CreateProductCommand;
 import com.twohands.commerce_service.application.product.createproduct.CreateProductUseCase;
 import com.twohands.commerce_service.domain.catalog.ProductCategoryRepository;
@@ -47,6 +49,9 @@ class CreateProductUseCaseTest {
     private ProductCategoryRepository productCategoryRepository;
 
     @Mock
+    private BrandRepository brandRepository;
+
+    @Mock
     private CreateProductRepository createProductRepository;
 
     @Mock
@@ -66,9 +71,12 @@ class CreateProductUseCaseTest {
 
     @BeforeEach
     void setUp() {
+        ProductCatalogValidationService productCatalogValidationService =
+                new ProductCatalogValidationService(brandRepository);
         useCase = new CreateProductUseCase(
                 sellerShopRepository,
                 productCategoryRepository,
+                productCatalogValidationService,
                 createProductRepository,
                 outboxEventRepository,
                 productCreatedOutboxService,
@@ -141,7 +149,7 @@ class CreateProductUseCaseTest {
                 "PHYSICAL",
                 categoryId,
                 null,
-                "NEW",
+                "GOOD",
                 "Phone",
                 "Description",
                 0
@@ -153,13 +161,65 @@ class CreateProductUseCaseTest {
                 .isEqualTo(ErrorCode.VALIDATION_ERROR);
     }
 
+    @Test
+    void shouldRejectInvalidCondition() {
+        when(sellerShopRepository.findBySellerId(sellerId))
+                .thenReturn(Optional.of(new SellerShop(shopId, sellerId, ShopStatus.ACTIVE)));
+        when(productCategoryRepository.existsActiveById(categoryId)).thenReturn(true);
+
+        CreateProductCommand command = new CreateProductCommand(
+                sellerId,
+                "PHYSICAL",
+                categoryId,
+                null,
+                "NEW",
+                "Ao thun",
+                "Mo ta",
+                300
+        );
+
+        assertThatThrownBy(() -> useCase.execute(command))
+                .isInstanceOf(AppException.class)
+                .extracting(ex -> ((AppException) ex).getErrorCode())
+                .isEqualTo(ErrorCode.VALIDATION_ERROR);
+
+        verify(createProductRepository, never()).create(any(), any());
+    }
+
+    @Test
+    void shouldRejectInactiveBrand() {
+        UUID brandId = UUID.randomUUID();
+        when(sellerShopRepository.findBySellerId(sellerId))
+                .thenReturn(Optional.of(new SellerShop(shopId, sellerId, ShopStatus.ACTIVE)));
+        when(productCategoryRepository.existsActiveById(categoryId)).thenReturn(true);
+        when(brandRepository.existsActiveById(brandId)).thenReturn(false);
+
+        CreateProductCommand command = new CreateProductCommand(
+                sellerId,
+                "PHYSICAL",
+                categoryId,
+                brandId,
+                "GOOD",
+                "Ao thun",
+                "Mo ta",
+                300
+        );
+
+        assertThatThrownBy(() -> useCase.execute(command))
+                .isInstanceOf(AppException.class)
+                .extracting(ex -> ((AppException) ex).getErrorCode())
+                .isEqualTo(ErrorCode.BRAND_NOT_FOUND);
+
+        verify(createProductRepository, never()).create(any(), any());
+    }
+
     private CreateProductCommand validCommand() {
         return new CreateProductCommand(
                 sellerId,
                 "PHYSICAL",
                 categoryId,
                 null,
-                "NEW",
+                "GOOD",
                 " iPhone 15 ",
                 " Like new ",
                 500
@@ -175,7 +235,7 @@ class CreateProductUseCaseTest {
                 "PHYSICAL",
                 categoryId,
                 null,
-                "NEW",
+                "GOOD",
                 "iPhone 15",
                 "Like new",
                 500,

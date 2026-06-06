@@ -1,5 +1,6 @@
 package com.twohands.commerce_service.application.product.updateproduct;
 
+import com.twohands.commerce_service.application.product.common.ProductCatalogValidationService;
 import com.twohands.commerce_service.application.product.common.ProductUpdatedOutboxService;
 import com.twohands.commerce_service.domain.catalog.ProductCategoryRepository;
 import com.twohands.commerce_service.domain.outbox.OutboxEventRepository;
@@ -26,6 +27,7 @@ public class UpdateProductUseCase {
 
     private final SellerShopRepository sellerShopRepository;
     private final ProductCategoryRepository productCategoryRepository;
+    private final ProductCatalogValidationService productCatalogValidationService;
     private final UpdateProductRepository updateProductRepository;
     private final OutboxEventRepository outboxEventRepository;
     private final ProductUpdatedOutboxService productUpdatedOutboxService;
@@ -34,6 +36,7 @@ public class UpdateProductUseCase {
     public UpdateProductUseCase(
             SellerShopRepository sellerShopRepository,
             ProductCategoryRepository productCategoryRepository,
+            ProductCatalogValidationService productCatalogValidationService,
             UpdateProductRepository updateProductRepository,
             OutboxEventRepository outboxEventRepository,
             ProductUpdatedOutboxService productUpdatedOutboxService,
@@ -41,6 +44,7 @@ public class UpdateProductUseCase {
     ) {
         this.sellerShopRepository = sellerShopRepository;
         this.productCategoryRepository = productCategoryRepository;
+        this.productCatalogValidationService = productCatalogValidationService;
         this.updateProductRepository = updateProductRepository;
         this.outboxEventRepository = outboxEventRepository;
         this.productUpdatedOutboxService = productUpdatedOutboxService;
@@ -71,16 +75,21 @@ public class UpdateProductUseCase {
             throw new AppException(ErrorCode.CATEGORY_NOT_FOUND);
         }
 
+        productCatalogValidationService.validateActiveBrandId(command.brandId());
+
+        String productType = productCatalogValidationService.normalizeProductType(command.productType());
+        String condition = productCatalogValidationService.normalizeCondition(command.condition());
+
         Instant now = clock.instant();
         UpdateProductResult updated = updateProductRepository.update(
                 new UpdateProductDraft(
                         existing.productId(),
                         existing.sellerId(),
                         existing.shopId(),
-                        command.productType().trim(),
+                        productType,
                         command.categoryId(),
                         command.brandId(),
-                        command.condition().trim(),
+                        condition,
                         command.title().trim(),
                         command.description().trim(),
                         command.weightGram()

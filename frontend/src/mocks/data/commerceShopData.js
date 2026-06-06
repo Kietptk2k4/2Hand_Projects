@@ -1,5 +1,10 @@
-export const MOCK_SHOP_BUILDTECH_ID = "s1000000-0000-4000-8000-000000000001";
-export const MOCK_SHOP_AQUAFLOW_ID = "s1000000-0000-4000-8000-000000000006";
+export const MOCK_SHOP_LAN_CLOSET_ID = "s1000000-0000-4000-8000-000000000001";
+export const MOCK_SHOP_VACATION_ID = "s1000000-0000-4000-8000-000000000006";
+
+/** @deprecated use MOCK_SHOP_LAN_CLOSET_ID */
+export const MOCK_SHOP_BUILDTECH_ID = MOCK_SHOP_LAN_CLOSET_ID;
+/** @deprecated use MOCK_SHOP_VACATION_ID */
+export const MOCK_SHOP_AQUAFLOW_ID = MOCK_SHOP_VACATION_ID;
 export const MOCK_SHOP_SUSPENDED_ID = "s1000000-0000-4000-8000-000000000099";
 export const MOCK_SHOP_EMPTY_ID = "s1000000-0000-4000-8000-000000000007";
 
@@ -12,12 +17,12 @@ export const MOCK_SHOP_IDS = {
 
 const shopRecords = [
   {
-    shop_id: MOCK_SHOP_BUILDTECH_ID,
-    shop_name: "BuildTech Supplies",
+    shop_id: MOCK_SHOP_LAN_CLOSET_ID,
+    shop_name: "Tu do cua Lan",
     description:
-      "Chuyên cung cấp dụng cụ điện và thiết bị thi công chất lượng cao cho thợ và nhà thầu trên 2Hands.",
-    avatar_url: "https://picsum.photos/seed/shop-buildtech-avatar/200/200",
-    cover_url: "https://picsum.photos/seed/shop-buildtech-cover/1200/400",
+      "Tu do thoi trang nu second-hand — ao, vay, giay va tui xach tu Lan.",
+    avatar_url: "https://picsum.photos/seed/shop-lan-closet-avatar/200/200",
+    cover_url: "https://picsum.photos/seed/shop-lan-closet-cover/1200/400",
     rating_avg: 4.8,
     rating_count: 128,
     shop_vacation: false,
@@ -25,17 +30,41 @@ const shopRecords = [
     status: "ACTIVE",
   },
   {
-    shop_id: MOCK_SHOP_AQUAFLOW_ID,
-    shop_name: "AquaFlow Plumbing",
+    shop_id: MOCK_SHOP_VACATION_ID,
+    shop_name: "Closet Nghi Phep",
     description:
-      "Giải pháp ống nước và phụ kiện hệ thống cấp thoát nước cho dự án dân dụng và công nghiệp.",
-    avatar_url: "https://picsum.photos/seed/shop-aquaflow-avatar/200/200",
-    cover_url: "https://picsum.photos/seed/shop-aquaflow-cover/1200/400",
+      "Tu do thoi trang tam nghi — ban van co the xem san pham, don se xu ly sau.",
+    avatar_url: "https://picsum.photos/seed/shop-vacation-closet-avatar/200/200",
+    cover_url: "https://picsum.photos/seed/shop-vacation-closet-cover/1200/400",
     rating_avg: 4.5,
     rating_count: 42,
     shop_vacation: true,
     vacation_message:
       "Shop tạm thời không nhận đơn hàng mới. Bạn vẫn có thể xem sản phẩm; đơn sẽ được xử lý sau khi shop mở lại.",
+    status: "ACTIVE",
+  },
+  {
+    shop_id: "s1000000-0000-4000-8000-000000000002",
+    shop_name: "Vintage Closet",
+    description: "Do vintage va second-hand doc dao tu nguon uy tin.",
+    avatar_url: "https://picsum.photos/seed/shop-vintage-closet-avatar/200/200",
+    cover_url: "https://picsum.photos/seed/shop-vintage-closet-cover/1200/400",
+    rating_avg: 4.7,
+    rating_count: 64,
+    shop_vacation: false,
+    vacation_message: null,
+    status: "ACTIVE",
+  },
+  {
+    shop_id: "s1000000-0000-4000-8000-000000000003",
+    shop_name: "Streetwear 2Hand",
+    description: "Streetwear, hoodie va sneaker second-hand.",
+    avatar_url: "https://picsum.photos/seed/shop-streetwear-avatar/200/200",
+    cover_url: "https://picsum.photos/seed/shop-streetwear-cover/1200/400",
+    rating_avg: 4.6,
+    rating_count: 38,
+    shop_vacation: false,
+    vacation_message: null,
     status: "ACTIVE",
   },
   {

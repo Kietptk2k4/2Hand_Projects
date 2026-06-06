@@ -14,16 +14,16 @@ export const MOCK_SELLER_REVIEW_HIDDEN = "srv-0000-4000-8000-000000000003";
 const VALID_STATUSES = ["VISIBLE", "HIDDEN"];
 
 const PRODUCT_NAMES = [
-  "Máy khoan pin 18V",
-  "Bộ tuốc lực điện 20V",
-  "Máy mài góc 100mm",
-  "Cờ lê điện nháp",
-  "Máy cắt đá mini",
+  "Ao khoac denim demo",
+  "Vay midi H&M demo",
+  "Giay Nike demo",
+  "Hoodie nhap san sang dang ban",
+  "Ao thun nam demo",
 ];
 
 const COMMENTS = [
   "Sản phẩm tuyệt vời! Giao hàng nhanh và đóng gói cẩn thận.",
-  "Pin trâu, dùng công trình cả ngày vẫn ổn.",
+  "Chat lieu tot, mac rat thoang.",
   "Hơi nặng tay nhưng công suất tốt.",
   "Shop tư vấn nhiệt tình, sẽ mua lại.",
   null,

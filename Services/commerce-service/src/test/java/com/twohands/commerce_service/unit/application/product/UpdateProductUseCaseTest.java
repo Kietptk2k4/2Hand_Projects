@@ -1,6 +1,8 @@
 package com.twohands.commerce_service.unit.application.product;
 
+import com.twohands.commerce_service.application.product.common.ProductCatalogValidationService;
 import com.twohands.commerce_service.application.product.common.ProductUpdatedOutboxService;
+import com.twohands.commerce_service.domain.catalog.BrandRepository;
 import com.twohands.commerce_service.application.product.updateproduct.UpdateProductCommand;
 import com.twohands.commerce_service.application.product.updateproduct.UpdateProductUseCase;
 import com.twohands.commerce_service.domain.catalog.ProductCategoryRepository;
@@ -46,6 +48,9 @@ class UpdateProductUseCaseTest {
     private ProductCategoryRepository productCategoryRepository;
 
     @Mock
+    private BrandRepository brandRepository;
+
+    @Mock
     private UpdateProductRepository updateProductRepository;
 
     @Mock
@@ -64,9 +69,12 @@ class UpdateProductUseCaseTest {
 
     @BeforeEach
     void setUp() {
+        ProductCatalogValidationService productCatalogValidationService =
+                new ProductCatalogValidationService(brandRepository);
         useCase = new UpdateProductUseCase(
                 sellerShopRepository,
                 productCategoryRepository,
+                productCatalogValidationService,
                 updateProductRepository,
                 outboxEventRepository,
                 productUpdatedOutboxService,
@@ -151,7 +159,7 @@ class UpdateProductUseCaseTest {
         return new UpdateProductCommand(
                 sellerId,
                 productId,
-                "PHONE",
+                "PHYSICAL",
                 categoryId,
                 null,
                 "USED",
@@ -167,7 +175,7 @@ class UpdateProductUseCaseTest {
                 sellerId,
                 shopId,
                 status,
-                "PHONE",
+                "PHYSICAL",
                 UUID.randomUUID(),
                 null,
                 "USED",
@@ -184,7 +192,7 @@ class UpdateProductUseCaseTest {
                 sellerId,
                 shopId,
                 status,
-                "PHONE",
+                "PHYSICAL",
                 categoryId,
                 null,
                 "USED",

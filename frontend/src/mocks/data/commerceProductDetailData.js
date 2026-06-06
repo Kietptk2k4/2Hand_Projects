@@ -44,9 +44,9 @@ function buildMedia(product) {
 
 function buildAttributes(product) {
   const defaults = [
-    { attribute_name: "Thương hiệu", attribute_value: "ProGrade" },
-    { attribute_name: "Xuất xứ", attribute_value: "Việt Nam" },
-    { attribute_name: "Bảo hành", attribute_value: "12 tháng" },
+    { attribute_name: "size", attribute_value: "M" },
+    { attribute_name: "color", attribute_value: "Den" },
+    { attribute_name: "material", attribute_value: "Cotton blend" },
   ];
   if (product.category_name) {
     defaults.push({ attribute_name: "Danh mục", attribute_value: product.category_name });
@@ -59,11 +59,11 @@ function buildInventorySummary(product) {
   const lowStock = Boolean(product.low_stock) && inStock;
   let stockQuantity = 0;
   if (inStock) {
-    stockQuantity = lowStock ? 3 : 24;
+    stockQuantity = lowStock ? 1 : 1;
   }
   return {
     stock_quantity: stockQuantity,
-    low_stock_threshold: 5,
+    low_stock_threshold: 0,
     in_stock: inStock,
     low_stock: lowStock,
   };
@@ -93,8 +93,8 @@ export function buildDetailFromListProduct(product) {
     title: product.title,
     description:
       product.description ||
-      `${product.title} — sản phẩm chất lượng, phù hợp cho thợ và nhà thầu trên nền tảng 2Hands Commerce.`,
-    condition: product.condition || "NEW",
+      `${product.title} — san pham second-hand tu tu do ca nhan tren 2Hands Commerce.`,
+    condition: product.condition || "GOOD",
     weight_gram: product.weight_gram ?? 1850,
     status: product.status || "ACTIVE",
     category: {

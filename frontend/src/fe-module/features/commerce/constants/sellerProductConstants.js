@@ -1,7 +1,9 @@
 export const PRODUCT_STATUSES = ["DRAFT", "ACTIVE", "OUT_OF_STOCK", "PAUSED", "ARCHIVED"];
 
 export const PRODUCT_CONDITIONS = [
-  { value: "NEW", label: "Mới" },
+  { value: "LIKE_NEW", label: "Như mới" },
+  { value: "GOOD", label: "Tốt" },
+  { value: "FAIR", label: "Khá" },
   { value: "USED", label: "Đã qua sử dụng" },
 ];
 
@@ -53,7 +55,7 @@ export const READ_ONLY_STATUSES = ["ARCHIVED"];
 export const EMPTY_CREATE_PRODUCT_FORM = {
   productType: "PHYSICAL",
   categoryId: "",
-  condition: "NEW",
+  condition: "GOOD",
   title: "",
   description: "",
   weightGram: "",
@@ -62,7 +64,7 @@ export const EMPTY_CREATE_PRODUCT_FORM = {
   saleStartAt: "",
   saleEndAt: "",
   stockQuantity: "",
-  lowStockThreshold: "3",
+  lowStockThreshold: "0",
 };
 
 export const SELLER_PRODUCT_ERROR_MESSAGES = {
@@ -70,6 +72,7 @@ export const SELLER_PRODUCT_ERROR_MESSAGES = {
   "COMMERCE-400-VALIDATION": "Vui lòng kiểm tra thông tin sản phẩm.",
   "COMMERCE-400-MEDIA-URL": "Cần ít nhất một ảnh sản phẩm hợp lệ.",
   "COMMERCE-404-CATEGORY": "Danh mục không tồn tại hoặc đã ngừng hoạt động.",
+  "COMMERCE-404-BRAND": "Thương hiệu không tồn tại hoặc đã ngừng hoạt động.",
   "COMMERCE-404-PRODUCT": "Không tìm thấy sản phẩm.",
   "COMMERCE-409-SELLER-SHOP": "Bạn chưa có cửa hàng. Hãy tạo shop trước.",
   "COMMERCE-409-SHOP-STATUS": "Cửa hàng không ở trạng thái hoạt động.",

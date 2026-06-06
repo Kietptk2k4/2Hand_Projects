@@ -6,6 +6,7 @@ import com.twohands.commerce_service.application.product.uploadproductmedia.Crea
 import com.twohands.commerce_service.application.product.uploadproductmedia.CreateProductMediaUploadUrlValidationService;
 import com.twohands.commerce_service.application.product.uploadproductmedia.ProductMediaUploadIntent;
 import com.twohands.commerce_service.application.product.uploadproductmedia.ProductMediaUploadStoragePort;
+import com.twohands.commerce_service.common.media.ProductMediaContentValidator;
 import com.twohands.commerce_service.config.CommerceObjectStorageProperties;
 import com.twohands.commerce_service.domain.product.ProductStatus;
 import com.twohands.commerce_service.domain.product.UpdateProductMediaProductRef;
@@ -38,6 +39,7 @@ class CreateProductMediaUploadUrlUseCaseTest {
     private ProductMediaUploadStoragePort productMediaUploadStoragePort;
 
     private CreateProductMediaUploadUrlUseCase useCase;
+    private CommerceObjectStorageProperties properties;
 
     private final UUID sellerId = UUID.randomUUID();
     private final UUID shopId = UUID.randomUUID();
@@ -45,13 +47,15 @@ class CreateProductMediaUploadUrlUseCaseTest {
 
     @BeforeEach
     void setUp() {
-        CommerceObjectStorageProperties properties = new CommerceObjectStorageProperties();
+        properties = new CommerceObjectStorageProperties();
         properties.setEnabled(true);
         properties.setProductMediaMaxFileSizeBytes(5_242_880L);
+        properties.setProductMediaMaxVideoFileSizeBytes(52_428_800L);
         properties.setPresignedUrlTtlSeconds(900);
 
+        ProductMediaContentValidator contentValidator = new ProductMediaContentValidator(properties);
         useCase = new CreateProductMediaUploadUrlUseCase(
-                new CreateProductMediaUploadUrlValidationService(properties),
+                new CreateProductMediaUploadUrlValidationService(properties, contentValidator),
                 updateProductMediaRepository,
                 properties,
                 productMediaUploadStoragePort
@@ -89,14 +93,47 @@ class CreateProductMediaUploadUrlUseCaseTest {
 
         assertThat(result.uploadUrl()).isEqualTo("https://minio/upload");
         assertThat(result.mediaUrl()).contains("2hands-commerce-product");
+        assertThat(result.maxFileSizeBytes()).isEqualTo(5_242_880L);
+    }
+
+    @Test
+    void shouldIssueUploadUrlForProductVideo() {
+        Instant expiresAt = Instant.parse("2026-05-21T10:15:00Z");
+        when(updateProductMediaRepository.findProductByIdAndSellerId(productId, sellerId))
+                .thenReturn(Optional.of(new UpdateProductMediaProductRef(
+                        productId, sellerId, shopId, ProductStatus.DRAFT
+                )));
+        when(productMediaUploadStoragePort.createUploadIntent(
+                eq(sellerId),
+                eq(productId),
+                eq("video/mp4"),
+                eq(CreateProductMediaUploadUrlValidationService.MEDIA_KIND_PRODUCT_VIDEO),
+                any()
+        )).thenReturn(new ProductMediaUploadIntent(
+                "https://minio/upload",
+                "products/x/y/videos/a.mp4",
+                "http://localhost:9000/2hands-commerce-product/products/x/y/videos/a.mp4",
+                CreateProductMediaUploadUrlValidationService.MEDIA_KIND_PRODUCT_VIDEO,
+                expiresAt
+        ));
+
+        CreateProductMediaUploadUrlResult result = useCase.execute(new CreateProductMediaUploadUrlCommand(
+                sellerId,
+                productId,
+                "video/mp4",
+                10_485_760L,
+                CreateProductMediaUploadUrlValidationService.MEDIA_KIND_PRODUCT_VIDEO
+        ));
+
+        assertThat(result.mediaUrl()).contains("/videos/");
+        assertThat(result.maxFileSizeBytes()).isEqualTo(52_428_800L);
     }
 
     @Test
     void shouldRejectWhenObjectStorageDisabled() {
-        CommerceObjectStorageProperties properties = new CommerceObjectStorageProperties();
         properties.setEnabled(false);
         CreateProductMediaUploadUrlUseCase disabledUseCase = new CreateProductMediaUploadUrlUseCase(
-                new CreateProductMediaUploadUrlValidationService(properties),
+                new CreateProductMediaUploadUrlValidationService(properties, new ProductMediaContentValidator(properties)),
                 updateProductMediaRepository,
                 properties,
                 productMediaUploadStoragePort

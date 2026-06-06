@@ -1,5 +1,6 @@
 package com.twohands.commerce_service.application.product.publishproduct;
 
+import com.twohands.commerce_service.application.product.common.ProductCatalogValidationService;
 import com.twohands.commerce_service.application.product.common.ProductPublishedOutboxService;
 import com.twohands.commerce_service.common.media.CommerceProductMediaUrlValidator;
 import com.twohands.commerce_service.domain.outbox.OutboxEventRepository;
@@ -22,6 +23,7 @@ public class PublishProductUseCase {
     private final PublishProductRepository publishProductRepository;
     private final OutboxEventRepository outboxEventRepository;
     private final ProductPublishedOutboxService productPublishedOutboxService;
+    private final ProductCatalogValidationService productCatalogValidationService;
     private final CommerceProductMediaUrlValidator productMediaUrlValidator;
     private final Clock clock;
 
@@ -29,12 +31,14 @@ public class PublishProductUseCase {
             PublishProductRepository publishProductRepository,
             OutboxEventRepository outboxEventRepository,
             ProductPublishedOutboxService productPublishedOutboxService,
+            ProductCatalogValidationService productCatalogValidationService,
             CommerceProductMediaUrlValidator productMediaUrlValidator,
             Clock clock
     ) {
         this.publishProductRepository = publishProductRepository;
         this.outboxEventRepository = outboxEventRepository;
         this.productPublishedOutboxService = productPublishedOutboxService;
+        this.productCatalogValidationService = productCatalogValidationService;
         this.productMediaUrlValidator = productMediaUrlValidator;
         this.clock = clock;
     }
@@ -143,6 +147,8 @@ public class PublishProductUseCase {
             );
         }
 
+        productCatalogValidationService.normalizeCondition(snapshot.condition());
+
         if (snapshot.weightGram() <= 0) {
             throw new AppException(ErrorCode.BAD_REQUEST, "Product weight must be greater than zero");
         }
@@ -157,6 +163,8 @@ public class PublishProductUseCase {
                     "Inventory record is required before publish"
             );
         }
+
+        productCatalogValidationService.validateSecondHandStockQuantity(snapshot.stockQuantity());
 
         productMediaUrlValidator.validateRequiredProductMedia(snapshot.primaryMediaUrl());
     }

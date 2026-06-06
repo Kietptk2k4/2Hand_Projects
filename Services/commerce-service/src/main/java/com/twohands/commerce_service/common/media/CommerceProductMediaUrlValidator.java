@@ -1,22 +1,34 @@
 package com.twohands.commerce_service.common.media;
 
 import com.twohands.commerce_service.config.CommerceObjectStorageProperties;
+import com.twohands.commerce_service.domain.product.ProductMediaType;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
+
 @Component
 public class CommerceProductMediaUrlValidator {
 
     private final CommerceObjectStorageProperties properties;
+    private final ProductMediaContentValidator productMediaContentValidator;
 
-    public CommerceProductMediaUrlValidator(CommerceObjectStorageProperties properties) {
+    public CommerceProductMediaUrlValidator(
+            CommerceObjectStorageProperties properties,
+            ProductMediaContentValidator productMediaContentValidator
+    ) {
         this.properties = properties;
+        this.productMediaContentValidator = productMediaContentValidator;
     }
 
     public int maxProductMediaCount() {
         return properties.getProductMediaMaxCount();
+    }
+
+    public int maxProductVideoCount() {
+        return properties.getProductMediaMaxVideoCount();
     }
 
     public void validateRequiredProductMedia(String mediaUrl) {
@@ -26,18 +38,57 @@ public class CommerceProductMediaUrlValidator {
         if (!StringUtils.hasText(mediaUrl)) {
             throw new AppException(
                     ErrorCode.INVALID_MEDIA_URL,
-                    "At least one product media URL is required when MinIO is enabled"
+                    "At least one product image is required when MinIO is enabled"
             );
         }
         validateProductBucketUrl(mediaUrl);
+        if (productMediaContentValidator.inferMediaTypeFromUrl(mediaUrl) != ProductMediaType.IMAGE) {
+            throw new AppException(
+                    ErrorCode.INVALID_MEDIA_URL,
+                    "Primary product media must be an image"
+            );
+        }
     }
 
-    public void validateProductMediaUrls(java.util.List<String> mediaUrls) {
+    public void validateProductMediaUrls(List<String> mediaUrls) {
         if (!properties.isEnabled()) {
             return;
         }
+        validateProductMediaComposition(mediaUrls);
+    }
+
+    public void validateProductMediaComposition(List<String> mediaUrls) {
+        if (!properties.isEnabled()) {
+            return;
+        }
+
+        int imageCount = 0;
+        int videoCount = 0;
+
         for (String mediaUrl : mediaUrls) {
             validateProductBucketUrl(mediaUrl);
+            ProductMediaType mediaType = productMediaContentValidator.inferMediaTypeFromUrl(mediaUrl);
+            if (mediaType == ProductMediaType.IMAGE) {
+                imageCount++;
+            } else {
+                videoCount++;
+            }
+        }
+
+        if (!mediaUrls.isEmpty() && imageCount == 0) {
+            throw fieldError("media_urls", "must include at least one image");
+        }
+        if (imageCount > maxProductMediaCount()) {
+            throw fieldError(
+                    "media_urls",
+                    "must contain at most " + maxProductMediaCount() + " images"
+            );
+        }
+        if (videoCount > maxProductVideoCount()) {
+            throw fieldError(
+                    "media_urls",
+                    "must contain at most " + maxProductVideoCount() + " videos"
+            );
         }
     }
 
@@ -58,5 +109,9 @@ public class CommerceProductMediaUrlValidator {
             return "";
         }
         return value.endsWith("/") ? value.substring(0, value.length() - 1) : value;
+    }
+
+    private AppException fieldError(String field, String reason) {
+        return new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed", field, reason);
     }
 }

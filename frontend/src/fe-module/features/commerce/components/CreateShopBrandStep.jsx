@@ -30,7 +30,7 @@ export function CreateShopBrandStep({
             type="text"
             maxLength={SHOP_NAME_MAX}
             className={inputClass}
-            placeholder="VD: Cửa hàng Dụng cụ An"
+            placeholder="VD: Tu do thoi trang Lan"
             value={form.shopName}
             disabled={disabled}
             onChange={(event) => onFieldChange("shopName", event.target.value)}

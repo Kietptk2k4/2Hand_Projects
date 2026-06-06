@@ -1,7 +1,9 @@
 package com.twohands.commerce_service.unit.application.product;
 
 import com.twohands.commerce_service.application.cart.synccartitemstatus.SyncCartItemStatusUseCase;
+import com.twohands.commerce_service.application.product.common.ProductCatalogValidationService;
 import com.twohands.commerce_service.application.product.common.ProductInventoryUpdatedOutboxService;
+import com.twohands.commerce_service.domain.catalog.BrandRepository;
 import com.twohands.commerce_service.application.product.updateproductinventory.UpdateProductInventoryCommand;
 import com.twohands.commerce_service.application.product.updateproductinventory.UpdateProductInventoryUseCase;
 import com.twohands.commerce_service.domain.cart.SyncCartItemStatusResult;
@@ -51,6 +53,9 @@ class UpdateProductInventoryUseCaseTest {
     @Mock
     private ProductInventoryUpdatedOutboxService productInventoryUpdatedOutboxService;
 
+    @Mock
+    private BrandRepository brandRepository;
+
     private UpdateProductInventoryUseCase useCase;
 
     private final UUID sellerId = UUID.randomUUID();
@@ -60,9 +65,12 @@ class UpdateProductInventoryUseCaseTest {
 
     @BeforeEach
     void setUp() {
+        ProductCatalogValidationService productCatalogValidationService =
+                new ProductCatalogValidationService(brandRepository);
         useCase = new UpdateProductInventoryUseCase(
                 updateProductInventoryRepository,
                 syncCartItemStatusUseCase,
+                productCatalogValidationService,
                 outboxEventRepository,
                 productInventoryUpdatedOutboxService,
                 Clock.fixed(now, ZoneOffset.UTC)
@@ -96,8 +104,8 @@ class UpdateProductInventoryUseCaseTest {
     void shouldRestoreOutOfStockToActiveWhenEligible() {
         when(updateProductInventoryRepository.findProductForInventoryUpdate(eq(productId), eq(sellerId), any()))
                 .thenReturn(Optional.of(snapshot(ProductStatus.OUT_OF_STOCK, inventory(0, 2, 0))));
-        when(updateProductInventoryRepository.upsertInventory(productId, 10, 2, now))
-                .thenReturn(new ProductInventoryState(10, 2, 0));
+        when(updateProductInventoryRepository.upsertInventory(productId, 1, 2, now))
+                .thenReturn(new ProductInventoryState(1, 2, 0));
         when(syncCartItemStatusUseCase.syncByProductId(productId))
                 .thenReturn(SyncCartItemStatusResult.empty());
         when(productInventoryUpdatedOutboxService.build(
@@ -105,7 +113,7 @@ class UpdateProductInventoryUseCaseTest {
         )).thenReturn(sampleOutboxEvent());
 
         UpdateProductInventoryResult result = useCase.execute(
-                new UpdateProductInventoryCommand(sellerId, productId, 10, null)
+                new UpdateProductInventoryCommand(sellerId, productId, 1, null)
         );
 
         assertThat(result.status()).isEqualTo(ProductStatus.ACTIVE);
@@ -113,12 +121,24 @@ class UpdateProductInventoryUseCaseTest {
     }
 
     @Test
-    void shouldRejectStockBelowReservedQuantity() {
-        when(updateProductInventoryRepository.findProductForInventoryUpdate(eq(productId), eq(sellerId), any()))
-                .thenReturn(Optional.of(snapshot(ProductStatus.ACTIVE, inventory(5, 1, 3))));
-
+    void shouldRejectStockAboveOne() {
         assertThatThrownBy(() -> useCase.execute(
                 new UpdateProductInventoryCommand(sellerId, productId, 2, null)
+        ))
+                .isInstanceOf(AppException.class)
+                .extracting(ex -> ((AppException) ex).getErrorCode())
+                .isEqualTo(ErrorCode.VALIDATION_ERROR);
+
+        verify(updateProductInventoryRepository, never()).findProductForInventoryUpdate(any(), any(), any());
+    }
+
+    @Test
+    void shouldRejectStockBelowReservedQuantity() {
+        when(updateProductInventoryRepository.findProductForInventoryUpdate(eq(productId), eq(sellerId), any()))
+                .thenReturn(Optional.of(snapshot(ProductStatus.ACTIVE, inventory(1, 1, 1))));
+
+        assertThatThrownBy(() -> useCase.execute(
+                new UpdateProductInventoryCommand(sellerId, productId, 0, null)
         ))
                 .isInstanceOf(AppException.class)
                 .extracting(ex -> ((AppException) ex).getErrorCode())
@@ -133,7 +153,7 @@ class UpdateProductInventoryUseCaseTest {
                 .thenReturn(Optional.of(snapshot(ProductStatus.REMOVED, inventory(1, 0, 0))));
 
         assertThatThrownBy(() -> useCase.execute(
-                new UpdateProductInventoryCommand(sellerId, productId, 5, null)
+                new UpdateProductInventoryCommand(sellerId, productId, 1, null)
         ))
                 .isInstanceOf(AppException.class)
                 .extracting(ex -> ((AppException) ex).getErrorCode())
@@ -146,7 +166,7 @@ class UpdateProductInventoryUseCaseTest {
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> useCase.execute(
-                new UpdateProductInventoryCommand(sellerId, productId, 5, null)
+                new UpdateProductInventoryCommand(sellerId, productId, 1, null)
         ))
                 .isInstanceOf(AppException.class)
                 .extracting(ex -> ((AppException) ex).getErrorCode())

@@ -66,7 +66,9 @@ commerce:
     review-bucket: ${COMMERCE_MINIO_BUCKET_REVIEW:2hands-commerce-review}
     shop-media-max-file-size-bytes: ${COMMERCE_SHOP_MEDIA_MAX_FILE_SIZE_BYTES:5242880}
     product-media-max-file-size-bytes: ${COMMERCE_PRODUCT_MEDIA_MAX_FILE_SIZE_BYTES:5242880}
+    product-media-max-video-file-size-bytes: ${COMMERCE_PRODUCT_MEDIA_MAX_VIDEO_FILE_SIZE_BYTES:52428800}
     product-media-max-count: ${COMMERCE_PRODUCT_MEDIA_MAX_COUNT:10}
+    product-media-max-video-count: ${COMMERCE_PRODUCT_MEDIA_MAX_VIDEO_COUNT:1}
     presigned-url-ttl-seconds: ${COMMERCE_MINIO_PRESIGNED_URL_TTL_SECONDS:900}
     allowed-shop-media-content-types:
       - image/jpeg
@@ -76,6 +78,8 @@ commerce:
       - image/jpeg
       - image/png
       - image/webp
+      - video/mp4
+      - video/webm
   kafka:
     producer:
       enabled: ${COMMERCE_KAFKA_PRODUCER_ENABLED:false}

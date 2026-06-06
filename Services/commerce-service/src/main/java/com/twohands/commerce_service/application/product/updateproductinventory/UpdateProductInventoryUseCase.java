@@ -1,6 +1,7 @@
 package com.twohands.commerce_service.application.product.updateproductinventory;
 
 import com.twohands.commerce_service.application.cart.synccartitemstatus.SyncCartItemStatusUseCase;
+import com.twohands.commerce_service.application.product.common.ProductCatalogValidationService;
 import com.twohands.commerce_service.application.product.common.ProductInventoryUpdatedOutboxService;
 import com.twohands.commerce_service.domain.cart.SyncCartItemStatusResult;
 import com.twohands.commerce_service.domain.outbox.OutboxEventRepository;
@@ -25,6 +26,7 @@ public class UpdateProductInventoryUseCase {
 
     private final UpdateProductInventoryRepository updateProductInventoryRepository;
     private final SyncCartItemStatusUseCase syncCartItemStatusUseCase;
+    private final ProductCatalogValidationService productCatalogValidationService;
     private final OutboxEventRepository outboxEventRepository;
     private final ProductInventoryUpdatedOutboxService productInventoryUpdatedOutboxService;
     private final Clock clock;
@@ -32,12 +34,14 @@ public class UpdateProductInventoryUseCase {
     public UpdateProductInventoryUseCase(
             UpdateProductInventoryRepository updateProductInventoryRepository,
             SyncCartItemStatusUseCase syncCartItemStatusUseCase,
+            ProductCatalogValidationService productCatalogValidationService,
             OutboxEventRepository outboxEventRepository,
             ProductInventoryUpdatedOutboxService productInventoryUpdatedOutboxService,
             Clock clock
     ) {
         this.updateProductInventoryRepository = updateProductInventoryRepository;
         this.syncCartItemStatusUseCase = syncCartItemStatusUseCase;
+        this.productCatalogValidationService = productCatalogValidationService;
         this.outboxEventRepository = outboxEventRepository;
         this.productInventoryUpdatedOutboxService = productInventoryUpdatedOutboxService;
         this.clock = clock;
@@ -123,12 +127,8 @@ public class UpdateProductInventoryUseCase {
     }
 
     private void validateQuantities(UpdateProductInventoryCommand command) {
-        if (command.stockQuantity() < 0) {
-            throw fieldError("stock_quantity", "must be greater than or equal to 0");
-        }
-        if (command.lowStockThreshold() != null && command.lowStockThreshold() < 0) {
-            throw fieldError("low_stock_threshold", "must be greater than or equal to 0");
-        }
+        productCatalogValidationService.validateSecondHandStockQuantity(command.stockQuantity());
+        productCatalogValidationService.validateSecondHandLowStockThreshold(command.lowStockThreshold());
     }
 
     private int resolveLowStockThreshold(Integer requested, UpdateProductInventorySnapshot product) {
@@ -136,9 +136,5 @@ public class UpdateProductInventoryUseCase {
             return requested;
         }
         return product.currentLowStockThreshold();
-    }
-
-    private AppException fieldError(String field, String reason) {
-        return new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed", field, reason);
     }
 }

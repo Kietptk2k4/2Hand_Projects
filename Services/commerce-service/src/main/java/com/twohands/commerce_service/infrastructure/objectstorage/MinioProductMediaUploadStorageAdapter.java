@@ -2,7 +2,9 @@ package com.twohands.commerce_service.infrastructure.objectstorage;
 
 import com.twohands.commerce_service.application.product.uploadproductmedia.ProductMediaUploadIntent;
 import com.twohands.commerce_service.application.product.uploadproductmedia.ProductMediaUploadStoragePort;
+import com.twohands.commerce_service.common.media.ProductMediaContentValidator;
 import com.twohands.commerce_service.config.CommerceObjectStorageProperties;
+import com.twohands.commerce_service.domain.product.ProductMediaKind;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
 import io.minio.GetPresignedObjectUrlArgs;
@@ -25,13 +27,16 @@ public class MinioProductMediaUploadStorageAdapter implements ProductMediaUpload
 
     private final MinioClient minioClient;
     private final CommerceObjectStorageProperties properties;
+    private final ProductMediaContentValidator productMediaContentValidator;
 
     public MinioProductMediaUploadStorageAdapter(
             MinioClient minioClient,
-            CommerceObjectStorageProperties properties
+            CommerceObjectStorageProperties properties,
+            ProductMediaContentValidator productMediaContentValidator
     ) {
         this.minioClient = minioClient;
         this.properties = properties;
+        this.productMediaContentValidator = productMediaContentValidator;
     }
 
     @Override
@@ -42,8 +47,8 @@ public class MinioProductMediaUploadStorageAdapter implements ProductMediaUpload
             String mediaKind,
             Instant expiresAt
     ) {
-        String extension = resolveExtension(contentType);
-        String objectKey = buildObjectKey(sellerId, productId, extension);
+        String extension = productMediaContentValidator.resolveExtension(contentType);
+        String objectKey = buildObjectKey(sellerId, productId, extension, mediaKind);
         String bucket = properties.getProductBucket();
         String mediaUrl = buildPublicUrl(bucket, objectKey);
 
@@ -77,26 +82,15 @@ public class MinioProductMediaUploadStorageAdapter implements ProductMediaUpload
         }
     }
 
-    private String buildObjectKey(UUID sellerId, UUID productId, String extension) {
+    private String buildObjectKey(UUID sellerId, UUID productId, String extension, String mediaKind) {
         String fileName = UUID.randomUUID() + "." + extension;
-        return "products/" + sellerId + "/" + productId + "/images/" + fileName;
+        String folder = ProductMediaKind.PRODUCT_VIDEO.equals(mediaKind) ? "videos" : "images";
+        return "products/" + sellerId + "/" + productId + "/" + folder + "/" + fileName;
     }
 
     private String buildPublicUrl(String bucket, String objectKey) {
         String base = trimTrailingSlash(properties.getPublicUrl());
         return base + "/" + bucket + "/" + objectKey;
-    }
-
-    private String resolveExtension(String contentType) {
-        return switch (contentType) {
-            case "image/jpeg" -> "jpg";
-            case "image/png" -> "png";
-            case "image/webp" -> "webp";
-            default -> throw new AppException(
-                    ErrorCode.INVALID_MEDIA_TYPE,
-                    "Media type is not allowed"
-            );
-        };
     }
 
     private String trimTrailingSlash(String value) {

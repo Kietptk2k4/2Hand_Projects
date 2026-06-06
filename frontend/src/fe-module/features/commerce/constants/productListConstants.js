@@ -9,9 +9,9 @@ export const SORT_OPTIONS = [
 ];
 
 export const CATEGORY_NAV_ITEMS = [
-  { label: "Dụng cụ điện", categoryId: "c2000000-0000-4000-8000-000000000001" },
-  { label: "Vật liệu xây dựng", categoryId: "c2000000-0000-4000-8000-000000000003" },
-  { label: "Bảo hộ lao động", categoryId: "c2000000-0000-4000-8000-000000000006" },
-  { label: "Ống nước", categoryId: "c2000000-0000-4000-8000-000000000005" },
-  { label: "Thiết bị điện", categoryId: "c2000000-0000-4000-8000-000000000004" },
+  { label: "Nữ", categoryId: "f1000000-0000-4000-8000-000000000010" },
+  { label: "Nam", categoryId: "f1000000-0000-4000-8000-000000000020" },
+  { label: "Unisex / Streetwear", categoryId: "f1000000-0000-4000-8000-000000000030" },
+  { label: "Vintage & Designer", categoryId: "f1000000-0000-4000-8000-000000000040" },
+  { label: "Áo nữ", categoryId: "f1000000-0000-4000-8000-000000000011" },
 ];

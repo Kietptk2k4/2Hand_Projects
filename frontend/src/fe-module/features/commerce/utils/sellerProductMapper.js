@@ -86,7 +86,7 @@ export function detailToFormState(detail) {
   return {
     productType: detail.productType || "PHYSICAL",
     categoryId: detail.categoryId || "",
-    condition: detail.condition || "NEW",
+    condition: detail.condition || "GOOD",
     title: detail.title || "",
     description: detail.description || "",
     weightGram: detail.weightGram != null ? String(detail.weightGram) : "",
@@ -96,7 +96,7 @@ export function detailToFormState(detail) {
     saleEndAt: "",
     stockQuantity: detail.stockQuantity != null ? String(detail.stockQuantity) : "",
     lowStockThreshold:
-      detail.lowStockThreshold != null ? String(detail.lowStockThreshold) : "3",
+      detail.lowStockThreshold != null ? String(detail.lowStockThreshold) : "0",
   };
 }
 

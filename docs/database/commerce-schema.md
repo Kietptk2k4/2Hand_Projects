@@ -2,6 +2,27 @@
 
 Commerce Service su dung PostgreSQL lam source-of-truth cho shop, product, inventory, cart, order, payment, shipment va review. Tai lieu nay mo ta schema logic cho MVP, gom bang, enum, constraint, relationship va index quan trong.
 
+## 1.0 MVP Vertical & Catalog Seed
+
+MVP vertical: **thoi trang second-hand C2C** (khong da nganh). Schema van generic multi-vendor; quy uoc catalog/data:
+
+| Tai lieu | Noi dung |
+|----------|----------|
+| `docs/product-vision/fashion-secondhand-vertical.md` | Condition, inventory 0\|1, attributes, media |
+| `docs/database/commerce-catalog-seed.md` | UUID co dinh category (`f1000000-...`) va brand (`b1000000-...`) |
+
+**Migration lien quan (planned):**
+
+- `V2__create_brands_table.sql` — bang `brands` + FK `products.brand_id`
+- `V3__seed_fashion_catalog.sql` — seed category + brand theo catalog-seed doc
+
+**Quy uoc cot (vertical):**
+
+- `products.condition`: `LIKE_NEW`, `GOOD`, `FAIR`, `USED` (planned CHECK/validation)
+- `products.product_type`: `PHYSICAL` (MVP)
+- `products.brand_id`: FK -> `brands.id` (sau V2)
+- `product_inventories.stock_quantity`: 0 hoac 1 cho listing second-hand (application rule)
+
 ## 1. Naming And Type Conventions
 
 - Primary key uu tien UUID.
@@ -316,9 +337,28 @@ Dia chi lay hang cua seller.
 | `ward_code` | varchar | NOT NULL |
 | `address_detail` | text | NOT NULL |
 
-### 3.10 `product_categories`
+### 3.10 `brands`
 
-Cay category.
+Bang brand catalog (migration **V2**). Seed UUID: `docs/database/commerce-catalog-seed.md`.
+
+| Column | Type | Constraint / Meaning |
+|---|---|---|
+| `id` | UUID | PK |
+| `name` | varchar | NOT NULL |
+| `slug` | varchar | NOT NULL, UNIQUE |
+| `is_active` | boolean | NOT NULL, default true |
+| `created_at` | timestamp | NOT NULL |
+| `updated_at` | timestamp | NOT NULL |
+
+Business rules:
+
+- `products.brand_id` nullable; neu co thi FK -> `brands.id`.
+- Brand khong co trong catalog: dung brand **Khac** (`slug: khac`, UUID `b1000000-0000-4000-8000-000000000001`).
+- Khong duplicate `brand_id` va `product_attributes` key `brand`.
+
+### 3.11 `product_categories`
+
+Cay category thoi trang (seed **V3**). Chi active category trong vertical doc.
 
 | Column | Type | Constraint / Meaning |
 |---|---|---|
@@ -332,9 +372,9 @@ Cay category.
 | `created_at` | timestamp | NOT NULL |
 | `updated_at` | timestamp | NOT NULL |
 
-### 3.11 `products`
+### 3.12 `products`
 
-San pham seller dang ban.
+San pham seller dang ban (listing second-hand).
 
 | Column | Type | Constraint / Meaning |
 |---|---|---|
@@ -343,8 +383,8 @@ San pham seller dang ban.
 | `shop_id` | UUID | NOT NULL, FK -> `seller_shops.id` |
 | `product_type` | varchar | NOT NULL |
 | `category_id` | UUID | NOT NULL, FK -> `product_categories.id` |
-| `brand_id` | UUID | NULLABLE |
-| `condition` | varchar | NOT NULL |
+| `brand_id` | UUID | NULLABLE, FK -> `brands.id` (sau V2) |
+| `condition` | varchar | NOT NULL; MVP values: `LIKE_NEW`, `GOOD`, `FAIR`, `USED` |
 | `title` | varchar | NOT NULL |
 | `description` | text | NOT NULL |
 | `weight_gram` | integer | NOT NULL, CHECK `weight_gram > 0` |
@@ -352,7 +392,7 @@ San pham seller dang ban.
 | `created_at` | timestamp | NOT NULL |
 | `updated_at` | timestamp | NOT NULL |
 
-### 3.12 `product_media`
+### 3.13 `product_media`
 
 Media cua product. File tren MinIO bucket `2hands-commerce-product`; DB luu `media_url`.
 
@@ -369,7 +409,7 @@ Recommended constraint:
 
 - UNIQUE (`product_id`, `sort_order`) neu UI can thu tu duy nhat.
 
-### 3.13 `product_prices`
+### 3.14 `product_prices`
 
 Gia va sale price theo thoi gian.
 
@@ -388,7 +428,7 @@ Business rules:
 - Active price la record co `start_at <= now` va (`end_at is null` hoac `end_at > now`).
 - Nen tranh active price overlap cho cung product.
 
-### 3.14 `product_attributes`
+### 3.15 `product_attributes`
 
 Thuoc tinh san pham.
 
@@ -403,9 +443,9 @@ Constraints:
 
 - UNIQUE (`product_id`, `attribute_name`)
 
-### 3.15 `product_inventories`
+### 3.16 `product_inventories`
 
-Ton kho theo product.
+Ton kho theo product. Vertical second-hand: **stock_quantity** thuong 0 hoac 1 (1 listing = 1 mon).
 
 | Column | Type | Constraint / Meaning |
 |---|---|---|
@@ -423,7 +463,7 @@ Business rules:
 - Payment fail/expire/cancel: `reserved_quantity -= quantity`, `stock_quantity += quantity`.
 - Use row lock or optimistic locking in checkout to avoid oversell.
 
-### 3.16 `seller_shops`
+### 3.17 `seller_shops`
 
 Shop cua seller.
 
@@ -441,7 +481,7 @@ Shop cua seller.
 | `created_at` | timestamp | NOT NULL |
 | `updated_at` | timestamp | NOT NULL |
 
-### 3.17 `shop_settings`
+### 3.18 `shop_settings`
 
 Setting cua shop.
 
@@ -452,7 +492,7 @@ Setting cua shop.
 | `vacation_message` | text | NULLABLE |
 | `updated_at` | timestamp | NOT NULL |
 
-### 3.18 `reviews`
+### 3.19 `reviews`
 
 Review cua buyer cho order item/product/shop.
 
@@ -473,7 +513,7 @@ Business rules:
 - Cannot review unless `order_items.status = COMPLETED`.
 - `buyer_id` must match `orders.buyer_id`.
 
-### 3.19 `review_replies`
+### 3.20 `review_replies`
 
 Seller reply cho review.
 
@@ -489,7 +529,7 @@ Recommended constraint:
 
 - UNIQUE (`review_id`) neu MVP chi cho mot reply moi review.
 
-### 3.20 `review_media`
+### 3.21 `review_media`
 
 Media dinh kem review. File tren MinIO bucket `2hands-commerce-review`; DB luu `url`.
 
@@ -500,7 +540,7 @@ Media dinh kem review. File tren MinIO bucket `2hands-commerce-review`; DB luu `
 | `url` | text | NOT NULL |
 | `type` | varchar | NOT NULL |
 
-### 3.21 `payments`
+### 3.22 `payments`
 
 Payment cua order, ho tro COD va payOS.
 
@@ -529,7 +569,7 @@ Business rules:
 - payOS fields nullable when payment method is COD.
 - For payOS, `payos_order_code` should be unique when present.
 
-### 3.22 `payment_webhook_logs`
+### 3.23 `payment_webhook_logs`
 
 Webhook log cua payOS.
 
@@ -548,7 +588,7 @@ Constraints:
 
 - UNIQUE (`provider`, `payos_order_code`, `event_type`)
 
-### 3.23 `seller_payout_accounts`
+### 3.24 `seller_payout_accounts`
 
 Tai khoan payout cua seller. MVP chua can nghiep vu payout that, nhung luu cau truc de mo rong.
 
@@ -563,7 +603,7 @@ Tai khoan payout cua seller. MVP chua can nghiep vu payout that, nhung luu cau t
 | `created_at` | timestamp | NOT NULL |
 | `updated_at` | timestamp | NOT NULL |
 
-### 3.24 `order_status_history`
+### 3.25 `order_status_history`
 
 Audit order status change.
 
@@ -577,7 +617,7 @@ Audit order status change.
 | `note` | text | NULLABLE |
 | `created_at` | timestamp | NOT NULL |
 
-### 3.25 `payment_status_history`
+### 3.26 `payment_status_history`
 
 Audit payment status change.
 
@@ -590,7 +630,7 @@ Audit payment status change.
 | `payload` | jsonb | NULLABLE |
 | `created_at` | timestamp | NOT NULL |
 
-### 3.26 `shipment_status_history`
+### 3.27 `shipment_status_history`
 
 Audit shipment status change.
 
@@ -634,6 +674,7 @@ Recommended constraints:
 - `carts` 1 - N `cart_items`.
 - `cart_items` N - 1 `products`.
 - `cart_items` N - 1 `seller_shops` logically via `seller_id`/shop ownership.
+- `brands` 1 - N `products` via `brand_id` (nullable).
 - `product_categories` 1 - N `product_categories` via `parent_id`.
 - `product_categories` 1 - N `products`.
 - `seller_shops` 1 - 1 `shop_settings`.

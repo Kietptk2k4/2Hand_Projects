@@ -2,51 +2,100 @@ export { PAGE_SIZE, DEFAULT_SORT } from "./productListConstants";
 
 export const DEFAULT_INCLUDE_CHILDREN = true;
 
-/** Mock sidebar — khớp commerceCategoryData.js (product_count khi include_children=true) */
+/** Mock sidebar — khop commerceCategoryData.js (product_count khi include_children=true) */
 export const SIDEBAR_CATEGORY_ITEMS = [
   {
-    categoryId: "c2000000-0000-4000-8000-000000000001",
-    categoryName: "Dụng cụ điện",
-    productCount: 5,
+    categoryId: "f1000000-0000-4000-8000-000000000001",
+    categoryName: "Thoi trang",
+    productCount: 12,
     parentId: null,
   },
   {
-    categoryId: "c2000000-0000-4000-8000-000000000002",
-    categoryName: "Máy khoan",
+    categoryId: "f1000000-0000-4000-8000-000000000010",
+    categoryName: "Nu",
+    productCount: 6,
+    parentId: "f1000000-0000-4000-8000-000000000001",
+  },
+  {
+    categoryId: "f1000000-0000-4000-8000-000000000011",
+    categoryName: "Ao nu",
+    productCount: 2,
+    parentId: "f1000000-0000-4000-8000-000000000010",
+  },
+  {
+    categoryId: "f1000000-0000-4000-8000-000000000012",
+    categoryName: "Quan & Vay nu",
+    productCount: 2,
+    parentId: "f1000000-0000-4000-8000-000000000010",
+  },
+  {
+    categoryId: "f1000000-0000-4000-8000-000000000013",
+    categoryName: "Giay dep nu",
     productCount: 1,
-    parentId: "c2000000-0000-4000-8000-000000000001",
+    parentId: "f1000000-0000-4000-8000-000000000010",
   },
   {
-    categoryId: "c2000000-0000-4000-8000-000000000003",
-    categoryName: "Vật liệu xây dựng",
-    productCount: 2,
-    parentId: null,
+    categoryId: "f1000000-0000-4000-8000-000000000014",
+    categoryName: "Tui & Phu kien nu",
+    productCount: 1,
+    parentId: "f1000000-0000-4000-8000-000000000010",
   },
   {
-    categoryId: "c2000000-0000-4000-8000-000000000004",
-    categoryName: "Thiết bị điện",
-    productCount: 3,
-    parentId: null,
-  },
-  {
-    categoryId: "c2000000-0000-4000-8000-000000000005",
-    categoryName: "Ống nước",
-    productCount: 2,
-    parentId: null,
-  },
-  {
-    categoryId: "c2000000-0000-4000-8000-000000000006",
-    categoryName: "Bảo hộ lao động",
+    categoryId: "f1000000-0000-4000-8000-000000000020",
+    categoryName: "Nam",
     productCount: 4,
-    parentId: null,
+    parentId: "f1000000-0000-4000-8000-000000000001",
+  },
+  {
+    categoryId: "f1000000-0000-4000-8000-000000000021",
+    categoryName: "Ao nam",
+    productCount: 1,
+    parentId: "f1000000-0000-4000-8000-000000000020",
+  },
+  {
+    categoryId: "f1000000-0000-4000-8000-000000000022",
+    categoryName: "Quan nam",
+    productCount: 1,
+    parentId: "f1000000-0000-4000-8000-000000000020",
+  },
+  {
+    categoryId: "f1000000-0000-4000-8000-000000000023",
+    categoryName: "Giay dep nam",
+    productCount: 1,
+    parentId: "f1000000-0000-4000-8000-000000000020",
+  },
+  {
+    categoryId: "f1000000-0000-4000-8000-000000000024",
+    categoryName: "Phu kien nam",
+    productCount: 1,
+    parentId: "f1000000-0000-4000-8000-000000000020",
+  },
+  {
+    categoryId: "f1000000-0000-4000-8000-000000000030",
+    categoryName: "Unisex / Streetwear",
+    productCount: 1,
+    parentId: "f1000000-0000-4000-8000-000000000001",
+  },
+  {
+    categoryId: "f1000000-0000-4000-8000-000000000040",
+    categoryName: "Vintage & Designer",
+    productCount: 1,
+    parentId: "f1000000-0000-4000-8000-000000000001",
   },
 ];
 
 export const CATEGORY_DESCRIPTIONS = {
-  "dung-cu-dien": "Công cụ và thiết bị điện chuyên nghiệp cho thợ và nhà thầu.",
-  "may-khoan": "Máy khoan và phụ kiện — danh mục con của dụng cụ điện.",
-  "vat-lieu-xay-dung": "Vật liệu xây dựng và hóa chất thi công chất lượng cao.",
-  "thiet-bi-dien": "Dây điện, đèn LED và thiết bị điện dân dụng — công nghiệp.",
-  "ong-nuoc": "Ống PVC, van và phụ kiện hệ thống nước.",
-  "bao-ho-lao-dong": "Mũ bảo hộ, găng tay và thiết bị an toàn lao động.",
+  "thoi-trang": "Thoi trang second-hand C2C — ao, quan, giay va phu kien tu tu do ca nhan.",
+  nu: "Do nu second-hand: ao, quan, vay, giay va tui xach.",
+  "ao-nu": "Ao nu second-hand tu cac thuong hieu noi tieng.",
+  "quan-vay-nu": "Quan, vay va chan vay nu da qua su dung.",
+  "giay-dep-nu": "Giay dep nu second-hand.",
+  "tui-phu-kien-nu": "Tui xach va phu kien nu.",
+  nam: "Thoi trang nam second-hand.",
+  "ao-nam": "Ao nam, thun, so mi second-hand.",
+  "quan-nam": "Quan jean, kaki va short nam.",
+  "giay-dep-nam": "Giay sneaker va giay da nam.",
+  "phu-kien-nam": "Mu, that lung va phu kien nam.",
+  "unisex-streetwear": "Streetwear unisex — hoodie, ao phong oversized.",
+  "vintage-designer": "Do vintage va thiet ke doc dao.",
 };

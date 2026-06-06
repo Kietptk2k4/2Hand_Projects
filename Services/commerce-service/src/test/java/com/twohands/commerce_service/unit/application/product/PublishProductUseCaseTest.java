@@ -1,6 +1,8 @@
 package com.twohands.commerce_service.unit.application.product;
 
+import com.twohands.commerce_service.application.product.common.ProductCatalogValidationService;
 import com.twohands.commerce_service.application.product.common.ProductPublishedOutboxService;
+import com.twohands.commerce_service.domain.catalog.BrandRepository;
 import com.twohands.commerce_service.application.product.publishproduct.PublishProductCommand;
 import com.twohands.commerce_service.application.product.publishproduct.PublishProductResult;
 import com.twohands.commerce_service.application.product.publishproduct.PublishProductUseCase;
@@ -50,16 +52,22 @@ class PublishProductUseCaseTest {
     @Mock
     private CommerceProductMediaUrlValidator productMediaUrlValidator;
 
+    @Mock
+    private BrandRepository brandRepository;
+
     private final Clock clock = Clock.fixed(Instant.parse("2026-05-21T10:00:00Z"), ZoneOffset.UTC);
 
     private PublishProductUseCase useCase;
 
     @BeforeEach
     void setUp() {
+        ProductCatalogValidationService productCatalogValidationService =
+                new ProductCatalogValidationService(brandRepository);
         useCase = new PublishProductUseCase(
                 publishProductRepository,
                 outboxEventRepository,
                 productPublishedOutboxService,
+                productCatalogValidationService,
                 productMediaUrlValidator,
                 clock
         );
@@ -72,14 +80,14 @@ class PublishProductUseCaseTest {
 
     @Test
     void shouldPublishDraftProductAsActiveWhenStockAvailable() {
-        ProductPublishSnapshot draft = readyDraftSnapshot(5);
+        ProductPublishSnapshot draft = readyDraftSnapshot(1);
         ProductPublishSnapshot published = withStatus(draft, ProductStatus.ACTIVE, now);
 
         when(publishProductRepository.findForSeller(productId, sellerId, now)).thenReturn(Optional.of(draft));
         doNothing().when(productMediaUrlValidator).validateRequiredProductMedia(any());
         when(publishProductRepository.updateStatus(productId, ProductStatus.ACTIVE, now)).thenReturn(published);
         when(productPublishedOutboxService.build(
-                eq(productId), eq(shopId), eq(sellerId), eq(ProductStatus.DRAFT), eq(ProductStatus.ACTIVE), eq(5), eq(now)))
+                eq(productId), eq(shopId), eq(sellerId), eq(ProductStatus.DRAFT), eq(ProductStatus.ACTIVE), eq(1), eq(now)))
                 .thenReturn(sampleOutboxEvent());
 
         PublishProductResult result = useCase.execute(new PublishProductCommand(sellerId, productId));
@@ -107,7 +115,7 @@ class PublishProductUseCaseTest {
 
     @Test
     void shouldResumePausedProduct() {
-        ProductPublishSnapshot paused = withStatus(readyDraftSnapshot(3), ProductStatus.PAUSED, now);
+        ProductPublishSnapshot paused = withStatus(readyDraftSnapshot(1), ProductStatus.PAUSED, now);
         ProductPublishSnapshot published = withStatus(paused, ProductStatus.ACTIVE, now);
 
         when(publishProductRepository.findForSeller(productId, sellerId, now)).thenReturn(Optional.of(paused));
@@ -123,7 +131,7 @@ class PublishProductUseCaseTest {
 
     @Test
     void shouldReturnIdempotentWhenAlreadyActiveWithStock() {
-        ProductPublishSnapshot active = withStatus(readyDraftSnapshot(2), ProductStatus.ACTIVE, now);
+        ProductPublishSnapshot active = withStatus(readyDraftSnapshot(1), ProductStatus.ACTIVE, now);
 
         when(publishProductRepository.findForSeller(productId, sellerId, now)).thenReturn(Optional.of(active));
 
@@ -168,6 +176,30 @@ class PublishProductUseCaseTest {
                 .isInstanceOf(AppException.class)
                 .extracting(ex -> ((AppException) ex).getErrorCode())
                 .isEqualTo(ErrorCode.INVALID_PRODUCT_STATUS);
+    }
+
+    @Test
+    void shouldRejectInvalidConditionOnPublish() {
+        ProductPublishSnapshot draft = withCondition(readyDraftSnapshot(1), "NEW");
+
+        when(publishProductRepository.findForSeller(productId, sellerId, now)).thenReturn(Optional.of(draft));
+
+        assertThatThrownBy(() -> useCase.execute(new PublishProductCommand(sellerId, productId)))
+                .isInstanceOf(AppException.class)
+                .extracting(ex -> ((AppException) ex).getErrorCode())
+                .isEqualTo(ErrorCode.VALIDATION_ERROR);
+    }
+
+    @Test
+    void shouldRejectStockAboveOneOnPublish() {
+        ProductPublishSnapshot draft = readyDraftSnapshot(2);
+
+        when(publishProductRepository.findForSeller(productId, sellerId, now)).thenReturn(Optional.of(draft));
+
+        assertThatThrownBy(() -> useCase.execute(new PublishProductCommand(sellerId, productId)))
+                .isInstanceOf(AppException.class)
+                .extracting(ex -> ((AppException) ex).getErrorCode())
+                .isEqualTo(ErrorCode.VALIDATION_ERROR);
     }
 
     @Test
@@ -219,6 +251,25 @@ class PublishProductUseCaseTest {
 
     private ProductPublishSnapshot withStockQuantity(ProductPublishSnapshot snapshot, Integer stockQuantity) {
         return copy(snapshot, snapshot.status(), snapshot.shopStatus(), snapshot.activePrice(), stockQuantity, snapshot.updatedAt());
+    }
+
+    private ProductPublishSnapshot withCondition(ProductPublishSnapshot snapshot, String condition) {
+        return new ProductPublishSnapshot(
+                snapshot.productId(),
+                snapshot.sellerId(),
+                snapshot.shopId(),
+                snapshot.title(),
+                snapshot.description(),
+                condition,
+                snapshot.weightGram(),
+                snapshot.status(),
+                snapshot.shopStatus(),
+                snapshot.categoryActive(),
+                snapshot.activePrice(),
+                snapshot.stockQuantity(),
+                snapshot.primaryMediaUrl(),
+                snapshot.updatedAt()
+        );
     }
 
     private ProductPublishSnapshot copy(

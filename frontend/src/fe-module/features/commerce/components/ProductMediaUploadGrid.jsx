@@ -2,10 +2,31 @@ import { useCallback, useId, useRef, useState } from "react";
 import { requestProductMediaUploadUrl, uploadProductMediaFile } from "../api/sellerProductApi";
 import {
   PRODUCT_MEDIA_ALLOWED_TYPES,
+  PRODUCT_MEDIA_IMAGE_TYPES,
   PRODUCT_MEDIA_KIND,
   PRODUCT_MEDIA_MAX_BYTES,
   PRODUCT_MEDIA_MAX_COUNT,
+  PRODUCT_MEDIA_MAX_VIDEO_BYTES,
+  PRODUCT_MEDIA_MAX_VIDEO_COUNT,
+  PRODUCT_MEDIA_VIDEO_TYPES,
 } from "../constants/productMediaConstants";
+
+function isVideoUrl(url) {
+  return /\/videos\//.test(url) || /\.(mp4|webm)(\?|$)/i.test(url);
+}
+
+function countByType(urls) {
+  let images = 0;
+  let videos = 0;
+  for (const url of urls) {
+    if (isVideoUrl(url)) {
+      videos += 1;
+    } else {
+      images += 1;
+    }
+  }
+  return { images, videos };
+}
 
 export function ProductMediaUploadGrid({ productId, mediaUrls, disabled, onChange, error }) {
   const inputId = useId();
@@ -14,25 +35,70 @@ export function ProductMediaUploadGrid({ productId, mediaUrls, disabled, onChang
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(null);
 
+  const { images: imageCount, videos: videoCount } = countByType(mediaUrls);
+  const canAddImage = imageCount < PRODUCT_MEDIA_MAX_COUNT;
+  const canAddVideo = videoCount < PRODUCT_MEDIA_MAX_VIDEO_COUNT;
+  const canAddMore = canAddImage || canAddVideo;
+
   const handleFiles = useCallback(
     async (event) => {
       const files = Array.from(event.target.files || []);
       if (!files.length) return;
 
       if (!productId) {
-        setUploadError("Vui lòng lưu thông tin sản phẩm (bước 1) trước khi tải ảnh.");
+        setUploadError("Vui lòng lưu thông tin sản phẩm (bước 1) trước khi tải ảnh/video.");
         event.target.value = "";
         return;
       }
 
-      const remainingSlots = PRODUCT_MEDIA_MAX_COUNT - mediaUrls.length;
-      if (remainingSlots <= 0) {
-        setUploadError(`Tối đa ${PRODUCT_MEDIA_MAX_COUNT} ảnh cho mỗi sản phẩm.`);
+      let slotsImages = PRODUCT_MEDIA_MAX_COUNT - imageCount;
+      let slotsVideos = PRODUCT_MEDIA_MAX_VIDEO_COUNT - videoCount;
+
+      if (slotsImages <= 0 && slotsVideos <= 0) {
+        setUploadError(
+          `Tối đa ${PRODUCT_MEDIA_MAX_COUNT} ảnh và ${PRODUCT_MEDIA_MAX_VIDEO_COUNT} video cho mỗi sản phẩm.`,
+        );
         event.target.value = "";
         return;
       }
 
-      const filesToUpload = files.slice(0, remainingSlots);
+      const filesToUpload = [];
+      for (const file of files) {
+        const isImage = PRODUCT_MEDIA_IMAGE_TYPES.includes(file.type);
+        const isVideo = PRODUCT_MEDIA_VIDEO_TYPES.includes(file.type);
+
+        if (!isImage && !isVideo) {
+          setUploadError("Định dạng không được hỗ trợ. Chọn JPG, PNG, WEBP, MP4 hoặc WebM.");
+          event.target.value = "";
+          return;
+        }
+        if (isImage) {
+          if (slotsImages <= 0) continue;
+          if (file.size > PRODUCT_MEDIA_MAX_BYTES) {
+            setUploadError("Ảnh vượt quá 5MB.");
+            event.target.value = "";
+            return;
+          }
+          slotsImages -= 1;
+        }
+        if (isVideo) {
+          if (slotsVideos <= 0) continue;
+          if (file.size > PRODUCT_MEDIA_MAX_VIDEO_BYTES) {
+            setUploadError("Video vượt quá 50MB.");
+            event.target.value = "";
+            return;
+          }
+          slotsVideos -= 1;
+        }
+        filesToUpload.push(file);
+      }
+
+      if (!filesToUpload.length) {
+        setUploadError("Đã đủ số lượng ảnh/video cho phép.");
+        event.target.value = "";
+        return;
+      }
+
       setUploadError("");
       setIsUploading(true);
       setUploadProgress(0);
@@ -42,13 +108,8 @@ export function ProductMediaUploadGrid({ productId, mediaUrls, disabled, onChang
       try {
         for (let index = 0; index < filesToUpload.length; index++) {
           const file = filesToUpload[index];
-
-          if (!PRODUCT_MEDIA_ALLOWED_TYPES.includes(file.type)) {
-            throw { message: "Định dạng không được hỗ trợ. Chỉ JPG, PNG, WEBP." };
-          }
-          if (file.size > PRODUCT_MEDIA_MAX_BYTES) {
-            throw { message: "Tệp vượt quá 5MB." };
-          }
+          const isVideo = PRODUCT_MEDIA_VIDEO_TYPES.includes(file.type);
+          const mediaKind = isVideo ? PRODUCT_MEDIA_KIND.PRODUCT_VIDEO : PRODUCT_MEDIA_KIND.PRODUCT_IMAGE;
 
           const baseProgress = Math.round((index / filesToUpload.length) * 100);
           setUploadProgress(baseProgress + 5);
@@ -56,7 +117,7 @@ export function ProductMediaUploadGrid({ productId, mediaUrls, disabled, onChang
           const uploadMeta = await requestProductMediaUploadUrl(productId, {
             contentType: file.type,
             fileSizeBytes: file.size,
-            mediaKind: PRODUCT_MEDIA_KIND.PRODUCT_IMAGE,
+            mediaKind,
           });
 
           setUploadProgress(baseProgress + 40);
@@ -67,7 +128,7 @@ export function ProductMediaUploadGrid({ productId, mediaUrls, disabled, onChang
 
         onChange?.(next);
       } catch (uploadErr) {
-        setUploadError(uploadErr?.message || "Upload ảnh thất bại. Vui lòng thử lại.");
+        setUploadError(uploadErr?.message || "Upload ảnh/video thất bại. Vui lòng thử lại.");
       } finally {
         setIsUploading(false);
         setUploadProgress(null);
@@ -76,7 +137,7 @@ export function ProductMediaUploadGrid({ productId, mediaUrls, disabled, onChang
         }
       }
     },
-    [mediaUrls, onChange, productId],
+    [imageCount, mediaUrls, onChange, productId, videoCount],
   );
 
   const removeAt = (index) => {
@@ -84,7 +145,7 @@ export function ProductMediaUploadGrid({ productId, mediaUrls, disabled, onChang
   };
 
   const setPrimary = (index) => {
-    if (index === 0) return;
+    if (index === 0 || isVideoUrl(mediaUrls[index])) return;
     const next = [...mediaUrls];
     const [item] = next.splice(index, 1);
     next.unshift(item);
@@ -109,7 +170,7 @@ export function ProductMediaUploadGrid({ productId, mediaUrls, disabled, onChang
 
       <button
         type="button"
-        disabled={fieldDisabled || mediaUrls.length >= PRODUCT_MEDIA_MAX_COUNT}
+        disabled={fieldDisabled || !canAddMore}
         onClick={() => inputRef.current?.click()}
         className="flex w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-outline-variant bg-surface-container-low p-8 transition-colors hover:bg-surface-container disabled:cursor-not-allowed disabled:opacity-60"
       >
@@ -117,10 +178,11 @@ export function ProductMediaUploadGrid({ productId, mediaUrls, disabled, onChang
           cloud_upload
         </span>
         <span className="text-label-md font-medium text-on-surface">
-          {isUploading ? "Đang tải lên..." : "Tải ảnh lên"}
+          {isUploading ? "Đang tải lên..." : "Tải ảnh/video lên"}
         </span>
         <span className="mt-1 text-body-sm text-on-surface-variant">
-          JPG, PNG, WEBP — tối đa 5MB/ảnh, {PRODUCT_MEDIA_MAX_COUNT} ảnh/sản phẩm (MinIO)
+          JPG, PNG, WEBP (5MB) — tối đa {PRODUCT_MEDIA_MAX_COUNT} ảnh; MP4, WebM (50MB) — tối đa{" "}
+          {PRODUCT_MEDIA_MAX_VIDEO_COUNT} video (MinIO)
         </span>
       </button>
 
@@ -143,34 +205,50 @@ export function ProductMediaUploadGrid({ productId, mediaUrls, disabled, onChang
 
       {mediaUrls.length > 0 ? (
         <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-          {mediaUrls.map((url, index) => (
-            <li key={`${url}-${index}`} className="group relative aspect-square overflow-hidden rounded-lg border border-outline-variant">
-              <img src={url} alt="" className="h-full w-full object-cover" />
-              {index === 0 ? (
-                <span className="absolute left-2 top-2 rounded bg-primary px-2 py-0.5 text-[10px] font-semibold text-on-primary">
-                  Ảnh chính
-                </span>
-              ) : (
+          {mediaUrls.map((url, index) => {
+            const video = isVideoUrl(url);
+            const isPrimary = !video && index === 0;
+
+            return (
+              <li
+                key={`${url}-${index}`}
+                className="group relative aspect-square overflow-hidden rounded-lg border border-outline-variant"
+              >
+                {video ? (
+                  <video src={url} className="h-full w-full object-cover" controls muted playsInline />
+                ) : (
+                  <img src={url} alt="" className="h-full w-full object-cover" />
+                )}
+                {video ? (
+                  <span className="absolute left-2 top-2 rounded bg-secondary px-2 py-0.5 text-[10px] font-semibold text-on-secondary">
+                    Video
+                  </span>
+                ) : isPrimary ? (
+                  <span className="absolute left-2 top-2 rounded bg-primary px-2 py-0.5 text-[10px] font-semibold text-on-primary">
+                    Ảnh chính
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={fieldDisabled}
+                    onClick={() => setPrimary(index)}
+                    className="absolute left-2 top-2 rounded bg-surface/90 px-2 py-0.5 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-100"
+                  >
+                    Đặt làm chính
+                  </button>
+                )}
                 <button
                   type="button"
                   disabled={fieldDisabled}
-                  onClick={() => setPrimary(index)}
-                  className="absolute left-2 top-2 rounded bg-surface/90 px-2 py-0.5 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-100"
+                  onClick={() => removeAt(index)}
+                  className="absolute right-2 top-2 rounded-full bg-error-container p-1 text-on-error-container"
+                  aria-label={video ? "Xóa video" : "Xóa ảnh"}
                 >
-                  Đặt làm chính
+                  <span className="material-symbols-outlined text-[18px]">close</span>
                 </button>
-              )}
-              <button
-                type="button"
-                disabled={fieldDisabled}
-                onClick={() => removeAt(index)}
-                className="absolute right-2 top-2 rounded-full bg-error-container p-1 text-on-error-container"
-                aria-label="Xóa ảnh"
-              >
-                <span className="material-symbols-outlined text-[18px]">close</span>
-              </button>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       ) : null}
     </div>

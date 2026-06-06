@@ -47,7 +47,8 @@ public class PublishProductRepositoryAdapter implements PublishProductRepository
                            SELECT pm.media_url
                            FROM product_media pm
                            WHERE pm.product_id = p.id
-                           ORDER BY pm.sort_order ASC
+                           ORDER BY CASE WHEN pm.media_type = 'VIDEO' THEN 1 ELSE 0 END,
+                                    pm.sort_order ASC
                            LIMIT 1
                        ) AS primary_media_url
                 FROM products p

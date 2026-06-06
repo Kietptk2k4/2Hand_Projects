@@ -1,0 +1,98 @@
+---
+description: Vertical thời trang second-hand C2C — quy ước catalog, condition, inventory, media, mock data (đọc trước khi sửa commerce catalog/seller/product)
+globs: Services/commerce-service/**,frontend/src/fe-module/features/commerce/**,frontend/src/mocks/**,docs/product-vision/**,docs/database/commerce-catalog-seed.md,docs/database/commerce-schema.md,docs/business-spec/commerce-service-spec.md
+alwaysApply: false
+---
+
+# Fashion Second-hand Vertical (MVP)
+
+**Source-of-truth đầy đủ:** `docs/product-vision/fashion-secondhand-vertical.md`  
+**UUID seed:** `docs/database/commerce-catalog-seed.md`
+
+2Hands MVP = **sàn đồ thời trang second-hand C2C (closet marketplace)**. Kiến trúc microservices **giữ generic**; vertical được cấu hình bằng **data + business rules**, không đổi service boundary.
+
+## Đọc trước khi code
+
+1. Vertical doc (file trên) — *đang build gì cho user?*
+2. `commerce-catalog-seed.md` — UUID category/brand cố định
+3. Rule commerce kỹ thuật: `.cursor/rules/commerce/commerce-backend-standards.mdc`
+
+## Positioning (bắt buộc nhớ)
+
+| Khía cạnh | Quy tắc MVP |
+|-----------|-------------|
+| Ngành | **Chỉ thời trang & phụ kiện** — không công cụ, điện tử, nội thất |
+| Listing | **1 sản phẩm = 1 món unique** (closet item) |
+| Seller | Closet cá nhân / shop nhỏ — mock: "Tủ đồ của Lan", "Vintage Closet" |
+| Discovery | Catalog + social (OOTD, tag `product_id`) |
+
+**Out of scope:** đa ngành, hàng mới retail, luxury auth, rental, auction, transcode video.
+
+## Catalog & UUID
+
+- Category namespace: `f1000000-0000-4000-8000-...` (migration V3)
+- Brand namespace: `b1000000-0000-4000-8000-...` (migration V2)
+- Seller **chọn leaf category** (vd. "Áo nữ"), không gán root "Thời trang"
+- Brand qua `products.brand_id`; không có trong catalog → **Khác** (`slug: khac`)
+- `product_type` MVP: **`PHYSICAL` only**
+
+## Condition (thống nhất BE + FE + DB)
+
+Chỉ 4 giá trị — **không** dùng `NEW` mặc định:
+
+| Code | UI (VI) |
+|------|---------|
+| `LIKE_NEW` | Như mới |
+| `GOOD` | Tốt |
+| `FAIR` | Khá |
+| `USED` | Đã qua sử dụng |
+
+Backend: `ProductCatalogValidationService` + `ProductCondition`.  
+FE: `sellerProductConstants.js`, `productDetailConstants.js`.
+
+## Inventory
+
+- `stock_quantity`: **1** khi publish, **0** khi hết — application chỉ cho phép `{0, 1}`
+- `low_stock_threshold`: **0** hoặc **1**
+- Không SKU đa lượng / không stock > 1
+
+## Product attributes (dictionary)
+
+Ưu tiên: `size`, `color`, `gender`, `material`, `defects`. Không duplicate brand trong `product_attributes` nếu đã có `brand_id`.
+
+## Media (product)
+
+| Loại | Giới hạn | Content types |
+|------|----------|---------------|
+| Ảnh | max **10**, 5MB | `image/jpeg`, `image/png`, `image/webp` |
+| Video | max **1**, 50MB | `video/mp4`, `video/webm` |
+
+- Bucket: `2hands-commerce-product` — ảnh: `.../images/`, video: `.../videos/`
+- **Bắt buộc ≥1 ảnh** khi có media; thumbnail/primary **phải là ảnh**
+- Config: `COMMERCE_PRODUCT_MEDIA_MAX_VIDEO_*` trong `application.yml`
+- Validator: `ProductMediaContentValidator`, `CommerceProductMediaUrlValidator`
+- FE: `productMediaConstants.js`, `ProductMediaUploadGrid.jsx`
+
+## Mock & FE data
+
+- **Không** mock ngành công cụ/xây dựng (`c2000000-...` construction)
+- Dùng fashion IDs từ `commerceCategoryIds.js` / seed doc
+- `condition` ∈ {`LIKE_NEW`,`GOOD`,`FAIR`,`USED`}; default seller wizard: `GOOD`
+- Brands mock: `sellerProductBrands.js`
+
+## Khi thêm tính năng catalog/seller
+
+**Hỏi trước:** có phù hợp closet second-hand thời trang không?
+
+- ✅ Condition, size, brand, 1-of-1 stock, fashion categories, OOTD tag product
+- ❌ Multi-qty SKU, `NEW` condition, category đa ngành, bulk wholesale
+
+## File then chốt
+
+| Layer | Path |
+|-------|------|
+| Validation | `.../application/product/common/ProductCatalogValidationService.java` |
+| Migrations | `Services/commerce-service/src/main/resources/db/migration/V2__*`, `V3__*` |
+| FE constants | `frontend/src/fe-module/features/commerce/constants/sellerProductConstants.js` |
+| FE mocks | `frontend/src/mocks/data/commerceProductListData.js` |
+| Media | `productMediaConstants.js`, `CreateProductMediaUploadUrlValidationService.java` |
