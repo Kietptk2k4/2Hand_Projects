@@ -14,7 +14,7 @@ public class SocialObjectStorageProperties {
     private String accessKey = "admin";
     private String secretKey = "password123";
     private String postBucket = "2hands-social-post";
-    private String publicPathPrefix = "social";
+    private String publicPathPrefix = "";
     private long imageMaxFileSizeBytes = 10_485_760L;
     private long videoMaxFileSizeBytes = 104_857_600L;
     private int presignedUrlTtlSeconds = 900;
@@ -142,6 +142,25 @@ public class SocialObjectStorageProperties {
 
     public String buildAllowedMediaUrlPrefix(UUID userId) {
         return buildPublicObjectUrl("posts/" + userId + "/");
+    }
+
+    /**
+     * Rewrites URLs that incorrectly include a legacy {@code /social/} segment after the bucket
+     * path (local MinIO direct access). Object keys are stored as {@code posts/...} without that prefix.
+     */
+    public String rewriteLegacyMediaUrl(String url) {
+        if (url == null || url.isBlank() || !normalizePathPrefix(publicPathPrefix).isEmpty()) {
+            return url;
+        }
+        String base = trimTrailingSlash(publicUrl);
+        if (base.isEmpty()) {
+            return url;
+        }
+        String legacyPrefix = base + "/social/";
+        if (url.startsWith(legacyPrefix)) {
+            return base + "/" + url.substring(legacyPrefix.length());
+        }
+        return url;
     }
 
     private static String trimTrailingSlash(String value) {

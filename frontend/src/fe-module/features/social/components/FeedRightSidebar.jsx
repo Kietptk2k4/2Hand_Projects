@@ -45,7 +45,7 @@ export function FeedRightSidebar({ onComingSoon, onViewProfile, onSelectHashtag 
       </div>
 
       <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
-        <h3 className="mb-4 text-xl font-semibold text-on-surface">Nhà cung cấp gợi ý</h3>
+        <h3 className="mb-4 text-xl font-semibold text-on-surface">Những người bạn có thể biết</h3>
         <ul className="flex flex-col gap-4">
           {SUGGESTIONS.map((item) => (
             <li key={item.userId} className="flex items-center justify-between gap-2">

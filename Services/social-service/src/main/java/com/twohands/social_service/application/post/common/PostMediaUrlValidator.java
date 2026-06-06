@@ -28,7 +28,8 @@ public class PostMediaUrlValidator {
             if (url == null || url.isBlank()) {
                 continue;
             }
-            if (!url.startsWith(allowedPrefix)) {
+            String normalizedUrl = properties.rewriteLegacyMediaUrl(url);
+            if (!normalizedUrl.startsWith(allowedPrefix) && !url.startsWith(allowedPrefix)) {
                 throw new AppException(
                         ErrorCode.VALIDATION_ERROR,
                         "Validation failed",

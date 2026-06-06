@@ -1,3 +1,4 @@
+import { normalizePostMediaUrl } from "../utils/postMediaUrl";
 import { PostOptionsMenu } from "./PostOptionsMenu";
 
 export function ProfilePostTile({
@@ -12,14 +13,26 @@ export function ProfilePostTile({
   isDeletingPost = false,
   showMenu = true,
 }) {
-  const thumbUrl = post.media?.[0]?.url;
+  const thumbUrl = normalizePostMediaUrl(post.media?.[0]?.url);
   const isDraft = post.status === "DRAFT";
 
+  const openPost = () => onOpenPost?.(post.postId);
+
+  const handleKeyDown = (event) => {
+    if (event.target !== event.currentTarget) return;
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openPost();
+    }
+  };
+
   return (
-    <button
-      type="button"
-      onClick={() => onOpenPost?.(post.postId)}
-      className="group relative aspect-square overflow-hidden rounded-lg border border-outline-variant/30 bg-surface-container shadow-sm transition-shadow hover:shadow-md"
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={openPost}
+      onKeyDown={handleKeyDown}
+      className="group relative aspect-square cursor-pointer overflow-hidden rounded-lg border border-outline-variant/30 bg-surface-container shadow-sm transition-shadow hover:shadow-md"
       aria-label={post.caption ? `Xem bài: ${post.caption.slice(0, 40)}` : "Xem bài viết"}
     >
       {thumbUrl ? (
@@ -72,6 +85,6 @@ export function ProfilePostTile({
           <span className="material-symbols-outlined text-[14px]">collections</span>
         </span>
       ) : null}
-    </button>
+    </div>
   );
 }

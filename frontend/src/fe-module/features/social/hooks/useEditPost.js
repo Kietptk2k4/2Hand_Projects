@@ -15,6 +15,7 @@ import { buildEditPatchBody, buildPatchSnapshot } from "../utils/buildEditPatch"
 import { loadProductCatalogEntry } from "../api/postProductTagApi";
 import { mergeTagWithCatalog } from "../utils/postProductTagMapper";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
+import { normalizePostMediaUrl } from "../utils/postMediaUrl";
 
 function resolveMediaKind(file) {
   return file.type.startsWith("video/") ? "VIDEO" : "IMAGE";
@@ -39,16 +40,19 @@ function normalizeHashtag(raw) {
 }
 
 function mapMediaToSlots(media) {
-  return (media || []).map((item, index) => ({
-    id: `existing-${index}-${item.url}`,
-    file: null,
-    previewUrl: item.url,
-    mediaUrl: item.url,
-    type: item.type,
-    status: "done",
-    progress: 100,
-    errorMessage: "",
-  }));
+  return (media || []).map((item, index) => {
+    const url = normalizePostMediaUrl(item.url);
+    return {
+      id: `existing-${index}-${url}`,
+      file: null,
+      previewUrl: url,
+      mediaUrl: url,
+      type: item.type,
+      status: "done",
+      progress: 100,
+      errorMessage: "",
+    };
+  });
 }
 
 function getReadyMedia(mediaItems) {

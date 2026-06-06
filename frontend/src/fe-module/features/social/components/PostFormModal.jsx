@@ -478,7 +478,7 @@ export function PostFormModal({
                             <input
                               type="number"
                               min="0"
-                              value={tag.price}
+                              value={tag.price ?? ""}
                               onChange={(event) =>
                                 updateProductTagPrice(tag.productId, event.target.value)
                               }
