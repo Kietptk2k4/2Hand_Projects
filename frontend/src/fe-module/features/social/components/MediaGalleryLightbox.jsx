@@ -1,7 +1,10 @@
 import { useEffect } from "react";
+import { normalizePostMediaUrl } from "../utils/postMediaUrl";
 
 export function MediaGalleryLightbox({ media = [], initialIndex = 0, onClose }) {
-  const items = (media || []).filter((item) => item?.url);
+  const items = (media || [])
+    .filter((item) => item?.url)
+    .map((item) => ({ ...item, url: normalizePostMediaUrl(item.url) }));
   const safeIndex = Math.min(Math.max(initialIndex, 0), Math.max(items.length - 1, 0));
   const current = items[safeIndex];
 

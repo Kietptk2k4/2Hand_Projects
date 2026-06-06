@@ -1,6 +1,7 @@
-import { authorAvatarUrl, authorDisplayName } from "../utils/authorDisplay";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
-import { enrichProductTags } from "../utils/enrichProductTag";
+import { useEnrichedProductTags } from "../hooks/useEnrichedProductTags";
+import { usePostAuthorDisplay } from "../hooks/usePostAuthorDisplay";
+import { normalizePostMediaUrl } from "../utils/postMediaUrl";
 import { PostCaption } from "./PostCaption";
 import { PostOptionsMenu } from "./PostOptionsMenu";
 import { PostProductTagsBlock } from "./PostProductTagsBlock";
@@ -32,10 +33,9 @@ export function HashtagPostCard({
 }) {
   const isOwner = Boolean(currentUserId && post.authorId === currentUserId);
   const savedByMe = post.savedByMe ?? false;
-  const mediaUrl = post.media?.[0]?.url || PLACEHOLDER_IMAGE;
-  const displayName = authorDisplayName(post.authorId);
-  const avatarUrl = authorAvatarUrl(post.authorId);
-  const enrichedProductTags = enrichProductTags(post.productTags);
+  const mediaUrl = normalizePostMediaUrl(post.media?.[0]?.url) || PLACEHOLDER_IMAGE;
+  const author = usePostAuthorDisplay(post.authorId);
+  const enrichedProductTags = useEnrichedProductTags(post.productTags);
 
   const handleOpenPost = () => onOpenPost?.(post.postId);
   const handleOpenComments = (event) => {
@@ -69,9 +69,9 @@ export function HashtagPostCard({
             onClick={handleViewProfile}
             className="flex min-w-0 items-center gap-2 text-left"
           >
-            <img src={avatarUrl} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
+            <img src={author.avatarUrl} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
             <div className="min-w-0">
-              <h3 className="truncate text-sm font-medium text-on-surface">{displayName}</h3>
+              <h3 className="truncate text-sm font-medium text-on-surface">{author.displayName}</h3>
               <p className="text-xs text-on-surface-variant">{formatRelativeTime(post.createdAt)}</p>
             </div>
           </button>

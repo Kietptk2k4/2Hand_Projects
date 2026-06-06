@@ -1,6 +1,6 @@
-import { authorAvatarUrl, authorDisplayName } from "../utils/authorDisplay";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
-import { enrichProductTags } from "../utils/enrichProductTag";
+import { useEnrichedProductTags } from "../hooks/useEnrichedProductTags";
+import { usePostAuthorDisplay } from "../hooks/usePostAuthorDisplay";
 import { PostCaption } from "./PostCaption";
 import { PostMediaGrid } from "./PostMediaGrid";
 import { PostOptionsMenu } from "./PostOptionsMenu";
@@ -30,7 +30,8 @@ export function PostCard({
 }) {
   const isOwner = Boolean(currentUserId && post.authorId === currentUserId);
   const savedByMe = post.savedByMe ?? false;
-  const enrichedProductTags = enrichProductTags(post.productTags);
+  const enrichedProductTags = useEnrichedProductTags(post.productTags);
+  const author = usePostAuthorDisplay(post.authorId);
   const openDetail = (options) => {
     onOpenPost?.(post.postId, options);
   };
@@ -52,7 +53,7 @@ export function PostCard({
               aria-label="Xem hồ sơ tác giả"
             >
               <img
-                src={authorAvatarUrl(post.authorId)}
+                src={author.avatarUrl}
                 alt=""
                 className="h-12 w-12 rounded-full object-cover"
               />
@@ -63,7 +64,7 @@ export function PostCard({
               onClick={stopAnd(() => onViewProfile?.(post.authorId))}
             >
               <h4 className="truncate text-sm font-semibold text-on-surface hover:text-primary">
-                {authorDisplayName(post.authorId)}
+                {author.displayName}
               </h4>
               <p className="text-sm text-on-surface-variant">Thành viên 2Hands</p>
               <span className="mt-1 flex items-center gap-1 text-xs text-outline">

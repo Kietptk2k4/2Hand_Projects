@@ -1,27 +1,12 @@
-import { MOCK_PRODUCT_CATALOG } from "../constants/mockProductCatalog";
-
-function findCatalogEntry(productId) {
-  return MOCK_PRODUCT_CATALOG.find((item) => item.productId === productId);
-}
+import { getCachedProductCatalogEntry } from "./productTagEnrichmentCache";
+import { mergeTagWithCatalog } from "./postProductTagMapper";
 
 /**
- * Enrich tag từ catalog MVP (Create/Edit + read post không gọi Commerce).
+ * Enrich tag từ cache (sync). Dùng useEnrichedProductTags khi cần fetch Commerce.
  */
 export function enrichProductTag(tag) {
   if (!tag?.productId) return null;
-
-  const catalog = findCatalogEntry(tag.productId);
-  const price = Number(tag.price);
-  const defaultPrice = catalog?.defaultPrice ?? 0;
-
-  return {
-    productId: tag.productId,
-    price: Number.isFinite(price) && price >= 0 ? price : defaultPrice,
-    name: catalog?.name || "Sản phẩm",
-    category: catalog?.category || "",
-    imageUrl: catalog?.imageUrl || null,
-    defaultPrice,
-  };
+  return mergeTagWithCatalog(tag, getCachedProductCatalogEntry(tag.productId));
 }
 
 export function enrichProductTags(tags) {

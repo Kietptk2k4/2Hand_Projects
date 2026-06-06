@@ -40,7 +40,7 @@ public class MinioPostMediaUploadStorageAdapter implements PostMediaUploadStorag
     ) {
         String extension = resolveExtension(contentType);
         String objectKey = "posts/" + userId + "/" + UUID.randomUUID() + "." + extension;
-        String mediaUrl = buildPublicUrl(objectKey);
+        String mediaUrl = properties.buildPublicObjectUrl(objectKey);
 
         try {
             String uploadUrl = minioClient.getPresignedObjectUrl(
@@ -69,21 +69,6 @@ public class MinioPostMediaUploadStorageAdapter implements PostMediaUploadStorag
                     ex
             );
         }
-    }
-
-    private String buildPublicUrl(String objectKey) {
-        String base = properties.getPublicUrl();
-        if (base.endsWith("/")) {
-            base = base.substring(0, base.length() - 1);
-        }
-        String prefix = properties.getPublicPathPrefix();
-        if (prefix.startsWith("/")) {
-            prefix = prefix.substring(1);
-        }
-        if (prefix.endsWith("/")) {
-            prefix = prefix.substring(0, prefix.length() - 1);
-        }
-        return base + "/" + prefix + "/" + objectKey;
     }
 
     private String resolveExtension(String contentType) {

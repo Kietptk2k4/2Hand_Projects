@@ -244,7 +244,7 @@ export function PostFormModal({
                   <span className="material-symbols-outlined text-[16px] text-primary" aria-hidden="true">
                     sell
                   </span>
-                  Gắn dịch vụ / sản phẩm
+                  Gắn sản phẩm
                 </button>
 
                 <div className="absolute bottom-4 left-4 right-4 z-10 flex items-center justify-between">

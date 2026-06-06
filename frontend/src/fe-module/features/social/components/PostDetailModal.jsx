@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCurrentUserAvatarUrl } from "../../auth/hooks/useCurrentUserAvatarUrl";
 import { useViewCommerceProduct } from "../hooks/useViewCommerceProduct";
-import { enrichProductTags } from "../utils/enrichProductTag";
+import { useEnrichedProductTags } from "../hooks/useEnrichedProductTags";
 import { MAX_COMMENT_LENGTH } from "../constants/commentConstants";
 import { DEFAULT_USER_DISPLAY_NAME } from "../constants/socialUiStrings";
 import { usePostComments } from "../hooks/usePostComments";
 import { usePostDetail } from "../hooks/usePostDetail";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
+import { normalizePostMediaUrl } from "../utils/postMediaUrl";
 import { MediaGalleryLightbox } from "./MediaGalleryLightbox";
 import { PostCaption } from "./PostCaption";
 import { PostDetailComments } from "./PostDetailComments";
@@ -47,10 +48,7 @@ export function PostDetailModal({
   const [replyCountBump, setReplyCountBump] = useState(0);
 
   const { post, isLoading, isError, errorMessage, errorCode, retry } = usePostDetail(postId);
-  const enrichedProductTags = useMemo(
-    () => enrichProductTags(post?.productTags),
-    [post?.productTags]
-  );
+  const enrichedProductTags = useEnrichedProductTags(post?.productTags);
   const [savedByMe, setSavedByMe] = useState(false);
 
   useEffect(() => {
@@ -224,7 +222,7 @@ export function PostDetailModal({
                   aria-label="Mở gallery ảnh"
                 >
                   <img
-                    src={post.media[0].url}
+                    src={normalizePostMediaUrl(post.media[0].url)}
                     alt=""
                     className="h-full min-h-[280px] w-full object-cover md:min-h-full"
                   />

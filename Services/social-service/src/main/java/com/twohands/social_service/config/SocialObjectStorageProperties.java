@@ -3,6 +3,7 @@ package com.twohands.social_service.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.List;
+import java.util.UUID;
 
 @ConfigurationProperties(prefix = "social.object-storage")
 public class SocialObjectStorageProperties {
@@ -128,5 +129,43 @@ public class SocialObjectStorageProperties {
             }
         }
         return List.copyOf(combined);
+    }
+
+    public String buildPublicObjectUrl(String objectKey) {
+        String base = trimTrailingSlash(publicUrl);
+        String prefix = normalizePathPrefix(publicPathPrefix);
+        if (prefix.isEmpty()) {
+            return base + "/" + objectKey;
+        }
+        return base + "/" + prefix + "/" + objectKey;
+    }
+
+    public String buildAllowedMediaUrlPrefix(UUID userId) {
+        return buildPublicObjectUrl("posts/" + userId + "/");
+    }
+
+    private static String trimTrailingSlash(String value) {
+        if (value == null || value.isBlank()) {
+            return "";
+        }
+        String trimmed = value;
+        while (trimmed.endsWith("/")) {
+            trimmed = trimmed.substring(0, trimmed.length() - 1);
+        }
+        return trimmed;
+    }
+
+    private static String normalizePathPrefix(String value) {
+        if (value == null || value.isBlank()) {
+            return "";
+        }
+        String prefix = value;
+        while (prefix.startsWith("/")) {
+            prefix = prefix.substring(1);
+        }
+        while (prefix.endsWith("/")) {
+            prefix = prefix.substring(0, prefix.length() - 1);
+        }
+        return prefix;
     }
 }

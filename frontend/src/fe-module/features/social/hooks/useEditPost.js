@@ -12,7 +12,8 @@ import {
   VIDEO_MAX_BYTES,
 } from "../constants/createPostConstants";
 import { buildEditPatchBody, buildPatchSnapshot } from "../utils/buildEditPatch";
-import { enrichProductTag } from "../utils/enrichProductTag";
+import { loadProductCatalogEntry } from "../api/postProductTagApi";
+import { mergeTagWithCatalog } from "../utils/postProductTagMapper";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 
 function resolveMediaKind(file) {
@@ -282,7 +283,14 @@ export function useEditPost({ postId, onSuccess }) {
         setVisibility(snapshot.visibility);
         setAllowComments(snapshot.allowComments);
         setHashtags(snapshot.hashtags);
-        setProductTags((post.productTags || []).map(enrichProductTag));
+        const enrichedTags = await Promise.all(
+          (post.productTags || []).map(async (tag) => {
+            const catalog = await loadProductCatalogEntry(tag.productId);
+            return mergeTagWithCatalog(tag, catalog);
+          }),
+        );
+        if (cancelled) return;
+        setProductTags(enrichedTags.filter(Boolean));
         setMediaItems(mapMediaToSlots(post.media));
         setActiveMediaIndex(0);
         setLoadStatus("ready");

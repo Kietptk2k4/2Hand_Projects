@@ -1,6 +1,7 @@
-import { authorAvatarUrl, authorDisplayName } from "../utils/authorDisplay";
-import { enrichProductTags } from "../utils/enrichProductTag";
+import { useEnrichedProductTags } from "../hooks/useEnrichedProductTags";
+import { usePostAuthorDisplay } from "../hooks/usePostAuthorDisplay";
 import { formatSavedAt } from "../utils/formatSavedAt";
+import { normalizePostMediaUrl } from "../utils/postMediaUrl";
 import { PostProductTagsBlock } from "./PostProductTagsBlock";
 
 const PLACEHOLDER_IMAGE =
@@ -15,12 +16,11 @@ export function SavedPostCard({
   onViewProduct,
   isUnsaveLoading = false,
 }) {
-  const mediaUrl = post.media?.[0]?.url || PLACEHOLDER_IMAGE;
+  const mediaUrl = normalizePostMediaUrl(post.media?.[0]?.url) || PLACEHOLDER_IMAGE;
   const savedLabel = formatSavedAt(post.savedAt);
-  const displayName = authorDisplayName(post.authorId);
-  const avatarUrl = authorAvatarUrl(post.authorId);
+  const author = usePostAuthorDisplay(post.authorId);
   const titleText = post.caption?.trim() || "Bài viết không có nội dung";
-  const enrichedProductTags = enrichProductTags(post.productTags);
+  const enrichedProductTags = useEnrichedProductTags(post.productTags);
 
   const handleOpenPost = () => onOpenPost?.(post.postId);
   const handleOpenComments = (event) => {
@@ -67,8 +67,8 @@ export function SavedPostCard({
             onClick={handleViewProfile}
             className="flex items-center gap-2 text-left"
           >
-            <img src={avatarUrl} alt="" className="h-8 w-8 rounded-full object-cover" />
-            <h3 className="text-sm font-medium text-on-surface">{displayName}</h3>
+            <img src={author.avatarUrl} alt="" className="h-8 w-8 rounded-full object-cover" />
+            <h3 className="text-sm font-medium text-on-surface">{author.displayName}</h3>
           </button>
           <button
             type="button"

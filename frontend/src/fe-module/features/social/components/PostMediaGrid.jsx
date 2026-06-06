@@ -1,5 +1,9 @@
+import { normalizePostMediaUrl } from "../utils/postMediaUrl";
+
 export function PostMediaGrid({ media = [], onMediaClick }) {
-  const images = (media || []).filter((item) => item?.url);
+  const images = (media || [])
+    .filter((item) => item?.url)
+    .map((item) => ({ ...item, url: normalizePostMediaUrl(item.url) }));
   if (images.length === 0) return null;
 
   const handleActivate = (event, index) => {

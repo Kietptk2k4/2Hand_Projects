@@ -40,17 +40,6 @@ public class PostMediaUrlValidator {
     }
 
     public String buildAllowedUrlPrefix(UUID userId) {
-        String base = properties.getPublicUrl();
-        if (base.endsWith("/")) {
-            base = base.substring(0, base.length() - 1);
-        }
-        String prefix = properties.getPublicPathPrefix();
-        if (prefix.startsWith("/")) {
-            prefix = prefix.substring(1);
-        }
-        if (prefix.endsWith("/")) {
-            prefix = prefix.substring(0, prefix.length() - 1);
-        }
-        return base + "/" + prefix + "/posts/" + userId + "/";
+        return properties.buildAllowedMediaUrlPrefix(userId);
     }
 }

@@ -48,6 +48,21 @@ class PostMediaUrlValidatorTest {
     }
 
     @Test
+    void shouldAcceptUrlWithoutPathPrefixForDirectMinioAccess() {
+        SocialObjectStorageProperties properties = new SocialObjectStorageProperties();
+        properties.setEnabled(true);
+        properties.setPublicUrl("http://localhost:9000/2hands-social-post");
+        properties.setPublicPathPrefix("");
+        PostMediaUrlValidator validator = new PostMediaUrlValidator(properties);
+        UUID userId = UUID.randomUUID();
+
+        assertThatCode(() -> validator.validateMediaUrls(
+                userId,
+                List.of("http://localhost:9000/2hands-social-post/posts/" + userId + "/abc.jpg")
+        )).doesNotThrowAnyException();
+    }
+
+    @Test
     void shouldSkipValidationWhenStorageDisabled() {
         SocialObjectStorageProperties properties = new SocialObjectStorageProperties();
         properties.setEnabled(false);
