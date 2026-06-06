@@ -64,6 +64,12 @@ commerce:
     shop-bucket: ${COMMERCE_MINIO_BUCKET_SHOP:2hands-commerce-shop}
     product-bucket: ${COMMERCE_MINIO_BUCKET_PRODUCT:2hands-commerce-product}
     review-bucket: ${COMMERCE_MINIO_BUCKET_REVIEW:2hands-commerce-review}
+    shop-media-max-file-size-bytes: ${COMMERCE_SHOP_MEDIA_MAX_FILE_SIZE_BYTES:5242880}
+    presigned-url-ttl-seconds: ${COMMERCE_MINIO_PRESIGNED_URL_TTL_SECONDS:900}
+    allowed-shop-media-content-types:
+      - image/jpeg
+      - image/png
+      - image/webp
   kafka:
     producer:
       enabled: ${COMMERCE_KAFKA_PRODUCER_ENABLED:false}

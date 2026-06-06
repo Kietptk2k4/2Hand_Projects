@@ -1,6 +1,46 @@
 import { commerceApiClient } from "../../../services/http/commerceApiClient";
 import { mapAxiosError, unwrapResponse } from "./commerceApiResponse";
 
+function mapShopMediaUploadUrlResponse(data) {
+  return {
+    uploadUrl: data.upload_url,
+    objectKey: data.object_key,
+    mediaUrl: data.media_url,
+    mediaKind: data.media_kind,
+    expiresAt: data.expires_at,
+    maxFileSizeBytes: data.max_file_size_bytes,
+    allowedContentTypes: data.allowed_content_types,
+  };
+}
+
+export async function requestShopMediaUploadUrl({ contentType, fileSizeBytes, mediaKind }) {
+  try {
+    const response = await commerceApiClient.post("/commerce/api/v1/seller/shop/media/upload-url", {
+      content_type: contentType,
+      file_size_bytes: fileSizeBytes,
+      media_kind: mediaKind,
+    });
+    return mapShopMediaUploadUrlResponse(unwrapResponse(response));
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function uploadShopMediaFile(uploadUrl, file) {
+  const response = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": file.type },
+    body: file,
+  });
+
+  if (!response.ok) {
+    throw {
+      code: response.status,
+      message: "Upload ảnh thất bại. Vui lòng thử lại.",
+    };
+  }
+}
+
 /** FE-only GET until backend exposes seller shop detail — MSW implements. */
 export async function fetchMyShop() {
   try {

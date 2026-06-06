@@ -1,5 +1,6 @@
 import { PRODUCT_CONDITIONS, PRODUCT_TYPE_OPTIONS, TITLE_MAX } from "../constants/sellerProductConstants";
 import { ShopImageUploadField } from "./ShopImageUploadField";
+import { SHOP_MEDIA_KIND } from "../constants/shopMediaConstants";
 
 const inputClass =
   "w-full rounded-lg border border-outline bg-surface-container-lowest px-4 py-2.5 text-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary";
@@ -131,6 +132,7 @@ export function CreateSellerProductInfoStep({
           hint="Nhấn để chọn ảnh (khuyến nghị 1:1)"
           icon="image"
           aspectHint="avatar"
+          uploadMediaKind={SHOP_MEDIA_KIND.PRODUCT_THUMBNAIL}
           value={form.thumbnailUrl}
           disabled={disabled}
           onChange={(url) => onFieldChange("thumbnailUrl", url)}

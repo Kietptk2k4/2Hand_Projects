@@ -2,6 +2,8 @@ package com.twohands.commerce_service.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.List;
+
 @ConfigurationProperties(prefix = "commerce.object-storage")
 public class CommerceObjectStorageProperties {
 
@@ -13,6 +15,13 @@ public class CommerceObjectStorageProperties {
     private String shopBucket = "2hands-commerce-shop";
     private String productBucket = "2hands-commerce-product";
     private String reviewBucket = "2hands-commerce-review";
+    private long shopMediaMaxFileSizeBytes = 5_242_880L;
+    private int presignedUrlTtlSeconds = 900;
+    private List<String> allowedShopMediaContentTypes = List.of(
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+    );
 
     public boolean isEnabled() {
         return enabled;
@@ -76,5 +85,29 @@ public class CommerceObjectStorageProperties {
 
     public void setSecretKey(String secretKey) {
         this.secretKey = secretKey;
+    }
+
+    public long getShopMediaMaxFileSizeBytes() {
+        return shopMediaMaxFileSizeBytes;
+    }
+
+    public void setShopMediaMaxFileSizeBytes(long shopMediaMaxFileSizeBytes) {
+        this.shopMediaMaxFileSizeBytes = shopMediaMaxFileSizeBytes;
+    }
+
+    public int getPresignedUrlTtlSeconds() {
+        return presignedUrlTtlSeconds;
+    }
+
+    public void setPresignedUrlTtlSeconds(int presignedUrlTtlSeconds) {
+        this.presignedUrlTtlSeconds = presignedUrlTtlSeconds;
+    }
+
+    public List<String> getAllowedShopMediaContentTypes() {
+        return allowedShopMediaContentTypes;
+    }
+
+    public void setAllowedShopMediaContentTypes(List<String> allowedShopMediaContentTypes) {
+        this.allowedShopMediaContentTypes = allowedShopMediaContentTypes;
     }
 }

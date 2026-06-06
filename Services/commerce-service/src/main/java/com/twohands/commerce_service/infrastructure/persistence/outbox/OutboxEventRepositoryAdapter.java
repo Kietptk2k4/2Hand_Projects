@@ -5,6 +5,7 @@ import com.twohands.commerce_service.domain.outbox.OutboxEventRepository;
 import com.twohands.commerce_service.domain.outbox.OutboxStatus;
 import com.twohands.commerce_service.infrastructure.persistence.JdbcPgEnumTypes;
 import com.twohands.commerce_service.infrastructure.persistence.JdbcSqlDialect;
+import com.twohands.commerce_service.infrastructure.persistence.JdbcTimestamps;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -51,8 +52,8 @@ public class OutboxEventRepositoryAdapter implements OutboxEventRepository {
                 .addValue("payload", event.payload())
                 .addValue("status", event.status().name())
                 .addValue("retryCount", event.retryCount())
-                .addValue("createdAt", event.createdAt())
-                .addValue("publishedAt", event.publishedAt())
+                .addValue("createdAt", JdbcTimestamps.from(event.createdAt()))
+                .addValue("publishedAt", JdbcTimestamps.from(event.publishedAt()))
                 .addValue("lastError", event.lastError()));
 
         return event;
@@ -114,7 +115,7 @@ public class OutboxEventRepositoryAdapter implements OutboxEventRepository {
                 .addValue("pendingStatus", OutboxStatus.PENDING.name())
                 .addValue("processingStatus", OutboxStatus.PROCESSING.name())
                 .addValue("maxRetries", maxRetries)
-                .addValue("pendingTimeoutBefore", pendingTimeoutBefore)
+                .addValue("pendingTimeoutBefore", JdbcTimestamps.from(pendingTimeoutBefore))
                 .addValue("batchSize", batchSize);
         List<OutboxEvent> candidates = jdbcTemplate.query(selectSql, params, (rs, rowNum) -> mapOutboxEvent(rs));
         if (candidates.isEmpty()) {
@@ -136,7 +137,7 @@ public class OutboxEventRepositoryAdapter implements OutboxEventRepository {
                 """.formatted(sqlDialect.castEnum("publishedStatus", JdbcPgEnumTypes.OUTBOX_STATUS));
         return jdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("publishedStatus", OutboxStatus.PUBLISHED.name())
-                .addValue("publishedAt", publishedAt)
+                .addValue("publishedAt", JdbcTimestamps.from(publishedAt))
                 .addValue("eventId", eventId));
     }
 

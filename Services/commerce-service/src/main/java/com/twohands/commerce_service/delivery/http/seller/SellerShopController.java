@@ -6,6 +6,9 @@ import com.twohands.commerce_service.application.shop.updateshopprofile.UpdateSh
 import com.twohands.commerce_service.application.shop.updateshopprofile.UpdateShopProfileUseCase;
 import com.twohands.commerce_service.application.shop.updateshopvacation.UpdateShopVacationCommand;
 import com.twohands.commerce_service.application.shop.updateshopvacation.UpdateShopVacationUseCase;
+import com.twohands.commerce_service.application.shop.uploadshopmedia.CreateShopMediaUploadUrlCommand;
+import com.twohands.commerce_service.application.shop.uploadshopmedia.CreateShopMediaUploadUrlResult;
+import com.twohands.commerce_service.application.shop.uploadshopmedia.CreateShopMediaUploadUrlUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.shop.CreateShopPickupDraft;
 import com.twohands.commerce_service.domain.shop.CreateShopResult;
@@ -33,15 +36,50 @@ public class SellerShopController {
     private final CreateShopUseCase createShopUseCase;
     private final UpdateShopProfileUseCase updateShopProfileUseCase;
     private final UpdateShopVacationUseCase updateShopVacationUseCase;
+    private final CreateShopMediaUploadUrlUseCase createShopMediaUploadUrlUseCase;
 
     public SellerShopController(
             CreateShopUseCase createShopUseCase,
             UpdateShopProfileUseCase updateShopProfileUseCase,
-            UpdateShopVacationUseCase updateShopVacationUseCase
+            UpdateShopVacationUseCase updateShopVacationUseCase,
+            CreateShopMediaUploadUrlUseCase createShopMediaUploadUrlUseCase
     ) {
         this.createShopUseCase = createShopUseCase;
         this.updateShopProfileUseCase = updateShopProfileUseCase;
         this.updateShopVacationUseCase = updateShopVacationUseCase;
+        this.createShopMediaUploadUrlUseCase = createShopMediaUploadUrlUseCase;
+    }
+
+    @PostMapping("/media/upload-url")
+    public ResponseEntity<ApiResponse<CreateShopMediaUploadUrlResponse>> createShopMediaUploadUrl(
+            @RequestBody @Valid CreateShopMediaUploadUrlRequest request,
+            Authentication authentication
+    ) {
+        UUID sellerId = resolveUserId(authentication);
+        CreateShopMediaUploadUrlResult result = createShopMediaUploadUrlUseCase.execute(
+                new CreateShopMediaUploadUrlCommand(
+                        sellerId,
+                        request.contentType(),
+                        request.fileSizeBytes(),
+                        request.mediaKind()
+                )
+        );
+
+        CreateShopMediaUploadUrlResponse response = new CreateShopMediaUploadUrlResponse(
+                result.uploadUrl(),
+                result.objectKey(),
+                result.mediaUrl(),
+                result.mediaKind(),
+                result.expiresAt().toString(),
+                result.maxFileSizeBytes(),
+                result.allowedContentTypes()
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                createShopMediaUploadUrlUseCase.successMessage(),
+                response
+        ));
     }
 
     @PatchMapping("/vacation")
