@@ -26,7 +26,7 @@ export function ProductDetailShopCard({ product, onVisitShop, onViewAllReviews }
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-label-sm text-on-surface-variant">Bán bởi</p>
+          {/* <p className="text-label-sm text-on-surface-variant">Bán bởi</p> */}
           <p className="truncate text-headline-sm font-semibold text-on-surface">{shop.shopName}</p>
           {product.ratingCount > 0 ? (
             <p className="mt-1 text-body-sm text-on-surface-variant">

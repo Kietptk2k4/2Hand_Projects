@@ -78,7 +78,7 @@ export function SellerProductPricingInventoryStep({ form, fieldErrors, disabled,
       <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm md:p-8">
         <h2 className="mb-1 text-headline-sm font-semibold text-on-surface">Tồn kho</h2>
         <p className="mb-6 text-body-sm text-on-surface-variant">
-          Cập nhật số lượng có thể bán và ngưỡng cảnh báo sắp hết hàng.
+          Đồ second-hand: mỗi listing một món — tồn kho 0 hoặc 1; ngưỡng cảnh báo 0 hoặc 1.
         </p>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -90,6 +90,7 @@ export function SellerProductPricingInventoryStep({ form, fieldErrors, disabled,
               id="stock"
               type="number"
               min={0}
+              max={1}
               className={inputClass}
               value={form.stockQuantity}
               disabled={disabled}
@@ -108,11 +109,15 @@ export function SellerProductPricingInventoryStep({ form, fieldErrors, disabled,
               id="low-stock"
               type="number"
               min={0}
+              max={1}
               className={inputClass}
               value={form.lowStockThreshold}
               disabled={disabled}
               onChange={(e) => onFieldChange("lowStockThreshold", e.target.value)}
             />
+            {fieldErrors.lowStockThreshold ? (
+              <p className={errorClass}>{fieldErrors.lowStockThreshold}</p>
+            ) : null}
           </div>
         </div>
       </section>

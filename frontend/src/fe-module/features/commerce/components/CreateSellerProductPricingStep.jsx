@@ -60,6 +60,7 @@ export function CreateSellerProductPricingStep({
             id="stock"
             type="number"
             min={0}
+            max={1}
             className={inputClass}
             value={form.stockQuantity}
             disabled={disabled}
@@ -76,11 +77,15 @@ export function CreateSellerProductPricingStep({
             id="low-stock"
             type="number"
             min={0}
+            max={1}
             className={inputClass}
             value={form.lowStockThreshold}
             disabled={disabled}
             onChange={(e) => onFieldChange("lowStockThreshold", e.target.value)}
           />
+          {fieldErrors.lowStockThreshold ? (
+            <p className={errorClass}>{fieldErrors.lowStockThreshold}</p>
+          ) : null}
         </div>
       </div>
 

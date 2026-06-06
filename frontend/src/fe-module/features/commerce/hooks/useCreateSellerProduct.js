@@ -67,8 +67,15 @@ export function useCreateSellerProduct() {
       }
     }
     const stock = Number(form.stockQuantity);
-    if (form.stockQuantity === "" || !Number.isInteger(stock) || stock < 0) {
-      errors.stockQuantity = "Tồn kho phải là số nguyên ≥ 0.";
+    if (form.stockQuantity === "" || !Number.isInteger(stock) || (stock !== 0 && stock !== 1)) {
+      errors.stockQuantity = "Tồn kho chỉ được 0 hoặc 1 (mỗi listing là một món).";
+    }
+    const thresholdRaw = form.lowStockThreshold;
+    if (thresholdRaw !== "" && thresholdRaw != null) {
+      const threshold = Number(thresholdRaw);
+      if (!Number.isInteger(threshold) || (threshold !== 0 && threshold !== 1)) {
+        errors.lowStockThreshold = "Ngưỡng sắp hết hàng chỉ được 0 hoặc 1.";
+      }
     }
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;

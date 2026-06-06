@@ -63,7 +63,7 @@ export const EMPTY_CREATE_PRODUCT_FORM = {
   salePrice: "",
   saleStartAt: "",
   saleEndAt: "",
-  stockQuantity: "",
+  stockQuantity: "1",
   lowStockThreshold: "0",
 };
 

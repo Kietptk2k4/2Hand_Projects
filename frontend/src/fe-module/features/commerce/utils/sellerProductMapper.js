@@ -168,9 +168,13 @@ export function formatVnd(amount) {
 }
 
 export function mapUpdateInventoryPayload(form) {
+  const rawThreshold = form.lowStockThreshold;
+  const lowStockThreshold =
+    rawThreshold === "" || rawThreshold == null ? 0 : Number(rawThreshold);
+
   return {
     stock_quantity: Number(form.stockQuantity),
-    low_stock_threshold: Number(form.lowStockThreshold) || 3,
+    low_stock_threshold: lowStockThreshold,
   };
 }
 
