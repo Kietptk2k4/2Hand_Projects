@@ -19,7 +19,18 @@ import com.twohands.commerce_service.application.product.updateproductinventory.
 import com.twohands.commerce_service.application.product.updateproductinventory.UpdateProductInventoryUseCase;
 import com.twohands.commerce_service.application.product.updateproductprice.UpdateProductPriceCommand;
 import com.twohands.commerce_service.application.product.updateproductprice.UpdateProductPriceUseCase;
+import com.twohands.commerce_service.application.product.viewsellerproductdetail.ViewSellerProductDetailCommand;
+import com.twohands.commerce_service.application.product.viewsellerproductdetail.ViewSellerProductDetailUseCase;
+import com.twohands.commerce_service.application.product.viewsellerproducts.ViewSellerProductsCommand;
+import com.twohands.commerce_service.application.product.viewsellerproducts.ViewSellerProductsUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
+import com.twohands.commerce_service.common.pagination.PageMeta;
+import com.twohands.commerce_service.delivery.http.catalog.PageMetaResponse;
+import com.twohands.commerce_service.domain.product.SellerProductAttributeItem;
+import com.twohands.commerce_service.domain.product.SellerProductDetail;
+import com.twohands.commerce_service.domain.product.SellerProductListItem;
+import com.twohands.commerce_service.domain.product.SellerProductListSummary;
+import com.twohands.commerce_service.domain.product.ViewSellerProductsResult;
 import com.twohands.commerce_service.domain.product.CreateProductResult;
 import com.twohands.commerce_service.domain.product.ProductAttributeItem;
 import com.twohands.commerce_service.domain.product.UpdateProductAttributesResult;
@@ -33,12 +44,14 @@ import com.twohands.commerce_service.security.AuthenticatedUser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -55,6 +68,8 @@ public class SellerProductController {
     private final UpdateProductAttributesUseCase updateProductAttributesUseCase;
     private final UpdateProductInventoryUseCase updateProductInventoryUseCase;
     private final UpdateProductPriceUseCase updateProductPriceUseCase;
+    private final ViewSellerProductsUseCase viewSellerProductsUseCase;
+    private final ViewSellerProductDetailUseCase viewSellerProductDetailUseCase;
 
     public SellerProductController(
             CreateProductUseCase createProductUseCase,
@@ -64,7 +79,9 @@ public class SellerProductController {
             UpdateProductUseCase updateProductUseCase,
             UpdateProductAttributesUseCase updateProductAttributesUseCase,
             UpdateProductInventoryUseCase updateProductInventoryUseCase,
-            UpdateProductPriceUseCase updateProductPriceUseCase
+            UpdateProductPriceUseCase updateProductPriceUseCase,
+            ViewSellerProductsUseCase viewSellerProductsUseCase,
+            ViewSellerProductDetailUseCase viewSellerProductDetailUseCase
     ) {
         this.createProductUseCase = createProductUseCase;
         this.publishProductUseCase = publishProductUseCase;
@@ -74,6 +91,45 @@ public class SellerProductController {
         this.updateProductAttributesUseCase = updateProductAttributesUseCase;
         this.updateProductInventoryUseCase = updateProductInventoryUseCase;
         this.updateProductPriceUseCase = updateProductPriceUseCase;
+        this.viewSellerProductsUseCase = viewSellerProductsUseCase;
+        this.viewSellerProductDetailUseCase = viewSellerProductDetailUseCase;
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<ViewSellerProductsResponse>> viewSellerProducts(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String q,
+            Authentication authentication
+    ) {
+        UUID sellerId = resolveUserId(authentication);
+        ViewSellerProductsResult result = viewSellerProductsUseCase.execute(
+                new ViewSellerProductsCommand(sellerId, page, limit, status, q)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewSellerProductsUseCase.successMessage(),
+                toListResponse(result)
+        ));
+    }
+
+    @GetMapping("/{productId}")
+    public ResponseEntity<ApiResponse<ViewSellerProductDetailResponse>> viewSellerProductDetail(
+            @PathVariable UUID productId,
+            Authentication authentication
+    ) {
+        UUID sellerId = resolveUserId(authentication);
+        SellerProductDetail detail = viewSellerProductDetailUseCase.execute(
+                new ViewSellerProductDetailCommand(sellerId, productId)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewSellerProductDetailUseCase.successMessage(),
+                toDetailResponse(detail)
+        ));
     }
 
     @PostMapping
@@ -251,6 +307,90 @@ public class SellerProductController {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         return principal.userId();
+    }
+
+    private ViewSellerProductsResponse toListResponse(ViewSellerProductsResult result) {
+        PageMeta pagination = result.pagination();
+        SellerProductListSummary summary = result.summary();
+        return new ViewSellerProductsResponse(
+                result.items().stream().map(this::toListItemResponse).toList(),
+                new PageMetaResponse(
+                        pagination.page(),
+                        pagination.limit(),
+                        pagination.totalItems(),
+                        pagination.totalPages(),
+                        pagination.hasNext()
+                ),
+                new SellerProductListSummaryResponse(
+                        summary.total(),
+                        summary.active(),
+                        summary.outOfStock(),
+                        summary.draft(),
+                        summary.paused(),
+                        summary.archived(),
+                        summary.lowStock()
+                )
+        );
+    }
+
+    private SellerProductListItemResponse toListItemResponse(SellerProductListItem item) {
+        return new SellerProductListItemResponse(
+                item.productId(),
+                item.sellerId(),
+                item.shopId(),
+                item.status(),
+                item.productType(),
+                item.categoryId(),
+                item.categoryName(),
+                item.condition(),
+                item.title(),
+                item.description(),
+                item.weightGram(),
+                item.thumbnailUrl(),
+                item.price(),
+                item.salePrice(),
+                item.effectivePrice(),
+                item.stockQuantity(),
+                item.lowStockThreshold(),
+                item.createdAt(),
+                item.updatedAt()
+        );
+    }
+
+    private ViewSellerProductDetailResponse toDetailResponse(SellerProductDetail detail) {
+        return new ViewSellerProductDetailResponse(
+                detail.productId(),
+                detail.sellerId(),
+                detail.shopId(),
+                detail.status(),
+                detail.productType(),
+                detail.categoryId(),
+                detail.categoryName(),
+                detail.brandId(),
+                detail.condition(),
+                detail.title(),
+                detail.description(),
+                detail.weightGram(),
+                detail.thumbnailUrl(),
+                detail.price(),
+                detail.salePrice(),
+                detail.effectivePrice(),
+                detail.priceId(),
+                detail.stockQuantity(),
+                detail.lowStockThreshold(),
+                detail.reservedQuantity(),
+                detail.attributes().stream().map(this::toAttributeResponse).toList(),
+                detail.mediaUrls(),
+                detail.hasPrice(),
+                detail.hasInventory(),
+                detail.hasMedia(),
+                detail.createdAt(),
+                detail.updatedAt()
+        );
+    }
+
+    private SellerProductAttributeResponse toAttributeResponse(SellerProductAttributeItem attribute) {
+        return new SellerProductAttributeResponse(attribute.attributeName(), attribute.attributeValue());
     }
 
     private UpdateProductPriceResponse toPriceResponse(UpdateProductPriceResult result) {

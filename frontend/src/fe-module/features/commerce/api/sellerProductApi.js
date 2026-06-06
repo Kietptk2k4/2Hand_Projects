@@ -1,7 +1,6 @@
 import { commerceApiClient } from "../../../services/http/commerceApiClient";
 import { mapAxiosError, unwrapResponse } from "./commerceApiResponse";
 
-/** FE-only GET list — MSW until backend exposes seller catalog */
 export async function fetchSellerProductList({ page, limit, status, q }) {
   try {
     const params = { page, limit };
