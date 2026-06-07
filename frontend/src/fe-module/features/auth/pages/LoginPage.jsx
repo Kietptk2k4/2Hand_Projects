@@ -5,6 +5,7 @@ import { SocialLoginButtons } from "../components/SocialLoginButtons";
 import { validateEmail, validateLoginForm } from "../schemas/authSchemas";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 import { useAuthSession } from "../hooks/useAuthSession";
+import { USER_SESSION_KIND } from "../utils/adminSession";
 import { GENERIC_ERROR_RETRY, HIDE_PASSWORD, INVALID_FIELD_MESSAGE, SHOW_PASSWORD } from "../constants/authUiStrings";
 
 const ERROR_MESSAGE_BY_CODE = {
@@ -93,6 +94,7 @@ export function LoginPage() {
         accessToken: loginData.access_token,
         refreshToken: loginData.refresh_token,
         user: loginData.user,
+        sessionKind: USER_SESSION_KIND,
       });
 
       const isPendingVerification = loginData?.user?.status === "PENDING_VERIFICATION";

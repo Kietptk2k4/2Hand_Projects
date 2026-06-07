@@ -13,7 +13,6 @@ const DEFAULT_AVATAR_URL = "https://i.pravatar.cc/96?img=11";
 const NAV_LINKS = [
   { label: "Social", to: APP_ROUTES.socialFeed },
   { label: "Commerce", to: APP_ROUTES.commerceHome },
-  { label: "Admin", to: APP_ROUTES.admin },
   { label: "Services", to: "#services" },
   { label: "My Bookings", to: "#bookings" },
 ];

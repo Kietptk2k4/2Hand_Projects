@@ -6,6 +6,7 @@ import {
   resolveUserIdFromAccessToken,
 } from "../utils/resolveCurrentUserId";
 import { SESSION_EXPIRED_DEFAULT_MESSAGE } from "../constants/authUiStrings";
+import { persistSessionKind, readSessionKind } from "../utils/adminSession";
 
 const AuthSessionContext = createContext(null);
 const DEFAULT_SESSION_EXPIRED_MESSAGE = SESSION_EXPIRED_DEFAULT_MESSAGE;
@@ -33,15 +34,27 @@ export function AuthSessionProvider({ children }) {
     localStorage.getItem("twohands_refresh_token")
   );
   const [user, setUser] = useState(readInitialUser);
+  const [sessionKind, setSessionKind] = useState(readSessionKind);
   const [sessionExpiredState, setSessionExpiredState] = useState({
     isOpen: false,
     message: DEFAULT_SESSION_EXPIRED_MESSAGE,
   });
 
-  const setSession = ({ accessToken: nextAccessToken, refreshToken: nextRefreshToken, user: nextUser }) => {
+  const setSession = ({
+    accessToken: nextAccessToken,
+    refreshToken: nextRefreshToken,
+    user: nextUser,
+    sessionKind: nextSessionKind,
+  }) => {
     setAccessToken(nextAccessToken || null);
     setRefreshToken(nextRefreshToken || null);
     setUser(nextUser || null);
+
+    if (nextSessionKind) {
+      setSessionKind(nextSessionKind);
+      persistSessionKind(nextSessionKind);
+    }
+
     persistStoredUser(nextUser);
 
     if (nextAccessToken) {
@@ -56,9 +69,11 @@ export function AuthSessionProvider({ children }) {
     setAccessToken(null);
     setRefreshToken(null);
     setUser(null);
+    setSessionKind(null);
     localStorage.removeItem("twohands_access_token");
     localStorage.removeItem("twohands_refresh_token");
     persistStoredUser(null);
+    persistSessionKind(null);
   }, []);
 
   const showSessionExpired = useCallback((message = DEFAULT_SESSION_EXPIRED_MESSAGE) => {
@@ -77,15 +92,17 @@ export function AuthSessionProvider({ children }) {
       accessToken,
       refreshToken,
       user,
+      sessionKind,
       setSession,
       setAccessToken,
       isAuthenticated: Boolean(accessToken || localStorage.getItem("twohands_access_token")),
+      isAdminSession: sessionKind === "admin",
       clearSession,
       sessionExpiredState,
       showSessionExpired,
       hideSessionExpired,
     }),
-    [accessToken, refreshToken, user, sessionExpiredState]
+    [accessToken, refreshToken, user, sessionKind, sessionExpiredState]
   );
 
   useEffect(() => {

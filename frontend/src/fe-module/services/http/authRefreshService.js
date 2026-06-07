@@ -66,8 +66,11 @@ export async function refreshAccessTokenOnce() {
     }
 
     try {
+      const sessionKind = localStorage.getItem("twohands_session_kind");
+      const refreshPath =
+        sessionKind === "admin" ? "/api/v1/auth/admin/token/refresh" : "/api/v1/auth/refresh";
       const response = await axios.post(
-        `${AUTH_BASE_URL}/api/v1/auth/refresh`,
+        `${AUTH_BASE_URL}${refreshPath}`,
         { refresh_token: refreshToken },
         { headers: { "Content-Type": "application/json" } }
       );

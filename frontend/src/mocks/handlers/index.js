@@ -1,3 +1,4 @@
+import { adminAuthHandlers } from "./adminAuthHandlers";
 import { adminInvestigationHandlers } from "./adminInvestigationHandlers";
 import { adminRbacHandlers } from "./adminRbacHandlers";
 import { authHandlers } from "./authHandlers";
@@ -37,6 +38,7 @@ import { commerceAdminProductRemovalHandlers } from "./commerceAdminProductRemov
 
 export const handlers = [
   ...authHandlers,
+  ...adminAuthHandlers,
   ...adminRbacHandlers,
   ...adminInvestigationHandlers,
   ...socialFeedHandlers,

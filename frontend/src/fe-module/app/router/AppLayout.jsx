@@ -9,10 +9,14 @@ export function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { sessionExpiredState, hideSessionExpired } = useAuthSession();
+  const isAdminLoginRoute = location.pathname === APP_ROUTES.adminLogin;
+  const isAdminConsoleRoute =
+    location.pathname.startsWith(APP_ROUTES.admin) && !isAdminLoginRoute;
   const isAuthImmersiveRoute =
     location.pathname === APP_ROUTES.login ||
     location.pathname === APP_ROUTES.register ||
-    location.pathname === APP_ROUTES.verifyEmail;
+    location.pathname === APP_ROUTES.verifyEmail ||
+    isAdminLoginRoute;
 
   const isSocialRoute =
     location.pathname === APP_ROUTES.socialFeed ||
@@ -22,14 +26,13 @@ export function AppLayout() {
     location.pathname.startsWith(`${APP_ROUTES.commerceHome}/`);
   const isFullBleedRoute = isSocialRoute || isCommerceRoute;
   const isWideLayoutRoute =
-    location.pathname.startsWith(APP_ROUTES.account) ||
-    location.pathname.startsWith(APP_ROUTES.admin);
+    location.pathname.startsWith(APP_ROUTES.account) || isAdminConsoleRoute;
   const isSensitiveRoute = location.pathname.startsWith(APP_ROUTES.account);
   const allowClose = !isSensitiveRoute;
 
   const onSignIn = () => {
     hideSessionExpired();
-    navigate(APP_ROUTES.login, { replace: true });
+    navigate(isAdminConsoleRoute ? APP_ROUTES.adminLogin : APP_ROUTES.login, { replace: true });
   };
 
   const onClose = () => {
@@ -40,6 +43,23 @@ export function AppLayout() {
     hideSessionExpired();
   };
 
+  if (isAdminLoginRoute) {
+    return (
+      <div className="flex min-h-screen flex-col bg-surface-container-low text-on-surface">
+        <main className="flex-1">
+          <Outlet />
+        </main>
+        <SessionExpiredModal
+          open={sessionExpiredState.isOpen}
+          message={sessionExpiredState.message}
+          allowClose={allowClose}
+          onSignIn={onSignIn}
+          onClose={onClose}
+        />
+      </div>
+    );
+  }
+
   if (isAuthImmersiveRoute) {
     return (
       <div className="flex min-h-screen flex-col bg-surface text-on-surface">
@@ -48,6 +68,23 @@ export function AppLayout() {
           <Outlet />
         </main>
         <AppFooter />
+        <SessionExpiredModal
+          open={sessionExpiredState.isOpen}
+          message={sessionExpiredState.message}
+          allowClose={allowClose}
+          onSignIn={onSignIn}
+          onClose={onClose}
+        />
+      </div>
+    );
+  }
+
+  if (isAdminConsoleRoute) {
+    return (
+      <div className="flex min-h-screen flex-col bg-surface text-on-surface">
+        <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 py-8">
+          <Outlet />
+        </main>
         <SessionExpiredModal
           open={sessionExpiredState.isOpen}
           message={sessionExpiredState.message}

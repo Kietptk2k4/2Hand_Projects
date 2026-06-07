@@ -10,6 +10,7 @@ import {
 } from "../admin/adminUrlParams.js";
 import { AdminNestedNav } from "../admin/components/AdminNestedNav.jsx";
 import { AdminPageLayout } from "../admin/components/AdminPageLayout.jsx";
+import { AdminShell } from "../admin/components/AdminShell.jsx";
 import { AdminUserTargetBar } from "../admin/loginSession/components/AdminUserTargetBar.jsx";
 import { AssignRoleTab } from "../admin/rolePermission/components/AssignRoleTab.jsx";
 import { RevokeRoleTab } from "../admin/rolePermission/components/RevokeRoleTab.jsx";
@@ -142,39 +143,41 @@ export function AdminPage() {
   ]);
 
   return (
-    <AdminPageLayout
-      nav={
-        <AdminNestedNav
-          activeSection={adminTopTab}
-          activeChildTab={activeChildTab}
-          onSectionChange={handleSectionChange}
-          onChildTabChange={handleChildTabChange}
-        />
-      }
-    >
-      {alert ? (
-        <AuthAlert
-          variant={alert.variant}
-          title={
-            alert.variant === "success"
-              ? "Thành công"
-              : alert.variant === "error"
-                ? "Lỗi"
-                : undefined
-          }
-          message={alert.message}
-          onDismiss={() => setAlert(null)}
-        />
-      ) : null}
+    <AdminShell>
+      <AdminPageLayout
+        nav={
+          <AdminNestedNav
+            activeSection={adminTopTab}
+            activeChildTab={activeChildTab}
+            onSectionChange={handleSectionChange}
+            onChildTabChange={handleChildTabChange}
+          />
+        }
+      >
+        {alert ? (
+          <AuthAlert
+            variant={alert.variant}
+            title={
+              alert.variant === "success"
+                ? "Thành công"
+                : alert.variant === "error"
+                  ? "Lỗi"
+                  : undefined
+            }
+            message={alert.message}
+            onDismiss={() => setAlert(null)}
+          />
+        ) : null}
 
-      {adminTopTab === "loginSession" ? (
-        <AdminUserTargetBar
-          userId={selectedInvestigationUserId}
-          onUserIdChange={setSelectedInvestigationUserId}
-        />
-      ) : null}
+        {adminTopTab === "loginSession" ? (
+          <AdminUserTargetBar
+            userId={selectedInvestigationUserId}
+            onUserIdChange={setSelectedInvestigationUserId}
+          />
+        ) : null}
 
-      {mainContent}
-    </AdminPageLayout>
+        {mainContent}
+      </AdminPageLayout>
+    </AdminShell>
   );
 }

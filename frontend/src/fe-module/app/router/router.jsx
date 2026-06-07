@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { APP_ROUTES } from "../../shared/constants/routes";
 import { AppLayout } from "./AppLayout";
+import { AdminAuthGuard } from "./AdminAuthGuard";
 import { AuthGuard } from "./AuthGuard";
 import { LoginPage } from "../../features/auth/pages/LoginPage";
 import { RegisterPage } from "../../features/auth/pages/RegisterPage";
@@ -11,6 +12,7 @@ import { VerifyEmailPage } from "../../features/auth/pages/VerifyEmailPage";
 import { AccountPasswordPage } from "../../features/auth/pages/AccountPasswordPage";
 import { ChangePasswordPage } from "../../features/auth/pages/ChangePasswordPage";
 import { SessionExpiredPage } from "../../features/auth/pages/SessionExpiredPage";
+import { AdminLoginPage } from "../../features/auth/pages/AdminLoginPage";
 import { AdminPage } from "../../features/auth/pages/AdminPage";
 import { SocialFeedPage } from "../../features/social/pages/SocialFeedPage";
 import { SocialProfilePage } from "../../features/social/pages/SocialProfilePage";
@@ -55,6 +57,7 @@ export const router = createBrowserRouter([
       { path: APP_ROUTES.forgotPassword.slice(1), element: <ForgotPasswordPage /> },
       { path: APP_ROUTES.verifyEmail.slice(1), element: <VerifyEmailPage /> },
       { path: APP_ROUTES.sessionExpired.slice(1), element: <SessionExpiredPage /> },
+      { path: APP_ROUTES.adminLogin.slice(1), element: <AdminLoginPage /> },
       { path: APP_ROUTES.commerceHome.slice(1), element: <CommerceHomePage /> },
       { path: APP_ROUTES.commerceSearch.slice(1), element: <CommerceSearchPage /> },
       {
@@ -80,7 +83,6 @@ export const router = createBrowserRouter([
           { path: APP_ROUTES.accountSecurity.slice(1), element: <AccountSecurityPage /> },
           { path: APP_ROUTES.accountPassword.slice(1), element: <AccountPasswordPage /> },
           { path: APP_ROUTES.changePassword.slice(1), element: <ChangePasswordPage /> },
-          { path: APP_ROUTES.admin.slice(1), element: <AdminPage /> },
           {
             path: APP_ROUTES.commerceAdminShopModeration.slice(1),
             element: <CommerceAdminShopModerationPage />,
@@ -163,6 +165,10 @@ export const router = createBrowserRouter([
             element: <CommerceSellerShopReviewsPage />,
           },
         ],
+      },
+      {
+        element: <AdminAuthGuard />,
+        children: [{ path: APP_ROUTES.admin.slice(1), element: <AdminPage /> }],
       },
     ],
   },
