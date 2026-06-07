@@ -7,13 +7,16 @@ import { DEFAULT_USER_DISPLAY_NAME } from "../constants/socialUiStrings";
 import { usePostComments } from "../hooks/usePostComments";
 import { usePostDetail } from "../hooks/usePostDetail";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
-import { normalizePostMediaUrl } from "../utils/postMediaUrl";
+import { isPostVideoMedia } from "../utils/postMediaType";
+import { PostMediaItem } from "./PostMediaItem";
 import { MediaGalleryLightbox } from "./MediaGalleryLightbox";
 import { PostCaption } from "./PostCaption";
 import { PostDetailComments } from "./PostDetailComments";
 import { PostMediaGrid } from "./PostMediaGrid";
 import { PostProductTagsBlock } from "./PostProductTagsBlock";
 import { useSocialWriteBlock } from "../context/SocialWriteBlockContext";
+import { useVideoPlayback } from "../context/VideoPlaybackContext";
+import { buildPlaybackId, VIDEO_PLAYBACK_SURFACES } from "../utils/videoPlaybackId";
 import { PostOptionsMenu } from "./PostOptionsMenu";
 import { LikeCountButton } from "./LikeCountButton";
 
@@ -45,6 +48,7 @@ export function PostDetailModal({
   const viewerAvatar = useCurrentUserAvatarUrl(DEFAULT_AVATAR);
   const viewCommerceProduct = useViewCommerceProduct();
   const { isWriteBlocked, suspendMessage } = useSocialWriteBlock();
+  const { pauseAll } = useVideoPlayback();
   const commentAnchorRef = useRef(null);
   const commentInputRef = useRef(null);
   const [galleryIndex, setGalleryIndex] = useState(null);
@@ -91,6 +95,16 @@ export function PostDetailModal({
     setDraftComment("");
     setReplyCountBump(0);
   }, [postId]);
+
+  useEffect(() => {
+    if (!postId) return;
+    pauseAll();
+  }, [pauseAll, postId]);
+
+  const handleClose = useCallback(() => {
+    pauseAll();
+    onClose?.();
+  }, [onClose, pauseAll]);
 
   const displayReplyCount = (post?.replyCount ?? 0) + replyCountBump;
   const commentsDisabled = post?.allowComments === false || isWriteBlocked;
@@ -146,15 +160,16 @@ export function PostDetailModal({
     const onKeyDown = (event) => {
       if (event.key === "Escape") {
         if (galleryIndex !== null) {
+          pauseAll();
           setGalleryIndex(null);
           return;
         }
-        onClose?.();
+        handleClose();
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [galleryIndex, onClose]);
+  }, [galleryIndex, handleClose, pauseAll]);
 
   useEffect(() => {
     if (!focusComments || !post || commentsState.isLoading) return;
@@ -167,6 +182,7 @@ export function PostDetailModal({
 
   const openGallery = (index = 0) => {
     if (!post?.media?.length) return;
+    pauseAll();
     setGalleryIndex(index);
   };
 
@@ -175,7 +191,7 @@ export function PostDetailModal({
       <div
         className="fixed inset-0 z-50 flex items-center justify-center bg-on-background/40 p-4 backdrop-blur-md md:p-8"
         role="presentation"
-        onClick={onClose}
+        onClick={handleClose}
       >
         <div
           className="relative flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg md:max-h-[921px] md:flex-row"
@@ -186,7 +202,7 @@ export function PostDetailModal({
         >
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="absolute right-3 top-3 z-50 rounded-full bg-surface-container-lowest/90 p-2 text-on-surface transition-colors hover:bg-surface-variant"
             aria-label="Đóng"
           >
@@ -221,7 +237,7 @@ export function PostDetailModal({
               ) : null}
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleClose}
                 className="mt-3 text-sm font-medium text-primary hover:underline"
               >
                 Đóng
@@ -233,19 +249,37 @@ export function PostDetailModal({
             <>
               {post.media?.length > 0 ? (
                 <div
-                  className="relative min-h-[280px] w-full cursor-pointer bg-surface-container-high md:min-h-full md:w-1/2"
-                  onClick={() => openGallery(0)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") openGallery(0);
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Mở gallery ảnh"
+                  className={[
+                    "relative min-h-[280px] w-full overflow-hidden bg-surface-container-high md:min-h-full md:w-1/2",
+                    isPostVideoMedia(post.media[0]) ? "" : "cursor-pointer",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  onClick={
+                    isPostVideoMedia(post.media[0]) ? undefined : () => openGallery(0)
+                  }
+                  onKeyDown={
+                    isPostVideoMedia(post.media[0])
+                      ? undefined
+                      : (event) => {
+                          if (event.key === "Enter") openGallery(0);
+                        }
+                  }
+                  role={isPostVideoMedia(post.media[0]) ? undefined : "button"}
+                  tabIndex={isPostVideoMedia(post.media[0]) ? undefined : 0}
+                  aria-label={
+                    isPostVideoMedia(post.media[0]) ? "Video bài viết" : "Mở gallery ảnh"
+                  }
                 >
-                  <img
-                    src={normalizePostMediaUrl(post.media[0].url)}
-                    alt=""
+                  <PostMediaItem
+                    item={post.media[0]}
+                    variant="inline"
                     className="h-full min-h-[280px] w-full object-cover md:min-h-full"
+                    playbackId={buildPlaybackId(
+                      postId,
+                      0,
+                      VIDEO_PLAYBACK_SURFACES.DETAIL
+                    )}
                   />
                 </div>
               ) : (
@@ -315,6 +349,8 @@ export function PostDetailModal({
                     <div className="mb-6 overflow-hidden rounded-lg">
                       <PostMediaGrid
                         media={post.media}
+                        postId={postId}
+                        surface={VIDEO_PLAYBACK_SURFACES.DETAIL}
                         onMediaClick={(index) => openGallery(index)}
                       />
                     </div>
@@ -450,6 +486,7 @@ export function PostDetailModal({
       {galleryIndex !== null && post?.media ? (
         <MediaGalleryLightbox
           media={post.media}
+          postId={postId}
           initialIndex={galleryIndex}
           onClose={() => setGalleryIndex(null)}
         />

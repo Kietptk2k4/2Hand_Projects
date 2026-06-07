@@ -1,7 +1,7 @@
 import { formatRelativeTime } from "../utils/formatRelativeTime";
 import { useEnrichedProductTags } from "../hooks/useEnrichedProductTags";
 import { usePostAuthorDisplay } from "../hooks/usePostAuthorDisplay";
-import { normalizePostMediaUrl } from "../utils/postMediaUrl";
+import { PostMediaThumbnail } from "./PostMediaItem";
 import { PostCaption } from "./PostCaption";
 import { PostOptionsMenu } from "./PostOptionsMenu";
 import { PostProductTagsBlock } from "./PostProductTagsBlock";
@@ -38,7 +38,7 @@ export function HashtagPostCard({
   const isOwner = Boolean(currentUserId && post.authorId === currentUserId);
   const savedByMe = post.savedByMe ?? false;
   const likedByMe = post.likedByMe ?? false;
-  const mediaUrl = normalizePostMediaUrl(post.media?.[0]?.url) || PLACEHOLDER_IMAGE;
+  const primaryMedia = post.media?.[0];
   const author = usePostAuthorDisplay(post.authorId);
   const enrichedProductTags = useEnrichedProductTags(post.productTags);
 
@@ -64,7 +64,7 @@ export function HashtagPostCard({
         className="h-48 flex-shrink-0 bg-surface-variant md:h-auto md:w-1/3"
         aria-label="Xem chi tiết bài viết"
       >
-        <img src={mediaUrl} alt="" className="h-full w-full object-cover" />
+        <PostMediaThumbnail item={primaryMedia} fallbackSrc={PLACEHOLDER_IMAGE} />
       </button>
 
       <div className="flex flex-grow flex-col p-4">

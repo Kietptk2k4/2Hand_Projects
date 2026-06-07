@@ -1,4 +1,4 @@
-import { normalizePostMediaUrl } from "../utils/postMediaUrl";
+import { PostMediaThumbnail } from "./PostMediaItem";
 import { PostOptionsMenu } from "./PostOptionsMenu";
 
 export function ProfilePostTile({
@@ -13,7 +13,7 @@ export function ProfilePostTile({
   isDeletingPost = false,
   showMenu = true,
 }) {
-  const thumbUrl = normalizePostMediaUrl(post.media?.[0]?.url);
+  const primaryMedia = post.media?.[0];
   const isDraft = post.status === "DRAFT";
 
   const openPost = () => onOpenPost?.(post.postId);
@@ -35,12 +35,10 @@ export function ProfilePostTile({
       className="group relative aspect-square cursor-pointer overflow-hidden rounded-lg border border-outline-variant/30 bg-surface-container shadow-sm transition-shadow hover:shadow-md"
       aria-label={post.caption ? `Xem bài: ${post.caption.slice(0, 40)}` : "Xem bài viết"}
     >
-      {thumbUrl ? (
-        <img
-          src={thumbUrl}
-          alt=""
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
+      {primaryMedia?.url || primaryMedia?.mediaUrl ? (
+        <div className="h-full w-full transition-transform duration-500 group-hover:scale-105">
+          <PostMediaThumbnail item={primaryMedia} />
+        </div>
       ) : (
         <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-surface-container-high p-3 text-center">
           <span className="material-symbols-outlined text-3xl text-outline" aria-hidden="true">

@@ -1,7 +1,7 @@
 import { useEnrichedProductTags } from "../hooks/useEnrichedProductTags";
 import { usePostAuthorDisplay } from "../hooks/usePostAuthorDisplay";
 import { formatSavedAt } from "../utils/formatSavedAt";
-import { normalizePostMediaUrl } from "../utils/postMediaUrl";
+import { PostMediaThumbnail } from "./PostMediaItem";
 import { PostProductTagsBlock } from "./PostProductTagsBlock";
 import { LikeCountButton } from "./LikeCountButton";
 
@@ -46,7 +46,7 @@ export function SavedPostCard({
         className="relative h-48 flex-shrink-0 bg-surface-variant md:h-auto md:w-1/3"
         aria-label="Xem chi tiết bài viết"
       >
-        <img src={mediaUrl} alt="" className="h-full w-full object-cover" />
+        <PostMediaThumbnail item={primaryMedia} fallbackSrc={PLACEHOLDER_IMAGE} />
         <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full border border-outline-variant bg-surface-container-lowest/90 px-2 py-1 backdrop-blur-sm">
           <span
             className="material-symbols-outlined text-[16px] text-primary"

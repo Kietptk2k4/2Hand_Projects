@@ -115,7 +115,12 @@ export function PostCard({
         ) : null}
       </div>
 
-      <PostMediaGrid media={post.media} onMediaClick={() => openDetail()} />
+      <PostMediaGrid
+        media={post.media}
+        postId={post.postId}
+        surface="feed"
+        onMediaClick={() => openDetail()}
+      />
 
       <div className="flex items-center justify-between border-t border-outline-variant bg-[#f9f9ff] p-6">
         <div className="flex gap-4">
