@@ -550,7 +550,18 @@ Không over-engineer:
 
 ---
 
-# 20. Final Goal
+# 20. File Encoding (Windows)
+
+Mọi file nguồn backend (`*.java`, `*.yml`, `*.sql`, `*.md`) phải là **UTF-8 without BOM**.
+
+Trên Windows, tool/agent đôi khi ghi nhầm **UTF-16** → Gradle báo `illegal character: '\u0000'`. Agent và dev phải verify sau khi tạo file mới.
+
+Chi tiết detect/fix: `docs/engineering_rules/file-encoding-standards.md`  
+Cursor rule: `.cursor/rules/file-encoding-utf8.mdc`
+
+---
+
+# 21. Final Goal
 
 Codebase phải:
 

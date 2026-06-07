@@ -14,6 +14,17 @@ Tai lieu nay quy dinh convention frontend de:
 
 ---
 
+## 1.1 File encoding (Windows)
+
+Mọi file frontend (`*.js`, `*.jsx`, `*.ts`, `*.tsx`, `*.md`) phải là **UTF-8 without BOM**.
+
+UTF-16 (thường do agent/editor trên Windows) gây `SyntaxError: Invalid or unexpected token` ở dòng 1 khi Vite load module.
+
+Chi tiết: `docs/engineering_rules/file-encoding-standards.md`  
+Cursor rule: `.cursor/rules/file-encoding-utf8.mdc`
+
+---
+
 ## 2. Cau truc thu muc de xuat
 
 ```txt

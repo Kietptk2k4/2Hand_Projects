@@ -1,5 +1,6 @@
 package com.twohands.social_service.unit.application.comment.replycomment;
 
+import com.twohands.social_service.application.comment.common.CommentAuthorResolver;
 import com.twohands.social_service.application.comment.common.CommentCreatedOutboxService;
 import com.twohands.social_service.application.comment.replycomment.ReplyCommentCommand;
 import com.twohands.social_service.application.comment.replycomment.ReplyCommentResult;
@@ -49,12 +50,14 @@ class ReplyCommentUseCaseTest {
             new CommentCreatedOutboxService(new ObjectMapper());
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
     private final UserWriteGuard userWriteGuard = new UserWriteGuard(userProjectionRepository);
+    private final CommentAuthorResolver commentAuthorResolver = new CommentAuthorResolver(userProjectionRepository);
     private final ReplyCommentUseCase useCase = new ReplyCommentUseCase(
             commentRepository,
             postRepository,
             outboxEventRepository,
             commentCreatedOutboxService,
-            userWriteGuard
+            userWriteGuard,
+            commentAuthorResolver
     );
 
     private Comment buildParentComment(UUID authorId, String commentId, String postId) {
@@ -128,6 +131,8 @@ class ReplyCommentUseCaseTest {
         assertThat(result.commentId()).isEqualTo("reply-id");
         assertThat(result.parentCommentId()).isEqualTo(parentId);
         assertThat(result.postId()).isEqualTo(postId);
+        assertThat(result.author().userId()).isEqualTo(authorId.toString());
+        assertThat(result.author().displayName()).isEqualTo("User");
         assertThat(outboxCaptor.getValue().eventType()).isEqualTo("COMMENT_CREATED");
         assertThat(outboxCaptor.getValue().status()).isEqualTo(OutboxStatus.PENDING);
     }

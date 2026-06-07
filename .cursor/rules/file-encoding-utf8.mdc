@@ -1,0 +1,50 @@
+---
+description: File encoding must be UTF-8 (no UTF-16) on Windows — prevents Gradle/Vite parse errors
+alwaysApply: true
+---
+
+# File Encoding — UTF-8 Only (Windows)
+
+On this repo (Windows), **never leave source files as UTF-16**. Cursor/editor writes sometimes produce UTF-16 LE (`\x00` between ASCII bytes). That breaks Gradle (`error: illegal character: '\u0000'`), Vite (`Invalid or unexpected token`), and ripgrep/read tools (`File seems to be binary`).
+
+## Required encoding
+
+| Scope | Encoding |
+|-------|----------|
+| All `*.java`, `*.js`, `*.jsx`, `*.ts`, `*.tsx`, `*.md`, `*.mdc`, `*.yml`, `*.json`, `*.sql` | **UTF-8 without BOM** |
+| Gradle / Spring / Node / Vite | Expect UTF-8 |
+
+## When creating or rewriting files
+
+1. **Prefer** `StrReplace` / small edits on existing UTF-8 files.
+2. For **new files** or **full rewrites**, if the Write tool is used on Windows, **verify encoding after save**.
+3. If compile or browser reports garbage tokens at column 1–2, treat as UTF-16 corruption and fix immediately.
+
+## Quick verify (first bytes)
+
+```powershell
+python -c "print(open(r'PATH', 'rb').read(20))"
+```
+
+- Good: `b'package com.twohand'` or `b'/** Active brands'`
+- Bad: `b'/\x00*\x00*\x00'` or `b'p\x00a\x00c\x00k\x00'`
+
+## Fix corrupted file (PowerShell)
+
+```powershell
+$path = "d:\Projects\2Hand_Projects\path\to\File.java"
+$content = Get-Content -Path $path -Raw -Encoding Unicode
+[System.IO.File]::WriteAllText($path, $content, [System.Text.UTF8Encoding]::new($false))
+```
+
+Or Python:
+
+```python
+from pathlib import Path
+p = Path(r"d:/Projects/2Hand_Projects/path/to/file.js")
+p.write_text(p.read_text(encoding="utf-16"), encoding="utf-8")
+```
+
+## Full reference
+
+`docs/engineering_rules/file-encoding-standards.md`

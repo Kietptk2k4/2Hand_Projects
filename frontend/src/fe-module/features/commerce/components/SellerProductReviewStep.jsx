@@ -1,4 +1,5 @@
 import { PRODUCT_CONDITIONS, STATUS_LABELS } from "../constants/sellerProductConstants";
+import { resolveBrandLabel } from "../constants/sellerProductBrands";
 import { formatVnd } from "../utils/sellerProductMapper";
 
 function CheckItem({ ok, label }) {
@@ -21,6 +22,7 @@ function CheckItem({ ok, label }) {
 export function SellerProductReviewStep({
   form,
   categories,
+  brands,
   mediaUrls,
   attributes,
   status,
@@ -30,6 +32,7 @@ export function SellerProductReviewStep({
 }) {
   const categoryName =
     categories.find((c) => c.id === form.categoryId)?.name || form.categoryId || "—";
+  const brandName = resolveBrandLabel(form.brandId, brands);
   const conditionLabel =
     PRODUCT_CONDITIONS.find((c) => c.value === form.condition)?.label || form.condition;
 
@@ -50,6 +53,10 @@ export function SellerProductReviewStep({
           <div>
             <dt className="text-label-sm text-on-surface-variant">Danh mục</dt>
             <dd className="text-body-md text-on-surface">{categoryName}</dd>
+          </div>
+          <div>
+            <dt className="text-label-sm text-on-surface-variant">Thương hiệu</dt>
+            <dd className="text-body-md text-on-surface">{brandName}</dd>
           </div>
           <div>
             <dt className="text-label-sm text-on-surface-variant">Tình trạng</dt>

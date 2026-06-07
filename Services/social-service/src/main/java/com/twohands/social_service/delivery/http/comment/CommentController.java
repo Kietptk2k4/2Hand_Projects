@@ -126,11 +126,17 @@ public class CommentController {
         List<ReplyCommentResponse.MediaItemResponse> media = result.media().stream()
                 .map(m -> new ReplyCommentResponse.MediaItemResponse(m.url(), m.type()))
                 .toList();
+        ReplyCommentResponse.AuthorResponse author = new ReplyCommentResponse.AuthorResponse(
+                result.author().userId(),
+                result.author().displayName(),
+                result.author().avatarUrl()
+        );
         return new ReplyCommentResponse(
                 result.commentId(),
                 result.postId(),
                 result.parentCommentId(),
                 result.authorId(),
+                author,
                 result.contentText(),
                 media,
                 result.status(),

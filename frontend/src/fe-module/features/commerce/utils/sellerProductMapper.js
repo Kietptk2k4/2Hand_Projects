@@ -1,5 +1,12 @@
+import { DEFAULT_BRAND_ID } from "../constants/sellerProductBrands";
+
 function pick(obj, camel, snake) {
   return obj?.[camel] ?? obj?.[snake];
+}
+
+function mapBrandId(brandId) {
+  const normalized = String(brandId ?? "").trim();
+  return normalized || DEFAULT_BRAND_ID;
 }
 
 export function mapSellerProductListResponse(data) {
@@ -86,6 +93,7 @@ export function detailToFormState(detail) {
   return {
     productType: detail.productType || "PHYSICAL",
     categoryId: detail.categoryId || "",
+    brandId: detail.brandId || DEFAULT_BRAND_ID,
     condition: detail.condition || "GOOD",
     title: detail.title || "",
     description: detail.description || "",
@@ -104,7 +112,7 @@ export function mapUpdateProductPayload(form) {
   return {
     product_type: form.productType,
     category_id: form.categoryId,
-    brand_id: null,
+    brand_id: mapBrandId(form.brandId),
     condition: form.condition,
     title: form.title.trim(),
     description: form.description.trim(),
@@ -133,6 +141,7 @@ export function mapCreateProductPayload(form) {
   const body = {
     product_type: form.productType,
     category_id: form.categoryId,
+    brand_id: mapBrandId(form.brandId),
     condition: form.condition,
     title: form.title.trim(),
     description: form.description.trim(),

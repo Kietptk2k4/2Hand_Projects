@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SELLER_ACTIVE_CATEGORIES } from "../constants/sellerProductCategories";
+import { SELLER_ACTIVE_BRANDS } from "../constants/sellerProductBrands";
 import {
   createProduct,
   fetchSellerProductDetail,
@@ -153,6 +154,10 @@ export function useSellerProductForm({ mode, productId: routeProductId }) {
   const validateStep1 = useCallback(() => {
     const errors = {};
     if (!form.categoryId) errors.categoryId = "Vui lòng chọn danh mục.";
+    if (!form.brandId) errors.brandId = "Vui lòng chọn thương hiệu.";
+    else if (!SELLER_ACTIVE_BRANDS.some((brand) => brand.id === form.brandId)) {
+      errors.brandId = "Thương hiệu không hợp lệ.";
+    }
     if (!form.title.trim()) errors.title = "Vui lòng nhập tên sản phẩm.";
     else if (form.title.trim().length > TITLE_MAX) {
       errors.title = `Tối đa ${TITLE_MAX} ký tự.`;
@@ -212,6 +217,9 @@ export function useSellerProductForm({ mode, productId: routeProductId }) {
         errors[`attr_${i}`] = `Tên tối đa ${ATTRIBUTE_NAME_MAX}, giá trị tối đa ${ATTRIBUTE_VALUE_MAX} ký tự.`;
       }
       const key = name.toLowerCase();
+      if (key === "brand") {
+        errors[`attr_${i}`] = 'Không dùng thuộc tính "brand" — hãy chọn thương hiệu ở bước Thông tin.';
+      }
       if (names.has(key)) {
         errors[`attr_${i}`] = "Tên thuộc tính không được trùng.";
       }
@@ -398,6 +406,7 @@ export function useSellerProductForm({ mode, productId: routeProductId }) {
     canEdit,
     maxUnlockedStep,
     categories: SELLER_ACTIVE_CATEGORIES,
+    brands: SELLER_ACTIVE_BRANDS,
     reviewChecklist,
     canPublish,
     updateField,

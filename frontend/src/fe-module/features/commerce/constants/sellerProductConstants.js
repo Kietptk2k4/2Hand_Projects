@@ -1,3 +1,5 @@
+import { DEFAULT_BRAND_ID } from "./sellerProductBrands";
+
 export const PRODUCT_STATUSES = ["DRAFT", "ACTIVE", "OUT_OF_STOCK", "PAUSED", "ARCHIVED"];
 
 export const PRODUCT_CONDITIONS = [
@@ -55,6 +57,7 @@ export const READ_ONLY_STATUSES = ["ARCHIVED"];
 export const EMPTY_CREATE_PRODUCT_FORM = {
   productType: "PHYSICAL",
   categoryId: "",
+  brandId: DEFAULT_BRAND_ID,
   condition: "GOOD",
   title: "",
   description: "",

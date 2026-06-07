@@ -35,6 +35,7 @@ export function CommerceSellerProductFormPage({ mode: modeProp }) {
     canEdit,
     maxUnlockedStep,
     categories,
+    brands,
     reviewChecklist,
     canPublish,
     updateField,
@@ -135,6 +136,7 @@ export function CommerceSellerProductFormPage({ mode: modeProp }) {
             form={form}
             fieldErrors={fieldErrors}
             categories={categories}
+            brands={brands}
             disabled={disabled}
             onFieldChange={updateField}
           />
@@ -166,6 +168,7 @@ export function CommerceSellerProductFormPage({ mode: modeProp }) {
             <SellerProductReviewStep
               form={form}
               categories={categories}
+              brands={brands}
               mediaUrls={mediaUrls}
               attributes={attributes}
               status={status}

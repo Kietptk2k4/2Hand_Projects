@@ -1,6 +1,7 @@
 package com.twohands.social_service.integration.comment;
 
 import com.twohands.social_service.application.comment.commentpost.CommentPostResult;
+import com.twohands.social_service.application.comment.common.CommentAuthorSummary;
 import com.twohands.social_service.application.comment.commentpost.CommentPostUseCase;
 import com.twohands.social_service.application.post.createpost.CreatePostUseCase;
 import com.twohands.social_service.application.post.deletepost.DeletePostUseCase;
@@ -9,6 +10,7 @@ import com.twohands.social_service.application.post.likeunlikepost.LikeUnlikePos
 import com.twohands.social_service.application.post.saveunsavepost.SaveUnsavePostUseCase;
 import com.twohands.social_service.application.post.viewpostdetail.ViewPostDetailUseCase;
 import com.twohands.social_service.application.post.viewsavedposts.ViewSavedPostsUseCase;
+import com.twohands.social_service.delivery.http.comment.mapper.ListPostCommentsHttpMapper;
 import com.twohands.social_service.delivery.http.post.mapper.ViewPostDetailHttpMapper;
 import com.twohands.social_service.delivery.http.post.mapper.ViewSavedPostsHttpMapper;
 import com.twohands.social_service.config.SecurityConfig;
@@ -51,7 +53,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         RestAuthenticationEntryPoint.class,
         GlobalExceptionHandler.class,
         ViewSavedPostsHttpMapper.class,
-        ViewPostDetailHttpMapper.class
+        ViewPostDetailHttpMapper.class,
+        ListPostCommentsHttpMapper.class
 })
 @TestPropertySource(properties = {
         "jwt.access-secret=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
@@ -113,6 +116,7 @@ class CommentPostApiIntegrationTest {
                 "507f1f77bcf86cd799439011",
                 null,
                 userId.toString(),
+                new CommentAuthorSummary(userId.toString(), "Test User", "https://cdn/avatar.jpg"),
                 "Great post!",
                 List.of(),
                 "ACTIVE",
@@ -130,7 +134,9 @@ class CommentPostApiIntegrationTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.code").value(201))
                 .andExpect(jsonPath("$.data.commentId").value("comment-id"))
-                .andExpect(jsonPath("$.data.parentCommentId").doesNotExist());
+                .andExpect(jsonPath("$.data.parentCommentId").doesNotExist())
+                .andExpect(jsonPath("$.data.author.displayName").value("Test User"))
+                .andExpect(jsonPath("$.data.author.avatarUrl").value("https://cdn/avatar.jpg"));
     }
 
     @Test

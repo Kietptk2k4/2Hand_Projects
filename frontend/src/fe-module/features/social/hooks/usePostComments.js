@@ -3,7 +3,7 @@ import { createCommentReply, createPostComment, deleteOwnComment } from "../api/
 import { canDeleteCommentItem } from "../utils/commentPermissions";
 import { fetchPostComments } from "../api/postApi";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
-import { buildAuthorFromSessionUser, mapApiCommentToListItem } from "../utils/mapCommentItem";
+import { mapApiCommentToListItem } from "../utils/mapCommentItem";
 import { DEFAULT_COMMENT_SORT } from "../constants/commentConstants";
 import { validateCommentContent } from "../utils/validateCommentContent";
 import { mapSocialWriteError } from "../utils/socialWriteErrors";
@@ -44,7 +44,7 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
         return;
       }
       setStatus("error");
-      setErrorMessage(error?.message || "Không tải được bình luận.");
+      setErrorMessage(error?.message || "KhÃ´ng táº£i Ä‘Æ°á»£c bÃ¬nh luáº­n.");
     }
   }, [commentSort, enabled, postId, showSessionExpired]);
 
@@ -79,7 +79,7 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
         showSessionExpired(error?.message);
         return;
       }
-      setErrorMessage(error?.message || "Không tải thêm bình luận.");
+      setErrorMessage(error?.message || "KhÃ´ng táº£i thÃªm bÃ¬nh luáº­n.");
       setStatus("ready");
     }
   }, [commentSort, meta, postId, showSessionExpired, status]);
@@ -149,8 +149,7 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
           contentText: validation.value,
           media: [],
         });
-        const author = buildAuthorFromSessionUser(user);
-        const listItem = mapApiCommentToListItem(data, author);
+        const listItem = mapApiCommentToListItem(data);
         setComments((prev) => [listItem, ...prev]);
         onReplyCountChange?.(1);
         return { ok: true };
@@ -169,7 +168,7 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
         setIsSubmittingTopLevel(false);
       }
     },
-    [isSubmittingTopLevel, onReplyCountChange, postId, showSessionExpired, user]
+    [isSubmittingTopLevel, onReplyCountChange, postId, showSessionExpired]
   );
 
   const submitReply = useCallback(
@@ -190,11 +189,10 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
           contentText: validation.value,
           media: [],
         });
-        const author = buildAuthorFromSessionUser(user);
-        const listItem = mapApiCommentToListItem(
-          { ...data, parentCommentId },
-          author
-        );
+        const listItem = mapApiCommentToListItem({
+          ...data,
+          parentCommentId,
+        });
 
         setRepliesByParent((prev) => ({
           ...prev,
@@ -228,7 +226,7 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
         setIsSubmittingReplyId(null);
       }
     },
-    [isSubmittingReplyId, onReplyCountChange, showSessionExpired, user]
+    [isSubmittingReplyId, onReplyCountChange, showSessionExpired]
   );
 
   const canDeleteComment = useCallback(
@@ -267,7 +265,7 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
         return { ok: false };
       }
 
-      const confirmed = window.confirm("Bạn có chắc muốn xóa bình luận này?");
+      const confirmed = window.confirm("Báº¡n cÃ³ cháº¯c muá»‘n xÃ³a bÃ¬nh luáº­n nÃ y?");
       if (!confirmed) {
         return { ok: false, cancelled: true };
       }
@@ -297,7 +295,7 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
 
         return {
           ok: false,
-          message: error?.message || "Không xóa được bình luận.",
+          message: error?.message || "KhÃ´ng xÃ³a Ä‘Æ°á»£c bÃ¬nh luáº­n.",
           code: error?.code,
         };
       } finally {

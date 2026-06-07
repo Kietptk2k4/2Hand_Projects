@@ -1,5 +1,6 @@
 package com.twohands.social_service.application.comment.replycomment;
 
+import com.twohands.social_service.application.comment.common.CommentAuthorSummary;
 import com.twohands.social_service.domain.comment.CommentMediaItem;
 
 import java.util.List;
@@ -9,6 +10,7 @@ public record ReplyCommentResult(
         String postId,
         String parentCommentId,
         String authorId,
+        CommentAuthorSummary author,
         String contentText,
         List<CommentMediaItem> media,
         String status,

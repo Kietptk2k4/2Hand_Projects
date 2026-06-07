@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { SELLER_ACTIVE_CATEGORIES } from "../constants/sellerProductCategories";
+import { SELLER_ACTIVE_BRANDS } from "../constants/sellerProductBrands";
 import {
   createProduct,
   publishProduct,
@@ -41,6 +42,10 @@ export function useCreateSellerProduct() {
   const validateStep1 = useCallback(() => {
     const errors = {};
     if (!form.categoryId) errors.categoryId = "Vui lòng chọn danh mục.";
+    if (!form.brandId) errors.brandId = "Vui lòng chọn thương hiệu.";
+    else if (!SELLER_ACTIVE_BRANDS.some((brand) => brand.id === form.brandId)) {
+      errors.brandId = "Thương hiệu không hợp lệ.";
+    }
     if (!form.title.trim()) errors.title = "Vui lòng nhập tên sản phẩm.";
     else if (form.title.trim().length > TITLE_MAX) {
       errors.title = `Tối đa ${TITLE_MAX} ký tự.`;
@@ -146,6 +151,7 @@ export function useCreateSellerProduct() {
     apiError,
     isSubmitting,
     categories: SELLER_ACTIVE_CATEGORIES,
+    brands: SELLER_ACTIVE_BRANDS,
     updateField,
     nextStep,
     prevStep,

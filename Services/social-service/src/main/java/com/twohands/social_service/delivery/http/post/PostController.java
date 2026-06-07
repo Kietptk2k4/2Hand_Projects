@@ -448,11 +448,17 @@ public class PostController {
         List<CommentPostResponse.MediaItemResponse> media = result.media().stream()
                 .map(m -> new CommentPostResponse.MediaItemResponse(m.url(), m.type()))
                 .toList();
+        CommentPostResponse.AuthorResponse author = new CommentPostResponse.AuthorResponse(
+                result.author().userId(),
+                result.author().displayName(),
+                result.author().avatarUrl()
+        );
         return new CommentPostResponse(
                 result.commentId(),
                 result.postId(),
                 result.parentCommentId(),
                 result.authorId(),
+                author,
                 result.contentText(),
                 media,
                 result.status(),

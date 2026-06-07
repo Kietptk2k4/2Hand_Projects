@@ -7,12 +7,16 @@ public record ReplyCommentResponse(
         String postId,
         String parentCommentId,
         String authorId,
+        AuthorResponse author,
         String contentText,
         List<MediaItemResponse> media,
         String status,
         String createdAt,
         String updatedAt
 ) {
+    public record AuthorResponse(String userId, String displayName, String avatarUrl) {
+    }
+
     public record MediaItemResponse(String url, String type) {
     }
 }

@@ -2,6 +2,7 @@ package com.twohands.social_service.integration.comment;
 
 import com.twohands.social_service.application.comment.deleteowncomment.DeleteOwnCommentUseCase;
 import com.twohands.social_service.application.comment.likecomment.LikeCommentUseCase;
+import com.twohands.social_service.application.comment.common.CommentAuthorSummary;
 import com.twohands.social_service.application.comment.replycomment.ReplyCommentResult;
 import com.twohands.social_service.application.comment.replycomment.ReplyCommentUseCase;
 import com.twohands.social_service.config.SecurityConfig;
@@ -83,6 +84,7 @@ class ReplyCommentApiIntegrationTest {
                 "507f1f77bcf86cd799439011",
                 "parent-id",
                 userId.toString(),
+                new CommentAuthorSummary(userId.toString(), "Test User", "https://cdn/avatar.jpg"),
                 "Thanks!",
                 List.of(),
                 "ACTIVE",
@@ -101,7 +103,9 @@ class ReplyCommentApiIntegrationTest {
                 .andExpect(jsonPath("$.code").value(201))
                 .andExpect(jsonPath("$.message").value("Tra loi comment thanh cong."))
                 .andExpect(jsonPath("$.data.commentId").value("reply-id"))
-                .andExpect(jsonPath("$.data.parentCommentId").value("parent-id"));
+                .andExpect(jsonPath("$.data.parentCommentId").value("parent-id"))
+                .andExpect(jsonPath("$.data.author.displayName").value("Test User"))
+                .andExpect(jsonPath("$.data.author.avatarUrl").value("https://cdn/avatar.jpg"));
     }
 
     @Test

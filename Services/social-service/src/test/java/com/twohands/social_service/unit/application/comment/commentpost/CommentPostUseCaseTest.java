@@ -3,6 +3,7 @@ package com.twohands.social_service.unit.application.comment.commentpost;
 import com.twohands.social_service.application.comment.commentpost.CommentPostCommand;
 import com.twohands.social_service.application.comment.commentpost.CommentPostResult;
 import com.twohands.social_service.application.comment.commentpost.CommentPostUseCase;
+import com.twohands.social_service.application.comment.common.CommentAuthorResolver;
 import com.twohands.social_service.application.comment.common.CommentCreatedOutboxService;
 import com.twohands.social_service.domain.comment.Comment;
 import com.twohands.social_service.domain.comment.CommentRepository;
@@ -47,12 +48,14 @@ class CommentPostUseCaseTest {
             new CommentCreatedOutboxService(new ObjectMapper());
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
     private final UserWriteGuard userWriteGuard = new UserWriteGuard(userProjectionRepository);
+    private final CommentAuthorResolver commentAuthorResolver = new CommentAuthorResolver(userProjectionRepository);
     private final CommentPostUseCase useCase = new CommentPostUseCase(
             commentRepository,
             postRepository,
             outboxEventRepository,
             commentCreatedOutboxService,
-            userWriteGuard
+            userWriteGuard,
+            commentAuthorResolver
     );
 
     private Post buildPost(String postId, PostStatus status, boolean allowComments) {
@@ -100,6 +103,8 @@ class CommentPostUseCaseTest {
 
         assertThat(result.commentId()).isEqualTo("comment-id");
         assertThat(result.parentCommentId()).isNull();
+        assertThat(result.author().userId()).isEqualTo(authorId.toString());
+        assertThat(result.author().displayName()).isEqualTo("User");
 
         verify(postRepository).incrementReplyCount(postId);
 

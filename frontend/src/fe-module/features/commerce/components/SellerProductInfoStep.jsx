@@ -9,6 +9,7 @@ export function SellerProductInfoStep({
   form,
   fieldErrors,
   categories,
+  brands,
   disabled,
   onFieldChange,
 }) {
@@ -55,6 +56,26 @@ export function SellerProductInfoStep({
             ))}
           </select>
           {fieldErrors.categoryId ? <p className={errorClass}>{fieldErrors.categoryId}</p> : null}
+        </div>
+
+        <div>
+          <label htmlFor="brand-id" className="mb-1 block text-label-md font-medium text-on-surface">
+            Thương hiệu <span className="text-error">*</span>
+          </label>
+          <select
+            id="brand-id"
+            className={inputClass}
+            value={form.brandId}
+            disabled={disabled}
+            onChange={(e) => onFieldChange("brandId", e.target.value)}
+          >
+            {brands.map((brand) => (
+              <option key={brand.id} value={brand.id}>
+                {brand.name}
+              </option>
+            ))}
+          </select>
+          {fieldErrors.brandId ? <p className={errorClass}>{fieldErrors.brandId}</p> : null}
         </div>
 
         <div>

@@ -1,5 +1,6 @@
 package com.twohands.social_service.application.comment.replycomment;
 
+import com.twohands.social_service.application.comment.common.CommentAuthorResolver;
 import com.twohands.social_service.application.comment.common.CommentCreatedOutboxService;
 import com.twohands.social_service.domain.comment.Comment;
 import com.twohands.social_service.domain.comment.CommentMediaItem;
@@ -33,19 +34,22 @@ public class ReplyCommentUseCase {
     private final OutboxEventRepository outboxEventRepository;
     private final CommentCreatedOutboxService commentCreatedOutboxService;
     private final UserWriteGuard userWriteGuard;
+    private final CommentAuthorResolver commentAuthorResolver;
 
     public ReplyCommentUseCase(
             CommentRepository commentRepository,
             PostRepository postRepository,
             OutboxEventRepository outboxEventRepository,
             CommentCreatedOutboxService commentCreatedOutboxService,
-            UserWriteGuard userWriteGuard
+            UserWriteGuard userWriteGuard,
+            CommentAuthorResolver commentAuthorResolver
     ) {
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
         this.outboxEventRepository = outboxEventRepository;
         this.commentCreatedOutboxService = commentCreatedOutboxService;
         this.userWriteGuard = userWriteGuard;
+        this.commentAuthorResolver = commentAuthorResolver;
     }
 
     @Transactional
@@ -151,6 +155,7 @@ public class ReplyCommentUseCase {
                 comment.postId(),
                 comment.parentCommentId(),
                 comment.authorId(),
+                commentAuthorResolver.resolve(comment.authorId()),
                 comment.contentText(),
                 comment.media(),
                 comment.status().name(),
