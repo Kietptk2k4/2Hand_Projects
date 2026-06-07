@@ -21,6 +21,12 @@ function followButtonLabel(followStatus) {
 export function ProfileHero({
   profile,
   bio,
+  website,
+  socialLinks = {},
+  showPrivateNotice = false,
+  isDetailsLoading = false,
+  detailsError = "",
+  onDetailsRetry,
   onFollowClick,
   onFollowersClick,
   onFollowingClick,
@@ -35,6 +41,11 @@ export function ProfileHero({
   const followerDisplay = formatSocialCount(profile.followerCount);
   const followingDisplay = formatSocialCount(profile.followingCount);
   const showCounters = followerDisplay !== null && followingDisplay !== null;
+  const socialLinkEntries = Object.entries(socialLinks || {}).filter(
+    ([, url]) => String(url || "").trim()
+  );
+  const hasWebsite = Boolean(String(website || "").trim());
+  const showDetails = !showPrivateNotice && !isDetailsLoading && !detailsError;
 
   return (
     <section className="relative w-full">
@@ -82,10 +93,66 @@ export function ProfileHero({
           )}
         </div>
 
-        {bio ? (
+        {showPrivateNotice ? (
+          <p className="mt-2 max-w-2xl text-center text-sm text-on-surface-variant">
+            Tài khoản đang ở chế độ riêng tư.
+          </p>
+        ) : null}
+
+        {isDetailsLoading ? (
+          <div
+            className="mt-3 h-4 w-48 animate-pulse rounded bg-surface-container-highest"
+            aria-label="Đang tải thông tin hồ sơ"
+          />
+        ) : null}
+
+        {detailsError ? (
+          <div className="mt-2 text-center">
+            <p className="text-sm text-on-surface-variant">{detailsError}</p>
+            {onDetailsRetry ? (
+              <button
+                type="button"
+                onClick={onDetailsRetry}
+                className="mt-1 text-sm font-medium text-primary hover:underline"
+              >
+                Thử lại
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+
+        {showDetails && bio ? (
           <p className="mt-2 max-w-2xl text-center text-sm text-on-surface-variant md:text-base">
             {bio}
           </p>
+        ) : null}
+
+        {showDetails && hasWebsite ? (
+          <a
+            href={website}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-2 text-sm text-primary hover:underline"
+          >
+            {website}
+          </a>
+        ) : null}
+
+        {showDetails && socialLinkEntries.length > 0 ? (
+          <ul className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
+            {socialLinkEntries.map(([key, url]) => (
+              <li key={key}>
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm text-primary hover:underline"
+                >
+                  {key}
+                </a>
+              </li>
+            ))}
+          </ul>
         ) : null}
 
         {showCounters ? (

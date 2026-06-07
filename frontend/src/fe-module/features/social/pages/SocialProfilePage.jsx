@@ -12,8 +12,13 @@ import { DEFAULT_PROFILE_STATUS_FILTER } from "../constants/profilePostsConstant
 import { useEditPostModal } from "../hooks/useEditPostModal";
 import { usePostActions } from "../hooks/usePostActions";
 import { usePostDetailModal } from "../hooks/usePostDetailModal";
+import { usePublicUserProfile } from "../hooks/usePublicUserProfile";
 import { useSocialProfile } from "../hooks/useSocialProfile";
 import { useUserPosts } from "../hooks/useUserPosts";
+import {
+  resolvePublicProfileDetails,
+  resolveSelfProfileDetails,
+} from "../utils/resolveProfileDetails";
 import { EditPostModal } from "../components/EditPostModal";
 import { FollowListModal } from "../components/FollowListModal";
 import { LikesListModal } from "../components/LikesListModal";
@@ -34,7 +39,21 @@ export function SocialProfilePage() {
     useSocialProfile(userId);
   const { profile: accountProfile } = useAccountProfile();
 
-  const isSelf = profile?.followStatus === "SELF";
+  const isSelfBySession = Boolean(user?.id && userId && user.id === userId);
+  const isSelf = profile?.followStatus === "SELF" || isSelfBySession;
+
+  const {
+    publicProfile,
+    isLoading: isPublicProfileLoading,
+    isError: isPublicProfileError,
+    errorMessage: publicProfileErrorMessage,
+    errorCode: publicProfileErrorCode,
+    retry: retryPublicProfile,
+  } = usePublicUserProfile(userId, { enabled: Boolean(userId) && !isSelfBySession });
+
+  const profileDetails = isSelf
+    ? resolveSelfProfileDetails(accountProfile, user)
+    : resolvePublicProfileDetails(publicProfile);
   const canViewPosts = Boolean(profile?.canViewFullProfile);
   const effectiveStatusFilter = isSelf ? statusFilter : "published";
 
@@ -61,13 +80,6 @@ export function SocialProfilePage() {
       onToast: setToastMessage,
       refetchProfile,
     });
-
-  const bio =
-    isSelf && accountProfile?.profile?.bio
-      ? accountProfile.profile.bio
-      : isSelf && user?.bio
-        ? user.bio
-        : "";
 
   const {
     handleDeletePost,
@@ -169,7 +181,17 @@ export function SocialProfilePage() {
           <>
             <ProfileHero
               profile={profile}
-              bio={bio}
+              bio={profileDetails.bio}
+              website={profileDetails.website}
+              socialLinks={profileDetails.socialLinks}
+              showPrivateNotice={profileDetails.showPrivateNotice}
+              isDetailsLoading={!isSelf && isPublicProfileLoading}
+              detailsError={
+                !isSelf && isPublicProfileError && publicProfileErrorCode !== 404
+                  ? publicProfileErrorMessage
+                  : ""
+              }
+              onDetailsRetry={!isSelf && isPublicProfileError ? retryPublicProfile : undefined}
               onFollowClick={handleFollowToggle}
               isFollowLoading={isFollowLoading}
               followDisabled={followDisabled}
