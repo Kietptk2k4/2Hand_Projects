@@ -5,9 +5,12 @@ import com.twohands.commerce_service.application.shipment.createshipment.CreateS
 import com.twohands.commerce_service.application.shipment.updatesellershipment.UpdateSellerShipmentCommand;
 import com.twohands.commerce_service.application.shipment.updatesellershipment.UpdateSellerShipmentUseCase;
 import com.twohands.commerce_service.application.shipment.viewsellershipment.ViewSellerShipmentUseCase;
+import com.twohands.commerce_service.application.shipment.viewsellershipments.ViewSellerShipmentsCommand;
+import com.twohands.commerce_service.application.shipment.viewsellershipments.ViewSellerShipmentsUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.shipment.CreateShipmentResult;
 import com.twohands.commerce_service.domain.shipment.SellerShipmentDetail;
+import com.twohands.commerce_service.domain.shipment.ViewSellerShipmentsResult;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
 import com.twohands.commerce_service.security.AuthenticatedUser;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -32,15 +36,38 @@ public class SellerShipmentController {
     private final CreateShipmentUseCase createShipmentUseCase;
     private final UpdateSellerShipmentUseCase updateSellerShipmentUseCase;
     private final ViewSellerShipmentUseCase viewSellerShipmentUseCase;
+    private final ViewSellerShipmentsUseCase viewSellerShipmentsUseCase;
 
     public SellerShipmentController(
             CreateShipmentUseCase createShipmentUseCase,
             UpdateSellerShipmentUseCase updateSellerShipmentUseCase,
-            ViewSellerShipmentUseCase viewSellerShipmentUseCase
+            ViewSellerShipmentUseCase viewSellerShipmentUseCase,
+            ViewSellerShipmentsUseCase viewSellerShipmentsUseCase
     ) {
         this.createShipmentUseCase = createShipmentUseCase;
         this.updateSellerShipmentUseCase = updateSellerShipmentUseCase;
         this.viewSellerShipmentUseCase = viewSellerShipmentUseCase;
+        this.viewSellerShipmentsUseCase = viewSellerShipmentsUseCase;
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<ViewSellerShipmentsResponse>> viewShipments(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String q,
+            Authentication authentication
+    ) {
+        UUID sellerId = resolveUserId(authentication);
+        ViewSellerShipmentsResult result = viewSellerShipmentsUseCase.execute(
+                new ViewSellerShipmentsCommand(sellerId, page, limit, status, q)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewSellerShipmentsUseCase.successMessage(),
+                SellerShipmentMapper.toListResponse(result)
+        ));
     }
 
     @PostMapping

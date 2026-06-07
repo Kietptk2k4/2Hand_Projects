@@ -28,7 +28,7 @@ function mapError(result) {
 }
 
 export const commerceSellerShipmentHandlers = [
-  /** FE-only GET list — backend chưa có endpoint list seller shipments */
+  /** GET list seller shipments — mirrors backend GET /commerce/api/v1/seller/shipments */
   http.get("*/commerce/api/v1/seller/shipments", async ({ request }) => {
     await delay(300);
     const auth = requireAuth(request);
