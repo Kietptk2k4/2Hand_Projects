@@ -1,9 +1,10 @@
 import { useCallback, useState } from "react";
-import { deletePost } from "../api/postApi";
+import { deletePost, toggleLikePost } from "../api/postApi";
 import { toggleSavePost } from "../api/savePostApi";
 
 export function usePostActions({ onToast, openPostId, closePost } = {}) {
   const [savingPostId, setSavingPostId] = useState(null);
+  const [likingPostId, setLikingPostId] = useState(null);
   const [deletingPostId, setDeletingPostId] = useState(null);
 
   const handleDeletePost = useCallback(
@@ -25,6 +26,27 @@ export function usePostActions({ onToast, openPostId, closePost } = {}) {
       }
     },
     [closePost, onToast, openPostId]
+  );
+
+  const handleToggleLikePost = useCallback(
+    async (postId, { onLikedChange } = {}) => {
+      if (!postId) return null;
+
+      setLikingPostId(postId);
+      try {
+        const data = await toggleLikePost(postId);
+        const liked = Boolean(data?.liked);
+        const likeCount = Number(data?.likeCount) || 0;
+        onLikedChange?.(postId, liked, likeCount);
+        return data;
+      } catch (error) {
+        onToast?.(error?.message || "Không cập nhật được lượt thích.");
+        return null;
+      } finally {
+        setLikingPostId(null);
+      }
+    },
+    [onToast]
   );
 
   const handleToggleSavePost = useCallback(
@@ -49,12 +71,15 @@ export function usePostActions({ onToast, openPostId, closePost } = {}) {
   );
 
   const isSavingPost = useCallback((postId) => savingPostId === postId, [savingPostId]);
+  const isLikingPost = useCallback((postId) => likingPostId === postId, [likingPostId]);
   const isDeletingPost = useCallback((postId) => deletingPostId === postId, [deletingPostId]);
 
   return {
     handleDeletePost,
+    handleToggleLikePost,
     handleToggleSavePost,
     isSavingPost,
+    isLikingPost,
     isDeletingPost,
   };
 }

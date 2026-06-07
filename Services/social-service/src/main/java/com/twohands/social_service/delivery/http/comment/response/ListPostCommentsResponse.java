@@ -14,6 +14,7 @@ public record ListPostCommentsResponse(
             String contentText,
             List<MediaItemResponse> media,
             long likeCount,
+            boolean likedByMe,
             long replyCount,
             String createdAt,
             String updatedAt

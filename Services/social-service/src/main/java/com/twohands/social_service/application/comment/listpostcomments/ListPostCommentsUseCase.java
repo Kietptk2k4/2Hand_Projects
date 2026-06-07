@@ -6,6 +6,7 @@ import com.twohands.social_service.application.post.common.PostViewAccessPolicy.
 import com.twohands.social_service.domain.comment.Comment;
 import com.twohands.social_service.domain.comment.CommentListQuery;
 import com.twohands.social_service.domain.comment.CommentMediaItem;
+import com.twohands.social_service.domain.comment.CommentReactionRepository;
 import com.twohands.social_service.domain.comment.CommentRepository;
 import com.twohands.social_service.domain.comment.CommentSortOrder;
 import com.twohands.social_service.domain.follow.FollowRepository;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -34,6 +36,7 @@ public class ListPostCommentsUseCase {
 
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final CommentReactionRepository commentReactionRepository;
     private final FollowRepository followRepository;
     private final UserProjectionRepository userProjectionRepository;
     private final PostViewAccessPolicy postViewAccessPolicy;
@@ -42,6 +45,7 @@ public class ListPostCommentsUseCase {
     public ListPostCommentsUseCase(
             PostRepository postRepository,
             CommentRepository commentRepository,
+            CommentReactionRepository commentReactionRepository,
             FollowRepository followRepository,
             UserProjectionRepository userProjectionRepository,
             PostViewAccessPolicy postViewAccessPolicy,
@@ -49,6 +53,7 @@ public class ListPostCommentsUseCase {
     ) {
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
+        this.commentReactionRepository = commentReactionRepository;
         this.followRepository = followRepository;
         this.userProjectionRepository = userProjectionRepository;
         this.postViewAccessPolicy = postViewAccessPolicy;
@@ -94,8 +99,12 @@ public class ListPostCommentsUseCase {
         );
 
         boolean includeReplyCount = normalizedParentId == null;
+        Set<String> likedCommentIds = commentReactionRepository.findLikedCommentIdsByUserIdAndCommentIds(
+                viewerId,
+                commentsPage.items().stream().map(Comment::id).toList()
+        );
         List<ListPostCommentsResult.CommentItem> items = commentsPage.items().stream()
-                .map(comment -> toItem(comment, postId, includeReplyCount))
+                .map(comment -> toItem(comment, postId, includeReplyCount, likedCommentIds.contains(comment.id())))
                 .toList();
 
         return ListPostCommentsResult.from(new PageResult<>(
@@ -161,7 +170,12 @@ public class ListPostCommentsUseCase {
         return parentCommentId;
     }
 
-    private ListPostCommentsResult.CommentItem toItem(Comment comment, String postId, boolean includeReplyCount) {
+    private ListPostCommentsResult.CommentItem toItem(
+            Comment comment,
+            String postId,
+            boolean includeReplyCount,
+            boolean likedByMe
+    ) {
         long replyCount = includeReplyCount
                 ? commentRepository.countActiveReplies(postId, comment.id())
                 : 0L;
@@ -177,6 +191,7 @@ public class ListPostCommentsUseCase {
                 comment.contentText(),
                 media,
                 comment.likeCount(),
+                likedByMe,
                 replyCount,
                 comment.createdAt() != null ? comment.createdAt().toString() : null,
                 comment.updatedAt() != null ? comment.updatedAt().toString() : null

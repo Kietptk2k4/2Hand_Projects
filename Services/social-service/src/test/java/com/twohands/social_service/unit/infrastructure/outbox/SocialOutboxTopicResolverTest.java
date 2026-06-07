@@ -14,6 +14,7 @@ class SocialOutboxTopicResolverTest {
     @Test
     void shouldResolveMvpEventTopics() {
         assertThat(resolver.resolve("POST_LIKED")).isEqualTo("social.post.liked");
+        assertThat(resolver.resolve("COMMENT_LIKED")).isEqualTo("social.comment.liked");
         assertThat(resolver.resolve("COMMENT_CREATED")).isEqualTo("social.comment.created");
         assertThat(resolver.resolve("USER_FOLLOWED")).isEqualTo("social.user.followed");
     }

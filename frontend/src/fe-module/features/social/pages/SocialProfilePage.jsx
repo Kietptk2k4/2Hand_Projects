@@ -16,8 +16,10 @@ import { useSocialProfile } from "../hooks/useSocialProfile";
 import { useUserPosts } from "../hooks/useUserPosts";
 import { EditPostModal } from "../components/EditPostModal";
 import { FollowListModal } from "../components/FollowListModal";
+import { LikesListModal } from "../components/LikesListModal";
 import { useFollowActions } from "../hooks/useFollowActions";
 import { useFollowListModal } from "../hooks/useFollowListModal";
+import { useLikesListModal } from "../hooks/useLikesListModal";
 import { buildSocialProfilePath } from "../utils/socialProfileRoutes";
 
 export function SocialProfilePage() {
@@ -43,6 +45,7 @@ export function SocialProfilePage() {
 
   const { postId, focusComments, isOpen, openPost, closePost } = usePostDetailModal();
   const { editPostId, isEditOpen, openEdit, closeEdit } = useEditPostModal();
+  const likesListModal = useLikesListModal();
   const {
     isOpen: isFollowListOpen,
     activeType: followListType,
@@ -66,8 +69,14 @@ export function SocialProfilePage() {
         ? user.bio
         : "";
 
-  const { handleDeletePost, handleToggleSavePost, isSavingPost, isDeletingPost } =
-    usePostActions({
+  const {
+    handleDeletePost,
+    handleToggleSavePost,
+    handleToggleLikePost,
+    isSavingPost,
+    isLikingPost,
+    isDeletingPost,
+  } = usePostActions({
       onToast: setToastMessage,
       openPostId: postId,
       closePost,
@@ -84,6 +93,12 @@ export function SocialProfilePage() {
     (targetPostId) =>
       handleToggleSavePost(targetPostId, { onSavedChange: postsState.patchSaved }),
     [handleToggleSavePost, postsState.patchSaved]
+  );
+
+  const onToggleLikePost = useCallback(
+    (targetPostId) =>
+      handleToggleLikePost(targetPostId, { onLikedChange: postsState.patchLiked }),
+    [handleToggleLikePost, postsState.patchLiked]
   );
 
   const onEditSuccess = useCallback(() => {
@@ -203,11 +218,23 @@ export function SocialProfilePage() {
           onEdit={openEdit}
           onDeletePost={onDeletePost}
           onToggleSavePost={onToggleSavePost}
+          onToggleLikePost={onToggleLikePost}
+          onOpenLikesList={likesListModal.openLikesList}
           isSavingPost={isSavingPost(postId)}
+          isLikingPost={isLikingPost(postId)}
           isDeletingPost={isDeletingPost(postId)}
           onViewProfile={viewProfile}
         />
       ) : null}
+
+      <LikesListModal
+        isOpen={likesListModal.isOpen}
+        targetType={likesListModal.targetType}
+        targetId={likesListModal.targetId}
+        likeCount={likesListModal.likeCount}
+        onClose={likesListModal.closeLikesList}
+        onViewProfile={viewProfile}
+      />
 
       {isEditOpen ? (
         <EditPostModal

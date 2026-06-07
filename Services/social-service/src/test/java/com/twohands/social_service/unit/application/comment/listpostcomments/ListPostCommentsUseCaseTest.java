@@ -6,6 +6,7 @@ import com.twohands.social_service.application.post.common.PostIdValidator;
 import com.twohands.social_service.application.post.common.PostViewAccessPolicy;
 import com.twohands.social_service.domain.comment.Comment;
 import com.twohands.social_service.domain.comment.CommentListQuery;
+import com.twohands.social_service.domain.comment.CommentReactionRepository;
 import com.twohands.social_service.domain.comment.CommentRepository;
 import com.twohands.social_service.domain.comment.CommentSortOrder;
 import com.twohands.social_service.domain.comment.CommentStatus;
@@ -27,6 +28,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,6 +42,8 @@ class ListPostCommentsUseCaseTest {
 
     private final PostRepository postRepository = org.mockito.Mockito.mock(PostRepository.class);
     private final CommentRepository commentRepository = org.mockito.Mockito.mock(CommentRepository.class);
+    private final CommentReactionRepository commentReactionRepository =
+            org.mockito.Mockito.mock(CommentReactionRepository.class);
     private final FollowRepository followRepository = org.mockito.Mockito.mock(FollowRepository.class);
     private final UserProjectionRepository userProjectionRepository = org.mockito.Mockito.mock(UserProjectionRepository.class);
     private final PostViewAccessPolicy postViewAccessPolicy = new PostViewAccessPolicy();
@@ -47,6 +51,7 @@ class ListPostCommentsUseCaseTest {
     private final ListPostCommentsUseCase useCase = new ListPostCommentsUseCase(
             postRepository,
             commentRepository,
+            commentReactionRepository,
             followRepository,
             userProjectionRepository,
             postViewAccessPolicy,
@@ -74,12 +79,15 @@ class ListPostCommentsUseCaseTest {
         ));
         when(commentRepository.countActiveReplies(postId, commentId)).thenReturn(3L);
         when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
+        when(commentReactionRepository.findLikedCommentIdsByUserIdAndCommentIds(viewerId, List.of(commentId)))
+                .thenReturn(Set.of(commentId));
 
         ListPostCommentsResult result = useCase.execute(viewerId, postId, 0, 20, null, "created_at_asc");
 
         assertThat(result.items()).hasSize(1);
         assertThat(result.items().getFirst().commentId()).isEqualTo(commentId);
         assertThat(result.items().getFirst().replyCount()).isEqualTo(3L);
+        assertThat(result.items().getFirst().likedByMe()).isTrue();
         assertThat(result.items().getFirst().author().displayName()).isEqualTo("User");
         assertThat(result.meta().totalElements()).isEqualTo(1);
         verify(commentRepository).findActiveByPost(new CommentListQuery(
@@ -114,6 +122,8 @@ class ListPostCommentsUseCaseTest {
                 false
         ));
         when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
+        when(commentReactionRepository.findLikedCommentIdsByUserIdAndCommentIds(viewerId, List.of(replyId)))
+                .thenReturn(Set.of());
 
         ListPostCommentsResult result = useCase.execute(viewerId, postId, 0, 20, parentCommentId, "created_at_desc");
 

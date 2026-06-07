@@ -3,6 +3,7 @@ import { usePostAuthorDisplay } from "../hooks/usePostAuthorDisplay";
 import { formatSavedAt } from "../utils/formatSavedAt";
 import { normalizePostMediaUrl } from "../utils/postMediaUrl";
 import { PostProductTagsBlock } from "./PostProductTagsBlock";
+import { LikeCountButton } from "./LikeCountButton";
 
 const PLACEHOLDER_IMAGE =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect fill='%23dee8ff' width='400' height='300'/%3E%3C/svg%3E";
@@ -14,6 +15,7 @@ export function SavedPostCard({
   onViewProfile,
   onUnsave,
   onViewProduct,
+  onOpenLikesList,
   isUnsaveLoading = false,
 }) {
   const mediaUrl = normalizePostMediaUrl(post.media?.[0]?.url) || PLACEHOLDER_IMAGE;
@@ -26,10 +28,6 @@ export function SavedPostCard({
   const handleOpenComments = (event) => {
     event.stopPropagation();
     onOpenComments?.(post.postId);
-  };
-  const handleLikeClick = (event) => {
-    event.stopPropagation();
-    onOpenPost?.(post.postId);
   };
   const handleViewProfile = (event) => {
     event.stopPropagation();
@@ -100,17 +98,26 @@ export function SavedPostCard({
 
         <div className="mt-auto flex items-center justify-between border-t border-outline-variant pt-3">
           <div className="flex items-center gap-4 text-sm text-on-surface-variant">
-            <button
-              type="button"
-              onClick={handleLikeClick}
-              className="flex items-center gap-1 transition-colors hover:text-primary"
-              aria-label="Xem lượt thích"
-            >
-              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
+            <div className="flex items-center gap-1.5">
+              <span
+                className="material-symbols-outlined text-[16px] text-on-surface-variant"
+                aria-hidden="true"
+              >
                 thumb_up
               </span>
-              <span>{post.likeCount ?? 0}</span>
-            </button>
+              <LikeCountButton
+                count={post.likeCount}
+                size="compact"
+                showZero
+                onPress={() =>
+                  onOpenLikesList?.({
+                    type: "post",
+                    targetId: post.postId,
+                    likeCount: post.likeCount,
+                  })
+                }
+              />
+            </div>
             <button
               type="button"
               onClick={handleOpenComments}

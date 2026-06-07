@@ -100,6 +100,14 @@ export function useFeed(activeTab) {
     );
   }, []);
 
+  const patchLiked = useCallback((targetPostId, liked, likeCount) => {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.postId === targetPostId ? { ...item, likedByMe: liked, likeCount } : item
+      )
+    );
+  }, []);
+
   return {
     items,
     meta,
@@ -113,5 +121,6 @@ export function useFeed(activeTab) {
     refetch,
     removeItem,
     patchSaved,
+    patchLiked,
   };
 }

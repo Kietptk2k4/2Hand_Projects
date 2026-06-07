@@ -112,6 +112,14 @@ export function useSearchPosts() {
     );
   }, []);
 
+  const patchLiked = useCallback((targetPostId, liked, likeCount) => {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.postId === targetPostId ? { ...item, likedByMe: liked, likeCount } : item
+      )
+    );
+  }, []);
+
   return {
     q,
     keyword,
@@ -128,5 +136,6 @@ export function useSearchPosts() {
     refetch,
     removeItem,
     patchSaved,
+    patchLiked,
   };
 }

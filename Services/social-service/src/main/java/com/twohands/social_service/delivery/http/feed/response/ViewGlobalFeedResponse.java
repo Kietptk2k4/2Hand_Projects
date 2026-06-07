@@ -14,6 +14,7 @@ public record ViewGlobalFeedResponse(
             String visibility,
             long likeCount,
             long replyCount,
+            boolean likedByMe,
             List<String> hashtags,
             boolean allowComments,
             String createdAt,

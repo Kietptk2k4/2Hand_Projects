@@ -6,6 +6,8 @@ import com.twohands.social_service.application.comment.deleteowncomment.DeleteOw
 import com.twohands.social_service.application.comment.likecomment.LikeCommentCommand;
 import com.twohands.social_service.application.comment.likecomment.LikeCommentResult;
 import com.twohands.social_service.application.comment.likecomment.LikeCommentUseCase;
+import com.twohands.social_service.application.comment.viewcommentlikers.ViewCommentLikersUseCase;
+import com.twohands.social_service.application.reaction.common.ViewLikeUsersResult;
 import com.twohands.social_service.application.comment.replycomment.ReplyCommentCommand;
 import com.twohands.social_service.application.comment.replycomment.ReplyCommentResult;
 import com.twohands.social_service.application.comment.replycomment.ReplyCommentUseCase;
@@ -14,6 +16,8 @@ import com.twohands.social_service.delivery.http.comment.request.ReplyCommentReq
 import com.twohands.social_service.delivery.http.comment.response.DeleteOwnCommentResponse;
 import com.twohands.social_service.delivery.http.comment.response.LikeCommentResponse;
 import com.twohands.social_service.delivery.http.comment.response.ReplyCommentResponse;
+import com.twohands.social_service.delivery.http.reaction.mapper.ViewLikeUsersHttpMapper;
+import com.twohands.social_service.delivery.http.reaction.response.ViewLikeUsersResponse;
 import com.twohands.social_service.domain.comment.CommentMediaItem;
 import com.twohands.social_service.security.AuthenticatedUser;
 import jakarta.validation.Valid;
@@ -21,10 +25,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -37,15 +43,21 @@ public class CommentController {
     private final ReplyCommentUseCase replyCommentUseCase;
     private final DeleteOwnCommentUseCase deleteOwnCommentUseCase;
     private final LikeCommentUseCase likeCommentUseCase;
+    private final ViewCommentLikersUseCase viewCommentLikersUseCase;
+    private final ViewLikeUsersHttpMapper viewLikeUsersHttpMapper;
 
     public CommentController(
             ReplyCommentUseCase replyCommentUseCase,
             DeleteOwnCommentUseCase deleteOwnCommentUseCase,
-            LikeCommentUseCase likeCommentUseCase
+            LikeCommentUseCase likeCommentUseCase,
+            ViewCommentLikersUseCase viewCommentLikersUseCase,
+            ViewLikeUsersHttpMapper viewLikeUsersHttpMapper
     ) {
         this.replyCommentUseCase = replyCommentUseCase;
         this.deleteOwnCommentUseCase = deleteOwnCommentUseCase;
         this.likeCommentUseCase = likeCommentUseCase;
+        this.viewCommentLikersUseCase = viewCommentLikersUseCase;
+        this.viewLikeUsersHttpMapper = viewLikeUsersHttpMapper;
     }
 
     @PostMapping("/{commentId}/replies")
@@ -98,6 +110,23 @@ public class CommentController {
                 HttpStatus.OK.value(),
                 likeCommentUseCase.successMessage(result.liked()),
                 toLikeResponse(result)
+        ));
+    }
+
+    @GetMapping("/{commentId}/likes")
+    public ResponseEntity<ApiResponse<ViewLikeUsersResponse>> viewCommentLikers(
+            @PathVariable String commentId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            Authentication authentication
+    ) {
+        UUID viewerId = resolveUserId(authentication);
+        ViewLikeUsersResult result = viewCommentLikersUseCase.execute(viewerId, commentId, page, size);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewCommentLikersUseCase.successMessage(),
+                viewLikeUsersHttpMapper.toResponse(result)
         ));
     }
 

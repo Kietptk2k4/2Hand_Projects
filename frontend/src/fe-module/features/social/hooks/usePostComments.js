@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { createCommentReply, createPostComment, deleteOwnComment } from "../api/commentApi";
+import {
+  createCommentReply,
+  createPostComment,
+  deleteOwnComment,
+  toggleLikeComment,
+} from "../api/commentApi";
 import { canDeleteCommentItem } from "../utils/commentPermissions";
 import { fetchPostComments } from "../api/postApi";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
@@ -21,6 +26,7 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
   const [isSubmittingReplyId, setIsSubmittingReplyId] = useState(null);
   const [submitError, setSubmitError] = useState("");
   const [deletingCommentId, setDeletingCommentId] = useState(null);
+  const [likingCommentId, setLikingCommentId] = useState(null);
   const [commentSort, setCommentSort] = useState(DEFAULT_COMMENT_SORT);
 
   const loadTopLevel = useCallback(async () => {
@@ -234,6 +240,53 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
     [user]
   );
 
+  const updateCommentLike = useCallback((commentId, parentCommentId, liked, likeCount) => {
+    const patchItem = (item) =>
+      item.commentId === commentId ? { ...item, likedByMe: liked, likeCount } : item;
+
+    if (parentCommentId) {
+      setRepliesByParent((prev) => ({
+        ...prev,
+        [parentCommentId]: (prev[parentCommentId] || []).map(patchItem),
+      }));
+      return;
+    }
+
+    setComments((prev) => prev.map(patchItem));
+  }, []);
+
+  const toggleCommentLike = useCallback(
+    async (commentId, { parentCommentId = null } = {}) => {
+      if (!commentId || likingCommentId) {
+        return { ok: false };
+      }
+
+      setLikingCommentId(commentId);
+
+      try {
+        const data = await toggleLikeComment(commentId);
+        const liked = Boolean(data?.liked);
+        const likeCount = Number(data?.likeCount) || 0;
+        updateCommentLike(commentId, parentCommentId, liked, likeCount);
+        return { ok: true };
+      } catch (error) {
+        const mapped = mapSocialWriteError(error);
+        if (mapped.type === "session") {
+          showSessionExpired(mapped.message);
+          return { ok: false };
+        }
+        if (mapped.type === "suspended") {
+          return { ok: false };
+        }
+        setSubmitError(mapped.message);
+        return { ok: false };
+      } finally {
+        setLikingCommentId(null);
+      }
+    },
+    [likingCommentId, showSessionExpired, updateCommentLike]
+  );
+
   const removeCommentFromState = useCallback((commentId, parentCommentId) => {
     if (parentCommentId) {
       setRepliesByParent((prev) => ({
@@ -337,6 +390,8 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
     deleteComment,
     canDeleteComment,
     deletingCommentId,
+    toggleCommentLike,
+    likingCommentId,
     commentSort,
     setCommentSort: handleCommentSortChange,
   };

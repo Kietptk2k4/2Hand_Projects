@@ -110,6 +110,14 @@ export function useHashtagPosts() {
     );
   }, []);
 
+  const patchLiked = useCallback((targetPostId, liked, likeCount) => {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.postId === targetPostId ? { ...item, likedByMe: liked, likeCount } : item
+      )
+    );
+  }, []);
+
   return {
     hashtag,
     resolvedHashtag,
@@ -127,5 +135,6 @@ export function useHashtagPosts() {
     refetch,
     removeItem,
     patchSaved,
+    patchLiked,
   };
 }

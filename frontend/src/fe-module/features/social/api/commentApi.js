@@ -37,6 +37,15 @@ export async function createCommentReply(commentId, { contentText, media = [] })
   }
 }
 
+export async function toggleLikeComment(commentId) {
+  try {
+    const response = await socialApiClient.post(`/api/v1/social/comments/${commentId}/like`);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export async function deleteOwnComment(commentId) {
   try {
     const response = await socialApiClient.delete(`/api/v1/social/comments/${commentId}`);

@@ -123,6 +123,7 @@ class ListPostCommentsApiIntegrationTest {
                         "Hay qua!",
                         List.of(),
                         3L,
+                        true,
                         1L,
                         "2026-05-21T10:00:00Z",
                         "2026-05-21T10:00:00Z"
@@ -150,6 +151,7 @@ class ListPostCommentsApiIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Lay danh sach binh luan thanh cong."))
                 .andExpect(jsonPath("$.data.items[0].commentId").value(commentId))
                 .andExpect(jsonPath("$.data.items[0].author.displayName").value("User A"))
+                .andExpect(jsonPath("$.data.items[0].likedByMe").value(true))
                 .andExpect(jsonPath("$.data.items[0].replyCount").value(1))
                 .andExpect(jsonPath("$.data.meta.totalElements").value(1));
     }

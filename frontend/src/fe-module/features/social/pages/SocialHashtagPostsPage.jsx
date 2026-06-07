@@ -7,7 +7,9 @@ import { HashtagPageHeader } from "../components/HashtagPageHeader";
 import { HashtagPostCard } from "../components/HashtagPostCard";
 import { HashtagPostCardSkeleton } from "../components/HashtagPostCardSkeleton";
 import { HashtagSidebar } from "../components/HashtagSidebar";
+import { LikesListModal } from "../components/LikesListModal";
 import { PostDetailModal } from "../components/PostDetailModal";
+import { useLikesListModal } from "../hooks/useLikesListModal";
 import { useEditPostModal } from "../hooks/useEditPostModal";
 import { useHashtagPosts } from "../hooks/useHashtagPosts";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
@@ -25,6 +27,7 @@ export function SocialHashtagPostsPage() {
   const [toastMessage, setToastMessage] = useState("");
   const [detailRefreshKey, setDetailRefreshKey] = useState(0);
   const { postId, focusComments, isOpen, openPost, closePost } = usePostDetailModal();
+  const likesListModal = useLikesListModal();
   const { editPostId, isEditOpen, openEdit, closeEdit } = useEditPostModal();
   const {
     hashtag,
@@ -41,12 +44,19 @@ export function SocialHashtagPostsPage() {
     refetch,
     removeItem,
     patchSaved,
+    patchLiked,
   } = useHashtagPosts();
 
   const resolvedUserId = currentUserId || user?.id;
 
-  const { handleDeletePost, handleToggleSavePost, isSavingPost, isDeletingPost } =
-    usePostActions({
+  const {
+    handleDeletePost,
+    handleToggleSavePost,
+    handleToggleLikePost,
+    isSavingPost,
+    isLikingPost,
+    isDeletingPost,
+  } = usePostActions({
       onToast: setToastMessage,
       openPostId: postId,
       closePost,
@@ -62,6 +72,11 @@ export function SocialHashtagPostsPage() {
   const onToggleSavePost = useCallback(
     (targetPostId) => handleToggleSavePost(targetPostId, { onSavedChange: patchSaved }),
     [handleToggleSavePost, patchSaved]
+  );
+
+  const onToggleLikePost = useCallback(
+    (targetPostId) => handleToggleLikePost(targetPostId, { onLikedChange: patchLiked }),
+    [handleToggleLikePost, patchLiked]
   );
 
   const displayHashtag = resolvedHashtag || hashtag;
@@ -171,7 +186,10 @@ export function SocialHashtagPostsPage() {
                   onEdit={openEdit}
                   onDeletePost={onDeletePost}
                   onToggleSavePost={onToggleSavePost}
+                  onToggleLikePost={onToggleLikePost}
+                  onOpenLikesList={likesListModal.openLikesList}
                   isSavingPost={isSavingPost(post.postId)}
+                  isLikingPost={isLikingPost(post.postId)}
                   isDeletingPost={isDeletingPost(post.postId)}
                   onViewProduct={viewProduct}
                 />
@@ -210,12 +228,24 @@ export function SocialHashtagPostsPage() {
           onEdit={openEdit}
           onDeletePost={onDeletePost}
           onToggleSavePost={onToggleSavePost}
+          onToggleLikePost={onToggleLikePost}
+          onOpenLikesList={likesListModal.openLikesList}
           isSavingPost={isSavingPost(postId)}
+          isLikingPost={isLikingPost(postId)}
           isDeletingPost={isDeletingPost(postId)}
           onViewProfile={viewProfile}
           onHashtagClick={handleHashtagFromModal}
         />
       ) : null}
+
+      <LikesListModal
+        isOpen={likesListModal.isOpen}
+        targetType={likesListModal.targetType}
+        targetId={likesListModal.targetId}
+        likeCount={likesListModal.likeCount}
+        onClose={likesListModal.closeLikesList}
+        onViewProfile={viewProfile}
+      />
 
       {isEditOpen ? (
         <EditPostModal

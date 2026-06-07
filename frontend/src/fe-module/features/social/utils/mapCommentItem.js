@@ -25,8 +25,9 @@ export function mapApiCommentToListItem(data) {
     author: resolveAuthorFromApi(data),
     contentText: data.contentText,
     media: data.media || [],
-    likeCount: 0,
-    replyCount: 0,
+    likeCount: Number(data.likeCount) || 0,
+    likedByMe: Boolean(data.likedByMe),
+    replyCount: Number(data.replyCount) || 0,
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
   };

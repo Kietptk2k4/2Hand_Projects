@@ -5,6 +5,7 @@ import { PostCaption } from "./PostCaption";
 import { PostMediaGrid } from "./PostMediaGrid";
 import { PostOptionsMenu } from "./PostOptionsMenu";
 import { PostProductTagsBlock } from "./PostProductTagsBlock";
+import { LikeCountButton } from "./LikeCountButton";
 
 function formatCount(value) {
   const num = Number(value) || 0;
@@ -21,7 +22,10 @@ export function PostCard({
   onEdit,
   onDeletePost,
   onToggleSavePost,
+  onToggleLikePost,
+  onOpenLikesList,
   isSavingPost = false,
+  isLikingPost = false,
   isDeletingPost = false,
   onViewProfile,
   onHashtagClick,
@@ -30,6 +34,7 @@ export function PostCard({
 }) {
   const isOwner = Boolean(currentUserId && post.authorId === currentUserId);
   const savedByMe = post.savedByMe ?? false;
+  const likedByMe = post.likedByMe ?? false;
   const enrichedProductTags = useEnrichedProductTags(post.productTags);
   const author = usePostAuthorDisplay(post.authorId);
   const openDetail = (options) => {
@@ -114,17 +119,34 @@ export function PostCard({
 
       <div className="flex items-center justify-between border-t border-outline-variant bg-[#f9f9ff] p-6">
         <div className="flex gap-4">
-          <button
-            type="button"
-            className="flex items-center gap-2 text-on-surface-variant transition-colors hover:text-primary"
-            onClick={stopAnd(onComingSoon)}
-            aria-label="Thích bài viết"
-          >
-            <span className="material-symbols-outlined" aria-hidden="true">
-              thumb_up
-            </span>
-            <span className="text-sm font-medium">{formatCount(post.likeCount)}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="flex items-center text-on-surface-variant transition-colors hover:text-primary disabled:opacity-50"
+              onClick={stopAnd(() => onToggleLikePost?.(post.postId))}
+              disabled={isLikingPost || !onToggleLikePost}
+              aria-label={likedByMe ? "Bỏ thích bài viết" : "Thích bài viết"}
+              aria-pressed={likedByMe}
+            >
+              <span
+                className={`material-symbols-outlined ${likedByMe ? "fill text-primary" : ""}`}
+                aria-hidden="true"
+              >
+                thumb_up
+              </span>
+            </button>
+            <LikeCountButton
+              count={post.likeCount}
+              showZero
+              onPress={() =>
+                onOpenLikesList?.({
+                  type: "post",
+                  targetId: post.postId,
+                  likeCount: post.likeCount,
+                })
+              }
+            />
+          </div>
           <button
             type="button"
             className="flex items-center gap-2 text-on-surface-variant transition-colors hover:text-primary"

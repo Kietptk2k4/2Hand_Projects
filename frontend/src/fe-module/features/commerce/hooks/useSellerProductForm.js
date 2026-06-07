@@ -333,8 +333,10 @@ export function useSellerProductForm({ mode, productId: routeProductId }) {
   const goToStep = useCallback(
     async (targetStep) => {
       if (targetStep < 1 || targetStep > 4) return false;
-      if (targetStep > maxUnlockedStep) return false;
       if (targetStep === step) return true;
+
+      const isSequentialForward = targetStep === step + 1;
+      if (targetStep > maxUnlockedStep && !isSequentialForward) return false;
 
       if (targetStep > step && canEdit) {
         const ok = await saveCurrentStep();

@@ -5,6 +5,7 @@ import { normalizePostMediaUrl } from "../utils/postMediaUrl";
 import { PostCaption } from "./PostCaption";
 import { PostOptionsMenu } from "./PostOptionsMenu";
 import { PostProductTagsBlock } from "./PostProductTagsBlock";
+import { LikeCountButton } from "./LikeCountButton";
 
 const PLACEHOLDER_IMAGE =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect fill='%23dee8ff' width='400' height='300'/%3E%3C/svg%3E";
@@ -27,12 +28,16 @@ export function HashtagPostCard({
   onEdit,
   onDeletePost,
   onToggleSavePost,
+  onToggleLikePost,
+  onOpenLikesList,
   isSavingPost = false,
+  isLikingPost = false,
   isDeletingPost = false,
   currentUserId,
 }) {
   const isOwner = Boolean(currentUserId && post.authorId === currentUserId);
   const savedByMe = post.savedByMe ?? false;
+  const likedByMe = post.likedByMe ?? false;
   const mediaUrl = normalizePostMediaUrl(post.media?.[0]?.url) || PLACEHOLDER_IMAGE;
   const author = usePostAuthorDisplay(post.authorId);
   const enrichedProductTags = useEnrichedProductTags(post.productTags);
@@ -42,9 +47,9 @@ export function HashtagPostCard({
     event.stopPropagation();
     onOpenComments?.(post.postId);
   };
-  const handleLikeClick = (event) => {
+  const handleToggleLike = (event) => {
     event.stopPropagation();
-    onOpenPost?.(post.postId);
+    onToggleLikePost?.(post.postId);
   };
   const handleViewProfile = (event) => {
     event.stopPropagation();
@@ -106,17 +111,35 @@ export function HashtagPostCard({
         </div>
 
         <div className="flex items-center gap-4 border-t border-outline-variant pt-3 text-sm text-on-surface-variant">
-          <button
-            type="button"
-            onClick={handleLikeClick}
-            className="flex items-center gap-1 transition-colors hover:text-primary"
-            aria-label="Xem lượt thích"
-          >
-            <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
-              thumb_up
-            </span>
-            <span>{formatCount(post.likeCount)}</span>
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={handleToggleLike}
+              disabled={isLikingPost || !onToggleLikePost}
+              className="flex items-center transition-colors hover:text-primary disabled:opacity-50"
+              aria-label={likedByMe ? "Bỏ thích bài viết" : "Thích bài viết"}
+              aria-pressed={likedByMe}
+            >
+              <span
+                className={`material-symbols-outlined text-[16px] ${likedByMe ? "fill text-primary" : ""}`}
+                aria-hidden="true"
+              >
+                thumb_up
+              </span>
+            </button>
+            <LikeCountButton
+              count={post.likeCount}
+              size="compact"
+              showZero
+              onPress={() =>
+                onOpenLikesList?.({
+                  type: "post",
+                  targetId: post.postId,
+                  likeCount: post.likeCount,
+                })
+              }
+            />
+          </div>
           <button
             type="button"
             onClick={handleOpenComments}

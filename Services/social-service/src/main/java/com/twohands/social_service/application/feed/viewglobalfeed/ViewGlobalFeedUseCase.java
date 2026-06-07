@@ -4,12 +4,14 @@ import com.twohands.social_service.domain.post.FeedQuery;
 import com.twohands.social_service.domain.post.MediaItem;
 import com.twohands.social_service.domain.post.PageResult;
 import com.twohands.social_service.domain.post.Post;
+import com.twohands.social_service.domain.post.PostLikeRepository;
 import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -21,9 +23,11 @@ public class ViewGlobalFeedUseCase {
     private static final String SUCCESS_MESSAGE = "Lay global feed thanh cong.";
 
     private final PostRepository postRepository;
+    private final PostLikeRepository postLikeRepository;
 
-    public ViewGlobalFeedUseCase(PostRepository postRepository) {
+    public ViewGlobalFeedUseCase(PostRepository postRepository, PostLikeRepository postLikeRepository) {
         this.postRepository = postRepository;
+        this.postLikeRepository = postLikeRepository;
     }
 
     public ViewGlobalFeedResult execute(UUID userId, int page, int size) {
@@ -33,8 +37,12 @@ public class ViewGlobalFeedUseCase {
         validatePagination(page, size);
 
         PageResult<Post> feedPage = postRepository.findGlobalFeed(new FeedQuery(page, size));
+        Set<String> likedPostIds = postLikeRepository.findLikedPostIdsByUserIdAndPostIds(
+                userId,
+                feedPage.items().stream().map(Post::id).toList()
+        );
         List<ViewGlobalFeedResult.FeedPostItem> items = feedPage.items().stream()
-                .map(this::toItem)
+                .map(post -> toItem(post, likedPostIds.contains(post.id())))
                 .toList();
 
         return ViewGlobalFeedResult.from(new PageResult<>(
@@ -70,7 +78,7 @@ public class ViewGlobalFeedUseCase {
         }
     }
 
-    private ViewGlobalFeedResult.FeedPostItem toItem(Post post) {
+    private ViewGlobalFeedResult.FeedPostItem toItem(Post post, boolean likedByMe) {
         List<ViewGlobalFeedResult.MediaItemData> media = post.media()
                 .stream()
                 .map(this::toMedia)
@@ -83,6 +91,7 @@ public class ViewGlobalFeedUseCase {
                 post.visibility().name(),
                 post.likeCount(),
                 post.replyCount(),
+                likedByMe,
                 post.hashtags(),
                 post.allowComments(),
                 post.createdAt().toString(),

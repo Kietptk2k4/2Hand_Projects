@@ -7,6 +7,7 @@ import com.twohands.social_service.domain.post.FeedQuery;
 import com.twohands.social_service.domain.post.MediaItem;
 import com.twohands.social_service.domain.post.PageResult;
 import com.twohands.social_service.domain.post.Post;
+import com.twohands.social_service.domain.post.PostLikeRepository;
 import com.twohands.social_service.domain.post.PostModerationStatus;
 import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostStatus;
@@ -18,6 +19,7 @@ import org.mockito.ArgumentCaptor;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,7 +33,12 @@ class ViewFollowingFeedUseCaseTest {
 
     private final FollowRepository followRepository = mock(FollowRepository.class);
     private final PostRepository postRepository = mock(PostRepository.class);
-    private final ViewFollowingFeedUseCase useCase = new ViewFollowingFeedUseCase(followRepository, postRepository);
+    private final PostLikeRepository postLikeRepository = mock(PostLikeRepository.class);
+    private final ViewFollowingFeedUseCase useCase = new ViewFollowingFeedUseCase(
+            followRepository,
+            postRepository,
+            postLikeRepository
+    );
 
     @Test
     void shouldReturnFollowingFeedWithMappedItems() {
@@ -59,6 +66,8 @@ class ViewFollowingFeedUseCaseTest {
         when(followRepository.findAcceptedFolloweeIds(userId)).thenReturn(List.of(followeeId));
         when(postRepository.findFollowingFeed(any(FeedQuery.class), any()))
                 .thenReturn(new PageResult<>(List.of(post), 0, 20, 1, 1, false));
+        when(postLikeRepository.findLikedPostIdsByUserIdAndPostIds(userId, List.of(post.id())))
+                .thenReturn(Set.of(post.id()));
 
         ViewGlobalFeedResult result = useCase.execute(userId, 0, 20);
 
@@ -67,6 +76,7 @@ class ViewFollowingFeedUseCaseTest {
         assertThat(followeeCaptor.getValue()).containsExactly(followeeId.toString());
         assertThat(result.items()).hasSize(1);
         assertThat(result.items().getFirst().visibility()).isEqualTo("FOLLOWERS");
+        assertThat(result.items().getFirst().likedByMe()).isTrue();
     }
 
     @Test
@@ -75,6 +85,8 @@ class ViewFollowingFeedUseCaseTest {
         when(followRepository.findAcceptedFolloweeIds(userId)).thenReturn(List.of());
         when(postRepository.findFollowingFeed(any(FeedQuery.class), any()))
                 .thenReturn(new PageResult<>(List.of(), 0, 20, 0, 0, false));
+        when(postLikeRepository.findLikedPostIdsByUserIdAndPostIds(userId, List.of()))
+                .thenReturn(Set.of());
 
         ViewGlobalFeedResult result = useCase.execute(userId, 0, 20);
 

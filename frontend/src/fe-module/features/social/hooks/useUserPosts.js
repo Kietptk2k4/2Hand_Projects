@@ -104,6 +104,14 @@ export function useUserPosts(userId, { enabled = true, statusFilter = "published
     );
   }, []);
 
+  const patchLiked = useCallback((targetPostId, liked, likeCount) => {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.postId === targetPostId ? { ...item, likedByMe: liked, likeCount } : item
+      )
+    );
+  }, []);
+
   return {
     items,
     meta,
@@ -118,5 +126,6 @@ export function useUserPosts(userId, { enabled = true, statusFilter = "published
     refetch,
     removeItem,
     patchSaved,
+    patchLiked,
   };
 }

@@ -29,6 +29,7 @@ public record ListPostCommentsResult(
             String contentText,
             List<MediaItemData> media,
             long likeCount,
+            boolean likedByMe,
             long replyCount,
             String createdAt,
             String updatedAt

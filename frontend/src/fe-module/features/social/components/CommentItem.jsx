@@ -3,16 +3,21 @@ import { MAX_COMMENT_LENGTH } from "../constants/commentConstants";
 import { DEFAULT_USER_DISPLAY_NAME } from "../constants/socialUiStrings";
 import { useSocialWriteBlock } from "../context/SocialWriteBlockContext";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
+import { LikeCountButton } from "./LikeCountButton";
 
 const DEFAULT_AVATAR = "https://i.pravatar.cc/80?img=11";
 
 function CommentActions({
   commentId,
   createdAt,
+  likeCount = 0,
+  likedByMe = false,
   canDelete,
   isDeleting,
   onDelete,
-  onComingSoon,
+  onToggleLike,
+  onOpenLikesList,
+  isLiking = false,
   showReply,
   onStartReply,
   isSubmittingReply,
@@ -25,9 +30,26 @@ function CommentActions({
   return (
     <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-on-surface-variant">
       <span>{formatRelativeTime(createdAt)}</span>
-      <button type="button" className="font-medium hover:text-primary" onClick={onComingSoon}>
-        Thích
+      <button
+        type="button"
+        className={`font-medium hover:text-primary ${likedByMe ? "text-primary" : ""}`}
+        onClick={onToggleLike}
+        disabled={writeDisabled || isLiking || !onToggleLike}
+        aria-pressed={likedByMe}
+      >
+        {likedByMe ? "Đã thích" : "Thích"}
       </button>
+      <LikeCountButton
+        count={likeCount}
+        size="compact"
+        onPress={() =>
+          onOpenLikesList?.({
+            type: "comment",
+            targetId: commentId,
+            likeCount,
+          })
+        }
+      />
       {showReply ? (
         <button
           type="button"
@@ -68,7 +90,10 @@ export function CommentItem({
   isRepliesLoading,
   isRepliesExpanded,
   onExpandReplies,
-  onComingSoon,
+  onToggleLike,
+  onOpenLikesList,
+  onToggleReplyLike,
+  likingCommentId = null,
   onViewProfile,
   replyingToId,
   onStartReply,
@@ -142,10 +167,13 @@ export function CommentItem({
           <CommentActions
             commentId={comment.commentId}
             createdAt={comment.createdAt}
+            likeCount={comment.likeCount ?? 0}
+            likedByMe={comment.likedByMe ?? false}
             canDelete={canDeleteTop}
             isDeleting={deletingCommentId === comment.commentId}
             onDelete={handleDeleteTop}
-            onComingSoon={onComingSoon}
+            onToggleLike={() => onToggleLike?.(comment.commentId)}
+            isLiking={likingCommentId === comment.commentId}
             showReply={isTopLevel}
             onStartReply={() => onStartReply?.(comment.commentId)}
             isSubmittingReply={isSubmittingReply}
@@ -153,6 +181,7 @@ export function CommentItem({
             isRepliesExpanded={isRepliesExpanded}
             isRepliesLoading={isRepliesLoading}
             onExpandReplies={() => onExpandReplies(comment.commentId)}
+            onOpenLikesList={onOpenLikesList}
             writeDisabled={isWriteBlocked}
           />
 
@@ -230,10 +259,16 @@ export function CommentItem({
                   <CommentActions
                     commentId={reply.commentId}
                     createdAt={reply.createdAt}
+                    likeCount={reply.likeCount ?? 0}
+                    likedByMe={reply.likedByMe ?? false}
                     canDelete={canDeleteReply}
                     isDeleting={deletingCommentId === reply.commentId}
                     onDelete={() => onDeleteComment?.(reply.commentId, comment.commentId)}
-                    onComingSoon={onComingSoon}
+                    onToggleLike={() =>
+                      onToggleReplyLike?.(reply.commentId, comment.commentId)
+                    }
+                    onOpenLikesList={onOpenLikesList}
+                    isLiking={likingCommentId === reply.commentId}
                     showReply={false}
                     replyCount={0}
                     isRepliesExpanded={false}

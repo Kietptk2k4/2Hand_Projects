@@ -4,8 +4,8 @@ import { CommentSortSelect } from "./CommentSortSelect";
 
 export function PostDetailComments({
   commentsState,
-  onComingSoon,
   onViewProfile,
+  onOpenLikesList,
   commentInputRef,
   onDeleteComment,
 }) {
@@ -30,6 +30,8 @@ export function PostDetailComments({
     deleteComment: deleteCommentFromState,
     canDeleteComment,
     deletingCommentId,
+    toggleCommentLike,
+    likingCommentId,
     commentSort,
     setCommentSort,
   } = commentsState;
@@ -93,7 +95,14 @@ export function PostDetailComments({
                 isRepliesExpanded={expanded}
                 isRepliesLoading={replyStatusByParent[item.commentId] === "loading"}
                 onExpandReplies={expandReplies}
-                onComingSoon={onComingSoon}
+                onToggleLike={(commentId) =>
+                  toggleCommentLike(commentId, { parentCommentId: null })
+                }
+                onToggleReplyLike={(commentId, parentCommentId) =>
+                  toggleCommentLike(commentId, { parentCommentId })
+                }
+                onOpenLikesList={onOpenLikesList}
+                likingCommentId={likingCommentId}
                 onViewProfile={onViewProfile}
                 replyingToId={replyingToId}
                 onStartReply={startReply}

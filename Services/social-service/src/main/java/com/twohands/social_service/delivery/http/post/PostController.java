@@ -25,8 +25,10 @@ import com.twohands.social_service.application.post.uploadpostmedia.UploadPostMe
 import com.twohands.social_service.application.post.uploadpostmedia.UploadPostMediaUseCase;
 import com.twohands.social_service.application.post.viewpostdetail.ViewPostDetailResult;
 import com.twohands.social_service.application.post.viewpostdetail.ViewPostDetailUseCase;
+import com.twohands.social_service.application.post.viewpostlikers.ViewPostLikersUseCase;
 import com.twohands.social_service.application.post.viewsavedposts.ViewSavedPostsResult;
 import com.twohands.social_service.application.post.viewsavedposts.ViewSavedPostsUseCase;
+import com.twohands.social_service.application.reaction.common.ViewLikeUsersResult;
 import com.twohands.social_service.common.dto.ApiResponse;
 import com.twohands.social_service.domain.comment.CommentMediaItem;
 import com.twohands.social_service.delivery.http.comment.mapper.ListPostCommentsHttpMapper;
@@ -46,6 +48,8 @@ import com.twohands.social_service.delivery.http.post.response.SaveUnsavePostRes
 import com.twohands.social_service.delivery.http.post.response.UploadPostMediaResponse;
 import com.twohands.social_service.delivery.http.post.response.ViewPostDetailResponse;
 import com.twohands.social_service.delivery.http.post.response.ViewSavedPostsResponse;
+import com.twohands.social_service.delivery.http.reaction.mapper.ViewLikeUsersHttpMapper;
+import com.twohands.social_service.delivery.http.reaction.response.ViewLikeUsersResponse;
 import com.twohands.social_service.security.AuthenticatedUser;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -84,6 +88,8 @@ public class PostController {
     private final ViewSavedPostsHttpMapper viewSavedPostsHttpMapper;
     private final ViewPostDetailUseCase viewPostDetailUseCase;
     private final ViewPostDetailHttpMapper viewPostDetailHttpMapper;
+    private final ViewPostLikersUseCase viewPostLikersUseCase;
+    private final ViewLikeUsersHttpMapper viewLikeUsersHttpMapper;
     private final UploadPostMediaUseCase uploadPostMediaUseCase;
 
     public PostController(
@@ -99,6 +105,8 @@ public class PostController {
             ViewSavedPostsHttpMapper viewSavedPostsHttpMapper,
             ViewPostDetailUseCase viewPostDetailUseCase,
             ViewPostDetailHttpMapper viewPostDetailHttpMapper,
+            ViewPostLikersUseCase viewPostLikersUseCase,
+            ViewLikeUsersHttpMapper viewLikeUsersHttpMapper,
             UploadPostMediaUseCase uploadPostMediaUseCase
     ) {
         this.createPostUseCase = createPostUseCase;
@@ -113,6 +121,8 @@ public class PostController {
         this.viewSavedPostsHttpMapper = viewSavedPostsHttpMapper;
         this.viewPostDetailUseCase = viewPostDetailUseCase;
         this.viewPostDetailHttpMapper = viewPostDetailHttpMapper;
+        this.viewPostLikersUseCase = viewPostLikersUseCase;
+        this.viewLikeUsersHttpMapper = viewLikeUsersHttpMapper;
         this.uploadPostMediaUseCase = uploadPostMediaUseCase;
     }
 
@@ -273,6 +283,23 @@ public class PostController {
                 HttpStatus.OK.value(),
                 likeUnlikePostUseCase.successMessage(result.liked()),
                 toLikeUnlikeResponse(result)
+        ));
+    }
+
+    @GetMapping("/{postId}/likes")
+    public ResponseEntity<ApiResponse<ViewLikeUsersResponse>> viewPostLikers(
+            @PathVariable String postId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            Authentication authentication
+    ) {
+        UUID viewerId = resolveUserId(authentication);
+        ViewLikeUsersResult result = viewPostLikersUseCase.execute(viewerId, postId, page, size);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewPostLikersUseCase.successMessage(),
+                viewLikeUsersHttpMapper.toResponse(result)
         ));
     }
 

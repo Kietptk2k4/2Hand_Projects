@@ -6,6 +6,7 @@ import com.twohands.social_service.domain.post.FeedQuery;
 import com.twohands.social_service.domain.post.MediaItem;
 import com.twohands.social_service.domain.post.PageResult;
 import com.twohands.social_service.domain.post.Post;
+import com.twohands.social_service.domain.post.PostLikeRepository;
 import com.twohands.social_service.domain.post.PostModerationStatus;
 import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostStatus;
@@ -17,6 +18,7 @@ import org.mockito.ArgumentCaptor;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,7 +31,8 @@ import static org.mockito.Mockito.when;
 class ViewGlobalFeedUseCaseTest {
 
     private final PostRepository postRepository = mock(PostRepository.class);
-    private final ViewGlobalFeedUseCase useCase = new ViewGlobalFeedUseCase(postRepository);
+    private final PostLikeRepository postLikeRepository = mock(PostLikeRepository.class);
+    private final ViewGlobalFeedUseCase useCase = new ViewGlobalFeedUseCase(postRepository, postLikeRepository);
 
     @Test
     void shouldReturnGlobalFeedWithMappedItems() {
@@ -55,6 +58,8 @@ class ViewGlobalFeedUseCaseTest {
         );
         when(postRepository.findGlobalFeed(any(FeedQuery.class)))
                 .thenReturn(new PageResult<>(List.of(post), 0, 20, 1, 1, false));
+        when(postLikeRepository.findLikedPostIdsByUserIdAndPostIds(userId, List.of(post.id())))
+                .thenReturn(Set.of());
 
         ViewGlobalFeedResult result = useCase.execute(userId, 0, 20);
 
@@ -65,6 +70,39 @@ class ViewGlobalFeedUseCaseTest {
         assertThat(result.items()).hasSize(1);
         assertThat(result.items().getFirst().postId()).isEqualTo("507f1f77bcf86cd799439011");
         assertThat(result.items().getFirst().visibility()).isEqualTo("PUBLIC");
+        assertThat(result.items().getFirst().likedByMe()).isFalse();
+    }
+
+    @Test
+    void shouldIncludeLikedByMeWhenViewerHasLikedPost() {
+        UUID userId = UUID.randomUUID();
+        Post post = new Post(
+                "507f1f77bcf86cd799439011",
+                UUID.randomUUID().toString(),
+                "caption",
+                List.of(new MediaItem("https://cdn/1.jpg", "IMAGE")),
+                List.of(),
+                PostStatus.ACTIVE,
+                PostVisibility.PUBLIC,
+                10,
+                2,
+                List.of("java", "spring"),
+                true,
+                PostModerationStatus.NONE,
+                null,
+                null,
+                Instant.parse("2026-05-18T10:15:30Z"),
+                Instant.parse("2026-05-18T10:20:30Z"),
+                null
+        );
+        when(postRepository.findGlobalFeed(any(FeedQuery.class)))
+                .thenReturn(new PageResult<>(List.of(post), 0, 20, 1, 1, false));
+        when(postLikeRepository.findLikedPostIdsByUserIdAndPostIds(userId, List.of(post.id())))
+                .thenReturn(Set.of(post.id()));
+
+        ViewGlobalFeedResult result = useCase.execute(userId, 0, 20);
+
+        assertThat(result.items().getFirst().likedByMe()).isTrue();
     }
 
     @Test

@@ -37,6 +37,7 @@ public class ViewGlobalFeedHttpMapper {
                 item.visibility(),
                 item.likeCount(),
                 item.replyCount(),
+                item.likedByMe(),
                 item.hashtags(),
                 item.allowComments(),
                 item.createdAt(),

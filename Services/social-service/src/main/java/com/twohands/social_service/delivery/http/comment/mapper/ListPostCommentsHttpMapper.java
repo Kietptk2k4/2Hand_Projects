@@ -40,6 +40,7 @@ public class ListPostCommentsHttpMapper {
                 item.contentText(),
                 media,
                 item.likeCount(),
+                item.likedByMe(),
                 item.replyCount(),
                 item.createdAt(),
                 item.updatedAt()

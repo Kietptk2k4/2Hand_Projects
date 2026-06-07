@@ -4,7 +4,9 @@ import { FeedLeftSidebar } from "../components/FeedLeftSidebar";
 import { FeedRightSidebar } from "../components/FeedRightSidebar";
 import { FeedToast } from "../components/FeedToast";
 import { EditPostModal } from "../components/EditPostModal";
+import { LikesListModal } from "../components/LikesListModal";
 import { PostDetailModal } from "../components/PostDetailModal";
+import { useLikesListModal } from "../hooks/useLikesListModal";
 import { SavedPostCard } from "../components/SavedPostCard";
 import { SavedPostCardSkeleton } from "../components/SavedPostCardSkeleton";
 import { SavedPostsHeader } from "../components/SavedPostsHeader";
@@ -24,6 +26,7 @@ export function SocialSavedPostsPage() {
   const [detailRefreshKey, setDetailRefreshKey] = useState(0);
   const [unsavingId, setUnsavingId] = useState(null);
   const { postId, focusComments, isOpen, openPost, closePost } = usePostDetailModal();
+  const likesListModal = useLikesListModal();
   const { editPostId, isEditOpen, openEdit, closeEdit } = useEditPostModal();
   const {
     items,
@@ -70,8 +73,14 @@ export function SocialSavedPostsPage() {
     setToastMessage("Cập nhật bài viết thành công.");
   }, [postId, refetch]);
 
-  const { handleDeletePost, handleToggleSavePost, isSavingPost, isDeletingPost } =
-    usePostActions({
+  const {
+    handleDeletePost,
+    handleToggleSavePost,
+    handleToggleLikePost,
+    isSavingPost,
+    isLikingPost,
+    isDeletingPost,
+  } = usePostActions({
       onToast: setToastMessage,
       openPostId: postId,
       closePost,
@@ -94,6 +103,11 @@ export function SocialSavedPostsPage() {
         },
       }),
     [handleToggleSavePost, removeItem]
+  );
+
+  const onToggleLikePost = useCallback(
+    (targetPostId) => handleToggleLikePost(targetPostId),
+    [handleToggleLikePost]
   );
 
   const handleUnsave = useCallback(
@@ -165,6 +179,7 @@ export function SocialSavedPostsPage() {
                   onOpenComments={(id) => openPost(id, { focusComments: true })}
                   onViewProfile={viewProfile}
                   onUnsave={handleUnsave}
+                  onOpenLikesList={likesListModal.openLikesList}
                   isUnsaveLoading={unsavingId === post.postId}
                   onViewProduct={viewProduct}
                 />
@@ -210,11 +225,23 @@ export function SocialSavedPostsPage() {
           onEdit={openEdit}
           onDeletePost={onDeletePost}
           onToggleSavePost={onToggleSavePost}
+          onToggleLikePost={onToggleLikePost}
+          onOpenLikesList={likesListModal.openLikesList}
           isSavingPost={isSavingPost(postId)}
+          isLikingPost={isLikingPost(postId)}
           isDeletingPost={isDeletingPost(postId)}
           onViewProfile={viewProfile}
         />
       ) : null}
+
+      <LikesListModal
+        isOpen={likesListModal.isOpen}
+        targetType={likesListModal.targetType}
+        targetId={likesListModal.targetId}
+        likeCount={likesListModal.likeCount}
+        onClose={likesListModal.closeLikesList}
+        onViewProfile={viewProfile}
+      />
 
       {isEditOpen ? (
         <EditPostModal

@@ -6,7 +6,9 @@ import { FeedPostSkeleton } from "../components/FeedPostSkeleton";
 import { FeedToast } from "../components/FeedToast";
 import { EditPostModal } from "../components/EditPostModal";
 import { PostCard } from "../components/PostCard";
+import { LikesListModal } from "../components/LikesListModal";
 import { PostDetailModal } from "../components/PostDetailModal";
+import { useLikesListModal } from "../hooks/useLikesListModal";
 import { SearchResultsHeader } from "../components/SearchResultsHeader";
 import { SearchSidebar } from "../components/SearchSidebar";
 import { useEditPostModal } from "../hooks/useEditPostModal";
@@ -27,6 +29,7 @@ export function SocialSearchPostsPage() {
   const [toastMessage, setToastMessage] = useState("");
   const [detailRefreshKey, setDetailRefreshKey] = useState(0);
   const { postId, focusComments, isOpen, openPost, closePost } = usePostDetailModal();
+  const likesListModal = useLikesListModal();
   const { editPostId, isEditOpen, openEdit, closeEdit } = useEditPostModal();
   const {
     q,
@@ -42,12 +45,19 @@ export function SocialSearchPostsPage() {
     refetch,
     removeItem,
     patchSaved,
+    patchLiked,
   } = useSearchPosts();
 
   const resolvedUserId = currentUserId || user?.id;
 
-  const { handleDeletePost, handleToggleSavePost, isSavingPost, isDeletingPost } =
-    usePostActions({
+  const {
+    handleDeletePost,
+    handleToggleSavePost,
+    handleToggleLikePost,
+    isSavingPost,
+    isLikingPost,
+    isDeletingPost,
+  } = usePostActions({
       onToast: setToastMessage,
       openPostId: postId,
       closePost,
@@ -63,6 +73,11 @@ export function SocialSearchPostsPage() {
   const onToggleSavePost = useCallback(
     (targetPostId) => handleToggleSavePost(targetPostId, { onSavedChange: patchSaved }),
     [handleToggleSavePost, patchSaved]
+  );
+
+  const onToggleLikePost = useCallback(
+    (targetPostId) => handleToggleLikePost(targetPostId, { onLikedChange: patchLiked }),
+    [handleToggleLikePost, patchLiked]
   );
 
   const showComingSoon = useCallback(() => {
@@ -181,7 +196,10 @@ export function SocialSearchPostsPage() {
                   onEdit={openEdit}
                   onDeletePost={onDeletePost}
                   onToggleSavePost={onToggleSavePost}
+                  onToggleLikePost={onToggleLikePost}
+                  onOpenLikesList={likesListModal.openLikesList}
                   isSavingPost={isSavingPost(post.postId)}
+                  isLikingPost={isLikingPost(post.postId)}
                   isDeletingPost={isDeletingPost(post.postId)}
                   onViewProfile={viewProfile}
                   onHashtagClick={viewHashtag}
@@ -222,12 +240,24 @@ export function SocialSearchPostsPage() {
           onEdit={openEdit}
           onDeletePost={onDeletePost}
           onToggleSavePost={onToggleSavePost}
+          onToggleLikePost={onToggleLikePost}
+          onOpenLikesList={likesListModal.openLikesList}
           isSavingPost={isSavingPost(postId)}
+          isLikingPost={isLikingPost(postId)}
           isDeletingPost={isDeletingPost(postId)}
           onViewProfile={viewProfile}
           onHashtagClick={handleHashtagFromModal}
         />
       ) : null}
+
+      <LikesListModal
+        isOpen={likesListModal.isOpen}
+        targetType={likesListModal.targetType}
+        targetId={likesListModal.targetId}
+        likeCount={likesListModal.likeCount}
+        onClose={likesListModal.closeLikesList}
+        onViewProfile={viewProfile}
+      />
 
       {isEditOpen ? (
         <EditPostModal

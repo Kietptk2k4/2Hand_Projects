@@ -15,6 +15,7 @@ import { PostMediaGrid } from "./PostMediaGrid";
 import { PostProductTagsBlock } from "./PostProductTagsBlock";
 import { useSocialWriteBlock } from "../context/SocialWriteBlockContext";
 import { PostOptionsMenu } from "./PostOptionsMenu";
+import { LikeCountButton } from "./LikeCountButton";
 
 const DEFAULT_AVATAR = "https://i.pravatar.cc/96?img=11";
 const COMING_SOON = "Tính năng đang được phát triển.";
@@ -33,7 +34,10 @@ export function PostDetailModal({
   onEdit,
   onDeletePost,
   onToggleSavePost,
+  onToggleLikePost,
+  onOpenLikesList,
   isSavingPost = false,
+  isLikingPost = false,
   isDeletingPost = false,
   onViewProfile,
   onHashtagClick,
@@ -50,10 +54,17 @@ export function PostDetailModal({
   const { post, isLoading, isError, errorMessage, errorCode, retry } = usePostDetail(postId);
   const enrichedProductTags = useEnrichedProductTags(post?.productTags);
   const [savedByMe, setSavedByMe] = useState(false);
+  const [likedByMe, setLikedByMe] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
 
   useEffect(() => {
     setSavedByMe(post?.savedByMe ?? false);
   }, [post?.savedByMe, postId]);
+
+  useEffect(() => {
+    setLikedByMe(post?.likedByMe ?? false);
+    setLikeCount(Number(post?.likeCount) || 0);
+  }, [post?.likeCount, post?.likedByMe, postId]);
 
   const bumpReplyCount = useCallback((delta = 1) => {
     setReplyCountBump((value) => value + delta);
@@ -65,6 +76,16 @@ export function PostDetailModal({
   });
 
   const showComingSoon = () => onToast?.(COMING_SOON);
+
+  const handleToggleLike = useCallback(async () => {
+    if (!postId || isLikingPost || !onToggleLikePost) return;
+
+    const data = await onToggleLikePost(postId);
+    if (data) {
+      setLikedByMe(Boolean(data.liked));
+      setLikeCount(Number(data.likeCount) || 0);
+    }
+  }, [isLikingPost, onToggleLikePost, postId]);
 
   useEffect(() => {
     setDraftComment("");
@@ -308,19 +329,34 @@ export function PostDetailModal({
                   ) : null}
 
                   <div className="mb-6 flex items-center gap-6 border-y border-outline-variant py-3">
-                    <button
-                      type="button"
-                      className="flex items-center gap-2 text-on-surface-variant hover:text-primary"
-                      onClick={showComingSoon}
-                    >
-                      <span
-                        className={`material-symbols-outlined ${post.likedByMe ? "fill text-primary" : ""}`}
-                        aria-hidden="true"
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        className="flex items-center text-on-surface-variant hover:text-primary disabled:opacity-50"
+                        onClick={handleToggleLike}
+                        disabled={isLikingPost || isWriteBlocked || !onToggleLikePost}
+                        aria-label={likedByMe ? "Bỏ thích bài viết" : "Thích bài viết"}
+                        aria-pressed={likedByMe}
                       >
-                        {post.likedByMe ? "favorite" : "favorite_border"}
-                      </span>
-                      <span className="text-sm font-medium">{formatCount(post.likeCount)}</span>
-                    </button>
+                        <span
+                          className={`material-symbols-outlined ${likedByMe ? "fill text-primary" : ""}`}
+                          aria-hidden="true"
+                        >
+                          {likedByMe ? "favorite" : "favorite_border"}
+                        </span>
+                      </button>
+                      <LikeCountButton
+                        count={likeCount}
+                        showZero
+                        onPress={() =>
+                          onOpenLikesList?.({
+                            type: "post",
+                            targetId: postId,
+                            likeCount,
+                          })
+                        }
+                      />
+                    </div>
                     <button
                       type="button"
                       className="flex items-center gap-2 text-on-surface-variant hover:text-primary"
@@ -346,8 +382,8 @@ export function PostDetailModal({
                   <div ref={commentAnchorRef}>
                     <PostDetailComments
                       commentsState={commentsState}
-                      onComingSoon={showComingSoon}
                       onViewProfile={onViewProfile}
+                      onOpenLikesList={onOpenLikesList}
                       commentInputRef={commentInputRef}
                       onDeleteComment={handleDeleteComment}
                     />
