@@ -9,6 +9,7 @@ public record ConsumeAuthUserEventCommand(
         UUID userId,
         String status,
         String displayName,
+        String email,
         String avatarUrl,
         Boolean isPrivate,
         String actionType,

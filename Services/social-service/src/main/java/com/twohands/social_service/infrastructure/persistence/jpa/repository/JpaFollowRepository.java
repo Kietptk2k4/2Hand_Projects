@@ -17,6 +17,9 @@ public interface JpaFollowRepository extends JpaRepository<FollowEntity, FollowE
     @Query("select f.followeeId from FollowEntity f where f.followerId = :followerId and f.status = :status")
     List<UUID> findFolloweeIdsByFollowerIdAndStatus(UUID followerId, FollowStatusDb status);
 
+    @Query("select f.followeeId from FollowEntity f where f.followerId = :followerId")
+    List<UUID> findFolloweeIdsByFollowerId(UUID followerId);
+
     Optional<FollowEntity> findByFollowerIdAndFolloweeId(UUID followerId, UUID followeeId);
 
     void deleteByFollowerIdAndFolloweeId(UUID followerId, UUID followeeId);

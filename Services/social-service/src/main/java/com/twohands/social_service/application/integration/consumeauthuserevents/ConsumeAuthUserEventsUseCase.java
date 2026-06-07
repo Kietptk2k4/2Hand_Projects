@@ -98,9 +98,7 @@ public class ConsumeAuthUserEventsUseCase {
         String status = targetStatus != null
                 ? targetStatus
                 : existing != null ? existing.status() : "ACTIVE";
-        String displayName = command.displayName() != null
-                ? command.displayName()
-                : existing != null ? existing.displayName() : defaultDisplayName(command.userId());
+        String displayName = resolveDisplayName(command, existing);
         String avatarUrl = command.avatarUrl() != null
                 ? command.avatarUrl()
                 : existing != null ? existing.avatarUrl() : null;
@@ -121,6 +119,45 @@ public class ConsumeAuthUserEventsUseCase {
         return userProjectionRepository.findByUserId(userId)
                 .map(UserProjection::status)
                 .orElse("ACTIVE");
+    }
+
+    private String resolveDisplayName(ConsumeAuthUserEventCommand command, UserProjection existing) {
+        if (command.displayName() != null && !command.displayName().isBlank()) {
+            return command.displayName();
+        }
+        String emailDisplayName = displayNameFromEmail(command.email());
+        if (emailDisplayName != null) {
+            return emailDisplayName;
+        }
+        if (existing != null
+                && existing.displayName() != null
+                && !existing.displayName().isBlank()
+                && !isPlaceholderDisplayName(existing.displayName(), command.userId())) {
+            return existing.displayName();
+        }
+        return defaultDisplayName(command.userId());
+    }
+
+    private boolean isPlaceholderDisplayName(String displayName, UUID userId) {
+        if (displayName == null || displayName.isBlank() || userId == null) {
+            return true;
+        }
+        String trimmed = displayName.trim();
+        if (trimmed.equalsIgnoreCase(userId.toString())) {
+            return true;
+        }
+        return trimmed.equalsIgnoreCase(defaultDisplayName(userId));
+    }
+
+    private String displayNameFromEmail(String email) {
+        if (email == null || email.isBlank() || !email.contains("@")) {
+            return null;
+        }
+        String localPart = email.substring(0, email.indexOf('@')).trim();
+        if (localPart.isBlank()) {
+            return null;
+        }
+        return localPart.length() > 100 ? localPart.substring(0, 100) : localPart;
     }
 
     private String defaultDisplayName(UUID userId) {

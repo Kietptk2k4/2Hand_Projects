@@ -2,6 +2,9 @@ package com.twohands.auth_service.application.auth.verifyemail;
 
 import com.twohands.auth_service.application.auth.register.PasswordHashingService;
 import com.twohands.auth_service.application.useraccount.common.UserAccountOutboxService;
+import com.twohands.auth_service.application.useraccount.common.UserProjectionSyncPayload;
+import com.twohands.auth_service.domain.user.UserProfile;
+import com.twohands.auth_service.domain.user.UserProfileRepository;
 import com.twohands.auth_service.domain.outbox.OutboxEventRepository;
 import com.twohands.auth_service.domain.user.PasswordHash;
 import com.twohands.auth_service.domain.user.User;
@@ -35,6 +38,7 @@ public class VerifyEmailUseCase {
     private final VerifyEmailValidationService validationService;
     private final PasswordHashingService passwordHashingService;
     private final UserAccountOutboxService userAccountOutboxService;
+    private final UserProfileRepository userProfileRepository;
     private final VerifyEmailRateLimitService rateLimitService;
 
     public VerifyEmailUseCase(
@@ -44,6 +48,7 @@ public class VerifyEmailUseCase {
             VerifyEmailValidationService validationService,
             PasswordHashingService passwordHashingService,
             UserAccountOutboxService userAccountOutboxService,
+            UserProfileRepository userProfileRepository,
             VerifyEmailRateLimitService rateLimitService
     ) {
         this.userRepository = userRepository;
@@ -52,6 +57,7 @@ public class VerifyEmailUseCase {
         this.validationService = validationService;
         this.passwordHashingService = passwordHashingService;
         this.userAccountOutboxService = userAccountOutboxService;
+        this.userProfileRepository = userProfileRepository;
         this.rateLimitService = rateLimitService;
     }
 
@@ -99,11 +105,21 @@ public class VerifyEmailUseCase {
             throw invalidTokenException();
         }
 
+        UserProfile profile = userProfileRepository.findByUserId(user.id()).orElse(null);
+        UserProjectionSyncPayload sync = profile != null
+                ? UserProjectionSyncPayload.profileOnly(
+                        profile.displayName(),
+                        profile.avatarUrl(),
+                        profile.isPrivate()
+                )
+                : UserProjectionSyncPayload.empty();
+
         outboxEventRepository.save(
                 userAccountOutboxService.userActivatedAfterEmailVerification(
                         user.id(),
                         user.email().normalizedValue(),
-                        now
+                        now,
+                        sync
                 )
         );
 

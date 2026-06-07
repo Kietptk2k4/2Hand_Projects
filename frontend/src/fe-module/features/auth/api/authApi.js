@@ -133,6 +133,15 @@ export async function getMyProfile() {
   }
 }
 
+export async function fetchPublicUserProfile(userId) {
+  try {
+    const response = await apiClient.get(`/api/v1/users/${userId}/public-profile`);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export async function updateMyProfile(payload) {
   try {
     const response = await apiClient.put("/api/v1/users/me/profile", payload);

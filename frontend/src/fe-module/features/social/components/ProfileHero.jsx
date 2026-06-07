@@ -1,17 +1,9 @@
 import { Link } from "react-router-dom";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 import { COVER_IMAGE_URL } from "../constants/socialProfileConstants";
+import { formatSocialCount } from "../utils/formatSocialCount";
 
 const DEFAULT_AVATAR = "https://i.pravatar.cc/200?img=11";
-
-function formatCount(value) {
-  if (value === null || value === undefined) return null;
-  const num = Number(value) || 0;
-  if (num >= 1000) {
-    return `${(num / 1000).toFixed(1).replace(/\.0$/, "")}k`;
-  }
-  return String(num);
-}
 
 function followButtonLabel(followStatus) {
   switch (followStatus) {
@@ -40,8 +32,8 @@ export function ProfileHero({
 
   const isSelf = profile.followStatus === "SELF";
   const followLabel = followButtonLabel(profile.followStatus);
-  const followerDisplay = formatCount(profile.followerCount);
-  const followingDisplay = formatCount(profile.followingCount);
+  const followerDisplay = formatSocialCount(profile.followerCount);
+  const followingDisplay = formatSocialCount(profile.followingCount);
   const showCounters = followerDisplay !== null && followingDisplay !== null;
 
   return (

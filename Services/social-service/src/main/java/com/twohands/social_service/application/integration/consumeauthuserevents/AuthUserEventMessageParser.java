@@ -66,6 +66,7 @@ public class AuthUserEventMessageParser {
                     userId,
                     text(payload, "status"),
                     text(payload, "display_name"),
+                    text(payload, "email"),
                     text(payload, "avatar_url"),
                     bool(payload, "is_private"),
                     text(payload, "action_type"),

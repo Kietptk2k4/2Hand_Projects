@@ -7,6 +7,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface FollowRepository {
+    List<UUID> findFolloweeIdsByFollowerId(UUID followerId);
+
     List<UUID> findAcceptedFolloweeIds(UUID followerId);
 
     Optional<Follow> findByFollowerIdAndFolloweeId(UUID followerId, UUID followeeId);

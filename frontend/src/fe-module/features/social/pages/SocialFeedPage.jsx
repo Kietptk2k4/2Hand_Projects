@@ -134,7 +134,7 @@ export function SocialFeedPage() {
   return (
     <>
       <div className="mx-auto grid w-full max-w-[1280px] grid-cols-1 gap-6 px-4 py-8 md:px-8 lg:grid-cols-12">
-        <FeedLeftSidebar />
+        <FeedLeftSidebar onComingSoon={() => setToastMessage(COMING_SOON_MESSAGE)} />
 
         <section className="flex flex-col gap-6 lg:col-span-6">
           <FeedTabs activeTab={activeTab} onChange={setActiveTab} />
@@ -219,6 +219,7 @@ export function SocialFeedPage() {
           onComingSoon={showComingSoon}
           onViewProfile={viewProfile}
           onSelectHashtag={viewHashtag}
+          onToast={setToastMessage}
         />
       </div>
 

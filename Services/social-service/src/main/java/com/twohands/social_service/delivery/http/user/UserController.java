@@ -9,6 +9,9 @@ import com.twohands.social_service.application.user.unfollowuser.UnfollowUserUse
 import com.twohands.social_service.application.user.viewfollowersfollowinglist.ViewFollowersFollowingListCommand;
 import com.twohands.social_service.application.user.viewfollowersfollowinglist.ViewFollowersFollowingListResult;
 import com.twohands.social_service.application.user.viewfollowersfollowinglist.ViewFollowersFollowingListUseCase;
+import com.twohands.social_service.application.user.viewsuggestedusers.ViewSuggestedUsersCommand;
+import com.twohands.social_service.application.user.viewsuggestedusers.ViewSuggestedUsersResult;
+import com.twohands.social_service.application.user.viewsuggestedusers.ViewSuggestedUsersUseCase;
 import com.twohands.social_service.application.user.viewsocialprofile.ViewSocialProfileCommand;
 import com.twohands.social_service.application.user.viewsocialprofile.ViewSocialProfileResult;
 import com.twohands.social_service.application.user.viewsocialprofile.ViewSocialProfileUseCase;
@@ -20,6 +23,7 @@ import com.twohands.social_service.delivery.http.user.response.UnfollowUserRespo
 import com.twohands.social_service.delivery.http.user.response.ViewFollowersFollowingListResponse;
 import com.twohands.social_service.delivery.http.user.mapper.ViewUserPostsHttpMapper;
 import com.twohands.social_service.delivery.http.user.response.ViewSocialProfileResponse;
+import com.twohands.social_service.delivery.http.user.response.ViewSuggestedUsersResponse;
 import com.twohands.social_service.delivery.http.user.response.ViewUserPostsResponse;
 import com.twohands.social_service.domain.follow.RelationListType;
 import com.twohands.social_service.security.AuthenticatedUser;
@@ -52,6 +56,7 @@ public class UserController {
     private final ViewUserPostsUseCase viewUserPostsUseCase;
     private final ViewUserPostsHttpMapper viewUserPostsHttpMapper;
     private final ViewFollowersFollowingListUseCase viewFollowersFollowingListUseCase;
+    private final ViewSuggestedUsersUseCase viewSuggestedUsersUseCase;
 
     public UserController(
             FollowUserUseCase followUserUseCase,
@@ -59,7 +64,8 @@ public class UserController {
             ViewSocialProfileUseCase viewSocialProfileUseCase,
             ViewUserPostsUseCase viewUserPostsUseCase,
             ViewUserPostsHttpMapper viewUserPostsHttpMapper,
-            ViewFollowersFollowingListUseCase viewFollowersFollowingListUseCase
+            ViewFollowersFollowingListUseCase viewFollowersFollowingListUseCase,
+            ViewSuggestedUsersUseCase viewSuggestedUsersUseCase
     ) {
         this.followUserUseCase = followUserUseCase;
         this.unfollowUserUseCase = unfollowUserUseCase;
@@ -67,6 +73,27 @@ public class UserController {
         this.viewUserPostsUseCase = viewUserPostsUseCase;
         this.viewUserPostsHttpMapper = viewUserPostsHttpMapper;
         this.viewFollowersFollowingListUseCase = viewFollowersFollowingListUseCase;
+        this.viewSuggestedUsersUseCase = viewSuggestedUsersUseCase;
+    }
+
+    @GetMapping("/suggestions")
+    public ResponseEntity<ApiResponse<ViewSuggestedUsersResponse>> viewSuggestedUsers(
+            @RequestParam(name = "page", defaultValue = "" + DEFAULT_PAGE) int page,
+            @RequestParam(name = "size", required = false) Integer size,
+            @RequestParam(name = "limit", required = false) Integer limit,
+            Authentication authentication
+    ) {
+        UUID viewerId = resolveUserId(authentication);
+        int resolvedSize = resolveSuggestionSize(size, limit);
+        ViewSuggestedUsersResult result = viewSuggestedUsersUseCase.execute(
+                new ViewSuggestedUsersCommand(viewerId, page, resolvedSize)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewSuggestedUsersUseCase.successMessage(),
+                toSuggestedUsersResponse(result)
+        ));
     }
 
     @GetMapping("/{userId}/relations")
@@ -189,6 +216,38 @@ public class UserController {
                 result.followingCount(),
                 result.followStatus(),
                 result.canViewFullProfile()
+        );
+    }
+
+    private int resolveSuggestionSize(Integer size, Integer limit) {
+        if (size != null) {
+            return size;
+        }
+        if (limit != null) {
+            return limit;
+        }
+        return DEFAULT_SIZE;
+    }
+
+    private ViewSuggestedUsersResponse toSuggestedUsersResponse(ViewSuggestedUsersResult result) {
+        List<ViewSuggestedUsersResponse.SuggestedUserItemResponse> items = result.users().items().stream()
+                .map(item -> new ViewSuggestedUsersResponse.SuggestedUserItemResponse(
+                        item.userId(),
+                        item.displayName(),
+                        item.avatarUrl(),
+                        item.followStatus(),
+                        item.mutualFollowCount()
+                ))
+                .toList();
+        return new ViewSuggestedUsersResponse(
+                items,
+                new ViewSuggestedUsersResponse.PageMetaResponse(
+                        result.users().page(),
+                        result.users().size(),
+                        result.users().totalElements(),
+                        result.users().totalPages(),
+                        result.users().hasNext()
+                )
         );
     }
 

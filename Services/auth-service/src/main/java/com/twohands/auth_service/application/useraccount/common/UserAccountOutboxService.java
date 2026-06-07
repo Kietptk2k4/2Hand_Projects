@@ -37,10 +37,22 @@ public class UserAccountOutboxService {
     }
 
     public OutboxEvent userActivatedAfterEmailVerification(UUID userId, String email, Instant now) {
+        return userActivatedAfterEmailVerification(userId, email, now, UserProjectionSyncPayload.empty());
+    }
+
+    public OutboxEvent userActivatedAfterEmailVerification(
+            UUID userId,
+            String email,
+            Instant now,
+            UserProjectionSyncPayload sync
+    ) {
         Map<String, Object> payload = basePayload(userId, email, now);
         payload.put("status", "ACTIVE");
         payload.put("email_verified", true);
         payload.put("verified_at", now.toString());
+        if (sync != null) {
+            sync.applyTo(payload);
+        }
         return build("USER_UPDATED", payload, now);
     }
 

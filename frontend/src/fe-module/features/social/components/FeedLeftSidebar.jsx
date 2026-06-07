@@ -2,9 +2,23 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAccountProfile } from "../../auth/account/hooks/useAccountProfile";
 import { useCurrentUserId } from "../../auth/hooks/useCurrentUserId";
 import { APP_ROUTES } from "../../../shared/constants/routes";
+import { useFeedSidebarStats } from "../hooks/useFeedSidebarStats";
 import { buildSocialProfilePath } from "../utils/socialProfileRoutes";
+import { formatSocialCount } from "../utils/formatSocialCount";
 
 const DEFAULT_AVATAR_URL = "https://i.pravatar.cc/96?img=11";
+const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
+
+function SidebarStatValue({ value, isLoading }) {
+  if (isLoading) {
+    return <span className="mb-0.5 inline-block h-7 w-10 animate-pulse rounded bg-surface-container-high" />;
+  }
+  return (
+    <span className="text-xl font-semibold text-on-surface">
+      {formatSocialCount(value) ?? "\u2014"}
+    </span>
+  );
+}
 
 const QUICK_LINKS = [
   { icon: "bookmark", label: "Đã lưu", color: "text-primary", to: APP_ROUTES.socialSavedPosts },
@@ -12,7 +26,7 @@ const QUICK_LINKS = [
   { icon: "event", label: "Sự kiện", color: "text-[#565a5b]" },
 ];
 
-export function FeedLeftSidebar() {
+export function FeedLeftSidebar({ onComingSoon }) {
   const navigate = useNavigate();
   const currentUserId = useCurrentUserId();
   const { profile, isLoading } = useAccountProfile();
@@ -20,12 +34,23 @@ export function FeedLeftSidebar() {
   const title = profile?.profile?.bio || "Thành viên 2Hands";
   const avatarUrl = profile?.profile?.avatar_url || DEFAULT_AVATAR_URL;
   const resolvedUserId = currentUserId || profile?.user?.id;
+  const { postCount, followerCount, savedCount, isLoading: isStatsLoading } =
+    useFeedSidebarStats(resolvedUserId);
   const selfProfilePath = resolvedUserId
     ? buildSocialProfilePath(resolvedUserId)
     : APP_ROUTES.socialFeed;
 
   const goToSelfProfile = () => {
     if (resolvedUserId) navigate(buildSocialProfilePath(resolvedUserId));
+  };
+
+  const handleComingSoon = (event) => {
+    event.preventDefault();
+    if (onComingSoon) {
+      onComingSoon();
+      return;
+    }
+    window.alert(COMING_SOON_MESSAGE);
   };
 
   return (
@@ -48,15 +73,25 @@ export function FeedLeftSidebar() {
         </button>
         <p className="mt-1 text-sm text-on-surface-variant">{title}</p>
         <div className="mt-4 flex w-full justify-between border-t border-outline-variant pt-4">
-          <div className="flex flex-1 flex-col items-center">
-            <span className="text-xl font-semibold text-on-surface">—</span>
+          <button
+            type="button"
+            onClick={goToSelfProfile}
+            disabled={!resolvedUserId}
+            className="flex flex-1 flex-col items-center rounded-lg transition-colors hover:bg-surface-container-high disabled:cursor-default disabled:hover:bg-transparent"
+          >
+            <SidebarStatValue value={postCount} isLoading={isStatsLoading} />
             <span className="text-xs font-semibold text-on-surface-variant">Bài viết</span>
-          </div>
+          </button>
           <div className="mx-2 w-px bg-outline-variant" />
-          <div className="flex flex-1 flex-col items-center">
-            <span className="text-xl font-semibold text-on-surface">—</span>
+          <button
+            type="button"
+            onClick={goToSelfProfile}
+            disabled={!resolvedUserId}
+            className="flex flex-1 flex-col items-center rounded-lg transition-colors hover:bg-surface-container-high disabled:cursor-default disabled:hover:bg-transparent"
+          >
+            <SidebarStatValue value={followerCount} isLoading={isStatsLoading} />
             <span className="text-xs font-semibold text-on-surface-variant">Người theo dõi</span>
-          </div>
+          </button>
         </div>
         <Link
           to={selfProfilePath}
@@ -92,20 +127,29 @@ export function FeedLeftSidebar() {
               >
                 {item.icon}
               </span>
-              <span>{item.label}</span>
+              <span className="flex-1 text-left">{item.label}</span>
+              {item.to === APP_ROUTES.socialSavedPosts ? (
+                isStatsLoading ? (
+                  <span className="inline-block h-4 w-6 animate-pulse rounded bg-surface-container-high" />
+                ) : savedCount !== null ? (
+                  <span className="text-xs font-semibold text-on-surface-variant">
+                    {formatSocialCount(savedCount)}
+                  </span>
+                ) : null
+              ) : null}
             </NavLink>
           ) : (
-            <a
+            <button
               key={item.label}
-              href="#"
-              className="flex items-center gap-3 rounded-lg p-2 text-on-surface transition-colors hover:bg-[#f0f3ff]"
-              onClick={(event) => event.preventDefault()}
+              type="button"
+              className="flex w-full items-center gap-3 rounded-lg p-2 text-left text-on-surface transition-colors hover:bg-[#f0f3ff]"
+              onClick={handleComingSoon}
             >
               <span className={`material-symbols-outlined ${item.color}`} aria-hidden="true">
                 {item.icon}
               </span>
               <span className="text-sm">{item.label}</span>
-            </a>
+            </button>
           )
         )}
       </div>

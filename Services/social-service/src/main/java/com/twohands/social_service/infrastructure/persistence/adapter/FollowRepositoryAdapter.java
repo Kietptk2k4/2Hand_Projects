@@ -26,6 +26,11 @@ public class FollowRepositoryAdapter implements FollowRepository {
     }
 
     @Override
+    public List<UUID> findFolloweeIdsByFollowerId(UUID followerId) {
+        return jpaFollowRepository.findFolloweeIdsByFollowerId(followerId);
+    }
+
+    @Override
     public List<UUID> findAcceptedFolloweeIds(UUID followerId) {
         return jpaFollowRepository.findFolloweeIdsByFollowerIdAndStatus(followerId, FollowStatusDb.ACCEPTED);
     }

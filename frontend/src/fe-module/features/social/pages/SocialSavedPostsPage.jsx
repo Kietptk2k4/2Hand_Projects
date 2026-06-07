@@ -120,7 +120,7 @@ export function SocialSavedPostsPage() {
   return (
     <>
       <div className="mx-auto grid w-full max-w-[1280px] grid-cols-1 gap-6 px-4 py-8 md:px-8 lg:grid-cols-12">
-        <FeedLeftSidebar />
+        <FeedLeftSidebar onComingSoon={showComingSoon} />
 
         <section className="flex flex-col gap-6 lg:col-span-6">
           <SavedPostsHeader />
@@ -196,6 +196,7 @@ export function SocialSavedPostsPage() {
           onComingSoon={showComingSoon}
           onViewProfile={viewProfile}
           onSelectHashtag={viewHashtag}
+          onToast={setToastMessage}
         />
       </div>
 

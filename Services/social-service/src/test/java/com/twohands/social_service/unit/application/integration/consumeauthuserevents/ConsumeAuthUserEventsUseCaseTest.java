@@ -47,6 +47,7 @@ class ConsumeAuthUserEventsUseCaseTest {
                 userId,
                 "ACTIVE",
                 "User A",
+                null,
                 "https://cdn.2hands.vn/avatar.png",
                 false,
                 null,
@@ -79,6 +80,7 @@ class ConsumeAuthUserEventsUseCaseTest {
                 userId,
                 null,
                 null,
+                null,
                 "https://cdn.2hands.vn/new.png",
                 true,
                 null,
@@ -109,6 +111,7 @@ class ConsumeAuthUserEventsUseCaseTest {
                 null,
                 null,
                 null,
+                null,
                 null
         ));
 
@@ -130,6 +133,7 @@ class ConsumeAuthUserEventsUseCaseTest {
                 eventId,
                 AuthUserEventType.USER_SUSPENDED,
                 userId,
+                null,
                 null,
                 null,
                 null,
@@ -161,6 +165,7 @@ class ConsumeAuthUserEventsUseCaseTest {
                 null,
                 null,
                 null,
+                null,
                 null
         ));
 
@@ -170,6 +175,63 @@ class ConsumeAuthUserEventsUseCaseTest {
                 ConsumeAuthUserEventsUseCase.CONSUMER_NAME,
                 "USER_ENFORCEMENT_REVOKED"
         );
+    }
+
+    @Test
+    void shouldUseEmailLocalPartWhenDisplayNameMissing() {
+        UUID eventId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        when(processedDomainEventRepository.existsByEventId(eventId)).thenReturn(false);
+        when(userProjectionRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(userProjectionRepository.upsert(any(UserProjection.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        useCase.execute(new ConsumeAuthUserEventCommand(
+                eventId,
+                AuthUserEventType.USER_CREATED,
+                userId,
+                "ACTIVE",
+                null,
+                "new.user@2hands.vn",
+                null,
+                false,
+                null,
+                null
+        ));
+
+        verify(userProjectionRepository).upsert(org.mockito.ArgumentMatchers.argThat(projection ->
+                "new.user".equals(projection.displayName())
+        ));
+    }
+
+    @Test
+    void shouldReplacePlaceholderDisplayNameWithEmailLocalPart() {
+        UUID eventId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        String placeholderName = "User " + userId.toString().substring(0, 8);
+
+        when(processedDomainEventRepository.existsByEventId(eventId)).thenReturn(false);
+        when(userProjectionRepository.findByUserId(userId)).thenReturn(Optional.of(
+                new UserProjection(userId.toString(), "ACTIVE", placeholderName, null, false)
+        ));
+        when(userProjectionRepository.upsert(any(UserProjection.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        useCase.execute(new ConsumeAuthUserEventCommand(
+                eventId,
+                AuthUserEventType.USER_UPDATED,
+                userId,
+                "ACTIVE",
+                null,
+                "real.name@2hands.vn",
+                null,
+                null,
+                null,
+                null
+        ));
+
+        verify(userProjectionRepository).upsert(org.mockito.ArgumentMatchers.argThat(projection ->
+                "real.name".equals(projection.displayName())
+        ));
     }
 
     @Test
@@ -186,6 +248,7 @@ class ConsumeAuthUserEventsUseCaseTest {
                 eventId,
                 AuthUserEventType.USER_SUSPENDED,
                 userId,
+                null,
                 null,
                 null,
                 null,

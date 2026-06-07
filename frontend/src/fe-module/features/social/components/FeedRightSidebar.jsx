@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { SUGGESTED_PROVIDERS } from "../constants/suggestedProviders";
+import { useSuggestedUsers } from "../hooks/useSuggestedUsers";
 import { buildSocialHashtagPath } from "../utils/socialHashtagRoutes";
+import { resolveSuggestedAvatarUrl } from "../utils/suggestedUserDisplay";
 
 const TRENDING = [
   { tag: "RemoteWork2024", count: "12.5k bài viết" },
@@ -9,10 +11,37 @@ const TRENDING = [
   { tag: "LegalTech", count: "3.9k bài viết" },
 ];
 
-const SUGGESTIONS = SUGGESTED_PROVIDERS;
+function SuggestedUserAvatar({ userId, avatarUrl, displayName }) {
+  const [hasError, setHasError] = useState(false);
+  const resolvedUrl = hasError
+    ? resolveSuggestedAvatarUrl(userId, "")
+    : resolveSuggestedAvatarUrl(userId, avatarUrl);
 
-export function FeedRightSidebar({ onComingSoon, onViewProfile, onSelectHashtag }) {
+  return (
+    <img
+      src={resolvedUrl}
+      alt={displayName ? `Avatar ${displayName}` : ""}
+      className="h-10 w-10 shrink-0 rounded-full object-cover"
+      onError={() => setHasError(true)}
+    />
+  );
+}
+
+export function FeedRightSidebar({ onComingSoon, onViewProfile, onSelectHashtag, onToast }) {
   const navigate = useNavigate();
+  const {
+    items: suggestedItems,
+    isLoading: isSuggestionsLoading,
+    isError: isSuggestionsError,
+    errorMessage: suggestionsErrorMessage,
+    expanded,
+    expand,
+    handleFollowToggle,
+    followButtonLabel,
+    suggestionSubtitle,
+    loadingUserId,
+    followDisabled,
+  } = useSuggestedUsers({ onToast });
 
   const goToHashtag = (tag) => {
     const normalized = tag?.replace(/^#+/, "").trim();
@@ -46,45 +75,68 @@ export function FeedRightSidebar({ onComingSoon, onViewProfile, onSelectHashtag 
 
       <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
         <h3 className="mb-4 text-xl font-semibold text-on-surface">Những người bạn có thể biết</h3>
-        <ul className="flex flex-col gap-4">
-          {SUGGESTIONS.map((item) => (
-            <li key={item.userId} className="flex items-center justify-between gap-2">
-              <button
-                type="button"
-                onClick={() => onViewProfile?.(item.userId)}
-                className="flex min-w-0 flex-1 items-center gap-3 text-left"
-              >
-                <img
-                  src={item.avatarUrl}
-                  alt=""
-                  className="h-10 w-10 shrink-0 rounded-full object-cover"
-                />
-                <div className="min-w-0 flex flex-col">
-                  <span className="truncate text-sm font-medium text-on-surface hover:text-primary">
-                    {item.name}
-                  </span>
-                  <span className="truncate text-xs font-semibold text-on-surface-variant">
-                    {item.role}
-                  </span>
-                </div>
-              </button>
-              <button
-                type="button"
-                onClick={onComingSoon}
-                className="shrink-0 rounded-full border border-primary px-3 py-1 text-xs font-semibold text-primary transition-colors hover:bg-[#e7eeff]"
-              >
-                Theo dõi
-              </button>
-            </li>
-          ))}
-        </ul>
-        <button
-          type="button"
-          onClick={onComingSoon}
-          className="mt-4 block w-full text-center text-sm font-medium text-primary hover:underline"
-        >
-          Xem tất cả gợi ý
-        </button>
+        {isSuggestionsLoading ? (
+          <p className="text-sm text-on-surface-variant">Đang tải...</p>
+        ) : isSuggestionsError ? (
+          <p className="text-sm text-error">{suggestionsErrorMessage}</p>
+        ) : suggestedItems.length === 0 ? (
+          <p className="text-sm text-on-surface-variant">Chưa có gợi ý người dùng.</p>
+        ) : (
+          <ul className="flex flex-col gap-4">
+            {suggestedItems.map((item) => {
+              const isFollowLoading = loadingUserId === item.userId;
+              const followLabel = followButtonLabel(item.followStatus);
+              const isFollowing = item.followStatus === "ACCEPTED" || item.followStatus === "PENDING";
+
+              return (
+                <li key={item.userId} className="flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onViewProfile?.(item.userId)}
+                    className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                  >
+                    <SuggestedUserAvatar
+                      userId={item.userId}
+                      avatarUrl={item.avatarUrl}
+                      displayName={item.name}
+                    />
+                    <div className="min-w-0 flex flex-col">
+                      <span className="truncate text-sm font-medium text-on-surface hover:text-primary">
+                        {item.name}
+                      </span>
+                      <span className="truncate text-xs font-semibold text-on-surface-variant">
+                        {suggestionSubtitle(item.mutualFollowCount)}
+                      </span>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    disabled={followDisabled || isFollowLoading}
+                    onClick={() => handleFollowToggle(item.userId, item.followStatus)}
+                    className={[
+                      "shrink-0 rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
+                      isFollowing
+                        ? "border-outline-variant text-on-surface-variant hover:bg-surface-container-high"
+                        : "border-primary text-primary hover:bg-[#e7eeff]",
+                      followDisabled || isFollowLoading ? "cursor-not-allowed opacity-60" : "",
+                    ].join(" ")}
+                  >
+                    {isFollowLoading ? "..." : followLabel}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        {!expanded && suggestedItems.length > 0 ? (
+          <button
+            type="button"
+            onClick={expand}
+            className="mt-4 block w-full text-center text-sm font-medium text-primary hover:underline"
+          >
+            Xem tất cả gợi ý
+          </button>
+        ) : null}
       </div>
     </aside>
   );

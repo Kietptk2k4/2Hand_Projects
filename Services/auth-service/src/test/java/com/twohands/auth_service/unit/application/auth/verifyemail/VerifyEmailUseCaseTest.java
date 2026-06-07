@@ -11,6 +11,8 @@ import com.twohands.auth_service.domain.outbox.OutboxEventRepository;
 import com.twohands.auth_service.domain.user.EmailAddress;
 import com.twohands.auth_service.domain.user.PasswordHash;
 import com.twohands.auth_service.domain.user.User;
+import com.twohands.auth_service.domain.user.UserProfile;
+import com.twohands.auth_service.domain.user.UserProfileRepository;
 import com.twohands.auth_service.domain.user.UserRepository;
 import com.twohands.auth_service.domain.user.UserStatus;
 import com.twohands.auth_service.domain.user.VerificationToken;
@@ -42,6 +44,7 @@ class VerifyEmailUseCaseTest {
     private final VerificationTokenRepository verificationTokenRepository = Mockito.mock(VerificationTokenRepository.class);
     private final OutboxEventRepository outboxEventRepository = Mockito.mock(OutboxEventRepository.class);
     private final PasswordHashingService passwordHashingService = Mockito.mock(PasswordHashingService.class);
+    private final UserProfileRepository userProfileRepository = Mockito.mock(UserProfileRepository.class);
 
     private VerifyEmailUseCase useCase;
 
@@ -54,6 +57,7 @@ class VerifyEmailUseCaseTest {
                 new VerifyEmailValidationService(),
                 passwordHashingService,
                 new UserAccountOutboxService(new ObjectMapper()),
+                userProfileRepository,
                 new NoopVerifyEmailRateLimitService()
         );
     }
