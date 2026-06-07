@@ -3,6 +3,7 @@ package com.twohands.social_service.integration.search;
 import com.twohands.social_service.application.search.searchhashtag.SearchHashtagUseCase;
 import com.twohands.social_service.application.search.searchpost.SearchPostResult;
 import com.twohands.social_service.application.search.searchpost.SearchPostUseCase;
+import com.twohands.social_service.application.search.viewtrendinghashtags.ViewTrendingHashtagsUseCase;
 import com.twohands.social_service.config.SecurityConfig;
 import com.twohands.social_service.delivery.http.search.SearchController;
 import com.twohands.social_service.exception.AppException;
@@ -55,6 +56,9 @@ class SearchPostApiIntegrationTest {
 
     @MockBean
     private SearchHashtagUseCase searchHashtagUseCase;
+
+    @MockBean
+    private ViewTrendingHashtagsUseCase viewTrendingHashtagsUseCase;
 
     @Test
     void shouldReturnUnauthorizedWithoutToken() throws Exception {

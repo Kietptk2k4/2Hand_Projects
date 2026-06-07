@@ -6,9 +6,13 @@ import com.twohands.social_service.application.search.searchhashtag.SearchHashta
 import com.twohands.social_service.application.search.searchpost.SearchPostCommand;
 import com.twohands.social_service.application.search.searchpost.SearchPostResult;
 import com.twohands.social_service.application.search.searchpost.SearchPostUseCase;
+import com.twohands.social_service.application.search.viewtrendinghashtags.ViewTrendingHashtagsCommand;
+import com.twohands.social_service.application.search.viewtrendinghashtags.ViewTrendingHashtagsResult;
+import com.twohands.social_service.application.search.viewtrendinghashtags.ViewTrendingHashtagsUseCase;
 import com.twohands.social_service.common.dto.ApiResponse;
 import com.twohands.social_service.delivery.http.search.response.SearchHashtagResponse;
 import com.twohands.social_service.delivery.http.search.response.SearchPostResponse;
+import com.twohands.social_service.delivery.http.search.response.ViewTrendingHashtagsResponse;
 import com.twohands.social_service.security.AuthenticatedUser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,13 +32,37 @@ public class SearchController {
 
     private static final int DEFAULT_PAGE = 0;
     private static final int DEFAULT_SIZE = 20;
+    private static final int DEFAULT_TRENDING_LIMIT = 5;
 
     private final SearchPostUseCase searchPostUseCase;
     private final SearchHashtagUseCase searchHashtagUseCase;
+    private final ViewTrendingHashtagsUseCase viewTrendingHashtagsUseCase;
 
-    public SearchController(SearchPostUseCase searchPostUseCase, SearchHashtagUseCase searchHashtagUseCase) {
+    public SearchController(
+            SearchPostUseCase searchPostUseCase,
+            SearchHashtagUseCase searchHashtagUseCase,
+            ViewTrendingHashtagsUseCase viewTrendingHashtagsUseCase
+    ) {
         this.searchPostUseCase = searchPostUseCase;
         this.searchHashtagUseCase = searchHashtagUseCase;
+        this.viewTrendingHashtagsUseCase = viewTrendingHashtagsUseCase;
+    }
+
+    @GetMapping("/trending-hashtags")
+    public ResponseEntity<ApiResponse<ViewTrendingHashtagsResponse>> viewTrendingHashtags(
+            @RequestParam(name = "limit", defaultValue = "" + DEFAULT_TRENDING_LIMIT) int limit,
+            Authentication authentication
+    ) {
+        UUID userId = resolveUserId(authentication);
+        ViewTrendingHashtagsResult result = viewTrendingHashtagsUseCase.execute(
+                new ViewTrendingHashtagsCommand(userId, limit)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewTrendingHashtagsUseCase.successMessage(),
+                toTrendingHashtagsResponse(result)
+        ));
     }
 
     @GetMapping("/hashtags/{hashtag}")
@@ -109,6 +137,20 @@ public class SearchController {
                         result.meta().hasNext()
                 )
         );
+    }
+
+    private ViewTrendingHashtagsResponse toTrendingHashtagsResponse(ViewTrendingHashtagsResult result) {
+        List<ViewTrendingHashtagsResponse.TrendingHashtagItemResponse> items = result.items().stream()
+                .map(item -> new ViewTrendingHashtagsResponse.TrendingHashtagItemResponse(
+                        item.tag(),
+                        item.postCount(),
+                        item.totalLikes(),
+                        item.totalReplies(),
+                        item.engagementCount(),
+                        item.score()
+                ))
+                .toList();
+        return new ViewTrendingHashtagsResponse(items);
     }
 
     private SearchHashtagResponse toHashtagResponse(SearchHashtagResult result) {

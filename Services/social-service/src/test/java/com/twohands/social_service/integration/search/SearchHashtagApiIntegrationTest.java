@@ -3,6 +3,9 @@ package com.twohands.social_service.integration.search;
 import com.twohands.social_service.application.search.searchhashtag.SearchHashtagResult;
 import com.twohands.social_service.application.search.searchhashtag.SearchHashtagUseCase;
 import com.twohands.social_service.application.search.searchpost.SearchPostUseCase;
+import com.twohands.social_service.application.search.viewtrendinghashtags.ViewTrendingHashtagsCommand;
+import com.twohands.social_service.application.search.viewtrendinghashtags.ViewTrendingHashtagsResult;
+import com.twohands.social_service.application.search.viewtrendinghashtags.ViewTrendingHashtagsUseCase;
 import com.twohands.social_service.config.SecurityConfig;
 import com.twohands.social_service.delivery.http.search.SearchController;
 import com.twohands.social_service.exception.AppException;
@@ -56,6 +59,9 @@ class SearchHashtagApiIntegrationTest {
     @MockBean
     private SearchHashtagUseCase searchHashtagUseCase;
 
+    @MockBean
+    private ViewTrendingHashtagsUseCase viewTrendingHashtagsUseCase;
+
     @Test
     void shouldReturnUnauthorizedWithoutToken() throws Exception {
         mockMvc.perform(get("/api/v1/social/search/hashtags/travel"))
@@ -102,6 +108,32 @@ class SearchHashtagApiIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Tim kiem hashtag thanh cong."))
                 .andExpect(jsonPath("$.data.hashtag").value("travel"))
                 .andExpect(jsonPath("$.data.items[0].caption").value("Trip"));
+    }
+
+    @Test
+    void shouldReturn200WithTrendingHashtags() throws Exception {
+        UUID userId = UUID.randomUUID();
+        String token = buildAccessToken(userId);
+
+        when(viewTrendingHashtagsUseCase.execute(any(ViewTrendingHashtagsCommand.class)))
+                .thenReturn(new ViewTrendingHashtagsResult(List.of(
+                        new ViewTrendingHashtagsResult.TrendingHashtagItem(
+                                "LegalTech",
+                                3L,
+                                20L,
+                                5L,
+                                25L,
+                                55L
+                        )
+                )));
+
+        mockMvc.perform(get("/api/v1/social/search/trending-hashtags")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.items[0].tag").value("LegalTech"))
+                .andExpect(jsonPath("$.data.items[0].postCount").value(3))
+                .andExpect(jsonPath("$.data.items[0].score").value(55));
     }
 
     @Test

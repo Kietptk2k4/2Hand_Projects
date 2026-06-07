@@ -1,7 +1,7 @@
 import { socialApiClient } from "../../../services/http/socialApiClient";
 import { mapAxiosError, unwrapResponse } from "./socialApiResponse";
 
-export async function fetchTrendingHashtags({ limit = 4 } = {}) {
+export async function fetchTrendingHashtags({ limit = 5 } = {}) {
   try {
     const response = await socialApiClient.get("/api/v1/social/search/trending-hashtags", {
       params: { limit },

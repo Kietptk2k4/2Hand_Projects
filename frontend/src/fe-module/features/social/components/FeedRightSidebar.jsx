@@ -1,15 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSuggestedUsers } from "../hooks/useSuggestedUsers";
+import { useTrendingHashtags, formatTrendingPostCount } from "../hooks/useTrendingHashtags";
 import { buildSocialHashtagPath } from "../utils/socialHashtagRoutes";
 import { resolveSuggestedAvatarUrl } from "../utils/suggestedUserDisplay";
-
-const TRENDING = [
-  { tag: "RemoteWork2024", count: "12.5k bài viết" },
-  { tag: "AIinFinance", count: "8.2k bài viết" },
-  { tag: "FreelanceTips", count: "5.1k bài viết" },
-  { tag: "LegalTech", count: "3.9k bài viết" },
-];
 
 function SuggestedUserAvatar({ userId, avatarUrl, displayName }) {
   const [hasError, setHasError] = useState(false);
@@ -29,6 +23,12 @@ function SuggestedUserAvatar({ userId, avatarUrl, displayName }) {
 
 export function FeedRightSidebar({ onComingSoon, onViewProfile, onSelectHashtag, onToast }) {
   const navigate = useNavigate();
+  const {
+    items: trendingItems,
+    isLoading: isTrendingLoading,
+    isError: isTrendingError,
+    errorMessage: trendingErrorMessage,
+  } = useTrendingHashtags({ limit: 5 });
   const {
     items: suggestedItems,
     isLoading: isSuggestionsLoading,
@@ -57,20 +57,30 @@ export function FeedRightSidebar({ onComingSoon, onViewProfile, onSelectHashtag,
     <aside className="hidden flex-col gap-6 lg:col-span-3 lg:flex lg:sticky lg:top-20 lg:max-h-[calc(100vh-5rem)] lg:self-start lg:overflow-y-auto">
       <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
         <h3 className="mb-4 text-xl font-semibold text-on-surface">Đang thịnh hành</h3>
-        <ul className="flex flex-col gap-3">
-          {TRENDING.map((item) => (
-            <li key={item.tag} className="flex flex-col">
-              <button
-                type="button"
-                className="text-left text-sm font-medium text-primary hover:underline"
-                onClick={() => goToHashtag(item.tag)}
-              >
-                #{item.tag}
-              </button>
-              <span className="text-xs font-semibold text-on-surface-variant">{item.count}</span>
-            </li>
-          ))}
-        </ul>
+        {isTrendingLoading ? (
+          <p className="text-sm text-on-surface-variant">Đang tải...</p>
+        ) : isTrendingError ? (
+          <p className="text-sm text-error">{trendingErrorMessage}</p>
+        ) : trendingItems.length === 0 ? (
+          <p className="text-sm text-on-surface-variant">Chưa có hashtag thịnh hành.</p>
+        ) : (
+          <ul className="flex flex-col gap-3">
+            {trendingItems.map((item) => (
+              <li key={item.tag} className="flex flex-col">
+                <button
+                  type="button"
+                  className="text-left text-sm font-medium text-primary hover:underline"
+                  onClick={() => goToHashtag(item.tag)}
+                >
+                  #{item.tag}
+                </button>
+                <span className="text-xs font-semibold text-on-surface-variant">
+                  {formatTrendingPostCount(item.postCount)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
