@@ -9,11 +9,14 @@ import com.twohands.commerce_service.application.shop.updateshopvacation.UpdateS
 import com.twohands.commerce_service.application.shop.uploadshopmedia.CreateShopMediaUploadUrlCommand;
 import com.twohands.commerce_service.application.shop.uploadshopmedia.CreateShopMediaUploadUrlResult;
 import com.twohands.commerce_service.application.shop.uploadshopmedia.CreateShopMediaUploadUrlUseCase;
+import com.twohands.commerce_service.application.shop.viewmyshop.ViewMyShopCommand;
+import com.twohands.commerce_service.application.shop.viewmyshop.ViewMyShopUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.shop.CreateShopPickupDraft;
 import com.twohands.commerce_service.domain.shop.CreateShopResult;
 import com.twohands.commerce_service.domain.shop.UpdateShopProfileResult;
 import com.twohands.commerce_service.domain.shop.UpdateShopVacationResult;
+import com.twohands.commerce_service.domain.shop.ViewMyShopResult;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
 import com.twohands.commerce_service.security.AuthenticatedUser;
@@ -21,6 +24,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,21 +37,36 @@ import java.util.UUID;
 @RequestMapping("/commerce/api/v1/seller/shop")
 public class SellerShopController {
 
+    private final ViewMyShopUseCase viewMyShopUseCase;
     private final CreateShopUseCase createShopUseCase;
     private final UpdateShopProfileUseCase updateShopProfileUseCase;
     private final UpdateShopVacationUseCase updateShopVacationUseCase;
     private final CreateShopMediaUploadUrlUseCase createShopMediaUploadUrlUseCase;
 
     public SellerShopController(
+            ViewMyShopUseCase viewMyShopUseCase,
             CreateShopUseCase createShopUseCase,
             UpdateShopProfileUseCase updateShopProfileUseCase,
             UpdateShopVacationUseCase updateShopVacationUseCase,
             CreateShopMediaUploadUrlUseCase createShopMediaUploadUrlUseCase
     ) {
+        this.viewMyShopUseCase = viewMyShopUseCase;
         this.createShopUseCase = createShopUseCase;
         this.updateShopProfileUseCase = updateShopProfileUseCase;
         this.updateShopVacationUseCase = updateShopVacationUseCase;
         this.createShopMediaUploadUrlUseCase = createShopMediaUploadUrlUseCase;
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<ViewMyShopResponse>> viewMyShop(Authentication authentication) {
+        UUID sellerId = resolveUserId(authentication);
+        ViewMyShopResult result = viewMyShopUseCase.execute(new ViewMyShopCommand(sellerId));
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewMyShopUseCase.successMessage(),
+                toViewMyShopResponse(result)
+        ));
     }
 
     @PostMapping("/media/upload-url")
@@ -176,6 +195,24 @@ public class SellerShopController {
                 result.status(),
                 result.isVacation(),
                 result.vacationMessage(),
+                result.updatedAt()
+        );
+    }
+
+    private ViewMyShopResponse toViewMyShopResponse(ViewMyShopResult result) {
+        return new ViewMyShopResponse(
+                result.shopId(),
+                result.sellerId(),
+                result.shopName(),
+                result.description(),
+                result.avatarUrl(),
+                result.coverUrl(),
+                result.status(),
+                result.ratingAvg(),
+                result.ratingCount(),
+                result.vacationMode(),
+                result.vacationMessage(),
+                result.createdAt(),
                 result.updatedAt()
         );
     }

@@ -34,7 +34,7 @@ public class ViewShopReviewsRepositoryAdapter implements ViewShopReviewsReposito
             FROM reviews r
             INNER JOIN order_items oi ON oi.id = r.order_item_id
             WHERE r.seller_id = :sellerId
-              AND r.status = :status
+              AND r.status = CAST(:status AS review_status)
             """;
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
@@ -124,7 +124,7 @@ public class ViewShopReviewsRepositoryAdapter implements ViewShopReviewsReposito
                        oi.product_name_snapshot,
                        r.rating,
                        r.comment,
-                       r.status,
+                       r.status::text AS status,
                        r.created_at
                 """
                 + SELLER_REVIEWS_FROM

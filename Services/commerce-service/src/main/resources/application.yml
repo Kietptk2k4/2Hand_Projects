@@ -54,6 +54,11 @@ jwt:
   access-expiration: 900000
   refresh-expiration: 2592000000
 
+logging:
+  level:
+    com.twohands.commerce_service: DEBUG
+    org.springframework.jdbc: DEBUG
+    
 commerce:
   object-storage:
     enabled: ${COMMERCE_MINIO_ENABLED:false}

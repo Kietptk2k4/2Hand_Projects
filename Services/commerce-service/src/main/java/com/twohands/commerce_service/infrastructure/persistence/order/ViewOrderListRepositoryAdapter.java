@@ -147,7 +147,7 @@ public class ViewOrderListRepositoryAdapter implements ViewOrderListRepository {
                         ORDER BY order_id, created_at ASC
                         """,
                 new MapSqlParameterSource("orderIds", orderIds),
-                rs -> {
+                (rs, rowNum) -> {
                     UUID orderId = UUID.fromString(rs.getString("order_id"));
                     ItemAggregateRow existing = aggregates.getOrDefault(orderId, new ItemAggregateRow(0, null, null));
                     aggregates.put(

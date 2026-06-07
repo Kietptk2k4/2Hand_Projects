@@ -41,7 +41,6 @@ export async function uploadShopMediaFile(uploadUrl, file) {
   }
 }
 
-/** FE-only GET until backend exposes seller shop detail — MSW implements. */
 export async function fetchMyShop() {
   try {
     const response = await commerceApiClient.get("/commerce/api/v1/seller/shop");
