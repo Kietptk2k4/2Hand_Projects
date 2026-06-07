@@ -9,6 +9,7 @@ Cho phep user tao comment tren post dang hoat dong.
 ## 3. Scope
 - **In Scope:**
   - Tao comment moi trong `COMMENTS`.
+  - Dinh kem media (toi da 5, `IMAGE`/`VIDEO`) trong payload.
   - Tang `POSTS.reply_count`.
   - Publish `COMMENT_CREATED`.
 - **Out of Scope:**
@@ -38,3 +39,8 @@ Cho phep user tao comment tren post dang hoat dong.
 - Comment hop le -> 201.
 - Post tat comment -> 403.
 - Post khong ton tai -> 404.
+- FE: `CommentComposer` upload media qua presigned URL post media; hien thi qua `CommentMediaDisplay`.
+
+## 10. Related
+- API doc: `docs/api_fe_behavior/social_api_fe_behavior/CommentPost-api-and-behavior.md`
+- FE: `CommentComposer.jsx`, `useCommentMediaUpload.js`, `usePostComments.js`

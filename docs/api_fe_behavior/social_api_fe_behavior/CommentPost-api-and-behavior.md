@@ -99,7 +99,9 @@ Cho phép người dùng đã đăng nhập tạo bình luận cấp 1 (top-leve
 ## 8. FE Integration Notes
 
 - **Thread UI:** Dùng endpoint này cho comment gốc; reply dùng `POST /api/v1/social/comments/{commentId}/replies`.
+- **Comment media (FE):** `CommentComposer.jsx` hỗ trợ đính kèm tối đa 5 ảnh/video (`MAX_COMMENT_MEDIA_ITEMS` trong `commentConstants.js`). Upload qua `useCommentMediaUpload.js` — tái sử dụng `POST /api/v1/social/posts/media/upload-url` (`createPostApi.js`), map payload bằng `mapCommentMediaPayload.js`, gửi `media[]` trong body khi submit (`usePostComments.js` → `submitTopLevel`). `contentText` vẫn bắt buộc kể cả khi có media.
+- **Hiển thị media:** `CommentMediaDisplay.jsx` render `media` trên `CommentItem.jsx` sau khi tạo hoặc khi list comments.
 - **Optimistic UI:** Sau 201, append comment vào danh sách; có thể tăng `reply_count` trên post card.
 - **Token refresh:** 401 → refresh token rồi retry.
-- **Field mapping:** `commentId`, `postId`, `authorId`, `contentText`, `createdAt`, `updatedAt`.
-- Tham chiếu: `docs/engineering_rules/frontend-api-integration.md`.
+- **Field mapping:** `commentId`, `postId`, `authorId`, `contentText`, `media`, `createdAt`, `updatedAt`.
+- Tham chiếu: `docs/feature_requirements/social/FR_CommentPost.md`, `docs/engineering_rules/frontend-api-integration.md`.

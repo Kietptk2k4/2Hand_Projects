@@ -88,6 +88,7 @@ Cho phép người dùng like/unlike bài viết (toggle), đồng bộ relation
 ## 8. FE Integration Notes
 
 - **Toggle UI:** Dùng `data.liked` cho trạng thái nút like; `data.likeCount` cho hiển thị số like.
+- **Danh sách likers:** Bấm số like (`LikeCountButton.jsx`) → `LikesListModal.jsx` gọi `GET /api/v1/social/posts/{postId}/likes` qua `likesApi.js` / `useLikeUsersList.js`. Xem `ViewPostLikers-api-and-behavior.md`.
 - **Notification:** Downstream consume `POST_LIKED` từ outbox/broker (không gọi trực tiếp từ FE).
 - **Token refresh:** 401 → refresh token rồi retry.
-- Tham chiếu: `docs/engineering_rules/frontend-api-integration.md`.
+- Tham chiếu: `docs/feature_requirements/social/FR_ViewPostLikers.md`, `docs/engineering_rules/frontend-api-integration.md`.

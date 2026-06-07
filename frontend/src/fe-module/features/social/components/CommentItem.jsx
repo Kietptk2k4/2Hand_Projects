@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { MAX_COMMENT_LENGTH } from "../constants/commentConstants";
 import { DEFAULT_USER_DISPLAY_NAME } from "../constants/socialUiStrings";
 import { useSocialWriteBlock } from "../context/SocialWriteBlockContext";
+import { useCommentMediaUpload } from "../hooks/useCommentMediaUpload";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
+import { CommentComposer } from "./CommentComposer";
+import { CommentMediaDisplay } from "./CommentMediaDisplay";
 import { LikeCountButton } from "./LikeCountButton";
 
 const DEFAULT_AVATAR = "https://i.pravatar.cc/80?img=11";
@@ -105,6 +107,8 @@ export function CommentItem({
   deletingCommentId,
 }) {
   const { isWriteBlocked } = useSocialWriteBlock();
+  const replyMediaUpload = useCommentMediaUpload();
+  const { mediaItems: replyMediaItems, resetMedia: resetReplyMedia } = replyMediaUpload;
   const [replyDraft, setReplyDraft] = useState("");
   const avatarUrl = comment.author?.avatarUrl || DEFAULT_AVATAR;
   const displayName = comment.author?.displayName || DEFAULT_USER_DISPLAY_NAME;
@@ -116,8 +120,9 @@ export function CommentItem({
   useEffect(() => {
     if (!isReplying) {
       setReplyDraft("");
+      resetReplyMedia();
     }
-  }, [isReplying]);
+  }, [isReplying, resetReplyMedia]);
 
   const openAuthorProfile = (event) => {
     event.stopPropagation();
@@ -125,16 +130,14 @@ export function CommentItem({
   };
 
   const handleSubmitReply = async () => {
-    const result = await onSubmitReply?.(comment.commentId, replyDraft);
+    const result = await onSubmitReply?.(
+      comment.commentId,
+      replyDraft,
+      replyMediaItems
+    );
     if (result?.ok) {
       setReplyDraft("");
-    }
-  };
-
-  const handleReplyKeyDown = (event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      handleSubmitReply();
+      resetReplyMedia();
     }
   };
 
@@ -163,6 +166,7 @@ export function CommentItem({
               {displayName}
             </button>
             <p className="mt-0.5 text-sm text-on-surface">{comment.contentText}</p>
+            <CommentMediaDisplay media={comment.media} />
           </div>
           <CommentActions
             commentId={comment.commentId}
@@ -187,35 +191,24 @@ export function CommentItem({
 
           {isTopLevel && isReplying ? (
             <div className="mt-3 space-y-2">
-              <input
-                type="text"
+              <CommentComposer
+                variant="compact"
                 value={replyDraft}
-                onChange={(event) => setReplyDraft(event.target.value)}
-                onKeyDown={handleReplyKeyDown}
-                maxLength={MAX_COMMENT_LENGTH}
+                onChange={setReplyDraft}
+                onSubmit={handleSubmitReply}
+                mediaUpload={replyMediaUpload}
                 placeholder="Viết phản hồi..."
-                disabled={isWriteBlocked || isSubmittingReply}
-                className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-60"
-                autoFocus
+                disabled={isWriteBlocked}
+                isSubmitting={isSubmittingReply}
               />
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleSubmitReply}
-                  disabled={isWriteBlocked || isSubmittingReply || !replyDraft.trim()}
-                  className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-on-primary hover:bg-[#0050cb] disabled:opacity-50"
-                >
-                  {isSubmittingReply ? "Đang gửi..." : "Gửi"}
-                </button>
-                <button
-                  type="button"
-                  onClick={onCancelReply}
-                  disabled={isSubmittingReply}
-                  className="text-xs font-medium text-on-surface-variant hover:text-primary"
-                >
-                  Hủy
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={onCancelReply}
+                disabled={isSubmittingReply}
+                className="text-xs font-medium text-on-surface-variant hover:text-primary"
+              >
+                Hủy
+              </button>
             </div>
           ) : null}
         </div>
@@ -255,6 +248,7 @@ export function CommentItem({
                       {reply.author?.displayName || DEFAULT_USER_DISPLAY_NAME}
                     </button>
                     <p className="mt-0.5 text-sm text-on-surface">{reply.contentText}</p>
+                    <CommentMediaDisplay media={reply.media} />
                   </div>
                   <CommentActions
                     commentId={reply.commentId}

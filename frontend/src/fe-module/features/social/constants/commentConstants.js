@@ -1,4 +1,5 @@
 export const MAX_COMMENT_LENGTH = 2000;
+export const MAX_COMMENT_MEDIA_ITEMS = 5;
 
 export const COMMENT_SORT_OPTIONS = [
   { value: "created_at_asc", label: "Cũ nhất trước" },

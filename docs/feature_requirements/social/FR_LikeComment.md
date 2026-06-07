@@ -34,3 +34,8 @@ Cho phep user like comment de the hien tuong tac voi noi dung hoi thoai.
 ## 9. Acceptance Criteria
 - Like comment hop le -> 200.
 - Comment khong ton tai -> 404.
+- User bam so like tren comment -> xem danh sach likers (`FR_ViewCommentLikers`).
+
+## 10. Related
+- `FR_ViewCommentLikers` — `GET /api/v1/social/comments/{commentId}/likes`
+- API doc: `docs/api_fe_behavior/social_api_fe_behavior/LikeComment-api-and-behavior.md`

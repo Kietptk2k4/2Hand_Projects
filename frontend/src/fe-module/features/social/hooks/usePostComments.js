@@ -11,6 +11,7 @@ import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { mapApiCommentToListItem } from "../utils/mapCommentItem";
 import { DEFAULT_COMMENT_SORT } from "../constants/commentConstants";
 import { validateCommentContent } from "../utils/validateCommentContent";
+import { mapCommentMediaPayload } from "../utils/mapCommentMediaPayload";
 import { mapSocialWriteError } from "../utils/socialWriteErrors";
 
 export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
@@ -138,12 +139,25 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
   }, []);
 
   const submitTopLevel = useCallback(
-    async (rawText) => {
+    async (rawText, mediaItems = []) => {
       if (!postId || isSubmittingTopLevel) return { ok: false };
 
       const validation = validateCommentContent(rawText);
       if (!validation.valid) {
         setSubmitError(validation.message);
+        return { ok: false };
+      }
+
+      const media = mapCommentMediaPayload(mediaItems);
+      const isUploading = mediaItems.some(
+        (item) => item.status === "uploading" || item.status === "pending"
+      );
+      if (isUploading) {
+        setSubmitError("Đang tải media, vui lòng đợi.");
+        return { ok: false };
+      }
+      if (mediaItems.some((item) => item.status === "error")) {
+        setSubmitError("Có file upload lỗi. Xóa hoặc thử lại.");
         return { ok: false };
       }
 
@@ -153,7 +167,7 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
       try {
         const data = await createPostComment(postId, {
           contentText: validation.value,
-          media: [],
+          media,
         });
         const listItem = mapApiCommentToListItem(data);
         setComments((prev) => [listItem, ...prev]);
@@ -178,12 +192,25 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
   );
 
   const submitReply = useCallback(
-    async (parentCommentId, rawText) => {
+    async (parentCommentId, rawText, mediaItems = []) => {
       if (!parentCommentId || isSubmittingReplyId) return { ok: false };
 
       const validation = validateCommentContent(rawText);
       if (!validation.valid) {
         setSubmitError(validation.message);
+        return { ok: false };
+      }
+
+      const media = mapCommentMediaPayload(mediaItems);
+      const isUploading = mediaItems.some(
+        (item) => item.status === "uploading" || item.status === "pending"
+      );
+      if (isUploading) {
+        setSubmitError("Đang tải media, vui lòng đợi.");
+        return { ok: false };
+      }
+      if (mediaItems.some((item) => item.status === "error")) {
+        setSubmitError("Có file upload lỗi. Xóa hoặc thử lại.");
         return { ok: false };
       }
 
@@ -193,7 +220,7 @@ export function usePostComments(postId, enabled, { onReplyCountChange } = {}) {
       try {
         const data = await createCommentReply(parentCommentId, {
           contentText: validation.value,
-          media: [],
+          media,
         });
         const listItem = mapApiCommentToListItem({
           ...data,

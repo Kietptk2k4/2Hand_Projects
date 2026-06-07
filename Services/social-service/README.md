@@ -62,6 +62,7 @@ Response envelope chuẩn 2Hands: `{ code, success, message, data, errors, times
 | `GET` | `/posts/saved` | Danh sách bài đã lưu |
 | `POST` | `/posts/media/upload-url` | Lấy presigned URL upload media |
 | `POST` | `/posts/{postId}/like` | Like / unlike (toggle) |
+| `GET` | `/posts/{postId}/likes` | Danh sách người đã like bài (phân trang) |
 | `POST` | `/posts/{postId}/save` | Lưu / bỏ lưu (toggle) |
 | `GET` | `/posts/{postId}/comments` | Danh sách comment (phân trang, sort, reply theo `parent_comment_id`) |
 | `POST` | `/posts/{postId}/comments` | Tạo comment trên bài |
@@ -73,6 +74,7 @@ Response envelope chuẩn 2Hands: `{ code, success, message, data, errors, times
 | `POST` | `/comments/{commentId}/replies` | Trả lời comment |
 | `DELETE` | `/comments/{commentId}` | Xóa comment của mình |
 | `POST` | `/comments/{commentId}/like` | Like comment |
+| `GET` | `/comments/{commentId}/likes` | Danh sách người đã like comment (phân trang) |
 
 ### Người dùng xã hội (`/users`)
 
@@ -83,6 +85,7 @@ Response envelope chuẩn 2Hands: `{ code, success, message, data, errors, times
 | `GET` | `/users/{userId}/relations` | Followers / following |
 | `POST` | `/users/{userId}/follow` | Follow |
 | `DELETE` | `/users/{userId}/follow` | Unfollow |
+| `GET` | `/users/suggestions` | Gợi ý người dùng nên follow (phân trang) |
 
 ### Tìm kiếm (`/search`)
 
@@ -90,6 +93,7 @@ Response envelope chuẩn 2Hands: `{ code, success, message, data, errors, times
 |--------|------|--------|
 | `GET` | `/search/posts` | Tìm bài theo từ khóa |
 | `GET` | `/search/hashtags/{hashtag}` | Tìm theo hashtag |
+| `GET` | `/search/trending-hashtags` | Hashtag thịnh hành (engagement 7 ngày) |
 
 > Qua API Gateway production, prefix thường là `/social-service/api/v1/social/...` — xem `docs/engineering_rules/api-standard.md`.
 

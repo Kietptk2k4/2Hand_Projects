@@ -87,6 +87,7 @@ Cho phép người dùng like/unlike comment (toggle) để thể hiện tương
 ## 8. FE Integration Notes
 
 - **Toggle UI:** Dùng `data.liked` để cập nhật icon/trạng thái; dùng `data.likeCount` để hiển thị số like.
+- **Danh sách likers:** Bấm số like trên `CommentItem.jsx` → `LikesListModal.jsx` gọi `GET /api/v1/social/comments/{commentId}/likes` qua `likesApi.js` / `useLikeUsersList.js`. Xem `ViewCommentLikers-api-and-behavior.md`.
 - **Optimistic UI:** Có thể toggle ngay, rollback nếu API lỗi.
 - **Token refresh:** 401 → refresh token rồi retry.
-- Tham chiếu: `docs/engineering_rules/frontend-api-integration.md`.
+- Tham chiếu: `docs/feature_requirements/social/FR_ViewCommentLikers.md`, `docs/engineering_rules/frontend-api-integration.md`.

@@ -36,3 +36,8 @@ Cho phep user like hoac unlike post, dong bo trang thai relation va bo dem like.
 ## 9. Acceptance Criteria
 - Like thanh cong -> relation duoc tao, counter tang.
 - Unlike thanh cong -> relation bi xoa, counter giam.
+- User bam so like -> xem danh sach likers (`FR_ViewPostLikers`).
+
+## 10. Related
+- `FR_ViewPostLikers` — `GET /api/v1/social/posts/{postId}/likes`
+- API doc: `docs/api_fe_behavior/social_api_fe_behavior/LikeUnlikePost-api-and-behavior.md`

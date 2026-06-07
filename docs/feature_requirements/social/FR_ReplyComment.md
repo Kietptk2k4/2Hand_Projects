@@ -9,6 +9,7 @@ Cho phep user tra loi mot comment da ton tai de tao thread hoi thoai.
 ## 3. Scope
 - **In Scope:**
   - Tao comment moi voi `parent_comment_id`.
+  - Dinh kem media (toi da 5, `IMAGE`/`VIDEO`) trong payload.
   - Cap nhat bo dem lien quan.
   - Publish `COMMENT_CREATED`.
 - **Out of Scope:**
@@ -36,3 +37,8 @@ Cho phep user tra loi mot comment da ton tai de tao thread hoi thoai.
 ## 9. Acceptance Criteria
 - Reply hop le -> 201.
 - Parent comment khong ton tai/da xoa -> 404.
+- FE: reply inline dung `CommentComposer` voi cung luong upload media nhu top-level comment.
+
+## 10. Related
+- API doc: `docs/api_fe_behavior/social_api_fe_behavior/ReplyComment-api-and-behavior.md`
+- FE: `CommentItem.jsx`, `CommentComposer.jsx`, `usePostComments.js`

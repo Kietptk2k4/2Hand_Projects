@@ -16,6 +16,7 @@ Cho phep user xem danh sach comment tren mot post (top-level hoac reply theo `pa
   - Mac dinh chi top-level (`parent_comment_id = null`); ho tro filter reply theo `parent_comment_id`.
   - Phan trang (`page`, `size`).
   - Tra ve author summary (`display_name`, `avatar_url`) tu projection.
+  - Tra ve `media[]` dinh kem tren moi comment (neu co).
 - **Out of Scope:**
   - Tao/sua/xoa comment (`FR_CommentPost`, `FR_ReplyComment`, `FR_DeleteOwnComment`).
   - Nested tree load tat ca cap trong 1 request (MVP: FE goi them khi expand reply).
@@ -143,7 +144,8 @@ Index khuyen nghi: `idx_comments_post_parent_created` (`post_id`, `parent_commen
 | `docs/database/social-schema.md` | Schema `COMMENTS` |
 | `docs/business-spec/social-service-spec.md` | Phan Comment Management |
 
-## 13. Implementation Notes (hien trang)
+## 13. FE Integration Notes
 
-- Endpoint `GET .../posts/{postId}/comments` **chua co** trong `social-service` (chi co `POST .../comments/{commentId}/replies` cho reply).
-- Can bo sung use case + controller theo Clean Architecture.
+- `CommentItem.jsx` hien thi `media` qua `CommentMediaDisplay.jsx`.
+- Top-level comment trong `PostDetailModal` dung `CommentComposer` (co media).
+- Tham chieu: `docs/api_fe_behavior/social_api_fe_behavior/ListPostComments-api-and-behavior.md`

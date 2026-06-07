@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCurrentUserAvatarUrl } from "../../auth/hooks/useCurrentUserAvatarUrl";
 import { useViewCommerceProduct } from "../hooks/useViewCommerceProduct";
 import { useEnrichedProductTags } from "../hooks/useEnrichedProductTags";
-import { MAX_COMMENT_LENGTH } from "../constants/commentConstants";
 import { DEFAULT_USER_DISPLAY_NAME } from "../constants/socialUiStrings";
+import { useCommentMediaUpload } from "../hooks/useCommentMediaUpload";
 import { usePostComments } from "../hooks/usePostComments";
 import { usePostDetail } from "../hooks/usePostDetail";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
@@ -19,6 +19,7 @@ import { useVideoPlayback } from "../context/VideoPlaybackContext";
 import { buildPlaybackId, VIDEO_PLAYBACK_SURFACES } from "../utils/videoPlaybackId";
 import { PostOptionsMenu } from "./PostOptionsMenu";
 import { LikeCountButton } from "./LikeCountButton";
+import { CommentComposer } from "./CommentComposer";
 
 const DEFAULT_AVATAR = "https://i.pravatar.cc/96?img=11";
 const COMING_SOON = "Tính năng đang được phát triển.";
@@ -49,6 +50,8 @@ export function PostDetailModal({
   const viewCommerceProduct = useViewCommerceProduct();
   const { isWriteBlocked, suspendMessage } = useSocialWriteBlock();
   const { pauseAll } = useVideoPlayback();
+  const topLevelMediaUpload = useCommentMediaUpload();
+  const { mediaItems: topLevelMediaItems, resetMedia: resetTopLevelMedia } = topLevelMediaUpload;
   const commentAnchorRef = useRef(null);
   const commentInputRef = useRef(null);
   const [galleryIndex, setGalleryIndex] = useState(null);
@@ -94,7 +97,8 @@ export function PostDetailModal({
   useEffect(() => {
     setDraftComment("");
     setReplyCountBump(0);
-  }, [postId]);
+    resetTopLevelMedia();
+  }, [postId, resetTopLevelMedia]);
 
   useEffect(() => {
     if (!postId) return;
@@ -108,26 +112,19 @@ export function PostDetailModal({
 
   const displayReplyCount = (post?.replyCount ?? 0) + replyCountBump;
   const commentsDisabled = post?.allowComments === false || isWriteBlocked;
-  const canSubmitComment =
-    !commentsDisabled && !commentsState.isSubmittingTopLevel && draftComment.trim().length > 0;
 
   const handleSubmitTopLevel = async () => {
     commentsState.clearSubmitError();
-    const result = await commentsState.submitTopLevel(draftComment);
+    const result = await commentsState.submitTopLevel(
+      draftComment,
+      topLevelMediaItems
+    );
     if (result?.ok) {
       setDraftComment("");
+      resetTopLevelMedia();
       onToast?.("Đã gửi bình luận.");
     } else if (commentsState.submitError) {
       onToast?.(commentsState.submitError);
-    }
-  };
-
-  const handleCommentKeyDown = (event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      if (canSubmitComment) {
-        handleSubmitTopLevel();
-      }
     }
   };
 
@@ -427,20 +424,19 @@ export function PostDetailModal({
                 </div>
 
                 <div className="sticky bottom-0 border-t border-outline-variant bg-surface-container-lowest p-3">
-                  <div className="flex items-center gap-3">
-                    <img src={viewerAvatar} alt="" className="h-8 w-8 rounded-full object-cover" />
-                    <input
-                      ref={commentInputRef}
-                      type="text"
+                  <div className="flex items-start gap-3">
+                    <img
+                      src={viewerAvatar}
+                      alt=""
+                      className="mt-1 h-8 w-8 shrink-0 rounded-full object-cover"
+                    />
+                    <CommentComposer
+                      inputRef={commentInputRef}
                       value={draftComment}
-                      onChange={(event) => {
-                        setDraftComment(event.target.value);
-                        if (commentsState.submitError) {
-                          commentsState.clearSubmitError();
-                        }
-                      }}
-                      onKeyDown={handleCommentKeyDown}
-                      maxLength={MAX_COMMENT_LENGTH}
+                      onChange={setDraftComment}
+                      onSubmit={handleSubmitTopLevel}
+                      onClearError={commentsState.clearSubmitError}
+                      mediaUpload={topLevelMediaUpload}
                       placeholder={
                         isWriteBlocked
                           ? "Tài khoản bị đình chỉ"
@@ -448,28 +444,9 @@ export function PostDetailModal({
                             ? "Bình luận đã tắt"
                             : "Thêm bình luận..."
                       }
-                      title={isWriteBlocked ? suspendMessage : undefined}
-                      disabled={commentsDisabled || commentsState.isSubmittingTopLevel}
-                      className="flex-1 rounded-full border border-outline-variant bg-surface-container-low px-4 py-2 text-sm outline-none transition focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-60"
+                      disabled={commentsDisabled}
+                      isSubmitting={commentsState.isSubmittingTopLevel}
                     />
-                    <button
-                      type="button"
-                      onClick={handleSubmitTopLevel}
-                      disabled={!canSubmitComment}
-                      className="rounded-full p-2 text-primary hover:bg-primary-fixed disabled:opacity-50"
-                      aria-label="Gửi bình luận"
-                    >
-                      {commentsState.isSubmittingTopLevel ? (
-                        <span
-                          className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent"
-                          aria-hidden="true"
-                        />
-                      ) : (
-                        <span className="material-symbols-outlined" aria-hidden="true">
-                          send
-                        </span>
-                      )}
-                    </button>
                   </div>
                   {commentsState.submitError && !commentsState.replyingToId ? (
                     <p className="mt-2 px-1 text-xs text-error" role="alert">
