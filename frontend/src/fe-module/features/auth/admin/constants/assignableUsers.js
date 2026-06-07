@@ -14,5 +14,6 @@ export const ASSIGNABLE_USERS = [
     id: "c0000000-0000-4000-8000-000000000099",
     email: "admin@2hands.vn",
     display_name: "Admin User",
+    is_admin: true,
   },
 ];

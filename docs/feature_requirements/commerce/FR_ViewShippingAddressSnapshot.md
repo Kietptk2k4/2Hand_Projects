@@ -21,6 +21,7 @@ Cho phep buyer/seller xem shipping address snapshot cua shipment theo quyen truy
 
 - Update snapshot.
 - Update user address book.
+- Dedicated Commerce FE client cho endpoint nay — UI lay dia chi qua `FR_ViewShipment` (`shipping_address` trong response shipment detail).
 
 ## 4. API Contract
 
@@ -59,4 +60,8 @@ Cho phep buyer/seller xem shipping address snapshot cua shipment theo quyen truy
 - Authorized buyer/seller can view snapshot.
 - Snapshot data remains unchanged after address book updates.
 - Unauthorized users cannot access address PII.
+
+## 11. Related
+
+- Commerce FE hien thi dia chi: `FR_ViewShipment.md` (buyer/seller shipment detail, field `shipping_address`).
 

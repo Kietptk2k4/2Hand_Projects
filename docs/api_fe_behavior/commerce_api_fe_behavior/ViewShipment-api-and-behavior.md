@@ -48,14 +48,21 @@ Tra ve thong tin shipment day du, gom:
 - Tracking timeline ngan: `GET /commerce/api/v1/shipments/{shipmentId}/tracking`
 - Seller quan ly: `GET /commerce/api/v1/seller/shipments/{shipmentId}` (cung data shape, seller-only path)
 
-## 5. Errors
+## 5. FE Integration Notes
+
+- **Buyer:** `shipmentApi.js` → `fetchShipmentDetail` (`GET /commerce/api/v1/shipments/{shipmentId}`); hook `useShipmentTrackingPage`; map `shipping_address` qua `shipmentMapper.js`.
+- **Seller:** `sellerShipmentApi.js` → `fetchSellerShipmentDetail` (`GET /commerce/api/v1/seller/shipments/{shipmentId}`); hook `useSellerShipmentDetail`; map qua `sellerShipmentMapper.js`.
+- Field `shipping_address` chinh la shipping address snapshot immutable — FE **khong** can goi them `GET .../address-snapshot`.
+- UI: `CommerceShipmentTrackingPage`, `CommerceOrderDetailPage` (qua `orderDetailMapper`), `CommerceSellerShipmentDetailPage` — component `OrderDetailShippingAddress`.
+
+## 6. Errors
 
 | HTTP | Code | Khi nao |
 |------|------|---------|
 | 404 | `COMMERCE-404-SHIPMENT` | Khong ton tai hoac khong thuoc buyer/seller |
 | 401 | `COMMERCE-401` | Thieu JWT |
 
-## 6. Related
+## 7. Related
 
 - FR: `docs/feature_requirements/commerce/FR_ViewShipment.md`
 - Track: `TrackShipment-api-and-behavior.md` (neu co)

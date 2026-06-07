@@ -41,7 +41,7 @@ export function AccountCard({ children, className = "" }) {
   return (
     <div
       className={[
-        "rounded-xl border border-outline-variant bg-white p-6 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.08)]",
+        "rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.08)]",
         className,
       ]
         .filter(Boolean)

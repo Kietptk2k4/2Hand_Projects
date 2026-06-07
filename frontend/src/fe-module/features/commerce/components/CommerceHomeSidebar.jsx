@@ -1,6 +1,8 @@
 import { useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
+import { useCartBadge } from "../context/CartBadgeContext";
+import { CartBadgePill } from "./CartBadgePill";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
 const SIDEBAR_LINKS = [
@@ -123,6 +125,7 @@ export function CommerceHomeSidebar({ onComingSoon }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { user } = useAuthSession();
+  const { itemCount: cartItemCount } = useCartBadge();
 
   const handleLinkClick = useCallback(
     (link) => {
@@ -184,7 +187,10 @@ export function CommerceHomeSidebar({ onComingSoon }) {
               >
                 {link.icon}
               </span>
-              {link.label}
+              <span className="min-w-0 flex-1 truncate">{link.label}</span>
+              {link.id === "cart" && user ? (
+                <CartBadgePill count={cartItemCount} active={active} className="ml-auto" />
+              ) : null}
             </button>
           );
         })}

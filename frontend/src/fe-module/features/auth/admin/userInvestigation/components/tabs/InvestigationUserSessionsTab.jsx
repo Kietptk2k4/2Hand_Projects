@@ -1,15 +1,31 @@
 import { useCallback, useEffect, useState } from "react";
-import { getAdminUserSessions } from "../../../api/authApi.js";
-import { useAuthSession } from "../../../hooks/useAuthSession.jsx";
-import { formatDateTime } from "../../../security/utils/formatDateTime.js";
+import { getInvestigationUserSessions } from "../../api/userInvestigationApi.js";
+import { useAuthSession } from "../../../../hooks/useAuthSession.jsx";
+import { formatDateTime } from "../../../../security/utils/formatDateTime.js";
 import {
   AccountCard,
   AccountSkeleton,
   PrimaryButton,
   TabPanelHeader,
-} from "../../../../../shared/ui/auth/authUi.jsx";
-import { EmptyState, ErrorState } from "../../../../../shared/ui/PageState.jsx";
-import { getSessionStatusLabel } from "../../../constants/authUiStrings";
+} from "../../../../../../shared/ui/auth/authUi.jsx";
+import { EmptyState, ErrorState } from "../../../../../../shared/ui/PageState.jsx";
+import { getSessionStatusLabel } from "../../../../constants/authUiStrings";
+import {
+  INVESTIGATION_SESSIONS_SUBTITLE,
+  INVESTIGATION_SESSIONS_TITLE,
+} from "../../constants/userInvestigationUiStrings.js";
+import { INVESTIGATION_PERMISSIONS } from "../../constants/investigationPermissions.js";
+import { useInvestigationPermissions } from "../../hooks/useInvestigationPermissions.js";
+import { getInvestigationUserLabel } from "../../utils/investigationUserLabel.js";
+import {
+  handleInvestigationLoadError,
+  resolveInvestigationForbiddenMessage,
+} from "../../utils/investigationTabErrors.js";
+import { isAdminInvestigationTarget } from "../../utils/investigationTarget.js";
+import { RevokeAdminSessionModal } from "../modals/RevokeAdminSessionModal.jsx";
+import { InvestigationEmptyState } from "../InvestigationEmptyState.jsx";
+import { InvestigationForbiddenState } from "../InvestigationForbiddenState.jsx";
+import { InvestigationPermissionNotice } from "../InvestigationPermissionNotice.jsx";
 
 const PAGE_LIMIT = 20;
 
@@ -28,9 +44,10 @@ const STATUS_BADGE_CLASS = {
   EXPIRED: "bg-amber-50 text-amber-900",
 };
 
-function SessionCard({ session }) {
+function SessionCard({ session, canRevokeSession, onRevokeSession }) {
   const status = session.status || "ACTIVE";
   const badgeClass = STATUS_BADGE_CLASS[status] || "bg-gray-100 text-gray-800";
+  const showRevoke = canRevokeSession && status === "ACTIVE";
 
   return (
     <li className="rounded-lg border border-outline-variant bg-account-surface-low p-4">
@@ -63,15 +80,26 @@ function SessionCard({ session }) {
           <dd className="break-all text-on-surface">{session.user_agent || "—"}</dd>
         </div>
       </dl>
+      {showRevoke ? (
+        <div className="mt-4 flex justify-end border-t border-outline-variant/50 pt-3">
+          <button
+            type="button"
+            onClick={() => onRevokeSession?.(session)}
+            className="rounded-md px-3 py-1.5 text-sm font-medium text-error transition-colors hover:bg-error-container hover:text-on-error-container"
+          >
+            Thu hồi phiên admin
+          </button>
+        </div>
+      ) : null}
     </li>
   );
 }
 
-const EMPTY_USER_MESSAGE = "Vui lòng chọn người dùng để xem dữ liệu.";
-
-export function AdminUserSessionsTab({ userId, onNotify }) {
+export function InvestigationUserSessionsTab({ userId, targetUser, onNotify }) {
   const { showSessionExpired } = useAuthSession();
+  const { canReadProfile, canRevokeAdminSession } = useInvestigationPermissions();
   const [sessions, setSessions] = useState([]);
+  const [revokeSessionTarget, setRevokeSessionTarget] = useState(null);
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
   const [statusFilter, setStatusFilter] = useState("ACTIVE");
@@ -91,7 +119,7 @@ export function AdminUserSessionsTab({ userId, onNotify }) {
       setErrorMessage("");
 
       try {
-        const data = await getAdminUserSessions(userId, {
+        const data = await getInvestigationUserSessions(userId, {
           page: targetPage,
           limit: PAGE_LIMIT,
           status: filterStatus,
@@ -104,22 +132,21 @@ export function AdminUserSessionsTab({ userId, onNotify }) {
         setHasNext(pagination.has_next === true);
         setStatus("ready");
       } catch (error) {
-        if (error?.code === 401) {
-          showSessionExpired(error?.message);
-          return;
-        }
-        if (error?.code === 403) {
-          onNotify?.({ variant: "error", message: error?.message || "Bạn không co quyen truy cap." });
-        }
-        if (!append) {
-          setStatus("error");
-        }
-        setErrorMessage(error?.message || "Không tải duoc danh sach phiên đăng nhập.");
+        handleInvestigationLoadError(error, {
+          showSessionExpired,
+          setStatus,
+          setErrorMessage,
+          permissionCode: INVESTIGATION_PERMISSIONS.READ_PROFILE,
+          actionLabel: "xem phiên đăng nhập",
+          fallbackMessage: "Không tải được danh sách phiên đăng nhập.",
+          preserveStatusOnForbidden: append,
+          preserveStatusOnError: append,
+        });
       } finally {
         setLoadMoreStatus("idle");
       }
     },
-    [userId, statusFilter, showSessionExpired, onNotify]
+    [userId, statusFilter, showSessionExpired]
   );
 
   useEffect(() => {
@@ -139,14 +166,35 @@ export function AdminUserSessionsTab({ userId, onNotify }) {
     fetchPage(page + 1, true);
   };
 
+  const handleApiError = (error) => {
+    if (error?.code === 401) {
+      showSessionExpired(error?.message);
+      return;
+    }
+    if (error?.code === 403) {
+      onNotify?.({
+        variant: "error",
+        message: resolveInvestigationForbiddenMessage(error, {
+          actionLabel: "thực hiện thao tác này",
+        }),
+      });
+      return;
+    }
+    onNotify?.({ variant: "error", message: error?.message || "Có lỗi xảy ra." });
+  };
+
+  const isAdminTarget = isAdminInvestigationTarget(targetUser);
+  const canRevokeSession = canRevokeAdminSession && isAdminTarget;
+  const userLabel = getInvestigationUserLabel(userId, null, targetUser);
+
   if (!userId) {
     return (
       <div>
         <TabPanelHeader
-          title="Phiên người dùng"
-          subtitle="Xem các phiên đăng nhập của người dùng duoc chon."
+          title={INVESTIGATION_SESSIONS_TITLE}
+          subtitle={INVESTIGATION_SESSIONS_SUBTITLE}
         />
-        <EmptyState message={EMPTY_USER_MESSAGE} />
+        <InvestigationEmptyState />
       </div>
     );
   }
@@ -155,10 +203,22 @@ export function AdminUserSessionsTab({ userId, onNotify }) {
     return (
       <div>
         <TabPanelHeader
-          title="Phiên người dùng"
-          subtitle="Xem các phiên đăng nhập của người dùng duoc chon."
+          title={INVESTIGATION_SESSIONS_TITLE}
+          subtitle={INVESTIGATION_SESSIONS_SUBTITLE}
         />
         <AccountSkeleton />
+      </div>
+    );
+  }
+
+  if (status === "forbidden") {
+    return (
+      <div>
+        <TabPanelHeader
+          title={INVESTIGATION_SESSIONS_TITLE}
+          subtitle={INVESTIGATION_SESSIONS_SUBTITLE}
+        />
+        <InvestigationForbiddenState message={errorMessage} />
       </div>
     );
   }
@@ -167,8 +227,8 @@ export function AdminUserSessionsTab({ userId, onNotify }) {
     return (
       <div>
         <TabPanelHeader
-          title="Phiên người dùng"
-          subtitle="Xem các phiên đăng nhập của người dùng duoc chon."
+          title={INVESTIGATION_SESSIONS_TITLE}
+          subtitle={INVESTIGATION_SESSIONS_SUBTITLE}
         />
         <AccountCard className="border-error/30 bg-error-container/30">
           <ErrorState message={errorMessage} />
@@ -190,9 +250,17 @@ export function AdminUserSessionsTab({ userId, onNotify }) {
   return (
     <div>
       <TabPanelHeader
-        title="Phiên người dùng"
-        subtitle="Xem các phiên đăng nhập của người dùng duoc chon."
+        title={INVESTIGATION_SESSIONS_TITLE}
+        subtitle={INVESTIGATION_SESSIONS_SUBTITLE}
       />
+
+      {!canReadProfile ? (
+        <InvestigationPermissionNotice message="Tài khoản của bạn thiếu quyền USER_INVESTIGATION_READ để xem phiên người dùng." />
+      ) : null}
+
+      {isAdminTarget && !canRevokeAdminSession ? (
+        <InvestigationPermissionNotice message="Thiếu quyền ADMIN_SESSION_REVOKE để thu hồi phiên admin." />
+      ) : null}
 
       <AccountCard className="mb-6">
         <label htmlFor="session-status" className="mb-1 block text-xs font-semibold text-on-surface">
@@ -213,12 +281,17 @@ export function AdminUserSessionsTab({ userId, onNotify }) {
       </AccountCard>
 
       {sessions.length === 0 ? (
-        <EmptyState message="Không co phiên đăng nhập phu hop bo loc." />
+        <EmptyState message="Không có phiên đăng nhập phù hợp bộ lọc." />
       ) : (
         <AccountCard className="!p-0">
           <ul className="divide-y divide-outline-variant/50 p-2 sm:p-4">
             {sessions.map((session) => (
-              <SessionCard key={session.session_id} session={session} />
+              <SessionCard
+                key={session.session_id}
+                session={session}
+                canRevokeSession={canRevokeSession}
+                onRevokeSession={setRevokeSessionTarget}
+              />
             ))}
           </ul>
 
@@ -230,7 +303,7 @@ export function AdminUserSessionsTab({ userId, onNotify }) {
                 loading={loadMoreStatus === "loading"}
                 className="!min-w-[160px]"
               >
-                Tai them
+                Tải thêm
               </PrimaryButton>
             </div>
           ) : null}
@@ -240,6 +313,22 @@ export function AdminUserSessionsTab({ userId, onNotify }) {
       {errorMessage && status === "ready" ? (
         <p className="mt-4 text-sm text-error">{errorMessage}</p>
       ) : null}
+
+      <RevokeAdminSessionModal
+        open={Boolean(revokeSessionTarget)}
+        session={revokeSessionTarget}
+        userLabel={userLabel}
+        onClose={() => setRevokeSessionTarget(null)}
+        onSuccess={(result) => {
+          const count = result?.revoked_session_count ?? 1;
+          onNotify?.({
+            variant: "success",
+            message: `Đã thu hồi ${count} phiên admin.`,
+          });
+          fetchPage(1, false, statusFilter);
+        }}
+        onError={handleApiError}
+      />
     </div>
   );
 }

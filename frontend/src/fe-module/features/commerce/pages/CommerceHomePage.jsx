@@ -7,6 +7,8 @@ import { CommerceShell } from "../components/CommerceShell";
 import { ProductCard } from "../components/ProductCard";
 import { ProductListSkeleton } from "../components/ProductListSkeleton";
 import { ProductListSortSelect } from "../components/ProductListSortSelect";
+import { CartBadgePill } from "../components/CartBadgePill";
+import { useCartBadge } from "../context/CartBadgeContext";
 import { useCommerceAddToCart } from "../hooks/useCommerceAddToCart";
 import { useProductList } from "../hooks/useProductList";
 import { buildCommerceCategoryPath, buildCommerceShopPath } from "../utils/commerceRoutes";
@@ -20,6 +22,7 @@ const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
 export function CommerceHomePage() {
   const navigate = useNavigate();
   const { user } = useAuthSession();
+  const { itemCount: cartItemCount } = useCartBadge();
   const [toastMessage, setToastMessage] = useState("");
   const {
     items,
@@ -108,12 +111,18 @@ export function CommerceHomePage() {
         <button
           type="button"
           onClick={goToCart}
-          className="rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary"
+          className="relative rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary"
           aria-label="Giỏ hàng"
         >
           <span className="material-symbols-outlined" aria-hidden="true">
             shopping_cart
           </span>
+          {user ? (
+            <CartBadgePill
+              count={cartItemCount}
+              className="absolute -right-1 -top-1 min-h-4 min-w-4 px-1 text-[10px] leading-none"
+            />
+          ) : null}
         </button>
       </div>
 

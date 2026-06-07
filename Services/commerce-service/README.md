@@ -48,7 +48,7 @@ Prefix: **`/commerce/api/v1/...`** · Lỗi: **`COMMERCE-*`** · Envelope chuẩ
 | Payments | `/payments` | Tạo thanh toán, payOS checkout URL, trạng thái |
 | Addresses | `/addresses` | CRUD địa chỉ giao hàng |
 | Shipping | `/shipping` | Tính phí ship |
-| Shipments | `/shipments` | Theo dõi vận đơn |
+| Shipments | `/shipments` | Theo dõi vận đơn; chi tiết gồm `shipping_address` (snapshot). Tùy chọn: `GET /shipments/{id}/address-snapshot` — FE hiện không dùng |
 | Reviews | `/reviews` | Tạo/sửa đánh giá sản phẩm |
 
 ### Seller

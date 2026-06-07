@@ -5,6 +5,7 @@ import { mapCartResponse } from "../utils/cartMapper";
 import { applyValidationToCart } from "../utils/cartValidationMerge";
 import { isCartItemInvalid } from "../utils/cartDisplay";
 import { useValidateCartItems } from "./useValidateCartItems";
+import { useCartBadge } from "../context/CartBadgeContext";
 
 function isUnauthorizedError(error) {
   const code = String(error?.code ?? "");
@@ -13,6 +14,7 @@ function isUnauthorizedError(error) {
 
 export function useCart() {
   const { showSessionExpired } = useAuthSession();
+  const { syncFromMappedCart } = useCartBadge();
   const { validate } = useValidateCartItems();
   const [cart, setCart] = useState(null);
   const [validation, setValidation] = useState(null);
@@ -27,6 +29,7 @@ export function useCart() {
       if (!mapped?.items?.length) {
         setValidation(null);
         setCart(mapped);
+        syncFromMappedCart(mapped);
         return mapped;
       }
 
@@ -36,9 +39,10 @@ export function useCart() {
         setValidation(result);
       }
       setCart(mapped);
+      syncFromMappedCart(mapped);
       return mapped;
     },
-    [validate]
+    [syncFromMappedCart, validate]
   );
 
   const load = useCallback(async () => {

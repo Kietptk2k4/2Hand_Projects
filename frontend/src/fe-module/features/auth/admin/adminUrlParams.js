@@ -1,19 +1,24 @@
 import { DEFAULT_COMMERCE_MODERATION_TAB } from "./commerceModeration/commerceModerationTabs.js";
 
-const VALID_SECTIONS = ["rolePermission", "loginSession", "commerceModeration"];
+const VALID_SECTIONS = ["rolePermission", "userInvestigation", "commerceModeration"];
+
+const LEGACY_SECTION_MAP = {
+  loginSession: "userInvestigation",
+};
 
 const DEFAULT_TAB_BY_SECTION = {
   rolePermission: "role-list",
-  loginSession: "login-history",
+  userInvestigation: "profile",
   commerceModeration: DEFAULT_COMMERCE_MODERATION_TAB,
 };
 
 export function parseAdminSection(searchParams) {
   const raw = searchParams.get("section");
-  if (!raw || !VALID_SECTIONS.includes(raw)) {
+  const mapped = LEGACY_SECTION_MAP[raw] || raw;
+  if (!mapped || !VALID_SECTIONS.includes(mapped)) {
     return "rolePermission";
   }
-  return raw;
+  return mapped;
 }
 
 export function parseAdminTab(searchParams, section) {
@@ -22,12 +27,16 @@ export function parseAdminTab(searchParams, section) {
   return DEFAULT_TAB_BY_SECTION[section] || DEFAULT_TAB_BY_SECTION.rolePermission;
 }
 
-export function buildAdminSearchParams({ section, tab, preserve }) {
+export function parseInvestigationUserId(searchParams) {
+  return searchParams.get("userId") || "";
+}
+
+export function buildAdminSearchParams({ section, tab, userId, preserve }) {
   const next = new URLSearchParams();
 
   if (preserve) {
     for (const [key, value] of preserve.entries()) {
-      if (key !== "section" && key !== "tab") {
+      if (key !== "section" && key !== "tab" && key !== "userId") {
         next.set(key, value);
       }
     }
@@ -35,5 +44,11 @@ export function buildAdminSearchParams({ section, tab, preserve }) {
 
   next.set("section", section);
   next.set("tab", tab);
+
+  const resolvedUserId = userId ?? (preserve ? preserve.get("userId") : null);
+  if (resolvedUserId) {
+    next.set("userId", resolvedUserId);
+  }
+
   return next;
 }

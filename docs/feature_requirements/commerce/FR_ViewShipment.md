@@ -34,6 +34,7 @@ Cho phep buyer hoac seller xem thong tin shipment, bao gom carrier, tracking, st
 - Buyer can view shipment only if shipment belongs to buyer order.
 - Seller can view shipment only if `shipments.seller_id` belongs to their shop.
 - Seller response can include fulfillment address snapshot.
+- Field `shipping_address` trong response la ban snapshot immutable — du cho UI fulfillment/tracking; FE khong can endpoint `/address-snapshot` rieng (xem `FR_ViewShippingAddressSnapshot.md`).
 - Do not expose unrelated payment provider details.
 
 ## 6. Database Impact

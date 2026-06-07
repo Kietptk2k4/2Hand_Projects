@@ -1,7 +1,10 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import ModuleProviders from "./fe-module";
+import { bootstrapAppearanceFromStorage } from "./fe-module/features/auth/utils/appearanceTheme";
 import "./index.css";
+
+bootstrapAppearanceFromStorage();
 
 async function enableMocking() {
   if (import.meta.env.VITE_USE_MOCK !== "true") {

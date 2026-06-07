@@ -50,17 +50,26 @@ Buyer hoac seller xem **shipping address snapshot** immutable cua shipment (dia 
 ## 5. FE Behavior
 
 - Snapshot **read-only**; khong co API update tren endpoint nay.
-- Dung cho man hinh fulfillment (seller) hoac theo doi don (buyer).
-- Chi tiet shipment day du: `GET /shipments/{shipmentId}`.
+- **FE hien tai khong goi endpoint nay.** Dia chi giao hang duoc lay qua `GET /shipments/{shipmentId}` (field `shipping_address`) hoac seller path `GET /seller/shipments/{shipmentId}` — cung shape snapshot.
+- Endpoint nay giu cho client doc lap / audit / tooling; khong can them client rieng tren Commerce FE.
 
-## 6. Errors
+## 6. FE Integration Notes
+
+| Vai tro | API FE goi | File / hook |
+|---------|------------|-------------|
+| Buyer | `GET /commerce/api/v1/shipments/{shipmentId}` | `shipmentApi.js` → `fetchShipmentDetail`; `useShipmentTrackingPage`; `shipmentMapper.js` |
+| Seller | `GET /commerce/api/v1/seller/shipments/{shipmentId}` | `sellerShipmentApi.js` → `fetchSellerShipmentDetail`; `useSellerShipmentDetail`; `sellerShipmentMapper.js` |
+
+UI hien thi dia chi: `OrderDetailShippingAddress` tren `CommerceShipmentTrackingPage`, `CommerceOrderDetailPage`, `CommerceSellerShipmentDetailPage` — map tu `shipping_address`, khong tu `/address-snapshot`.
+
+## 7. Errors
 
 | HTTP | Code | Khi nao |
 |------|------|---------|
 | 404 | `COMMERCE-404-SHIPMENT` | Shipment/snapshot khong ton tai hoac khong owned |
 | 401 | `COMMERCE-401` | Thieu JWT |
 
-## 7. Related
+## 8. Related
 
 - FR: `docs/feature_requirements/commerce/FR_ViewShippingAddressSnapshot.md`
 - View shipment: `ViewShipment-api-and-behavior.md`

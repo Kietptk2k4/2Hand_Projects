@@ -1,22 +1,22 @@
 import { ADMIN_TOP_TABS } from "../adminTabs.js";
 import { COMMERCE_MODERATION_TABS } from "../commerceModeration/commerceModerationTabs.js";
-import { LOGIN_SESSION_TABS } from "../loginSession/loginSessionTabs.js";
+import { USER_INVESTIGATION_TABS } from "../userInvestigation/userInvestigationTabs.js";
 import { ROLE_PERMISSION_TABS } from "../rolePermission/rolePermissionTabs.js";
 
 const SECTION_CHILDREN = {
   rolePermission: ROLE_PERMISSION_TABS,
-  loginSession: LOGIN_SESSION_TABS,
+  userInvestigation: USER_INVESTIGATION_TABS,
   commerceModeration: COMMERCE_MODERATION_TABS,
 };
 
 function ParentNavIcon({ sectionId, active }) {
   const className = `h-5 w-5 shrink-0 ${active ? "text-primary" : "text-on-surface-variant group-hover:text-primary"}`;
 
-  if (sectionId === "loginSession") {
+  if (sectionId === "userInvestigation") {
     return (
       <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
         <path
-          d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
@@ -75,7 +75,28 @@ function ChildNavIcon({ name, active }) {
         strokeLinejoin="round"
       />
     ),
+    profile: (
+      <path
+        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ),
     history: <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />,
+    enforcement: (
+      <path
+        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ),
+    timeline: (
+      <path
+        d="M4 6h16M4 10h16M4 14h10M4 18h8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ),
     sessions: (
       <path
         d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"

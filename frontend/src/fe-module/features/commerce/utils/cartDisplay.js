@@ -30,3 +30,14 @@ export function getCartItemCountLabel(cart) {
   if (total === 0) return "Giỏ hàng trống";
   return `${total} sản phẩm trong giỏ hàng`;
 }
+
+/** Tổng số lượng SP (sum quantity) — dùng cho badge sidebar. */
+export function getCartBadgeCountFromMapped(cart) {
+  if (!cart?.items?.length) return 0;
+  return cart.items.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+}
+
+export function getCartBadgeCountFromRaw(raw) {
+  const items = raw?.items || [];
+  return items.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+}

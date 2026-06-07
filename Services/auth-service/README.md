@@ -159,6 +159,7 @@ cd Services/auth-service
 - **Port:** `3001` (`SERVER_PORT` override được)
 - **Health:** `GET http://localhost:3001/actuator/health`
 - **Flyway:** migration tại `src/main/resources/db/migration/`
+- **Admin RBAC:** `V2__seed_admin_permissions.sql` gán permission portal (vd. `USER_INVESTIGATION_READ`) cho role `ADMIN` / `MODERATOR`. Sau khi migrate, **đăng xuất và đăng nhập lại admin** để JWT nhận claim `permissions` mới.
 
 ### 4. Smoke test
 

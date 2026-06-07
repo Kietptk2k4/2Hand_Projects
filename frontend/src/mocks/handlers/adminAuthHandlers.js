@@ -5,7 +5,12 @@ import { apiError, apiSuccess } from "../utils/response";
 const ADMIN_ROLES = ["ADMIN"];
 const ADMIN_PERMISSIONS = [
   "ADMIN_ACCESS",
+  "USER_INVESTIGATION_READ",
+  "USER_ENFORCEMENT_READ",
+  "USER_ENFORCEMENT_REVOKE",
+  "ADMIN_SESSION_REVOKE",
   "USER_SUSPEND",
+  "USER_BAN",
   "USER_RESTRICT",
   "PRODUCT_REMOVE",
   "REVIEW_HIDE",

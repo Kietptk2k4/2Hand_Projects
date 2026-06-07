@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hạn chế người dùng - 2Hands Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#b3c5ff",
+                        "inverse-surface": "#263143",
+                        "surface": "#f9f9ff",
+                        "secondary-container": "#6063ee",
+                        "background": "#f9f9ff",
+                        "on-tertiary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#cfdaf2",
+                        "on-tertiary-fixed": "#191c1e",
+                        "surface-container-low": "#f0f3ff",
+                        "outline-variant": "#c2c6d8",
+                        "inverse-primary": "#b3c5ff",
+                        "tertiary-fixed": "#e0e3e5",
+                        "outline": "#727687",
+                        "on-tertiary-container": "#f6f8fa",
+                        "on-surface": "#111c2d",
+                        "tertiary": "#565a5b",
+                        "on-surface-variant": "#424656",
+                        "inverse-on-surface": "#ecf1ff",
+                        "primary-container": "#0066ff",
+                        "surface-container": "#e7eeff",
+                        "on-primary-container": "#f8f7ff",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "on-primary-fixed-variant": "#003fa4",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "surface-container-highest": "#d8e3fb",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed": "#e1e0ff",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-container": "#6f7274",
+                        "on-secondary-container": "#fffbff",
+                        "surface-tint": "#0054d6",
+                        "on-background": "#111c2d",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "surface-variant": "#d8e3fb",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "on-primary-fixed": "#001849",
+                        "surface-bright": "#f9f9ff",
+                        "on-secondary-fixed": "#07006c",
+                        "surface-container-high": "#dee8ff",
+                        "primary-fixed": "#dae1ff",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "secondary": "#4648d4",
+                        "primary": "#0050cb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "container-max": "1280px",
+                        "xl": "64px",
+                        "sm": "12px",
+                        "lg": "40px",
+                        "md": "24px",
+                        "margin-desktop": "32px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter", "sans-serif"],
+                        "headline-xl": ["Inter", "sans-serif"],
+                        "headline-lg-mobile": ["Inter", "sans-serif"],
+                        "headline-md": ["Inter", "sans-serif"],
+                        "label-md": ["Inter", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"],
+                        "label-sm": ["Inter", "sans-serif"],
+                        "headline-lg": ["Inter", "sans-serif"],
+                        "headline-sm": ["Inter", "sans-serif"],
+                        "headline-xl-mobile": ["Inter", "sans-serif"],
+                        "body-sm": ["Inter", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-xl": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-xl-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased overflow-hidden">
+<!-- TopNavBar -->
+<header class="bg-surface-container-lowest text-primary flex justify-between items-center w-full px-margin-desktop h-16 fixed top-0 z-50 border-b border-outline-variant">
+<div class="flex items-center gap-md">
+<span class="font-headline-md text-headline-md font-bold text-primary">2Hands Admin</span>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-2 rounded-full hover:bg-surface-container-low transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-low transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-label-md text-label-md overflow-hidden ml-sm">
+<img alt="Administrator Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a corporate administrator in a bright, modern office setting. The lighting is soft and even, typical of high-end corporate photography. The subject is wearing a crisp, minimalist white shirt, conveying a sense of reliability and trust within an institutional platform. The background is slightly blurred with subtle geometric shapes." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrcyhzPjOrLDI59GQfWv8cOpjYbkMNMf8Lmd3-4IFbMeogmihWbC72tEQiwV3g87Fj2TsmGunxW15n613PI26bLhP5Jx7kaVMbtR0hV9cRL0q7tPKaoBwJLKE0yJ5ia0C8S6YzVl81Y5ZHarQ9cuOOo83rf6TeicCRvmmM7FEirTu6eJZ6ON7ooAQyJFc5Rkm2UmKWG0KPmtdo5WE3Wy_fyVKIqMviOHHiiaNFxnWdoocW-4qj56EI3G1_yq6Cz4s-5TFfmlCwwsg"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<nav class="bg-surface-container-low fixed left-0 top-16 bottom-0 w-64 flex flex-col py-6 px-4 z-40 border-r border-outline-variant">
+<div class="mb-lg px-4">
+<h2 class="font-headline-sm text-headline-sm font-black text-on-surface">Management</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Portal Control</p>
+</div>
+<ul class="flex flex-col gap-xs flex-1">
+<li>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-variant transition-all rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                    Dashboard
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-variant transition-all rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">storefront</span>
+                    Shops
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-variant transition-all rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+                    Products
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-variant transition-all rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">rate_review</span>
+                    Reviews
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 bg-secondary-container text-on-secondary-container rounded-lg px-4 py-3 scale-95 transition-transform font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+                    Users
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-variant transition-all rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">settings_applications</span>
+                    System
+                </a>
+</li>
+</ul>
+<div class="mt-auto pt-md">
+<button class="w-full bg-primary text-on-primary font-label-md text-label-md py-3 rounded-lg hover:bg-primary-container transition-colors shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1)]">
+                Generate Report
+            </button>
+</div>
+</nav>
+<!-- Main Content Canvas (Blurred Background Context) -->
+<main class="ml-64 mt-16 p-margin-desktop bg-surface-bright min-h-[calc(100vh-64px)] relative z-0 flex flex-col blur-[2px] opacity-60 select-none pointer-events-none">
+<!-- Mock Profile Content for Context -->
+<div class="max-w-container-max mx-auto w-full space-y-md">
+<div class="flex items-center justify-between">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-xs">Chi tiết người dùng</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Quản lý hồ sơ và hoạt động của người dùng trên nền tảng.</p>
+</div>
+</div>
+<!-- Profile Bento Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1)] flex gap-lg items-start">
+<img alt="User Profile" class="w-32 h-32 rounded-xl object-cover" data-alt="A clear, forward-facing portrait photograph of a young Asian male, intended for a user profile picture on a professional digital platform. He is wearing a simple, clean, dark-colored crewneck t-shirt. The background is a flat, neutral light gray, providing excellent contrast and a clean minimalist aesthetic. The lighting is bright and flattering, typical of high-quality web-based profile imagery." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeqMf0pb4_FGr2TqmJmQvu75NHZhZOdto2OOPQgjvh0RUzJyVooA95gDFcJ7gO5vqEQDX34Lj4tBGUK_XQGc-YgkU9uqBHZbK6MIqmdwf0v2nM-YYGhnjkZQxfCndwZP9DSuCTlh_s16ZWYmRKRfLcgvAYKXnLoPtggVl7ebqK2NylDsPS7WxGaMNI89kudyXcBDpa-SJyKb2GGVIUQzXdqU5OKPMD87I-k-mWP79Yz69l-NH5Z1Qt7yKJ5Q1ssZo4mZtL4SkoHuI"/>
+<div class="flex-1">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-xs">Kiet Tran</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-md">ID: USR-98234-A</p>
+<div class="grid grid-cols-3 gap-md">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-xs">Email</p>
+<p class="font-body-md text-body-md text-on-surface">kiet.tran@example.com</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-xs">Ngày tham gia</p>
+<p class="font-body-md text-body-md text-on-surface">12/05/2023</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-xs">Trạng thái</p>
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-surface-container-highest text-on-surface font-label-md text-label-md">Đang hoạt động</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Overlay Modal Flow -->
+<div class="fixed inset-0 z-[100] bg-on-background/30 backdrop-blur-sm flex items-center justify-center p-margin-mobile md:p-margin-desktop ml-0 md:ml-64 mt-16 transition-opacity">
+<!-- Modal Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] w-full max-w-lg border border-outline-variant flex flex-col overflow-hidden animate-[fadeIn_0.2s_ease-out]">
+<!-- Modal Header -->
+<div class="px-md py-sm border-b border-outline-variant flex justify-between items-center bg-surface">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Thiết lập hạn chế người dùng</h3>
+<button class="p-2 rounded-full hover:bg-surface-container-low text-on-surface-variant transition-colors" title="Đóng">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Warning Banner -->
+<div class="bg-error-container/20 border-l-4 border-error p-4 mx-md mt-md rounded-r-lg flex gap-3 items-start">
+<span class="material-symbols-outlined text-error mt-0.5" style="font-variation-settings: 'FILL' 1;">warning</span>
+<div>
+<p class="font-label-md text-label-md text-on-surface font-bold">Lưu ý quan trọng</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                        Người dùng <strong>Kiet Tran</strong> vẫn có thể đăng nhập và mua hàng bình thường, nhưng <strong>KHÔNG THỂ</strong> đăng tin mới, bình luận, hoặc đánh giá dịch vụ.
+                    </p>
+</div>
+</div>
+<!-- Modal Body / Form -->
+<div class="p-md space-y-md">
+<!-- Field 1: Lý do hạn chế -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface" for="restrict-reason">Lý do hạn chế</label>
+<div class="relative">
+<select class="w-full appearance-none bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow" id="restrict-reason">
+<option disabled="" selected="" value="">Chọn lý do phù hợp</option>
+<option value="SPAM">Spam / Đăng tin rác liên tục</option>
+<option value="POLICY_VIOLATION">Vi phạm chính sách cộng đồng</option>
+<option value="SUSPICIOUS_ACTIVITY">Hoạt động đáng ngờ / Gian lận</option>
+<option value="OFFENSIVE_LANGUAGE">Sử dụng ngôn từ không phù hợp</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined">arrow_drop_down</span>
+</div>
+</div>
+</div>
+<!-- Field 2: Mô tả chi tiết -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface" for="restrict-details">Mô tả chi tiết (Bằng chứng)</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow resize-none" id="restrict-details" placeholder="Nhập đường dẫn bài viết vi phạm, hoặc mô tả ngắn gọn hành vi..." rows="3"></textarea>
+</div>
+<!-- Field 3: Thời hạn hạn chế -->
+<div class="flex flex-col gap-sm pt-sm border-t border-outline-variant">
+<label class="font-label-md text-label-md text-on-surface">Thời hạn áp dụng</label>
+<div class="space-y-3">
+<!-- Option: Tạm thời -->
+<label class="flex items-start gap-3 cursor-pointer group">
+<div class="relative flex items-center justify-center w-5 h-5 mt-0.5">
+<input class="peer appearance-none w-5 h-5 border-2 border-outline-variant rounded-full checked:border-primary checked:border-[6px] transition-all cursor-pointer" name="restriction_duration" type="radio" value="temporary"/>
+</div>
+<div class="flex-1">
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Tạm thời (Có thời hạn)</span>
+<!-- Dependent Date Picker (Simulated active state via vanilla JS usually, showing statically here for UI design) -->
+<div class="mt-2 flex items-center gap-2">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Đến ngày:</span>
+<div class="relative flex-1 max-w-[200px]">
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-1.5 font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow" type="date"/>
+</div>
+</div>
+</div>
+</label>
+<!-- Option: Vĩnh viễn -->
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="relative flex items-center justify-center w-5 h-5">
+<input class="peer appearance-none w-5 h-5 border-2 border-outline-variant rounded-full checked:border-primary checked:border-[6px] transition-all cursor-pointer" name="restriction_duration" type="radio" value="permanent"/>
+</div>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Vĩnh viễn</span>
+</label>
+</div>
+</div>
+</div>
+<!-- Modal Footer / Actions -->
+<div class="px-md py-sm border-t border-outline-variant bg-surface-container-low flex justify-end gap-3 mt-auto">
+<button class="px-4 py-2 rounded-lg font-label-md text-label-md text-on-surface-variant bg-transparent hover:bg-surface-variant border border-transparent transition-colors">
+                    Hủy bỏ
+                </button>
+<button class="px-4 py-2 rounded-lg font-label-md text-label-md text-on-primary bg-primary hover:bg-primary-container shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1)] transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">gavel</span>
+                    Áp dụng hạn chế
+                </button>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="bg-surface-dim flex justify-between items-center w-full px-margin-desktop py-4 mt-auto ml-64 max-w-[calc(100%-16rem)] border-t border-outline-variant fixed bottom-0 z-10">
+<div class="font-label-sm text-label-sm text-on-surface-variant">
+            © 2024 2Hands Marketplace Admin Portal. All rights reserved.
+        </div>
+<div class="flex gap-md font-label-sm text-label-sm">
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Security Policy</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">System Status</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Contact Support</a>
+</div>
+</footer>
+</body></html>

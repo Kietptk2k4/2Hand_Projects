@@ -1,14 +1,24 @@
 import { useCallback, useEffect, useState } from "react";
-import { getAdminLoginHistory } from "../../../api/authApi.js";
-import { useAuthSession } from "../../../hooks/useAuthSession.jsx";
-import { formatDateTime } from "../../../security/utils/formatDateTime.js";
+import { getInvestigationLoginHistory } from "../../api/userInvestigationApi.js";
+import { useAuthSession } from "../../../../hooks/useAuthSession.jsx";
+import { formatDateTime } from "../../../../security/utils/formatDateTime.js";
 import {
   AccountCard,
   AccountSkeleton,
   PrimaryButton,
   TabPanelHeader,
-} from "../../../../../shared/ui/auth/authUi.jsx";
-import { EmptyState, ErrorState } from "../../../../../shared/ui/PageState.jsx";
+} from "../../../../../../shared/ui/auth/authUi.jsx";
+import { EmptyState, ErrorState } from "../../../../../../shared/ui/PageState.jsx";
+import {
+  INVESTIGATION_LOGIN_HISTORY_SUBTITLE,
+  INVESTIGATION_LOGIN_HISTORY_TITLE,
+} from "../../constants/userInvestigationUiStrings.js";
+import { INVESTIGATION_PERMISSIONS } from "../../constants/investigationPermissions.js";
+import { useInvestigationPermissions } from "../../hooks/useInvestigationPermissions.js";
+import { handleInvestigationLoadError } from "../../utils/investigationTabErrors.js";
+import { InvestigationEmptyState } from "../InvestigationEmptyState.jsx";
+import { InvestigationForbiddenState } from "../InvestigationForbiddenState.jsx";
+import { InvestigationPermissionNotice } from "../InvestigationPermissionNotice.jsx";
 
 const PAGE_LIMIT = 20;
 
@@ -34,7 +44,7 @@ function HistoryRow({ item }) {
               success ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800",
             ].join(" ")}
           >
-            {success ? "Thanh cong" : "That bai"}
+            {success ? "Thành công" : "Thất bại"}
           </span>
         </div>
         <p className="mt-1 text-sm text-on-surface-variant">{formatDateTime(item.created_at)}</p>
@@ -47,10 +57,9 @@ function HistoryRow({ item }) {
   );
 }
 
-const EMPTY_USER_MESSAGE = "Vui lòng chọn người dùng để xem dữ liệu.";
-
-export function AdminLoginHistoryTab({ userId, onNotify }) {
+export function InvestigationLoginHistoryTab({ userId, onNotify }) {
   const { showSessionExpired } = useAuthSession();
+  const { canReadProfile } = useInvestigationPermissions();
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
@@ -82,7 +91,7 @@ export function AdminLoginHistoryTab({ userId, onNotify }) {
       if (filters.to) params.to = filters.to;
 
       try {
-        const data = await getAdminLoginHistory(userId, params);
+        const data = await getInvestigationLoginHistory(userId, params);
         const nextItems = data?.items || [];
         const pagination = data?.pagination || {};
 
@@ -96,22 +105,21 @@ export function AdminLoginHistoryTab({ userId, onNotify }) {
         setHasNext(nextHasNext);
         setStatus("ready");
       } catch (error) {
-        if (error?.code === 401) {
-          showSessionExpired(error?.message);
-          return;
-        }
-        if (error?.code === 403) {
-          onNotify?.({ variant: "error", message: error?.message || "Bạn không co quyen truy cap." });
-        }
-        if (!append) {
-          setStatus("error");
-        }
-        setErrorMessage(error?.message || "Không tải duoc lịch sử đăng nhập.");
+        handleInvestigationLoadError(error, {
+          showSessionExpired,
+          setStatus,
+          setErrorMessage,
+          permissionCode: INVESTIGATION_PERMISSIONS.READ_PROFILE,
+          actionLabel: "xem lịch sử đăng nhập",
+          fallbackMessage: "Không tải được lịch sử đăng nhập.",
+          preserveStatusOnForbidden: append,
+          preserveStatusOnError: append,
+        });
       } finally {
         setLoadMoreStatus("idle");
       }
     },
-    [userId, appliedFilters, showSessionExpired, onNotify]
+    [userId, appliedFilters, showSessionExpired]
   );
 
   useEffect(() => {
@@ -150,10 +158,10 @@ export function AdminLoginHistoryTab({ userId, onNotify }) {
     return (
       <div>
         <TabPanelHeader
-          title="Lịch sử đăng nhập"
-          subtitle="Xem lịch sử đăng nhập của người dùng duoc chon."
+          title={INVESTIGATION_LOGIN_HISTORY_TITLE}
+          subtitle={INVESTIGATION_LOGIN_HISTORY_SUBTITLE}
         />
-        <EmptyState message={EMPTY_USER_MESSAGE} />
+        <InvestigationEmptyState />
       </div>
     );
   }
@@ -162,10 +170,22 @@ export function AdminLoginHistoryTab({ userId, onNotify }) {
     return (
       <div>
         <TabPanelHeader
-          title="Lịch sử đăng nhập"
-          subtitle="Xem lịch sử đăng nhập của người dùng duoc chon."
+          title={INVESTIGATION_LOGIN_HISTORY_TITLE}
+          subtitle={INVESTIGATION_LOGIN_HISTORY_SUBTITLE}
         />
         <AccountSkeleton />
+      </div>
+    );
+  }
+
+  if (status === "forbidden") {
+    return (
+      <div>
+        <TabPanelHeader
+          title={INVESTIGATION_LOGIN_HISTORY_TITLE}
+          subtitle={INVESTIGATION_LOGIN_HISTORY_SUBTITLE}
+        />
+        <InvestigationForbiddenState message={errorMessage} />
       </div>
     );
   }
@@ -174,8 +194,8 @@ export function AdminLoginHistoryTab({ userId, onNotify }) {
     return (
       <div>
         <TabPanelHeader
-          title="Lịch sử đăng nhập"
-          subtitle="Xem lịch sử đăng nhập của người dùng duoc chon."
+          title={INVESTIGATION_LOGIN_HISTORY_TITLE}
+          subtitle={INVESTIGATION_LOGIN_HISTORY_SUBTITLE}
         />
         <AccountCard className="border-error/30">
           <ErrorState message={errorMessage} />
@@ -194,16 +214,20 @@ export function AdminLoginHistoryTab({ userId, onNotify }) {
   return (
     <div>
       <TabPanelHeader
-        title="Lịch sử đăng nhập"
-        subtitle="Xem lịch sử đăng nhập của người dùng duoc chon."
+        title={INVESTIGATION_LOGIN_HISTORY_TITLE}
+        subtitle={INVESTIGATION_LOGIN_HISTORY_SUBTITLE}
       />
 
+      {!canReadProfile ? (
+        <InvestigationPermissionNotice message="Tài khoản của bạn thiếu quyền USER_INVESTIGATION_READ để xem lịch sử đăng nhập." />
+      ) : null}
+
       <AccountCard className="mb-6">
-        <p className="mb-3 text-sm font-semibold text-on-surface">Bo loc</p>
+        <p className="mb-3 text-sm font-semibold text-on-surface">Bộ lọc</p>
         <div className="grid gap-4 sm:grid-cols-3">
           <div>
             <label htmlFor="history-success" className="mb-1 block text-xs text-on-surface-variant">
-              Ket qua
+              Kết quả
             </label>
             <select
               id="history-success"
@@ -211,14 +235,14 @@ export function AdminLoginHistoryTab({ userId, onNotify }) {
               onChange={(e) => setSuccessDraft(e.target.value)}
               className="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm outline-none focus:border-primary"
             >
-              <option value="">Tat ca</option>
-              <option value="true">Thanh cong</option>
-              <option value="false">That bai</option>
+              <option value="">Tất cả</option>
+              <option value="true">Thành công</option>
+              <option value="false">Thất bại</option>
             </select>
           </div>
           <div>
             <label htmlFor="history-from" className="mb-1 block text-xs text-on-surface-variant">
-              Tu ngay
+              Từ ngày
             </label>
             <input
               id="history-from"
@@ -230,7 +254,7 @@ export function AdminLoginHistoryTab({ userId, onNotify }) {
           </div>
           <div>
             <label htmlFor="history-to" className="mb-1 block text-xs text-on-surface-variant">
-              Den ngay
+              Đến ngày
             </label>
             <input
               id="history-to"
@@ -247,20 +271,20 @@ export function AdminLoginHistoryTab({ userId, onNotify }) {
             onClick={onApplyFilters}
             className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
           >
-            Ap dung
+            Áp dụng
           </button>
           <button
             type="button"
             onClick={onClearFilters}
             className="rounded-lg border border-outline-variant px-4 py-2 text-sm font-medium text-on-surface hover:bg-account-surface-low"
           >
-            Xoa loc
+            Xóa lọc
           </button>
         </div>
       </AccountCard>
 
       {items.length === 0 ? (
-        <EmptyState message="Chưa co lịch sử đăng nhập." />
+        <EmptyState message="Chưa có lịch sử đăng nhập." />
       ) : (
         <AccountCard>
           <ul>
@@ -280,7 +304,7 @@ export function AdminLoginHistoryTab({ userId, onNotify }) {
                 loading={loadMoreStatus === "loading"}
                 className="!min-w-[160px]"
               >
-                Tai them
+                Tải thêm
               </PrimaryButton>
             </div>
           ) : null}

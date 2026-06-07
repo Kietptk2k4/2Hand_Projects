@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ban User Modal - 2Hands Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#e0e3e5",
+                        "outline-variant": "#c2c6d8",
+                        "surface": "#f9f9ff",
+                        "on-primary-fixed": "#001849",
+                        "on-secondary": "#ffffff",
+                        "on-primary-container": "#f8f7ff",
+                        "secondary-container": "#6063ee",
+                        "on-primary-fixed-variant": "#003fa4",
+                        "inverse-on-surface": "#ecf1ff",
+                        "surface-bright": "#f9f9ff",
+                        "surface-container-low": "#f0f3ff",
+                        "surface-container": "#e7eeff",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "inverse-primary": "#b3c5ff",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "secondary": "#4648d4",
+                        "on-tertiary-container": "#f6f8fa",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "on-surface": "#111c2d",
+                        "on-secondary-fixed": "#07006c",
+                        "primary-container": "#0066ff",
+                        "on-secondary-container": "#fffbff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#dee8ff",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#263143",
+                        "surface-variant": "#d8e3fb",
+                        "on-surface-variant": "#424656",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#0054d6",
+                        "secondary-fixed": "#e1e0ff",
+                        "tertiary-container": "#6f7274",
+                        "on-tertiary-fixed": "#191c1e",
+                        "primary-fixed": "#dae1ff",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "surface-dim": "#cfdaf2",
+                        "surface-container-highest": "#d8e3fb",
+                        "tertiary": "#565a5b",
+                        "primary": "#0050cb",
+                        "on-background": "#111c2d",
+                        "background": "#f9f9ff",
+                        "outline": "#727687"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "64px",
+                        "xs": "4px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "lg": "40px",
+                        "gutter": "24px",
+                        "md": "24px",
+                        "margin-desktop": "32px",
+                        "container-max": "1280px",
+                        "sm": "12px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-xl-mobile": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                        "headline-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        [data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased overflow-hidden">
+<!-- Blurred Background Context (User Management Dashboard) -->
+<div class="fixed inset-0 z-0 flex blur-[4px] pointer-events-none opacity-60">
+<!-- SideNav (Simulated) -->
+<div class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container dark:bg-surface-container-low border-r border-outline-variant dark:border-outline py-lg">
+<div class="px-md mb-lg">
+<div class="flex items-center gap-base mb-base">
+<img alt="2Hands Admin Logo" class="w-8 h-8 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSBdhAeJVW1U6BH_TjXBMdYzvHYLTWYTkSrlqff7wOiVKOv4-Ouu-DhM-gedbxbT8ymCvxYfpxnxu3gSVQ-S1gOGECHQ4tL1pIo6TN3ioDKBN--GrDEts_wpPabMXRRfZPfopQXXjDwUSAWK7bEgk3RAdI4jiLXnUmMWscTjLJuFc1qVPeXwTvsB1x6CaJoW-jocPMy4DR1IK-q2CJ-66do2pJTbyupNQuff8SYI_-LBva8QLmX6voBuGcAtnL38rXTvMtnrJvX7Q"/>
+<span class="text-headline-sm font-headline-sm font-black text-primary dark:text-primary-fixed">2Hands Admin</span>
+</div>
+<div class="text-label-sm font-label-sm text-on-surface-variant">Super Admin Console</div>
+</div>
+<nav class="flex-1 px-base space-y-xs">
+<a class="text-on-surface-variant flex items-center gap-base px-md py-sm rounded-md hover:bg-surface-container-high transition-all" href="#"><span class="material-symbols-outlined">dashboard</span> <span class="text-label-md font-label-md">Dashboard</span></a>
+<a class="text-primary font-bold border-r-4 border-primary bg-primary-fixed-dim/10 flex items-center gap-base px-md py-sm rounded-l-md" href="#"><span class="material-symbols-outlined" data-weight="fill">group</span> <span class="text-label-md font-label-md">User Management</span></a>
+<a class="text-on-surface-variant flex items-center gap-base px-md py-sm rounded-md hover:bg-surface-container-high transition-all" href="#"><span class="material-symbols-outlined">storefront</span> <span class="text-label-md font-label-md">Marketplace Listings</span></a>
+</nav>
+</div>
+<!-- Main Content Area (Simulated) -->
+<div class="flex-1 ml-0 md:ml-64 p-margin-desktop">
+<h1 class="text-headline-lg font-headline-lg mb-md">User Management</h1>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
+<table class="w-full text-left">
+<thead class="bg-surface-container text-on-surface-variant text-label-sm font-label-sm border-b border-outline-variant">
+<tr>
+<th class="p-sm">User ID</th>
+<th class="p-sm">Name</th>
+<th class="p-sm">Status</th>
+<th class="p-sm">Actions</th>
+</tr>
+</thead>
+<tbody class="text-body-sm font-body-sm">
+<tr class="border-b border-outline-variant/50">
+<td class="p-sm">#U-8821</td>
+<td class="p-sm font-medium">Nguyễn Văn A</td>
+<td class="p-sm"><span class="px-2 py-1 bg-surface-variant text-on-surface-variant rounded-full text-xs">Active</span></td>
+<td class="p-sm"><span class="material-symbols-outlined text-outline">more_vert</span></td>
+</tr>
+<tr class="border-b border-outline-variant/50">
+<td class="p-sm">#U-8822</td>
+<td class="p-sm font-medium">Trần Thị B</td>
+<td class="p-sm"><span class="px-2 py-1 bg-surface-variant text-on-surface-variant rounded-full text-xs">Active</span></td>
+<td class="p-sm"><span class="material-symbols-outlined text-outline">more_vert</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-on-background/40 backdrop-blur-sm p-margin-mobile">
+<!-- Ban User Modal -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] w-full max-w-md overflow-hidden flex flex-col transform transition-all">
+<!-- Modal Header -->
+<div class="px-md py-sm border-b border-outline-variant flex justify-between items-center bg-error-container/20">
+<div class="flex items-center gap-base text-error">
+<span class="material-symbols-outlined" data-weight="fill">gavel</span>
+<h2 class="text-headline-sm font-headline-sm">Ban Người dùng: Nguyễn Văn A</h2>
+</div>
+<button aria-label="Close modal" class="text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Modal Body -->
+<div class="p-md flex flex-col gap-md overflow-y-auto">
+<p class="text-body-sm font-body-sm text-on-surface-variant">
+                    Hành động này sẽ hạn chế quyền truy cập của người dùng vào nền tảng. Vui lòng cung cấp lý do và chi tiết để lưu vào nhật ký hệ thống.
+                </p>
+<!-- Reason Dropdown -->
+<div class="flex flex-col gap-xs">
+<label class="text-label-md font-label-md text-on-surface" for="ban-reason">Lý do <span class="text-error">*</span></label>
+<div class="relative">
+<select class="w-full appearance-none bg-surface-container-lowest border border-outline-variant rounded-lg px-sm py-sm text-body-md font-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" id="ban-reason">
+<option disabled="" selected="" value="">Chọn lý do vi phạm</option>
+<option value="fraud">Gian lận / Lừa đảo (FRAUD)</option>
+<option value="spam">Spam / Quảng cáo rác (SPAM)</option>
+<option value="policy">Vi phạm chính sách cộng đồng</option>
+<option value="other">Khác</option>
+</select>
+<span class="material-symbols-outlined absolute right-sm top-1/2 -translate-y-1/2 text-outline pointer-events-none">arrow_drop_down</span>
+</div>
+</div>
+<!-- Description Textarea -->
+<div class="flex flex-col gap-xs">
+<label class="text-label-md font-label-md text-on-surface" for="ban-description">Mô tả chi tiết</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-sm py-sm text-body-md font-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none placeholder-outline" id="ban-description" placeholder="Cung cấp thêm ngữ cảnh hoặc bằng chứng (tùy chọn)" rows="3"></textarea>
+</div>
+<!-- Expiration Date & Permanent Checkbox -->
+<div class="flex flex-col gap-sm p-sm bg-surface-container-low rounded-lg border border-outline-variant/50">
+<div class="flex items-center justify-between">
+<label class="text-label-md font-label-md text-on-surface" for="ban-date">Ngày hết hạn</label>
+<label class="flex items-center gap-xs cursor-pointer">
+<input class="w-4 h-4 text-error border-outline-variant rounded focus:ring-error focus:ring-offset-surface-container-lowest" id="permanent-ban" type="checkbox"/>
+<span class="text-label-sm font-label-sm text-error">Cấm vĩnh viễn</span>
+</label>
+</div>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-sm py-sm text-body-md font-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-on-surface" id="ban-date" type="datetime-local"/>
+</div>
+</div>
+</div>
+<!-- Modal Footer (Actions) -->
+<div class="px-md py-sm border-t border-outline-variant bg-surface flex justify-end gap-base">
+<button class="px-md py-sm rounded-lg text-label-md font-label-md text-on-surface-variant hover:bg-surface-variant transition-colors bg-transparent">
+                    Hủy bỏ
+                </button>
+<button class="px-md py-sm rounded-lg text-label-md font-label-md text-on-error bg-error hover:bg-on-error-container transition-colors shadow-sm flex items-center gap-xs">
+<span class="material-symbols-outlined" data-weight="fill" style="font-size: 18px;">block</span>
+                    Xác nhận Ban
+                </button>
+</div>
+</div>
+</div>
+<script>
+        // Simple interaction for the Permanent Checkbox
+        document.getElementById('permanent-ban').addEventListener('change', function(e) {
+            const dateInput = document.getElementById('ban-date');
+            if(e.target.checked) {
+                dateInput.disabled = true;
+                dateInput.classList.add('opacity-50', 'bg-surface-variant');
+            } else {
+                dateInput.disabled = false;
+                dateInput.classList.remove('opacity-50', 'bg-surface-variant');
+            }
+        });
+    </script>
+</body></html>

@@ -120,6 +120,21 @@ function buildMockLoginHistory() {
   return items;
 }
 
+
+const ADMIN_USER_ID = "c0000000-0000-4000-8000-000000000099";
+
+mockSessionsByUserId[ADMIN_USER_ID] = [
+  {
+    id: "d1000000-0000-4000-8000-000000000001",
+    device_id: "admin-portal-chrome",
+    ip_address: "192.168.0.10",
+    user_agent: "Mozilla/5.0 AdminPortal",
+    status: "ACTIVE",
+    created_at: "2026-05-21T09:00:00Z",
+    updated_at: "2026-05-21T09:00:00Z",
+    expires_at: "2026-06-21T09:00:00Z",
+  },
+];
 export const mockLoginHistoryByUserId = {
   [ACTIVE_USER_ID]: buildMockLoginHistory(),
 };

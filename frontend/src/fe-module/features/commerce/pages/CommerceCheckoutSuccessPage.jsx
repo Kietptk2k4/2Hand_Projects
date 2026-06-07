@@ -4,6 +4,7 @@ import { formatVndPrice } from "../../social/utils/formatPrice";
 import { CommerceShell } from "../components/CommerceShell";
 import { PAYOS_AUTO_REDIRECT_MS } from "../constants/paymentConstants";
 import { usePayOsCheckout } from "../hooks/usePayOsCheckout";
+import { useCartBadge } from "../context/CartBadgeContext";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
 function CodSuccessContent({ state }) {
@@ -145,9 +146,16 @@ export function CommerceCheckoutSuccessPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state || {};
+  const { refetch: refetchCartBadge } = useCartBadge();
 
   const isCod = state.paymentMethod === "COD";
   const isPayos = state.paymentMethod === "PAYOS";
+
+  useEffect(() => {
+    if (state.orderId) {
+      refetchCartBadge();
+    }
+  }, [refetchCartBadge, state.orderId]);
 
   useEffect(() => {
     if (!state.orderId) {

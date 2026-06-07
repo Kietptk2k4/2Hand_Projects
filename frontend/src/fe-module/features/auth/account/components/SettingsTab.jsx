@@ -1,30 +1,45 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { updateMySettings } from "../../api/authApi";
+import { useAppearance } from "../../context/AppearanceContext";
+import { normalizeAppearanceMode } from "../../utils/appearanceTheme";
 import { AccountCard, PrimaryButton, TabPanelHeader } from "../../../../shared/ui/auth/authUi.jsx";
 
 const THEME_OPTIONS = [
-  { value: "LIGHT", label: "Sang", icon: "☀️" },
-  { value: "DARK", label: "Toi", icon: "🌙" },
-  { value: "SYSTEM", label: "Theo hệ thống", icon: "💻", hint: "Tu dong theo cài đặt thiết bị của ban" },
+  { value: "LIGHT", label: "Sáng", icon: "☀️", previewClass: "bg-surface-container-lowest" },
+  { value: "DARK", label: "Tối", icon: "🌙", previewClass: "bg-[#1a1c1e]" },
+  {
+    value: "SYSTEM",
+    label: "Theo hệ thống",
+    icon: "💻",
+    hint: "Tự động theo cài đặt thiết bị của bạn",
+    previewClass: "bg-gradient-to-br from-surface-container-lowest to-[#1a1c1e]",
+  },
 ];
 
 export function SettingsTab({ profile, refetch, onNotify }) {
-  const initialMode = profile?.settings?.appearance_mode || "SYSTEM";
-  const [appearanceMode, setAppearanceMode] = useState(initialMode);
+  const { setAppearanceMode: applyAppearanceMode } = useAppearance();
+  const savedModeFromDb = useMemo(
+    () => normalizeAppearanceMode(profile?.settings?.appearance_mode),
+    [profile?.settings?.appearance_mode]
+  );
+  const [appearanceMode, setAppearanceMode] = useState(savedModeFromDb);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    setAppearanceMode(initialMode);
+    setAppearanceMode(savedModeFromDb);
     setErrorMessage("");
-  }, [initialMode]);
+  }, [savedModeFromDb]);
 
   const onSubmit = async (event) => {
     event.preventDefault();
     setIsSubmitting(true);
     setErrorMessage("");
     try {
-      await updateMySettings({ appearance_mode: appearanceMode });
+      const data = await updateMySettings({ appearance_mode: appearanceMode });
+      const savedMode = normalizeAppearanceMode(data?.appearance_mode || appearanceMode);
+      applyAppearanceMode(savedMode);
+      setAppearanceMode(savedMode);
       await refetch();
       onNotify?.({ variant: "success", message: "Cập nhật cài đặt thành công." });
     } catch (error) {
@@ -37,15 +52,15 @@ export function SettingsTab({ profile, refetch, onNotify }) {
 
   return (
     <div>
-      <TabPanelHeader title="Cài đặt" subtitle="Tuy chinh giao dien hien thi của ung dung 2Hands." />
+      <TabPanelHeader title="Cài đặt" subtitle="Tùy chỉnh giao diện hiển thị của ứng dụng 2Hands." />
 
       <AccountCard>
         <form onSubmit={onSubmit}>
-          <h2 className="mb-6 text-lg font-semibold text-on-surface">Giao dien</h2>
+          <h2 className="mb-6 text-lg font-semibold text-on-surface">Giao diện</h2>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {THEME_OPTIONS.map((option) => {
-              const selected = appearanceMode === option.value;
+              const selected = normalizeAppearanceMode(appearanceMode) === option.value;
               return (
                 <label
                   key={option.value}
@@ -62,7 +77,12 @@ export function SettingsTab({ profile, refetch, onNotify }) {
                     onChange={() => setAppearanceMode(option.value)}
                     className="sr-only"
                   />
-                  <div className="mb-3 flex h-28 items-center justify-center rounded-lg border border-outline-variant bg-white text-4xl">
+                  <div
+                    className={[
+                      "mb-3 flex h-28 items-center justify-center rounded-lg border border-outline-variant text-4xl",
+                      option.previewClass,
+                    ].join(" ")}
+                  >
                     {option.icon}
                   </div>
                   <div className="flex items-center gap-2">
@@ -86,7 +106,7 @@ export function SettingsTab({ profile, refetch, onNotify }) {
 
           <div className="mt-8 flex justify-end border-t border-outline-variant pt-6">
             <PrimaryButton type="submit" loading={isSubmitting}>
-              Luu cài đặt
+              Lưu cài đặt
             </PrimaryButton>
           </div>
         </form>

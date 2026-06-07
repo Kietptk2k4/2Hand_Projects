@@ -189,7 +189,7 @@ export function AppHeader({ className = "" }) {
                     submitPostSearch();
                   }
                 }}
-                className="w-full rounded-lg border border-header-border bg-white py-2 pl-10 pr-3 text-sm text-on-surface outline-none transition placeholder:text-header-muted focus:border-primary focus:ring-1 focus:ring-primary/30"
+                className="w-full rounded-lg border border-header-border bg-surface-container-lowest py-2 pl-10 pr-3 text-sm text-on-surface outline-none transition placeholder:text-header-muted focus:border-primary focus:ring-1 focus:ring-primary/30"
               />
             </label>
             {searchOpen && socialSearchEnabled && searchPanelMode === "suggestions" ? (

@@ -1,5 +1,8 @@
 package com.twohands.auth_service.delivery.http.admin;
 
+import com.twohands.auth_service.application.admin.searchusersforinvestigation.SearchUsersForInvestigationCommand;
+import com.twohands.auth_service.application.admin.searchusersforinvestigation.SearchUsersForInvestigationResult;
+import com.twohands.auth_service.application.admin.searchusersforinvestigation.SearchUsersForInvestigationUseCase;
 import com.twohands.auth_service.application.admin.viewuserinvestigationprofile.ViewUserInvestigationProfileByAdminCommand;
 import com.twohands.auth_service.application.admin.viewuserinvestigationprofile.ViewUserInvestigationProfileByAdminResult;
 import com.twohands.auth_service.application.admin.viewuserinvestigationprofile.ViewUserInvestigationProfileByAdminUseCase;
@@ -12,6 +15,7 @@ import com.twohands.auth_service.application.admin.viewusersessionsforadmin.View
 import com.twohands.auth_service.application.admin.viewusersessionsforadmin.ViewUserSessionsForAdminResult;
 import com.twohands.auth_service.application.admin.viewusersessionsforadmin.ViewUserSessionsForAdminUseCase;
 import com.twohands.auth_service.common.dto.ApiResponse;
+import com.twohands.auth_service.delivery.http.admin.response.SearchUsersForInvestigationResponse;
 import com.twohands.auth_service.delivery.http.admin.response.ViewLoginHistoryForAdminResponse;
 import com.twohands.auth_service.delivery.http.admin.response.ViewUserInvestigationProfileByAdminResponse;
 import com.twohands.auth_service.delivery.http.admin.response.ViewUserSessionsForAdminResponse;
@@ -33,18 +37,50 @@ import java.util.UUID;
 @RequestMapping("/api/v1/admin/users")
 public class AdminUserInvestigationController {
 
+	private final SearchUsersForInvestigationUseCase searchUsersForInvestigationUseCase;
 	private final ViewUserInvestigationProfileByAdminUseCase viewUserInvestigationProfileByAdminUseCase;
 	private final ViewUserSessionsForAdminUseCase viewUserSessionsForAdminUseCase;
 	private final ViewLoginHistoryForAdminUseCase viewLoginHistoryForAdminUseCase;
 
 	public AdminUserInvestigationController(
+			SearchUsersForInvestigationUseCase searchUsersForInvestigationUseCase,
 			ViewUserInvestigationProfileByAdminUseCase viewUserInvestigationProfileByAdminUseCase,
 			ViewUserSessionsForAdminUseCase viewUserSessionsForAdminUseCase,
 			ViewLoginHistoryForAdminUseCase viewLoginHistoryForAdminUseCase
 	) {
+		this.searchUsersForInvestigationUseCase = searchUsersForInvestigationUseCase;
 		this.viewUserInvestigationProfileByAdminUseCase = viewUserInvestigationProfileByAdminUseCase;
 		this.viewUserSessionsForAdminUseCase = viewUserSessionsForAdminUseCase;
 		this.viewLoginHistoryForAdminUseCase = viewLoginHistoryForAdminUseCase;
+	}
+
+	@GetMapping("/search")
+	public ResponseEntity<ApiResponse<SearchUsersForInvestigationResponse>> searchUsers(
+			@RequestParam(name = "query", defaultValue = "") String query,
+			@RequestParam(defaultValue = "20") int limit
+	) {
+		SearchUsersForInvestigationResult result = searchUsersForInvestigationUseCase.execute(
+				new SearchUsersForInvestigationCommand(resolveAuthenticatedUserId(), query, limit)
+		);
+
+		SearchUsersForInvestigationResponse response = new SearchUsersForInvestigationResponse(
+				result.users().stream()
+						.map(user -> new SearchUsersForInvestigationResponse.UserItem(
+								user.userId().toString(),
+								user.email(),
+								user.displayName(),
+								user.status(),
+								user.roleCodes()
+						))
+						.toList()
+		);
+
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(ApiResponse.success(
+						HttpStatus.OK.value(),
+						searchUsersForInvestigationUseCase.successMessage(),
+						response
+				));
 	}
 
 	@GetMapping("/{userId}/investigation-profile")

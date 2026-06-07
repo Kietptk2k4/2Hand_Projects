@@ -7,18 +7,22 @@ import {
   buildAdminSearchParams,
   parseAdminSection,
   parseAdminTab,
+  parseInvestigationUserId,
 } from "../admin/adminUrlParams.js";
 import { AdminNestedNav } from "../admin/components/AdminNestedNav.jsx";
 import { AdminPageLayout } from "../admin/components/AdminPageLayout.jsx";
 import { AdminShell } from "../admin/components/AdminShell.jsx";
-import { AdminUserTargetBar } from "../admin/loginSession/components/AdminUserTargetBar.jsx";
 import { AssignRoleTab } from "../admin/rolePermission/components/AssignRoleTab.jsx";
 import { RevokeRoleTab } from "../admin/rolePermission/components/RevokeRoleTab.jsx";
 import { PermissionsOfRoleTab } from "../admin/rolePermission/components/PermissionsOfRoleTab.jsx";
 import { PermissionsOfUserTab } from "../admin/rolePermission/components/PermissionsOfUserTab.jsx";
 import { RoleListTab } from "../admin/rolePermission/components/RoleListTab.jsx";
-import { AdminLoginHistoryTab } from "../admin/loginSession/components/AdminLoginHistoryTab.jsx";
-import { AdminUserSessionsTab } from "../admin/loginSession/components/AdminUserSessionsTab.jsx";
+import { AdminUserTargetBar } from "../admin/userInvestigation/components/AdminUserTargetBar.jsx";
+import { InvestigationCurrentEnforcementTab } from "../admin/userInvestigation/components/tabs/InvestigationCurrentEnforcementTab.jsx";
+import { InvestigationEnforcementHistoryTab } from "../admin/userInvestigation/components/tabs/InvestigationEnforcementHistoryTab.jsx";
+import { InvestigationLoginHistoryTab } from "../admin/userInvestigation/components/tabs/InvestigationLoginHistoryTab.jsx";
+import { InvestigationProfileTab } from "../admin/userInvestigation/components/tabs/InvestigationProfileTab.jsx";
+import { InvestigationUserSessionsTab } from "../admin/userInvestigation/components/tabs/InvestigationUserSessionsTab.jsx";
 import { AuthAlert } from "../../../shared/ui/auth/authUi.jsx";
 
 const ROLE_PERMISSION_TAB_COMPONENTS = {
@@ -29,9 +33,12 @@ const ROLE_PERMISSION_TAB_COMPONENTS = {
   "user-permissions": PermissionsOfUserTab,
 };
 
-const LOGIN_SESSION_TAB_COMPONENTS = {
-  "login-history": AdminLoginHistoryTab,
-  "user-sessions": AdminUserSessionsTab,
+const USER_INVESTIGATION_TAB_COMPONENTS = {
+  profile: InvestigationProfileTab,
+  "login-history": InvestigationLoginHistoryTab,
+  "user-sessions": InvestigationUserSessionsTab,
+  "current-enforcement": InvestigationCurrentEnforcementTab,
+  "enforcement-history": InvestigationEnforcementHistoryTab,
 };
 
 const COMMERCE_MODERATION_TAB_COMPONENTS = {
@@ -44,19 +51,34 @@ export function AdminPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const adminTopTab = parseAdminSection(searchParams);
   const activeChildTab = parseAdminTab(searchParams, adminTopTab);
+  const investigationUserId = parseInvestigationUserId(searchParams);
 
-  const [selectedInvestigationUserId, setSelectedInvestigationUserId] = useState("");
   const [selectedRoleId, setSelectedRoleId] = useState("");
+  const [investigationTargetUser, setInvestigationTargetUser] = useState(null);
   const [alert, setAlert] = useState(null);
 
   useEffect(() => {
-    if (!searchParams.get("section")) {
+    const rawSection = searchParams.get("section");
+    if (rawSection === "loginSession") {
+      setSearchParams(
+        buildAdminSearchParams({
+          section: "userInvestigation",
+          tab: searchParams.get("tab") || "login-history",
+          userId: investigationUserId,
+          preserve: searchParams,
+        }),
+        { replace: true },
+      );
+      return;
+    }
+
+    if (!rawSection) {
       setSearchParams(
         buildAdminSearchParams({ section: "rolePermission", tab: "role-list" }),
         { replace: true },
       );
     }
-  }, [searchParams, setSearchParams]);
+  }, [investigationUserId, searchParams, setSearchParams]);
 
   const onNotify = useCallback((nextAlert) => {
     setAlert(nextAlert);
@@ -65,12 +87,17 @@ export function AdminPage() {
   const handleSectionChange = useCallback(
     (sectionId) => {
       const defaultTab = parseAdminTab(new URLSearchParams(), sectionId);
-      setSearchParams(buildAdminSearchParams({ section: sectionId, tab: defaultTab }), {
-        replace: true,
-      });
+      setSearchParams(
+        buildAdminSearchParams({
+          section: sectionId,
+          tab: defaultTab,
+          userId: sectionId === "userInvestigation" ? investigationUserId : undefined,
+        }),
+        { replace: true },
+      );
       setAlert(null);
     },
-    [setSearchParams],
+    [investigationUserId, setSearchParams],
   );
 
   const handleChildTabChange = useCallback(
@@ -79,13 +106,31 @@ export function AdminPage() {
         buildAdminSearchParams({
           section: adminTopTab,
           tab: childId,
+          userId: adminTopTab === "userInvestigation" ? investigationUserId : undefined,
           preserve: searchParams,
         }),
         { replace: true },
       );
       setAlert(null);
     },
-    [adminTopTab, searchParams, setSearchParams],
+    [adminTopTab, investigationUserId, searchParams, setSearchParams],
+  );
+
+  const handleInvestigationTargetChange = useCallback(
+    ({ userId, user }) => {
+      setInvestigationTargetUser(user ?? null);
+      setSearchParams(
+        buildAdminSearchParams({
+          section: "userInvestigation",
+          tab: activeChildTab,
+          userId: userId || undefined,
+          preserve: searchParams,
+        }),
+        { replace: true },
+      );
+      setAlert(null);
+    },
+    [activeChildTab, searchParams, setSearchParams],
   );
 
   const onViewRolePermissions = useCallback(
@@ -104,8 +149,8 @@ export function AdminPage() {
   );
 
   const RoleTabComponent = ROLE_PERMISSION_TAB_COMPONENTS[activeChildTab] || RoleListTab;
-  const LoginSessionTabComponent =
-    LOGIN_SESSION_TAB_COMPONENTS[activeChildTab] || AdminLoginHistoryTab;
+  const InvestigationTabComponent =
+    USER_INVESTIGATION_TAB_COMPONENTS[activeChildTab] || InvestigationProfileTab;
   const CommerceTabComponent =
     COMMERCE_MODERATION_TAB_COMPONENTS[activeChildTab] || AdminShopModerationTab;
 
@@ -117,8 +162,9 @@ export function AdminPage() {
     onViewRolePermissions,
   };
 
-  const loginSessionTabProps = {
-    userId: selectedInvestigationUserId,
+  const investigationTabProps = {
+    userId: investigationUserId,
+    targetUser: investigationTargetUser,
     onNotify,
   };
 
@@ -126,8 +172,8 @@ export function AdminPage() {
     if (adminTopTab === "rolePermission") {
       return <RoleTabComponent {...roleTabProps} />;
     }
-    if (adminTopTab === "loginSession") {
-      return <LoginSessionTabComponent {...loginSessionTabProps} />;
+    if (adminTopTab === "userInvestigation") {
+      return <InvestigationTabComponent {...investigationTabProps} />;
     }
     if (adminTopTab === "commerceModeration") {
       return <CommerceTabComponent />;
@@ -135,10 +181,10 @@ export function AdminPage() {
     return null;
   }, [
     CommerceTabComponent,
-    LoginSessionTabComponent,
+    InvestigationTabComponent,
     RoleTabComponent,
     adminTopTab,
-    loginSessionTabProps,
+    investigationTabProps,
     roleTabProps,
   ]);
 
@@ -169,10 +215,11 @@ export function AdminPage() {
           />
         ) : null}
 
-        {adminTopTab === "loginSession" ? (
+        {adminTopTab === "userInvestigation" ? (
           <AdminUserTargetBar
-            userId={selectedInvestigationUserId}
-            onUserIdChange={setSelectedInvestigationUserId}
+            userId={investigationUserId}
+            selectedUser={investigationTargetUser}
+            onTargetChange={handleInvestigationTargetChange}
           />
         ) : null}
 

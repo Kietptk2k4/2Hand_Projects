@@ -33,6 +33,37 @@
   --color-outline: #727687;
 }
 
+html.dark {
+  --color-primary: #8ab4ff;
+  --color-on-primary: #002f66;
+  --color-surface: #111318;
+  --color-surface-container: #1a1c1e;
+  --color-on-surface: #e2e2e6;
+  --color-on-surface-variant: #c4c6d0;
+  --color-outline-variant: #44474e;
+  --color-error: #ffb4ab;
+  --color-error-container: #93000a;
+  --color-on-error-container: #ffdad6;
+  --color-footer-surface: #1a1f2e;
+  --color-footer-brand: #8ab4ff;
+  --color-footer-muted: #9ca3af;
+  --color-header-surface: #1a1c1e;
+  --color-header-border: #44474e;
+  --color-header-brand: #8ab4ff;
+  --color-header-nav: #c4c6d0;
+  --color-header-muted: #8b919a;
+  --color-account-surface: #111318;
+  --color-account-surface-low: #232838;
+  --color-account-surface-dim: #3a4258;
+  --color-account-danger: #ff897d;
+  --color-primary-container: #0050cb;
+  --color-secondary: #b8c3ff;
+  --color-surface-container-low: #23262a;
+  --color-surface-container-lowest: #1a1c1e;
+  --color-surface-container-high: #2d3135;
+  --color-outline: #8b919a;
+}
+
 @layer base {
   body {
     @apply bg-surface font-body text-on-surface antialiased;
@@ -42,6 +73,11 @@
     background: linear-gradient(90deg, #f0f3ff 25%, #e7eeff 50%, #f0f3ff 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
+  }
+
+  html.dark .skeleton-shimmer {
+    background: linear-gradient(90deg, #23262a 25%, #2d3135 50%, #23262a 75%);
+    background-size: 200% 100%;
   }
 
   @keyframes shimmer {

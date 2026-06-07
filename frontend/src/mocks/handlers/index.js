@@ -1,5 +1,6 @@
 import { adminAuthHandlers } from "./adminAuthHandlers";
 import { adminInvestigationHandlers } from "./adminInvestigationHandlers";
+import { adminUserInvestigationHandlers } from "./adminUserInvestigationHandlers";
 import { adminRbacHandlers } from "./adminRbacHandlers";
 import { authHandlers } from "./authHandlers";
 import { socialFeedHandlers } from "./socialFeedHandlers";
@@ -41,6 +42,7 @@ export const handlers = [
   ...adminAuthHandlers,
   ...adminRbacHandlers,
   ...adminInvestigationHandlers,
+  ...adminUserInvestigationHandlers,
   ...socialFeedHandlers,
   ...socialSavedPostsHandlers,
   ...socialSearchPostsHandlers,

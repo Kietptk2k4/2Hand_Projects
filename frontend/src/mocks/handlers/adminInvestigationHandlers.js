@@ -56,7 +56,53 @@ function mapSessionForAdmin(session) {
   };
 }
 
+function mapUserForInvestigationSearch(user) {
+  return {
+    user_id: user.id,
+    email: user.email,
+    display_name: user.display_name || user.email,
+    status: user.status,
+    role_codes: user.is_admin ? ["ADMIN"] : ["USER"],
+  };
+}
+
 export const adminInvestigationHandlers = [
+  http.get("*/api/v1/admin/users/search", async ({ request }) => {
+    await delay(250);
+    const actor = getActorFromRequest(request);
+    if (!actor) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+    if (!isAdminActor(actor)) {
+      return HttpResponse.json(apiError(403, "Ban khong co quyen truy cap."), { status: 403 });
+    }
+
+    const url = new URL(request.url);
+    const query = (url.searchParams.get("query") || "").trim().toLowerCase();
+    const limit = Math.min(Math.max(Number(url.searchParams.get("limit") || 20), 1), 50);
+
+    if (!query) {
+      return HttpResponse.json(
+        apiSuccess(200, "User investigation search completed successfully", { users: [] }),
+      );
+    }
+
+    const users = mockUsers
+      .filter((user) => user.status !== "DELETED")
+      .filter((user) => {
+        if (isValidUuid(query)) {
+          return user.id.toLowerCase() === query;
+        }
+        return query.length >= 2 && user.email.toLowerCase().includes(query);
+      })
+      .slice(0, limit)
+      .map(mapUserForInvestigationSearch);
+
+    return HttpResponse.json(
+      apiSuccess(200, "User investigation search completed successfully", { users }),
+    );
+  }),
+
   http.get("*/api/v1/admin/users/:userId/login-history", async ({ request, params }) => {
     await delay(350);
     const actor = getActorFromRequest(request);

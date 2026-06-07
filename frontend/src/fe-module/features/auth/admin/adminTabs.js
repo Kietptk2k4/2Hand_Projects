@@ -5,9 +5,9 @@ export const ADMIN_TOP_TABS = [
     labelEn: "Role & Permission",
   },
   {
-    id: "loginSession",
-    labelVn: "Đăng nhập & phiên",
-    labelEn: "Login & Session",
+    id: "userInvestigation",
+    labelVn: "Điều tra người dùng",
+    labelEn: "User Investigation",
   },
   {
     id: "commerceModeration",
