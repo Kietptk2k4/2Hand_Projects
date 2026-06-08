@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nhật ký Webhook - 2Hands Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#263143",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "primary-container": "#0066ff",
+                        "surface-container-high": "#dee8ff",
+                        "outline-variant": "#c2c6d8",
+                        "on-primary-fixed-variant": "#003fa4",
+                        "tertiary-fixed": "#e0e3e5",
+                        "on-secondary-container": "#fffbff",
+                        "primary-fixed": "#dae1ff",
+                        "on-secondary-fixed": "#07006c",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "surface-variant": "#d8e3fb",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "surface-container": "#e7eeff",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#191c1e",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f0f3ff",
+                        "tertiary-container": "#6f7274",
+                        "surface-tint": "#0054d6",
+                        "secondary": "#4648d4",
+                        "on-background": "#111c2d",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#001849",
+                        "on-primary-container": "#f8f7ff",
+                        "on-tertiary-container": "#f6f8fa",
+                        "surface-bright": "#f9f9ff",
+                        "on-surface-variant": "#424656",
+                        "outline": "#727687",
+                        "inverse-primary": "#b3c5ff",
+                        "surface-dim": "#cfdaf2",
+                        "surface-container-highest": "#d8e3fb",
+                        "secondary-container": "#6063ee",
+                        "primary": "#0050cb",
+                        "surface": "#f9f9ff",
+                        "on-surface": "#111c2d",
+                        "tertiary": "#565a5b",
+                        "secondary-fixed": "#e1e0ff",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "inverse-on-surface": "#ecf1ff",
+                        "error": "#ba1a1a",
+                        "background": "#f9f9ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "xl": "64px",
+                        "margin-desktop": "32px",
+                        "xs": "4px",
+                        "sm": "12px",
+                        "gutter": "24px",
+                        "md": "24px",
+                        "container-max": "1280px",
+                        "lg": "40px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-xl-mobile": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-xl-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-xl": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-desktop h-16 bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<span class="font-headline-sm text-headline-sm font-bold text-primary">2Hands Admin</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:bg-surface-container-low transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-low transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-low transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden ml-2">
+<img alt="Administrator profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6qnClQjUEHIgj_dAUXli-dvOdmesvLeUoSIk4EnD9_D2FygX-LoahNJUh5gsTQRLBD6dRNhmaK-Y2YQE31ZU7YJLYIDgqnmu1GKyeV6iL7yn3JF_Nz2J1w71AHViCJmhm-BdZzFQWzyBvF9tiyyIJNO-5xzTL1HXYs8VqQ0tEeAyrtNkpAE2dwT5JALa7h_RRD5hbQtU2UMcZSow3xIPSmHUym-syD1XDb5WSDMNLMefdfaZVO3Iwzh3TporX8VVySaQAVOiDHXQ"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 flex flex-col p-md bg-surface-container-low border-r border-outline-variant">
+<div class="mb-8">
+<h2 class="font-headline-sm text-headline-sm font-bold text-primary">Admin Console</h2>
+<p class="font-label-md text-label-md text-on-surface-variant">Management Hub</p>
+</div>
+<div class="flex-1 space-y-2">
+<a class="flex items-center gap-sm text-on-surface-variant px-md py-sm hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-md text-label-md">User Management</span>
+</a>
+<a class="flex items-center gap-sm text-on-surface-variant px-md py-sm hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+<span class="font-label-md text-label-md">Marketplace Listings</span>
+</a>
+<a class="flex items-center gap-sm text-on-surface-variant px-md py-sm hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-label-md text-label-md">Financials</span>
+</a>
+<a class="flex items-center gap-sm text-on-surface-variant px-md py-sm hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="gavel">gavel</span>
+<span class="font-label-md text-label-md">Disputes</span>
+</a>
+<a class="flex items-center gap-sm bg-primary-container text-on-primary-container rounded-lg px-md py-sm hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+<span class="font-label-md text-label-md">System Logs</span>
+</a>
+</div>
+<div class="mt-auto space-y-2 pt-4 border-t border-outline-variant">
+<button class="w-full bg-primary-container text-on-primary-container font-label-md text-label-md py-2 rounded-lg hover:bg-primary hover:text-on-primary transition-colors mb-4">
+                Generate Report
+            </button>
+<a class="flex items-center gap-sm text-on-surface-variant px-md py-sm hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="support_agent">support_agent</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+<a class="flex items-center gap-sm text-on-surface-variant px-md py-sm hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Sign Out</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-16 min-h-screen bg-background p-margin-desktop">
+<!-- Header -->
+<div class="mb-gutter">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Nhật ký Webhook</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-2">Theo dõi và gỡ lỗi các sự kiện webhook từ đối tác cung cấp dịch vụ.</p>
+</div>
+<!-- Filter & Search Bar (Bento-style layout) -->
+<div class="bg-surface p-4 rounded-xl border border-outline-variant shadow-sm mb-gutter flex flex-wrap gap-4 items-end">
+<div class="flex-1 min-w-[200px]">
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1">Provider</label>
+<select class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+<option value="">Tất cả</option>
+<option value="payos">PayOS</option>
+<option value="ghn">GHN</option>
+</select>
+</div>
+<div class="flex-1 min-w-[200px]">
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1">Reference ID</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant material-symbols-outlined text-[18px]">search</span>
+<input class="w-full border border-outline-variant rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none" placeholder="Tìm kiếm theo ID..." type="text"/>
+</div>
+</div>
+<div class="flex-1 min-w-[200px]">
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1">Status</label>
+<select class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+<option value="">Tất cả</option>
+<option value="PROCESSED">PROCESSED</option>
+<option value="PENDING">PENDING</option>
+<option value="INVALID_SIGNATURE">INVALID_SIGNATURE</option>
+</select>
+</div>
+<div class="flex-1 min-w-[150px]">
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1">Từ ngày</label>
+<input class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none text-on-surface-variant" type="date"/>
+</div>
+<div class="flex-1 min-w-[150px]">
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1">Đến ngày</label>
+<input class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none text-on-surface-variant" type="date"/>
+</div>
+<button class="bg-primary-container text-on-primary-container px-4 py-2 rounded-lg font-label-md text-label-md hover:bg-primary hover:text-on-primary transition-colors flex items-center gap-2 h-[38px]">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                Lọc
+            </button>
+</div>
+<!-- Data Table -->
+<div class="bg-surface rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant font-label-md text-label-md text-on-surface-variant">
+<th class="py-3 px-4 w-[250px]">Log ID / Thời gian</th>
+<th class="py-3 px-4 w-[120px]">Provider</th>
+<th class="py-3 px-4 w-[200px]">Reference ID</th>
+<th class="py-3 px-4">Event Type</th>
+<th class="py-3 px-4 w-[120px]">Status</th>
+<th class="py-3 px-4 w-[60px]"></th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm divide-y divide-outline-variant">
+<!-- Row 1: PayOS Error -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-3 px-4">
+<div class="text-on-surface font-mono text-xs truncate w-[200px]">wh_9f8e7d6c5b4a3...</div>
+<div class="text-on-surface-variant text-xs mt-1">10/10/2023 14:30:22</div>
+</td>
+<td class="py-3 px-4">
+<span class="bg-[#1E3A8A] text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">PayOS</span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs text-on-surface">REF-10029384</span>
+<button class="text-outline hover:text-primary transition-colors"><span class="material-symbols-outlined text-[16px]">content_copy</span></button>
+</div>
+</td>
+<td class="py-3 px-4 text-on-surface">PAYMENT.SUCCESS</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 bg-error-container text-on-error-container text-xs font-semibold px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px]">error</span>
+                                    INVALID_SIG
+                                </span>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-primary hover:text-surface-tint font-label-sm text-label-sm">Chi tiết</button>
+</td>
+</tr>
+<!-- Row 2: GHN Success -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-3 px-4">
+<div class="text-on-surface font-mono text-xs truncate w-[200px]">wh_2a3b4c5d6e7f8...</div>
+<div class="text-on-surface-variant text-xs mt-1">10/10/2023 14:25:01</div>
+</td>
+<td class="py-3 px-4">
+<span class="bg-[#F97316] text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">GHN</span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs text-on-surface">GHN-WX982K</span>
+<button class="text-outline hover:text-primary transition-colors"><span class="material-symbols-outlined text-[16px]">content_copy</span></button>
+</div>
+</td>
+<td class="py-3 px-4 text-on-surface">ORDER.STATUS_UPDATED</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 bg-[#DCFCE7] text-[#166534] text-xs font-semibold px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                    PROCESSED
+                                </span>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-primary hover:text-surface-tint font-label-sm text-label-sm">Chi tiết</button>
+</td>
+</tr>
+<!-- Row 3: PayOS Success -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-3 px-4">
+<div class="text-on-surface font-mono text-xs truncate w-[200px]">wh_1q2w3e4r5t6y7...</div>
+<div class="text-on-surface-variant text-xs mt-1">10/10/2023 14:15:45</div>
+</td>
+<td class="py-3 px-4">
+<span class="bg-[#1E3A8A] text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">PayOS</span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs text-on-surface">REF-10029383</span>
+<button class="text-outline hover:text-primary transition-colors"><span class="material-symbols-outlined text-[16px]">content_copy</span></button>
+</div>
+</td>
+<td class="py-3 px-4 text-on-surface">PAYMENT.SUCCESS</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 bg-[#DCFCE7] text-[#166534] text-xs font-semibold px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                    PROCESSED
+                                </span>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-primary hover:text-surface-tint font-label-sm text-label-sm">Chi tiết</button>
+</td>
+</tr>
+<!-- Row 4: GHN Pending -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-3 px-4">
+<div class="text-on-surface font-mono text-xs truncate w-[200px]">wh_8u7y6t5r4e3w2...</div>
+<div class="text-on-surface-variant text-xs mt-1">10/10/2023 14:10:12</div>
+</td>
+<td class="py-3 px-4">
+<span class="bg-[#F97316] text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">GHN</span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs text-on-surface">GHN-PL442M</span>
+<button class="text-outline hover:text-primary transition-colors"><span class="material-symbols-outlined text-[16px]">content_copy</span></button>
+</div>
+</td>
+<td class="py-3 px-4 text-on-surface">ORDER.CREATED</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 bg-[#FEF9C3] text-[#854D0E] text-xs font-semibold px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px]">pending</span>
+                                    PENDING
+                                </span>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-primary hover:text-surface-tint font-label-sm text-label-sm">Chi tiết</button>
+</td>
+</tr>
+<!-- Row 5: PayOS Error 2 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-3 px-4">
+<div class="text-on-surface font-mono text-xs truncate w-[200px]">wh_m9n8b7v6c5x4z...</div>
+<div class="text-on-surface-variant text-xs mt-1">10/10/2023 13:55:00</div>
+</td>
+<td class="py-3 px-4">
+<span class="bg-[#1E3A8A] text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">PayOS</span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs text-on-surface">REF-10029370</span>
+<button class="text-outline hover:text-primary transition-colors"><span class="material-symbols-outlined text-[16px]">content_copy</span></button>
+</div>
+</td>
+<td class="py-3 px-4 text-on-surface">PAYMENT.FAILED</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 bg-error-container text-on-error-container text-xs font-semibold px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px]">error</span>
+                                    INVALID_SIG
+                                </span>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-primary hover:text-surface-tint font-label-sm text-label-sm">Chi tiết</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="border-t border-outline-variant bg-surface-container-lowest px-4 py-3 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Hiển thị</span>
+<select class="border border-outline-variant rounded-md text-sm py-1 px-2 focus:ring-primary outline-none">
+<option>10</option>
+<option>20</option>
+<option>50</option>
+</select>
+<span class="font-body-sm text-body-sm text-on-surface-variant">dòng</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Trang 1 / 12</span>
+<div class="flex items-center gap-1">
+<button class="p-1 rounded text-outline hover:bg-surface-container-low disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<button class="p-1 rounded text-on-surface hover:bg-surface-container-low">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

@@ -1,5 +1,6 @@
 import { ADMIN_TOP_TABS } from "../adminTabs.js";
 import { COMMERCE_MODERATION_TABS } from "../commerceModeration/commerceModerationTabs.js";
+import { ORDER_SUPPORT_TABS } from "../orderSupport/orderSupportTabs.js";
 import { USER_INVESTIGATION_TABS } from "../userInvestigation/userInvestigationTabs.js";
 import { ROLE_PERMISSION_TABS } from "../rolePermission/rolePermissionTabs.js";
 
@@ -7,6 +8,7 @@ const SECTION_CHILDREN = {
   rolePermission: ROLE_PERMISSION_TABS,
   userInvestigation: USER_INVESTIGATION_TABS,
   commerceModeration: COMMERCE_MODERATION_TABS,
+  orderSupport: ORDER_SUPPORT_TABS,
 };
 
 function ParentNavIcon({ sectionId, active }) {
@@ -33,6 +35,18 @@ function ParentNavIcon({ sectionId, active }) {
           strokeLinejoin="round"
         />
         <path d="M9 22V12h6v10" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  if (sectionId === "orderSupport") {
+    return (
+      <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     );
   }
@@ -121,6 +135,34 @@ function ChildNavIcon({ name, active }) {
     product: (
       <path
         d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ),
+    order: (
+      <path
+        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ),
+    payment: (
+      <path
+        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ),
+    shipment: (
+      <path
+        d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10m10 0h4m-4 0a2 2 0 104 0m-6 0a2 2 0 11-4 0m8 0V8h3l3 3v5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ),
+    webhook: (
+      <path
+        d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

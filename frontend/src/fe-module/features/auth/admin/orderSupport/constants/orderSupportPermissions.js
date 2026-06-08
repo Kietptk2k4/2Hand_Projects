@@ -1,0 +1,10 @@
+export const ORDER_SUPPORT_PERMISSIONS = {
+  READ_ORDER: "ORDER_SUPPORT_READ",
+  READ_PAYMENT: "PAYMENT_SUPPORT_READ",
+  READ_SHIPMENT: "SHIPMENT_SUPPORT_READ",
+  READ_WEBHOOK: "WEBHOOK_SUPPORT_READ",
+};
+
+export function hasSupportPermission(permissions, code) {
+  return Array.isArray(permissions) && permissions.includes(code);
+}

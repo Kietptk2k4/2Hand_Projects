@@ -14,4 +14,9 @@ export const ADMIN_TOP_TABS = [
     labelVn: "Commerce moderation",
     labelEn: "Commerce Moderation",
   },
+  {
+    id: "orderSupport",
+    labelVn: "Hỗ trợ đơn hàng",
+    labelEn: "Order Support",
+  },
 ];
