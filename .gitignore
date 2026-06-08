@@ -5,3 +5,8 @@ frontend/.env
 # Local dev DB/object-storage dumps (PII — do not commit)
 dev-dumps/
 *.dev-dump.zip
+
+# Service secrets — never commit
+Services/*/.env
+Services/**/.env
+# !Services/**/.env.example
