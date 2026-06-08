@@ -16,7 +16,7 @@ public class ViewPostDetailHttpMapper {
                 result.author().avatarUrl()
         );
         List<ViewPostDetailResponse.MediaItemResponse> media = result.media().stream()
-                .map(item -> new ViewPostDetailResponse.MediaItemResponse(item.url(), item.type()))
+                .map(item -> new ViewPostDetailResponse.MediaItemResponse(item.url(), item.type(), item.width(), item.height()))
                 .toList();
         List<ViewPostDetailResponse.ProductTagResponse> productTags = result.productTags().stream()
                 .map(tag -> new ViewPostDetailResponse.ProductTagResponse(tag.productId(), tag.price()))

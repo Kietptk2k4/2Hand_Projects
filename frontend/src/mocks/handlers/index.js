@@ -4,6 +4,7 @@ import { adminUserInvestigationHandlers } from "./adminUserInvestigationHandlers
 import { adminAuditHandlers } from "./adminAuditHandlers";
 import { adminContentModerationHandlers } from "./adminContentModerationHandlers";
 import { adminOrderSupportHandlers } from "./adminOrderSupportHandlers";
+import { adminSystemOperationsHandlers } from "./adminSystemOperationsHandlers";
 import { adminRbacHandlers } from "./adminRbacHandlers";
 import { authHandlers } from "./authHandlers";
 import { socialFeedHandlers } from "./socialFeedHandlers";
@@ -39,6 +40,7 @@ import { commerceSellerShopReviewsHandlers } from "./commerceSellerShopReviewsHa
 import { commerceAdminShopModerationHandlers } from "./commerceAdminShopModerationHandlers";
 import { commerceAdminReviewModerationHandlers } from "./commerceAdminReviewModerationHandlers";
 import { commerceAdminProductRemovalHandlers } from "./commerceAdminProductRemovalHandlers";
+import { notificationHandlers } from "./notificationHandlers";
 
 export const handlers = [
   ...authHandlers,
@@ -49,6 +51,7 @@ export const handlers = [
   ...adminAuditHandlers,
   ...adminContentModerationHandlers,
   ...adminOrderSupportHandlers,
+  ...adminSystemOperationsHandlers,
   ...socialFeedHandlers,
   ...socialSavedPostsHandlers,
   ...socialSearchPostsHandlers,
@@ -82,5 +85,6 @@ export const handlers = [
   ...commerceAdminShopModerationHandlers,
   ...commerceAdminReviewModerationHandlers,
   ...commerceAdminProductRemovalHandlers,
+  ...notificationHandlers,
 ];
 

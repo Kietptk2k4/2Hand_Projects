@@ -109,7 +109,7 @@ class ViewSavedPostsApiIntegrationTest {
                         "507f1f77bcf86cd799439011",
                         UUID.randomUUID().toString(),
                         "saved caption",
-                        List.of(new ViewSavedPostsResult.MediaItemData("https://cdn/1.jpg", "IMAGE")),
+                        List.of(new ViewSavedPostsResult.MediaItemData("https://cdn/1.jpg", "IMAGE", null, null)),
                         "PUBLIC",
                         10,
                         2,

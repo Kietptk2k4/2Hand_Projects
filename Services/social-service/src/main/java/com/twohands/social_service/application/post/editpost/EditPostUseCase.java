@@ -1,5 +1,6 @@
 package com.twohands.social_service.application.post.editpost;
 
+import com.twohands.social_service.application.post.common.PostMediaDimensionValidator;
 import com.twohands.social_service.application.post.common.PostMediaUrlValidator;
 import com.twohands.social_service.application.post.common.ProductTagValidationItem;
 import com.twohands.social_service.application.post.common.ProductTagValidator;
@@ -120,15 +121,18 @@ public class EditPostUseCase {
                 throw new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed",
                         "media", "Khong duoc upload qua " + MAX_MEDIA_ITEMS + " media items.");
             }
-            for (EditPostCommand.MediaItemCommand item : media) {
+            for (int index = 0; index < media.size(); index++) {
+                EditPostCommand.MediaItemCommand item = media.get(index);
+                String fieldPrefix = "media[" + index + "]";
                 if (item.url() == null || item.url().isBlank()) {
                     throw new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed",
-                            "media[].url", "URL media khong duoc de trong.");
+                            fieldPrefix + ".url", "URL media khong duoc de trong.");
                 }
                 if (!"IMAGE".equals(item.type()) && !"VIDEO".equals(item.type())) {
                     throw new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed",
-                            "media[].type", "Media type chi chap nhan IMAGE hoac VIDEO.");
+                            fieldPrefix + ".type", "Media type chi chap nhan IMAGE hoac VIDEO.");
                 }
+                PostMediaDimensionValidator.validate(item.width(), item.height(), fieldPrefix);
             }
         });
         command.hashtags().ifPresent(hashtags -> {
@@ -161,7 +165,7 @@ public class EditPostUseCase {
 
     private List<MediaItem> resolveMedia(EditPostCommand command, Post existing) {
         return command.media()
-                .map(items -> items.stream().map(i -> new MediaItem(i.url(), i.type())).toList())
+                .map(items -> items.stream().map(i -> new MediaItem(i.url(), i.type(), i.width(), i.height())).toList())
                 .orElse(existing.media());
     }
 
@@ -187,7 +191,7 @@ public class EditPostUseCase {
 
     private EditPostResult toResult(Post post) {
         List<EditPostResult.MediaItemData> media = post.media().stream()
-                .map(m -> new EditPostResult.MediaItemData(m.url(), m.type()))
+                .map(m -> new EditPostResult.MediaItemData(m.url(), m.type(), m.width(), m.height()))
                 .toList();
         List<EditPostResult.ProductTagData> productTags = post.productTags().stream()
                 .map(pt -> new EditPostResult.ProductTagData(pt.productId(), pt.price()))

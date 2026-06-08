@@ -1,5 +1,6 @@
 package com.twohands.social_service.application.post.createpost;
 
+import com.twohands.social_service.application.post.common.PostMediaDimensionValidator;
 import com.twohands.social_service.application.post.common.PostMediaUrlValidator;
 import com.twohands.social_service.application.post.common.ProductTagValidationItem;
 import com.twohands.social_service.application.post.common.ProductTagValidator;
@@ -113,15 +114,18 @@ public class CreatePostUseCase {
                 throw new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed",
                         "media", "Khong duoc upload qua " + MAX_MEDIA_ITEMS + " media items.");
             }
-            for (CreatePostCommand.MediaItemCommand item : command.media()) {
+            for (int index = 0; index < command.media().size(); index++) {
+                CreatePostCommand.MediaItemCommand item = command.media().get(index);
+                String fieldPrefix = "media[" + index + "]";
                 if (item.url() == null || item.url().isBlank()) {
                     throw new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed",
-                            "media[].url", "URL media khong duoc de trong.");
+                            fieldPrefix + ".url", "URL media khong duoc de trong.");
                 }
                 if (!"IMAGE".equals(item.type()) && !"VIDEO".equals(item.type())) {
                     throw new AppException(ErrorCode.VALIDATION_ERROR, "Validation failed",
-                            "media[].type", "Media type chi chap nhan IMAGE hoac VIDEO.");
+                            fieldPrefix + ".type", "Media type chi chap nhan IMAGE hoac VIDEO.");
                 }
+                PostMediaDimensionValidator.validate(item.width(), item.height(), fieldPrefix);
             }
         }
         if (command.hashtags() != null) {
@@ -149,7 +153,7 @@ public class CreatePostUseCase {
 
     private List<MediaItem> toMediaItems(List<CreatePostCommand.MediaItemCommand> items) {
         if (items == null) return List.of();
-        return items.stream().map(i -> new MediaItem(i.url(), i.type())).toList();
+        return items.stream().map(i -> new MediaItem(i.url(), i.type(), i.width(), i.height())).toList();
     }
 
     private List<ProductTag> toProductTags(List<CreatePostCommand.ProductTagCommand> items) {
@@ -159,7 +163,7 @@ public class CreatePostUseCase {
 
     private CreatePostResult toResult(Post post) {
         List<CreatePostResult.MediaItemData> media = post.media().stream()
-                .map(m -> new CreatePostResult.MediaItemData(m.url(), m.type()))
+                .map(m -> new CreatePostResult.MediaItemData(m.url(), m.type(), m.width(), m.height()))
                 .toList();
         List<CreatePostResult.ProductTagData> productTags = post.productTags().stream()
                 .map(pt -> new CreatePostResult.ProductTagData(pt.productId(), pt.price()))

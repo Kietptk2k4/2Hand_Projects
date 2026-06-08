@@ -110,7 +110,7 @@ class ViewPostDetailApiIntegrationTest {
                 postId,
                 new ViewPostDetailResult.AuthorSummary(authorId.toString(), "User A", "https://cdn/avatar.png"),
                 "caption",
-                List.of(new ViewPostDetailResult.MediaItemData("https://cdn/1.jpg", "IMAGE")),
+                List.of(new ViewPostDetailResult.MediaItemData("https://cdn/1.jpg", "IMAGE", null, null)),
                 List.of(new ViewPostDetailResult.ProductTagData("product-1", new BigDecimal("199000"))),
                 "PUBLIC",
                 "ACTIVE",

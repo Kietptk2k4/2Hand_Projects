@@ -176,6 +176,6 @@ public class ViewUserPostsUseCase {
     }
 
     private ViewUserPostsResult.MediaItemData toMedia(MediaItem mediaItem) {
-        return new ViewUserPostsResult.MediaItemData(mediaItem.url(), mediaItem.type());
+        return new ViewUserPostsResult.MediaItemData(mediaItem.url(), mediaItem.type(), mediaItem.width(), mediaItem.height());
     }
 }

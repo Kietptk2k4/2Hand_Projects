@@ -16,6 +16,9 @@ import { loadProductCatalogEntry } from "../api/postProductTagApi";
 import { mergeTagWithCatalog } from "../utils/postProductTagMapper";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { normalizePostMediaUrl } from "../utils/postMediaUrl";
+import { mapPostMediaPayload } from "../utils/postMediaAspectRatio";
+import { readFileMediaDimensions } from "../utils/readMediaDimensions";
+import { mapSocialWriteError } from "../utils/socialWriteErrors";
 
 function resolveMediaKind(file) {
   return file.type.startsWith("video/") ? "VIDEO" : "IMAGE";
@@ -48,6 +51,8 @@ function mapMediaToSlots(media) {
       previewUrl: url,
       mediaUrl: url,
       type: item.type,
+      width: item.width ?? null,
+      height: item.height ?? null,
       status: "done",
       progress: 100,
       errorMessage: "",
@@ -58,7 +63,14 @@ function mapMediaToSlots(media) {
 function getReadyMedia(mediaItems) {
   return mediaItems
     .filter((item) => item.status === "done" && item.mediaUrl)
-    .map((item) => ({ url: item.mediaUrl, type: item.type }));
+    .map((item) =>
+      mapPostMediaPayload({
+        url: item.mediaUrl,
+        type: item.type,
+        width: item.width,
+        height: item.height,
+      }),
+    );
 }
 
 export function useEditPost({ postId, onSuccess }) {
@@ -179,12 +191,26 @@ export function useEditPost({ postId, onSuccess }) {
         const previewUrl = URL.createObjectURL(file);
         objectUrlsRef.current.push(previewUrl);
         const id = crypto.randomUUID();
+        let width = null;
+        let height = null;
+        if (!validationError) {
+          try {
+            const dimensions = await readFileMediaDimensions(file);
+            width = dimensions.width;
+            height = dimensions.height;
+          } catch {
+            width = null;
+            height = null;
+          }
+        }
         newSlots.push({
           id,
           file,
           previewUrl,
           mediaUrl: null,
           type: resolveMediaKind(file),
+          width,
+          height,
           status: validationError ? "error" : "pending",
           progress: 0,
           errorMessage: validationError,

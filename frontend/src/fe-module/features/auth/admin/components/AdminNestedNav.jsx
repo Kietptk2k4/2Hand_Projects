@@ -2,6 +2,7 @@ import { ADMIN_TOP_TABS } from "../adminTabs.js";
 import { ADMIN_AUDIT_TABS } from "../adminAudit/adminAuditTabs.js";
 import { CONTENT_MODERATION_TABS } from "../contentModeration/contentModerationTabs.js";
 import { ORDER_SUPPORT_TABS } from "../orderSupport/orderSupportTabs.js";
+import { SYSTEM_OPERATIONS_TABS } from "../systemOperations/systemOperationsTabs.js";
 import { USER_INVESTIGATION_TABS } from "../userInvestigation/userInvestigationTabs.js";
 import { ROLE_PERMISSION_TABS } from "../rolePermission/rolePermissionTabs.js";
 
@@ -11,6 +12,7 @@ const SECTION_CHILDREN = {
   adminAudit: ADMIN_AUDIT_TABS,
   contentModeration: CONTENT_MODERATION_TABS,
   orderSupport: ORDER_SUPPORT_TABS,
+  systemOperations: SYSTEM_OPERATIONS_TABS,
 };
 
 function ParentNavIcon({ sectionId, active }) {
@@ -48,6 +50,20 @@ function ParentNavIcon({ sectionId, active }) {
           strokeLinecap="round"
           strokeLinejoin="round"
         />
+      </svg>
+    );
+  }
+
+
+  if (sectionId === "systemOperations") {
+    return (
+      <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
   }
@@ -190,6 +206,21 @@ function ChildNavIcon({ name, active }) {
     post: (
       <path
         d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 12h10"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ),
+
+    settings: (
+      <path
+        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ),
+    announcement: (
+      <path
+        d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

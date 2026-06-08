@@ -24,7 +24,9 @@ public record SearchPostResponse(
 
     public record MediaItemResponse(
             String url,
-            String type
+            String type,
+            Integer width,
+            Integer height
     ) {
     }
 

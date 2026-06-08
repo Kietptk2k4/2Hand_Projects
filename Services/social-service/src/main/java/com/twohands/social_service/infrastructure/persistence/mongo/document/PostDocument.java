@@ -206,20 +206,56 @@ public class PostDocument {
         @Field("type")
         private String type;
 
+        @Field("width")
+        private Integer width;
+
+        @Field("height")
+        private Integer height;
+
         public MediaDocument() {
         }
 
-        public MediaDocument(String url, String type) {
+        public MediaDocument(String url, String type, Integer width, Integer height) {
             this.url = url;
             this.type = type;
+            this.width = width;
+            this.height = height;
+        }
+
+        public MediaDocument(String url, String type) {
+            this(url, type, null, null);
         }
 
         public String getUrl() {
             return url;
         }
 
+        public void setUrl(String url) {
+            this.url = url;
+        }
+
         public String getType() {
             return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public Integer getWidth() {
+            return width;
+        }
+
+        public void setWidth(Integer width) {
+            this.width = width;
+        }
+
+        public Integer getHeight() {
+            return height;
+        }
+
+        public void setHeight(Integer height) {
+            this.height = height;
         }
     }
 

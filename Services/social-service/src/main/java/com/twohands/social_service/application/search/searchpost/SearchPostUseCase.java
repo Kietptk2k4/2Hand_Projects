@@ -144,6 +144,6 @@ public class SearchPostUseCase {
     }
 
     private SearchPostResult.MediaItemData toMedia(MediaItem mediaItem) {
-        return new SearchPostResult.MediaItemData(mediaItem.url(), mediaItem.type());
+        return new SearchPostResult.MediaItemData(mediaItem.url(), mediaItem.type(), mediaItem.width(), mediaItem.height());
     }
 }

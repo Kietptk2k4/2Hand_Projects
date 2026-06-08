@@ -46,6 +46,6 @@ public class ViewGlobalFeedHttpMapper {
     }
 
     private ViewGlobalFeedResponse.MediaItemResponse toMedia(ViewGlobalFeedResult.MediaItemData media) {
-        return new ViewGlobalFeedResponse.MediaItemResponse(media.url(), media.type());
+        return new ViewGlobalFeedResponse.MediaItemResponse(media.url(), media.type(), media.width(), media.height());
     }
 }

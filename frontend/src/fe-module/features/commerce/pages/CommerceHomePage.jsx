@@ -7,6 +7,7 @@ import { CommerceShell } from "../components/CommerceShell";
 import { ProductCard } from "../components/ProductCard";
 import { ProductListSkeleton } from "../components/ProductListSkeleton";
 import { ProductListSortSelect } from "../components/ProductListSortSelect";
+import { NotificationBell } from "../../notification/components/NotificationBell";
 import { CartBadgePill } from "../components/CartBadgePill";
 import { useCartBadge } from "../context/CartBadgeContext";
 import { useCommerceAddToCart } from "../hooks/useCommerceAddToCart";
@@ -97,17 +98,7 @@ export function CommerceHomePage() {
   return (
     <CommerceShell onComingSoon={showComingSoon}>
       <div className="mb-6 flex items-center justify-end gap-2 lg:hidden">
-        <button
-          type="button"
-          onClick={showComingSoon}
-          className="relative rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary"
-          aria-label="Thông báo"
-        >
-          <span className="material-symbols-outlined" aria-hidden="true">
-            notifications
-          </span>
-          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-error" />
-        </button>
+        <NotificationBell buttonClassName="h-10 w-10 text-on-surface-variant hover:bg-surface-container-low hover:text-primary" />
         <button
           type="button"
           onClick={goToCart}

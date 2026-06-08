@@ -3,6 +3,7 @@ import { APP_ROUTES } from "../../shared/constants/routes";
 import { useAuthSession } from "../../features/auth/hooks/useAuthSession.jsx";
 import { SessionExpiredModal } from "../../features/auth/components/SessionExpiredModal.jsx";
 import { AppFooter } from "../../shared/ui/AppFooter.jsx";
+import { SystemAnnouncementBanner } from "../../features/notification/components/SystemAnnouncementBanner.jsx";
 import { AppHeader } from "../../shared/ui/AppHeader.jsx";
 
 export function AppLayout() {
@@ -99,6 +100,7 @@ export function AppLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-surface text-on-surface">
       <AppHeader />
+      {isFullBleedRoute ? <SystemAnnouncementBanner /> : null}
 
       <main
         className={[

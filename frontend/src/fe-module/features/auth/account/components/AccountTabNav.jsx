@@ -45,6 +45,16 @@ function NavIcon({ name, active, danger }) {
         <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" strokeLinecap="round" strokeLinejoin="round" />
       </>
     ),
+    notifications: (
+      <>
+        <path
+          d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path d="M13.73 21a2 2 0 01-3.46 0" strokeLinecap="round" strokeLinejoin="round" />
+      </>
+    ),
     delete: (
       <path
         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"

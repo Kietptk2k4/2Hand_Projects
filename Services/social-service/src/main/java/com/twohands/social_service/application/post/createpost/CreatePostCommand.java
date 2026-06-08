@@ -14,7 +14,7 @@ public record CreatePostCommand(
         List<String> hashtags,
         boolean publish
 ) {
-    public record MediaItemCommand(String url, String type) {
+    public record MediaItemCommand(String url, String type, Integer width, Integer height) {
     }
 
     public record ProductTagCommand(String productId, BigDecimal price) {

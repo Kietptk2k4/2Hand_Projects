@@ -141,6 +141,6 @@ public class ViewSavedPostsUseCase {
     }
 
     private ViewSavedPostsResult.MediaItemData toMedia(MediaItem mediaItem) {
-        return new ViewSavedPostsResult.MediaItemData(mediaItem.url(), mediaItem.type());
+        return new ViewSavedPostsResult.MediaItemData(mediaItem.url(), mediaItem.type(), mediaItem.width(), mediaItem.height());
     }
 }

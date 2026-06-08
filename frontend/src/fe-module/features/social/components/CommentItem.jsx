@@ -105,6 +105,7 @@ export function CommentItem({
   canDeleteComment,
   onDeleteComment,
   deletingCommentId,
+  onOpenCommentMedia,
 }) {
   const { isWriteBlocked } = useSocialWriteBlock();
   const replyMediaUpload = useCommentMediaUpload();
@@ -166,7 +167,12 @@ export function CommentItem({
               {displayName}
             </button>
             <p className="mt-0.5 text-sm text-on-surface">{comment.contentText}</p>
-            <CommentMediaDisplay media={comment.media} />
+            <CommentMediaDisplay
+              media={comment.media}
+              onMediaClick={(index) =>
+                onOpenCommentMedia?.(comment.commentId, comment.media, index)
+              }
+            />
           </div>
           <CommentActions
             commentId={comment.commentId}
@@ -248,7 +254,12 @@ export function CommentItem({
                       {reply.author?.displayName || DEFAULT_USER_DISPLAY_NAME}
                     </button>
                     <p className="mt-0.5 text-sm text-on-surface">{reply.contentText}</p>
-                    <CommentMediaDisplay media={reply.media} />
+                    <CommentMediaDisplay
+                      media={reply.media}
+                      onMediaClick={(index) =>
+                        onOpenCommentMedia?.(reply.commentId, reply.media, index)
+                      }
+                    />
                   </div>
                   <CommentActions
                     commentId={reply.commentId}

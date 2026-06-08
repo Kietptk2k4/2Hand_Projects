@@ -27,7 +27,7 @@ public class ViewSavedPostsHttpMapper {
     private ViewSavedPostsResponse.SavedPostItemResponse toItem(ViewSavedPostsResult.SavedPostItem item) {
         List<ViewSavedPostsResponse.MediaItemResponse> media = item.media()
                 .stream()
-                .map(m -> new ViewSavedPostsResponse.MediaItemResponse(m.url(), m.type()))
+                .map(m -> new ViewSavedPostsResponse.MediaItemResponse(m.url(), m.type(), m.width(), m.height()))
                 .toList();
         return new ViewSavedPostsResponse.SavedPostItemResponse(
                 item.postId(),

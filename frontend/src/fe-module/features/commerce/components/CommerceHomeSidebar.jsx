@@ -8,7 +8,7 @@ import { APP_ROUTES } from "../../../shared/constants/routes";
 const SIDEBAR_LINKS = [
   { id: "home", icon: "home", label: "Trang chủ", route: APP_ROUTES.commerceHome },
   { id: "cart", icon: "shopping_cart", label: "Giỏ hàng", route: APP_ROUTES.commerceCart, requiresAuth: true },
-  { id: "marketplace", icon: "storefront", label: "Marketplace", comingSoon: true },
+  // { id: "marketplace", icon: "storefront", label: "Marketplace", comingSoon: true },
   {
     id: "orders",
     icon: "receipt_long",
@@ -58,7 +58,7 @@ const SIDEBAR_LINKS = [
     route: APP_ROUTES.commerceSellerReviews,
     requiresAuth: true,
   },
-  { id: "analytics", icon: "analytics", label: "Thống kê", comingSoon: true },
+  // { id: "analytics", icon: "analytics", label: "Thống kê", comingSoon: true },
   {
     id: "settings",
     icon: "settings",

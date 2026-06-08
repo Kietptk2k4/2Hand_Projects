@@ -100,6 +100,6 @@ public class ViewGlobalFeedUseCase {
     }
 
     private ViewGlobalFeedResult.MediaItemData toMedia(MediaItem mediaItem) {
-        return new ViewGlobalFeedResult.MediaItemData(mediaItem.url(), mediaItem.type());
+        return new ViewGlobalFeedResult.MediaItemData(mediaItem.url(), mediaItem.type(), mediaItem.width(), mediaItem.height());
     }
 }

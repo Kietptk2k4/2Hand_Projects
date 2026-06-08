@@ -353,7 +353,8 @@ public class PostController {
     private CreatePostCommand toCommand(CreatePostRequest request, UUID authorId) {
         List<CreatePostCommand.MediaItemCommand> media = request.media() != null
                 ? request.media().stream()
-                        .map(m -> new CreatePostCommand.MediaItemCommand(m.url(), m.type()))
+                        .map(m -> new CreatePostCommand.MediaItemCommand(
+                                m.url(), m.type(), m.width(), m.height()))
                         .toList()
                 : List.of();
         List<CreatePostCommand.ProductTagCommand> productTags = request.productTags() != null
@@ -375,7 +376,7 @@ public class PostController {
 
     private CreatePostResponse toResponse(CreatePostResult result) {
         List<CreatePostResponse.MediaItemResponse> media = result.media().stream()
-                .map(m -> new CreatePostResponse.MediaItemResponse(m.url(), m.type()))
+                .map(m -> new CreatePostResponse.MediaItemResponse(m.url(), m.type(), m.width(), m.height()))
                 .toList();
         List<CreatePostResponse.ProductTagResponse> productTags = result.productTags().stream()
                 .map(pt -> new CreatePostResponse.ProductTagResponse(pt.productId(), pt.price()))
@@ -398,7 +399,8 @@ public class PostController {
     private EditPostCommand toEditCommand(EditPostRequest request, UUID editorId, String postId) {
         var media = request.media()
                 .map(items -> items.stream()
-                        .map(m -> new EditPostCommand.MediaItemCommand(m.url(), m.type()))
+                        .map(m -> new EditPostCommand.MediaItemCommand(
+                                m.url(), m.type(), m.width(), m.height()))
                         .toList());
         var productTags = request.productTags()
                 .map(items -> items.stream()
@@ -418,7 +420,7 @@ public class PostController {
 
     private EditPostResponse toEditResponse(EditPostResult result) {
         List<EditPostResponse.MediaItemResponse> media = result.media().stream()
-                .map(m -> new EditPostResponse.MediaItemResponse(m.url(), m.type()))
+                .map(m -> new EditPostResponse.MediaItemResponse(m.url(), m.type(), m.width(), m.height()))
                 .toList();
         List<EditPostResponse.ProductTagResponse> productTags = result.productTags().stream()
                 .map(pt -> new EditPostResponse.ProductTagResponse(pt.productId(), pt.price()))

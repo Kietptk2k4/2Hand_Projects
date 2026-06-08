@@ -143,7 +143,7 @@ public class ViewPostDetailUseCase {
     }
 
     private ViewPostDetailResult.MediaItemData toMedia(MediaItem mediaItem) {
-        return new ViewPostDetailResult.MediaItemData(mediaItem.url(), mediaItem.type());
+        return new ViewPostDetailResult.MediaItemData(mediaItem.url(), mediaItem.type(), mediaItem.width(), mediaItem.height());
     }
 
     private ViewPostDetailResult.ProductTagData toProductTag(ProductTag productTag) {

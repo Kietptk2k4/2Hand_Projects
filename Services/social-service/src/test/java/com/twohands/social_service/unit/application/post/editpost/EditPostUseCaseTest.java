@@ -118,7 +118,7 @@ class EditPostUseCaseTest {
                 authorId,
                 postId,
                 Optional.empty(),
-                Optional.of(List.of(new EditPostCommand.MediaItemCommand("https://cdn/new.mp4", "VIDEO"))),
+                Optional.of(List.of(new EditPostCommand.MediaItemCommand("https://cdn/new.mp4", "VIDEO", null, null))),
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),

@@ -1,5 +1,9 @@
 package com.twohands.admin_service.delivery.http.announcement;
 
+import com.twohands.admin_service.application.announcement.listsystemannouncements.ListSystemAnnouncementsQuery;
+import com.twohands.admin_service.application.announcement.listsystemannouncements.ListSystemAnnouncementsResult;
+import com.twohands.admin_service.application.announcement.listsystemannouncements.ListSystemAnnouncementsUseCase;
+import com.twohands.admin_service.application.announcement.listsystemannouncements.SystemAnnouncementListItem;
 import com.twohands.admin_service.application.announcement.dismisssystemannouncement.DismissSystemAnnouncementCommand;
 import com.twohands.admin_service.application.announcement.dismisssystemannouncement.DismissSystemAnnouncementResult;
 import com.twohands.admin_service.application.announcement.dismisssystemannouncement.DismissSystemAnnouncementUseCase;
@@ -21,11 +25,13 @@ import com.twohands.admin_service.security.annotation.RequireAdminPermission;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -35,6 +41,7 @@ import java.util.UUID;
 @RequestMapping("/admin/api/v1/system-announcements")
 public class SystemAnnouncementController {
 
+	private final ListSystemAnnouncementsUseCase listSystemAnnouncementsUseCase;
 	private final CreateSystemAnnouncementUseCase createSystemAnnouncementUseCase;
 	private final PublishSystemAnnouncementUseCase publishSystemAnnouncementUseCase;
 	private final PinSystemAnnouncementUseCase pinSystemAnnouncementUseCase;
@@ -42,17 +49,44 @@ public class SystemAnnouncementController {
 	private final DismissSystemAnnouncementUseCase dismissSystemAnnouncementUseCase;
 
 	public SystemAnnouncementController(
+			ListSystemAnnouncementsUseCase listSystemAnnouncementsUseCase,
 			CreateSystemAnnouncementUseCase createSystemAnnouncementUseCase,
 			PublishSystemAnnouncementUseCase publishSystemAnnouncementUseCase,
 			PinSystemAnnouncementUseCase pinSystemAnnouncementUseCase,
 			CancelSystemAnnouncementUseCase cancelSystemAnnouncementUseCase,
 			DismissSystemAnnouncementUseCase dismissSystemAnnouncementUseCase
 	) {
+		this.listSystemAnnouncementsUseCase = listSystemAnnouncementsUseCase;
 		this.createSystemAnnouncementUseCase = createSystemAnnouncementUseCase;
 		this.publishSystemAnnouncementUseCase = publishSystemAnnouncementUseCase;
 		this.pinSystemAnnouncementUseCase = pinSystemAnnouncementUseCase;
 		this.cancelSystemAnnouncementUseCase = cancelSystemAnnouncementUseCase;
 		this.dismissSystemAnnouncementUseCase = dismissSystemAnnouncementUseCase;
+	}
+
+	@GetMapping
+	@RequireAdminPermission({
+			AdminPermission.SYSTEM_ANNOUNCEMENT_CREATE,
+			AdminPermission.SYSTEM_ANNOUNCEMENT_UPDATE,
+			AdminPermission.SYSTEM_ANNOUNCEMENT_PUBLISH,
+			AdminPermission.SYSTEM_ANNOUNCEMENT_CANCEL
+	})
+	public ResponseEntity<ApiResponse<ListSystemAnnouncementsResponse>> list(
+			@RequestParam(required = false) String q,
+			@RequestParam(required = false) String status,
+			@RequestParam(required = false) String severity,
+			@RequestParam(required = false) Integer page,
+			@RequestParam(required = false) Integer size
+	) {
+		ListSystemAnnouncementsResult result = listSystemAnnouncementsUseCase.execute(
+				new ListSystemAnnouncementsQuery(q, status, severity, page, size)
+		);
+
+		return ResponseEntity.ok(ApiResponse.success(
+				HttpStatus.OK.value(),
+				listSystemAnnouncementsUseCase.successMessage(),
+				toListResponse(result)
+		));
 	}
 
 	@PostMapping
@@ -169,6 +203,31 @@ public class SystemAnnouncementController {
 				: cancelSystemAnnouncementUseCase.idempotentMessage();
 
 		return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), message, data));
+	}
+
+	private ListSystemAnnouncementsResponse toListResponse(ListSystemAnnouncementsResult result) {
+		return new ListSystemAnnouncementsResponse(
+				result.page(),
+				result.size(),
+				result.totalElements(),
+				result.totalPages(),
+				result.items().stream().map(this::toListEntry).toList()
+		);
+	}
+
+	private SystemAnnouncementListEntryResponse toListEntry(SystemAnnouncementListItem item) {
+		return new SystemAnnouncementListEntryResponse(
+				item.announcementId(),
+				item.title(),
+				item.content(),
+				item.severity().name(),
+				item.status().name(),
+				item.pinned(),
+				item.dismissible(),
+				item.createdBy(),
+				item.createdAt(),
+				item.sentAt()
+		);
 	}
 
 	@PostMapping("/{announcementId}/dismiss")

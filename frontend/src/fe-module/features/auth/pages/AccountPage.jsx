@@ -4,6 +4,7 @@ import { AccountInfoTab } from "../account/components/AccountInfoTab.jsx";
 import { DeleteAccountTab } from "../account/components/DeleteAccountTab.jsx";
 import { EditProfileTab } from "../account/components/EditProfileTab.jsx";
 import { PrivacyTab } from "../account/components/PrivacyTab.jsx";
+import { NotificationSettingsTab } from "../../notification/components/NotificationSettingsTab.jsx";
 import { SettingsTab } from "../account/components/SettingsTab.jsx";
 import { UpdateAvatarTab } from "../account/components/UpdateAvatarTab.jsx";
 import { useAccountProfile } from "../account/hooks/useAccountProfile.jsx";
@@ -16,6 +17,7 @@ const TAB_COMPONENTS = {
   avatar: UpdateAvatarTab,
   privacy: PrivacyTab,
   settings: SettingsTab,
+  notifications: NotificationSettingsTab,
   delete: DeleteAccountTab,
 };
 

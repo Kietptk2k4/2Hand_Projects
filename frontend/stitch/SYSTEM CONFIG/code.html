@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ConfigAdmin - Configurations</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "background": "#f9f9ff",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "inverse-surface": "#263143",
+                        "surface": "#f9f9ff",
+                        "secondary-container": "#6063ee",
+                        "surface-dim": "#cfdaf2",
+                        "on-tertiary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-container-low": "#f0f3ff",
+                        "outline-variant": "#c2c6d8",
+                        "inverse-primary": "#b3c5ff",
+                        "tertiary-fixed": "#e0e3e5",
+                        "on-tertiary-fixed": "#191c1e",
+                        "outline": "#727687",
+                        "on-tertiary-container": "#f6f8fa",
+                        "on-surface": "#111c2d",
+                        "on-surface-variant": "#424656",
+                        "tertiary": "#565a5b",
+                        "primary-container": "#0066ff",
+                        "inverse-on-surface": "#ecf1ff",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "surface-container": "#e7eeff",
+                        "on-primary-container": "#f8f7ff",
+                        "secondary-fixed": "#e1e0ff",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#003fa4",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "surface-container-highest": "#d8e3fb",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#6f7274",
+                        "surface-tint": "#0054d6",
+                        "on-secondary-container": "#fffbff",
+                        "on-background": "#111c2d",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "surface-variant": "#d8e3fb",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "on-primary-fixed": "#001849",
+                        "surface-bright": "#f9f9ff",
+                        "on-secondary-fixed": "#07006c",
+                        "surface-container-high": "#dee8ff",
+                        "secondary": "#4648d4",
+                        "primary": "#0050cb",
+                        "primary-fixed": "#dae1ff",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "xl": "64px",
+                        "sm": "12px",
+                        "lg": "40px",
+                        "md": "24px",
+                        "margin-desktop": "32px",
+                        "gutter": "24px",
+                        "xs": "4px",
+                        "margin-mobile": "16px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-xl-mobile": ["Inter"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-xl": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-xl-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #0066ff;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #0066ff;
+        }
+        .toggle-checkbox {
+            right: 0;
+            z-index: 1;
+            border-color: #e2e8f0;
+            transition: all 0.3s;
+        }
+        .toggle-label {
+            width: 36px;
+            height: 20px;
+            background-color: #cbd5e1;
+            border-radius: 9999px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .toggle-label:after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background-color: white;
+            border-radius: 50%;
+            transition: all 0.3s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .toggle-checkbox:checked + .toggle-label:after {
+            transform: translateX(16px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col">
+<!-- TopNavBar Shared Component -->
+<header class="bg-surface dark:bg-surface-dim font-body-md text-body-md full-width top-0 border-b border-outline-variant dark:border-outline flex justify-between items-center w-full px-margin-desktop h-16 shrink-0 sticky z-50">
+<div class="flex items-center gap-md h-full">
+<span class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed-dim">ConfigAdmin</span>
+<nav class="hidden md:flex h-full ml-lg">
+<ul class="flex items-center gap-md h-full">
+<li class="h-full flex items-center">
+<a class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors h-full flex items-center px-sm" href="#">Dashboard</a>
+</li>
+<li class="h-full flex items-center">
+<a class="text-primary dark:text-primary-fixed-dim border-b-2 border-primary pb-1 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors h-full flex items-center px-sm opacity-80 mt-[2px]" href="#">Configurations</a>
+</li>
+<li class="h-full flex items-center">
+<a class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors h-full flex items-center px-sm" href="#">Audit Logs</a>
+</li>
+<li class="h-full flex items-center">
+<a class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors h-full flex items-center px-sm" href="#">Users</a>
+</li>
+</ul>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative hidden sm:block w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant text-body-md">search</span>
+<input class="w-full pl-10 pr-3 py-1.5 bg-surface-container-low border border-outline-variant rounded-full text-body-sm focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all" placeholder="Search configs..." type="text"/>
+</div>
+<div class="flex items-center gap-sm text-on-surface-variant">
+<button aria-label="notifications" class="p-2 hover:bg-surface-container-highest rounded-full transition-colors flex">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button aria-label="settings" class="p-2 hover:bg-surface-container-highest rounded-full transition-colors flex">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant ml-sm cursor-pointer">
+<img alt="Administrator Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRew5U9EfYRO95wurbxEzx2XGOIywG1BwmffR72UelYZ6csiB6ZKeaGXkKOJpCh849YZjEQ4J8xJdrY5XBgIEBsuXFSAhrYwkpGT-tgd8csp2NXA6b5Np3TSt21soVBd0DTFrv_BvM5VJyJix7GwCt3HVPRBU_lhW0pgpBPbiHdgw-cZsMuX0TRrNSyFO9mhO1KUh8S456FjF4eW116A1KYKgMdPqfu8h3UdXnBqRDTUZxDCgZVkR5t-MljEYvSM0xrcMOZc2D--o"/>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<div class="flex flex-1 overflow-hidden">
+<!-- SideNavBar Shared Component (Hidden on small screens to prioritize table) -->
+<aside class="hidden xl:flex bg-surface-container-low dark:bg-inverse-surface font-label-md text-label-md left-0 h-full w-64 border-r border-outline-variant dark:border-outline flex-col py-md px-sm shrink-0">
+<div class="px-sm mb-lg flex items-center gap-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">dataset</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm font-bold text-on-surface dark:text-inverse-on-surface text-sm leading-tight">Core Systems</h2>
+<p class="text-xs text-on-surface-variant">Management Console</p>
+</div>
+</div>
+<button class="mb-lg w-full bg-primary-container text-on-primary-container hover:bg-primary py-2 px-4 rounded-lg font-label-md text-label-md font-semibold flex justify-center items-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                New Configuration
+            </button>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">monitor_heart</span>
+                    System Status
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings_applications</span>
+                    Global Settings
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">variables</span>
+                    Environment Vars
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">shield</span>
+                    Security
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">backup</span>
+                    Backup
+                </a>
+</nav>
+<div class="mt-auto pt-md border-t border-outline-variant space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[18px]">help</span>
+                    Support
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[18px]">description</span>
+                    Documentation
+                </a>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="flex-1 overflow-y-auto bg-background p-margin-mobile md:p-margin-desktop flex flex-col items-center">
+<div class="w-full max-w-container-max">
+<!-- Page Header & Table Controls -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-md">
+<div>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Global Settings</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Manage core system variables and feature flags.</p>
+</div>
+<div class="flex items-center gap-3 flex-wrap">
+<!-- Search specific to table -->
+<div class="relative w-full sm:w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant text-[18px]">search</span>
+<input class="w-full pl-10 pr-3 py-2 bg-surface border border-outline-variant rounded-lg font-body-sm text-body-sm focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all shadow-sm" placeholder="Filter by Key..." type="text"/>
+</div>
+<!-- Filter Dropdowns -->
+<div class="relative">
+<select class="appearance-none bg-surface border border-outline-variant rounded-lg font-body-sm text-body-sm py-2 pl-3 pr-8 focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none cursor-pointer shadow-sm text-on-surface-variant">
+<option value="">Type: All</option>
+<option value="boolean">Boolean</option>
+<option value="string">String</option>
+<option value="number">Number</option>
+<option value="json">JSON</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-outline-variant pointer-events-none text-[18px]">expand_more</span>
+</div>
+<div class="relative">
+<select class="appearance-none bg-surface border border-outline-variant rounded-lg font-body-sm text-body-sm py-2 pl-3 pr-8 focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none cursor-pointer shadow-sm text-on-surface-variant">
+<option value="">Status: All</option>
+<option value="active">Active</option>
+<option value="inactive">Inactive</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-outline-variant pointer-events-none text-[18px]">expand_more</span>
+</div>
+</div>
+</div>
+<!-- High-Density Table Container -->
+<div class="bg-surface border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[800px]">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">
+<th class="py-3 px-4 font-semibold w-1/4">Config Key</th>
+<th class="py-3 px-4 font-semibold w-1/5">Value</th>
+<th class="py-3 px-4 font-semibold w-24">Type</th>
+<th class="py-3 px-4 font-semibold">Description</th>
+<th class="py-3 px-4 font-semibold w-24 text-center">Status</th>
+<th class="py-3 px-4 font-semibold w-24 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm text-on-surface divide-y divide-outline-variant/50">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-2.5 px-4">
+<div class="font-mono text-primary font-medium tracking-tight bg-primary-fixed/20 inline-block px-1.5 py-0.5 rounded text-[13px]">FEATURE_NEW_DASHBOARD</div>
+</td>
+<td class="py-2.5 px-4">
+<span class="font-mono text-on-surface">true</span>
+</td>
+<td class="py-2.5 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-surface-variant text-on-surface-variant border border-outline-variant/30">Boolean</span>
+</td>
+<td class="py-2.5 px-4 text-on-surface-variant truncate max-w-[200px]" title="Enables the v2 dashboard for all beta users.">
+                                        Enables the v2 dashboard for all beta users.
+                                    </td>
+<td class="py-2.5 px-4 text-center">
+<div class="relative inline-block w-9 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer opacity-0" id="toggle1" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer" for="toggle1"></label>
+</div>
+</td>
+<td class="py-2.5 px-4 text-right">
+<div class="flex justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+<button class="p-1 hover:bg-surface-container rounded text-outline hover:text-primary transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1 hover:bg-surface-container rounded text-outline hover:text-primary transition-colors" title="History">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-2.5 px-4">
+<div class="font-mono text-primary font-medium tracking-tight bg-primary-fixed/20 inline-block px-1.5 py-0.5 rounded text-[13px]">MAX_LOGIN_ATTEMPTS</div>
+</td>
+<td class="py-2.5 px-4">
+<span class="font-mono text-on-surface">5</span>
+</td>
+<td class="py-2.5 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-surface-variant text-on-surface-variant border border-outline-variant/30">Number</span>
+</td>
+<td class="py-2.5 px-4 text-on-surface-variant truncate max-w-[200px]" title="Maximum failed login attempts before account lockout.">
+                                        Maximum failed login attempts before account lockout.
+                                    </td>
+<td class="py-2.5 px-4 text-center">
+<div class="relative inline-block w-9 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer opacity-0" id="toggle2" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer" for="toggle2"></label>
+</div>
+</td>
+<td class="py-2.5 px-4 text-right">
+<div class="flex justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+<button class="p-1 hover:bg-surface-container rounded text-outline hover:text-primary transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1 hover:bg-surface-container rounded text-outline hover:text-primary transition-colors" title="History">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group opacity-75 bg-surface-container-lowest/50">
+<td class="py-2.5 px-4">
+<div class="font-mono text-tertiary font-medium tracking-tight bg-surface-variant/50 inline-block px-1.5 py-0.5 rounded text-[13px]">API_RATE_LIMIT_GLOBAL</div>
+</td>
+<td class="py-2.5 px-4">
+<span class="font-mono text-on-surface-variant">1000</span>
+</td>
+<td class="py-2.5 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-surface-variant text-on-surface-variant border border-outline-variant/30">Number</span>
+</td>
+<td class="py-2.5 px-4 text-on-surface-variant truncate max-w-[200px]" title="Global requests per minute limit across all endpoints.">
+                                        Global requests per minute limit across all endpoints.
+                                    </td>
+<td class="py-2.5 px-4 text-center">
+<div class="relative inline-block w-9 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer opacity-0" id="toggle3" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer" for="toggle3"></label>
+</div>
+</td>
+<td class="py-2.5 px-4 text-right">
+<div class="flex justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+<button class="p-1 hover:bg-surface-container rounded text-outline hover:text-primary transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1 hover:bg-surface-container rounded text-outline hover:text-primary transition-colors" title="History">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-2.5 px-4">
+<div class="font-mono text-primary font-medium tracking-tight bg-primary-fixed/20 inline-block px-1.5 py-0.5 rounded text-[13px]">SUPPORT_CONTACT_EMAIL</div>
+</td>
+<td class="py-2.5 px-4">
+<span class="font-mono text-on-surface">"help@system.local"</span>
+</td>
+<td class="py-2.5 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-surface-variant text-on-surface-variant border border-outline-variant/30">String</span>
+</td>
+<td class="py-2.5 px-4 text-on-surface-variant truncate max-w-[200px]" title="Primary routing address for automated support tickets.">
+                                        Primary routing address for automated support tickets.
+                                    </td>
+<td class="py-2.5 px-4 text-center">
+<div class="relative inline-block w-9 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer opacity-0" id="toggle4" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer" for="toggle4"></label>
+</div>
+</td>
+<td class="py-2.5 px-4 text-right">
+<div class="flex justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+<button class="p-1 hover:bg-surface-container rounded text-outline hover:text-primary transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1 hover:bg-surface-container rounded text-outline hover:text-primary transition-colors" title="History">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="py-2.5 px-4">
+<div class="font-mono text-primary font-medium tracking-tight bg-primary-fixed/20 inline-block px-1.5 py-0.5 rounded text-[13px]">MAINTENANCE_MODE_CONFIG</div>
+</td>
+<td class="py-2.5 px-4">
+<span class="font-mono text-on-surface text-[12px] bg-surface-container-low px-1 rounded border border-outline-variant/30">{"active":false,"eta":"2h"}</span>
+</td>
+<td class="py-2.5 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-surface-variant text-on-surface-variant border border-outline-variant/30">JSON</span>
+</td>
+<td class="py-2.5 px-4 text-on-surface-variant truncate max-w-[200px]" title="Detailed configuration payload for scheduled maintenance windows.">
+                                        Detailed configuration payload for scheduled maintenance windows.
+                                    </td>
+<td class="py-2.5 px-4 text-center">
+<div class="relative inline-block w-9 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer opacity-0" id="toggle5" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer" for="toggle5"></label>
+</div>
+</td>
+<td class="py-2.5 px-4 text-right">
+<div class="flex justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+<button class="p-1 hover:bg-surface-container rounded text-outline hover:text-primary transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1 hover:bg-surface-container rounded text-outline hover:text-primary transition-colors" title="History">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Pagination -->
+<div class="bg-surface border-t border-outline-variant px-4 py-3 flex items-center justify-between">
+<div class="font-body-sm text-body-sm text-on-surface-variant">
+                            Showing <span class="font-medium text-on-surface">1</span> to <span class="font-medium text-on-surface">5</span> of <span class="font-medium text-on-surface">142</span> results
+                        </div>
+<div class="flex gap-1">
+<button class="px-2 py-1 border border-outline-variant rounded-md bg-surface text-on-surface-variant hover:bg-surface-container-highest disabled:opacity-50 disabled:cursor-not-allowed font-label-sm text-label-sm" disabled="">Previous</button>
+<button class="px-3 py-1 border border-outline-variant rounded-md bg-primary-container text-on-primary-container font-label-sm text-label-sm">1</button>
+<button class="px-3 py-1 border border-outline-variant rounded-md bg-surface text-on-surface hover:bg-surface-container-highest font-label-sm text-label-sm">2</button>
+<button class="px-3 py-1 border border-outline-variant rounded-md bg-surface text-on-surface hover:bg-surface-container-highest font-label-sm text-label-sm">3</button>
+<span class="px-2 py-1 text-on-surface-variant">...</span>
+<button class="px-2 py-1 border border-outline-variant rounded-md bg-surface text-on-surface-variant hover:bg-surface-container-highest font-label-sm text-label-sm">Next</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer Shared Component -->
+<footer class="bg-surface-container-lowest dark:bg-surface-dim font-label-sm text-label-sm full-width bottom-0 border-t border-outline-variant dark:border-outline flex justify-between items-center px-margin-desktop py-base w-full shrink-0">
+<div class="text-on-surface-variant dark:text-outline-variant opacity-90">
+            © 2024 ConfigAdmin Systems. All rights reserved.
+        </div>
+<div class="flex gap-md opacity-90">
+<a class="text-on-surface-variant dark:text-outline-variant hover:underline transition-all" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:underline transition-all" href="#">Terms of Service</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:underline transition-all" href="#">API Status</a>
+</div>
+</footer>
+</body></html>

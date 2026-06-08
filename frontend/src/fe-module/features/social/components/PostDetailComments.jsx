@@ -8,6 +8,7 @@ export function PostDetailComments({
   onOpenLikesList,
   commentInputRef,
   onDeleteComment,
+  onOpenCommentMedia,
 }) {
   const {
     comments,
@@ -112,6 +113,7 @@ export function PostDetailComments({
                 canDeleteComment={canDeleteComment}
                 onDeleteComment={handleDeleteComment}
                 deletingCommentId={deletingCommentId}
+                onOpenCommentMedia={onOpenCommentMedia}
               />
             );
           })}

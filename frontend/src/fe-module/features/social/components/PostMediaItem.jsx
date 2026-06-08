@@ -43,6 +43,7 @@ function PostMediaVideoPlayer({
   className,
   showControls,
   playbackId,
+  onActivate,
 }) {
   const videoRef = useRef(null);
   const { registerPlayer, claimPlayback, releasePlayback, isActivePlayer, activePlaybackId } =
@@ -90,7 +91,10 @@ function PostMediaVideoPlayer({
       onPlay={handlePlay}
       onPause={handlePause}
       onEnded={handleEnded}
-      onClick={(event) => event.stopPropagation()}
+      onClick={(event) => {
+        event.stopPropagation();
+        onActivate?.(event);
+      }}
       onKeyDown={(event) => event.stopPropagation()}
     />
   );
@@ -103,6 +107,7 @@ export function PostMediaItem({
   controls,
   loading = "lazy",
   playbackId = null,
+  onActivate,
 }) {
   const src = getPostMediaUrl(item);
   if (!src) return null;
@@ -121,6 +126,7 @@ export function PostMediaItem({
         className={className}
         showControls={showControls}
         playbackId={playbackId}
+        onActivate={onActivate}
       />
     );
   }

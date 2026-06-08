@@ -54,6 +54,8 @@ export const mockGlobalFeedPosts = [
       {
         url: `${CDN}/photo-1521737711867-e3b97375f902?w=800&q=80`,
         type: "IMAGE",
+        width: 1200,
+        height: 800,
       },
     ],
     productTags: [
@@ -84,8 +86,18 @@ export const mockGlobalFeedPosts = [
     replyCount: 3,
     createdAt: "2026-05-27T10:15:30Z",
     media: [
-      { url: `${CDN}/photo-1517694712202-14dd9538aa43?w=800&q=80`, type: "IMAGE" },
-      { url: `${CDN}/photo-1498050108023-c5249f4df085?w=800&q=80`, type: "IMAGE" },
+      {
+        url: `${CDN}/photo-1517694712202-14dd9538aa43?w=800&q=80`,
+        type: "IMAGE",
+        width: 800,
+        height: 1200,
+      },
+      {
+        url: `${CDN}/photo-1498050108023-c5249f4df085?w=800&q=80`,
+        type: "IMAGE",
+        width: 1200,
+        height: 800,
+      },
     ],
   }),
   post({
@@ -105,10 +117,30 @@ export const mockGlobalFeedPosts = [
     replyCount: 14,
     createdAt: "2026-05-25T16:00:00Z",
     media: [
-      { url: `${CDN}/photo-1522071820081-009f0129c71c?w=800&q=80`, type: "IMAGE" },
-      { url: `${CDN}/photo-1600880292203-757bb62b4baf?w=800&q=80`, type: "IMAGE" },
-      { url: `${CDN}/photo-1552664730-d307ca884978?w=800&q=80`, type: "IMAGE" },
-      { url: `${CDN}/photo-1556761175-b413da4baf72?w=800&q=80`, type: "IMAGE" },
+      {
+        url: `${CDN}/photo-1522071820081-009f0129c71c?w=800&q=80`,
+        type: "IMAGE",
+        width: 900,
+        height: 1200,
+      },
+      {
+        url: `${CDN}/photo-1600880292203-757bb62b4baf?w=800&q=80`,
+        type: "IMAGE",
+        width: 1200,
+        height: 900,
+      },
+      {
+        url: `${CDN}/photo-1552664730-d307ca884978?w=800&q=80`,
+        type: "IMAGE",
+        width: 1100,
+        height: 800,
+      },
+      {
+        url: `${CDN}/photo-1556761175-b413da4baf72?w=800&q=80`,
+        type: "IMAGE",
+        width: 800,
+        height: 1100,
+      },
     ],
   }),
   post({

@@ -112,7 +112,7 @@ class EditPostApiIntegrationTest {
                 "507f1f77bcf86cd799439011",
                 userId.toString(),
                 "Updated caption",
-                List.of(new EditPostResult.MediaItemData("https://cdn/1.jpg", "IMAGE")),
+                List.of(new EditPostResult.MediaItemData("https://cdn/1.jpg", "IMAGE", null, null)),
                 List.of(),
                 "ACTIVE",
                 "PUBLIC",

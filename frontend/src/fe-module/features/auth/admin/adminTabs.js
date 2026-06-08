@@ -20,6 +20,11 @@ export const ADMIN_TOP_TABS = [
     labelEn: "Content Moderation",
   },
   {
+    id: "systemOperations",
+    labelVn: "Vận hành hệ thống",
+    labelEn: "System Operations",
+  },
+  {
     id: "orderSupport",
     labelVn: "Hỗ trợ đơn hàng",
     labelEn: "Order Support",

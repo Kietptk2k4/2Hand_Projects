@@ -77,7 +77,7 @@ class CreatePostUseCaseTest {
         CreatePostCommand command = new CreatePostCommand(
                 authorId,
                 "Hello world",
-                List.of(new CreatePostCommand.MediaItemCommand("https://cdn/1.jpg", "IMAGE")),
+                List.of(new CreatePostCommand.MediaItemCommand("https://cdn/1.jpg", "IMAGE", null, null)),
                 List.of(),
                 "PUBLIC",
                 true,
@@ -209,7 +209,7 @@ class CreatePostUseCaseTest {
 
         CreatePostCommand command = new CreatePostCommand(
                 authorId, "caption",
-                List.of(new CreatePostCommand.MediaItemCommand("https://cdn/1.jpg", "GIF")),
+                List.of(new CreatePostCommand.MediaItemCommand("https://cdn/1.jpg", "GIF", null, null)),
                 List.of(), "PUBLIC", true, List.of(), true
         );
 

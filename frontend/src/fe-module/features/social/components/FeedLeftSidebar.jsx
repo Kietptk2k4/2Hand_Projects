@@ -22,8 +22,8 @@ function SidebarStatValue({ value, isLoading }) {
 
 const QUICK_LINKS = [
   { icon: "bookmark", label: "Đã lưu", color: "text-primary", to: APP_ROUTES.socialSavedPosts },
-  { icon: "group", label: "Mạng lưới", color: "text-secondary" },
-  { icon: "event", label: "Sự kiện", color: "text-[#565a5b]" },
+  // { icon: "group", label: "Mạng lưới", color: "text-secondary" },
+  // { icon: "event", label: "Sự kiện", color: "text-[#565a5b]" },
 ];
 
 export function FeedLeftSidebar({ onComingSoon }) {

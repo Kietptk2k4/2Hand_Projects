@@ -136,6 +136,6 @@ public class SearchHashtagUseCase {
     }
 
     private SearchHashtagResult.MediaItemData toMedia(MediaItem mediaItem) {
-        return new SearchHashtagResult.MediaItemData(mediaItem.url(), mediaItem.type());
+        return new SearchHashtagResult.MediaItemData(mediaItem.url(), mediaItem.type(), mediaItem.width(), mediaItem.height());
     }
 }

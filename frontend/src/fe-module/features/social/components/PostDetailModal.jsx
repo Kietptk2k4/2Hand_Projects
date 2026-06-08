@@ -8,15 +8,14 @@ import { usePostComments } from "../hooks/usePostComments";
 import { usePostDetail } from "../hooks/usePostDetail";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
 import { isPostVideoMedia } from "../utils/postMediaType";
-import { PostMediaItem } from "./PostMediaItem";
 import { MediaGalleryLightbox } from "./MediaGalleryLightbox";
 import { PostCaption } from "./PostCaption";
 import { PostDetailComments } from "./PostDetailComments";
-import { PostMediaGrid } from "./PostMediaGrid";
+import { PostMediaCarousel } from "./PostMediaCarousel";
 import { PostProductTagsBlock } from "./PostProductTagsBlock";
 import { useSocialWriteBlock } from "../context/SocialWriteBlockContext";
 import { useVideoPlayback } from "../context/VideoPlaybackContext";
-import { buildPlaybackId, VIDEO_PLAYBACK_SURFACES } from "../utils/videoPlaybackId";
+import { VIDEO_PLAYBACK_SURFACES } from "../utils/videoPlaybackId";
 import { PostOptionsMenu } from "./PostOptionsMenu";
 import { LikeCountButton } from "./LikeCountButton";
 import { CommentComposer } from "./CommentComposer";
@@ -55,6 +54,7 @@ export function PostDetailModal({
   const commentAnchorRef = useRef(null);
   const commentInputRef = useRef(null);
   const [galleryIndex, setGalleryIndex] = useState(null);
+  const [commentGallery, setCommentGallery] = useState(null);
   const [draftComment, setDraftComment] = useState("");
   const [replyCountBump, setReplyCountBump] = useState(0);
 
@@ -97,6 +97,7 @@ export function PostDetailModal({
   useEffect(() => {
     setDraftComment("");
     setReplyCountBump(0);
+    setCommentGallery(null);
     resetTopLevelMedia();
   }, [postId, resetTopLevelMedia]);
 
@@ -156,6 +157,11 @@ export function PostDetailModal({
   useEffect(() => {
     const onKeyDown = (event) => {
       if (event.key === "Escape") {
+        if (commentGallery) {
+          pauseAll();
+          setCommentGallery(null);
+          return;
+        }
         if (galleryIndex !== null) {
           pauseAll();
           setGalleryIndex(null);
@@ -166,7 +172,7 @@ export function PostDetailModal({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [galleryIndex, handleClose, pauseAll]);
+  }, [commentGallery, galleryIndex, handleClose, pauseAll]);
 
   useEffect(() => {
     if (!focusComments || !post || commentsState.isLoading) return;
@@ -180,8 +186,19 @@ export function PostDetailModal({
   const openGallery = (index = 0) => {
     if (!post?.media?.length) return;
     pauseAll();
+    setCommentGallery(null);
     setGalleryIndex(index);
   };
+
+  const openCommentGallery = useCallback(
+    (commentId, media, index = 0) => {
+      if (!media?.length) return;
+      pauseAll();
+      setGalleryIndex(null);
+      setCommentGallery({ commentId, media, index });
+    },
+    [pauseAll],
+  );
 
   return (
     <>
@@ -245,38 +262,18 @@ export function PostDetailModal({
           {post && !isError ? (
             <>
               {post.media?.length > 0 ? (
-                <div
-                  className={[
-                    "relative min-h-[280px] w-full overflow-hidden bg-surface-container-high md:min-h-full md:w-1/2",
-                    isPostVideoMedia(post.media[0]) ? "" : "cursor-pointer",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  onClick={
-                    isPostVideoMedia(post.media[0]) ? undefined : () => openGallery(0)
-                  }
-                  onKeyDown={
-                    isPostVideoMedia(post.media[0])
-                      ? undefined
-                      : (event) => {
-                          if (event.key === "Enter") openGallery(0);
-                        }
-                  }
-                  role={isPostVideoMedia(post.media[0]) ? undefined : "button"}
-                  tabIndex={isPostVideoMedia(post.media[0]) ? undefined : 0}
-                  aria-label={
-                    isPostVideoMedia(post.media[0]) ? "Video bài viết" : "Mở gallery ảnh"
-                  }
-                >
-                  <PostMediaItem
-                    item={post.media[0]}
-                    variant="inline"
-                    className="h-full min-h-[280px] w-full object-cover md:min-h-full"
-                    playbackId={buildPlaybackId(
-                      postId,
-                      0,
-                      VIDEO_PLAYBACK_SURFACES.DETAIL
-                    )}
+                <div className="flex w-full items-center justify-center bg-on-background/5 md:min-h-full md:w-1/2">
+                  <PostMediaCarousel
+                    media={post.media}
+                    postId={postId}
+                    surface={VIDEO_PLAYBACK_SURFACES.DETAIL}
+                    className="w-full md:max-h-[921px]"
+                    onMediaClick={(index) => {
+                      const item = post.media[index];
+                      if (item && !isPostVideoMedia(item)) {
+                        openGallery(index);
+                      }
+                    }}
                   />
                 </div>
               ) : (
@@ -338,17 +335,6 @@ export function PostDetailModal({
                         caption={post.caption}
                         hashtags={post.hashtags}
                         onHashtagClick={onHashtagClick}
-                      />
-                    </div>
-                  ) : null}
-
-                  {post.media?.length > 1 ? (
-                    <div className="mb-6 overflow-hidden rounded-lg">
-                      <PostMediaGrid
-                        media={post.media}
-                        postId={postId}
-                        surface={VIDEO_PLAYBACK_SURFACES.DETAIL}
-                        onMediaClick={(index) => openGallery(index)}
                       />
                     </div>
                   ) : null}
@@ -419,6 +405,7 @@ export function PostDetailModal({
                       onOpenLikesList={onOpenLikesList}
                       commentInputRef={commentInputRef}
                       onDeleteComment={handleDeleteComment}
+                      onOpenCommentMedia={openCommentGallery}
                     />
                   </div>
                 </div>
@@ -466,6 +453,15 @@ export function PostDetailModal({
           postId={postId}
           initialIndex={galleryIndex}
           onClose={() => setGalleryIndex(null)}
+        />
+      ) : null}
+
+      {commentGallery ? (
+        <MediaGalleryLightbox
+          media={commentGallery.media}
+          ownerId={commentGallery.commentId}
+          initialIndex={commentGallery.index}
+          onClose={() => setCommentGallery(null)}
         />
       ) : null}
     </>

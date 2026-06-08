@@ -15,7 +15,7 @@ public record EditPostCommand(
         Optional<Boolean> allowComments,
         Optional<List<String>> hashtags
 ) {
-    public record MediaItemCommand(String url, String type) {
+    public record MediaItemCommand(String url, String type, Integer width, Integer height) {
     }
 
     public record ProductTagCommand(String productId, BigDecimal price) {

@@ -16,7 +16,7 @@ public record CreatePostResponse(
         String createdAt,
         String updatedAt
 ) {
-    public record MediaItemResponse(String url, String type) {
+    public record MediaItemResponse(String url, String type, Integer width, Integer height) {
     }
 
     public record ProductTagResponse(String productId, BigDecimal price) {

@@ -254,7 +254,9 @@ public class PostRepositoryAdapter implements PostRepository {
         }
         doc.setAuthorId(post.authorId());
         doc.setCaption(post.caption());
-        doc.setMedia(post.media().stream().map(m -> new PostDocument.MediaDocument(m.url(), m.type())).toList());
+        doc.setMedia(post.media().stream()
+                .map(m -> new PostDocument.MediaDocument(m.url(), m.type(), m.width(), m.height()))
+                .toList());
         doc.setProductTags(post.productTags().stream()
                 .map(pt -> new PostDocument.ProductTagDocument(pt.productId(), pt.price()))
                 .toList());
@@ -309,7 +311,12 @@ public class PostRepositoryAdapter implements PostRepository {
     }
 
     private MediaItem toMedia(PostDocument.MediaDocument mediaDocument) {
-        return new MediaItem(mediaDocument.getUrl(), mediaDocument.getType());
+        return new MediaItem(
+                mediaDocument.getUrl(),
+                mediaDocument.getType(),
+                mediaDocument.getWidth(),
+                mediaDocument.getHeight()
+        );
     }
 
     private ProductTag toProductTag(PostDocument.ProductTagDocument pt) {

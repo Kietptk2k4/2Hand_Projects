@@ -25,7 +25,7 @@ public class ViewUserPostsHttpMapper {
 
     private ViewUserPostsResponse.UserPostItemResponse toItem(ViewUserPostsResult.UserPostItem item) {
         List<ViewUserPostsResponse.MediaItemResponse> media = item.media().stream()
-                .map(m -> new ViewUserPostsResponse.MediaItemResponse(m.url(), m.type()))
+                .map(m -> new ViewUserPostsResponse.MediaItemResponse(m.url(), m.type(), m.width(), m.height()))
                 .toList();
         return new ViewUserPostsResponse.UserPostItemResponse(
                 item.postId(),

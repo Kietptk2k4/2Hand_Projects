@@ -6,9 +6,11 @@ import { buildPlaybackId, VIDEO_PLAYBACK_SURFACES } from "../utils/videoPlayback
 export function MediaGalleryLightbox({
   media = [],
   postId,
+  ownerId,
   initialIndex = 0,
   onClose,
 }) {
+  const playbackOwnerId = ownerId || postId;
   const videoRef = useRef(null);
   const { registerPlayer, claimPlayback, releasePlayback, pauseAll } = useVideoPlayback();
 
@@ -18,7 +20,7 @@ export function MediaGalleryLightbox({
   const safeIndex = Math.min(Math.max(initialIndex, 0), Math.max(items.length - 1, 0));
   const current = items[safeIndex];
   const isVideo = current ? isPostVideoMedia(current) : false;
-  const playbackId = buildPlaybackId(postId, safeIndex, VIDEO_PLAYBACK_SURFACES.GALLERY);
+  const playbackId = buildPlaybackId(playbackOwnerId, safeIndex, VIDEO_PLAYBACK_SURFACES.GALLERY);
 
   useEffect(() => {
     const onKeyDown = (event) => {

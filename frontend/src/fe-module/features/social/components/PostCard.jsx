@@ -2,7 +2,7 @@ import { formatRelativeTime } from "../utils/formatRelativeTime";
 import { useEnrichedProductTags } from "../hooks/useEnrichedProductTags";
 import { usePostAuthorDisplay } from "../hooks/usePostAuthorDisplay";
 import { PostCaption } from "./PostCaption";
-import { PostMediaGrid } from "./PostMediaGrid";
+import { PostMediaCarousel } from "./PostMediaCarousel";
 import { PostOptionsMenu } from "./PostOptionsMenu";
 import { PostProductTagsBlock } from "./PostProductTagsBlock";
 import { LikeCountButton } from "./LikeCountButton";
@@ -94,28 +94,9 @@ export function PostCard({
             />
           ) : null}
         </div>
-        <PostCaption
-          caption={post.caption}
-          hashtags={post.hashtags}
-          onCaptionClick={() => openDetail()}
-          onHashtagClick={(tag) => {
-            if (onHashtagClick) {
-              onHashtagClick(tag);
-              return;
-            }
-            onComingSoon?.();
-          }}
-        />
-        {enrichedProductTags.length > 0 ? (
-          <PostProductTagsBlock
-            tags={enrichedProductTags}
-            variant="compact"
-            onViewProduct={onViewProduct}
-          />
-        ) : null}
       </div>
 
-      <PostMediaGrid
+      <PostMediaCarousel
         media={post.media}
         postId={post.postId}
         surface="feed"
@@ -177,6 +158,33 @@ export function PostCard({
           <span className="text-sm font-medium">Chia sẻ</span>
         </button>
       </div>
+
+      {post.caption || (post.hashtags && post.hashtags.length > 0) ? (
+        <div className="border-t border-outline-variant px-6 pb-4 pt-3">
+          <PostCaption
+            caption={post.caption}
+            hashtags={post.hashtags}
+            onCaptionClick={() => openDetail()}
+            onHashtagClick={(tag) => {
+              if (onHashtagClick) {
+                onHashtagClick(tag);
+                return;
+              }
+              onComingSoon?.();
+            }}
+          />
+        </div>
+      ) : null}
+
+      {enrichedProductTags.length > 0 ? (
+        <div className="px-6 pb-6">
+          <PostProductTagsBlock
+            tags={enrichedProductTags}
+            variant="compact"
+            onViewProduct={onViewProduct}
+          />
+        </div>
+      ) : null}
     </article>
   );
 }

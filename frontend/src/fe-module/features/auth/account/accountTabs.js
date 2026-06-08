@@ -30,6 +30,12 @@ export const ACCOUNT_TABS = [
     icon: "settings",
   },
   {
+    id: "notifications",
+    labelEn: "Notifications",
+    labelVn: "Thông báo",
+    icon: "notifications",
+  },
+  {
     id: "delete",
     labelEn: "Delete Account",
     labelVn: "Xóa tài khoản",

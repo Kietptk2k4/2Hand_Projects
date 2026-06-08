@@ -74,7 +74,9 @@ public class EditPostRequest {
     public record MediaItemRequest(
             @Size(max = 2048)
             String url,
-            String type
+            String type,
+            Integer width,
+            Integer height
     ) {
     }
 

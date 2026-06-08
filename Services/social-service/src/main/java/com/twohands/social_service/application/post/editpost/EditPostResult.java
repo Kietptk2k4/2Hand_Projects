@@ -16,7 +16,7 @@ public record EditPostResult(
         String createdAt,
         String updatedAt
 ) {
-    public record MediaItemData(String url, String type) {
+    public record MediaItemData(String url, String type, Integer width, Integer height) {
     }
 
     public record ProductTagData(String productId, BigDecimal price) {

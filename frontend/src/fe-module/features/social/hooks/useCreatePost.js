@@ -11,6 +11,8 @@ import {
 } from "../constants/createPostConstants";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { mapSocialWriteError } from "../utils/socialWriteErrors";
+import { mapPostMediaPayload } from "../utils/postMediaAspectRatio";
+import { readFileMediaDimensions } from "../utils/readMediaDimensions";
 
 function resolveMediaKind(file) {
   return file.type.startsWith("video/") ? "VIDEO" : "IMAGE";
@@ -146,12 +148,26 @@ export function useCreatePost({ onSuccess }) {
         const previewUrl = URL.createObjectURL(file);
         objectUrlsRef.current.push(previewUrl);
         const id = crypto.randomUUID();
+        let width = null;
+        let height = null;
+        if (!validationError) {
+          try {
+            const dimensions = await readFileMediaDimensions(file);
+            width = dimensions.width;
+            height = dimensions.height;
+          } catch {
+            width = null;
+            height = null;
+          }
+        }
         newSlots.push({
           id,
           file,
           previewUrl,
           mediaUrl: null,
           type: resolveMediaKind(file),
+          width,
+          height,
           status: validationError ? "error" : "pending",
           progress: 0,
           errorMessage: validationError,
@@ -265,7 +281,14 @@ export function useCreatePost({ onSuccess }) {
 
       const readyMedia = mediaItems
         .filter((item) => item.status === "done" && item.mediaUrl)
-        .map((item) => ({ url: item.mediaUrl, type: item.type }));
+        .map((item) =>
+          mapPostMediaPayload({
+            url: item.mediaUrl,
+            type: item.type,
+            width: item.width,
+            height: item.height,
+          }),
+        );
 
       const payload = {
         caption: caption.trim() || undefined,

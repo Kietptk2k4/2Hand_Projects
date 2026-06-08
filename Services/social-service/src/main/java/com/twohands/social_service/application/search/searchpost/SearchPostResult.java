@@ -40,7 +40,9 @@ public record SearchPostResult(
 
     public record MediaItemData(
             String url,
-            String type
+            String type,
+            Integer width,
+            Integer height
     ) {
     }
 

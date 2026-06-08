@@ -6,6 +6,7 @@ import { getMyProfile } from "../../features/auth/api/authApi";
 import { useAuthSession } from "../../features/auth/hooks/useAuthSession.jsx";
 import { buildSocialSearchPath } from "../../features/social/utils/socialSearchRoutes";
 import { APP_ROUTES } from "../constants/routes";
+import { NotificationBell } from "../../features/notification/components/NotificationBell.jsx";
 import { HeaderAccountMenu } from "./HeaderAccountMenu.jsx";
 
 const DEFAULT_AVATAR_URL = "https://i.pravatar.cc/96?img=11";
@@ -13,8 +14,8 @@ const DEFAULT_AVATAR_URL = "https://i.pravatar.cc/96?img=11";
 const NAV_LINKS = [
   { label: "Social", to: APP_ROUTES.socialFeed },
   { label: "Commerce", to: APP_ROUTES.commerceHome },
-  { label: "Services", to: "#services" },
-  { label: "My Bookings", to: "#bookings" },
+  // { label: "Services", to: "#services" },
+  // { label: "My Bookings", to: "#bookings" },
 ];
 
 function SearchIcon() {
@@ -49,15 +50,6 @@ function HeaderIconButton({ label, children, to }) {
     <button type="button" className={className} aria-label={label}>
       {children}
     </button>
-  );
-}
-
-function BellIcon() {
-  return (
-    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true">
-      <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M13.73 21a2 2 0 01-3.46 0" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
   );
 }
 
@@ -242,9 +234,7 @@ export function AppHeader({ className = "" }) {
           </nav>
 
           <div className="flex items-center gap-2 md:gap-3">
-            <HeaderIconButton label="Thông báo">
-              <BellIcon />
-            </HeaderIconButton>
+            <NotificationBell />
             <HeaderIconButton label="Trợ giúp">
               <HelpIcon />
             </HeaderIconButton>

@@ -1,5 +1,9 @@
 package com.twohands.admin_service.delivery.http.config;
 
+import com.twohands.admin_service.application.config.listsystemconfigs.ListSystemConfigsQuery;
+import com.twohands.admin_service.application.config.listsystemconfigs.ListSystemConfigsResult;
+import com.twohands.admin_service.application.config.listsystemconfigs.ListSystemConfigsUseCase;
+import com.twohands.admin_service.application.config.listsystemconfigs.SystemConfigListItem;
 import com.twohands.admin_service.application.config.createsystemconfig.CreateSystemConfigCommand;
 import com.twohands.admin_service.application.config.createsystemconfig.CreateSystemConfigResult;
 import com.twohands.admin_service.application.config.createsystemconfig.CreateSystemConfigUseCase;
@@ -33,21 +37,48 @@ import java.util.UUID;
 @RequestMapping("/admin/api/v1/system-configs")
 public class SystemConfigController {
 
+	private final ListSystemConfigsUseCase listSystemConfigsUseCase;
 	private final CreateSystemConfigUseCase createSystemConfigUseCase;
 	private final UpdateSystemConfigUseCase updateSystemConfigUseCase;
 	private final ToggleSystemConfigUseCase toggleSystemConfigUseCase;
 	private final ViewSystemConfigHistoryUseCase viewSystemConfigHistoryUseCase;
 
 	public SystemConfigController(
+			ListSystemConfigsUseCase listSystemConfigsUseCase,
 			CreateSystemConfigUseCase createSystemConfigUseCase,
 			UpdateSystemConfigUseCase updateSystemConfigUseCase,
 			ToggleSystemConfigUseCase toggleSystemConfigUseCase,
 			ViewSystemConfigHistoryUseCase viewSystemConfigHistoryUseCase
 	) {
+		this.listSystemConfigsUseCase = listSystemConfigsUseCase;
 		this.createSystemConfigUseCase = createSystemConfigUseCase;
 		this.updateSystemConfigUseCase = updateSystemConfigUseCase;
 		this.toggleSystemConfigUseCase = toggleSystemConfigUseCase;
 		this.viewSystemConfigHistoryUseCase = viewSystemConfigHistoryUseCase;
+	}
+
+	@GetMapping
+	@RequireAdminPermission(AdminPermission.SYSTEM_CONFIG_VIEW)
+	public ResponseEntity<ApiResponse<ListSystemConfigsResponse>> list(
+			@RequestParam(required = false) String q,
+			@RequestParam(name = "value_type", required = false) String valueType,
+			@RequestParam(name = "is_active", required = false) Boolean active,
+			@RequestParam(required = false) Integer page,
+			@RequestParam(required = false) Integer size
+	) {
+		ListSystemConfigsResult result = listSystemConfigsUseCase.execute(new ListSystemConfigsQuery(
+				q,
+				valueType,
+				active,
+				page,
+				size
+		));
+
+		return ResponseEntity.ok(ApiResponse.success(
+				HttpStatus.OK.value(),
+				listSystemConfigsUseCase.successMessage(),
+				toListResponse(result)
+		));
 	}
 
 	@PostMapping
@@ -163,6 +194,31 @@ public class SystemConfigController {
 				viewSystemConfigHistoryUseCase.successMessage(),
 				toHistoryResponse(result)
 		));
+	}
+
+	private ListSystemConfigsResponse toListResponse(ListSystemConfigsResult result) {
+		return new ListSystemConfigsResponse(
+				result.page(),
+				result.size(),
+				result.totalElements(),
+				result.totalPages(),
+				result.items().stream().map(this::toListEntry).toList()
+		);
+	}
+
+	private SystemConfigListEntryResponse toListEntry(SystemConfigListItem item) {
+		return new SystemConfigListEntryResponse(
+				item.configId(),
+				item.configKey(),
+				item.configValue(),
+				item.valueType().name(),
+				item.description(),
+				item.active(),
+				item.createdBy(),
+				item.createdAt(),
+				item.updatedBy(),
+				item.updatedAt()
+		);
 	}
 
 	private ViewSystemConfigHistoryResponse toHistoryResponse(ViewSystemConfigHistoryResult result) {

@@ -115,7 +115,7 @@ public class SearchController {
                         item.authorId(),
                         item.caption(),
                         item.media().stream()
-                                .map(m -> new SearchPostResponse.MediaItemResponse(m.url(), m.type()))
+                                .map(m -> new SearchPostResponse.MediaItemResponse(m.url(), m.type(), m.width(), m.height()))
                                 .toList(),
                         item.visibility(),
                         item.likeCount(),
@@ -160,7 +160,7 @@ public class SearchController {
                         item.authorId(),
                         item.caption(),
                         item.media().stream()
-                                .map(m -> new SearchHashtagResponse.MediaItemResponse(m.url(), m.type()))
+                                .map(m -> new SearchHashtagResponse.MediaItemResponse(m.url(), m.type(), m.width(), m.height()))
                                 .toList(),
                         item.visibility(),
                         item.likeCount(),

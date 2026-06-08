@@ -35,7 +35,11 @@ public record CreatePostRequest(
             String url,
 
             @NotNull(message = "Media type khong duoc de trong.")
-            String type
+            String type,
+
+            Integer width,
+
+            Integer height
     ) {
     }
 

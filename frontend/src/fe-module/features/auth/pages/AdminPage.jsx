@@ -18,6 +18,10 @@ import {
   parseOrderSupportPaymentId,
   parseOrderSupportShipmentId,
   parseOrderSupportWebhookFilters,
+  parseSystemOperationsAnnouncementFilters,
+  parseSystemOperationsConfigFilters,
+  parseSystemOperationsConfigId,
+  parseSystemOperationsConfigView,
 } from "../admin/adminUrlParams.js";
 import { AdminNestedNav } from "../admin/components/AdminNestedNav.jsx";
 import { AdminPageLayout } from "../admin/components/AdminPageLayout.jsx";
@@ -43,6 +47,8 @@ import { PaymentSupportDetailTab } from "../admin/orderSupport/components/tabs/P
 import { ShipmentSupportDetailTab } from "../admin/orderSupport/components/tabs/ShipmentSupportDetailTab.jsx";
 import { AdminSupportTargetBar } from "../admin/orderSupport/components/AdminSupportTargetBar.jsx";
 import { WebhookLogsSupportTab } from "../admin/orderSupport/components/tabs/WebhookLogsSupportTab.jsx";
+import { SystemConfigsTab } from "../admin/systemOperations/components/tabs/SystemConfigsTab.jsx";
+import { SystemAnnouncementsTab } from "../admin/systemOperations/components/tabs/SystemAnnouncementsTab.jsx";
 import { AuthAlert } from "../../../shared/ui/auth/authUi.jsx";
 
 const CONTENT_MODERATION_TAB_COMPONENTS = {
@@ -73,6 +79,11 @@ const USER_INVESTIGATION_TAB_COMPONENTS = {
   "enforcement-history": InvestigationEnforcementHistoryTab,
 };
 
+const SYSTEM_OPERATIONS_TAB_COMPONENTS = {
+  "system-configs": SystemConfigsTab,
+  "system-announcements": SystemAnnouncementsTab,
+};
+
 const ORDER_SUPPORT_TAB_COMPONENTS = {
   "order-detail": OrderSupportDetailTab,
   "payment-detail": PaymentSupportDetailTab,
@@ -95,6 +106,10 @@ export function AdminPage() {
   const contentModerationCommentId = parseContentModerationCommentId(searchParams);
   const contentModerationProductId = parseContentModerationProductId(searchParams);
   const contentModerationProductView = parseContentModerationProductView(searchParams);
+  const systemOperationsConfigFilters = parseSystemOperationsConfigFilters(searchParams);
+  const systemOperationsAnnouncementFilters = parseSystemOperationsAnnouncementFilters(searchParams);
+  const systemOperationsConfigId = parseSystemOperationsConfigId(searchParams);
+  const systemOperationsConfigView = parseSystemOperationsConfigView(searchParams);
 
   const [selectedRoleId, setSelectedRoleId] = useState("");
   const [investigationTargetUser, setInvestigationTargetUser] = useState(null);
@@ -410,6 +425,65 @@ export function AdminPage() {
     ],
   );
 
+
+  const handleSystemOperationsConfigFiltersChange = useCallback(
+    (filters) => {
+      setSearchParams(
+        buildAdminSearchParams({
+          section: "systemOperations",
+          tab: activeChildTab,
+          configFilters: filters,
+          clearConfigSelection: true,
+          preserve: searchParams,
+        }),
+        { replace: true },
+      );
+      setAlert(null);
+    },
+    [activeChildTab, searchParams, setSearchParams],
+  );
+
+  const handleSystemOperationsAnnouncementFiltersChange = useCallback(
+    (filters) => {
+      setSearchParams(
+        buildAdminSearchParams({
+          section: "systemOperations",
+          tab: activeChildTab,
+          announcementFilters: filters,
+          preserve: searchParams,
+        }),
+        { replace: true },
+      );
+      setAlert(null);
+    },
+    [activeChildTab, searchParams, setSearchParams],
+  );
+
+  const handleSystemOperationsConfigSelectionChange = useCallback(
+    ({ configId: nextConfigId, configView: nextConfigView }) => {
+      setSearchParams(
+        buildAdminSearchParams({
+          section: "systemOperations",
+          tab: activeChildTab,
+          configFilters: systemOperationsConfigFilters,
+          announcementFilters: systemOperationsAnnouncementFilters,
+          configId: nextConfigId || undefined,
+          configView: nextConfigView || undefined,
+          clearConfigSelection: !nextConfigId,
+          preserve: searchParams,
+        }),
+        { replace: true },
+      );
+    },
+    [
+      activeChildTab,
+      searchParams,
+      setSearchParams,
+      systemOperationsAnnouncementFilters,
+      systemOperationsConfigFilters,
+    ],
+  );
+
   const onViewRolePermissions = useCallback(
     (roleId) => {
       setSelectedRoleId(roleId);
@@ -432,6 +506,8 @@ export function AdminPage() {
     ADMIN_AUDIT_TAB_COMPONENTS[activeChildTab] || AdminActionLogsTab;
   const ContentModerationTabComponent =
     CONTENT_MODERATION_TAB_COMPONENTS[activeChildTab] || PostModerationTab;
+  const SystemOperationsTabComponent =
+    SYSTEM_OPERATIONS_TAB_COMPONENTS[activeChildTab] || SystemConfigsTab;
   const OrderSupportTabComponent =
     ORDER_SUPPORT_TAB_COMPONENTS[activeChildTab] || OrderSupportDetailTab;
 
@@ -467,6 +543,18 @@ export function AdminPage() {
     onNotify,
   };
 
+
+  const systemOperationsTabProps = {
+    configId: systemOperationsConfigId,
+    configView: systemOperationsConfigView,
+    configFilters: systemOperationsConfigFilters,
+    announcementFilters: systemOperationsAnnouncementFilters,
+    onFiltersChange: handleSystemOperationsConfigFiltersChange,
+    onAnnouncementFiltersChange: handleSystemOperationsAnnouncementFiltersChange,
+    onConfigSelectionChange: handleSystemOperationsConfigSelectionChange,
+    onNotify,
+  };
+
   const contentModerationTabProps = {
     postId: contentModerationPostId,
     commentId: contentModerationCommentId,
@@ -495,6 +583,9 @@ export function AdminPage() {
       }
       return <TabComponent />;
     }
+    if (adminTopTab === "systemOperations") {
+      return <SystemOperationsTabComponent {...systemOperationsTabProps} />;
+    }
     if (adminTopTab === "orderSupport") {
       return <OrderSupportTabComponent {...orderSupportTabProps} />;
     }
@@ -504,12 +595,14 @@ export function AdminPage() {
     ContentModerationTabComponent,
     InvestigationTabComponent,
     OrderSupportTabComponent,
+    SystemOperationsTabComponent,
     RoleTabComponent,
     adminTopTab,
     adminAuditTabProps,
     contentModerationTabProps,
     investigationTabProps,
     orderSupportTabProps,
+    systemOperationsTabProps,
     roleTabProps,
   ]);
 

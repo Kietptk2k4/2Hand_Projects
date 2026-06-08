@@ -90,7 +90,7 @@ class ViewUserPostsApiIntegrationTest {
                 List.of(new ViewUserPostsResult.UserPostItem(
                         postId,
                         "Preview caption",
-                        List.of(new ViewUserPostsResult.MediaItemData("https://cdn/1.jpg", "IMAGE")),
+                        List.of(new ViewUserPostsResult.MediaItemData("https://cdn/1.jpg", "IMAGE", null, null)),
                         "PUBLIC",
                         5L,
                         1L,

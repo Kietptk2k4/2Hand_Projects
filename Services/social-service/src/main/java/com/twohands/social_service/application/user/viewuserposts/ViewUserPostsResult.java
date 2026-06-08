@@ -35,7 +35,9 @@ public record ViewUserPostsResult(
 
     public record MediaItemData(
             String url,
-            String type
+            String type,
+            Integer width,
+            Integer height
     ) {
     }
 
