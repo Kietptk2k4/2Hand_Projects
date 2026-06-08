@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9f9ff;
+        }
+        .modal-overlay {
+            background-color: rgba(17, 28, 45, 0.6);
+            backdrop-filter: blur(4px);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface": "#f9f9ff",
+                      "on-secondary": "#ffffff",
+                      "inverse-surface": "#263143",
+                      "surface-tint": "#0054d6",
+                      "on-primary-fixed-variant": "#003fa4",
+                      "error-container": "#ffdad6",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary": "#ffffff",
+                      "secondary-container": "#6063ee",
+                      "on-surface": "#111c2d",
+                      "tertiary": "#565a5b",
+                      "surface-container": "#e7eeff",
+                      "on-error": "#ffffff",
+                      "surface-variant": "#d8e3fb",
+                      "on-secondary-container": "#fffbff",
+                      "inverse-on-surface": "#ecf1ff",
+                      "tertiary-container": "#6f7274",
+                      "outline-variant": "#c2c6d8",
+                      "on-tertiary-fixed-variant": "#444749",
+                      "primary-container": "#0066ff",
+                      "primary-fixed": "#dae1ff",
+                      "on-error-container": "#93000a",
+                      "background": "#f9f9ff",
+                      "primary-fixed-dim": "#b3c5ff",
+                      "on-secondary-fixed-variant": "#2f2ebe",
+                      "inverse-primary": "#b3c5ff",
+                      "outline": "#727687",
+                      "primary": "#0050cb",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed": "#e1e0ff",
+                      "tertiary-fixed-dim": "#c4c7c9",
+                      "on-primary-fixed": "#001849",
+                      "on-background": "#111c2d",
+                      "on-surface-variant": "#424656",
+                      "secondary": "#4648d4",
+                      "on-tertiary-fixed": "#191c1e",
+                      "surface-bright": "#f9f9ff",
+                      "surface-container-high": "#dee8ff",
+                      "secondary-fixed-dim": "#c0c1ff",
+                      "on-primary-container": "#f8f7ff",
+                      "surface-dim": "#cfdaf2",
+                      "surface-container-low": "#f0f3ff",
+                      "tertiary-fixed": "#e0e3e5",
+                      "surface-container-highest": "#d8e3fb",
+                      "error": "#ba1a1a",
+                      "on-tertiary-container": "#f6f8fa",
+                      "on-secondary-fixed": "#07006c"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "24px",
+                      "xs": "4px",
+                      "margin-desktop": "32px",
+                      "sm": "12px",
+                      "md": "24px",
+                      "margin-mobile": "16px",
+                      "base": "8px",
+                      "xl": "64px",
+                      "container-max": "1280px",
+                      "lg": "40px"
+              },
+              "fontFamily": {
+                      "label-md": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-xl": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "headline-sm": ["Inter"]
+              },
+              "fontSize": {
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- Sidebar Navigation -->
+<aside class="bg-inverse-surface dark:bg-surface-container-lowest h-screen w-64 fixed left-0 top-0 flex flex-col py-md shadow-sm z-40">
+<div class="px-6 mb-10">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary-container">2Hands Admin</h1>
+<p class="text-primary-fixed opacity-70 font-body-sm">Hệ thống quản trị</p>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center text-on-surface-variant opacity-80 pl-5 py-3 hover:bg-surface-container-highest/10 transition-colors cursor-pointer active:scale-95" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+<span class="font-body-md">Bảng điều khiển</span>
+</a>
+<a class="flex items-center text-primary-fixed font-bold border-l-4 border-primary-fixed pl-4 py-3 hover:bg-surface-container-highest/10 transition-colors cursor-pointer active:scale-95" href="#">
+<span class="material-symbols-outlined mr-3">gavel</span>
+<span class="font-body-md">Kiểm duyệt nội dung</span>
+</a>
+<a class="flex items-center text-on-surface-variant opacity-80 pl-5 py-3 hover:bg-surface-container-highest/10 transition-colors cursor-pointer active:scale-95" href="#">
+<span class="material-symbols-outlined mr-3">group</span>
+<span class="font-body-md">Quản lý người dùng</span>
+</a>
+<a class="flex items-center text-on-surface-variant opacity-80 pl-5 py-3 hover:bg-surface-container-highest/10 transition-colors cursor-pointer active:scale-95" href="#">
+<span class="material-symbols-outlined mr-3">settings</span>
+<span class="font-body-md">Cài đặt hệ thống</span>
+</a>
+</nav>
+<div class="px-6 mb-6">
+<button class="w-full bg-primary-container text-white py-3 rounded-lg font-label-md flex items-center justify-center gap-2 shadow-lg hover:brightness-110 transition-all">
+<span class="material-symbols-outlined">add</span>
+                Báo cáo mới
+            </button>
+</div>
+<div class="border-t border-white/10 pt-4">
+<a class="flex items-center text-on-surface-variant opacity-80 pl-5 py-2 hover:bg-surface-container-highest/10 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">help</span>
+<span class="font-body-md">Trợ giúp</span>
+</a>
+<a class="flex items-center text-on-surface-variant opacity-80 pl-5 py-2 hover:bg-surface-container-highest/10 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">logout</span>
+<span class="font-body-md">Đăng xuất</span>
+</a>
+</div>
+</aside>
+<!-- Top App Bar -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] z-30 bg-surface dark:bg-surface-dim border-b border-outline-variant flex justify-between items-center px-margin-desktop h-16">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full pl-10 pr-4 py-2 text-label-md focus:ring-2 focus:ring-primary" placeholder="Tìm kiếm nội dung, báo cáo..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="relative text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute -top-1 -right-1 bg-error text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">3</span>
+</button>
+<div class="flex items-center gap-3">
+<div class="text-right">
+<p class="font-label-md text-on-surface font-bold leading-none">Admin Nguyễn</p>
+<p class="text-[12px] text-outline">Kiểm duyệt viên cấp cao</p>
+</div>
+<img alt="Hồ sơ quản trị viên" class="w-10 h-10 rounded-full bg-primary-fixed border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuABULnvCT295Qt6-lhLN9Gp-wESdW55g1PoiffL3-XIvt9ZY-B4Fy-k7vGliB2qvwiQ11rUavN1M3rMLBbq3jPV2doBXKf95-nICqjYBfu-CMOALkBOD530BpWVSThDl0h-yT88gWR-LGU45JdJmBSvfy_EFuw5UU0DAK8ZpTwD1dP9KzM5-_J6rcgL8bCVtZDwDxLnbZ2UbPbQuKarNE647r7GUmop3tvq-NGHyegSRCYklnQdoT8ecOgSRUGt4PCVivMd6JNqXzE"/>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-64 pt-16 min-h-screen p-gutter">
+<!-- Dashboard Placeholder Content (Background for the modal) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+<div class="bg-white p-6 rounded-xl border border-outline-variant shadow-sm">
+<p class="text-outline font-label-md">Đang chờ xử lý</p>
+<h3 class="text-headline-md font-bold text-on-surface mt-1">128</h3>
+<p class="text-error font-label-sm mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span> +12% so với hôm qua
+                </p>
+</div>
+<div class="bg-white p-6 rounded-xl border border-outline-variant shadow-sm">
+<p class="text-outline font-label-md">Đã xử lý (24h)</p>
+<h3 class="text-headline-md font-bold text-on-surface mt-1">1,042</h3>
+<p class="text-primary font-label-sm mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">check_circle</span> Hiệu suất cao
+                </p>
+</div>
+<div class="bg-white p-6 rounded-xl border border-outline-variant shadow-sm">
+<p class="text-outline font-label-md">Tỉ lệ chính xác</p>
+<h3 class="text-headline-md font-bold text-on-surface mt-1">99.4%</h3>
+<p class="text-primary font-label-sm mt-2">Duy trì ổn định</p>
+</div>
+</div>
+<div class="bg-white rounded-xl border border-outline-variant overflow-hidden">
+<div class="px-6 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<h2 class="font-headline-sm text-on-surface">Danh sách báo cáo gần đây</h2>
+<div class="flex gap-2">
+<button class="px-4 py-2 border border-outline rounded-lg font-label-md">Bộ lọc</button>
+<button class="px-4 py-2 bg-primary text-white rounded-lg font-label-md">Xuất báo cáo</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-lowest border-b border-outline-variant text-outline font-label-sm">
+<th class="px-6 py-4">ID Báo cáo</th>
+<th class="px-6 py-4">Người dùng</th>
+<th class="px-6 py-4">Nội dung vi phạm</th>
+<th class="px-6 py-4">Loại vi phạm</th>
+<th class="px-6 py-4">Thời gian</th>
+<th class="px-6 py-4 text-right">Thao tác</th>
+</tr>
+</thead>
+<tbody class="text-body-sm">
+<tr class="border-b border-outline-variant hover:bg-surface-container-lowest transition-colors">
+<td class="px-6 py-4 font-bold">#RP-9401</td>
+<td class="px-6 py-4">Hoàng Nam</td>
+<td class="px-6 py-4">"Bán thuốc không rõ nguồn gốc..."</td>
+<td class="px-6 py-4"><span class="px-3 py-1 bg-error-container text-on-error-container rounded-full">Lừa đảo</span></td>
+<td class="px-6 py-4">15 phút trước</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary font-bold hover:underline">Thẩm định</button>
+</td>
+</tr>
+<!-- More rows... -->
+</tbody>
+</table>
+</div>
+</div>
+</main>
+<!-- ACTIVE MODAL: Thẩm định & Xử lý Bài viết -->
+<div class="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-10" id="investigationModal">
+<div class="modal-overlay absolute inset-0"></div>
+<div class="relative bg-white w-full max-w-6xl h-full max-h-[921px] rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-300">
+<!-- Modal Header -->
+<header class="flex items-center justify-between px-8 py-4 border-b border-outline-variant bg-surface-container-low">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary p-2 bg-primary-fixed rounded-lg">policy</span>
+<div>
+<h2 class="font-headline-sm text-on-surface">Thẩm định &amp; Xử lý Bài viết</h2>
+<p class="text-body-sm text-outline">ID Báo cáo: <span class="font-bold text-on-surface">#RP-9401</span> • Người báo cáo: <span class="font-bold text-on-surface">Minh Anh</span></p>
+</div>
+</div>
+<button class="p-2 hover:bg-error-container hover:text-on-error-container rounded-full transition-colors" onclick="closeModal()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</header>
+<!-- Modal Body (Split Layout) -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Left: Full Visual Preview -->
+<div class="w-3/5 overflow-y-auto p-8 border-r border-outline-variant bg-surface-bright">
+<div class="max-w-xl mx-auto space-y-6">
+<!-- Post Author Info -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<img alt="Người dùng đăng bài" class="w-12 h-12 rounded-full border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmFWHwrn2e_ba2_D-sWtN4XpmIvkrIHBOLSsyTSMSXc7V_F44sCO4PhEbub9yA8zLn5Uaax3SVsIGAR75n_cfIcmcYBSZPuYNBfxFbC3x_KhdexkUIc7IBhjYZGpulIIl6jQlDHlq-A03xjCg7mjzrasEA5_yvRJDNJfFKBFRv4Ohdv1909CsBz4dMdJMrijZObEdRtuRl5TIQ9nA8PUVj3F6nqr41yrLKSKqnV1U5qOA2atUZ4fXzJVc-rM89ZS4zDhD6Ud_tvGc"/>
+<div>
+<h3 class="font-bold text-on-surface">Hoàng Nam</h3>
+<p class="text-body-sm text-outline">Đã đăng 2 giờ trước • Hà Nội</p>
+</div>
+</div>
+<span class="px-3 py-1 bg-surface-container-high rounded-full text-label-sm">Công khai</span>
+</div>
+<!-- Media Gallery -->
+<div class="grid grid-cols-2 gap-2 rounded-xl overflow-hidden border border-outline-variant">
+<img alt="Ảnh thuốc 1" class="w-full h-64 object-cover" data-alt="A macro photograph of generic looking white and blue capsules scattered on a sterile white table. The lighting is clinical and bright, highlighting the reflective surface of the pills. The overall mood is cold and suspicious, suggesting an unauthorized medical sale in a minimalist, professional photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRLntHEi7zKfHeukX3i13TsNSQrKXeOhT3dyZFIDmiTfxUkzeShPaAXhRzzRnA9-_6SfLSVvTb_RApcNIEjuyYJL9a9PC5yU7wQOHNka3b9fhLzMFlzjDVQb5BzkMJgTyjP_APdOrdb5oYSCGd2TrNmYoJwhVwJqxIy_3MEZ5fccsYM1fxi46cnJ2OyoKepQiWLf9X1yiQUOG8VqOUHpP0JTkCCbxdOyq-UMAJ5Ybai8wJkRkcisWuZtU3PyMeZQOu_v7FnOSMWOw"/>
+<img alt="Ảnh thuốc 2" class="w-full h-64 object-cover" data-alt="A close-up shot of a counterfeit-looking medical certificate with blurred text and an official-looking gold seal that appears slightly pixelated. The document is held by a hand in low, dramatic lighting. The visual style is forensic and sharp, emphasizing the investigative nature of content moderation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwovyuZRim8mawaGSJ3rXpTrBy5U9Nc8OwliIRj6FNZ_VYptLkZoWhEhEQJUbiktnodf6ymAOKOd7JT0rqbs0AVZ2VCGB8bAJY9Viw7slQuBn9ZsJ7DAoIkRUWeRKcG6mKaPzDHQmuAbbLMMUt-uFkqy5SYYDsNtaZZwa3xVsjYd39v0PUTl_djH8r34sqnQUn4XxFou6nD75lNXomArmWrtXLUaS47mH3Yhg1TeeSRpyxUe0H-Q1EMXvTapZ5jETi_Vy01EEA3iE"/>
+</div>
+<!-- Post Content -->
+<div class="space-y-3">
+<p class="text-body-md text-on-surface leading-relaxed">
+                                GIẢM CÂN CẤP TỐC 5KG TRONG 1 TUẦN!!! 💊💊
+                                Không cần ăn kiêng, không cần tập luyện. Thuốc đông y gia truyền cam kết an toàn 100%. 
+                                Giá chỉ 199k/hộp. Liên hệ ngay Zalo: 09xx.xxx.xxx để được tư vấn. 
+                                SỐ LƯỢNG CÓ HẠN!
+                            </p>
+<div class="flex flex-wrap gap-2">
+<span class="text-primary font-bold text-body-sm cursor-pointer hover:underline">#giamcan</span>
+<span class="text-primary font-bold text-body-sm cursor-pointer hover:underline">#lamdep</span>
+<span class="text-primary font-bold text-body-sm cursor-pointer hover:underline">#thuocgiatruyen</span>
+<span class="text-primary font-bold text-body-sm cursor-pointer hover:underline">#hot</span>
+</div>
+</div>
+<!-- Report Context -->
+<div class="bg-error-container/20 border border-error/20 p-4 rounded-xl">
+<h4 class="font-bold text-error flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined">report</span>
+                                Chi tiết báo cáo
+                            </h4>
+<p class="text-body-sm text-on-surface">
+<span class="font-bold">Lý do:</span> Lừa đảo hoặc thông tin y tế sai lệch.
+                            </p>
+<p class="text-body-sm text-on-surface mt-1">
+<span class="font-bold">Mô tả:</span> Quảng cáo thuốc không giấy phép, có dấu hiệu lừa đảo đa cấp.
+                            </p>
+</div>
+</div>
+</div>
+<!-- Right: Action Form & Timeline -->
+<div class="w-2/5 flex flex-col h-full bg-white">
+<div class="flex-1 overflow-y-auto p-8 space-y-8">
+<!-- Toggle Action Mode -->
+<div>
+<label class="block font-label-md text-outline mb-4">Quyết định xử lý</label>
+<div class="flex p-1 bg-surface-container rounded-xl">
+<button class="flex-1 py-3 px-4 rounded-lg font-bold flex items-center justify-center gap-2 transition-all bg-error text-white shadow-md" id="btnDiscipline" onclick="setMode('discipline')">
+<span class="material-symbols-outlined">block</span>
+                                    Kỷ luật
+                                </button>
+<button class="flex-1 py-3 px-4 rounded-lg font-bold flex items-center justify-center gap-2 transition-all text-outline hover:text-on-surface" id="btnRestore" onclick="setMode('restore')">
+<span class="material-symbols-outlined">settings_backup_restore</span>
+                                    Khôi phục
+                                </button>
+</div>
+</div>
+<!-- Form Content (Dynamic) -->
+<div class="space-y-6" id="formContent">
+<!-- Default: Discipline Mode -->
+<div class="space-y-6" id="disciplineFields">
+<div>
+<label class="block font-label-md text-outline mb-2">Hình thức kỷ luật</label>
+<select class="w-full border-outline-variant rounded-lg p-3 text-body-md focus:ring-primary focus:border-primary">
+<option>Gỡ bỏ bài viết</option>
+<option>Gỡ bỏ &amp; Cảnh cáo người dùng</option>
+<option>Gỡ bỏ &amp; Khóa tài khoản 7 ngày</option>
+<option>Gỡ bỏ &amp; Khóa tài khoản vĩnh viễn</option>
+</select>
+</div>
+<div>
+<label class="block font-label-md text-outline mb-2">Lý do cụ thể</label>
+<textarea class="w-full border-outline-variant rounded-lg p-3 text-body-md focus:ring-primary focus:border-primary" placeholder="Nhập lý do chi tiết gửi cho người dùng..." rows="4"></textarea>
+</div>
+</div>
+<!-- Hidden: Restore Mode -->
+<div class="hidden space-y-6" id="restoreFields">
+<div>
+<label class="block font-label-md text-outline mb-2">Lý do khôi phục</label>
+<textarea class="w-full border-outline-variant rounded-lg p-3 text-body-md focus:ring-primary focus:border-primary" placeholder="Giải trình lý do nội dung này không vi phạm..." rows="4"></textarea>
+</div>
+<div class="flex items-center gap-3 p-3 bg-primary-fixed rounded-lg">
+<span class="material-symbols-outlined text-primary">info</span>
+<p class="text-body-sm text-on-primary-fixed-variant">Bài viết sẽ được hiển thị lại ngay lập tức sau khi xác nhận.</p>
+</div>
+</div>
+</div>
+<!-- Action History Timeline -->
+<div class="pt-6 border-t border-outline-variant">
+<h4 class="font-label-md text-outline mb-4 uppercase tracking-wider">Lịch sử xử lý</h4>
+<div class="space-y-6 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-outline-variant">
+<div class="relative pl-8">
+<div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-primary-fixed border-4 border-white flex items-center justify-center"></div>
+<p class="font-bold text-body-sm">Admin Nguyễn thẩm định</p>
+<p class="text-body-sm text-outline">10 phút trước • Đang xem xét</p>
+</div>
+<div class="relative pl-8">
+<div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-surface-variant border-4 border-white flex items-center justify-center"></div>
+<p class="font-bold text-body-sm">Hệ thống AI cảnh báo</p>
+<p class="text-body-sm text-outline">2 giờ trước • Điểm vi phạm: 85/100</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal Footer Actions -->
+<footer class="p-8 border-t border-outline-variant bg-surface-container-low flex gap-4">
+<button class="flex-1 py-3 px-6 border border-outline rounded-xl font-bold hover:bg-surface-variant transition-colors" onclick="closeModal()">Hủy bỏ</button>
+<button class="flex-[2] py-3 px-6 bg-error text-white rounded-xl font-bold shadow-lg hover:brightness-110 active:scale-[0.98] transition-all" id="submitBtn">Xác nhận xử lý</button>
+</footer>
+</div>
+</div>
+</div>
+</div>
+<script>
+        function setMode(mode) {
+            const btnDiscipline = document.getElementById('btnDiscipline');
+            const btnRestore = document.getElementById('btnRestore');
+            const disciplineFields = document.getElementById('disciplineFields');
+            const restoreFields = document.getElementById('restoreFields');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (mode === 'discipline') {
+                // Style buttons
+                btnDiscipline.className = 'flex-1 py-3 px-4 rounded-lg font-bold flex items-center justify-center gap-2 transition-all bg-error text-white shadow-md';
+                btnRestore.className = 'flex-1 py-3 px-4 rounded-lg font-bold flex items-center justify-center gap-2 transition-all text-outline hover:text-on-surface';
+                
+                // Toggle fields
+                disciplineFields.classList.remove('hidden');
+                restoreFields.classList.add('hidden');
+                
+                // Update submit button
+                submitBtn.innerText = 'Xác nhận xử lý';
+                submitBtn.classList.remove('bg-primary');
+                submitBtn.classList.add('bg-error');
+            } else {
+                // Style buttons
+                btnDiscipline.className = 'flex-1 py-3 px-4 rounded-lg font-bold flex items-center justify-center gap-2 transition-all text-outline hover:text-on-surface';
+                btnRestore.className = 'flex-1 py-3 px-4 rounded-lg font-bold flex items-center justify-center gap-2 transition-all bg-primary text-white shadow-md';
+                
+                // Toggle fields
+                disciplineFields.classList.add('hidden');
+                restoreFields.classList.remove('hidden');
+                
+                // Update submit button
+                submitBtn.innerText = 'Khôi phục bài viết';
+                submitBtn.classList.remove('bg-error');
+                submitBtn.classList.add('bg-primary');
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('investigationModal');
+            modal.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        // Auto-close on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+    </script>
+</body></html>

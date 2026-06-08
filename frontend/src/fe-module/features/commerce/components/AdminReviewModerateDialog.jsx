@@ -5,6 +5,7 @@ import {
   HIDE_WARNING,
   MODERATION_ACTIONS,
   REASON_MAX_LENGTH,
+  REMOVE_WARNING,
   RESTORE_WARNING,
   getAllowedActionsForReviewStatus,
   getDefaultActionForReview,
@@ -39,6 +40,7 @@ export function AdminReviewModerateDialog({
 
   const trimmedReason = reason.trim();
   const showHideWarning = action === MODERATION_ACTIONS.HIDE;
+  const showRemoveWarning = action === MODERATION_ACTIONS.REMOVE;
   const showRestoreWarning = action === MODERATION_ACTIONS.RESTORE;
 
   return (
@@ -100,6 +102,12 @@ export function AdminReviewModerateDialog({
           {showHideWarning ? (
             <p className="rounded-lg border border-error/20 bg-error-container/30 px-3 py-2 text-body-sm text-on-error-container">
               {HIDE_WARNING}
+            </p>
+          ) : null}
+
+          {showRemoveWarning ? (
+            <p className="rounded-lg border border-error/20 bg-error-container/30 px-3 py-2 text-body-sm text-on-error-container">
+              {REMOVE_WARNING}
             </p>
           ) : null}
 

@@ -1,5 +1,6 @@
 import { ADMIN_TOP_TABS } from "../adminTabs.js";
-import { COMMERCE_MODERATION_TABS } from "../commerceModeration/commerceModerationTabs.js";
+import { ADMIN_AUDIT_TABS } from "../adminAudit/adminAuditTabs.js";
+import { CONTENT_MODERATION_TABS } from "../contentModeration/contentModerationTabs.js";
 import { ORDER_SUPPORT_TABS } from "../orderSupport/orderSupportTabs.js";
 import { USER_INVESTIGATION_TABS } from "../userInvestigation/userInvestigationTabs.js";
 import { ROLE_PERMISSION_TABS } from "../rolePermission/rolePermissionTabs.js";
@@ -7,7 +8,8 @@ import { ROLE_PERMISSION_TABS } from "../rolePermission/rolePermissionTabs.js";
 const SECTION_CHILDREN = {
   rolePermission: ROLE_PERMISSION_TABS,
   userInvestigation: USER_INVESTIGATION_TABS,
-  commerceModeration: COMMERCE_MODERATION_TABS,
+  adminAudit: ADMIN_AUDIT_TABS,
+  contentModeration: CONTENT_MODERATION_TABS,
   orderSupport: ORDER_SUPPORT_TABS,
 };
 
@@ -26,15 +28,26 @@ function ParentNavIcon({ sectionId, active }) {
     );
   }
 
-  if (sectionId === "commerceModeration") {
+  if (sectionId === "adminAudit") {
     return (
       <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
         <path
-          d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <path d="M9 22V12h6v10" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  if (sectionId === "contentModeration") {
+    return (
+      <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     );
   }
@@ -163,6 +176,27 @@ function ChildNavIcon({ name, active }) {
     webhook: (
       <path
         d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ),
+    audit: (
+      <path
+        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ),
+    post: (
+      <path
+        d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 12h10"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ),
+    comment: (
+      <path
+        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

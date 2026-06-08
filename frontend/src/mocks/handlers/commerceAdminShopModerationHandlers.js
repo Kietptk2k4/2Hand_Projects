@@ -1,7 +1,6 @@
 import { delay, http, HttpResponse } from "msw";
 import {
   listAdminShops,
-  moderateAdminShop,
   userHasAdminShopModerationAccess,
   validateAdminShopListQuery,
 } from "../data/commerceAdminShopModerationData";
@@ -65,36 +64,6 @@ export const commerceAdminShopModerationHandlers = [
     const result = listAdminShops(validated);
     return HttpResponse.json(
       apiSuccess(200, "Lay danh sach shop admin thanh cong.", result.data),
-      { status: 200 },
-    );
-  }),
-
-  http.post("*/commerce/api/v1/admin/shops/:shopId/moderate", async ({ params, request }) => {
-    await delay(400);
-    const auth = requireAuth(request);
-    if (auth.error) return auth.error;
-
-    const denied = requireAdmin(auth.user);
-    if (denied) return denied.error;
-
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return HttpResponse.json(apiError("COMMERCE-400-VALIDATION", "Du lieu khong hop le."), {
-        status: 400,
-      });
-    }
-
-    const result = moderateAdminShop(params.shopId, body, {
-      isAdmin: Boolean(auth.user.is_admin),
-      permissions: auth.user.permissions || [],
-    });
-
-    if (result.error) return mapError(result);
-
-    return HttpResponse.json(
-      apiSuccess(200, result.message, result.data),
       { status: 200 },
     );
   }),

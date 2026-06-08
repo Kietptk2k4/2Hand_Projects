@@ -7,7 +7,7 @@ export function CommerceAdminProductRemovalPage() {
   const [searchParams] = useSearchParams();
 
   const next = buildAdminSearchParams({
-    section: "commerceModeration",
+    section: "contentModeration",
     tab: "product-moderation",
     preserve: searchParams,
   });

@@ -100,6 +100,40 @@ Use case nay mo ta nghiep vu review san pham/shop trong Commerce Service. Buyer 
 
 **Exception Flow:** Missing permission -> 403.
 
+### 5.6. View Review Context (Create Form)
+
+**Preconditions:** Buyer owns order item.
+
+**Main Flow:**
+
+1. Buyer request `GET /reviews/context?order_item_id=...`.
+2. System load order item snapshots and review existence.
+3. System return context for review create form.
+
+**Exception Flow:** Item not found/not owned -> 404; missing param -> 400.
+
+### 5.7. View My Product Review
+
+**Preconditions:** Buyer authenticated.
+
+**Main Flow:**
+
+1. Buyer request `GET /me/products/{productId}/review`.
+2. System lookup buyer review for product.
+3. System return `has_review` wrapper and `can_edit` flag.
+
+### 5.8. View Product Review For Edit
+
+**Preconditions:** Review belongs to buyer.
+
+**Main Flow:**
+
+1. Buyer request `GET /reviews/{reviewId}`.
+2. System load review, media count, order item snapshots.
+3. System return data for edit form.
+
+**Exception Flow:** Not owner -> 404.
+
 ## 6. Security
 
 - Buyer review ownership derived from order, not client-provided buyer id.

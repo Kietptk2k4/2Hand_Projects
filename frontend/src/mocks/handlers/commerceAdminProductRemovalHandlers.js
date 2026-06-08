@@ -1,7 +1,6 @@
 import { delay, http, HttpResponse } from "msw";
 import {
   listAdminProductsForAdmin,
-  removeProductByAdmin,
   userHasAdminProductAccess,
   validateAdminProductListQuery,
 } from "../data/commerceAdminProductRemovalData";
@@ -66,31 +65,5 @@ export const commerceAdminProductRemovalHandlers = [
       apiSuccess(200, "Lay danh sach san pham admin thanh cong.", result.data),
       { status: 200 },
     );
-  }),
-
-  http.post("*/commerce/api/v1/admin/products/:productId/remove", async ({ params, request }) => {
-    await delay(400);
-    const auth = requireAuth(request);
-    if (auth.error) return auth.error;
-
-    const denied = requireAdmin(auth.user);
-    if (denied) return denied.error;
-
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return HttpResponse.json(apiError("COMMERCE-400-VALIDATION", "Du lieu khong hop le."), {
-        status: 400,
-      });
-    }
-
-    const result = removeProductByAdmin(params.productId, body, {
-      isAdmin: Boolean(auth.user.is_admin),
-    });
-
-    if (result.error) return mapError(result);
-
-    return HttpResponse.json(apiSuccess(200, result.message, result.data), { status: 200 });
   }),
 ];

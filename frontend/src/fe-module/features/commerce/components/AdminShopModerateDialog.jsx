@@ -48,7 +48,7 @@ export function AdminShopModerateDialog({
       <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg">
         <div className="border-b border-outline-variant px-6 py-4">
           <h2 id="moderate-shop-title" className="text-headline-sm font-semibold text-on-surface">
-            Moderate shop
+            Kiểm duyệt shop
           </h2>
           <p className="mt-1 text-body-sm text-on-surface-variant">{shop.shopName}</p>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-label-sm text-on-surface-variant">

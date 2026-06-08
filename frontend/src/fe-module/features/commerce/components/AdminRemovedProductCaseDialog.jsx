@@ -3,7 +3,14 @@ import { formatOrderDate } from "../utils/formatOrderDate";
 import { formatShortSellerId, formatShortShopId } from "../utils/formatShortShopId";
 import { AdminProductStatusBadge } from "./AdminProductStatusBadge";
 
-export function AdminRemovedProductCaseDialog({ open, product, onClose }) {
+export function AdminRemovedProductCaseDialog({
+  open,
+  product,
+  isRestoring = false,
+  onClose,
+  onRestore,
+  onViewHistory,
+}) {
   if (!open || !product) return null;
 
   return (
@@ -61,19 +68,32 @@ export function AdminRemovedProductCaseDialog({ open, product, onClose }) {
               <dd className="font-mono break-all">{product.productId}</dd>
             </div>
           </dl>
-
-          <p className="rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-body-sm text-on-surface-variant">
-            Sản phẩm đã gỡ không thể khôi phục qua giao diện admin (ngoài phạm vi API hiện tại).
-          </p>
         </div>
 
-        <div className="flex justify-end border-t border-outline-variant px-6 py-4">
+        <div className="flex flex-wrap justify-end gap-3 border-t border-outline-variant px-6 py-4">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg bg-primary px-4 py-2 text-label-md font-medium text-on-primary"
+            disabled={isRestoring}
+            className="rounded-lg px-4 py-2 text-label-md text-on-surface-variant hover:bg-surface-container-low disabled:opacity-50"
           >
             Đóng
+          </button>
+          <button
+            type="button"
+            onClick={onViewHistory}
+            disabled={isRestoring}
+            className="rounded-lg border border-outline-variant px-4 py-2 text-label-md text-on-surface-variant hover:bg-surface-container-low disabled:opacity-50"
+          >
+            Xem lịch sử
+          </button>
+          <button
+            type="button"
+            onClick={onRestore}
+            disabled={isRestoring}
+            className="rounded-lg bg-primary px-4 py-2 text-label-md font-medium text-on-primary disabled:opacity-50"
+          >
+            Khôi phục
           </button>
         </div>
       </div>

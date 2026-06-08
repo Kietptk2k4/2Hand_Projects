@@ -5,8 +5,14 @@ import { AdminReviewModerationTab } from "../../commerce/components/AdminReviewM
 import { AdminShopModerationTab } from "../../commerce/components/AdminShopModerationTab";
 import {
   buildAdminSearchParams,
+  parseAdminAuditFilters,
+  parseAdminAuditLogId,
   parseAdminSection,
   parseAdminTab,
+  parseContentModerationCommentId,
+  parseContentModerationPostId,
+  parseContentModerationProductId,
+  parseContentModerationProductView,
   parseInvestigationUserId,
   parseOrderSupportOrderId,
   parseOrderSupportPaymentId,
@@ -27,12 +33,29 @@ import { InvestigationEnforcementHistoryTab } from "../admin/userInvestigation/c
 import { InvestigationLoginHistoryTab } from "../admin/userInvestigation/components/tabs/InvestigationLoginHistoryTab.jsx";
 import { InvestigationProfileTab } from "../admin/userInvestigation/components/tabs/InvestigationProfileTab.jsx";
 import { InvestigationUserSessionsTab } from "../admin/userInvestigation/components/tabs/InvestigationUserSessionsTab.jsx";
-import { AdminSupportTargetBar } from "../admin/orderSupport/components/AdminSupportTargetBar.jsx";
+import { AdminActionLogsTab } from "../admin/adminAudit/components/tabs/AdminActionLogsTab.jsx";
+import { PostModerationTab } from "../admin/contentModeration/components/tabs/PostModerationTab.jsx";
+import { CommentModerationTab } from "../admin/contentModeration/components/tabs/CommentModerationTab.jsx";
+import { ContentModerationQaReference } from "../admin/contentModeration/components/ContentModerationQaReference.jsx";
+import { ContentModerationTargetBar } from "../admin/contentModeration/components/ContentModerationTargetBar.jsx";
 import { OrderSupportDetailTab } from "../admin/orderSupport/components/tabs/OrderSupportDetailTab.jsx";
 import { PaymentSupportDetailTab } from "../admin/orderSupport/components/tabs/PaymentSupportDetailTab.jsx";
 import { ShipmentSupportDetailTab } from "../admin/orderSupport/components/tabs/ShipmentSupportDetailTab.jsx";
+import { AdminSupportTargetBar } from "../admin/orderSupport/components/AdminSupportTargetBar.jsx";
 import { WebhookLogsSupportTab } from "../admin/orderSupport/components/tabs/WebhookLogsSupportTab.jsx";
 import { AuthAlert } from "../../../shared/ui/auth/authUi.jsx";
+
+const CONTENT_MODERATION_TAB_COMPONENTS = {
+  "post-moderation": PostModerationTab,
+  "comment-moderation": CommentModerationTab,
+  "shop-moderation": AdminShopModerationTab,
+  "review-moderation": AdminReviewModerationTab,
+  "product-moderation": AdminProductRemovalTab,
+};
+
+const ADMIN_AUDIT_TAB_COMPONENTS = {
+  "action-logs": AdminActionLogsTab,
+};
 
 const ROLE_PERMISSION_TAB_COMPONENTS = {
   "role-list": RoleListTab,
@@ -48,12 +71,6 @@ const USER_INVESTIGATION_TAB_COMPONENTS = {
   "user-sessions": InvestigationUserSessionsTab,
   "current-enforcement": InvestigationCurrentEnforcementTab,
   "enforcement-history": InvestigationEnforcementHistoryTab,
-};
-
-const COMMERCE_MODERATION_TAB_COMPONENTS = {
-  "shop-moderation": AdminShopModerationTab,
-  "review-moderation": AdminReviewModerationTab,
-  "product-moderation": AdminProductRemovalTab,
 };
 
 const ORDER_SUPPORT_TAB_COMPONENTS = {
@@ -72,6 +89,12 @@ export function AdminPage() {
   const orderSupportPaymentId = parseOrderSupportPaymentId(searchParams);
   const orderSupportShipmentId = parseOrderSupportShipmentId(searchParams);
   const orderSupportWebhookFilters = parseOrderSupportWebhookFilters(searchParams);
+  const adminAuditFilters = parseAdminAuditFilters(searchParams);
+  const adminAuditLogId = parseAdminAuditLogId(searchParams);
+  const contentModerationPostId = parseContentModerationPostId(searchParams);
+  const contentModerationCommentId = parseContentModerationCommentId(searchParams);
+  const contentModerationProductId = parseContentModerationProductId(searchParams);
+  const contentModerationProductView = parseContentModerationProductView(searchParams);
 
   const [selectedRoleId, setSelectedRoleId] = useState("");
   const [investigationTargetUser, setInvestigationTargetUser] = useState(null);
@@ -92,13 +115,37 @@ export function AdminPage() {
       return;
     }
 
+    if (rawSection === "commerceModeration") {
+      setSearchParams(
+        buildAdminSearchParams({
+          section: "contentModeration",
+          tab: searchParams.get("tab") || "shop-moderation",
+          postId: contentModerationPostId || undefined,
+          commentId: contentModerationCommentId || undefined,
+          productId: contentModerationProductId || undefined,
+          productView: contentModerationProductView,
+          preserve: searchParams,
+        }),
+        { replace: true },
+      );
+      return;
+    }
+
     if (!rawSection) {
       setSearchParams(
         buildAdminSearchParams({ section: "rolePermission", tab: "role-list" }),
         { replace: true },
       );
     }
-  }, [investigationUserId, searchParams, setSearchParams]);
+  }, [
+    contentModerationCommentId,
+    contentModerationPostId,
+    contentModerationProductId,
+    contentModerationProductView,
+    investigationUserId,
+    searchParams,
+    setSearchParams,
+  ]);
 
   const onNotify = useCallback((nextAlert) => {
     setAlert(nextAlert);
@@ -119,12 +166,27 @@ export function AdminPage() {
             sectionId === "orderSupport" && defaultTab === "webhook-logs"
               ? orderSupportWebhookFilters
               : undefined,
+          auditFilters: sectionId === "adminAudit" ? adminAuditFilters : undefined,
+          logId: sectionId === "adminAudit" ? adminAuditLogId || undefined : undefined,
+          postId: sectionId === "contentModeration" ? contentModerationPostId || undefined : undefined,
+          commentId:
+            sectionId === "contentModeration" ? contentModerationCommentId || undefined : undefined,
+          productId:
+            sectionId === "contentModeration" ? contentModerationProductId || undefined : undefined,
+          productView:
+            sectionId === "contentModeration" ? contentModerationProductView : undefined,
         }),
         { replace: true },
       );
       setAlert(null);
     },
     [
+      adminAuditFilters,
+      adminAuditLogId,
+      contentModerationCommentId,
+      contentModerationPostId,
+      contentModerationProductId,
+      contentModerationProductView,
       investigationUserId,
       orderSupportOrderId,
       orderSupportPaymentId,
@@ -148,6 +210,20 @@ export function AdminPage() {
             adminTopTab === "orderSupport" && childId === "webhook-logs"
               ? orderSupportWebhookFilters
               : undefined,
+          auditFilters: adminTopTab === "adminAudit" ? adminAuditFilters : undefined,
+          logId: adminTopTab === "adminAudit" ? adminAuditLogId || undefined : undefined,
+          postId:
+            adminTopTab === "contentModeration" ? contentModerationPostId || undefined : undefined,
+          commentId:
+            adminTopTab === "contentModeration"
+              ? contentModerationCommentId || undefined
+              : undefined,
+          productId:
+            adminTopTab === "contentModeration"
+              ? contentModerationProductId || undefined
+              : undefined,
+          productView:
+            adminTopTab === "contentModeration" ? contentModerationProductView : undefined,
           preserve: searchParams,
         }),
         { replace: true },
@@ -156,6 +232,12 @@ export function AdminPage() {
     },
     [
       adminTopTab,
+      adminAuditFilters,
+      adminAuditLogId,
+      contentModerationCommentId,
+      contentModerationPostId,
+      contentModerationProductId,
+      contentModerationProductView,
       investigationUserId,
       orderSupportOrderId,
       orderSupportPaymentId,
@@ -243,6 +325,91 @@ export function AdminPage() {
     ],
   );
 
+  const handleAuditFiltersChange = useCallback(
+    (filters) => {
+      setSearchParams(
+        buildAdminSearchParams({
+          section: "adminAudit",
+          tab: activeChildTab,
+          auditFilters: filters,
+          clearLogId: true,
+          preserve: searchParams,
+        }),
+        { replace: true },
+      );
+      setAlert(null);
+    },
+    [activeChildTab, searchParams, setSearchParams],
+  );
+
+  const handleAuditLogIdChange = useCallback(
+    (nextLogId) => {
+      setSearchParams(
+        buildAdminSearchParams({
+          section: "adminAudit",
+          tab: activeChildTab,
+          auditFilters: adminAuditFilters,
+          logId: nextLogId || undefined,
+          clearLogId: !nextLogId,
+          preserve: searchParams,
+        }),
+        { replace: true },
+      );
+    },
+    [activeChildTab, adminAuditFilters, searchParams, setSearchParams],
+  );
+
+  const handleContentModerationProductViewChange = useCallback(
+    ({ productId: nextProductId, productView: nextProductView }) => {
+      setSearchParams(
+        buildAdminSearchParams({
+          section: "contentModeration",
+          tab: activeChildTab,
+          postId: contentModerationPostId || undefined,
+          commentId: contentModerationCommentId || undefined,
+          productId: nextProductId || undefined,
+          productView: nextProductView || "list",
+          preserve: searchParams,
+        }),
+        { replace: true },
+      );
+    },
+    [
+      activeChildTab,
+      contentModerationCommentId,
+      contentModerationPostId,
+      searchParams,
+      setSearchParams,
+    ],
+  );
+
+  const handleContentModerationTargetChange = useCallback(
+    (patch) => {
+      setSearchParams(
+        buildAdminSearchParams({
+          section: "contentModeration",
+          tab: activeChildTab,
+          postId: "postId" in patch ? patch.postId : contentModerationPostId,
+          commentId: "commentId" in patch ? patch.commentId : contentModerationCommentId,
+          productId: contentModerationProductId || undefined,
+          productView: contentModerationProductView,
+          preserve: searchParams,
+        }),
+        { replace: true },
+      );
+      setAlert(null);
+    },
+    [
+      activeChildTab,
+      contentModerationCommentId,
+      contentModerationPostId,
+      contentModerationProductId,
+      contentModerationProductView,
+      searchParams,
+      setSearchParams,
+    ],
+  );
+
   const onViewRolePermissions = useCallback(
     (roleId) => {
       setSelectedRoleId(roleId);
@@ -261,8 +428,10 @@ export function AdminPage() {
   const RoleTabComponent = ROLE_PERMISSION_TAB_COMPONENTS[activeChildTab] || RoleListTab;
   const InvestigationTabComponent =
     USER_INVESTIGATION_TAB_COMPONENTS[activeChildTab] || InvestigationProfileTab;
-  const CommerceTabComponent =
-    COMMERCE_MODERATION_TAB_COMPONENTS[activeChildTab] || AdminShopModerationTab;
+  const AdminAuditTabComponent =
+    ADMIN_AUDIT_TAB_COMPONENTS[activeChildTab] || AdminActionLogsTab;
+  const ContentModerationTabComponent =
+    CONTENT_MODERATION_TAB_COMPONENTS[activeChildTab] || PostModerationTab;
   const OrderSupportTabComponent =
     ORDER_SUPPORT_TAB_COMPONENTS[activeChildTab] || OrderSupportDetailTab;
 
@@ -290,6 +459,22 @@ export function AdminPage() {
     onNotify,
   };
 
+  const adminAuditTabProps = {
+    logId: adminAuditLogId,
+    auditFilters: adminAuditFilters,
+    onFiltersChange: handleAuditFiltersChange,
+    onLogIdChange: handleAuditLogIdChange,
+    onNotify,
+  };
+
+  const contentModerationTabProps = {
+    postId: contentModerationPostId,
+    commentId: contentModerationCommentId,
+    productId: contentModerationProductId,
+    productView: contentModerationProductView,
+    onProductViewChange: handleContentModerationProductViewChange,
+  };
+
   const mainContent = useMemo(() => {
     if (adminTopTab === "rolePermission") {
       return <RoleTabComponent {...roleTabProps} />;
@@ -297,19 +482,32 @@ export function AdminPage() {
     if (adminTopTab === "userInvestigation") {
       return <InvestigationTabComponent {...investigationTabProps} />;
     }
-    if (adminTopTab === "commerceModeration") {
-      return <CommerceTabComponent />;
+    if (adminTopTab === "adminAudit") {
+      return <AdminAuditTabComponent {...adminAuditTabProps} />;
+    }
+    if (adminTopTab === "contentModeration") {
+      const TabComponent = ContentModerationTabComponent;
+      if (TabComponent === PostModerationTab || TabComponent === CommentModerationTab) {
+        return <TabComponent {...contentModerationTabProps} />;
+      }
+      if (TabComponent === AdminProductRemovalTab) {
+        return <TabComponent {...contentModerationTabProps} />;
+      }
+      return <TabComponent />;
     }
     if (adminTopTab === "orderSupport") {
       return <OrderSupportTabComponent {...orderSupportTabProps} />;
     }
     return null;
   }, [
-    CommerceTabComponent,
+    AdminAuditTabComponent,
+    ContentModerationTabComponent,
     InvestigationTabComponent,
     OrderSupportTabComponent,
     RoleTabComponent,
     adminTopTab,
+    adminAuditTabProps,
+    contentModerationTabProps,
     investigationTabProps,
     orderSupportTabProps,
     roleTabProps,
@@ -360,6 +558,22 @@ export function AdminPage() {
             }}
             onTargetChange={handleSupportTargetChange}
           />
+        ) : null}
+
+        {adminTopTab === "contentModeration" &&
+        (activeChildTab === "post-moderation" || activeChildTab === "comment-moderation") ? (
+          <ContentModerationTargetBar
+            activeTab={activeChildTab}
+            targetIds={{
+              postId: contentModerationPostId,
+              commentId: contentModerationCommentId,
+            }}
+            onTargetChange={handleContentModerationTargetChange}
+          />
+        ) : null}
+
+        {adminTopTab === "adminAudit" || adminTopTab === "contentModeration" ? (
+          <ContentModerationQaReference activeTab={activeChildTab} />
         ) : null}
 
         {mainContent}

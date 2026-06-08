@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Comment Moderation Queue - 2Hands Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        /* Custom scrollbar for data density */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-high": "#dee8ff",
+                      "surface-bright": "#f9f9ff",
+                      "on-secondary-fixed": "#07006c",
+                      "secondary": "#4648d4",
+                      "primary": "#0050cb",
+                      "primary-fixed": "#dae1ff",
+                      "on-primary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "on-background": "#111c2d",
+                      "surface-variant": "#d8e3fb",
+                      "secondary-fixed-dim": "#c0c1ff",
+                      "on-primary-fixed": "#001849",
+                      "on-tertiary-fixed-variant": "#444749",
+                      "surface-tint": "#0054d6",
+                      "on-secondary-container": "#fffbff",
+                      "surface-container-lowest": "#ffffff",
+                      "secondary-fixed": "#e1e0ff",
+                      "on-error": "#ffffff",
+                      "tertiary-fixed-dim": "#c4c7c9",
+                      "surface-container-highest": "#d8e3fb",
+                      "error-container": "#ffdad6",
+                      "on-primary-fixed-variant": "#003fa4",
+                      "tertiary-container": "#6f7274",
+                      "primary-container": "#0066ff",
+                      "inverse-on-surface": "#ecf1ff",
+                      "on-secondary-fixed-variant": "#2f2ebe",
+                      "on-secondary": "#ffffff",
+                      "surface-container": "#e7eeff",
+                      "on-primary-container": "#f8f7ff",
+                      "on-surface": "#111c2d",
+                      "outline": "#727687",
+                      "on-tertiary-container": "#f6f8fa",
+                      "on-surface-variant": "#424656",
+                      "tertiary": "#565a5b",
+                      "tertiary-fixed": "#e0e3e5",
+                      "surface-container-low": "#f0f3ff",
+                      "outline-variant": "#c2c6d8",
+                      "inverse-primary": "#b3c5ff",
+                      "on-tertiary-fixed": "#191c1e",
+                      "background": "#f9f9ff",
+                      "surface": "#f9f9ff",
+                      "secondary-container": "#6063ee",
+                      "primary-fixed-dim": "#b3c5ff",
+                      "inverse-surface": "#263143",
+                      "surface-dim": "#cfdaf2",
+                      "on-error-container": "#93000a",
+                      "on-tertiary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-max": "1280px",
+                      "xl": "64px",
+                      "sm": "12px",
+                      "lg": "40px",
+                      "md": "24px",
+                      "margin-desktop": "32px",
+                      "gutter": "24px",
+                      "xs": "4px",
+                      "margin-mobile": "16px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "body-lg": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "headline-sm": ["Inter"],
+                      "headline-xl-mobile": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-xl": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "label-md": ["Inter"]
+              },
+              "fontSize": {
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "headline-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden">
+<!-- Sidebar Navigation -->
+<aside class="hidden md:flex flex-col h-screen py-md px-sm w-64 fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant z-50">
+<div class="mb-lg px-sm">
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">Admin Console</h1>
+<p class="font-label-md text-label-md text-on-surface-variant opacity-70">Management Suite</p>
+</div>
+<nav class="flex-1 space-y-xs">
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant/50 transition-all font-label-md text-label-md rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant/50 transition-all font-label-md text-label-md rounded-lg" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>User Management</span>
+</a>
+<a class="flex items-center gap-sm p-sm bg-primary-container text-on-primary-container font-bold rounded-lg transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">gavel</span>
+<span>Content Moderation</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant/50 transition-all font-label-md text-label-md rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>System Settings</span>
+</a>
+</nav>
+<div class="mt-auto pt-md space-y-xs">
+<button class="w-full flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant/50 transition-all font-label-md text-label-md rounded-lg">
+<span class="material-symbols-outlined">contact_support</span>
+<span>Help Center</span>
+</button>
+<button class="w-full flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant/50 transition-all font-label-md text-label-md rounded-lg">
+<span class="material-symbols-outlined">logout</span>
+<span>Log Out</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-64 min-h-screen">
+<!-- Top Navigation Bar -->
+<header class="flex justify-between items-center px-margin-desktop w-full sticky top-0 z-40 bg-surface h-16 border-b border-outline-variant shadow-sm">
+<div class="flex items-center gap-md">
+<div class="bg-primary/10 p-2 rounded-lg md:hidden">
+<span class="material-symbols-outlined text-primary">menu</span>
+</div>
+<h2 class="font-headline-md text-headline-md font-bold text-primary">2Hands</h2>
+</div>
+<div class="flex items-center gap-md flex-1 max-w-xl mx-lg">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full pl-10 pr-4 py-2 text-body-sm focus:ring-2 focus:ring-primary transition-all" placeholder="Search moderation history..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors relative">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">help</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant ml-sm">
+<img alt="Admin profile avatar" class="w-full h-full object-cover" data-alt="A professional close-up headshot of a confident male administrator in his early 40s. He is wearing a minimalist navy blue blazer over a crisp white shirt. The background is a soft-focus modern office with clean architectural lines and corporate blue lighting, echoing a secure and high-trust environment. The lighting is bright, even, and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuChb22Z_M08nyZADdMhfVyw_iSGQllGRwj43B7jN-DGrj39I_nTQRmhrprjciv5j4twuq3Ym1TNgLfveiJZxtASCNfv14zlR5U_BGzLfX2JIiPhBK7-FWaLlevXEuwYD_VIZhigrzBlr83EJqSmhQ69xll461-V-5U7EA8g05WLkCKGzV1gcqx4WhBoMlTAb4zjUrOKxyxlOCN9Eruya33VU3AV41kYeVtHQvMFDIuLl9Z2BQ60452LFsBmNVs-WHeOUvGBA64l2rM"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-margin-desktop">
+<!-- Summary Row -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-lg gap-md">
+<div>
+<h3 class="font-headline-lg text-headline-lg text-on-surface mb-1">Comment Moderation Queue</h3>
+<p class="text-on-surface-variant font-body-md">Review and manage community discussions across all services.</p>
+</div>
+<div class="flex gap-sm">
+<div class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl flex items-center gap-md shadow-sm">
+<div class="bg-error/10 text-error p-sm rounded-lg">
+<span class="material-symbols-outlined">report</span>
+</div>
+<div>
+<p class="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant">Pending Reports</p>
+<p class="text-headline-sm font-headline-sm font-bold">124</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl flex items-center gap-md shadow-sm">
+<div class="bg-primary/10 text-primary p-sm rounded-lg">
+<span class="material-symbols-outlined">rate_review</span>
+</div>
+<div>
+<p class="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant">Today's Actions</p>
+<p class="text-headline-sm font-headline-sm font-bold">842</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Filters & Bulk Actions -->
+<div class="flex flex-wrap items-center justify-between gap-md mb-md">
+<div class="flex items-center gap-sm overflow-x-auto pb-2 md:pb-0 no-scrollbar">
+<button class="px-md py-1.5 bg-primary text-on-primary rounded-full font-label-md text-label-md transition-colors whitespace-nowrap">All Comments</button>
+<button class="px-md py-1.5 bg-surface-container-high text-on-surface-variant hover:bg-surface-variant rounded-full font-label-md text-label-md transition-colors whitespace-nowrap flex items-center gap-1">
+                        Reports Only <span class="bg-error text-white text-[10px] px-1.5 rounded-full">12</span>
+</button>
+<button class="px-md py-1.5 bg-surface-container-high text-on-surface-variant hover:bg-surface-variant rounded-full font-label-md text-label-md transition-colors whitespace-nowrap">Active</button>
+<button class="px-md py-1.5 bg-surface-container-high text-on-surface-variant hover:bg-surface-variant rounded-full font-label-md text-label-md transition-colors whitespace-nowrap">Hidden</button>
+</div>
+<div class="flex items-center gap-sm">
+<button class="flex items-center gap-2 px-md py-2 border-2 border-primary text-primary hover:bg-primary/5 rounded-lg font-label-md text-label-md transition-all">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+                        Advanced Filters
+                    </button>
+<button class="px-md py-2 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:bg-primary-container transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">download</span>
+                        Export Log
+                    </button>
+</div>
+</div>
+<!-- Data Table Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="p-md w-12">
+<input class="rounded border-outline text-primary focus:ring-primary h-4 w-4" type="checkbox"/>
+</th>
+<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Comment ID</th>
+<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Author</th>
+<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase tracking-wider w-1/3">Content</th>
+<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Post Reference</th>
+<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="p-md font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- Row 1: Reported/Remove focus -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="p-md"><input class="rounded border-outline text-primary focus:ring-primary h-4 w-4" type="checkbox"/></td>
+<td class="p-md font-mono text-body-sm text-on-surface-variant">#65d2f8e1</td>
+<td class="p-md">
+<div class="flex items-center gap-sm">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="A detailed headshot of a male service professional with a friendly smile, short dark hair, and a clean-shaven face. He is set against a soft, bright blurred interior of a modern home. The overall mood is approachable and trustworthy, designed for a community-focused service platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOk4YQWVVqJAhwd5AjSaE2jGndhelPQzY8pUt5FyT8nlnjrCWjNydilWudHwn8Hz76aH4lgn59t7Za_Vw08cRTLSViR8c2ax7yDBmkn-_bK7NoitvYgaIQ-TtvdBUwxv4RulamA8Rhj97KBEJaKD3qPZ7y0uHFFkzVIp2xTSHP4H6TdKX53LrDAnkW8yanCkrSfBDWzeXW4mMiPFQ2Mf_1ibaB6KCKm1OheQCqXnmj4gzHnHFpOk7dIx1--ujtjutHaFe6pdHisfM"/>
+<span class="font-bold text-on-surface">Marcus Chen</span>
+</div>
+</td>
+<td class="p-md">
+<p class="text-body-sm text-on-surface line-clamp-2 mb-1">This service is absolutely terrible. The provider didn't show up and I've been waiting for two hours. Total waste of time and money, do not book this person!</p>
+<button class="text-primary text-[12px] font-bold hover:underline">see more</button>
+</td>
+<td class="p-md text-body-sm text-on-surface-variant">"Home Deep Cleaning"</td>
+<td class="p-md">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-error-container text-on-error-container">
+                                        Reported
+                                    </span>
+</td>
+<td class="p-md text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high hover:text-secondary rounded-lg transition-all" title="Hide">
+<span class="material-symbols-outlined text-xl">visibility_off</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-error-container hover:text-error rounded-lg transition-all" title="Remove">
+<span class="material-symbols-outlined text-xl">delete_forever</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Active -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="p-md"><input class="rounded border-outline text-primary focus:ring-primary h-4 w-4" type="checkbox"/></td>
+<td class="p-md font-mono text-body-sm text-on-surface-variant">#65d2f8f5</td>
+<td class="p-md">
+<div class="flex items-center gap-sm">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="A portrait of a smiling woman with glasses, representing a reliable client on the platform. She has a warm expression and is wearing a light-colored professional sweater. The lighting is natural and inviting, set in a bright, modern living space that suggests comfort and home services." src="https://lh3.googleusercontent.com/aida-public/AB6AXuACn0dLxmHcGlwjwRa1llLvmWo9Wsz_czYe5rpNjmaITDcqeBPskpHwkwFa458Crck_qfAjMRtEt6QjQgu4LClHVfJ7Lhxzoe5lTl5Vj0KfmkJFCUKu_yEl7zoBdufCmbD74MEaS2_cMG4EfQg4w590mBq2rJNbDXyfMhFpLu03fP8CGWMi1MquokkkWLCu6x6V8BVu333Wp0TYXket-5lllUmsV9MXLxIX5Dz_Ot5LlZnfvOa0vFlRzzWL--DDmysAv200Mdusdw8"/>
+<span class="font-bold text-on-surface">Sarah Jenkins</span>
+</div>
+</td>
+<td class="p-md">
+<p class="text-body-sm text-on-surface line-clamp-2 mb-1">Excellent experience! The lawn was perfectly mowed and the team even trimmed the hedges without me asking. Highly recommend.</p>
+<button class="text-primary text-[12px] font-bold hover:underline">see more</button>
+</td>
+<td class="p-md text-body-sm text-on-surface-variant">"Lawn Maintenance"</td>
+<td class="p-md">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800">
+                                        Active
+                                    </span>
+</td>
+<td class="p-md text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high hover:text-secondary rounded-lg transition-all" title="Hide">
+<span class="material-symbols-outlined text-xl">visibility_off</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-error-container hover:text-error rounded-lg transition-all" title="Remove">
+<span class="material-symbols-outlined text-xl">delete_forever</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Hidden/Restore focus -->
+<tr class="hover:bg-surface-container-low/50 transition-colors bg-surface-container-low/20">
+<td class="p-md"><input class="rounded border-outline text-primary focus:ring-primary h-4 w-4" type="checkbox"/></td>
+<td class="p-md font-mono text-body-sm text-on-surface-variant">#65d2f901</td>
+<td class="p-md">
+<div class="flex items-center gap-sm">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="A close-up photograph of a professional-looking man with a neatly trimmed beard and confident posture. He's wearing a casual but high-quality grey polo shirt. The environment is a blurred outdoor garden setting, perfectly matching the outdoor service provider vibe of the application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRSbyyiYthxIEAb1UP_fPI35cAg8Qu7HbhvONn80veGmXpr1sluGdYQQWfbWuv76bRVA-4Dv-0Dq2f-9fqfVfef1vQhV86yhS9eScBkx0aSX-DwoP1xmJ1ic1aDTOQ-mZ1sp_MHtbOvUiqKnHAP_i3fwL2FFGnawrCWBj7tNkSGNLuuqYxNfABTK91U67LOLdZrPU5461NSl-FjoHN4KTCo7KZx0sH6OVRX7EE2M3lZeCDtE5c8Xkg0Jdj6huzK_eer-uYCuSHGwQ"/>
+<span class="font-bold text-on-surface">David Wilson</span>
+</div>
+</td>
+<td class="p-md">
+<p class="text-body-sm text-on-surface-variant italic line-clamp-2 mb-1">[Hidden by Auto-Mod] This content contains potential promotional links or spam patterns detected by the filter.</p>
+<button class="text-primary text-[12px] font-bold hover:underline">see more</button>
+</td>
+<td class="p-md text-body-sm text-on-surface-variant">"General Plumbing"</td>
+<td class="p-md">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800">
+                                        Hidden
+                                    </span>
+</td>
+<td class="p-md text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-primary hover:bg-primary-fixed/50 rounded-lg transition-all" title="Restore">
+<span class="material-symbols-outlined text-xl">restore_from_trash</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-error-container hover:text-error rounded-lg transition-all" title="Remove Permanent">
+<span class="material-symbols-outlined text-xl">delete_forever</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Active -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="p-md"><input class="rounded border-outline text-primary focus:ring-primary h-4 w-4" type="checkbox"/></td>
+<td class="p-md font-mono text-body-sm text-on-surface-variant">#65d2f912</td>
+<td class="p-md">
+<div class="flex items-center gap-sm">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="A clear, professional portrait of a young woman with a thoughtful expression. She has light brown hair and is wearing a structured teal top. The background is a brightly lit minimalist studio setting, emphasizing a clean and corporate modern aesthetic suitable for a high-end service platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWo0rAWilkiRUyC9ZEmjv6iaalUUwe_uuRkRkBSbtI7ng3Qc9kFDv20rlNzZRGWsa6Xv2s6hWlw1bG8tmlMR0I63o-N1PReXjxDbd0ZJvlL9C3dageYQEGPc_6pdK1YyUslq038jJlltnmWj1oB_fjX4IGox_XzjpL0nmRI2R3dqdnu_R8MvjD75iXOWMpRcyb5kJXXFuH2qUziSscU9JTBIPGqg4DSkCxQiVPPaKNzNm0hSrtUoRhbXL7-DI-aUH769Ygqm4btss"/>
+<span class="font-bold text-on-surface">Elena Rodriguez</span>
+</div>
+</td>
+<td class="p-md">
+<p class="text-body-sm text-on-surface line-clamp-2 mb-1">Could you please clarify if the price includes the materials or if I need to purchase the paint separately? Thank you!</p>
+<button class="text-primary text-[12px] font-bold hover:underline">see more</button>
+</td>
+<td class="p-md text-body-sm text-on-surface-variant">"Interior Painting"</td>
+<td class="p-md">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800">
+                                        Active
+                                    </span>
+</td>
+<td class="p-md text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high hover:text-secondary rounded-lg transition-all" title="Hide">
+<span class="material-symbols-outlined text-xl">visibility_off</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-error-container hover:text-error rounded-lg transition-all" title="Remove">
+<span class="material-symbols-outlined text-xl">delete_forever</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="p-md bg-surface-container-low border-t border-outline-variant flex flex-col md:flex-row items-center justify-between gap-md">
+<p class="text-body-sm text-on-surface-variant">Showing <span class="font-bold">1 - 25</span> of <span class="font-bold">1,240</span> moderated comments</p>
+<div class="flex items-center gap-xs">
+<button class="p-2 rounded-lg hover:bg-surface-variant/50 text-on-surface-variant disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center bg-primary text-on-primary rounded-lg font-bold text-sm">1</button>
+<button class="w-8 h-8 flex items-center justify-center hover:bg-surface-variant/50 text-on-surface-variant rounded-lg font-bold text-sm">2</button>
+<button class="w-8 h-8 flex items-center justify-center hover:bg-surface-variant/50 text-on-surface-variant rounded-lg font-bold text-sm">3</button>
+<span class="px-1 text-on-surface-variant">...</span>
+<button class="w-8 h-8 flex items-center justify-center hover:bg-surface-variant/50 text-on-surface-variant rounded-lg font-bold text-sm">50</button>
+<button class="p-2 rounded-lg hover:bg-surface-variant/50 text-on-surface-variant">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Success Notification Toast (Hidden by default) -->
+<div class="fixed bottom-margin-desktop right-margin-desktop bg-inverse-surface text-inverse-on-surface px-lg py-md rounded-xl shadow-xl flex items-center gap-md transform translate-y-24 opacity-0 transition-all duration-300 z-[60]" id="toast">
+<span class="material-symbols-outlined text-green-400">check_circle</span>
+<p class="font-label-md text-label-md">Action successful: Comment has been removed.</p>
+<button class="ml-sm text-inverse-on-surface/60 hover:text-white" onclick="hideToast()">
+<span class="material-symbols-outlined text-sm">close</span>
+</button>
+</div>
+<script>
+        // Simple Micro-interactions
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            if(message) toast.querySelector('p').innerText = message;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            
+            setTimeout(() => {
+                hideToast();
+            }, 4000);
+        }
+
+        function hideToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('translate-y-24', 'opacity-0');
+        }
+
+        // Action simulation
+        document.querySelectorAll('button[title="Remove"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const row = btn.closest('tr');
+                row.style.opacity = '0.5';
+                showToast("Action successful: Comment has been removed.");
+            });
+        });
+
+        document.querySelectorAll('button[title="Hide"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                showToast("Comment visibility has been restricted.");
+            });
+        });
+
+        document.querySelectorAll('button[title="Restore"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                showToast("Comment successfully restored to public queue.");
+            });
+        });
+
+        // Filter chip toggle logic
+        document.querySelectorAll('.flex.items-center.gap-sm.overflow-x-auto button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.flex.items-center.gap-sm.overflow-x-auto button').forEach(b => {
+                    b.classList.remove('bg-primary', 'text-on-primary');
+                    b.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+                });
+                this.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+                this.classList.add('bg-primary', 'text-on-primary');
+            });
+        });
+    </script>
+</body></html>

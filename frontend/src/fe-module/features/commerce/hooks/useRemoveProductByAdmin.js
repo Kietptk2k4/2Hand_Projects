@@ -1,16 +1,15 @@
 import { useCallback, useState } from "react";
-import { removeProductByAdmin } from "../api/adminProductRemovalApi";
-import { mapAdminProductRemovalApiError } from "../constants/adminProductRemovalConstants";
+import { removeProduct } from "../../auth/admin/contentModeration/api/contentModerationAdminApi.js";
 import {
-  mapRemoveProductPayload,
-  mapRemoveProductResponse,
-} from "../utils/adminProductRemovalMapper";
+  mapModerationPayload,
+  mapProductModerationResponse,
+} from "../../auth/admin/contentModeration/utils/contentModerationAdminMapper.js";
+import {
+  isAdminUnauthorizedError,
+  mapContentModerationApiError,
+} from "../../auth/admin/contentModeration/utils/mapContentModerationApiError.js";
+import { mapAdminProductRemovalApiError } from "../constants/adminProductRemovalConstants";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
-
-function isUnauthorizedError(error) {
-  const code = String(error?.code ?? "");
-  return code === "401" || code.includes("401") || code.includes("COMMERCE-401");
-}
 
 export function useRemoveProductByAdmin({ onSuccess }) {
   const { showSessionExpired } = useAuthSession();
@@ -29,19 +28,18 @@ export function useRemoveProductByAdmin({ onSuccess }) {
       setSubmitError("");
 
       try {
-        const raw = await removeProductByAdmin(
-          productId,
-          mapRemoveProductPayload({ reason: trimmed }),
-        );
-        const result = mapRemoveProductResponse(raw);
+        const raw = await removeProduct(productId, mapModerationPayload({ reason: trimmed }));
+        const result = mapProductModerationResponse(raw);
         onSuccess?.(result);
         return result;
       } catch (error) {
-        if (isUnauthorizedError(error)) {
+        if (isAdminUnauthorizedError(error)) {
           showSessionExpired(error?.message);
           throw error;
         }
-        setSubmitError(mapAdminProductRemovalApiError(error));
+        setSubmitError(
+          mapContentModerationApiError(error, mapAdminProductRemovalApiError(error)),
+        );
         return null;
       } finally {
         setIsSubmitting(false);

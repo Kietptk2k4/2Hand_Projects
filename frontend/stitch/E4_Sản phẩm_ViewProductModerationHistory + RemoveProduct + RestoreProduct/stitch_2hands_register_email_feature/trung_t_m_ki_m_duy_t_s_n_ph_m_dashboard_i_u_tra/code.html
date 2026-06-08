@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>2Hands Moderation - Product Console</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#e0e3e5",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "inverse-on-surface": "#ecf1ff",
+                        "surface-container-low": "#f0f3ff",
+                        "on-primary-fixed": "#001849",
+                        "secondary-fixed": "#e1e0ff",
+                        "on-primary": "#ffffff",
+                        "surface": "#f9f9ff",
+                        "primary": "#0050cb",
+                        "secondary-container": "#6063ee",
+                        "inverse-surface": "#263143",
+                        "background": "#f9f9ff",
+                        "on-tertiary-container": "#f6f8fa",
+                        "tertiary": "#565a5b",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "on-primary-container": "#f8f7ff",
+                        "surface-container-high": "#dee8ff",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "primary-fixed": "#dae1ff",
+                        "on-surface-variant": "#424656",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#d8e3fb",
+                        "surface-bright": "#f9f9ff",
+                        "secondary": "#4648d4",
+                        "surface-container-highest": "#d8e3fb",
+                        "on-background": "#111c2d",
+                        "outline-variant": "#c2c6d8",
+                        "primary-container": "#0066ff",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-tint": "#0054d6",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#003fa4",
+                        "outline": "#727687",
+                        "on-secondary-fixed": "#07006c",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#6f7274",
+                        "on-surface": "#111c2d",
+                        "on-secondary-container": "#fffbff",
+                        "on-tertiary-fixed": "#191c1e",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#e7eeff",
+                        "surface-dim": "#cfdaf2",
+                        "inverse-primary": "#b3c5ff",
+                        "on-tertiary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "md": "24px",
+                        "gutter": "24px",
+                        "sm": "12px",
+                        "margin-desktop": "32px",
+                        "xl": "64px",
+                        "container-max": "1280px",
+                        "xs": "4px",
+                        "lg": "40px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-xl-mobile": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Drawer Transition */
+        #moderation-drawer {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .drawer-open #moderation-drawer {
+            transform: translateX(0);
+        }
+        .drawer-closed #moderation-drawer {
+            transform: translateX(100%);
+        }
+        .drawer-overlay {
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- Side Navigation Shell -->
+<aside class="fixed left-0 top-0 h-full flex flex-col bg-surface-container-lowest dark:bg-inverse-surface h-screen w-64 border-r border-outline-variant z-50">
+<div class="p-6 flex flex-col gap-1">
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed-dim">2Hands Admin</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Moderation Console</p>
+</div>
+<nav class="flex-1 mt-4">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-tertiary-container transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-tertiary-container transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+<span class="font-label-md text-label-md">Shop Moderation</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-primary dark:text-primary-fixed-dim font-bold border-r-4 border-primary bg-surface-container-low" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-label-md text-label-md">Product Moderation</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-tertiary-container transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="rate_review">rate_review</span>
+<span class="font-label-md text-label-md">Review Moderation</span>
+</a>
+</nav>
+<div class="border-t border-outline-variant p-4 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Top Navigation Shell -->
+<header class="flex justify-between items-center h-16 px-margin-desktop sticky top-0 z-40 ml-64 bg-surface-container-lowest border-b border-outline-variant">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg font-body-sm text-body-sm focus:ring-2 focus:ring-primary" placeholder="Search products, IDs, or users..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6 ml-gutter">
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+</button>
+</div>
+<div class="h-8 w-8 rounded-full bg-primary-container overflow-hidden">
+<img alt="Admin User Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2krluCH78NB9PcL9iRYHrsyEMB4a2eOmbE8pcwcImei4N947Go_To5IPNpfEyn_z6X4LLlq4rhFP1wgnFbZ0HQBiLI6oKBcCPXa7tuonZuUScn3PTaVWcNjCq1jA_89Z6DkwP3k2sD16HP22Guy8WdIpXxtLhkkVGSVKerC-crcP5d9B1IlNndxnAbA1NIUZvLMHksXFjCXR-kulymO5ssoC06fSFZ5OSDHv4unx9C2Js-GP4l3h_2-IK3EF_kWv-jv8FTOhjfyc"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 p-margin-desktop space-y-lg">
+<!-- Summary Metrics -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Pending Review -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-primary-container/10 text-primary rounded-lg">
+<span class="material-symbols-outlined" data-icon="pending_actions">pending_actions</span>
+</div>
+<span class="text-error font-label-sm text-label-sm bg-error-container px-2 py-1 rounded-full">+12%</span>
+</div>
+<h3 class="font-label-md text-label-md text-on-surface-variant">Pending Review</h3>
+<p class="font-headline-lg text-headline-lg text-on-surface mt-1">1,284</p>
+</div>
+<!-- High Risk -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-error-container text-error rounded-lg">
+<span class="material-symbols-outlined" data-icon="report">report</span>
+</div>
+<span class="text-on-surface-variant font-label-sm text-label-sm bg-surface-container px-2 py-1 rounded-full">Urgent</span>
+</div>
+<h3 class="font-label-md text-label-md text-on-surface-variant">High Risk Flags</h3>
+<p class="font-headline-lg text-headline-lg text-on-surface mt-1">42</p>
+</div>
+<!-- Approved Today -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-secondary-container/10 text-secondary rounded-lg">
+<span class="material-symbols-outlined" data-icon="verified">verified</span>
+</div>
+</div>
+<h3 class="font-label-md text-label-md text-on-surface-variant">Approved Today</h3>
+<p class="font-headline-lg text-headline-lg text-on-surface mt-1">312</p>
+</div>
+<!-- Removed Today -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-tertiary-container/10 text-tertiary rounded-lg">
+<span class="material-symbols-outlined" data-icon="delete_sweep">delete_sweep</span>
+</div>
+</div>
+<h3 class="font-label-md text-label-md text-on-surface-variant">Removed Today</h3>
+<p class="font-headline-lg text-headline-lg text-on-surface mt-1">84</p>
+</div>
+</section>
+<!-- Moderation List Area -->
+<section class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden">
+<!-- List Header/Filters -->
+<div class="p-6 border-b border-outline-variant flex flex-wrap items-center justify-between gap-4">
+<div class="space-y-1">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Product Queue</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Manage and review incoming product listings</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-primary text-primary font-label-md text-label-md hover:bg-primary-container/5 transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="filter_list">filter_list</span>
+                        Filters
+                    </button>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md text-label-md hover:bg-primary/90 transition-all active:scale-[0.98]">
+                        Bulk Actions
+                    </button>
+</div>
+</div>
+<!-- List Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low border-b border-outline-variant">
+<tr>
+<th class="px-6 py-3 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Product</th>
+<th class="px-6 py-3 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Seller</th>
+<th class="px-6 py-3 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Category</th>
+<th class="px-6 py-3 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Risk Score</th>
+<th class="px-6 py-3 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="px-6 py-3 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- Item 1 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A premium minimalist smartwatch with a clean white band and sleek chrome casing, photographed on a soft gray surface in professional studio lighting. The image evokes high-end corporate elegance and professional reliability, fitting a modern service dashboard aesthetic with its organized and calm visual style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSnX8drWyRW59S8EW7J04DB5i8wr2mSNxKuHhztOWook-Iad2tK-Gq8c3qsJhIcnWnlMrRN9MavJ-dsH76qaaFiWew9G7TdAD8aMUqLEJr_j330O8SnZ-LOonty9eX_mhCWbWG5xJq1mFPVfn8aDpW1eLneW8j_tM1tesE58UTqcjqcTNv9VVmyFepXtJ3TBa4aJYP__zTlB1Y-inEoRl3j7c6p8bU97fh9eL5zWzu_MqmnBM6DYGMYvmqPkfYrxmoxDsPnLW9kTo"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Precision Watch v2</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">ID: PROD-8821</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-label-md text-label-md text-on-surface">Arcturus Tech</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Level 4 Seller</p>
+</td>
+<td class="px-6 py-4">
+<span class="bg-surface-container px-3 py-1 rounded-full font-label-sm text-label-sm text-on-surface-variant">Electronics</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-16 h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="bg-primary w-1/4 h-full"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Low</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-surface-container px-3 py-1 rounded-full font-label-sm text-label-sm text-on-surface-variant">Pending</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary font-label-md text-label-md hover:underline" onclick="openDrawer('PROD-8821', 'Precision Watch v2')">Review</button>
+</td>
+</tr>
+<!-- Item 2 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Sleek professional noise-canceling headphones in charcoal black, positioned artistically on a minimalist wooden desk. The background is a clean white studio setting with soft ambient shadows. The overall mood is focused, modern, and high-quality, reinforcing a sense of technological institutional trust and professional integrity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsu6UeHowmCIzaYHuD9RUF-JFs2ShuWRifgHLw5YyUExrZPurKLOCEBVJg0EJhUvu4AltuzdWJGs4Yu2kp-bqhA-Zfp-hrD84_y_7mLP2Ekb0ME28Y3K1kZ47_H_3BA6CJ1whSKWFOvl9R6nRkU8axUPlWWSzgmNZWX8HIbm0fNFJberWuZsaW4SSuAgzCAl76C2y8ztAnOosZArI7J3pqvlHwDM-O2mUkKnlxHy7KyKf5TfTS45m-Qe2pUJjeqOrUqMesbUfjF7o"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Pro Audio HD-9</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">ID: PROD-7742</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-label-md text-label-md text-on-surface">Echo Valley Ltd</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">New Seller</p>
+</td>
+<td class="px-6 py-4">
+<span class="bg-surface-container px-3 py-1 rounded-full font-label-sm text-label-sm text-on-surface-variant">Audio</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-16 h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="bg-error w-4/5 h-full"></div>
+</div>
+<span class="font-label-sm text-label-sm text-error">High</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-error-container text-error px-3 py-1 rounded-full font-label-sm text-label-sm">Flagged</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary font-label-md text-label-md hover:underline" onclick="openDrawer('PROD-7742', 'Pro Audio HD-9')">Review</button>
+</td>
+</tr>
+<!-- Item 3 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A vintage style film camera in a pristine white studio environment. The camera is black with classic silver dials, representing clarity and professional integrity. The lighting is bright and even, casting subtle, high-quality shadows that emphasize the organized calm and reliability of the platform's service listing aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAr-im_a8r3iPihC062_iQVMKJIyoKwy-AsL5Dr5W6ID-grbOVcZVckqPoyI_fnqcpEcvkQxoPPcrbBzxRmI_eEferi4vmzYZmBT3CHNgHfeQ4CP_gQutEtyO1e6bekASdGKLknjwKXs4DOqtKQzfzSrG3LdCE47gBfzxhGngKl13YdZbp4nyx3Bl7MgC08iy8d7Z_5xi-5FqHWXVDAWE_mjcfhGoQbt2GzUy8Bn6spS2e6DfGMZqPP47BOOSNcgCzDa7SWe6t_x0Y"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Classic View Cam</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">ID: PROD-1102</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-label-md text-label-md text-on-surface">Vintage Hub</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Level 2 Seller</p>
+</td>
+<td class="px-6 py-4">
+<span class="bg-surface-container px-3 py-1 rounded-full font-label-sm text-label-sm text-on-surface-variant">Photography</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-16 h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="bg-secondary-container w-1/3 h-full"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Med</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-surface-container px-3 py-1 rounded-full font-label-sm text-label-sm text-on-surface-variant">Pending</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary font-label-md text-label-md hover:underline" onclick="openDrawer('PROD-1102', 'Classic View Cam')">Review</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- List Footer / Pagination -->
+<div class="p-4 bg-surface-container-low flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Showing 1-3 of 1,284 products</span>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-lg hover:bg-surface-container-high transition-colors disabled:opacity-50">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Side Moderation Drawer Overlay -->
+<div class="fixed inset-0 bg-on-background/40 backdrop-blur-sm z-[60] hidden transition-opacity duration-300 opacity-0" id="drawer-backdrop" onclick="closeDrawer()"></div>
+<!-- Side Moderation Drawer -->
+<aside class="fixed right-0 top-0 h-full w-full max-w-lg bg-surface-container-lowest shadow-2xl z-[70] transform translate-x-full flex flex-col" id="moderation-drawer">
+<!-- Drawer Header -->
+<div class="p-6 border-b border-outline-variant flex items-center justify-between">
+<div class="space-y-1">
+<h3 class="font-headline-sm text-headline-sm text-on-surface" id="drawer-title">Product Review</h3>
+<p class="font-label-md text-label-md text-primary" id="drawer-subtitle">ID: PROD-XXXX</p>
+</div>
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors" onclick="closeDrawer()">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-6 space-y-8 hide-scrollbar">
+<!-- Timeline Section -->
+<section class="space-y-4">
+<h4 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Moderation History</h4>
+<div class="relative space-y-6 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-outline-variant">
+<!-- History Item 1 -->
+<div class="relative flex items-start gap-6">
+<div class="absolute left-0 mt-1.5 w-10 h-10 flex items-center justify-center bg-surface-container-lowest border-2 border-primary rounded-full z-10">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="history_edu">history_edu</span>
+</div>
+<div class="ml-12">
+<p class="font-label-md text-label-md text-on-surface">Listed by Seller</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Oct 24, 2023 • 09:12 AM</p>
+</div>
+</div>
+<!-- History Item 2 -->
+<div class="relative flex items-start gap-6">
+<div class="absolute left-0 mt-1.5 w-10 h-10 flex items-center justify-center bg-surface-container-lowest border-2 border-outline rounded-full z-10">
+<span class="material-symbols-outlined text-[18px] text-outline" data-icon="visibility">visibility</span>
+</div>
+<div class="ml-12">
+<p class="font-label-md text-label-md text-on-surface">System Scan Triggered</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Oct 24, 2023 • 09:15 AM</p>
+<div class="mt-2 p-3 bg-surface-container-low rounded-lg border border-outline-variant">
+<p class="font-body-sm text-body-sm italic text-on-surface-variant">"Automated risk detection identified 2 potential brand violations."</p>
+</div>
+</div>
+</div>
+<!-- History Item 3 -->
+<div class="relative flex items-start gap-6">
+<div class="absolute left-0 mt-1.5 w-10 h-10 flex items-center justify-center bg-surface-container-lowest border-2 border-error rounded-full z-10">
+<span class="material-symbols-outlined text-[18px] text-error" data-icon="report">report</span>
+</div>
+<div class="ml-12">
+<p class="font-label-md text-label-md text-error">User Report Received</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Oct 25, 2023 • 02:34 PM</p>
+<p class="font-body-sm text-body-sm text-on-surface mt-1">Reason: Counterfeit Claim</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Investigation Notes -->
+<section class="space-y-4">
+<h4 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Decision Form</h4>
+<div class="space-y-4">
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant">Moderation Note</label>
+<textarea class="w-full bg-surface-container-low border-outline-variant rounded-lg focus:ring-primary focus:border-primary font-body-sm text-body-sm" placeholder="Enter details of your investigation..." rows="4"></textarea>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant">Violation Category (Optional)</label>
+<select class="w-full bg-surface-container-low border-outline-variant rounded-lg focus:ring-primary focus:border-primary font-body-sm text-body-sm">
+<option>Select category...</option>
+<option>Counterfeit</option>
+<option>Prohibited Item</option>
+<option>Inappropriate Content</option>
+<option>Spam/Duplicate</option>
+</select>
+</div>
+</div>
+</section>
+</div>
+<!-- Drawer Footer -->
+<div class="p-6 border-t border-outline-variant bg-surface-container-lowest grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-2 px-6 py-3 rounded-lg border-2 border-primary text-primary font-label-md text-label-md hover:bg-primary-container/5 transition-all active:scale-[0.98]" onclick="handleModeration('RestoreProduct')">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+                RestoreProduct
+            </button>
+<button class="flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-error text-on-error font-label-md text-label-md hover:bg-error/90 transition-all active:scale-[0.98]" onclick="handleModeration('RemoveProduct')">
+<span class="material-symbols-outlined" data-icon="delete_forever">delete_forever</span>
+                RemoveProduct
+            </button>
+</div>
+</aside>
+<script>
+        const drawer = document.getElementById('moderation-drawer');
+        const backdrop = document.getElementById('drawer-backdrop');
+        const drawerTitle = document.getElementById('drawer-title');
+        const drawerSubtitle = document.getElementById('drawer-subtitle');
+
+        function openDrawer(id, name) {
+            drawerTitle.innerText = name;
+            drawerSubtitle.innerText = `ID: ${id}`;
+            
+            backdrop.classList.remove('hidden');
+            setTimeout(() => {
+                backdrop.classList.remove('opacity-0');
+                backdrop.classList.add('opacity-100');
+                drawer.classList.remove('translate-x-full');
+                drawer.classList.add('translate-x-0');
+            }, 10);
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeDrawer() {
+            backdrop.classList.remove('opacity-100');
+            backdrop.classList.add('opacity-0');
+            drawer.classList.remove('translate-x-0');
+            drawer.classList.add('translate-x-full');
+            
+            setTimeout(() => {
+                backdrop.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }, 300);
+        }
+
+        function handleModeration(action) {
+            const confirmation = confirm(`Are you sure you want to perform: ${action}?`);
+            if (confirmation) {
+                // Mock success
+                alert(`Action ${action} successful.`);
+                closeDrawer();
+            }
+        }
+
+        // Close on ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeDrawer();
+        });
+    </script>
+</body></html>

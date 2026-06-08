@@ -80,15 +80,21 @@ Use case nay mo ta cac nghiep vu moderation cua Admin trong Commerce Service: re
 
 **Exception Flow:** Review not found -> 404.
 
-### 5.5. Support Read Order/Shipment
+### 5.5. Support Read Order/Payment/Shipment/Webhook
 
 **Main Flow:**
 
-1. Admin searches order/shipment.
-2. System checks support-read permission.
-3. System returns status, histories, webhook/provider summary.
+1. Admin/support (via Admin Service) requests read-only detail.
+2. Admin Service forwards Bearer token to Commerce support APIs:
+   - `GET /commerce/api/v1/admin/support/orders/{orderId}` — `ORDER_SUPPORT_READ`
+   - `GET /commerce/api/v1/admin/support/payments/{paymentId}` — `PAYMENT_SUPPORT_READ`
+   - `GET /commerce/api/v1/admin/support/shipments/{shipmentId}` — `SHIPMENT_SUPPORT_READ`
+   - `GET /commerce/api/v1/admin/support/webhook-logs` — `WEBHOOK_SUPPORT_READ`
+3. Commerce validates permission and returns sanitized projections.
 
 **Postconditions:** Read-only; no payment/order mutation in MVP.
+
+**Docs:** `docs/use_cases/commerce_use_cases/uc-commerce-support-read.md`
 
 ## 6. Acceptance Criteria
 

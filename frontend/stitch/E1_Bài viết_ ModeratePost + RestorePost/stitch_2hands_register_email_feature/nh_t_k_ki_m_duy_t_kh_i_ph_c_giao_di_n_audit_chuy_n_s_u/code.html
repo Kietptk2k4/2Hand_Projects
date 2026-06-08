@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Moderation Audit &amp; Restore | Console</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#e7eeff",
+                        "inverse-surface": "#263143",
+                        "surface-dim": "#cfdaf2",
+                        "on-primary-container": "#f8f7ff",
+                        "primary-fixed": "#dae1ff",
+                        "on-surface-variant": "#424656",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#0054d6",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "on-tertiary-fixed": "#191c1e",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "surface": "#f9f9ff",
+                        "tertiary-fixed": "#e0e3e5",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#f6f8fa",
+                        "secondary-fixed": "#e1e0ff",
+                        "on-primary-fixed": "#001849",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "secondary-container": "#6063ee",
+                        "on-secondary-fixed": "#07006c",
+                        "inverse-primary": "#b3c5ff",
+                        "tertiary-container": "#6f7274",
+                        "on-surface": "#111c2d",
+                        "surface-bright": "#f9f9ff",
+                        "primary-container": "#0066ff",
+                        "primary": "#0050cb",
+                        "on-background": "#111c2d",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "on-secondary-container": "#fffbff",
+                        "surface-container-high": "#dee8ff",
+                        "surface-container-highest": "#d8e3fb",
+                        "tertiary": "#565a5b",
+                        "surface-container-low": "#f0f3ff",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary": "#4648d4",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#ecf1ff",
+                        "on-primary-fixed-variant": "#003fa4",
+                        "outline-variant": "#c2c6d8",
+                        "surface-variant": "#d8e3fb",
+                        "outline": "#727687",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "background": "#f9f9ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "lg": "40px",
+                        "gutter": "24px",
+                        "margin-desktop": "32px",
+                        "base": "8px",
+                        "sm": "12px",
+                        "md": "24px",
+                        "xs": "4px",
+                        "xl": "64px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "headline-xl-mobile": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-xl-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "headline-xl": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        .expand-row-content {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.3s ease-out;
+        }
+        
+        .expand-row-content.expanded {
+            grid-template-rows: 1fr;
+        }
+        
+        .expand-row-inner {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md h-screen overflow-hidden flex">
+<!-- SideNavBar (Shared Component) -->
+<nav class="hidden md:flex flex-col bg-surface-container-low border-r border-outline-variant h-full w-64 p-4 gap-2 z-50 fixed left-0 top-0">
+<div class="flex items-center gap-3 px-4 py-md mb-6">
+<div class="w-10 h-10 rounded-lg bg-primary-container text-on-primary flex items-center justify-center font-bold text-headline-sm">
+                C
+            </div>
+<div>
+<h1 class="text-headline-md font-headline-md font-black text-on-surface">Console</h1>
+<p class="text-label-sm font-label-sm text-outline">v2.4.0</p>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-1">
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-container-high rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-container-high rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">post_add</span>
+<span class="text-label-md font-label-md">Posts</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-container-high rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">rate_review</span>
+<span class="text-label-md font-label-md">Reviews</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-container-high rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">storefront</span>
+<span class="text-label-md font-label-md">Shops</span>
+</a>
+<!-- Active State -->
+<a class="flex items-center gap-3 bg-secondary-fixed text-on-secondary-fixed rounded-lg px-4 py-3 font-semibold scale-[0.99] transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-weight="fill">person_search</span>
+<span class="text-label-md font-label-md">Investigations</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 hover:bg-surface-container-high rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-md font-label-md">Settings</span>
+</a>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant">
+<button class="w-full py-2 px-4 bg-surface text-primary border border-primary rounded-lg text-label-md font-label-md hover:bg-surface-container transition-colors">
+                Support Ticket
+            </button>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full ml-0 md:ml-64 relative">
+<!-- TopNavBar (Shared Component) -->
+<header class="flex justify-between items-center px-margin-mobile md:px-margin-desktop w-full h-16 sticky top-0 z-40 bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-on-surface-variant p-2 -ml-2 rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h2 class="text-headline-sm font-headline-sm font-bold text-primary">Marketplace Admin</h2>
+</div>
+<div class="flex items-center gap-2">
+<div class="relative hidden sm:block mr-2">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+<input class="w-64 pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-full text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="Search logs..." type="text"/>
+</div>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-variant border border-outline-variant ml-2 overflow-hidden flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+</div>
+</header>
+<!-- Page Canvas -->
+<div class="flex-1 overflow-auto bg-surface-container-lowest p-margin-mobile md:p-margin-desktop">
+<div class="max-w-container-max mx-auto">
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+<div>
+<h1 class="text-headline-lg-mobile md:text-headline-lg font-headline-lg-mobile md:font-headline-lg text-on-surface mb-1">Moderation Audit &amp; Restore</h1>
+<p class="text-body-md font-body-md text-on-surface-variant">Review historical moderation actions, investigate disputes, and restore content.</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-4 py-2 bg-surface border border-outline-variant text-on-surface rounded-lg text-label-md font-label-md hover:bg-surface-container transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                            Export CSV
+                        </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-surface border border-outline-variant text-on-surface rounded-lg text-label-md font-label-md hover:bg-surface-container transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                            Filter
+                        </button>
+</div>
+</div>
+<!-- Stats Overview Bento -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+<div class="bg-surface border border-outline-variant rounded-xl p-5 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)]">
+<div class="text-label-sm font-label-sm text-outline uppercase tracking-wider mb-2">Actions Today</div>
+<div class="text-headline-xl font-headline-xl text-on-surface">142</div>
+<div class="text-label-sm font-label-sm text-primary flex items-center mt-2">
+<span class="material-symbols-outlined text-[14px] mr-1">trending_down</span>
+                            12% vs yesterday
+                        </div>
+</div>
+<div class="bg-surface border border-outline-variant rounded-xl p-5 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)]">
+<div class="text-label-sm font-label-sm text-outline uppercase tracking-wider mb-2">Removals</div>
+<div class="text-headline-md font-headline-md text-on-surface mt-1 mb-1">87</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant">61% of total</div>
+</div>
+<div class="bg-surface border border-outline-variant rounded-xl p-5 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)]">
+<div class="text-label-sm font-label-sm text-outline uppercase tracking-wider mb-2">Warnings Issued</div>
+<div class="text-headline-md font-headline-md text-on-surface mt-1 mb-1">45</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant">32% of total</div>
+</div>
+<div class="bg-surface border border-outline-variant rounded-xl p-5 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)]">
+<div class="text-label-sm font-label-sm text-outline uppercase tracking-wider mb-2">Restores (7d)</div>
+<div class="text-headline-md font-headline-md text-on-surface mt-1 mb-1">12</div>
+<div class="text-label-sm font-label-sm text-error flex items-center mt-2">
+<span class="material-symbols-outlined text-[14px] mr-1">trending_up</span>
+                            Alert: Elevated rate
+                        </div>
+</div>
+</div>
+<!-- Main Data Table Container -->
+<div class="bg-surface border border-outline-variant rounded-xl shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col">
+<!-- Table Toolbar -->
+<div class="px-6 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Action Log</h3>
+<div class="flex gap-2">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-container-high text-on-surface">
+                                All Actions
+                                <span class="material-symbols-outlined text-[14px] ml-1">close</span>
+</span>
+</div>
+</div>
+<!-- Table Structure -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant text-label-sm font-label-sm uppercase tracking-wider border-b border-outline-variant">
+<th class="px-6 py-4 font-medium w-12"></th> <!-- Expand toggle -->
+<th class="px-6 py-4 font-medium">Date &amp; Time</th>
+<th class="px-6 py-4 font-medium">Post ID</th>
+<th class="px-6 py-4 font-medium">Admin</th>
+<th class="px-6 py-4 font-medium">Action</th>
+<th class="px-6 py-4 font-medium">Reason Code</th>
+<th class="px-6 py-4 font-medium text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="text-body-sm font-body-sm">
+<!-- Row 1 (Removed - Restorable) -->
+<tr class="border-b border-outline-variant hover:bg-surface-container-lowest transition-colors group">
+<td class="px-6 py-4">
+<button class="text-outline hover:text-primary transition-colors expand-btn p-1 rounded-full hover:bg-surface-container" onclick="toggleRow('row-1')">
+<span class="material-symbols-outlined transition-transform duration-200" id="icon-row-1">chevron_right</span>
+</button>
+</td>
+<td class="px-6 py-4 text-on-surface whitespace-nowrap">
+                                        Oct 24, 14:32<br/>
+<span class="text-label-sm font-label-sm text-outline">2023</span>
+</td>
+<td class="px-6 py-4 font-medium text-primary cursor-pointer hover:underline">
+                                        #P-8923-XZ
+                                    </td>
+<td class="px-6 py-4 text-on-surface">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center text-[10px] font-bold">SJ</div>
+                                            Sarah J.
+                                        </div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-error-container text-on-error-container text-label-sm font-label-sm border border-[#ffb4ab]">
+<span class="material-symbols-outlined text-[14px]">delete</span>
+                                            Removed
+                                        </span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">
+<span class="font-mono text-xs bg-surface-container px-2 py-1 rounded border border-outline-variant">RC-04_SPAM</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="px-3 py-1.5 bg-surface text-primary border border-primary rounded text-label-sm font-label-sm hover:bg-primary-container hover:text-on-primary-container transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-primary outline-none">
+                                            Restore
+                                        </button>
+</td>
+</tr>
+<!-- Expanded Content 1 -->
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<td class="p-0" colspan="7">
+<div class="expand-row-content" id="content-row-1">
+<div class="expand-row-inner px-16 py-4">
+<div class="grid grid-cols-2 gap-8">
+<div>
+<h4 class="text-label-sm font-label-sm text-outline uppercase tracking-wider mb-2">Internal Note</h4>
+<p class="text-body-sm font-body-sm text-on-surface bg-surface border border-outline-variant p-3 rounded-lg">
+                                                            "User repeatedly posting identical service listings across multiple irrelevant geographic zones. Clear violation of marketplace spam guidelines."
+                                                        </p>
+</div>
+<div>
+<h4 class="text-label-sm font-label-sm text-outline uppercase tracking-wider mb-2">System Metadata</h4>
+<ul class="text-body-sm font-body-sm text-on-surface-variant space-y-1">
+<li><span class="font-medium">Outbox Event ID:</span> <span class="font-mono text-xs">evt_01HDE9X2Y</span></li>
+<li><span class="font-medium">Target User:</span> <a class="text-primary hover:underline" href="#">U-4451</a></li>
+<li><span class="font-medium">Previous Offenses:</span> 2</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</td>
+</tr>
+<!-- Row 2 (Hidden - Restorable) -->
+<tr class="border-b border-outline-variant hover:bg-surface-container-lowest transition-colors group">
+<td class="px-6 py-4">
+<button class="text-outline hover:text-primary transition-colors expand-btn p-1 rounded-full hover:bg-surface-container" onclick="toggleRow('row-2')">
+<span class="material-symbols-outlined transition-transform duration-200" id="icon-row-2">chevron_right</span>
+</button>
+</td>
+<td class="px-6 py-4 text-on-surface whitespace-nowrap">
+                                        Oct 24, 11:15<br/>
+<span class="text-label-sm font-label-sm text-outline">2023</span>
+</td>
+<td class="px-6 py-4 font-medium text-primary cursor-pointer hover:underline">
+                                        #R-1102-BQ
+                                    </td>
+<td class="px-6 py-4 text-on-surface">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center text-[10px] font-bold">MR</div>
+                                            Marcus R.
+                                        </div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-highest text-on-surface text-label-sm font-label-sm border border-outline">
+<span class="material-symbols-outlined text-[14px]">visibility_off</span>
+                                            Hidden
+                                        </span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">
+<span class="font-mono text-xs bg-surface-container px-2 py-1 rounded border border-outline-variant">RC-12_PII</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="px-3 py-1.5 bg-surface text-primary border border-primary rounded text-label-sm font-label-sm hover:bg-primary-container hover:text-on-primary-container transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-primary outline-none">
+                                            Restore
+                                        </button>
+</td>
+</tr>
+<!-- Expanded Content 2 -->
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<td class="p-0" colspan="7">
+<div class="expand-row-content" id="content-row-2">
+<div class="expand-row-inner px-16 py-4">
+<div class="grid grid-cols-2 gap-8">
+<div>
+<h4 class="text-label-sm font-label-sm text-outline uppercase tracking-wider mb-2">Internal Note</h4>
+<p class="text-body-sm font-body-sm text-on-surface bg-surface border border-outline-variant p-3 rounded-lg">
+                                                            "Review contained client's unredacted phone number and home address. Hidden pending review author editing the content."
+                                                        </p>
+</div>
+<div>
+<h4 class="text-label-sm font-label-sm text-outline uppercase tracking-wider mb-2">System Metadata</h4>
+<ul class="text-body-sm font-body-sm text-on-surface-variant space-y-1">
+<li><span class="font-medium">Outbox Event ID:</span> <span class="font-mono text-xs">evt_01HDE7B4A</span></li>
+<li><span class="font-medium">Target User:</span> <a class="text-primary hover:underline" href="#">U-9921</a></li>
+<li><span class="font-medium">Automated Flag:</span> High Confidence (Regex Match)</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</td>
+</tr>
+<!-- Row 3 (Warning - Non-restorable) -->
+<tr class="border-b border-outline-variant hover:bg-surface-container-lowest transition-colors group">
+<td class="px-6 py-4">
+<button class="text-outline hover:text-primary transition-colors expand-btn p-1 rounded-full hover:bg-surface-container" onclick="toggleRow('row-3')">
+<span class="material-symbols-outlined transition-transform duration-200" id="icon-row-3">chevron_right</span>
+</button>
+</td>
+<td class="px-6 py-4 text-on-surface whitespace-nowrap">
+                                        Oct 23, 09:45<br/>
+<span class="text-label-sm font-label-sm text-outline">2023</span>
+</td>
+<td class="px-6 py-4 font-medium text-primary cursor-pointer hover:underline">
+                                        #U-7734-PROF
+                                    </td>
+<td class="px-6 py-4 text-on-surface">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center text-[10px] font-bold">SJ</div>
+                                            Sarah J.
+                                        </div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#fff8e1] text-[#795548] text-label-sm font-label-sm border border-[#ffe082]">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+                                            Warning
+                                        </span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">
+<span class="font-mono text-xs bg-surface-container px-2 py-1 rounded border border-outline-variant">RC-02_PROFANITY</span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="text-outline text-xs italic">N/A</span>
+</td>
+</tr>
+<!-- Expanded Content 3 -->
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<td class="p-0" colspan="7">
+<div class="expand-row-content" id="content-row-3">
+<div class="expand-row-inner px-16 py-4">
+<div class="grid grid-cols-2 gap-8">
+<div>
+<h4 class="text-label-sm font-label-sm text-outline uppercase tracking-wider mb-2">Internal Note</h4>
+<p class="text-body-sm font-body-sm text-on-surface bg-surface border border-outline-variant p-3 rounded-lg">
+                                                            "Profile bio contained unprofessional language. Issued formal warning to update bio within 48 hours or face temporary suspension."
+                                                        </p>
+</div>
+<div>
+<h4 class="text-label-sm font-label-sm text-outline uppercase tracking-wider mb-2">System Metadata</h4>
+<ul class="text-body-sm font-body-sm text-on-surface-variant space-y-1">
+<li><span class="font-medium">Outbox Event ID:</span> <span class="font-mono text-xs">evt_01HDC2M1P</span></li>
+<li><span class="font-medium">Target User:</span> <a class="text-primary hover:underline" href="#">U-7734</a></li>
+<li><span class="font-medium">Message Sent:</span> True</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 border-t border-outline-variant bg-surface-container-lowest flex items-center justify-between">
+<div class="text-body-sm font-body-sm text-on-surface-variant">
+                            Showing <span class="font-medium text-on-surface">1</span> to <span class="font-medium text-on-surface">3</span> of <span class="font-medium text-on-surface">1,204</span> results
+                        </div>
+<div class="flex gap-2">
+<button class="px-3 py-1 border border-outline-variant rounded bg-surface text-on-surface-variant hover:bg-surface-container disabled:opacity-50 disabled:cursor-not-allowed" disabled="">
+                                Previous
+                            </button>
+<button class="px-3 py-1 border border-outline-variant rounded bg-surface text-on-surface hover:bg-surface-container">
+                                Next
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        function toggleRow(rowId) {
+            const content = document.getElementById(`content-${rowId}`);
+            const icon = document.getElementById(`icon-${rowId}`);
+            
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                content.classList.add('expanded');
+                icon.style.transform = 'rotate(90deg)';
+            }
+        }
+    </script>
+</body></html>

@@ -10,9 +10,14 @@ export const ADMIN_TOP_TABS = [
     labelEn: "User Investigation",
   },
   {
-    id: "commerceModeration",
-    labelVn: "Commerce moderation",
-    labelEn: "Commerce Moderation",
+    id: "adminAudit",
+    labelVn: "Kiểm toán",
+    labelEn: "Audit",
+  },
+  {
+    id: "contentModeration",
+    labelVn: "Kiểm duyệt nội dung",
+    labelEn: "Content Moderation",
   },
   {
     id: "orderSupport",

@@ -102,6 +102,31 @@ function seedAdminProducts() {
 
 const productsById = new Map(seedAdminProducts().map((p) => [p.product_id, { ...p }]));
 
+/** @type {Map<string, Array<object>>} */
+const moderationHistoryByProductId = new Map();
+
+function nextModerationLogId(prefix) {
+  return `${prefix}-${Date.now().toString(36)}`;
+}
+
+function appendProductHistory(productId, entry) {
+  const list = moderationHistoryByProductId.get(productId) || [];
+  moderationHistoryByProductId.set(productId, [entry, ...list]);
+}
+
+function seedProductHistory() {
+  appendProductHistory(MOCK_ADMIN_PRODUCT_REMOVED, {
+    moderation_log_id: "pmh-0000-4000-8000-000000000001",
+    action: "REMOVE",
+    reason: "Vi pham chinh sach nhan hieu — ban hang gia mao thuong hieu.",
+    note: null,
+    admin_id: "a1000000-0000-4000-8000-000000000001",
+    created_at: "2026-05-18T14:30:00Z",
+  });
+}
+
+seedProductHistory();
+
 function mockCartInvalidated(productId) {
   const hash = productId.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
   return hash % 6;
@@ -193,11 +218,24 @@ export function removeProductByAdmin(productId, body, { isAdmin }) {
     record.removed_at = new Date().toISOString();
     cartItemsInvalidated = mockCartInvalidated(productId);
     productsById.set(productId, record);
+    appendProductHistory(productId, {
+      moderation_log_id: nextModerationLogId("pmh"),
+      action: "REMOVE",
+      reason,
+      note: body?.note ?? null,
+      admin_id: "a1000000-0000-4000-8000-000000000001",
+      created_at: record.removed_at,
+    });
   }
 
   return {
     data: {
       product_id: record.product_id,
+      moderation_log_id: nextModerationLogId("pmh"),
+      reason,
+      note: body?.note ?? null,
+      removed_at: record.removed_at,
+      outbox_event_id: nextModerationLogId("ob"),
       seller_id: record.seller_id,
       shop_id: record.shop_id,
       title: record.title,
@@ -205,9 +243,85 @@ export function removeProductByAdmin(productId, body, { isAdmin }) {
       previous_status: previousStatus,
       already_removed: alreadyRemoved,
       cart_items_invalidated: alreadyRemoved ? 0 : cartItemsInvalidated,
-      removed_at: record.removed_at,
     },
     message: alreadyRemoved ? "San pham da duoc go truoc do." : "Go san pham thanh cong.",
+  };
+}
+
+export function restoreProductByAdmin(productId, body, { isAdmin }) {
+  if (!isAdmin) {
+    return { error: "ADMIN-403", status: 403 };
+  }
+
+  const reason = String(body?.reason ?? "").trim();
+  if (!reason) {
+    return { error: "ADMIN-400-VALIDATION", status: 400 };
+  }
+
+  const record = productsById.get(productId);
+  if (!record) {
+    return { error: "ADMIN-404", status: 404 };
+  }
+
+  if (record.status !== "REMOVED") {
+    return { error: "ADMIN-409", status: 409, message: "San pham khong o trang thai REMOVED." };
+  }
+
+  const restoredAt = new Date().toISOString();
+  record.status = "ACTIVE";
+  record.remove_reason = null;
+  record.removed_at = null;
+  productsById.set(productId, record);
+
+  appendProductHistory(productId, {
+    moderation_log_id: nextModerationLogId("pmh"),
+    action: "RESTORE",
+    reason,
+    note: body?.note ?? null,
+    admin_id: "a1000000-0000-4000-8000-000000000001",
+    created_at: restoredAt,
+  });
+
+  return {
+    data: {
+      product_id: record.product_id,
+      moderation_log_id: nextModerationLogId("pmh"),
+      reason,
+      note: body?.note ?? null,
+      restored_at: restoredAt,
+      outbox_event_id: nextModerationLogId("ob"),
+    },
+    message: "Khoi phuc san pham thanh cong.",
+  };
+}
+
+export function getProductModerationHistory(productId, { page = 1, size = 20 } = {}) {
+  const pageNum = Number(page);
+  const sizeNum = Number(size);
+
+  if (!Number.isInteger(pageNum) || pageNum < 1 || !Number.isInteger(sizeNum) || sizeNum < 1) {
+    return { error: "ADMIN-400-PAGINATION", status: 400 };
+  }
+
+  const record = productsById.get(productId);
+  if (!record) {
+    return { error: "ADMIN-404", status: 404 };
+  }
+
+  const all = moderationHistoryByProductId.get(productId) || [];
+  const totalElements = all.length;
+  const totalPages = Math.max(1, Math.ceil(totalElements / sizeNum) || 1);
+  const start = (pageNum - 1) * sizeNum;
+
+  return {
+    data: {
+      product_id: productId,
+      page: pageNum,
+      size: sizeNum,
+      total_elements: totalElements,
+      total_pages: totalPages,
+      history: all.slice(start, start + sizeNum),
+    },
   };
 }
 

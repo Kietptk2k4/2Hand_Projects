@@ -64,3 +64,7 @@ export function buildRemoveProductSuccessToast(result) {
 
   return `Đã gỡ sản phẩm thành công.${cartPart}`;
 }
+
+export function buildRestoreProductSuccessToast() {
+  return "Đã khôi phục sản phẩm thành công.";
+}

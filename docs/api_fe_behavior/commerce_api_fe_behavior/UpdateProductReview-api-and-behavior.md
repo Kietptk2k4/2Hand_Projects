@@ -78,5 +78,6 @@ Buyer cap nhat **rating** va/hoac **comment** cua review da tao. Neu rating doi,
 ## 7. Related
 
 - Create: `POST /commerce/api/v1/reviews` — `CreateProductReview-api-and-behavior.md`
+- Load edit form: `ViewProductReviewForEdit-api-and-behavior.md`
 - Admin hide/restore: `ModerateReview-api-and-behavior.md`
 - FR: `docs/feature_requirements/commerce/FR_UpdateProductReview.md`

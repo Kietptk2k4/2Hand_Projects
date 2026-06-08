@@ -7,7 +7,7 @@ export function CommerceAdminShopModerationPage() {
   const [searchParams] = useSearchParams();
 
   const next = buildAdminSearchParams({
-    section: "commerceModeration",
+    section: "contentModeration",
     tab: "shop-moderation",
     preserve: searchParams,
   });

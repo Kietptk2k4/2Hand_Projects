@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#07006c",
+                    "on-tertiary-fixed": "#191c1e",
+                    "background": "#f9f9ff",
+                    "tertiary-fixed-dim": "#c4c7c9",
+                    "tertiary": "#565a5b",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed-dim": "#c0c1ff",
+                    "on-tertiary-fixed-variant": "#444749",
+                    "on-secondary-fixed-variant": "#2f2ebe",
+                    "surface-bright": "#f9f9ff",
+                    "on-primary-fixed": "#001849",
+                    "outline": "#727687",
+                    "surface-variant": "#d8e3fb",
+                    "surface-container-low": "#f0f3ff",
+                    "surface-container": "#e7eeff",
+                    "on-surface-variant": "#424656",
+                    "outline-variant": "#c2c6d8",
+                    "tertiary-fixed": "#e0e3e5",
+                    "secondary-container": "#6063ee",
+                    "error-container": "#ffdad6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface": "#111c2d",
+                    "inverse-surface": "#263143",
+                    "on-tertiary": "#ffffff",
+                    "on-background": "#111c2d",
+                    "inverse-on-surface": "#ecf1ff",
+                    "on-primary-container": "#f8f7ff",
+                    "surface-dim": "#cfdaf2",
+                    "secondary": "#4648d4",
+                    "on-error": "#ffffff",
+                    "error": "#ba1a1a",
+                    "surface-container-high": "#dee8ff",
+                    "on-secondary": "#ffffff",
+                    "tertiary-container": "#6f7274",
+                    "primary-fixed-dim": "#b3c5ff",
+                    "surface": "#f9f9ff",
+                    "on-secondary-container": "#fffbff",
+                    "primary": "#0050cb",
+                    "on-tertiary-container": "#f6f8fa",
+                    "surface-container-highest": "#d8e3fb",
+                    "primary-container": "#0066ff",
+                    "inverse-primary": "#b3c5ff",
+                    "on-error-container": "#93000a",
+                    "primary-fixed": "#dae1ff",
+                    "secondary-fixed": "#e1e0ff",
+                    "surface-tint": "#0054d6",
+                    "on-primary-fixed-variant": "#003fa4"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "md": "24px",
+                    "container-max": "1280px",
+                    "lg": "40px",
+                    "margin-mobile": "16px",
+                    "xs": "4px",
+                    "gutter": "24px",
+                    "base": "8px",
+                    "xl": "64px",
+                    "margin-desktop": "32px",
+                    "sm": "12px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "headline-xl": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-xl-mobile": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "headline-xl-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9f9ff;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .modal-blur {
+            backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+<body class="overflow-hidden">
+<!-- Admin Console Background Layer (Simulating the screen behind the modal) -->
+<div class="flex h-screen w-full">
+<!-- SideNavBar Shared Component Simulation -->
+<aside class="hidden md:flex flex-col h-full py-md px-sm gap-base bg-surface-container-low w-64 border-r border-outline-variant opacity-40">
+<div class="flex items-center gap-base px-xs mb-md">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined">shield_person</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm font-black text-on-surface">2Hands Admin</h2>
+<p class="text-label-sm text-outline">Platform Governance</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<div class="flex items-center gap-sm px-sm py-base bg-secondary-container text-on-secondary-container rounded-lg">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md">Overview</span>
+</div>
+<div class="flex items-center gap-sm px-sm py-base text-on-surface-variant">
+<span class="material-symbols-outlined">storefront</span>
+<span class="font-label-md">Shop Moderation</span>
+</div>
+<div class="flex items-center gap-sm px-sm py-base text-on-surface-variant">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-md">Transaction Logs</span>
+</div>
+</nav>
+</aside>
+<main class="flex-1 flex flex-col opacity-40">
+<!-- TopNavBar Shared Component Simulation -->
+<header class="flex justify-between items-center w-full px-margin-desktop h-16 bg-surface border-b border-outline-variant">
+<span class="font-headline-md text-headline-md font-bold text-primary">Admin Console</span>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-base">
+<span class="material-symbols-outlined text-outline">notifications</span>
+<span class="material-symbols-outlined text-outline">settings</span>
+</div>
+<img alt="Admin" class="w-8 h-8 rounded-full" data-alt="A professional headshot of a corporate administrator in a sleek modern office. High-key lighting highlights his professional attire and clean-cut appearance. The background is a soft-focus minimalist architectural space with glass and steel elements, maintaining a corporate and reliable aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgydoCZDjEixhv6M78xajyrvQFz2K9d_vJIFipuZ2_fEdDX_6Tq3lu37RvVEHnRKaFaPGmxyQQN9Q5b0yveGpmb22Ylhv48_A8WJlxBwvQBSbjrDEoxxmPIR6rSRnzmTy8OrpUNVxClkgdgKQMUf1OsyVZ2Mt10mJkJH0LB071sBo3hSDLKB_tkpyXeTL_gN-TW_UTMkZlDPc0Wj8UjdTAJf328IQ27slRx_rVk9R4fQg9BQp33tTwAmUD4FP4Ag8flUfMDzgGrTY"/>
+</div>
+</header>
+<div class="p-margin-desktop">
+<div class="max-w-4xl mx-auto space-y-md">
+<div class="h-8 w-48 bg-outline-variant rounded animate-pulse"></div>
+<div class="h-64 w-full bg-surface-container rounded animate-pulse"></div>
+</div>
+</div>
+</main>
+</div>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-margin-mobile modal-blur bg-black/40">
+<!-- Close Shop Modal -->
+<div class="bg-surface-container-lowest w-full max-w-[640px] rounded-xl shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] overflow-hidden border border-outline-variant flex flex-col">
+<!-- Modal Header -->
+<div class="px-md py-md border-b border-outline-variant">
+<div class="flex justify-between items-start">
+<div class="space-y-xs">
+<h1 class="font-headline-md text-headline-md text-error font-bold">Đóng Cửa hàng Vĩnh viễn</h1>
+<div class="flex items-center gap-sm">
+<span class="font-label-md text-on-surface-variant bg-surface-container px-sm py-1 rounded-full border border-outline-variant">
+                                Shop Đồ gia dụng Minh
+                            </span>
+<span class="font-label-md text-outline">ID #SHOP-8841</span>
+</div>
+</div>
+<button class="text-on-surface-variant hover:bg-surface-container-high p-1 rounded-full transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</div>
+<!-- Modal Content -->
+<div class="px-md py-md space-y-md overflow-y-auto max-h-[716px]">
+<!-- Danger Banner -->
+<div class="bg-error-container p-md rounded-lg flex gap-md border border-error/20">
+<div class="text-error mt-0.5">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div class="space-y-xs">
+<p class="font-headline-sm text-headline-sm text-on-error-container">Cảnh báo nghiêm trọng</p>
+<p class="font-body-md text-body-md text-on-error-container leading-relaxed">
+                            Hành động này sẽ <strong>xóa bỏ hoàn toàn</strong> quyền truy cập của người bán vào hệ thống 2Hands. Toàn bộ danh mục sản phẩm, lịch sử giao dịch đang xử lý và ví điện tử liên kết sẽ bị đóng băng theo quy định {{DATA:DOCUMENT:DOCUMENT_441}}. Đây là hành động <strong>không thể hoàn tác</strong> cho các vi phạm nghiêm trọng.
+                        </p>
+</div>
+</div>
+<!-- Form -->
+<form class="space-y-md">
+<!-- Lý do đóng cửa -->
+<div class="space-y-xs">
+<label class="font-label-md text-on-surface flex items-center gap-xs">
+                            Lý do đóng cửa <span class="text-error">*</span>
+</label>
+<div class="relative">
+<select class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-md py-sm font-body-md text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent outline-none appearance-none cursor-pointer" required="">
+<option disabled="" selected="" value="">Chọn lý do vi phạm...</option>
+<option value="fraud">Gian lận giao dịch và thanh toán</option>
+<option value="fake">Kinh doanh hàng giả, hàng nhái</option>
+<option value="policy">Vi phạm chính sách cộng đồng nhiều lần</option>
+<option value="abuse">Hành vi quấy rối người dùng</option>
+<option value="legal">Yêu cầu từ cơ quan pháp luật</option>
+<option value="other">Lý do khác (Vui lòng ghi chú)</option>
+</select>
+<div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-outline">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Ghi chú nội bộ -->
+<div class="space-y-xs">
+<label class="font-label-md text-on-surface">Ghi chú nội bộ (Không bắt buộc)</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-md py-sm font-body-md text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none" placeholder="Nhập chi tiết về các bằng chứng vi phạm, lịch sử nhắc nhở hoặc số văn bản liên quan để lưu hồ sơ quản trị..." rows="4"></textarea>
+<p class="text-label-sm text-outline">Ghi chú này sẽ được lưu trong lịch sử quản trị và có thể dùng để đối soát sau này.</p>
+</div>
+<!-- Checkbox Confirmation -->
+<div class="flex items-start gap-sm pt-xs">
+<input class="mt-1 w-5 h-5 text-error border-outline-variant rounded focus:ring-error" id="confirm-danger" type="checkbox"/>
+<label class="font-body-sm text-on-surface-variant cursor-pointer" for="confirm-danger">
+                            Tôi xác nhận rằng tôi đã kiểm tra kỹ hồ sơ vi phạm và hiểu rõ hậu quả của việc đóng cửa hàng vĩnh viễn này.
+                        </label>
+</div>
+</form>
+</div>
+<!-- Modal Footer -->
+<div class="px-md py-md bg-surface-container-low border-t border-outline-variant flex justify-end gap-md">
+<button class="px-md py-base font-label-md text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all active:scale-95">
+                    Quay lại
+                </button>
+<button class="px-md py-base font-label-md bg-error text-on-error rounded-lg transition-all opacity-50 cursor-not-allowed hover:brightness-90 active:scale-95 shadow-sm" disabled="" id="btn-close-shop">
+                    Đóng cửa hàng
+                </button>
+</div>
+</div>
+</div>
+<!-- Micro-interactions Script -->
+<script>
+        const checkbox = document.getElementById('confirm-danger');
+        const submitBtn = document.getElementById('btn-close-shop');
+
+        checkbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        });
+
+        // Close logic simulation
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                if(btn.innerText.includes('Đóng cửa hàng') && !btn.disabled) {
+                    if(confirm('Bạn có chắc chắn muốn thực hiện hành động KHÔNG THỂ HOÀN TÁC này không?')) {
+                        btn.innerHTML = '<span class="flex items-center gap-xs"><span class="material-symbols-outlined animate-spin">progress_activity</span> Đang xử lý...</span>';
+                        setTimeout(() => {
+                            alert('Cửa hàng ID #SHOP-8841 đã được đóng vĩnh viễn.');
+                            window.location.reload();
+                        }, 1500);
+                    }
+                }
+            });
+        });
+    </script>
+</body></html>

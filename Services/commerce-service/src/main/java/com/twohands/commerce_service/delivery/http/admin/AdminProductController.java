@@ -1,7 +1,10 @@
 package com.twohands.commerce_service.delivery.http.admin;
 
+import com.twohands.commerce_service.application.admin.viewadminproducts.ViewAdminProductsForModerationCommand;
+import com.twohands.commerce_service.application.admin.viewadminproducts.ViewAdminProductsForModerationUseCase;
 import com.twohands.commerce_service.application.product.removeproductbyadmin.RemoveProductByAdminCommand;
 import com.twohands.commerce_service.application.product.removeproductbyadmin.RemoveProductByAdminUseCase;
+import com.twohands.commerce_service.domain.admin.ViewAdminProductsForModerationResult;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.product.RemoveProductByAdminResult;
 import com.twohands.commerce_service.exception.AppException;
@@ -12,10 +15,12 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -24,15 +29,43 @@ import java.util.UUID;
 @RequestMapping("/commerce/api/v1/admin/products")
 public class AdminProductController {
 
+    private final ViewAdminProductsForModerationUseCase viewAdminProductsForModerationUseCase;
     private final RemoveProductByAdminUseCase removeProductByAdminUseCase;
     private final CommerceAdminAuthorization commerceAdminAuthorization;
 
     public AdminProductController(
+            ViewAdminProductsForModerationUseCase viewAdminProductsForModerationUseCase,
             RemoveProductByAdminUseCase removeProductByAdminUseCase,
             CommerceAdminAuthorization commerceAdminAuthorization
     ) {
+        this.viewAdminProductsForModerationUseCase = viewAdminProductsForModerationUseCase;
         this.removeProductByAdminUseCase = removeProductByAdminUseCase;
         this.commerceAdminAuthorization = commerceAdminAuthorization;
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<ViewAdminProductsForModerationResponse>> listProducts(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String q,
+            Authentication authentication
+    ) {
+        AuthenticatedUser admin = resolveAuthenticatedUser(authentication);
+        commerceAdminAuthorization.requirePermission(
+                admin,
+                CommerceAdminAuthorization.PERMISSION_PRODUCT_REMOVE
+        );
+
+        ViewAdminProductsForModerationResult result = viewAdminProductsForModerationUseCase.execute(
+                new ViewAdminProductsForModerationCommand(page, limit, status, q)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewAdminProductsForModerationUseCase.successMessage(),
+                AdminModerationListResponseMapper.toProductListResponse(result)
+        ));
     }
 
     @PostMapping("/{productId}/remove")

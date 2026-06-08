@@ -67,7 +67,8 @@ Prefix: **`/commerce/api/v1/...`** · Lỗi: **`COMMERCE-*`** · Envelope chuẩ
 | Base path | Mô tả |
 |-----------|--------|
 | `/admin/products`, `/admin/shops`, `/admin/reviews` | Moderation hỗ trợ |
-| `/admin/support/orders`, `payments`, `shipments`, `webhook-logs` | Tra cứu vận hành |
+| `/admin/support/orders`, `payments`, `shipments`, `webhook-logs` | Tra cứu vận hành (Admin Service proxy; Commerce FE chưa dùng) |
+| `/reviews/context`, `/me/products/{id}/review`, `GET /reviews/{id}` | Buyer review read — form viết/sửa review (Commerce FE) |
 
 ### Webhook (public, verify signature)
 
@@ -76,7 +77,7 @@ Prefix: **`/commerce/api/v1/...`** · Lỗi: **`COMMERCE-*`** · Envelope chuẩ
 | `POST` | `/commerce/api/v1/payments/webhooks/**` (payOS) |
 | `POST` | `/commerce/api/v1/shipments/webhooks/**` (GHN) |
 
-> Contract đầy đủ: [`docs/api_fe_behavior/commerce_api_fe_behavior/`](../../docs/api_fe_behavior/commerce_api_fe_behavior/) (~62 tài liệu)
+> Contract đầy đủ: [`docs/api_fe_behavior/commerce_api_fe_behavior/`](../../docs/api_fe_behavior/commerce_api_fe_behavior/) (~72 tài liệu)
 
 ---
 

@@ -18,16 +18,19 @@ export const RATING_FILTER_OPTIONS = [
 
 export const MODERATION_ACTIONS = {
   HIDE: "HIDE",
+  REMOVE: "REMOVE",
   RESTORE: "RESTORE",
 };
 
 export const ACTION_LABELS = {
   HIDE: "Ẩn đánh giá (Hide)",
+  REMOVE: "Gỡ đánh giá (Remove)",
   RESTORE: "Khôi phục công khai (Restore)",
 };
 
 export const ACTION_DESCRIPTIONS = {
   HIDE: "Ẩn đánh giá khỏi danh sách công khai trên marketplace.",
+  REMOVE: "Gỡ mềm đánh giá vi phạm nặng — vẫn auditable, không hiển thị công khai.",
   RESTORE: "Khôi phục đánh giá để hiển thị lại công khai.",
 };
 
@@ -43,6 +46,9 @@ export const REVIEW_STATUS_BADGE_CLASS = {
 
 export const HIDE_WARNING =
   "Đánh giá sẽ biến mất khỏi danh sách công khai. Rating shop chỉ tính từ review đang hiển thị (VISIBLE).";
+
+export const REMOVE_WARNING =
+  "Gỡ mềm review vi phạm nặng. Review vẫn lưu trong hệ thống để audit nhưng không hiển thị công khai.";
 
 export const RESTORE_WARNING =
   "Đánh giá sẽ hiển thị lại công khai. Rating shop (seller_rating_avg / seller_rating_count) sẽ được cập nhật.";
@@ -66,8 +72,9 @@ export function mapAdminReviewModerationApiError(error) {
 }
 
 export function getAllowedActionsForReviewStatus(status) {
-  if (status === "VISIBLE") return ["HIDE"];
-  if (status === "HIDDEN") return ["RESTORE"];
+  if (status === "VISIBLE") return ["HIDE", "REMOVE"];
+  if (status === "HIDDEN") return ["RESTORE", "REMOVE"];
+  if (status === "REMOVED") return ["RESTORE"];
   return [];
 }
 
@@ -88,6 +95,7 @@ export function buildModerateReviewSuccessToast(action, result) {
     return `Đánh giá đã ở trạng thái mục tiêu.${ratingPart}`;
   }
   if (action === "HIDE") return `Đã ẩn đánh giá thành công.${ratingPart}`;
+  if (action === "REMOVE") return `Đã gỡ đánh giá thành công.${ratingPart}`;
   if (action === "RESTORE") return `Đã khôi phục đánh giá thành công.${ratingPart}`;
   return `Kiểm duyệt thành công.${ratingPart}`;
 }

@@ -1,7 +1,10 @@
 package com.twohands.commerce_service.delivery.http.admin;
 
+import com.twohands.commerce_service.application.admin.viewadminreviews.ViewAdminReviewsForModerationCommand;
+import com.twohands.commerce_service.application.admin.viewadminreviews.ViewAdminReviewsForModerationUseCase;
 import com.twohands.commerce_service.application.review.moderatereview.ModerateReviewCommand;
 import com.twohands.commerce_service.application.review.moderatereview.ModerateReviewUseCase;
+import com.twohands.commerce_service.domain.admin.ViewAdminReviewsForModerationResult;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.review.ModerateReviewResult;
 import com.twohands.commerce_service.domain.review.ReviewModerationAction;
@@ -13,10 +16,12 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -25,15 +30,44 @@ import java.util.UUID;
 @RequestMapping("/commerce/api/v1/admin/reviews")
 public class AdminReviewController {
 
+    private final ViewAdminReviewsForModerationUseCase viewAdminReviewsForModerationUseCase;
     private final ModerateReviewUseCase moderateReviewUseCase;
     private final CommerceAdminAuthorization commerceAdminAuthorization;
 
     public AdminReviewController(
+            ViewAdminReviewsForModerationUseCase viewAdminReviewsForModerationUseCase,
             ModerateReviewUseCase moderateReviewUseCase,
             CommerceAdminAuthorization commerceAdminAuthorization
     ) {
+        this.viewAdminReviewsForModerationUseCase = viewAdminReviewsForModerationUseCase;
         this.moderateReviewUseCase = moderateReviewUseCase;
         this.commerceAdminAuthorization = commerceAdminAuthorization;
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<ViewAdminReviewsForModerationResponse>> listReviews(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Integer rating,
+            @RequestParam(required = false) String q,
+            Authentication authentication
+    ) {
+        AuthenticatedUser admin = resolveAuthenticatedUser(authentication);
+        commerceAdminAuthorization.requirePermission(
+                admin,
+                CommerceAdminAuthorization.PERMISSION_REVIEW_HIDE
+        );
+
+        ViewAdminReviewsForModerationResult result = viewAdminReviewsForModerationUseCase.execute(
+                new ViewAdminReviewsForModerationCommand(page, limit, status, rating, q)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewAdminReviewsForModerationUseCase.successMessage(),
+                AdminModerationListResponseMapper.toReviewListResponse(result)
+        ));
     }
 
     @PostMapping("/{reviewId}/moderate")

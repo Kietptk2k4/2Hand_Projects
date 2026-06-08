@@ -1,4 +1,4 @@
-# View Product Reviews – API & Behavior
+# View Product Reviews - API & Behavior
 
 ## 1. Business Goal
 

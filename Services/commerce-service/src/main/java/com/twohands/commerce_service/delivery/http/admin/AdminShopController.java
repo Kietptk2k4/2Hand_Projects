@@ -1,7 +1,10 @@
 package com.twohands.commerce_service.delivery.http.admin;
 
+import com.twohands.commerce_service.application.admin.viewadminshops.ViewAdminShopsForModerationCommand;
+import com.twohands.commerce_service.application.admin.viewadminshops.ViewAdminShopsForModerationUseCase;
 import com.twohands.commerce_service.application.shop.moderateshop.ModerateShopCommand;
 import com.twohands.commerce_service.application.shop.moderateshop.ModerateShopUseCase;
+import com.twohands.commerce_service.domain.admin.ViewAdminShopsForModerationResult;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.shop.ModerateShopResult;
 import com.twohands.commerce_service.domain.shop.ShopModerationAction;
@@ -13,10 +16,12 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -25,15 +30,45 @@ import java.util.UUID;
 @RequestMapping("/commerce/api/v1/admin/shops")
 public class AdminShopController {
 
+    private final ViewAdminShopsForModerationUseCase viewAdminShopsForModerationUseCase;
     private final ModerateShopUseCase moderateShopUseCase;
     private final CommerceAdminAuthorization commerceAdminAuthorization;
 
     public AdminShopController(
+            ViewAdminShopsForModerationUseCase viewAdminShopsForModerationUseCase,
             ModerateShopUseCase moderateShopUseCase,
             CommerceAdminAuthorization commerceAdminAuthorization
     ) {
+        this.viewAdminShopsForModerationUseCase = viewAdminShopsForModerationUseCase;
         this.moderateShopUseCase = moderateShopUseCase;
         this.commerceAdminAuthorization = commerceAdminAuthorization;
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<ViewAdminShopsForModerationResponse>> listShops(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String sort,
+            Authentication authentication
+    ) {
+        AuthenticatedUser admin = resolveAuthenticatedUser(authentication);
+        commerceAdminAuthorization.requireAnyPermission(
+                admin,
+                CommerceAdminAuthorization.PERMISSION_SHOP_SUSPEND,
+                CommerceAdminAuthorization.PERMISSION_SHOP_CLOSE
+        );
+
+        ViewAdminShopsForModerationResult result = viewAdminShopsForModerationUseCase.execute(
+                new ViewAdminShopsForModerationCommand(page, limit, status, q, sort)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewAdminShopsForModerationUseCase.successMessage(),
+                AdminModerationListResponseMapper.toShopListResponse(result)
+        ));
     }
 
     @PostMapping("/{shopId}/moderate")

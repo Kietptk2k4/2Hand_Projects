@@ -1,4 +1,4 @@
-# View Shop Reviews – API & Behavior
+# View Shop Reviews - API & Behavior
 
 ## 1. Business Goal
 

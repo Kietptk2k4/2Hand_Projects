@@ -1,15 +1,33 @@
 import { useCallback, useState } from "react";
-import { moderateShop } from "../api/adminShopModerationApi";
-import { mapAdminShopModerationApiError } from "../constants/adminShopModerationConstants";
 import {
-  mapModerateShopPayload,
-  mapModerateShopResponse,
-} from "../utils/adminShopModerationMapper";
+  closeShop,
+  reopenShop,
+  suspendShop,
+} from "../../auth/admin/contentModeration/api/contentModerationAdminApi.js";
+import { mapAdminShopModerationApiError } from "../constants/adminShopModerationConstants";
+import { MODERATION_ACTIONS } from "../constants/adminShopModerationConstants";
+import {
+  mapModerationPayload,
+  mapShopModerationResponse,
+} from "../../auth/admin/contentModeration/utils/contentModerationAdminMapper.js";
+import {
+  isAdminUnauthorizedError,
+  mapContentModerationApiError,
+} from "../../auth/admin/contentModeration/utils/mapContentModerationApiError.js";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 
-function isUnauthorizedError(error) {
-  const code = String(error?.code ?? "");
-  return code === "401" || code.includes("401") || code.includes("COMMERCE-401");
+async function executeShopAction(shopId, action, payload) {
+  const body = mapModerationPayload(payload);
+  if (action === MODERATION_ACTIONS.SUSPEND) {
+    return suspendShop(shopId, body);
+  }
+  if (action === MODERATION_ACTIONS.CLOSE) {
+    return closeShop(shopId, body);
+  }
+  if (action === MODERATION_ACTIONS.RESTORE) {
+    return reopenShop(shopId, body);
+  }
+  throw { code: "ADMIN-400-VALIDATION", message: "Hanh dong khong hop le." };
 }
 
 export function useModerateShop({ onSuccess }) {
@@ -29,16 +47,18 @@ export function useModerateShop({ onSuccess }) {
       setSubmitError("");
 
       try {
-        const raw = await moderateShop(shopId, mapModerateShopPayload({ action, reason: trimmed }));
-        const result = mapModerateShopResponse(raw);
+        const raw = await executeShopAction(shopId, action, { reason: trimmed });
+        const result = mapShopModerationResponse(raw);
         onSuccess?.(result, action);
         return result;
       } catch (error) {
-        if (isUnauthorizedError(error)) {
+        if (isAdminUnauthorizedError(error)) {
           showSessionExpired(error?.message);
           throw error;
         }
-        setSubmitError(mapAdminShopModerationApiError(error));
+        setSubmitError(
+          mapContentModerationApiError(error, mapAdminShopModerationApiError(error)),
+        );
         return null;
       } finally {
         setIsSubmitting(false);

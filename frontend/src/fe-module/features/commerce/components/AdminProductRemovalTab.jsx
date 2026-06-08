@@ -1,19 +1,30 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { FeedToast } from "../../social/components/FeedToast";
 import { APP_ROUTES } from "../../../shared/constants/routes";
-import { buildRemoveProductSuccessToast } from "../constants/adminProductRemovalConstants";
+import {
+  buildRemoveProductSuccessToast,
+  buildRestoreProductSuccessToast,
+} from "../constants/adminProductRemovalConstants";
 import { useAdminProductList } from "../hooks/useAdminProductList";
 import { useRemoveProductByAdmin } from "../hooks/useRemoveProductByAdmin";
+import { useRestoreProductByAdmin } from "../hooks/useRestoreProductByAdmin";
+import { AdminProductModerationHistoryPanel } from "./AdminProductModerationHistoryPanel";
 import { AdminProductRemovalFilters } from "./AdminProductRemovalFilters";
 import { AdminProductRemovalPagination } from "./AdminProductRemovalPagination";
 import { AdminProductRemovalTable } from "./AdminProductRemovalTable";
 import { AdminRemoveProductDialog } from "./AdminRemoveProductDialog";
 import { AdminRemovedProductCaseDialog } from "./AdminRemovedProductCaseDialog";
+import { AdminRestoreProductDialog } from "./AdminRestoreProductDialog";
 
-export function AdminProductRemovalTab() {
+export function AdminProductRemovalTab({
+  productId: urlProductId = "",
+  productView = "list",
+  onProductViewChange,
+}) {
   const [toastMessage, setToastMessage] = useState("");
   const [removeProduct, setRemoveProduct] = useState(null);
+  const [restoreProduct, setRestoreProduct] = useState(null);
   const [caseProduct, setCaseProduct] = useState(null);
 
   const {
@@ -38,6 +49,11 @@ export function AdminProductRemovalTab() {
     applySearch,
   } = useAdminProductList();
 
+  const historyProduct = useMemo(() => {
+    if (!urlProductId) return null;
+    return items.find((item) => item.productId === urlProductId) ?? { productId: urlProductId };
+  }, [items, urlProductId]);
+
   const handleRemoveSuccess = useCallback(
     (result) => {
       setRemoveProduct(null);
@@ -47,25 +63,70 @@ export function AdminProductRemovalTab() {
     [refresh],
   );
 
-  const { isSubmitting, submitError, submit, clearError } = useRemoveProductByAdmin({
-    onSuccess: handleRemoveSuccess,
-  });
+  const handleRestoreSuccess = useCallback(() => {
+    setRestoreProduct(null);
+    setCaseProduct(null);
+    setToastMessage(buildRestoreProductSuccessToast());
+    onProductViewChange?.({ productId: undefined, productView: "list" });
+    refresh();
+  }, [onProductViewChange, refresh]);
+
+  const {
+    isSubmitting: isRemoving,
+    submitError: removeError,
+    submit: submitRemove,
+    clearError: clearRemoveError,
+  } = useRemoveProductByAdmin({ onSuccess: handleRemoveSuccess });
+
+  const {
+    isSubmitting: isRestoring,
+    submitError: restoreError,
+    submit: submitRestore,
+    clearError: clearRestoreError,
+  } = useRestoreProductByAdmin({ onSuccess: handleRestoreSuccess });
 
   const handleCloseRemoveDialog = useCallback(() => {
-    if (isSubmitting) return;
+    if (isRemoving) return;
     setRemoveProduct(null);
-    clearError();
-  }, [clearError, isSubmitting]);
+    clearRemoveError();
+  }, [clearRemoveError, isRemoving]);
+
+  const handleCloseRestoreDialog = useCallback(() => {
+    if (isRestoring) return;
+    setRestoreProduct(null);
+    clearRestoreError();
+  }, [clearRestoreError, isRestoring]);
 
   const handleSubmitRemove = useCallback(
     async ({ reason }) => {
       if (!removeProduct?.productId) return;
-      await submit(removeProduct.productId, { reason });
+      await submitRemove(removeProduct.productId, { reason });
     },
-    [removeProduct, submit],
+    [removeProduct, submitRemove],
   );
 
-  const disabled = isLoading || isSubmitting;
+  const handleSubmitRestore = useCallback(
+    async ({ reason }) => {
+      const target = restoreProduct || caseProduct;
+      if (!target?.productId) return;
+      await submitRestore(target.productId, { reason });
+    },
+    [caseProduct, restoreProduct, submitRestore],
+  );
+
+  const handleViewHistory = useCallback(
+    (product) => {
+      onProductViewChange?.({ productId: product.productId, productView: "history" });
+    },
+    [onProductViewChange],
+  );
+
+  const handleBackToList = useCallback(() => {
+    onProductViewChange?.({ productId: undefined, productView: "list" });
+  }, [onProductViewChange]);
+
+  const disabled = isLoading || isRemoving || isRestoring;
+  const showHistory = productView === "history" && urlProductId;
 
   return (
     <div className="space-y-6">
@@ -75,34 +136,44 @@ export function AdminProductRemovalTab() {
             Kiểm duyệt sản phẩm
           </h2>
           <p className="mt-1 text-body-sm text-on-surface-variant md:text-body-md">
-            Rà soát và gỡ listing vi phạm để đảm bảo chất lượng marketplace.
+            Rà soát và gỡ listing vi phạm qua admin-service; danh sách vẫn lấy từ Commerce.
           </p>
         </div>
-        <form
-          className="relative w-full md:w-80"
-          onSubmit={(e) => {
-            e.preventDefault();
-            applySearch();
-          }}
-        >
-          <span
-            className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-outline"
-            aria-hidden="true"
+        {!showHistory ? (
+          <form
+            className="relative w-full md:w-80"
+            onSubmit={(e) => {
+              e.preventDefault();
+              applySearch();
+            }}
           >
-            search
-          </span>
-          <input
-            type="search"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            disabled={disabled}
-            placeholder="Tìm kiếm theo tên sản phẩm hoặc Shop ID"
-            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest py-2 pl-10 pr-3 text-body-md shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
-          />
-        </form>
+            <span
+              className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-outline"
+              aria-hidden="true"
+            >
+              search
+            </span>
+            <input
+              type="search"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              disabled={disabled}
+              placeholder="Tìm kiếm theo tên sản phẩm hoặc Shop ID"
+              className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest py-2 pl-10 pr-3 text-body-md shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
+            />
+          </form>
+        ) : null}
       </div>
 
-      {forbidden ? (
+      {showHistory ? (
+        <AdminProductModerationHistoryPanel
+          productId={urlProductId}
+          productTitle={historyProduct?.title}
+          onBack={handleBackToList}
+        />
+      ) : null}
+
+      {!showHistory && forbidden ? (
         <div className="rounded-xl border border-error/30 bg-error-container/40 p-8 text-center">
           <p className="text-body-md text-on-error-container">
             Bạn không có quyền truy cập. Đăng nhập bằng tài khoản admin (
@@ -112,7 +183,9 @@ export function AdminProductRemovalTab() {
             Đăng nhập
           </Link>
         </div>
-      ) : (
+      ) : null}
+
+      {!showHistory && !forbidden ? (
         <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
           <AdminProductRemovalFilters
             activeStatusTabId={activeStatusTabId}
@@ -157,7 +230,9 @@ export function AdminProductRemovalTab() {
               items={items}
               disabled={disabled}
               onRemove={setRemoveProduct}
+              onRestore={setRestoreProduct}
               onViewCase={setCaseProduct}
+              onViewHistory={handleViewHistory}
             />
           ) : null}
 
@@ -175,21 +250,38 @@ export function AdminProductRemovalTab() {
             />
           ) : null}
         </div>
-      )}
+      ) : null}
 
       <AdminRemoveProductDialog
         open={Boolean(removeProduct)}
         product={removeProduct}
-        isSubmitting={isSubmitting}
-        submitError={submitError}
+        isSubmitting={isRemoving}
+        submitError={removeError}
         onClose={handleCloseRemoveDialog}
         onSubmit={handleSubmitRemove}
+      />
+
+      <AdminRestoreProductDialog
+        open={Boolean(restoreProduct)}
+        product={restoreProduct}
+        isSubmitting={isRestoring}
+        submitError={restoreError}
+        onClose={handleCloseRestoreDialog}
+        onSubmit={handleSubmitRestore}
       />
 
       <AdminRemovedProductCaseDialog
         open={Boolean(caseProduct)}
         product={caseProduct}
+        isRestoring={isRestoring}
         onClose={() => setCaseProduct(null)}
+        onRestore={() => {
+          if (caseProduct) setRestoreProduct(caseProduct);
+        }}
+        onViewHistory={() => {
+          if (caseProduct) handleViewHistory(caseProduct);
+          setCaseProduct(null);
+        }}
       />
 
       <FeedToast message={toastMessage} onDismiss={() => setToastMessage("")} />

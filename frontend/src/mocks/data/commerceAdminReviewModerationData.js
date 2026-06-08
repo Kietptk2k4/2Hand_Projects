@@ -6,8 +6,8 @@ export const MOCK_ADMIN_REVIEW_VISIBLE = "arv-0000-4000-8000-000000000001";
 /** QA: HIDDEN — thử RESTORE */
 export const MOCK_ADMIN_REVIEW_HIDDEN = "arv-0000-4000-8000-000000000002";
 
-const VALID_ACTIONS = ["HIDE", "RESTORE"];
-const VALID_STATUSES = ["VISIBLE", "HIDDEN"];
+const VALID_ACTIONS = ["HIDE", "RESTORE", "REMOVE"];
+const VALID_STATUSES = ["VISIBLE", "HIDDEN", "REMOVED"];
 
 const BUYERS = [
   {
@@ -229,10 +229,20 @@ export function moderateAdminReview(reviewId, body, { isAdmin }) {
   if (action === "RESTORE") {
     if (previousStatus === "VISIBLE") {
       alreadyModerated = true;
-    } else if (previousStatus !== "HIDDEN") {
+    } else if (previousStatus !== "HIDDEN" && previousStatus !== "REMOVED") {
       return { error: "COMMERCE-400-REVIEW-MODERATION", status: 400 };
     } else {
       nextStatus = "VISIBLE";
+    }
+  }
+
+  if (action === "REMOVE") {
+    if (previousStatus === "REMOVED") {
+      alreadyModerated = true;
+    } else if (previousStatus !== "VISIBLE" && previousStatus !== "HIDDEN") {
+      return { error: "COMMERCE-400-REVIEW-MODERATION", status: 400 };
+    } else {
+      nextStatus = "REMOVED";
     }
   }
 
@@ -257,7 +267,12 @@ export function moderateAdminReview(reviewId, body, { isAdmin }) {
       seller_rating_count: ratingSummary.rating_count,
       moderated_at: new Date().toISOString(),
     },
-    message: action === "HIDE" ? "An review thanh cong." : "Khoi phuc review thanh cong.",
+    message:
+      action === "HIDE"
+        ? "An review thanh cong."
+        : action === "REMOVE"
+          ? "Go review thanh cong."
+          : "Khoi phuc review thanh cong.",
   };
 }
 

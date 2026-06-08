@@ -2,7 +2,14 @@ import { formatVndPrice } from "../../social/utils/formatPrice";
 import { formatShortSellerId, formatShortShopId } from "../utils/formatShortShopId";
 import { AdminProductStatusBadge } from "./AdminProductStatusBadge";
 
-export function AdminProductRemovalTable({ items, disabled, onRemove, onViewCase }) {
+export function AdminProductRemovalTable({
+  items,
+  disabled,
+  onRemove,
+  onRestore,
+  onViewCase,
+  onViewHistory,
+}) {
   if (!items?.length) return null;
 
   return (
@@ -85,17 +92,41 @@ export function AdminProductRemovalTable({ items, disabled, onRemove, onViewCase
                 </td>
                 <td className="p-4 text-right">
                   {isRemoved ? (
-                    <button
-                      type="button"
-                      disabled={disabled}
-                      onClick={() => onViewCase?.(product)}
-                      className="inline-flex items-center gap-1 rounded-lg border border-outline-variant px-4 py-2 text-label-md text-on-surface-variant transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
-                    >
-                      <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
-                        folder_open
-                      </span>
-                      Xem hồ sơ
-                    </button>
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <button
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => onViewCase?.(product)}
+                        className="inline-flex items-center gap-1 rounded-lg border border-outline-variant px-3 py-2 text-label-md text-on-surface-variant transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
+                      >
+                        <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                          folder_open
+                        </span>
+                        Hồ sơ
+                      </button>
+                      <button
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => onViewHistory?.(product)}
+                        className="inline-flex items-center gap-1 rounded-lg border border-outline-variant px-3 py-2 text-label-md text-on-surface-variant transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
+                      >
+                        <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                          history
+                        </span>
+                        Lịch sử
+                      </button>
+                      <button
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => onRestore?.(product)}
+                        className="inline-flex items-center gap-1 rounded-lg border border-primary px-3 py-2 text-label-md font-medium text-primary transition-colors hover:bg-primary/5 disabled:opacity-50"
+                      >
+                        <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                          restore
+                        </span>
+                        Khôi phục
+                      </button>
+                    </div>
                   ) : (
                     <button
                       type="button"
