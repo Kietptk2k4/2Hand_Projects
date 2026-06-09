@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FeedToast } from "../../social/components/FeedToast";
 import { CartEmptyState } from "../components/CartEmptyState";
@@ -13,16 +13,21 @@ import { useValidateCartItems } from "../hooks/useValidateCartItems";
 import {
   getCartItemCountLabel,
   getEligibleCartItems,
+  getSelectedEligibleCartItems,
+  isCartItemCheckoutEligible,
   isCartItemInvalid,
 } from "../utils/cartDisplay";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
 const CHECKOUT_BLOCKED_TOAST = "Không thể thanh toán. Vui lòng kiểm tra lại giỏ hàng.";
+const CHECKOUT_NO_SELECTION_TOAST = "Vui lòng chọn ít nhất một sản phẩm để thanh toán.";
 
 export function CommerceCartPage() {
   const navigate = useNavigate();
   const [toastMessage, setToastMessage] = useState("");
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const selectAllRef = useRef(null);
   const { validate, isValidating } = useValidateCartItems();
   const {
     cart,
@@ -41,21 +46,88 @@ export function CommerceCartPage() {
     setToastMessage("Tính năng đang được phát triển.");
   }, []);
 
+  const eligibleCartItems = useMemo(
+    () => (cart ? getEligibleCartItems(cart) : []),
+    [cart]
+  );
+
+  const eligibleIds = useMemo(
+    () => eligibleCartItems.map((item) => item.cartItemId),
+    [eligibleCartItems]
+  );
+
+  const cartItemSignature = useMemo(
+    () =>
+      cart?.items
+        ?.map((item) => `${item.cartItemId}:${item.quantity}:${item.status}:${item.unavailableReason ?? ""}`)
+        .join("|") ?? "",
+    [cart?.items]
+  );
+
+  useEffect(() => {
+    if (!cart?.items?.length) {
+      setSelectedIds(new Set());
+      return;
+    }
+
+    setSelectedIds((prev) => {
+      const eligibleSet = new Set(eligibleIds);
+      const kept = [...prev].filter((id) => eligibleSet.has(id));
+      if (kept.length > 0) return new Set(kept);
+      return new Set(eligibleIds);
+    });
+  }, [cart?.items?.length, cartItemSignature, eligibleIds]);
+
+  const selectedEligibleItems = useMemo(
+    () => getSelectedEligibleCartItems(cart, selectedIds),
+    [cart, selectedIds]
+  );
+
+  const allEligibleSelected =
+    eligibleIds.length > 0 && eligibleIds.every((id) => selectedIds.has(id));
+
+  const someEligibleSelected =
+    eligibleIds.some((id) => selectedIds.has(id)) && !allEligibleSelected;
+
+  useEffect(() => {
+    if (selectAllRef.current) {
+      selectAllRef.current.indeterminate = someEligibleSelected;
+    }
+  }, [someEligibleSelected]);
+
+  const toggleSelectItem = useCallback((cartItemId) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(cartItemId)) {
+        next.delete(cartItemId);
+      } else {
+        next.add(cartItemId);
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAllEligible = useCallback(() => {
+    setSelectedIds((prev) => {
+      if (allEligibleSelected) return new Set();
+      return new Set(eligibleIds);
+    });
+  }, [allEligibleSelected, eligibleIds]);
+
   const goToCheckout = useCallback(async () => {
     if (!cart) return;
 
-    const eligible = getEligibleCartItems(cart);
-    if (!eligible.length) {
-      setToastMessage(CHECKOUT_BLOCKED_TOAST);
+    if (!selectedEligibleItems.length) {
+      setToastMessage(CHECKOUT_NO_SELECTION_TOAST);
       return;
     }
 
     setIsCheckingOut(true);
     try {
-      const eligibleIds = eligible.map((item) => item.cartItemId);
-      const result = await validate(eligibleIds);
+      const checkoutIds = selectedEligibleItems.map((item) => item.cartItemId);
+      const result = await validate(checkoutIds);
       if (!result?.canCheckout) {
-        await revalidate(eligibleIds);
+        await revalidate(checkoutIds);
         setToastMessage(CHECKOUT_BLOCKED_TOAST);
         return;
       }
@@ -74,7 +146,7 @@ export function CommerceCartPage() {
     } finally {
       setIsCheckingOut(false);
     }
-  }, [cart, navigate, revalidate, validate]);
+  }, [cart, navigate, revalidate, selectedEligibleItems, validate]);
 
   const dismissToast = useCallback(() => {
     setToastMessage("");
@@ -105,10 +177,7 @@ export function CommerceCartPage() {
     [updateQuantity]
   );
 
-  const eligibleCartItems = cart ? getEligibleCartItems(cart) : [];
-  const canCheckout = Boolean(
-    cart?.summary?.canCheckout && eligibleCartItems.length > 0 && !isValidating
-  );
+  const canCheckout = Boolean(selectedEligibleItems.length > 0 && !isValidating);
 
   return (
     <CommerceShell onComingSoon={showComingSoon}>
@@ -145,11 +214,29 @@ export function CommerceCartPage() {
 
           <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
             <div className="flex flex-col gap-4 lg:col-span-8">
+              <div className="flex items-center gap-3 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3">
+                <input
+                  ref={selectAllRef}
+                  type="checkbox"
+                  checked={allEligibleSelected}
+                  disabled={eligibleIds.length === 0 || isMutating}
+                  onChange={toggleSelectAllEligible}
+                  className="h-4 w-4 rounded border-outline-variant text-primary disabled:opacity-40"
+                  aria-label="Chọn tất cả sản phẩm có thể thanh toán"
+                />
+                <span className="text-sm text-on-surface">
+                  Chọn tất cả ({eligibleIds.length} sản phẩm)
+                </span>
+              </div>
+
               {cart.items.map((item) => (
                 <CartItemRow
                   key={item.cartItemId}
                   item={item}
+                  selected={selectedIds.has(item.cartItemId)}
+                  canSelect={isCartItemCheckoutEligible(item)}
                   isMutating={isMutating && mutatingItemId === item.cartItemId}
+                  onToggleSelect={toggleSelectItem}
                   onOpenProduct={openProduct}
                   onRemove={removeItem}
                   onDecrease={() => handleDecrease(item)}
@@ -161,6 +248,7 @@ export function CommerceCartPage() {
             <div className="lg:col-span-4">
               <CartOrderSummary
                 cart={cart}
+                selectedItems={selectedEligibleItems}
                 isMutating={isMutating || isCheckingOut || isValidating}
                 canCheckout={canCheckout}
                 onCheckout={goToCheckout}

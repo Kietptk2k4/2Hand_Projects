@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { FeedToast } from "../../social/components/FeedToast";
 import { CommerceShell } from "../components/CommerceShell";
 import { SellerOrderListEmptyState } from "../components/SellerOrderListEmptyState";
@@ -13,7 +12,6 @@ import { SellerOrderTable } from "../components/SellerOrderTable";
 import { buildProcessSuccessToast } from "../constants/sellerOrderConstants";
 import { useProcessSellerOrderItems } from "../hooks/useProcessSellerOrderItems";
 import { useSellerOrderList } from "../hooks/useSellerOrderList";
-import { APP_ROUTES } from "../../../shared/constants/routes";
 
 export function CommerceSellerOrderListPage() {
   const [toastMessage, setToastMessage] = useState("");
@@ -34,7 +32,6 @@ export function CommerceSellerOrderListPage() {
     rangeEnd,
     isLoading,
     errorMessage,
-    noShop,
     isEmpty,
     isFilterEmpty,
     isSearchEmpty,
@@ -141,7 +138,7 @@ export function CommerceSellerOrderListPage() {
     clearError();
   }, [clearError, isProcessing]);
 
-  const disabled = isLoading || noShop || isProcessing;
+  const disabled = isLoading || isProcessing;
 
   return (
     <CommerceShell onComingSoon={showComingSoon}>
@@ -156,20 +153,6 @@ export function CommerceSellerOrderListPage() {
           isProcessing={isProcessing}
           searchDisabled={disabled}
         />
-
-        {noShop ? (
-          <div className="mb-6 rounded-xl border border-outline-variant bg-surface-container-high p-6">
-            <p className="text-body-md text-on-surface">
-              Bạn chưa có cửa hàng. Tạo shop để nhận và quản lý đơn bán.
-            </p>
-            <Link
-              to={APP_ROUTES.commerceCreateShop}
-              className="mt-4 inline-flex rounded-lg bg-primary px-5 py-2.5 text-label-md font-medium text-on-primary hover:bg-[#0050cb]"
-            >
-              Tạo shop
-            </Link>
-          </div>
-        ) : null}
 
         <SellerOrderStatusTabs
           activeTabId={activeTabId}
@@ -199,13 +182,13 @@ export function CommerceSellerOrderListPage() {
           </div>
         ) : null}
 
-        {!isLoading && !errorMessage && !noShop && (isEmpty || isFilterEmpty || isSearchEmpty) ? (
+        {!isLoading && !errorMessage && (isEmpty || isFilterEmpty || isSearchEmpty) ? (
           <SellerOrderListEmptyState
             variant={isSearchEmpty ? "search" : isFilterEmpty ? "filter" : "none"}
           />
         ) : null}
 
-        {!isLoading && !errorMessage && !noShop && filteredItems.length > 0 ? (
+        {!isLoading && !errorMessage && filteredItems.length > 0 ? (
           <>
             <SellerOrderTable
               items={filteredItems}

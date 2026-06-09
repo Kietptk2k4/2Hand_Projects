@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FeedToast } from "../../social/components/FeedToast";
 import { CommerceShell } from "../components/CommerceShell";
@@ -7,13 +7,14 @@ import { SellerProductEmptyState } from "../components/SellerProductEmptyState";
 import { SellerProductStatusTabs } from "../components/SellerProductStatusTabs";
 import { SellerProductSummaryCards } from "../components/SellerProductSummaryCards";
 import { SellerProductTable } from "../components/SellerProductTable";
+import { useRouteToastMessage } from "../hooks/useRouteToastMessage";
 import { useSellerProductActions } from "../hooks/useSellerProductActions";
 import { useSellerProductList } from "../hooks/useSellerProductList";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
 export function CommerceSellerProductListPage() {
   const navigate = useNavigate();
-  const [toastMessage, setToastMessage] = useState("");
+  const { toastMessage, setToastMessage, dismissToast } = useRouteToastMessage();
 
   const {
     items,
@@ -28,7 +29,6 @@ export function CommerceSellerProductListPage() {
     isLoading,
     isEmpty,
     errorMessage,
-    noShop,
     rangeStart,
     rangeEnd,
     total,
@@ -63,8 +63,6 @@ export function CommerceSellerProductListPage() {
     [navigate],
   );
 
-  const dismissToast = useCallback(() => setToastMessage(""), []);
-
   return (
     <CommerceShell onComingSoon={() => setToastMessage("Tính năng đang được phát triển.")}>
       <div className="mx-auto w-full max-w-[1280px]">
@@ -88,23 +86,9 @@ export function CommerceSellerProductListPage() {
           </Link>
         </header>
 
-        {noShop ? (
-          <div className="rounded-xl border border-outline-variant bg-surface-container-low p-6 text-center">
-            <p className="text-body-sm text-on-surface-variant">{errorMessage}</p>
-            <Link
-              to={APP_ROUTES.commerceCreateShop}
-              className="mt-4 inline-block rounded-lg bg-primary px-4 py-2 text-label-md font-medium text-on-primary"
-            >
-              Tạo shop
-            </Link>
-          </div>
-        ) : null}
+        {summary ? <SellerProductSummaryCards summary={summary} /> : null}
 
-        {!noShop && summary ? <SellerProductSummaryCards summary={summary} /> : null}
-
-        {!noShop ? (
-          <>
-            <SellerProductStatusTabs
+        <SellerProductStatusTabs
               activeTabId={activeTabId}
               onChange={changeStatusFilter}
               disabled={isLoading}
@@ -191,8 +175,6 @@ export function CommerceSellerProductListPage() {
                 </div>
               </>
             ) : null}
-          </>
-        ) : null}
       </div>
 
       <SellerProductConfirmDialog

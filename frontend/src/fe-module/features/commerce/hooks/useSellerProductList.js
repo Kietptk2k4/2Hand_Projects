@@ -15,11 +15,6 @@ function isUnauthorizedError(error) {
   return code === "401" || code.includes("401") || code.includes("COMMERCE-401");
 }
 
-function isNoShopError(error) {
-  const code = String(error?.code ?? "");
-  return code.includes("409-SELLER-SHOP") || code.includes("404-SHOP");
-}
-
 function parseStatusParam(value) {
   if (!value) return null;
   if (!PRODUCT_STATUSES.includes(value)) return "__invalid__";
@@ -40,7 +35,6 @@ export function useSellerProductList() {
   const [summary, setSummary] = useState(null);
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
-  const [noShop, setNoShop] = useState(false);
   const requestIdRef = useRef(0);
 
   useEffect(() => {
@@ -72,7 +66,6 @@ export function useSellerProductList() {
       const requestId = ++requestIdRef.current;
       setStatus("loading");
       setErrorMessage("");
-      setNoShop(false);
 
       try {
         const raw = await fetchSellerProductList({
@@ -94,14 +87,6 @@ export function useSellerProductList() {
 
         if (isUnauthorizedError(error)) {
           showSessionExpired(error?.message);
-          return;
-        }
-
-        if (isNoShopError(error)) {
-          setNoShop(true);
-          setItems([]);
-          setStatus("ready");
-          setErrorMessage(mapSellerProductApiError(error));
           return;
         }
 
@@ -162,9 +147,8 @@ export function useSellerProductList() {
     setSearchInput,
     status,
     errorMessage,
-    noShop,
     isLoading: status === "loading",
-    isEmpty: status === "ready" && items.length === 0 && !noShop,
+    isEmpty: status === "ready" && items.length === 0,
     rangeStart,
     rangeEnd,
     total,

@@ -1,22 +1,15 @@
+import { useRef } from "react";
 import { formatVndPrice } from "../../social/utils/formatPrice";
-
-function ProductBadge({ children, className = "" }) {
-  return (
-    <span
-      className={`pointer-events-none absolute left-2 top-2 rounded px-2 py-0.5 text-xs font-semibold ${className}`}
-    >
-      {children}
-    </span>
-  );
-}
+import { ProductImageStickers } from "./ProductImageStickers";
 
 export function ProductCard({
   product,
   onOpenProduct,
   onOpenShop,
-  onComingSoon,
   onAddToCart,
+  onBuyNow,
   isAddingToCart = false,
+  isBuyingNow = false,
   disabledActions = false,
 }) {
   const isOnSale =
@@ -24,16 +17,28 @@ export function ProductCard({
     product.price != null &&
     Number(product.salePrice) < Number(product.price);
   const isOutOfStock = !product.inStock || product.status === "OUT_OF_STOCK";
-  const addDisabled = disabledActions || isOutOfStock || isAddingToCart;
+  const actionsDisabled = disabledActions || isOutOfStock || isAddingToCart || isBuyingNow;
 
+  const imageRef = useRef(null);
   const canOpenProduct = Boolean(product?.productId && onOpenProduct);
+
+  const handleAddToCart = (event) => {
+    event.stopPropagation();
+    if (actionsDisabled) return;
+    const fromRect = imageRef.current?.getBoundingClientRect();
+    onAddToCart?.(product.productId, 1, {
+      imageUrl: product.thumbnailUrl,
+      fromRect,
+      sourceElement: event.currentTarget,
+    });
+  };
 
   const handleOpen = () => {
     if (!canOpenProduct) return;
     onOpenProduct(product.productId);
   };
 
-  const handleCardClick = (event) => {
+  const handleCardClick = () => {
     if (!canOpenProduct) return;
     handleOpen();
   };
@@ -55,10 +60,12 @@ export function ProductCard({
       aria-label={canOpenProduct ? `Xem chi tiết ${product.title}` : undefined}
       className={[
         "group flex h-full flex-col overflow-hidden rounded-lg border border-outline-variant bg-surface-container-lowest transition-shadow",
-        canOpenProduct ? "cursor-pointer hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" : "",
+        canOpenProduct
+          ? "cursor-pointer hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          : "",
       ].join(" ")}
     >
-      <div className="relative h-48 w-full overflow-hidden bg-surface-container-low">
+      <div ref={imageRef} className="relative h-48 w-full overflow-hidden bg-surface-container-low">
         {product.thumbnailUrl ? (
           <img
             src={product.thumbnailUrl}
@@ -74,33 +81,11 @@ export function ProductCard({
           </div>
         )}
 
-        {isOnSale ? (
-          <ProductBadge className="z-10 bg-error text-on-error">Giảm giá</ProductBadge>
-        ) : null}
-        {isOutOfStock ? (
-          <ProductBadge className="left-auto right-2 z-10 bg-on-surface-variant text-surface">
-            Hết hàng
-          </ProductBadge>
-        ) : null}
-        {!isOutOfStock && product.lowStock ? (
-          <ProductBadge className="top-10 z-10 bg-secondary-container text-on-secondary-container">
-            Sắp hết hàng
-          </ProductBadge>
-        ) : null}
-
-        <button
-          type="button"
-          onClick={(event) => {
-            event.stopPropagation();
-            onComingSoon?.();
-          }}
-          className="absolute right-2 top-2 z-10 rounded-full bg-surface-container-lowest/80 p-2 text-on-surface-variant backdrop-blur-sm transition-all hover:bg-surface-container-lowest hover:text-primary"
-          aria-label="Yêu thích"
-        >
-          <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
-            favorite
-          </span>
-        </button>
+        <ProductImageStickers
+          isOnSale={isOnSale}
+          isOutOfStock={isOutOfStock}
+          lowStock={product.lowStock}
+        />
       </div>
 
       <div className="flex flex-1 flex-col p-4">
@@ -149,7 +134,7 @@ export function ProductCard({
           </p>
         ) : null}
 
-        <div className="mt-auto flex items-center justify-between border-t border-surface-container-high pt-4">
+        <div className="mt-auto flex flex-col gap-2 border-t border-surface-container-high pt-4">
           <div className="flex flex-col">
             {isOnSale ? (
               <span className="text-label-sm text-outline-variant line-through">
@@ -162,22 +147,32 @@ export function ProductCard({
               {formatVndPrice(product.effectivePrice)}
             </span>
           </div>
-          <button
-            type="button"
-            disabled={addDisabled}
-            onClick={(event) => {
-              event.stopPropagation();
-              if (!isOutOfStock && !disabledActions) {
-                onAddToCart?.(product.productId);
-              }
-            }}
-            className="relative z-10 flex items-center gap-1 rounded-md bg-primary-container px-3 py-1.5 text-label-md text-on-primary-container transition-colors hover:bg-primary hover:text-on-primary disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
-              add_shopping_cart
-            </span>
-            {isAddingToCart ? "..." : "Thêm"}
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={actionsDisabled}
+              onClick={(event) => {
+                event.stopPropagation();
+                if (!actionsDisabled) {
+                  onBuyNow?.(product.productId);
+                }
+              }}
+              className="relative z-10 flex flex-1 items-center justify-center rounded-md bg-primary px-2 py-1.5 text-label-md font-semibold text-on-primary transition-colors hover:bg-[#0050cb] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isBuyingNow ? "..." : "Mua ngay"}
+            </button>
+            <button
+              type="button"
+              disabled={actionsDisabled}
+              onClick={handleAddToCart}
+              className="relative z-10 flex items-center justify-center rounded-md border border-outline-variant bg-surface-container-lowest px-2.5 py-1.5 text-on-surface transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label={isAddingToCart ? "Đang thêm vào giỏ" : "Thêm vào giỏ"}
+            >
+              <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+                add_shopping_cart
+              </span>
+            </button>
+          </div>
         </div>
       </div>
     </article>

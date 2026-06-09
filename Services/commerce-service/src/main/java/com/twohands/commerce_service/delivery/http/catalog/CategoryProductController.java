@@ -1,8 +1,11 @@
 package com.twohands.commerce_service.delivery.http.catalog;
 
+import com.twohands.commerce_service.application.catalog.viewactivecategories.ViewActiveCategoriesCommand;
+import com.twohands.commerce_service.application.catalog.viewactivecategories.ViewActiveCategoriesUseCase;
 import com.twohands.commerce_service.application.product.filterproductsbycategory.FilterProductsByCategoryCommand;
 import com.twohands.commerce_service.application.product.filterproductsbycategory.FilterProductsByCategoryUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
+import com.twohands.commerce_service.domain.catalog.CategorySummary;
 import com.twohands.commerce_service.common.pagination.PageMeta;
 import com.twohands.commerce_service.domain.discovery.FilterProductsByCategoryResult;
 import com.twohands.commerce_service.domain.discovery.ProductCardSummary;
@@ -22,9 +25,32 @@ import java.util.UUID;
 public class CategoryProductController {
 
     private final FilterProductsByCategoryUseCase filterProductsByCategoryUseCase;
+    private final ViewActiveCategoriesUseCase viewActiveCategoriesUseCase;
 
-    public CategoryProductController(FilterProductsByCategoryUseCase filterProductsByCategoryUseCase) {
+    public CategoryProductController(
+            FilterProductsByCategoryUseCase filterProductsByCategoryUseCase,
+            ViewActiveCategoriesUseCase viewActiveCategoriesUseCase
+    ) {
         this.filterProductsByCategoryUseCase = filterProductsByCategoryUseCase;
+        this.viewActiveCategoriesUseCase = viewActiveCategoriesUseCase;
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<ViewActiveCategoriesResponse>> listActiveCategories(
+            @RequestParam(name = "min_level", required = false) Integer minLevel,
+            @RequestParam(name = "max_level", required = false) Integer maxLevel,
+            @RequestParam(name = "leaf_only", required = false) Boolean leafOnly,
+            @RequestParam(name = "include_product_counts", required = false) Boolean includeProductCounts
+    ) {
+        List<CategorySummary> items = viewActiveCategoriesUseCase.execute(
+                new ViewActiveCategoriesCommand(minLevel, maxLevel, leafOnly, includeProductCounts)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewActiveCategoriesUseCase.successMessage(),
+                toCategoriesResponse(items)
+        ));
     }
 
     @GetMapping("/{categoryId}/products")
@@ -44,6 +70,22 @@ public class CategoryProductController {
                 filterProductsByCategoryUseCase.successMessage(),
                 toResponse(result)
         ));
+    }
+
+    private ViewActiveCategoriesResponse toCategoriesResponse(List<CategorySummary> items) {
+        return new ViewActiveCategoriesResponse(items.stream().map(this::toCategorySummary).toList());
+    }
+
+    private ViewActiveCategoriesResponse.CategorySummaryResponse toCategorySummary(CategorySummary item) {
+        return new ViewActiveCategoriesResponse.CategorySummaryResponse(
+                item.id(),
+                item.name(),
+                item.slug(),
+                item.parentId(),
+                item.level(),
+                item.leaf(),
+                item.productCount()
+        );
     }
 
     private FilterProductsByCategoryResponse toResponse(FilterProductsByCategoryResult result) {

@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { SELLER_ACTIVE_CATEGORIES } from "../constants/sellerProductCategories";
+import { useCommerceCategories } from "./useCommerceCategories";
 import { SELLER_ACTIVE_BRANDS } from "../constants/sellerProductBrands";
 import {
   createProduct,
@@ -27,6 +27,10 @@ function isUnauthorizedError(error) {
 
 export function useCreateSellerProduct() {
   const { showSessionExpired } = useAuthSession();
+  const { sellerOptions: categories, isLoading: isLoadingCategories } = useCommerceCategories({
+    leafOnly: true,
+    includeProductCounts: false,
+  });
   const [step, setStep] = useState(1);
   const [form, setForm] = useState(EMPTY_CREATE_PRODUCT_FORM);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -150,7 +154,8 @@ export function useCreateSellerProduct() {
     fieldErrors,
     apiError,
     isSubmitting,
-    categories: SELLER_ACTIVE_CATEGORIES,
+    categories,
+    isLoadingCategories,
     brands: SELLER_ACTIVE_BRANDS,
     updateField,
     nextStep,

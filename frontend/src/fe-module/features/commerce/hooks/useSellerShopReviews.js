@@ -13,10 +13,6 @@ function isUnauthorizedError(error) {
   return code === "401" || code.includes("401") || code.includes("COMMERCE-401");
 }
 
-function isNoShopError(error) {
-  return String(error?.code ?? "") === "COMMERCE-409-SELLER-SHOP";
-}
-
 function parseRatingParam(value) {
   if (!value) return null;
   const n = Number(value);
@@ -43,7 +39,6 @@ export function useSellerShopReviews() {
   const [pagination, setPagination] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
-  const [noShop, setNoShop] = useState(false);
   const [clientSearch, setClientSearch] = useState("");
   const requestIdRef = useRef(0);
 
@@ -58,7 +53,6 @@ export function useSellerShopReviews() {
       const requestId = ++requestIdRef.current;
       setIsLoading(true);
       setErrorMessage("");
-      setNoShop(false);
 
       try {
         const raw = await fetchSellerShopReviews({
@@ -80,13 +74,6 @@ export function useSellerShopReviews() {
 
         if (isUnauthorizedError(error)) {
           showSessionExpired(error?.message);
-          return;
-        }
-
-        if (isNoShopError(error)) {
-          setNoShop(true);
-          setReviews([]);
-          setPagination(null);
           return;
         }
 
@@ -183,15 +170,14 @@ export function useSellerShopReviews() {
   const rangeEnd = Math.min(page * PAGE_SIZE, totalItems);
 
   const isEmpty =
-    !isLoading && !errorMessage && !noShop && totalItems === 0 && !clientSearch && replyTab === "all";
+    !isLoading && !errorMessage && totalItems === 0 && !clientSearch && replyTab === "all";
   const isFilterEmpty =
     !isLoading &&
     !errorMessage &&
-    !noShop &&
     filteredReviews.length === 0 &&
     (ratingFilter != null || replyTab !== "all" || statusFilter === "HIDDEN");
   const isSearchEmpty =
-    !isLoading && !errorMessage && !noShop && filteredReviews.length === 0 && Boolean(clientSearch);
+    !isLoading && !errorMessage && filteredReviews.length === 0 && Boolean(clientSearch);
 
   return {
     reviews: filteredReviews,
@@ -212,7 +198,6 @@ export function useSellerShopReviews() {
     rangeEnd,
     isLoading,
     errorMessage,
-    noShop,
     isEmpty,
     isFilterEmpty,
     isSearchEmpty,

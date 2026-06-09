@@ -20,6 +20,7 @@ import { socialCommentWriteHandlers } from "./socialCommentWriteHandlers";
 import { socialPostHandlers } from "./socialPostHandlers";
 import { commerceProductListHandlers } from "./commerceProductListHandlers";
 import { commerceCategoryProductsHandlers } from "./commerceCategoryProductsHandlers";
+import { commerceCategoriesHandlers } from "./commerceCategoriesHandlers";
 import { commerceProductSearchHandlers } from "./commerceProductSearchHandlers";
 import { commerceShopProductsHandlers } from "./commerceShopProductsHandlers";
 import { commerceProductDetailHandlers } from "./commerceProductDetailHandlers";
@@ -66,6 +67,7 @@ export const handlers = [
   ...socialRelationsHandlers,
   ...commerceProductListHandlers,
   ...commerceCategoryProductsHandlers,
+  ...commerceCategoriesHandlers,
   ...commerceProductSearchHandlers,
   ...commerceShopProductsHandlers,
   ...commerceProductDetailHandlers,

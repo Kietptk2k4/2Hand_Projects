@@ -1,5 +1,4 @@
 import { useCallback, useState } from "react";
-import { Link } from "react-router-dom";
 import { FeedToast } from "../../social/components/FeedToast";
 import { CommerceShell } from "../components/CommerceShell";
 import { ReplyToReviewModal } from "../components/ReplyToReviewModal";
@@ -15,7 +14,6 @@ import {
 } from "../constants/sellerShopReviewsConstants";
 import { useReplyToReview } from "../hooks/useReplyToReview";
 import { useSellerShopReviews } from "../hooks/useSellerShopReviews";
-import { APP_ROUTES } from "../../../shared/constants/routes";
 
 export function CommerceSellerShopReviewsPage() {
   const [toastMessage, setToastMessage] = useState("");
@@ -40,7 +38,6 @@ export function CommerceSellerShopReviewsPage() {
     rangeEnd,
     isLoading,
     errorMessage,
-    noShop,
     isEmpty,
     isFilterEmpty,
     isSearchEmpty,
@@ -96,10 +93,9 @@ export function CommerceSellerShopReviewsPage() {
     clearError();
   }, [clearError, isSubmitting]);
 
-  const disabled = isLoading || noShop || isSubmitting;
-  const showList = !isLoading && !errorMessage && !noShop && reviews.length > 0;
-  const showEmptyState =
-    !isLoading && !errorMessage && !noShop && reviews.length === 0;
+  const disabled = isLoading || isSubmitting;
+  const showList = !isLoading && !errorMessage && reviews.length > 0;
+  const showEmptyState = !isLoading && !errorMessage && reviews.length === 0;
 
   return (
     <CommerceShell>
@@ -118,20 +114,6 @@ export function CommerceSellerShopReviewsPage() {
             ratingCount={ratingSummary.ratingCount}
           />
         </div>
-
-        {noShop ? (
-          <div className="mb-6 rounded-xl border border-outline-variant bg-surface-container-high p-6">
-            <p className="text-body-md text-on-surface">
-              Bạn chưa có cửa hàng. Tạo shop để xem đánh giá từ khách hàng.
-            </p>
-            <Link
-              to={APP_ROUTES.commerceCreateShop}
-              className="mt-4 inline-flex rounded-lg bg-primary px-5 py-2.5 text-label-md font-medium text-on-primary"
-            >
-              Tạo shop
-            </Link>
-          </div>
-        ) : null}
 
         <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
           <SellerShopReviewsReplyTabs

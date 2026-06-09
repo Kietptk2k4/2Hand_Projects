@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FeedToast } from "../../social/components/FeedToast";
 import { CommerceShell } from "../components/CommerceShell";
@@ -6,13 +6,15 @@ import { CreateShopBrandStep } from "../components/CreateShopBrandStep";
 import { CreateShopPickupStep } from "../components/CreateShopPickupStep";
 import { CreateShopStepper } from "../components/CreateShopStepper";
 import { useCreateShop } from "../hooks/useCreateShop";
+import { useRouteToastMessage } from "../hooks/useRouteToastMessage";
+import { useSellerShop } from "../context/SellerShopContext";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
 const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
 
 export function CommerceCreateShopPage() {
   const navigate = useNavigate();
-  const [toastMessage, setToastMessage] = useState("");
+  const { toastMessage, setToastMessage, dismissToast } = useRouteToastMessage();
 
   const {
     step,
@@ -26,6 +28,7 @@ export function CommerceCreateShopPage() {
     prevStep,
     submit,
   } = useCreateShop();
+  const { reload: reloadSellerShop } = useSellerShop();
 
   const handleCancel = useCallback(() => {
     if (window.history.length > 1) {
@@ -43,17 +46,13 @@ export function CommerceCreateShopPage() {
     const result = await submit();
     if (!result?.shopId) return;
 
+    await reloadSellerShop();
     setToastMessage("Tạo shop thành công");
 
-    const storefrontPath = APP_ROUTES.commerceShopProducts.replace(":shopId", result.shopId);
     setTimeout(() => {
-      navigate(storefrontPath, { replace: true });
+      navigate(APP_ROUTES.commerceSellerProducts, { replace: true });
     }, 800);
-  }, [navigate, submit]);
-
-  const dismissToast = useCallback(() => {
-    setToastMessage("");
-  }, []);
+  }, [navigate, reloadSellerShop, submit]);
 
   const showComingSoon = useCallback(() => {
     setToastMessage(COMING_SOON_MESSAGE);

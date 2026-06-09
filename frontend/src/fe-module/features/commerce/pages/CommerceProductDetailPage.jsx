@@ -11,6 +11,7 @@ import { ProductDetailSkeleton } from "../components/ProductDetailSkeleton";
 import { ProductMediaGallery } from "../components/ProductMediaGallery";
 import { ShopVacationBanner } from "../components/ShopVacationBanner";
 import { useCommerceAddToCart } from "../hooks/useCommerceAddToCart";
+import { useCommerceBuyNow } from "../hooks/useCommerceBuyNow";
 import { useProductDetail } from "../hooks/useProductDetail";
 import { useProductReviewsPreview } from "../hooks/useProductReviewsPreview";
 import {
@@ -48,10 +49,29 @@ export function CommerceProductDetailPage() {
     onError: (message) => setToastMessage(message),
   });
 
-  const onAddToCart = useCallback(() => {
+  const { buyNow, isBuyingProduct } = useCommerceBuyNow({
+    onError: (message) => setToastMessage(message),
+  });
+
+  const productFlyImageUrl =
+    product?.media?.find((item) => item.mediaType === "IMAGE")?.mediaUrl || null;
+
+  const onAddToCart = useCallback(
+    (flyOptions = {}) => {
+      if (!product?.productId) return;
+      addToCart(product.productId, 1, {
+        imageUrl: flyOptions.imageUrl || productFlyImageUrl,
+        sourceElement: flyOptions.sourceElement,
+        fromRect: flyOptions.fromRect,
+      });
+    },
+    [addToCart, product?.productId, productFlyImageUrl]
+  );
+
+  const onBuyNow = useCallback(() => {
     if (!product?.productId) return;
-    addToCart(product.productId, 1);
-  }, [addToCart, product?.productId]);
+    buyNow(product.productId, 1);
+  }, [buyNow, product?.productId]);
 
   const dismissToast = useCallback(() => {
     setToastMessage("");
@@ -169,15 +189,18 @@ export function CommerceProductDetailPage() {
               <div className="lg:col-span-4">
                 <ProductDetailActionCard
                   product={product}
+                  productImageUrl={productFlyImageUrl}
                   onComingSoon={showComingSoon}
                   onAddToCart={onAddToCart}
+                  onBuyNow={onBuyNow}
                   isAddingToCart={isAddingToCart}
+                  isBuyingNow={isBuyingProduct(product.productId)}
                 />
-                <p className="mt-2 text-center text-xs text-on-surface-variant">
+                {/* <p className="mt-2 text-center text-xs text-on-surface-variant">
                   <Link to={APP_ROUTES.commerceCart} className="text-primary hover:underline">
                     Xem giỏ hàng
                   </Link>
-                </p>
+                </p> */}
                 <ProductDetailShopCard
                   product={product}
                   onVisitShop={visitShop}

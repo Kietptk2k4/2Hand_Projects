@@ -1,5 +1,17 @@
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
+const SELLER_PATH_PREFIX = "/commerce/seller";
+const CREATE_SHOP_PATH = APP_ROUTES.commerceCreateShop;
+
+export function isCommerceSellerAreaPath(pathname) {
+  return pathname.startsWith(SELLER_PATH_PREFIX);
+}
+
+/** Seller management UI — excludes onboarding create-shop flow. */
+export function isCommerceSellerShellPath(pathname) {
+  return isCommerceSellerAreaPath(pathname) && pathname !== CREATE_SHOP_PATH;
+}
+
 export function buildCommerceCategoryPath(categoryId) {
   return APP_ROUTES.commerceCategoryProducts.replace(":categoryId", categoryId);
 }

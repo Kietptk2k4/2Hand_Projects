@@ -16,6 +16,15 @@ export function getEligibleCartItemIds(cart) {
   return getEligibleCartItems(cart).map((item) => item.cartItemId);
 }
 
+export function getSelectedEligibleCartItems(cart, selectedIds) {
+  if (!selectedIds?.size) return [];
+  return getEligibleCartItems(cart).filter((item) => selectedIds.has(item.cartItemId));
+}
+
+export function getSelectedSubtotal(items) {
+  return (items || []).reduce((sum, item) => sum + getLineTotal(item), 0);
+}
+
 export function getLineTotal(item) {
   return (item?.effectivePrice || 0) * (item?.quantity || 0);
 }

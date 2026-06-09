@@ -14,10 +14,6 @@ function isUnauthorizedError(error) {
   return code === "401" || code.includes("401") || code.includes("COMMERCE-401");
 }
 
-function isNoShopError(error) {
-  return String(error?.code ?? "") === "COMMERCE-409-SELLER-SHOP";
-}
-
 function parseStatusTab(searchParams) {
   const tab = searchParams.get("tab") || "all";
   const found = STATUS_TABS.find((t) => t.id === tab);
@@ -36,7 +32,6 @@ export function useSellerShipmentList() {
   const [statusCounts, setStatusCounts] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
-  const [noShop, setNoShop] = useState(false);
   const [clientSearch, setClientSearch] = useState("");
   const requestIdRef = useRef(0);
 
@@ -47,7 +42,6 @@ export function useSellerShipmentList() {
       const requestId = ++requestIdRef.current;
       setIsLoading(true);
       setErrorMessage("");
-      setNoShop(false);
 
       try {
         const raw = await fetchSellerShipmentList({
@@ -69,13 +63,6 @@ export function useSellerShipmentList() {
 
         if (isUnauthorizedError(error)) {
           showSessionExpired(error?.message);
-          return;
-        }
-
-        if (isNoShopError(error)) {
-          setNoShop(true);
-          setItems([]);
-          setPagination(null);
           return;
         }
 
@@ -126,11 +113,11 @@ export function useSellerShipmentList() {
   const rangeStart = totalItems === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const rangeEnd = Math.min(page * PAGE_SIZE, totalItems);
 
-  const isEmpty = !isLoading && !errorMessage && !noShop && totalItems === 0 && !serverQuery;
+  const isEmpty = !isLoading && !errorMessage && totalItems === 0 && !serverQuery;
   const isFilterEmpty =
-    !isLoading && !errorMessage && !noShop && totalItems === 0 && Boolean(statusFilter);
+    !isLoading && !errorMessage && totalItems === 0 && Boolean(statusFilter);
   const isSearchEmpty =
-    !isLoading && !errorMessage && !noShop && totalItems === 0 && Boolean(serverQuery);
+    !isLoading && !errorMessage && totalItems === 0 && Boolean(serverQuery);
 
   const tabCounts = useMemo(() => {
     const counts = { all: 0 };
@@ -156,7 +143,6 @@ export function useSellerShipmentList() {
     rangeEnd,
     isLoading,
     errorMessage,
-    noShop,
     isEmpty,
     isFilterEmpty,
     isSearchEmpty,

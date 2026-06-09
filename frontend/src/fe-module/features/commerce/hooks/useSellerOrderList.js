@@ -16,10 +16,6 @@ function isUnauthorizedError(error) {
   return code === "401" || code.includes("401") || code.includes("COMMERCE-401");
 }
 
-function isNoShopError(error) {
-  return String(error?.code ?? "") === "COMMERCE-409-SELLER-SHOP";
-}
-
 function parseStatusParam(value) {
   if (!value) return null;
   if (!VALID_ITEM_STATUSES.includes(value)) return "__invalid__";
@@ -49,7 +45,6 @@ export function useSellerOrderList() {
   const [pagination, setPagination] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
-  const [noShop, setNoShop] = useState(false);
   const [clientSearch, setClientSearch] = useState("");
   const [pendingCount, setPendingCount] = useState(0);
   const requestIdRef = useRef(0);
@@ -67,7 +62,6 @@ export function useSellerOrderList() {
       const requestId = ++requestIdRef.current;
       setIsLoading(true);
       setErrorMessage("");
-      setNoShop(false);
 
       try {
         const raw = await fetchSellerOrderList({
@@ -89,13 +83,6 @@ export function useSellerOrderList() {
 
         if (isUnauthorizedError(error)) {
           showSessionExpired(error?.message);
-          return;
-        }
-
-        if (isNoShopError(error)) {
-          setNoShop(true);
-          setItems([]);
-          setPagination(null);
           return;
         }
 
@@ -176,11 +163,10 @@ export function useSellerOrderList() {
   );
 
   const isEmpty =
-    !isLoading && !noShop && !errorMessage && items.length === 0 && !clientSearch.trim();
+    !isLoading && !errorMessage && items.length === 0 && !clientSearch.trim();
 
   const isFilterEmpty =
     !isLoading &&
-    !noShop &&
     !errorMessage &&
     items.length === 0 &&
     hasServerFilter &&
@@ -188,7 +174,6 @@ export function useSellerOrderList() {
 
   const isSearchEmpty =
     !isLoading &&
-    !noShop &&
     !errorMessage &&
     items.length > 0 &&
     filteredItems.length === 0 &&
@@ -209,7 +194,6 @@ export function useSellerOrderList() {
     rangeEnd,
     isLoading,
     errorMessage,
-    noShop,
     isEmpty,
     isFilterEmpty,
     isSearchEmpty,

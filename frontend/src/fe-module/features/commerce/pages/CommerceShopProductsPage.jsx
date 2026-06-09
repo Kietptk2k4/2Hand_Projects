@@ -9,6 +9,7 @@ import { ShopStorefrontHero } from "../components/ShopStorefrontHero";
 import { ShopStorefrontHeroSkeleton } from "../components/ShopStorefrontHeroSkeleton";
 import { ShopVacationBanner } from "../components/ShopVacationBanner";
 import { useCommerceAddToCart } from "../hooks/useCommerceAddToCart";
+import { useCommerceBuyNow } from "../hooks/useCommerceBuyNow";
 import { useShopProducts } from "../hooks/useShopProducts";
 import { buildCommerceShopPath } from "../utils/commerceRoutes";
 import { APP_ROUTES } from "../../../shared/constants/routes";
@@ -41,6 +42,10 @@ export function CommerceShopProductsPage() {
 
   const { addToCart, isAddingProduct } = useCommerceAddToCart({
     onSuccess: (message) => setToastMessage(message),
+    onError: (message) => setToastMessage(message),
+  });
+
+  const { buyNow, isBuyingProduct } = useCommerceBuyNow({
     onError: (message) => setToastMessage(message),
   });
 
@@ -153,9 +158,10 @@ export function CommerceShopProductsPage() {
                     product={product}
                     onOpenProduct={openProduct}
                     onOpenShop={openShop}
-                    onComingSoon={showComingSoon}
                     onAddToCart={addToCart}
+                    onBuyNow={buyNow}
                     isAddingToCart={isAddingProduct(product.productId)}
+                    isBuyingNow={isBuyingProduct(product.productId)}
                     disabledActions={shop?.shopVacation}
                   />
                 ))}

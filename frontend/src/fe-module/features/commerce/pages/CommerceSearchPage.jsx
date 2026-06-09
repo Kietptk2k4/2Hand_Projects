@@ -8,6 +8,7 @@ import { CommerceShell } from "../components/CommerceShell";
 import { ProductCard } from "../components/ProductCard";
 import { ProductListSkeleton } from "../components/ProductListSkeleton";
 import { useCommerceAddToCart } from "../hooks/useCommerceAddToCart";
+import { useCommerceBuyNow } from "../hooks/useCommerceBuyNow";
 import { useProductSearch } from "../hooks/useProductSearch";
 import { buildCommerceSearchPath } from "../utils/commerceSearchRoutes";
 import { buildCommerceShopPath } from "../utils/commerceRoutes";
@@ -41,6 +42,10 @@ export function CommerceSearchPage() {
 
   const { addToCart, isAddingProduct } = useCommerceAddToCart({
     onSuccess: (message) => setToastMessage(message),
+    onError: (message) => setToastMessage(message),
+  });
+
+  const { buyNow, isBuyingProduct } = useCommerceBuyNow({
     onError: (message) => setToastMessage(message),
   });
 
@@ -159,9 +164,10 @@ export function CommerceSearchPage() {
                       product={product}
                       onOpenProduct={openProduct}
                       onOpenShop={openShop}
-                      onComingSoon={showComingSoon}
                       onAddToCart={addToCart}
+                      onBuyNow={buyNow}
                       isAddingToCart={isAddingProduct(product.productId)}
+                      isBuyingNow={isBuyingProduct(product.productId)}
                     />
                   ))}
                 </div>

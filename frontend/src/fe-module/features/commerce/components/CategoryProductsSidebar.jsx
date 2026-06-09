@@ -1,6 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
 import { APP_ROUTES } from "../../../shared/constants/routes";
-import { SIDEBAR_CATEGORY_ITEMS } from "../constants/categoryProductsConstants";
 import { buildCommerceCategoryPath } from "../utils/commerceRoutes";
 
 function CategoryBreadcrumb({ categoryName }) {
@@ -23,6 +22,8 @@ function CategoryBreadcrumb({ categoryName }) {
 export function CategoryProductsSidebar({
   activeCategoryId,
   categoryName,
+  categoryItems = [],
+  isLoadingCategories = false,
   includeChildren,
   onIncludeChildrenChange,
 }) {
@@ -36,7 +37,13 @@ export function CategoryProductsSidebar({
       <div className="rounded-lg border border-outline-variant bg-surface p-4">
         <h3 className="mb-3 text-headline-sm font-semibold text-on-surface">Danh mục</h3>
         <ul className="space-y-1">
-          {SIDEBAR_CATEGORY_ITEMS.map((item) => {
+          {isLoadingCategories ? (
+            <li className="py-2 text-body-sm text-on-surface-variant">Đang tải danh mục...</li>
+          ) : null}
+          {!isLoadingCategories && categoryItems.length === 0 ? (
+            <li className="py-2 text-body-sm text-on-surface-variant">Chưa có danh mục.</li>
+          ) : null}
+          {categoryItems.map((item) => {
             const isActive = item.categoryId === activeCategoryId;
             return (
               <li key={item.categoryId}>
@@ -86,7 +93,11 @@ export function CategoryProductsSidebar({
   );
 }
 
-export function CategoryProductsMobileNav({ activeCategoryId }) {
+export function CategoryProductsMobileNav({
+  activeCategoryId,
+  categoryItems = [],
+  isLoadingCategories = false,
+}) {
   const navigate = useNavigate();
 
   return (
@@ -101,7 +112,10 @@ export function CategoryProductsMobileNav({ activeCategoryId }) {
         <span className="font-medium text-on-surface">Danh mục</span>
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1">
-        {SIDEBAR_CATEGORY_ITEMS.map((item) => {
+        {isLoadingCategories ? (
+          <span className="shrink-0 text-label-md text-on-surface-variant">Đang tải...</span>
+        ) : null}
+        {categoryItems.map((item) => {
           const isActive = item.categoryId === activeCategoryId;
           return (
             <button

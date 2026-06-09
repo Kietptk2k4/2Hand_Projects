@@ -1,7 +1,11 @@
 import { useState } from "react";
-import { CATEGORY_NAV_ITEMS } from "../constants/productListConstants";
 
-export function CommerceHomeHero({ onSearchSubmit, onCategoryClick }) {
+export function CommerceHomeHero({
+  onSearchSubmit,
+  onCategoryClick,
+  navItems = [],
+  isLoadingNav = false,
+}) {
   const [query, setQuery] = useState("");
 
   const handleSubmit = (event) => {
@@ -44,7 +48,10 @@ export function CommerceHomeHero({ onSearchSubmit, onCategoryClick }) {
       </form>
 
       <div className="mt-6 flex flex-wrap justify-center gap-3">
-        {CATEGORY_NAV_ITEMS.map((item) => (
+        {isLoadingNav ? (
+          <span className="text-label-md text-on-surface-variant">Đang tải danh mục...</span>
+        ) : null}
+        {navItems.map((item) => (
           <button
             key={item.categoryId}
             type="button"

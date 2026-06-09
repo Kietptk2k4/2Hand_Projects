@@ -81,7 +81,8 @@ export function useCart() {
       setErrorMessage("");
 
       try {
-        const raw = await updateCartItemQuantity(cartItemId, quantity);
+        await updateCartItemQuantity(cartItemId, quantity);
+        const raw = await fetchCart();
         await syncCart(raw);
       } catch (error) {
         if (isUnauthorizedError(error)) {
@@ -105,7 +106,8 @@ export function useCart() {
       setErrorMessage("");
 
       try {
-        const raw = await removeCartItem(cartItemId);
+        await removeCartItem(cartItemId);
+        const raw = await fetchCart();
         await syncCart(raw);
       } catch (error) {
         if (isUnauthorizedError(error)) {

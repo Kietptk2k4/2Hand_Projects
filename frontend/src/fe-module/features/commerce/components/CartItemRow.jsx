@@ -5,6 +5,9 @@ import { CartQuantityStepper } from "./CartQuantityStepper";
 export function CartItemRow({
   item,
   isMutating = false,
+  selected = false,
+  canSelect = true,
+  onToggleSelect,
   onOpenProduct,
   onRemove,
   onDecrease,
@@ -23,7 +26,7 @@ export function CartItemRow({
 
   return (
     <article
-      className={`relative flex flex-col gap-4 overflow-hidden rounded-lg border bg-surface-container-lowest p-4 shadow-sm transition-shadow hover:shadow-md sm:flex-row sm:gap-6 ${
+      className={`relative flex flex-col gap-4 overflow-hidden rounded-lg border bg-surface-container-lowest p-4 shadow-sm transition-shadow hover:shadow-md sm:flex-row sm:items-start sm:gap-4 ${
         borderClass
       } ${isOutOfStock ? "opacity-90" : ""}`}
     >
@@ -33,6 +36,17 @@ export function CartItemRow({
       {isVacation ? (
         <div className="absolute left-0 top-0 h-1 w-full bg-surface-tint" aria-hidden="true" />
       ) : null}
+
+      <div className="flex shrink-0 items-start pt-1">
+        <input
+          type="checkbox"
+          checked={Boolean(selected)}
+          disabled={!canSelect || isMutating}
+          onChange={() => onToggleSelect?.(item.cartItemId)}
+          className="mt-1 h-4 w-4 rounded border-outline-variant text-primary disabled:cursor-not-allowed disabled:opacity-40"
+          aria-label={canSelect ? `Chọn ${item.productName}` : "Sản phẩm không thể chọn để thanh toán"}
+        />
+      </div>
 
       <button
         type="button"

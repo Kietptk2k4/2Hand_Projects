@@ -4,15 +4,19 @@ import { getStockLabel, isAddToCartDisabled, isProductOnSale } from "../utils/pr
 
 export function ProductDetailActionCard({
   product,
+  productImageUrl,
   onComingSoon,
   onAddToCart,
+  onBuyNow,
   isAddingToCart = false,
+  isBuyingNow = false,
 }) {
   if (!product) return null;
 
   const addDisabled = isAddToCartDisabled(product);
   const isOnSale = isProductOnSale(product);
   const stockLabel = getStockLabel(product);
+  const actionsDisabled = addDisabled || isAddingToCart || isBuyingNow;
 
   return (
     <aside className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm lg:sticky lg:top-24">
@@ -40,45 +44,49 @@ export function ProductDetailActionCard({
 
       <button
         type="button"
-        disabled={addDisabled || isAddingToCart}
+        disabled={actionsDisabled}
         onClick={() => {
-          if (!addDisabled && !isAddingToCart) onAddToCart?.();
+          if (!actionsDisabled) onBuyNow?.();
         }}
-        className="mb-3 w-full rounded-lg bg-primary py-3 text-label-md font-semibold text-on-primary transition-colors hover:bg-[#0050cb] disabled:cursor-not-allowed disabled:opacity-50"
+        className="mb-2 w-full rounded-lg bg-primary py-3 text-label-md font-semibold text-on-primary transition-colors hover:bg-[#0050cb] disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {isBuyingNow ? "Đang chuyển..." : "Mua ngay"}
+      </button>
+
+      <button
+        type="button"
+        disabled={actionsDisabled}
+        onClick={(event) => {
+          if (!actionsDisabled) {
+            onAddToCart?.({
+              imageUrl: productImageUrl,
+              sourceElement: event.currentTarget,
+            });
+          }
+        }}
+        className="mb-3 w-full rounded-lg border-2 border-primary py-2.5 text-label-md font-semibold text-primary transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isAddingToCart ? "Đang thêm..." : "Thêm vào giỏ"}
       </button>
 
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={onComingSoon}
-          className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-outline-variant py-2 text-label-md text-on-surface transition-colors hover:bg-surface-container-low"
-        >
-          <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
-            favorite
-          </span>
-          Lưu
-        </button>
-        <button
-          type="button"
-          onClick={onComingSoon}
-          className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-outline-variant py-2 text-label-md text-on-surface transition-colors hover:bg-surface-container-low"
-        >
-          <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
-            share
-          </span>
-          Chia sẻ
-        </button>
-      </div>
+      {/* <button
+        type="button"
+        onClick={onComingSoon}
+        className="flex w-full items-center justify-center gap-1 rounded-lg border border-outline-variant py-2 text-label-md text-on-surface transition-colors hover:bg-surface-container-low"
+      >
+        <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+          share
+        </span>
+        Chia sẻ
+      </button> */}
 
-      <button
+      {/* <button
         type="button"
         onClick={onComingSoon}
         className="mt-3 w-full rounded-lg border-2 border-primary py-2 text-label-md font-medium text-primary transition-colors hover:bg-surface-container-low"
       >
         Đề xuất giá
-      </button>
+      </button> */}
     </aside>
   );
 }

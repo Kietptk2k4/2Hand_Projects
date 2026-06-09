@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { SELLER_ACTIVE_CATEGORIES } from "../constants/sellerProductCategories";
+import { useCommerceCategories } from "./useCommerceCategories";
 import { SELLER_ACTIVE_BRANDS } from "../constants/sellerProductBrands";
 import {
   createProduct,
@@ -58,6 +58,10 @@ function writeSessionProductId(id) {
 
 export function useSellerProductForm({ mode, productId: routeProductId }) {
   const { showSessionExpired } = useAuthSession();
+  const { sellerOptions: categories, isLoading: isLoadingCategories } = useCommerceCategories({
+    leafOnly: true,
+    includeProductCounts: false,
+  });
   const isEdit = mode === "edit";
 
   const [step, setStep] = useState(1);
@@ -407,7 +411,8 @@ export function useSellerProductForm({ mode, productId: routeProductId }) {
     lastSavedAt,
     canEdit,
     maxUnlockedStep,
-    categories: SELLER_ACTIVE_CATEGORIES,
+    categories,
+    isLoadingCategories,
     brands: SELLER_ACTIVE_BRANDS,
     reviewChecklist,
     canPublish,

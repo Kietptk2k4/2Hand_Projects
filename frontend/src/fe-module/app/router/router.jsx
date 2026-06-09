@@ -3,6 +3,8 @@ import { APP_ROUTES } from "../../shared/constants/routes";
 import { AppLayout } from "./AppLayout";
 import { AdminAuthGuard } from "./AdminAuthGuard";
 import { AuthGuard } from "./AuthGuard";
+import { CreateShopGuard } from "./CreateShopGuard";
+import { SellerShopGuard } from "./SellerShopGuard";
 import { LoginPage } from "../../features/auth/pages/LoginPage";
 import { RegisterPage } from "../../features/auth/pages/RegisterPage";
 import { ForgotPasswordPage } from "../../features/auth/pages/ForgotPasswordPage";
@@ -129,40 +131,50 @@ export const router = createBrowserRouter([
             element: <CommerceCheckoutSuccessPage />,
           },
           {
-            path: APP_ROUTES.commerceCreateShop.slice(1),
-            element: <CommerceCreateShopPage />,
+            element: <CreateShopGuard />,
+            children: [
+              {
+                path: APP_ROUTES.commerceCreateShop.slice(1),
+                element: <CommerceCreateShopPage />,
+              },
+            ],
           },
           {
-            path: APP_ROUTES.commerceShopSettings.slice(1),
-            element: <CommerceShopSettingsPage />,
-          },
-          {
-            path: APP_ROUTES.commerceSellerProducts.slice(1),
-            element: <CommerceSellerProductListPage />,
-          },
-          {
-            path: APP_ROUTES.commerceSellerProductCreate.slice(1),
-            element: <CommerceSellerProductFormPage mode="create" />,
-          },
-          {
-            path: APP_ROUTES.commerceSellerProductEdit.slice(1),
-            element: <CommerceSellerProductFormPage mode="edit" />,
-          },
-          {
-            path: APP_ROUTES.commerceSellerOrders.slice(1),
-            element: <CommerceSellerOrderListPage />,
-          },
-          {
-            path: APP_ROUTES.commerceSellerShipments.slice(1),
-            element: <CommerceSellerShipmentListPage />,
-          },
-          {
-            path: APP_ROUTES.commerceSellerShipmentDetail.slice(1),
-            element: <CommerceSellerShipmentDetailPage />,
-          },
-          {
-            path: APP_ROUTES.commerceSellerReviews.slice(1),
-            element: <CommerceSellerShopReviewsPage />,
+            element: <SellerShopGuard />,
+            children: [
+              {
+                path: APP_ROUTES.commerceShopSettings.slice(1),
+                element: <CommerceShopSettingsPage />,
+              },
+              {
+                path: APP_ROUTES.commerceSellerProducts.slice(1),
+                element: <CommerceSellerProductListPage />,
+              },
+              {
+                path: APP_ROUTES.commerceSellerProductCreate.slice(1),
+                element: <CommerceSellerProductFormPage mode="create" />,
+              },
+              {
+                path: APP_ROUTES.commerceSellerProductEdit.slice(1),
+                element: <CommerceSellerProductFormPage mode="edit" />,
+              },
+              {
+                path: APP_ROUTES.commerceSellerOrders.slice(1),
+                element: <CommerceSellerOrderListPage />,
+              },
+              {
+                path: APP_ROUTES.commerceSellerShipments.slice(1),
+                element: <CommerceSellerShipmentListPage />,
+              },
+              {
+                path: APP_ROUTES.commerceSellerShipmentDetail.slice(1),
+                element: <CommerceSellerShipmentDetailPage />,
+              },
+              {
+                path: APP_ROUTES.commerceSellerReviews.slice(1),
+                element: <CommerceSellerShopReviewsPage />,
+              },
+            ],
           },
         ],
       },

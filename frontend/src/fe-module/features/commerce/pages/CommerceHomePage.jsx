@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { FeedToast } from "../../social/components/FeedToast";
 import { CommerceHomeHero } from "../components/CommerceHomeHero";
 import { CommerceShell } from "../components/CommerceShell";
@@ -8,10 +7,10 @@ import { ProductCard } from "../components/ProductCard";
 import { ProductListSkeleton } from "../components/ProductListSkeleton";
 import { ProductListSortSelect } from "../components/ProductListSortSelect";
 import { NotificationBell } from "../../notification/components/NotificationBell";
-import { CartBadgePill } from "../components/CartBadgePill";
-import { useCartBadge } from "../context/CartBadgeContext";
 import { useCommerceAddToCart } from "../hooks/useCommerceAddToCart";
+import { useCommerceBuyNow } from "../hooks/useCommerceBuyNow";
 import { useProductList } from "../hooks/useProductList";
+import { useCommerceCategories } from "../hooks/useCommerceCategories";
 import { buildCommerceCategoryPath, buildCommerceShopPath } from "../utils/commerceRoutes";
 import { buildCommerceSearchPath } from "../utils/commerceSearchRoutes";
 import { normalizeSearchKeyword } from "../utils/normalizeSearchKeyword";
@@ -22,8 +21,6 @@ const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
 
 export function CommerceHomePage() {
   const navigate = useNavigate();
-  const { user } = useAuthSession();
-  const { itemCount: cartItemCount } = useCartBadge();
   const [toastMessage, setToastMessage] = useState("");
   const {
     items,
@@ -37,12 +34,21 @@ export function CommerceHomePage() {
     retry,
   } = useProductList();
 
+  const {
+    homeNavItems,
+    isLoading: isLoadingCategories,
+  } = useCommerceCategories({ minLevel: 1, maxLevel: 1 });
+
   const showComingSoon = useCallback(() => {
     setToastMessage(COMING_SOON_MESSAGE);
   }, []);
 
   const { addToCart, isAddingProduct } = useCommerceAddToCart({
     onSuccess: (message) => setToastMessage(message),
+    onError: (message) => setToastMessage(message),
+  });
+
+  const { buyNow, isBuyingProduct } = useCommerceBuyNow({
     onError: (message) => setToastMessage(message),
   });
 
@@ -74,14 +80,6 @@ export function CommerceHomePage() {
     [navigate]
   );
 
-  const goToCart = useCallback(() => {
-    if (user) {
-      navigate(APP_ROUTES.commerceCart);
-      return;
-    }
-    navigate(APP_ROUTES.login);
-  }, [navigate, user]);
-
   const handleSearchSubmit = useCallback(
     (rawQuery) => {
       const normalized = normalizeSearchKeyword(rawQuery);
@@ -99,25 +97,14 @@ export function CommerceHomePage() {
     <CommerceShell onComingSoon={showComingSoon}>
       <div className="mb-6 flex items-center justify-end gap-2 lg:hidden">
         <NotificationBell buttonClassName="h-10 w-10 text-on-surface-variant hover:bg-surface-container-low hover:text-primary" />
-        <button
-          type="button"
-          onClick={goToCart}
-          className="relative rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary"
-          aria-label="Giỏ hàng"
-        >
-          <span className="material-symbols-outlined" aria-hidden="true">
-            shopping_cart
-          </span>
-          {user ? (
-            <CartBadgePill
-              count={cartItemCount}
-              className="absolute -right-1 -top-1 min-h-4 min-w-4 px-1 text-[10px] leading-none"
-            />
-          ) : null}
-        </button>
       </div>
 
-      <CommerceHomeHero onSearchSubmit={handleSearchSubmit} onCategoryClick={navigateToCategory} />
+      <CommerceHomeHero
+        onSearchSubmit={handleSearchSubmit}
+        onCategoryClick={navigateToCategory}
+        navItems={homeNavItems}
+        isLoadingNav={isLoadingCategories}
+      />
 
       <section>
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -157,9 +144,10 @@ export function CommerceHomePage() {
                   product={product}
                   onOpenProduct={openProduct}
                   onOpenShop={openShop}
-                  onComingSoon={showComingSoon}
                   onAddToCart={addToCart}
+                  onBuyNow={buyNow}
                   isAddingToCart={isAddingProduct(product.productId)}
+                  isBuyingNow={isBuyingProduct(product.productId)}
                 />
             ))}
           </div>

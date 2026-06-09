@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { FeedToast } from "../../social/components/FeedToast";
 import { CommerceShell } from "../components/CommerceShell";
 import { CreateShipmentModal } from "../components/CreateShipmentModal";
@@ -47,7 +47,6 @@ export function CommerceSellerShipmentListPage() {
     rangeEnd,
     isLoading,
     errorMessage,
-    noShop,
     isEmpty,
     isFilterEmpty,
     isSearchEmpty,
@@ -125,7 +124,7 @@ export function CommerceSellerShipmentListPage() {
     setUpdateError("");
   }, [isUpdating]);
 
-  const disabled = isLoading || noShop || isUpdating;
+  const disabled = isLoading || isUpdating;
 
   return (
     <CommerceShell>
@@ -136,20 +135,6 @@ export function CommerceSellerShipmentListPage() {
           onCreateClick={() => setCreateOpen(true)}
           searchDisabled={disabled}
         />
-
-        {noShop ? (
-          <div className="mb-6 rounded-xl border border-outline-variant bg-surface-container-high p-6">
-            <p className="text-body-md text-on-surface">
-              Bạn chưa có cửa hàng. Tạo shop để quản lý vận chuyển.
-            </p>
-            <Link
-              to={APP_ROUTES.commerceCreateShop}
-              className="mt-4 inline-flex rounded-lg bg-primary px-5 py-2.5 text-label-md font-medium text-on-primary"
-            >
-              Tạo shop
-            </Link>
-          </div>
-        ) : null}
 
         <SellerShipmentStatusTabs
           activeTabId={activeTabId}
@@ -173,13 +158,13 @@ export function CommerceSellerShipmentListPage() {
           </div>
         ) : null}
 
-        {!isLoading && !errorMessage && !noShop && (isEmpty || isFilterEmpty || isSearchEmpty) ? (
+        {!isLoading && !errorMessage && (isEmpty || isFilterEmpty || isSearchEmpty) ? (
           <SellerShipmentListEmptyState
             variant={isSearchEmpty ? "search" : isFilterEmpty ? "filter" : "none"}
           />
         ) : null}
 
-        {!isLoading && !errorMessage && !noShop && items.length > 0 ? (
+        {!isLoading && !errorMessage && items.length > 0 ? (
           <>
             <div className="space-y-4">
               {items.map((item) => (

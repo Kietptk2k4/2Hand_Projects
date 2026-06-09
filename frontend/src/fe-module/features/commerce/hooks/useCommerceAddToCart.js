@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 import { useCartBadge } from "../context/CartBadgeContext";
+import { useCartFlyAnimation } from "../context/CartFlyAnimationContext";
 import { useAddProductToCart } from "./useAddProductToCart";
 
 const SUCCESS_MESSAGE = "Đã thêm vào giỏ hàng.";
@@ -12,12 +13,13 @@ export function useCommerceAddToCart({ onSuccess, onError } = {}) {
   const location = useLocation();
   const { isAuthenticated } = useAuthSession();
   const { refetch: refetchCartBadge } = useCartBadge();
+  const { playFlyToCart } = useCartFlyAnimation();
   const { submit, isSubmitting } = useAddProductToCart();
   const [addingProductId, setAddingProductId] = useState(null);
   const [lastError, setLastError] = useState("");
 
   const addToCart = useCallback(
-    async (productId, quantity = 1) => {
+    async (productId, quantity = 1, flyOptions = {}) => {
       if (!productId) return null;
 
       if (!isAuthenticated) {
@@ -32,6 +34,11 @@ export function useCommerceAddToCart({ onSuccess, onError } = {}) {
       setLastError("");
       try {
         const result = await submit({ productId, quantity });
+        await playFlyToCart({
+          imageUrl: flyOptions.imageUrl,
+          sourceElement: flyOptions.sourceElement,
+          fromRect: flyOptions.fromRect,
+        });
         await refetchCartBadge();
         onSuccess?.(SUCCESS_MESSAGE, result);
         return result;
@@ -51,6 +58,7 @@ export function useCommerceAddToCart({ onSuccess, onError } = {}) {
       navigate,
       onError,
       onSuccess,
+      playFlyToCart,
       refetchCartBadge,
       submit,
     ]

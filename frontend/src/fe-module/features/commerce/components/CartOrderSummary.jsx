@@ -1,12 +1,20 @@
 import { formatVndPrice } from "../../social/utils/formatPrice";
 import { getLineTotal, isCartItemInvalid } from "../utils/cartDisplay";
 
-export function CartOrderSummary({ cart, onCheckout, isMutating = false, canCheckout }) {
+export function CartOrderSummary({
+  cart,
+  selectedItems = [],
+  onCheckout,
+  isMutating = false,
+  canCheckout,
+}) {
   const summary = cart?.summary;
   const checkoutEnabled = canCheckout ?? summary?.canCheckout;
   const items = cart?.items || [];
   const invalidItems = items.filter(isCartItemInvalid);
   const invalidDisplayTotal = invalidItems.reduce((sum, item) => sum + getLineTotal(item), 0);
+  const selectedSubtotal = selectedItems.reduce((sum, item) => sum + getLineTotal(item), 0);
+  const selectedCount = selectedItems.length;
 
   return (
     <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-md lg:sticky lg:top-24">
@@ -18,11 +26,9 @@ export function CartOrderSummary({ cart, onCheckout, isMutating = false, canChec
         <div className="flex justify-between text-sm text-on-surface">
           <span>
             Tạm tính
-            {summary?.activeItemCount > 0
-              ? ` (${summary.activeItemCount} sản phẩm hợp lệ)`
-              : ""}
+            {selectedCount > 0 ? ` (${selectedCount} sản phẩm đã chọn)` : ""}
           </span>
-          <span>{formatVndPrice(summary?.subtotal ?? 0)}</span>
+          <span>{formatVndPrice(selectedSubtotal)}</span>
         </div>
 
         {summary?.invalidItemCount > 0 ? (
@@ -37,7 +43,7 @@ export function CartOrderSummary({ cart, onCheckout, isMutating = false, canChec
         <div className="flex items-center justify-between">
           <span className="text-headline-sm font-semibold text-on-surface">Tổng cộng</span>
           <span className="text-headline-lg font-semibold text-on-surface">
-            {formatVndPrice(summary?.subtotal ?? 0)}
+            {formatVndPrice(selectedSubtotal)}
           </span>
         </div>
         <p className="mt-1 text-right text-xs text-on-surface-variant">

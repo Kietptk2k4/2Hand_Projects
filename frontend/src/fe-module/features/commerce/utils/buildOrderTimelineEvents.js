@@ -1,10 +1,10 @@
 import { getTimelineTransitionLabel } from "../constants/orderDetailConstants";
 
 function pushEvents(target, events, kind) {
-  (events || []).forEach((event) => {
+  (events || []).forEach((event, index) => {
     if (!event?.occurredAt) return;
     target.push({
-      id: event.id || `${kind}-${event.occurredAt}-${event.newStatus}`,
+      id: `${kind}-${index}-${event.occurredAt}-${event.newStatus ?? ""}`,
       label: getTimelineTransitionLabel(event),
       occurredAt: event.occurredAt,
       kind,

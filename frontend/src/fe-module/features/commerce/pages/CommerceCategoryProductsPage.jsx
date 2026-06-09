@@ -10,7 +10,9 @@ import { CommerceShell } from "../components/CommerceShell";
 import { ProductCard } from "../components/ProductCard";
 import { ProductListSkeleton } from "../components/ProductListSkeleton";
 import { useCommerceAddToCart } from "../hooks/useCommerceAddToCart";
+import { useCommerceBuyNow } from "../hooks/useCommerceBuyNow";
 import { useCategoryProducts } from "../hooks/useCategoryProducts";
+import { useCommerceCategories } from "../hooks/useCommerceCategories";
 import { buildCommerceShopPath } from "../utils/commerceRoutes";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
@@ -38,12 +40,21 @@ export function CommerceCategoryProductsPage() {
     retry,
   } = useCategoryProducts(categoryId);
 
+  const {
+    sidebarItems,
+    isLoading: isLoadingCategories,
+  } = useCommerceCategories();
+
   const showComingSoon = useCallback(() => {
     setToastMessage(COMING_SOON_MESSAGE);
   }, []);
 
   const { addToCart, isAddingProduct } = useCommerceAddToCart({
     onSuccess: (message) => setToastMessage(message),
+    onError: (message) => setToastMessage(message),
+  });
+
+  const { buyNow, isBuyingProduct } = useCommerceBuyNow({
     onError: (message) => setToastMessage(message),
   });
 
@@ -73,12 +84,18 @@ export function CommerceCategoryProductsPage() {
         <CategoryProductsSidebar
           activeCategoryId={categoryId}
           categoryName={category?.categoryName}
+          categoryItems={sidebarItems}
+          isLoadingCategories={isLoadingCategories}
           includeChildren={includeChildren}
           onIncludeChildrenChange={changeIncludeChildren}
         />
 
         <main className="lg:col-span-9">
-          <CategoryProductsMobileNav activeCategoryId={categoryId} />
+          <CategoryProductsMobileNav
+            activeCategoryId={categoryId}
+            categoryItems={sidebarItems}
+            isLoadingCategories={isLoadingCategories}
+          />
 
           {isNotFound ? (
             <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-8 text-center">
@@ -142,9 +159,10 @@ export function CommerceCategoryProductsPage() {
                       product={product}
                       onOpenProduct={openProduct}
                       onOpenShop={openShop}
-                      onComingSoon={showComingSoon}
                       onAddToCart={addToCart}
+                      onBuyNow={buyNow}
                       isAddingToCart={isAddingProduct(product.productId)}
+                      isBuyingNow={isBuyingProduct(product.productId)}
                     />
                   ))}
                 </div>

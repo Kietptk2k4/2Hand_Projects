@@ -60,6 +60,7 @@ public class ProductDiscoveryRepositoryAdapter implements ProductDiscoveryReposi
                 SELECT pm.media_url
                 FROM product_media pm
                 WHERE pm.product_id = p.id
+                  AND pm.media_type = 'IMAGE'
                 ORDER BY pm.sort_order ASC, pm.created_at ASC
                 LIMIT 1
             ) thumbnail ON TRUE
