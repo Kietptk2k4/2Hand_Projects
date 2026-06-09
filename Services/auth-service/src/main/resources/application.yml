@@ -105,7 +105,7 @@ auth:
       success-url: ${AUTH_OAUTH2_SUCCESS_REDIRECT_URL:http://localhost:5173/oauth/success}
       failure-url: ${AUTH_OAUTH2_FAILURE_REDIRECT_URL:http://localhost:5173/oauth/failure}
     cookie:
-      secure: ${AUTH_OAUTH2_COOKIE_SECURE:true}
+      secure: ${AUTH_OAUTH2_COOKIE_SECURE:false}
 
   register:
     verify-token-ttl-seconds: ${AUTH_REGISTER_VERIFY_TOKEN_TTL_SECONDS:900}

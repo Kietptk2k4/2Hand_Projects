@@ -11,11 +11,13 @@ import com.twohands.social_service.domain.post.PostModerationStatus;
 import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
+import com.twohands.social_service.domain.post.ProductTag;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -103,6 +105,41 @@ class ViewGlobalFeedUseCaseTest {
         ViewGlobalFeedResult result = useCase.execute(userId, 0, 20);
 
         assertThat(result.items().getFirst().likedByMe()).isTrue();
+    }
+
+    @Test
+    void shouldIncludeProductTagsWhenPostHasTaggedProducts() {
+        UUID userId = UUID.randomUUID();
+        String productId = UUID.randomUUID().toString();
+        Post post = new Post(
+                "507f1f77bcf86cd799439011",
+                UUID.randomUUID().toString(),
+                "caption",
+                List.of(new MediaItem("https://cdn/1.jpg", "IMAGE")),
+                List.of(new ProductTag(productId, new BigDecimal("150000"))),
+                PostStatus.ACTIVE,
+                PostVisibility.PUBLIC,
+                10,
+                2,
+                List.of("java"),
+                true,
+                PostModerationStatus.NONE,
+                null,
+                null,
+                Instant.parse("2026-05-18T10:15:30Z"),
+                Instant.parse("2026-05-18T10:20:30Z"),
+                null
+        );
+        when(postRepository.findGlobalFeed(any(FeedQuery.class)))
+                .thenReturn(new PageResult<>(List.of(post), 0, 20, 1, 1, false));
+        when(postLikeRepository.findLikedPostIdsByUserIdAndPostIds(userId, List.of(post.id())))
+                .thenReturn(Set.of());
+
+        ViewGlobalFeedResult result = useCase.execute(userId, 0, 20);
+
+        assertThat(result.items().getFirst().productTags()).hasSize(1);
+        assertThat(result.items().getFirst().productTags().getFirst().productId()).isEqualTo(productId);
+        assertThat(result.items().getFirst().productTags().getFirst().price()).isEqualByComparingTo("150000");
     }
 
     @Test

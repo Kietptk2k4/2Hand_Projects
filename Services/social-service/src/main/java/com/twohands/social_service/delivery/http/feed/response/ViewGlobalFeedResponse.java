@@ -1,5 +1,6 @@
 package com.twohands.social_service.delivery.http.feed.response;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public record ViewGlobalFeedResponse(
@@ -16,9 +17,16 @@ public record ViewGlobalFeedResponse(
             long replyCount,
             boolean likedByMe,
             List<String> hashtags,
+            List<ProductTagResponse> productTags,
             boolean allowComments,
             String createdAt,
             String updatedAt
+    ) {
+    }
+
+    public record ProductTagResponse(
+            String productId,
+            BigDecimal price
     ) {
     }
 

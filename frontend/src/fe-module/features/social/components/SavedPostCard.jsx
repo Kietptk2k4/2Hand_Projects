@@ -18,7 +18,7 @@ export function SavedPostCard({
   onOpenLikesList,
   isUnsaveLoading = false,
 }) {
-  const mediaUrl = normalizePostMediaUrl(post.media?.[0]?.url) || PLACEHOLDER_IMAGE;
+  const primaryMedia = post.media?.[0];
   const savedLabel = formatSavedAt(post.savedAt);
   const author = usePostAuthorDisplay(post.authorId);
   const titleText = post.caption?.trim() || "Bài viết không có nội dung";

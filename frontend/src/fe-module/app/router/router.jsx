@@ -14,6 +14,8 @@ import { VerifyEmailPage } from "../../features/auth/pages/VerifyEmailPage";
 import { AccountPasswordPage } from "../../features/auth/pages/AccountPasswordPage";
 import { ChangePasswordPage } from "../../features/auth/pages/ChangePasswordPage";
 import { SessionExpiredPage } from "../../features/auth/pages/SessionExpiredPage";
+import { OAuthSuccessPage } from "../../features/auth/pages/OAuthSuccessPage";
+import { OAuthFailurePage } from "../../features/auth/pages/OAuthFailurePage";
 import { AdminLoginPage } from "../../features/auth/pages/AdminLoginPage";
 import { AdminPage } from "../../features/auth/pages/AdminPage";
 import { SocialFeedPage } from "../../features/social/pages/SocialFeedPage";
@@ -59,6 +61,8 @@ export const router = createBrowserRouter([
       { path: APP_ROUTES.forgotPassword.slice(1), element: <ForgotPasswordPage /> },
       { path: APP_ROUTES.verifyEmail.slice(1), element: <VerifyEmailPage /> },
       { path: APP_ROUTES.sessionExpired.slice(1), element: <SessionExpiredPage /> },
+      { path: APP_ROUTES.oauthSuccess.slice(1), element: <OAuthSuccessPage /> },
+      { path: APP_ROUTES.oauthFailure.slice(1), element: <OAuthFailurePage /> },
       { path: APP_ROUTES.adminLogin.slice(1), element: <AdminLoginPage /> },
       { path: APP_ROUTES.commerceHome.slice(1), element: <CommerceHomePage /> },
       { path: APP_ROUTES.commerceSearch.slice(1), element: <CommerceSearchPage /> },

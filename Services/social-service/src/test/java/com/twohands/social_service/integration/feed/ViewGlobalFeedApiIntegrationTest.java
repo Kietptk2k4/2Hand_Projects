@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import javax.crypto.SecretKey;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
@@ -77,6 +78,7 @@ class ViewGlobalFeedApiIntegrationTest {
     void shouldReturnGlobalFeedWhenAuthenticated() throws Exception {
         UUID userId = UUID.randomUUID();
         String token = buildAccessToken(userId);
+        String productId = UUID.randomUUID().toString();
         ViewGlobalFeedResult result = new ViewGlobalFeedResult(
                 List.of(new ViewGlobalFeedResult.FeedPostItem(
                         "507f1f77bcf86cd799439011",
@@ -88,6 +90,7 @@ class ViewGlobalFeedApiIntegrationTest {
                         3,
                         true,
                         List.of("tag1"),
+                        List.of(new ViewGlobalFeedResult.ProductTagData(productId, new BigDecimal("199000"))),
                         true,
                         Instant.parse("2026-05-18T10:15:30Z").toString(),
                         Instant.parse("2026-05-18T10:20:30Z").toString()
@@ -107,6 +110,8 @@ class ViewGlobalFeedApiIntegrationTest {
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.data.items[0].visibility").value("PUBLIC"))
                 .andExpect(jsonPath("$.data.items[0].likedByMe").value(true))
+                .andExpect(jsonPath("$.data.items[0].productTags[0].productId").value(productId))
+                .andExpect(jsonPath("$.data.items[0].productTags[0].price").value(199000))
                 .andExpect(jsonPath("$.data.meta.totalElements").value(1));
     }
 

@@ -29,6 +29,10 @@ public class ViewGlobalFeedHttpMapper {
                 .stream()
                 .map(this::toMedia)
                 .toList();
+        List<ViewGlobalFeedResponse.ProductTagResponse> productTags = item.productTags()
+                .stream()
+                .map(tag -> new ViewGlobalFeedResponse.ProductTagResponse(tag.productId(), tag.price()))
+                .toList();
         return new ViewGlobalFeedResponse.PostItemResponse(
                 item.postId(),
                 item.authorId(),
@@ -39,6 +43,7 @@ public class ViewGlobalFeedHttpMapper {
                 item.replyCount(),
                 item.likedByMe(),
                 item.hashtags(),
+                productTags,
                 item.allowComments(),
                 item.createdAt(),
                 item.updatedAt()

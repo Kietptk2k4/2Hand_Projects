@@ -113,6 +113,17 @@ export async function logoutWithRefreshToken(refreshToken) {
   }
 }
 
+export async function fetchOAuthSession() {
+  try {
+    const response = await axios.get(`${AUTH_BASE_URL}/api/v1/auth/oauth/session`, {
+      withCredentials: true,
+    });
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export function getOAuthRedirectUrl(provider) {
   const providers = {
     google: "/oauth2/authorization/google",

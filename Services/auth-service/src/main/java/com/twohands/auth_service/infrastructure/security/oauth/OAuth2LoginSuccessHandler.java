@@ -87,8 +87,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     }
 
     private void addAuthCookies(HttpServletResponse response, OAuthLoginResult result) {
-        addCookie(response, "th_access_token", result.accessToken(), (int) result.expiresIn());
-        addCookie(response, "th_refresh_token", result.refreshToken(), 60 * 60 * 24 * 30);
+        addCookie(response, OAuthAuthCookies.ACCESS_TOKEN, result.accessToken(), (int) result.expiresIn());
+        addCookie(response, OAuthAuthCookies.REFRESH_TOKEN, result.refreshToken(), 60 * 60 * 24 * 30);
     }
 
     private void addCookie(HttpServletResponse response, String name, String value, int maxAgeSeconds) {

@@ -27,6 +27,8 @@ public enum ErrorCode {
             "Phien dang nhap khong hop le hoac da het han. Vui long dang nhap lai."),
     OAUTH_EMAIL_MISSING("AUTH-400-OAUTH-EMAIL-MISSING", HttpStatus.BAD_REQUEST,
             "Vui long cap quyen Email de su dung tinh nang nay."),
+    OAUTH_SESSION_INVALID("AUTH-401-OAUTH-SESSION-INVALID", HttpStatus.UNAUTHORIZED,
+            "Phien OAuth khong hop le hoac da het han."),
     OAUTH_PROVIDER_PROFILE_INVALID("AUTH-401-OAUTH-PROFILE-INVALID", HttpStatus.UNAUTHORIZED,
             "Xac thuc OAuth that bai."),
     OAUTH_ACCOUNT_UNAVAILABLE("AUTH-403-OAUTH-ACCOUNT-UNAVAILABLE", HttpStatus.FORBIDDEN,

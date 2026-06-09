@@ -40,6 +40,12 @@
         "likeCount": 4,
         "replyCount": 1,
         "hashtags": ["social"],
+        "productTags": [
+          {
+            "productId": "c1000000-0000-4000-8000-000000000001",
+            "price": 199000
+          }
+        ],
         "allowComments": true,
         "createdAt": "2026-05-18T10:16:30Z",
         "updatedAt": "2026-05-18T10:20:40Z"
