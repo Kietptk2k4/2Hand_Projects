@@ -3,6 +3,9 @@ package com.twohands.commerce_service.unit.application.shipment;
 import com.twohands.commerce_service.application.shipment.createshipment.CreateShipmentCommand;
 import com.twohands.commerce_service.application.shipment.createshipment.CreateShipmentTransactionService;
 import com.twohands.commerce_service.application.shipment.createshipment.CreateShipmentUseCase;
+import com.twohands.commerce_service.application.shipping.ghn.ResolveGhnServiceUseCase;
+import com.twohands.commerce_service.config.CommerceIntegrationProperties;
+import com.twohands.commerce_service.domain.shipment.GhnResolvedService;
 import com.twohands.commerce_service.domain.payment.PaymentMethod;
 import com.twohands.commerce_service.domain.payment.PaymentStatus;
 import com.twohands.commerce_service.domain.shipment.BuyerDeliveryAddress;
@@ -66,6 +69,11 @@ class CreateShipmentUseCaseTest {
     @Mock
     private CreateShipmentTransactionService createShipmentTransactionService;
 
+    @Mock
+    private ResolveGhnServiceUseCase resolveGhnServiceUseCase;
+
+    private final CommerceIntegrationProperties integrationProperties = new CommerceIntegrationProperties();
+
     private CreateShipmentUseCase useCase;
 
     private final UUID sellerId = UUID.randomUUID();
@@ -82,6 +90,8 @@ class CreateShipmentUseCaseTest {
                 sellerShopRepository,
                 sellerShippingProfileRepository,
                 ghnShipmentGateway,
+                resolveGhnServiceUseCase,
+                integrationProperties,
                 createShipmentTransactionService,
                 Clock.fixed(now, ZoneOffset.UTC)
         );
@@ -102,6 +112,8 @@ class CreateShipmentUseCaseTest {
     void shouldCreateGhnShipmentWithMockProvider() {
         CreateShipmentResult local = localResult(ShipmentCarrier.GHN, null);
         stubHappyPath(PaymentMethod.PAYOS, PaymentStatus.PAID, local);
+        when(resolveGhnServiceUseCase.resolveForRoute(760, 1))
+                .thenReturn(new GhnResolvedService(53320, 2, "Chuan", true));
         when(ghnShipmentGateway.createOrder(any())).thenReturn(new GhnCreateOrderResult(
                 "GHN-MOCK-123",
                 "SHOP-1",
@@ -153,7 +165,10 @@ class CreateShipmentUseCaseTest {
                         1,
                         BigDecimal.valueOf(100_000),
                         BigDecimal.valueOf(20_000),
-                        200
+                        200,
+                        "Test Product",
+                        "SKU-1",
+                        BigDecimal.valueOf(100_000)
                 )));
 
         assertThatThrownBy(() -> useCase.execute(command("MANUAL", "STANDARD", null, null)))
@@ -216,7 +231,10 @@ class CreateShipmentUseCaseTest {
                 1,
                 BigDecimal.valueOf(100_000),
                 BigDecimal.valueOf(20_000),
-                200
+                200,
+                "Test Product",
+                "SKU-1",
+                BigDecimal.valueOf(100_000)
         );
     }
 

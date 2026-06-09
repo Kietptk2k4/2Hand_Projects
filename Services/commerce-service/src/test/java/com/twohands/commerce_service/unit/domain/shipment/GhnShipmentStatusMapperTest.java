@@ -12,6 +12,8 @@ class GhnShipmentStatusMapperTest {
     void mapsDocumentedGhnStatuses() {
         assertThat(GhnShipmentStatusMapper.map("picking")).contains(ShipmentStatus.PICKING_UP);
         assertThat(GhnShipmentStatusMapper.map("ready_to_pick")).contains(ShipmentStatus.READY_TO_SHIP);
+        assertThat(GhnShipmentStatusMapper.map("picked")).contains(ShipmentStatus.SHIPPED);
+        assertThat(GhnShipmentStatusMapper.map("storing")).contains(ShipmentStatus.SHIPPED);
         assertThat(GhnShipmentStatusMapper.map("delivering")).contains(ShipmentStatus.SHIPPED);
         assertThat(GhnShipmentStatusMapper.map("delivered")).contains(ShipmentStatus.DELIVERED);
         assertThat(GhnShipmentStatusMapper.map("delivery_fail")).contains(ShipmentStatus.FAILED);

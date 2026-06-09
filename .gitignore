@@ -10,3 +10,6 @@ dev-dumps/
 Services/*/.env
 Services/**/.env
 # !Services/**/.env.example
+
+# Infrastructure secrets (ngrok authtoken)
+Infrastructure/.env

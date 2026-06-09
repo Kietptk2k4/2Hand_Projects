@@ -135,3 +135,11 @@ commerce:
       token: ${COMMERCE_GHN_TOKEN:}
       shop-id: ${COMMERCE_GHN_SHOP_ID:}
       webhook-secret: ${COMMERCE_GHN_WEBHOOK_SECRET:}
+      default-service-type-id: ${COMMERCE_GHN_DEFAULT_SERVICE_TYPE_ID:2}
+      default-service-id: ${COMMERCE_GHN_DEFAULT_SERVICE_ID:}
+      default-package-length-cm: ${COMMERCE_GHN_DEFAULT_PACKAGE_LENGTH_CM:20}
+      default-package-width-cm: ${COMMERCE_GHN_DEFAULT_PACKAGE_WIDTH_CM:20}
+      default-package-height-cm: ${COMMERCE_GHN_DEFAULT_PACKAGE_HEIGHT_CM:10}
+      track-sync-cooldown-seconds: ${COMMERCE_GHN_TRACK_SYNC_COOLDOWN_SECONDS:300}
+      print-token-ttl-minutes: ${COMMERCE_GHN_PRINT_TOKEN_TTL_MINUTES:30}
+      print-base-url: ${COMMERCE_GHN_PRINT_BASE_URL:}

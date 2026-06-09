@@ -1,5 +1,6 @@
 package com.twohands.commerce_service.unit.application.shipment;
 
+import com.twohands.commerce_service.application.shipment.syncghnshipment.SyncGhnShipmentStatusUseCase;
 import com.twohands.commerce_service.application.shipment.trackshipment.TrackShipmentCommand;
 import com.twohands.commerce_service.application.shipment.trackshipment.TrackShipmentUseCase;
 import com.twohands.commerce_service.domain.order.OrderStatus;
@@ -31,6 +32,9 @@ class TrackShipmentUseCaseTest {
 
     @Mock
     private TrackShipmentRepository trackShipmentRepository;
+
+    @Mock
+    private SyncGhnShipmentStatusUseCase syncGhnShipmentStatusUseCase;
 
     @InjectMocks
     private TrackShipmentUseCase useCase;

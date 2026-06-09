@@ -75,3 +75,61 @@ Sau khi đổi `MINIO_API_CORS_ALLOW_ORIGIN`, recreate container MinIO:
 docker compose up -d --force-recreate minio
 docker compose run --rm minio-init
 ```
+
+## PayOS webhook — ngrok (local dev)
+
+Tunnel HTTPS từ internet vào **commerce-service chạy trên host** (port `3003`). Dùng khi test webhook PayOS thật từ [my.payos.vn](https://my.payos.vn).
+
+### Chuẩn bị (một lần)
+
+1. Đăng ký ngrok, lấy authtoken: https://dashboard.ngrok.com/get-started/your-authtoken
+2. Copy env:
+
+```bash
+cd Infrastructure
+cp .env.example .env
+# Sửa .env: NGROK_AUTHTOKEN=<token>
+```
+
+3. Cấu hình PayOS trong `Services/commerce-service/.env` (`COMMERCE_PAYOS_*`, return URL FE port `5173`).
+
+### Chạy
+
+```bash
+# Terminal 1 — infra (+ ngrok nếu cần PayOS)
+cd Infrastructure
+docker compose -f docker-compose.yml -f docker-compose.payos.yml --profile payos up -d
+
+# Chỉ bật ngrok khi infra đã chạy:
+docker compose -f docker-compose.yml -f docker-compose.payos.yml --profile payos up -d ngrok-commerce
+
+# Terminal 2 — commerce-service trên host (bắt buộc)
+cd Services/commerce-service
+./gradlew bootRun
+```
+
+### Lấy Webhook URL cho PayOS
+
+```powershell
+# Windows
+cd Infrastructure
+./scripts/print-payos-webhook-url.ps1
+```
+
+```bash
+# macOS / Linux
+cd Infrastructure
+sh scripts/print-payos-webhook-url.sh
+```
+
+Dán URL in ra vào **Kênh thanh toán → Webhook URL** trên my.payos.vn:
+
+`https://<ngrok-host>/commerce/api/v1/payments/webhooks/payos`
+
+- ngrok dashboard (xem request webhook): http://localhost:4040
+- Verify webhook dùng `COMMERCE_PAYOS_CHECKSUM_KEY` (không cần webhook secret riêng)
+- Gói ngrok free: URL đổi mỗi lần restart container → cập nhật lại PayOS
+
+| Service | Container | Port host | Mục đích |
+|---------|-----------|-----------|----------|
+| ngrok (profile `payos`) | `ngrok-commerce` | 4040 | Tunnel + API inspect |

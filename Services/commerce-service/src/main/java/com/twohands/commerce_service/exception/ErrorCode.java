@@ -61,6 +61,7 @@ public enum ErrorCode {
     INVALID_SHIPMENT_CARRIER("COMMERCE-400-SHIPMENT-CARRIER", HttpStatus.BAD_REQUEST, "Invalid shipment carrier"),
     INVALID_SHIPMENT_TYPE("COMMERCE-400-SHIPMENT-TYPE", HttpStatus.BAD_REQUEST, "Invalid shipment type"),
     GHN_PROVIDER_UNAVAILABLE("COMMERCE-503-GHN", HttpStatus.SERVICE_UNAVAILABLE, "GHN provider unavailable"),
+    GHN_ADDRESS_NOT_READY("COMMERCE-400-GHN-ADDRESS", HttpStatus.BAD_REQUEST, "Address is not ready for GHN"),
     SHIPMENT_NOT_FOUND("COMMERCE-404-SHIPMENT", HttpStatus.NOT_FOUND, "Shipment not found"),
     INVALID_SHIPMENT_STATUS("COMMERCE-409-SHIPMENT-STATUS", HttpStatus.CONFLICT, "Invalid shipment status"),
     SHIPMENT_CARRIER_NOT_EDITABLE("COMMERCE-409-SHIPMENT-CARRIER", HttpStatus.CONFLICT, "Shipment carrier cannot be updated by seller"),

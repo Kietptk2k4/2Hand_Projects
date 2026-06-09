@@ -23,6 +23,14 @@ public class CommerceIntegrationProperties {
         private String token;
         private String shopId;
         private String webhookSecret;
+        private Integer defaultServiceTypeId = 2;
+        private Integer defaultServiceId;
+        private int defaultPackageLengthCm = 20;
+        private int defaultPackageWidthCm = 20;
+        private int defaultPackageHeightCm = 10;
+        private int trackSyncCooldownSeconds = 300;
+        private int printTokenTtlMinutes = 30;
+        private String printBaseUrl;
 
         public boolean isEnabled() {
             return enabled;
@@ -72,6 +80,73 @@ public class CommerceIntegrationProperties {
             this.webhookSecret = webhookSecret;
         }
 
+        public Integer getDefaultServiceTypeId() {
+            return defaultServiceTypeId;
+        }
+
+        public void setDefaultServiceTypeId(Integer defaultServiceTypeId) {
+            this.defaultServiceTypeId = defaultServiceTypeId;
+        }
+
+        public Integer getDefaultServiceId() {
+            return defaultServiceId;
+        }
+
+        public void setDefaultServiceId(Integer defaultServiceId) {
+            this.defaultServiceId = defaultServiceId;
+        }
+
+        public int getDefaultPackageLengthCm() {
+            return defaultPackageLengthCm;
+        }
+
+        public void setDefaultPackageLengthCm(int defaultPackageLengthCm) {
+            this.defaultPackageLengthCm = defaultPackageLengthCm;
+        }
+
+        public int getDefaultPackageWidthCm() {
+            return defaultPackageWidthCm;
+        }
+
+        public void setDefaultPackageWidthCm(int defaultPackageWidthCm) {
+            this.defaultPackageWidthCm = defaultPackageWidthCm;
+        }
+
+        public int getDefaultPackageHeightCm() {
+            return defaultPackageHeightCm;
+        }
+
+        public void setDefaultPackageHeightCm(int defaultPackageHeightCm) {
+            this.defaultPackageHeightCm = defaultPackageHeightCm;
+        }
+
+        public int getTrackSyncCooldownSeconds() {
+            return trackSyncCooldownSeconds;
+        }
+
+        public void setTrackSyncCooldownSeconds(int trackSyncCooldownSeconds) {
+            this.trackSyncCooldownSeconds = trackSyncCooldownSeconds;
+        }
+
+        public int getPrintTokenTtlMinutes() {
+            return printTokenTtlMinutes;
+        }
+
+        public void setPrintTokenTtlMinutes(int printTokenTtlMinutes) {
+            this.printTokenTtlMinutes = printTokenTtlMinutes;
+        }
+
+        public String getPrintBaseUrl() {
+            if (printBaseUrl != null && !printBaseUrl.isBlank()) {
+                return trimSlash(printBaseUrl);
+            }
+            return trimSlash(baseUrl) + "/a5/public-api";
+        }
+
+        public void setPrintBaseUrl(String printBaseUrl) {
+            this.printBaseUrl = printBaseUrl;
+        }
+
         public boolean isWebhookVerificationEnabled() {
             return webhookSecret != null && !webhookSecret.isBlank();
         }
@@ -81,6 +156,13 @@ public class CommerceIntegrationProperties {
                     && token != null && !token.isBlank()
                     && shopId != null && !shopId.isBlank()
                     && baseUrl != null && !baseUrl.isBlank();
+        }
+
+        private static String trimSlash(String value) {
+            if (value == null || value.isBlank()) {
+                return "";
+            }
+            return value.endsWith("/") ? value.substring(0, value.length() - 1) : value;
         }
     }
 

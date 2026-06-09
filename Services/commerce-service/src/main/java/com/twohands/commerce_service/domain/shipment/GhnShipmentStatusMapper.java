@@ -28,13 +28,14 @@ public final class GhnShipmentStatusMapper {
         if (normalized.contains("exception") || normalized.contains("fail")) {
             return Optional.of(ShipmentStatus.FAILED);
         }
-        if (normalized.contains("transport") || normalized.contains("delivering")) {
-            return Optional.of(ShipmentStatus.SHIPPED);
-        }
-        if (normalized.contains("ready_to_pick")
+        if (normalized.contains("transport")
+                || normalized.contains("delivering")
                 || normalized.equals("picked")
                 || normalized.contains("sorting")
                 || normalized.contains("storing")) {
+            return Optional.of(ShipmentStatus.SHIPPED);
+        }
+        if (normalized.contains("ready_to_pick")) {
             return Optional.of(ShipmentStatus.READY_TO_SHIP);
         }
         if (normalized.contains("picking")) {

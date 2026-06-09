@@ -1,12 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  EMPTY_ADDRESS_FORM,
-  MOCK_DISTRICTS_BY_PROVINCE,
-  MOCK_PROVINCES,
-  MOCK_WARDS_BY_DISTRICT,
-  VN_PHONE_REGEX,
-} from "../constants/addressFormConstants";
+import { EMPTY_ADDRESS_FORM, VN_PHONE_REGEX } from "../constants/addressFormConstants";
 import { mapAddressApiError } from "../constants/addressConstants";
+import { GhnAddressFields } from "./GhnAddressFields";
 import { addressFormToInitialValues } from "../utils/addressMapper";
 
 const inputClass =
@@ -31,11 +26,6 @@ export function UserAddressFormModal({
     setFieldErrors({});
     setApiError("");
   }, [open, initialValues]);
-
-  const districts = form.provinceCode
-    ? MOCK_DISTRICTS_BY_PROVINCE[form.provinceCode] || []
-    : [];
-  const wards = form.districtCode ? MOCK_WARDS_BY_DISTRICT[form.districtCode] || [] : [];
 
   const updateField = useCallback((name, value) => {
     setForm((prev) => {
@@ -166,73 +156,16 @@ export function UserAddressFormModal({
             ) : null}
           </div>
 
-          <div>
-            <label htmlFor="province" className="mb-1 block text-sm font-medium text-on-surface">
-              Tỉnh/Thành phố
-            </label>
-            <select
-              id="province"
-              value={form.provinceCode}
-              onChange={(e) => updateField("provinceCode", e.target.value)}
-              className={inputClass}
-            >
-              <option value="">Chọn tỉnh/thành phố</option>
-              {MOCK_PROVINCES.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-            {fieldErrors.provinceCode ? (
-              <p className="mt-1 text-xs text-error">{fieldErrors.provinceCode}</p>
-            ) : null}
-          </div>
-
-          <div>
-            <label htmlFor="district" className="mb-1 block text-sm font-medium text-on-surface">
-              Quận/Huyện
-            </label>
-            <select
-              id="district"
-              value={form.districtCode}
-              onChange={(e) => updateField("districtCode", e.target.value)}
-              disabled={!form.provinceCode}
-              className={inputClass}
-            >
-              <option value="">Chọn quận/huyện</option>
-              {districts.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-            {fieldErrors.districtCode ? (
-              <p className="mt-1 text-xs text-error">{fieldErrors.districtCode}</p>
-            ) : null}
-          </div>
-
-          <div>
-            <label htmlFor="ward" className="mb-1 block text-sm font-medium text-on-surface">
-              Phường/Xã
-            </label>
-            <select
-              id="ward"
-              value={form.wardCode}
-              onChange={(e) => updateField("wardCode", e.target.value)}
-              disabled={!form.districtCode}
-              className={inputClass}
-            >
-              <option value="">Chọn phường/xã</option>
-              {wards.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-            {fieldErrors.wardCode ? (
-              <p className="mt-1 text-xs text-error">{fieldErrors.wardCode}</p>
-            ) : null}
-          </div>
+          <GhnAddressFields
+            idPrefix={isEdit ? "edit-address" : "create-address"}
+            values={form}
+            fieldErrors={fieldErrors}
+            onFieldChange={updateField}
+            disabled={isSubmitting}
+            inputClass={inputClass}
+            selectClass={inputClass}
+            enabled={open}
+          />
 
           <div>
             <label htmlFor="address-detail" className="mb-1 block text-sm font-medium text-on-surface">

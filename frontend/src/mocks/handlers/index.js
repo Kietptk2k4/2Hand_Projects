@@ -27,6 +27,7 @@ import { commerceCartHandlers } from "./commerceCartHandlers";
 import { commerceProductReviewsHandlers } from "./commerceProductReviewsHandlers";
 import { commerceProductReviewWriteHandlers } from "./commerceProductReviewWriteHandlers";
 import { commerceAddressHandlers } from "./commerceAddressHandlers";
+import { commerceGhnAddressHandlers } from "./commerceGhnAddressHandlers";
 import { commerceCheckoutHandlers } from "./commerceCheckoutHandlers";
 import { commerceOrderHandlers } from "./commerceOrderHandlers";
 import { commerceOrderDetailHandlers } from "./commerceOrderDetailHandlers";
@@ -72,6 +73,7 @@ export const handlers = [
   ...commerceProductReviewsHandlers,
   ...commerceProductReviewWriteHandlers,
   ...commerceAddressHandlers,
+  ...commerceGhnAddressHandlers,
   ...commerceCheckoutHandlers,
   ...commercePaymentHandlers,
   ...commerceOrderHandlers,

@@ -93,6 +93,7 @@ public class CalculateOrderTotalUseCase {
                     profile,
                     address.provinceCode(),
                     address.districtCode(),
+                    address.wardCode(),
                     group.totalWeightGram(),
                     shipmentType
             );

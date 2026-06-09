@@ -143,6 +143,9 @@ public class CreateShipmentRepositoryAdapter implements CreateShipmentRepository
                        oi.quantity,
                        oi.final_price,
                        oi.shipping_fee_allocated,
+                       oi.product_name_snapshot,
+                       oi.sku_snapshot,
+                       oi.unit_price_snapshot,
                        (p.weight_gram * oi.quantity) AS weight_gram
                 FROM order_items oi
                 INNER JOIN products p ON p.id = oi.product_id
@@ -322,7 +325,10 @@ public class CreateShipmentRepositoryAdapter implements CreateShipmentRepository
                 rs.getInt("quantity"),
                 rs.getBigDecimal("final_price"),
                 rs.getBigDecimal("shipping_fee_allocated"),
-                rs.getInt("weight_gram")
+                rs.getInt("weight_gram"),
+                rs.getString("product_name_snapshot"),
+                rs.getString("sku_snapshot"),
+                rs.getBigDecimal("unit_price_snapshot")
         );
     }
 }

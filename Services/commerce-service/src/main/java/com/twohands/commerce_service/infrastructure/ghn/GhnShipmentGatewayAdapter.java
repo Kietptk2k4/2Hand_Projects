@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.twohands.commerce_service.config.CommerceIntegrationProperties;
 import com.twohands.commerce_service.domain.shipment.GhnCreateOrderCommand;
+import com.twohands.commerce_service.domain.shipment.GhnCreateOrderItem;
 import com.twohands.commerce_service.domain.shipment.GhnCreateOrderResult;
 import com.twohands.commerce_service.domain.shipment.GhnShipmentGateway;
 import com.twohands.commerce_service.exception.AppException;
@@ -13,10 +14,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -67,20 +71,32 @@ public class GhnShipmentGatewayAdapter implements GhnShipmentGateway {
     private GhnCreateOrderResult createViaGhnApi(GhnCreateOrderCommand command) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("payment_type_id", command.codAmount() > 0 ? 2 : 1);
-        body.put("required_note", "2Hands shipment");
+        body.put("required_note", "KHONGCHOXEMHANG");
         body.put("to_name", command.receiverName());
         body.put("to_phone", command.receiverPhone());
         body.put("to_address", command.toAddressDetail());
         body.put("to_ward_code", command.toWardCode());
-        body.put("to_district_id", parseDistrictId(command.toDistrictCode()));
-        body.put("from_name", "2Hands Seller");
-        body.put("from_phone", "0900000000");
+        body.put("to_district_id", GhnDistrictIdParser.parseRequired(command.toDistrictCode(), "to_district_id"));
+        body.put("from_name", command.fromName());
+        body.put("from_phone", command.fromPhone());
         body.put("from_address", command.fromAddressDetail());
         body.put("from_ward_code", command.fromWardCode());
-        body.put("from_district_id", parseDistrictId(command.fromDistrictCode()));
-        body.put("weight", command.totalWeightGram());
+        body.put("from_district_id", GhnDistrictIdParser.parseRequired(command.fromDistrictCode(), "from_district_id"));
+        body.put("weight", Math.max(command.totalWeightGram(), 1));
+        body.put("length", command.lengthCm());
+        body.put("width", command.widthCm());
+        body.put("height", command.heightCm());
         body.put("cod_amount", command.codAmount());
+        body.put("insurance_value", 0);
+        body.put("service_id", command.serviceId());
+        if (command.serviceTypeId() > 0) {
+            body.put("service_type_id", command.serviceTypeId());
+        }
+        if (StringUtils.hasText(command.content())) {
+            body.put("content", command.content());
+        }
         body.put("client_order_code", command.shipmentId().toString());
+        body.put("items", buildItemsPayload(command));
 
         String rawResponse = ghnRestClient.post()
                 .uri("/shiip/public-api/v2/shipping-order/create")
@@ -90,12 +106,56 @@ public class GhnShipmentGatewayAdapter implements GhnShipmentGateway {
                 .retrieve()
                 .body(String.class);
 
+        return parseCreateResponse(rawResponse);
+    }
+
+    public List<Map<String, Object>> buildItemsPayload(GhnCreateOrderCommand command) {
+        List<Map<String, Object>> items = new ArrayList<>();
+        int defaultLength = Math.max(command.lengthCm() / 2, 1);
+        int defaultWidth = Math.max(command.widthCm() / 2, 1);
+        int defaultHeight = Math.max(command.heightCm() / 2, 1);
+
+        for (GhnCreateOrderItem item : command.items()) {
+            Map<String, Object> payload = new LinkedHashMap<>();
+            payload.put("name", item.name());
+            payload.put("code", item.code());
+            payload.put("quantity", item.quantity());
+            payload.put("price", item.priceVnd());
+            payload.put("weight", Math.max(item.weightGram(), 1));
+            payload.put("length", defaultLength);
+            payload.put("width", defaultWidth);
+            payload.put("height", defaultHeight);
+            items.add(payload);
+        }
+
+        if (items.isEmpty()) {
+            Map<String, Object> fallback = new LinkedHashMap<>();
+            fallback.put("name", "2Hands parcel");
+            fallback.put("code", command.shipmentId().toString());
+            fallback.put("quantity", 1);
+            fallback.put("price", 0);
+            fallback.put("weight", Math.max(command.totalWeightGram(), 1));
+            fallback.put("length", command.lengthCm());
+            fallback.put("width", command.widthCm());
+            fallback.put("height", command.heightCm());
+            items.add(fallback);
+        }
+        return items;
+    }
+
+    public GhnCreateOrderResult parseCreateResponse(String rawResponse) {
         if (rawResponse == null || rawResponse.isBlank()) {
             throw new AppException(ErrorCode.GHN_PROVIDER_UNAVAILABLE, "GHN returned empty response");
         }
 
         try {
             JsonNode root = objectMapper.readTree(rawResponse);
+            int code = root.path("code").asInt(0);
+            if (code != 200) {
+                String message = root.path("message").asText("GHN create-order failed");
+                throw new AppException(ErrorCode.GHN_PROVIDER_UNAVAILABLE, message);
+            }
+
             JsonNode data = root.path("data");
             String orderCode = data.path("order_code").asText(null);
             if (orderCode == null || orderCode.isBlank()) {
@@ -104,7 +164,7 @@ public class GhnShipmentGatewayAdapter implements GhnShipmentGateway {
             return new GhnCreateOrderResult(
                     orderCode,
                     ghnProperties.getShopId(),
-                    data.path("expected_delivery_time").asText(orderCode),
+                    orderCode,
                     rawResponse,
                     false
             );
@@ -132,14 +192,6 @@ public class GhnShipmentGatewayAdapter implements GhnShipmentGateway {
             );
         } catch (JsonProcessingException ex) {
             throw new AppException(ErrorCode.INTERNAL_ERROR, "Cannot serialize mock GHN payload", ex);
-        }
-    }
-
-    private int parseDistrictId(String districtCode) {
-        try {
-            return Integer.parseInt(districtCode);
-        } catch (NumberFormatException ex) {
-            return 0;
         }
     }
 }

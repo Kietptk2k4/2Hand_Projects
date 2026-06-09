@@ -82,6 +82,8 @@ public class PayosCheckoutUrlGatewayAdapter implements PayosCheckoutUrlGateway {
                 returnUrl
         );
         String signature = signatureGenerator.sign(payosProperties.getChecksumKey(), signatureData);
+        log.info("DATA={}", signatureData);
+        log.info("SIGNATURE={}", signature);
 
         Map<String, Object> requestBody = new LinkedHashMap<>();
         requestBody.put("orderCode", command.orderCode());

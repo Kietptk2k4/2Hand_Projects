@@ -16,6 +16,7 @@ import {
   mapQuoteResponse,
   mapShippingFeeResponse,
 } from "../utils/checkoutMapper";
+import { prefetchGhnAddressLabelsForAddresses } from "../utils/prefetchGhnAddressLabels";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { useValidateCartItems } from "./useValidateCartItems";
 
@@ -55,6 +56,7 @@ export function useCheckout(cartItemIds) {
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [addressesLoaded, setAddressesLoaded] = useState(false);
+  const [addressLabelVersion, setAddressLabelVersion] = useState(0);
   const [isCreatingAddress, setIsCreatingAddress] = useState(false);
 
   const debounceRef = useRef(null);
@@ -67,6 +69,9 @@ export function useCheckout(cartItemIds) {
         const raw = await fetchUserAddresses();
         const list = mapAddressesResponse(raw);
         setAddresses(list);
+        prefetchGhnAddressLabelsForAddresses(list).then(() => {
+          setAddressLabelVersion((version) => version + 1);
+        });
 
         if (selectAddressId && list.some((item) => item.id === selectAddressId)) {
           setSelectedAddressId(selectAddressId);
@@ -243,6 +248,7 @@ export function useCheckout(cartItemIds) {
 
   return {
     addresses,
+    addressLabelVersion,
     selectedAddressId,
     shipmentType,
     paymentMethod,

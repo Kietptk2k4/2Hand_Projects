@@ -2,12 +2,10 @@ package com.twohands.commerce_service.unit.application.shipment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.twohands.commerce_service.application.shipment.common.ShipmentLifecycleOutboxEmitter;
-import com.twohands.commerce_service.application.shipment.common.ShipmentStatusChangedOutboxService;
+import com.twohands.commerce_service.application.shipment.common.GhnShipmentStatusUpdateResult;
+import com.twohands.commerce_service.application.shipment.common.GhnShipmentStatusUpdateService;
 import com.twohands.commerce_service.application.shipment.processghnwebhook.ProcessGhnWebhookResult;
 import com.twohands.commerce_service.application.shipment.processghnwebhook.ProcessGhnWebhookUseCase;
-import com.twohands.commerce_service.domain.outbox.OutboxEvent;
-import com.twohands.commerce_service.domain.outbox.OutboxEventRepository;
 import com.twohands.commerce_service.domain.shipment.GhnWebhookLogRepository;
 import com.twohands.commerce_service.domain.shipment.ProcessGhnWebhookRepository;
 import com.twohands.commerce_service.domain.shipment.SellerShipmentRecord;
@@ -22,9 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.Clock;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -48,13 +44,7 @@ class ProcessGhnWebhookUseCaseTest {
     private ProcessGhnWebhookRepository processGhnWebhookRepository;
 
     @Mock
-    private OutboxEventRepository outboxEventRepository;
-
-    @Mock
-    private ShipmentStatusChangedOutboxService shipmentStatusChangedOutboxService;
-
-    @Mock
-    private ShipmentLifecycleOutboxEmitter shipmentLifecycleOutboxEmitter;
+    private GhnShipmentStatusUpdateService ghnShipmentStatusUpdateService;
 
     private ProcessGhnWebhookUseCase useCase;
 
@@ -70,11 +60,8 @@ class ProcessGhnWebhookUseCaseTest {
                 signatureVerifier,
                 ghnWebhookLogRepository,
                 processGhnWebhookRepository,
-                outboxEventRepository,
-                shipmentStatusChangedOutboxService,
-                shipmentLifecycleOutboxEmitter,
-                new ObjectMapper(),
-                Clock.fixed(now, ZoneOffset.UTC)
+                ghnShipmentStatusUpdateService,
+                new ObjectMapper()
         );
     }
 
@@ -89,25 +76,18 @@ class ProcessGhnWebhookUseCaseTest {
         when(ghnWebhookLogRepository.insertLog(eq("GHN-123"), eq("delivered"), any())).thenReturn(logId);
         when(processGhnWebhookRepository.findByGhnOrderCodeForUpdate("GHN-123"))
                 .thenReturn(Optional.of(shipment));
-        when(processGhnWebhookRepository.updateStatus(
-                shipmentId, ShipmentStatus.SHIPPED, ShipmentStatus.DELIVERED, now))
-                .thenReturn(true);
-        when(shipmentStatusChangedOutboxService.build(any(), any(), any(), any(), any(), any()))
-                .thenReturn(sampleOutbox());
+        when(ghnShipmentStatusUpdateService.apply(shipment, "delivered", "GHN-123"))
+                .thenReturn(GhnShipmentStatusUpdateResult.updated(
+                        shipmentId,
+                        ShipmentStatus.SHIPPED,
+                        ShipmentStatus.DELIVERED
+                ));
 
         ProcessGhnWebhookResult result = useCase.execute(body, null, null);
 
         assertThat(result.statusChanged()).isTrue();
         assertThat(result.newStatus()).isEqualTo(ShipmentStatus.DELIVERED);
-        verify(processGhnWebhookRepository).updateOrderItemsForShipment(shipmentId, "DELIVERED", now);
         verify(ghnWebhookLogRepository).markProcessed(logId);
-        verify(outboxEventRepository).save(any(OutboxEvent.class));
-        verify(shipmentLifecycleOutboxEmitter).emitDedicatedNotificationEvents(
-                shipment,
-                ShipmentStatus.DELIVERED,
-                now,
-                null
-        );
     }
 
     @Test
@@ -121,21 +101,17 @@ class ProcessGhnWebhookUseCaseTest {
         when(ghnWebhookLogRepository.insertLog(eq("GHN-123"), eq("picked"), any())).thenReturn(logId);
         when(processGhnWebhookRepository.findByGhnOrderCodeForUpdate("GHN-123"))
                 .thenReturn(Optional.of(shipment));
-        when(processGhnWebhookRepository.updateStatus(
-                shipmentId, ShipmentStatus.READY_TO_SHIP, ShipmentStatus.SHIPPED, now))
-                .thenReturn(true);
-        when(shipmentStatusChangedOutboxService.build(any(), any(), any(), any(), any(), any()))
-                .thenReturn(sampleOutbox());
+        when(ghnShipmentStatusUpdateService.apply(shipment, "picked", "GHN-123"))
+                .thenReturn(GhnShipmentStatusUpdateResult.updated(
+                        shipmentId,
+                        ShipmentStatus.READY_TO_SHIP,
+                        ShipmentStatus.SHIPPED
+                ));
 
         ProcessGhnWebhookResult result = useCase.execute(body, null, null);
 
         assertThat(result.newStatus()).isEqualTo(ShipmentStatus.SHIPPED);
-        verify(shipmentLifecycleOutboxEmitter).emitDedicatedNotificationEvents(
-                shipment,
-                ShipmentStatus.SHIPPED,
-                now,
-                null
-        );
+        verify(ghnShipmentStatusUpdateService).apply(shipment, "picked", "GHN-123");
     }
 
     @Test
@@ -149,14 +125,34 @@ class ProcessGhnWebhookUseCaseTest {
         when(ghnWebhookLogRepository.insertLog(any(), any(), any())).thenReturn(logId);
         when(processGhnWebhookRepository.findByGhnOrderCodeForUpdate("GHN-123"))
                 .thenReturn(Optional.of(shipment));
+        when(ghnShipmentStatusUpdateService.apply(shipment, "delivered", "GHN-123"))
+                .thenReturn(GhnShipmentStatusUpdateResult.unchanged(shipmentId, ShipmentStatus.DELIVERED));
 
         ProcessGhnWebhookResult result = useCase.execute(body, null, null);
 
         assertThat(result.processed()).isTrue();
         assertThat(result.statusChanged()).isFalse();
-        verify(processGhnWebhookRepository, never()).updateStatus(any(), any(), any(), any());
-        verify(outboxEventRepository, never()).save(any());
-        verify(shipmentLifecycleOutboxEmitter, never()).emitDedicatedNotificationEvents(any(), any(), any(), any());
+        verify(ghnWebhookLogRepository).markProcessed(logId);
+    }
+
+    @Test
+    void skipsStatusTransitionForFeeUpdateWebhook() {
+        ObjectNode body = new ObjectMapper().createObjectNode();
+        body.put("OrderCode", "GHN-123");
+        body.put("Status", "delivering");
+        body.put("Type", "Update_fee");
+
+        SellerShipmentRecord shipment = shipment(ShipmentStatus.SHIPPED);
+        when(signatureVerifier.verify(null, null)).thenReturn(true);
+        when(ghnWebhookLogRepository.insertLog(any(), any(), any())).thenReturn(logId);
+        when(processGhnWebhookRepository.findByGhnOrderCodeForUpdate("GHN-123"))
+                .thenReturn(Optional.of(shipment));
+
+        ProcessGhnWebhookResult result = useCase.execute(body, null, null);
+
+        assertThat(result.statusChanged()).isFalse();
+        verify(ghnShipmentStatusUpdateService, never()).apply(any(), any(), any());
+        verify(ghnWebhookLogRepository).markProcessed(logId);
     }
 
     @Test
@@ -199,22 +195,6 @@ class ProcessGhnWebhookUseCaseTest {
                 ShipmentCarrier.GHN, ShipmentType.STANDARD, status,
                 "GHN-123", "TRK-1", BigDecimal.TEN, BigDecimal.ZERO, 500,
                 null, now, null, now, now
-        );
-    }
-
-    private OutboxEvent sampleOutbox() {
-        return new OutboxEvent(
-                UUID.randomUUID(),
-                ShipmentStatusChangedOutboxService.EVENT_TYPE,
-                "shipment:test",
-                shipmentId,
-                "commerce",
-                "{}",
-                com.twohands.commerce_service.domain.outbox.OutboxStatus.PENDING,
-                0,
-                now,
-                null,
-                null
         );
     }
 }

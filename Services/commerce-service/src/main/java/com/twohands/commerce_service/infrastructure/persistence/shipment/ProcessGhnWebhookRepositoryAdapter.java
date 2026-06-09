@@ -51,6 +51,72 @@ public class ProcessGhnWebhookRepositoryAdapter implements ProcessGhnWebhookRepo
     }
 
     @Override
+    public Optional<SellerShipmentRecord> findByShipmentIdForUpdate(UUID shipmentId) {
+        String sql = """
+                SELECT id, order_id, seller_id,
+                       carrier::text AS carrier,
+                       shipment_type::text AS shipment_type,
+                       status::text AS status,
+                       ghn_order_code, tracking_number,
+                       shipping_fee, cod_amount, weight_gram,
+                       estimated_delivery_date,
+                       shipped_at, delivered_at, created_at, updated_at
+                FROM shipments
+                WHERE id = :shipmentId
+                FOR UPDATE
+                """;
+        List<SellerShipmentRecord> rows = jdbcTemplate.query(
+                sql,
+                new MapSqlParameterSource("shipmentId", shipmentId),
+                this::mapShipment
+        );
+        return rows.isEmpty() ? Optional.empty() : Optional.of(rows.getFirst());
+    }
+
+    @Override
+    public Optional<SellerShipmentRecord> findGhnShipmentForUserUpdate(UUID shipmentId, UUID userId) {
+        String sql = """
+                SELECT s.id, s.order_id, s.seller_id,
+                       s.carrier::text AS carrier,
+                       s.shipment_type::text AS shipment_type,
+                       s.status::text AS status,
+                       s.ghn_order_code, s.tracking_number,
+                       s.shipping_fee, s.cod_amount, s.weight_gram,
+                       s.estimated_delivery_date,
+                       s.shipped_at, s.delivered_at, s.created_at, s.updated_at
+                FROM shipments s
+                INNER JOIN orders o ON o.id = s.order_id
+                WHERE s.id = :shipmentId
+                  AND s.carrier = 'GHN'::shipment_carrier
+                  AND (s.seller_id = :userId OR o.buyer_id = :userId)
+                FOR UPDATE
+                """;
+        List<SellerShipmentRecord> rows = jdbcTemplate.query(
+                sql,
+                new MapSqlParameterSource()
+                        .addValue("shipmentId", shipmentId)
+                        .addValue("userId", userId),
+                this::mapShipment
+        );
+        return rows.isEmpty() ? Optional.empty() : Optional.of(rows.getFirst());
+    }
+
+    @Override
+    public void updateTrackingNumberIfBlank(UUID shipmentId, String trackingNumber, Instant occurredAt) {
+        String sql = """
+                UPDATE shipments
+                SET tracking_number = :trackingNumber,
+                    updated_at = :now
+                WHERE id = :shipmentId
+                  AND (tracking_number IS NULL OR BTRIM(tracking_number) = '')
+                """;
+        jdbcTemplate.update(sql, new MapSqlParameterSource()
+                .addValue("shipmentId", shipmentId)
+                .addValue("trackingNumber", trackingNumber)
+                .addValue("now", Timestamp.from(occurredAt)));
+    }
+
+    @Override
     public boolean updateStatus(
             UUID shipmentId,
             ShipmentStatus currentStatus,

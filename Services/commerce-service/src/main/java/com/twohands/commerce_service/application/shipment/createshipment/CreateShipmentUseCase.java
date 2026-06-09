@@ -1,5 +1,7 @@
 package com.twohands.commerce_service.application.shipment.createshipment;
 
+import com.twohands.commerce_service.application.shipping.ghn.ResolveGhnServiceUseCase;
+import com.twohands.commerce_service.config.CommerceIntegrationProperties;
 import com.twohands.commerce_service.domain.payment.PaymentMethod;
 import com.twohands.commerce_service.domain.payment.PaymentStatus;
 import com.twohands.commerce_service.domain.shipment.BuyerDeliveryAddress;
@@ -7,8 +9,11 @@ import com.twohands.commerce_service.domain.shipment.CreateShipmentDraft;
 import com.twohands.commerce_service.domain.shipment.CreateShipmentOrderContext;
 import com.twohands.commerce_service.domain.shipment.CreateShipmentRepository;
 import com.twohands.commerce_service.domain.shipment.CreateShipmentResult;
+import com.twohands.commerce_service.domain.shipment.GhnAddressReadinessPolicy;
 import com.twohands.commerce_service.domain.shipment.GhnCreateOrderCommand;
+import com.twohands.commerce_service.domain.shipment.GhnCreateOrderItem;
 import com.twohands.commerce_service.domain.shipment.GhnCreateOrderResult;
+import com.twohands.commerce_service.domain.shipment.GhnResolvedService;
 import com.twohands.commerce_service.domain.shipment.GhnShipmentGateway;
 import com.twohands.commerce_service.domain.shipment.SellerPickupAddress;
 import com.twohands.commerce_service.domain.shipment.ShipmentCarrier;
@@ -20,6 +25,7 @@ import com.twohands.commerce_service.domain.shop.SellerShop;
 import com.twohands.commerce_service.domain.shop.SellerShopRepository;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
+import com.twohands.commerce_service.infrastructure.ghn.GhnDistrictIdParser;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -27,6 +33,7 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,6 +46,8 @@ public class CreateShipmentUseCase {
     private final SellerShopRepository sellerShopRepository;
     private final SellerShippingProfileRepository sellerShippingProfileRepository;
     private final GhnShipmentGateway ghnShipmentGateway;
+    private final ResolveGhnServiceUseCase resolveGhnServiceUseCase;
+    private final CommerceIntegrationProperties.Ghn ghnProperties;
     private final CreateShipmentTransactionService createShipmentTransactionService;
     private final Clock clock;
 
@@ -47,6 +56,8 @@ public class CreateShipmentUseCase {
             SellerShopRepository sellerShopRepository,
             SellerShippingProfileRepository sellerShippingProfileRepository,
             GhnShipmentGateway ghnShipmentGateway,
+            ResolveGhnServiceUseCase resolveGhnServiceUseCase,
+            CommerceIntegrationProperties integrationProperties,
             CreateShipmentTransactionService createShipmentTransactionService,
             Clock clock
     ) {
@@ -54,6 +65,8 @@ public class CreateShipmentUseCase {
         this.sellerShopRepository = sellerShopRepository;
         this.sellerShippingProfileRepository = sellerShippingProfileRepository;
         this.ghnShipmentGateway = ghnShipmentGateway;
+        this.resolveGhnServiceUseCase = resolveGhnServiceUseCase;
+        this.ghnProperties = integrationProperties.getGhn();
         this.createShipmentTransactionService = createShipmentTransactionService;
         this.clock = clock;
     }
@@ -148,35 +161,74 @@ public class CreateShipmentUseCase {
         CreateShipmentResult created = createShipmentTransactionService.createLocal(draft, order.buyerId(), now);
 
         if (carrier == ShipmentCarrier.GHN) {
-            created = registerGhnShipment(created, pickup, deliveryAddress, totalWeightGram, codAmount, now);
+            validateGhnAddresses(pickup, deliveryAddress);
+            created = registerGhnShipment(
+                    created,
+                    pickup,
+                    deliveryAddress,
+                    items,
+                    totalWeightGram,
+                    codAmount,
+                    now
+            );
         }
 
         return created;
+    }
+
+    private void validateGhnAddresses(SellerPickupAddress pickup, BuyerDeliveryAddress delivery) {
+        List<String> issues = new ArrayList<>();
+        issues.addAll(GhnAddressReadinessPolicy.validateDistrictAndWard(
+                pickup.districtCode(),
+                pickup.wardCode()
+        ));
+        issues.addAll(GhnAddressReadinessPolicy.validateDistrictAndWard(
+                delivery.districtCode(),
+                delivery.wardCode()
+        ));
+        if (!issues.isEmpty()) {
+            throw new AppException(
+                    ErrorCode.GHN_ADDRESS_NOT_READY,
+                    String.join("; ", issues)
+            );
+        }
     }
 
     private CreateShipmentResult registerGhnShipment(
             CreateShipmentResult local,
             SellerPickupAddress pickup,
             BuyerDeliveryAddress delivery,
+            List<ShipmentOrderItemLine> items,
             int totalWeightGram,
             BigDecimal codAmount,
             Instant occurredAt
     ) {
+        int fromDistrictId = GhnDistrictIdParser.parseRequired(pickup.districtCode(), "pickup district_code");
+        int toDistrictId = GhnDistrictIdParser.parseRequired(delivery.districtCode(), "destination district_code");
+        GhnResolvedService resolvedService = resolveGhnServiceUseCase.resolveForRoute(fromDistrictId, toDistrictId);
+
         GhnCreateOrderCommand ghnCommand = new GhnCreateOrderCommand(
                 local.shipmentId(),
                 local.orderId(),
                 codAmount.intValue(),
                 totalWeightGram,
+                resolvedService.serviceId(),
+                resolvedService.serviceTypeId(),
+                ghnProperties.getDefaultPackageLengthCm(),
+                ghnProperties.getDefaultPackageWidthCm(),
+                ghnProperties.getDefaultPackageHeightCm(),
                 delivery.receiverName(),
                 delivery.phone(),
-                delivery.provinceCode(),
                 delivery.districtCode(),
                 delivery.wardCode(),
                 delivery.addressDetail(),
-                pickup.provinceCode(),
+                pickup.pickupName(),
+                pickup.phone(),
                 pickup.districtCode(),
                 pickup.wardCode(),
-                pickup.addressDetail()
+                pickup.addressDetail(),
+                buildParcelContent(items),
+                toGhnItems(items)
         );
 
         GhnCreateOrderResult ghnResult;
@@ -282,6 +334,29 @@ public class CreateShipmentUseCase {
             return null;
         }
         return trackingNumber.trim();
+    }
+
+    private List<GhnCreateOrderItem> toGhnItems(List<ShipmentOrderItemLine> items) {
+        return items.stream()
+                .map(item -> new GhnCreateOrderItem(
+                        item.productNameSnapshot(),
+                        StringUtils.hasText(item.skuSnapshot())
+                                ? item.skuSnapshot().trim()
+                                : item.productId().toString(),
+                        item.quantity(),
+                        item.unitPriceSnapshot().intValue(),
+                        Math.max(item.weightGram(), 1)
+                ))
+                .toList();
+    }
+
+    private String buildParcelContent(List<ShipmentOrderItemLine> items) {
+        String content = items.stream()
+                .map(ShipmentOrderItemLine::productNameSnapshot)
+                .filter(StringUtils::hasText)
+                .reduce((left, right) -> left + ", " + right)
+                .orElse("2Hands order");
+        return content.length() > 500 ? content.substring(0, 500) : content;
     }
 
     private AppException validationError(String field, String detail) {

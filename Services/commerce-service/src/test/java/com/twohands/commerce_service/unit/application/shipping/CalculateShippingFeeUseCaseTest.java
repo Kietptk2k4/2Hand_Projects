@@ -59,7 +59,7 @@ class CalculateShippingFeeUseCaseTest {
                 .thenReturn(new CartShippingQuoteContext(address, ShipmentType.EXPRESS, List.of(weightGroup)));
         when(sellerShippingProfileRepository.findByShopIds(any()))
                 .thenReturn(Map.of(shopId, new SellerShippingProfile(shopId, sellerId, "79", "760", "26734")));
-        when(shippingFeeQuoteService.quoteGroup(any(), any(), any(), eq(1500), eq(ShipmentType.EXPRESS)))
+        when(shippingFeeQuoteService.quoteGroup(any(), any(), any(), any(), eq(1500), eq(ShipmentType.EXPRESS)))
                 .thenReturn(new ShippingGroupFeeQuote(
                         BigDecimal.valueOf(52_500),
                         BigDecimal.valueOf(52_500),

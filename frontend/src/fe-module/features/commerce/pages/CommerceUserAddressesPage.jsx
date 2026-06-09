@@ -22,6 +22,7 @@ function AddressListSkeleton() {
 export function CommerceUserAddressesPage() {
   const {
     addresses,
+    addressLabelVersion,
     isLoading,
     errorMessage,
     isCreating,
@@ -152,7 +153,7 @@ export function CommerceUserAddressesPage() {
           <div className="flex flex-col gap-4">
             {addresses.map((address) => (
               <UserAddressCard
-                key={address.id}
+                key={`${address.id}-${addressLabelVersion}`}
                 address={address}
                 disabled={isMutating}
                 isMutating={mutatingAddressId === address.id}

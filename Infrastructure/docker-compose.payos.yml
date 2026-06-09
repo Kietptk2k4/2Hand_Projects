@@ -1,0 +1,32 @@
+# PayOS local dev - ngrok tunnel to commerce-service on the host (port 3003).
+#
+# Prerequisites:
+#   1. Copy Infrastructure/.env.example -> Infrastructure/.env and set NGROK_AUTHTOKEN
+#   2. commerce-service running on host: cd Services/commerce-service && ./gradlew bootRun
+#
+# Start infra + ngrok:
+#   docker compose -f docker-compose.yml -f docker-compose.payos.yml --profile payos up -d
+#
+# Start only ngrok (infra already up):
+#   docker compose -f docker-compose.yml -f docker-compose.payos.yml --profile payos up -d ngrok-commerce
+#
+# Print webhook URL for my.payos.vn:
+#   ./scripts/print-payos-webhook-url.ps1
+
+services:
+  ngrok-commerce:
+    image: ngrok/ngrok:latest
+    container_name: ngrok-commerce
+    profiles:
+      - payos
+    restart: unless-stopped
+    command:
+      - http
+      - host.docker.internal:${COMMERCE_HOST_PORT:-3003}
+      - --log=stdout
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN:?Set NGROK_AUTHTOKEN in Infrastructure/.env - see .env.example}
+    ports:
+      - "4040:4040"
+    extra_hosts:
+      - host.docker.internal:host-gateway

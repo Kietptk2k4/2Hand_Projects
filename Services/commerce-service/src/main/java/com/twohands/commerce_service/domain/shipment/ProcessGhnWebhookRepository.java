@@ -8,6 +8,12 @@ public interface ProcessGhnWebhookRepository {
 
     Optional<SellerShipmentRecord> findByGhnOrderCodeForUpdate(String ghnOrderCode);
 
+    Optional<SellerShipmentRecord> findByShipmentIdForUpdate(UUID shipmentId);
+
+    Optional<SellerShipmentRecord> findGhnShipmentForUserUpdate(UUID shipmentId, UUID userId);
+
+    void updateTrackingNumberIfBlank(UUID shipmentId, String trackingNumber, Instant occurredAt);
+
     boolean updateStatus(
             UUID shipmentId,
             ShipmentStatus currentStatus,

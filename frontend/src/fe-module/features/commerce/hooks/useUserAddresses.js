@@ -15,6 +15,7 @@ import {
   toCreateAddressPayload,
   toUpdateAddressPayload,
 } from "../utils/addressMapper";
+import { prefetchGhnAddressLabelsForAddresses } from "../utils/prefetchGhnAddressLabels";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 
 function isUnauthorizedError(error) {
@@ -31,6 +32,7 @@ export function useUserAddresses() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [mutatingAddressId, setMutatingAddressId] = useState(null);
+  const [addressLabelVersion, setAddressLabelVersion] = useState(0);
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -40,6 +42,9 @@ export function useUserAddresses() {
       const raw = await fetchUserAddresses();
       const list = mapAddressesResponse(raw);
       setAddresses(sortAddressesClient(list));
+      prefetchGhnAddressLabelsForAddresses(list).then(() => {
+        setAddressLabelVersion((version) => version + 1);
+      });
       return list;
     } catch (error) {
       if (isUnauthorizedError(error)) {
@@ -144,6 +149,7 @@ export function useUserAddresses() {
 
   return {
     addresses,
+    addressLabelVersion,
     isLoading,
     errorMessage,
     isCreating,

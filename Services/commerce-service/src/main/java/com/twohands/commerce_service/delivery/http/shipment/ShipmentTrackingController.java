@@ -1,5 +1,7 @@
 package com.twohands.commerce_service.delivery.http.shipment;
 
+import com.twohands.commerce_service.application.shipment.syncghnshipment.SyncGhnShipmentCommand;
+import com.twohands.commerce_service.application.shipment.syncghnshipment.SyncGhnShipmentStatusUseCase;
 import com.twohands.commerce_service.application.shipment.trackshipment.TrackShipmentCommand;
 import com.twohands.commerce_service.application.shipment.trackshipment.TrackShipmentUseCase;
 import com.twohands.commerce_service.application.shipment.viewshippingaddresssnapshot.ViewShippingAddressSnapshotCommand;
@@ -23,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,15 +38,18 @@ public class ShipmentTrackingController {
     private final ViewShippingAddressSnapshotUseCase viewShippingAddressSnapshotUseCase;
     private final ViewShipmentUseCase viewShipmentUseCase;
     private final TrackShipmentUseCase trackShipmentUseCase;
+    private final SyncGhnShipmentStatusUseCase syncGhnShipmentStatusUseCase;
 
     public ShipmentTrackingController(
             ViewShippingAddressSnapshotUseCase viewShippingAddressSnapshotUseCase,
             ViewShipmentUseCase viewShipmentUseCase,
-            TrackShipmentUseCase trackShipmentUseCase
+            TrackShipmentUseCase trackShipmentUseCase,
+            SyncGhnShipmentStatusUseCase syncGhnShipmentStatusUseCase
     ) {
         this.viewShippingAddressSnapshotUseCase = viewShippingAddressSnapshotUseCase;
         this.viewShipmentUseCase = viewShipmentUseCase;
         this.trackShipmentUseCase = trackShipmentUseCase;
+        this.syncGhnShipmentStatusUseCase = syncGhnShipmentStatusUseCase;
     }
 
     @GetMapping("/{shipmentId}/address-snapshot")
@@ -77,6 +83,22 @@ public class ShipmentTrackingController {
                 HttpStatus.OK.value(),
                 viewShipmentUseCase.successMessage(),
                 toViewResponse(result)
+        ));
+    }
+
+    @PostMapping("/{shipmentId}/ghn/sync")
+    public ResponseEntity<ApiResponse<SyncGhnShipmentResponse>> syncGhnShipment(
+            @PathVariable UUID shipmentId,
+            Authentication authentication
+    ) {
+        UUID userId = resolveUserId(authentication);
+        var result = syncGhnShipmentStatusUseCase.execute(
+                new SyncGhnShipmentCommand(shipmentId, userId, true)
+        );
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                syncGhnShipmentStatusUseCase.successMessage(),
+                SyncGhnShipmentResponse.from(result)
         ));
     }
 

@@ -81,7 +81,7 @@ class CalculateOrderTotalUseCaseTest {
                 .thenReturn(Map.of(productId, productContext()));
         when(sellerShippingProfileRepository.findByShopIds(any()))
                 .thenReturn(Map.of(shopId, new SellerShippingProfile(shopId, sellerId, "79", "760", "26734")));
-        when(shippingFeeQuoteService.quoteGroupFee(any(), any(), any(), eq(1000), eq(ShipmentType.STANDARD)))
+        when(shippingFeeQuoteService.quoteGroupFee(any(), any(), any(), any(), eq(1000), eq(ShipmentType.STANDARD)))
                 .thenReturn(BigDecimal.valueOf(40_000));
 
         CalculateOrderTotalResult result = useCase.execute(new CalculateOrderTotalCommand(

@@ -64,6 +64,7 @@ public class CalculateShippingFeeUseCase {
                     profile,
                     context.destinationAddress().provinceCode(),
                     context.destinationAddress().districtCode(),
+                    context.destinationAddress().wardCode(),
                     group.totalWeightGram(),
                     context.shipmentType()
             );

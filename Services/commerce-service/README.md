@@ -161,6 +161,66 @@ COMMERCE_GHN_MOCK_FALLBACK_ENABLED=true
 COMMERCE_OUTBOX_PUBLISH_ENABLED=false
 ```
 
+### 5. GHN Sprint 1 (Get Service + địa chỉ)
+
+**Env:** `COMMERCE_GHN_TOKEN`, `COMMERCE_GHN_SHOP_ID`, `COMMERCE_GHN_BASE_URL`, `COMMERCE_GHN_DEFAULT_SERVICE_TYPE_ID` (mặc định `2` = Chuẩn). Xem [`.env.example`](.env.example).
+
+**API mới:** `POST /commerce/api/v1/shipping/ghn/available-services` (JWT)
+
+```json
+{ "from_district_id": 1447, "to_district_id": 1442 }
+```
+
+Trả danh sách dịch vụ GHN + `resolved_service` theo cấu hình. Doc GHN: `docs/ghn/GHN.Get Service.txt`.
+
+**Địa chỉ cho GHN:** `district_code` phải là **số** (GHN district id), `ward_code` là **mã phường GHN**. Tạo shipment carrier `GHN` sẽ reject nếu pickup/delivery chưa đủ (`COMMERCE-400-GHN-ADDRESS`).
+
+### 6. GHN Sprint 2 (Calculate Fee)
+
+Khi `COMMERCE_GHN_ENABLED=true` và đủ token/shop-id, `POST /commerce/api/v1/shipping/fee` gọi GHN **Calculate Fee** (`/shipping-order/fee`) thay vì mock.
+
+- Tự resolve `service_id` / `service_type_id` qua Sprint 1 (`ResolveGhnServiceUseCase` + available-services).
+- Cần `ward_code` địa chỉ giao hàng + pickup profile seller (GHN ward/district id).
+- Kích thước mặc định gói: `COMMERCE_GHN_DEFAULT_PACKAGE_*_CM` (20×20×10 cm).
+- `COMMERCE_GHN_MOCK_FALLBACK_ENABLED=true`: lỗi provider GHN → fallback mock; địa chỉ chưa GHN-ready vẫn trả `COMMERCE-400-GHN-ADDRESS`.
+
+Doc GHN: `docs/ghn/GHN.Calculate Fee.txt`.
+
+### 7. GHN Sprint 3 (Create Order + webhook + sync)
+
+**Create Order hardened:** seller tạo shipment `carrier=GHN` sẽ gửi đủ `service_id`, `service_type_id` (resolve từ available-services), `items[]` từ order lines, kích thước gói mặc định, `from_name`/`from_phone` từ pickup profile. `order_code` GHN được lưu làm `ghn_order_code` + `tracking_number`.
+
+**Webhook production:**
+- Verify `Token` / `Authorization` khi `COMMERCE_GHN_WEBHOOK_SECRET` có giá trị.
+- Bỏ qua chuyển trạng thái với webhook `Type` kiểu `Update_fee`, `Update_weight`, `Update_cod`.
+- Fallback tìm shipment qua `ClientOrderCode` (= `shipment_id`) nếu chưa có `ghn_order_code`.
+- Map `picked` / `storing` → `SHIPPED`.
+
+**Order Info sync:** `GET /commerce/api/v1/shipments/{id}/tracking` tự gọi GHN Order Info (`/shipping-order/detail`) khi GHN bật và shipment chưa terminal, rồi cập nhật trạng thái nội bộ.
+
+Doc GHN: `docs/ghn/GHN.Create Order.txt`, `GHN.Callback order status.txt`, `GHN.Order Info.txt`.
+
+### 8. GHN Sprint 4 (master data + cancel/print + sync polish)
+
+**Địa chỉ GHN (JWT):**
+- `GET /commerce/api/v1/shipping/ghn/provinces`
+- `GET /commerce/api/v1/shipping/ghn/districts?province_id=201`
+- `GET /commerce/api/v1/shipping/ghn/wards?district_id=1442`
+
+FE dùng để chọn `district_code` (GHN district id) + `ward_code` khi tạo địa chỉ.
+
+**Seller GHN ops:**
+- `POST /commerce/api/v1/seller/shipments/{id}/ghn/cancel` — hủy vận đơn GHN (`switch-status/cancel`)
+- `GET /commerce/api/v1/seller/shipments/{id}/ghn/print-label?format=a5|80x80|52x70` — link in vận đơn (token 30 phút)
+
+**Sync:**
+- `POST /commerce/api/v1/shipments/{id}/ghn/sync` — đồng bộ thủ công từ Order Info
+- `GET /shipments/{id}/tracking` vẫn auto-sync nhưng có cooldown `COMMERCE_GHN_TRACK_SYNC_COOLDOWN_SECONDS` (mặc định 300s)
+
+**Dev webhook:** `Infrastructure/scripts/print-ghn-webhook-url.sh`
+
+Doc GHN: `GHN.API Get Province.txt`, `GHN.Get District.txt`, `GHN.Get Ward.txt`, `GHN.Cancel Order.txt`, `GHN.Print Order.txt`.
+
 ---
 
 ## Kiểm thử

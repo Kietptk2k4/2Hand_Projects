@@ -302,6 +302,7 @@ public class CheckoutFromCartRepositoryAdapter implements CheckoutFromCartReposi
                     profile,
                     address.provinceCode(),
                     address.districtCode(),
+                    address.wardCode(),
                     group.totalWeightGram(),
                     shipmentType
             );

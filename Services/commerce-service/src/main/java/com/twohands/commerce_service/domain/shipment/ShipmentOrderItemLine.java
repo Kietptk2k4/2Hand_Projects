@@ -12,7 +12,10 @@ public record ShipmentOrderItemLine(
         int quantity,
         BigDecimal finalPrice,
         BigDecimal shippingFeeAllocated,
-        int weightGram
+        int weightGram,
+        String productNameSnapshot,
+        String skuSnapshot,
+        BigDecimal unitPriceSnapshot
 ) {
     public boolean hasShipment() {
         return shipmentId != null;

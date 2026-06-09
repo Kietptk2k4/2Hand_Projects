@@ -29,6 +29,7 @@ export function CommerceCheckoutPage() {
 
   const {
     addresses,
+    addressLabelVersion,
     selectedAddressId,
     shipmentType,
     paymentMethod,
@@ -154,6 +155,7 @@ export function CommerceCheckoutPage() {
           <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
             <div className="flex flex-col gap-6 lg:col-span-7">
               <CheckoutAddressSelector
+                key={addressLabelVersion}
                 addresses={addresses}
                 selectedAddressId={selectedAddressId}
                 onSelect={selectAddress}
