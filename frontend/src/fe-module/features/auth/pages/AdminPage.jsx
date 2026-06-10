@@ -13,10 +13,14 @@ import {
   parseContentModerationPostId,
   parseContentModerationProductId,
   parseContentModerationProductView,
+  parseCommerceFinanceSellerId,
   parseInvestigationUserId,
   parseOrderSupportOrderId,
+  parseOrderSupportOrderListFilters,
   parseOrderSupportPaymentId,
+  parseOrderSupportPaymentFilters,
   parseOrderSupportShipmentId,
+  parseOrderSupportShipmentListFilters,
   parseOrderSupportWebhookFilters,
   parseSystemOperationsAnnouncementFilters,
   parseSystemOperationsConfigFilters,
@@ -47,6 +51,11 @@ import { PaymentSupportDetailTab } from "../admin/orderSupport/components/tabs/P
 import { ShipmentSupportDetailTab } from "../admin/orderSupport/components/tabs/ShipmentSupportDetailTab.jsx";
 import { AdminSupportTargetBar } from "../admin/orderSupport/components/AdminSupportTargetBar.jsx";
 import { WebhookLogsSupportTab } from "../admin/orderSupport/components/tabs/WebhookLogsSupportTab.jsx";
+import { AdminFinanceOverviewTab } from "../admin/commerceFinance/components/tabs/AdminFinanceOverviewTab.jsx";
+import { AdminFinanceCodPipelineTab } from "../admin/commerceFinance/components/tabs/AdminFinanceCodPipelineTab.jsx";
+import { AdminFinanceTopSellersTab } from "../admin/commerceFinance/components/tabs/AdminFinanceTopSellersTab.jsx";
+import { AdminFinanceSellerDetailTab } from "../admin/commerceFinance/components/tabs/AdminFinanceSellerDetailTab.jsx";
+import { AdminFinancePayoutQueueTab } from "../admin/commerceFinance/components/tabs/AdminFinancePayoutQueueTab.jsx";
 import { SystemConfigsTab } from "../admin/systemOperations/components/tabs/SystemConfigsTab.jsx";
 import { SystemAnnouncementsTab } from "../admin/systemOperations/components/tabs/SystemAnnouncementsTab.jsx";
 import { AuthAlert } from "../../../shared/ui/auth/authUi.jsx";
@@ -91,15 +100,26 @@ const ORDER_SUPPORT_TAB_COMPONENTS = {
   "webhook-logs": WebhookLogsSupportTab,
 };
 
+const COMMERCE_FINANCE_TAB_COMPONENTS = {
+  "finance-overview": AdminFinanceOverviewTab,
+  "cod-pipeline": AdminFinanceCodPipelineTab,
+  "top-sellers": AdminFinanceTopSellersTab,
+  "seller-detail": AdminFinanceSellerDetailTab,
+  "payout-queue": AdminFinancePayoutQueueTab,
+};
+
 export function AdminPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const adminTopTab = parseAdminSection(searchParams);
   const activeChildTab = parseAdminTab(searchParams, adminTopTab);
   const investigationUserId = parseInvestigationUserId(searchParams);
   const orderSupportOrderId = parseOrderSupportOrderId(searchParams);
+  const orderSupportOrderListFilters = parseOrderSupportOrderListFilters(searchParams);
   const orderSupportPaymentId = parseOrderSupportPaymentId(searchParams);
   const orderSupportShipmentId = parseOrderSupportShipmentId(searchParams);
   const orderSupportWebhookFilters = parseOrderSupportWebhookFilters(searchParams);
+  const orderSupportPaymentFilters = parseOrderSupportPaymentFilters(searchParams);
+  const orderSupportShipmentListFilters = parseOrderSupportShipmentListFilters(searchParams);
   const adminAuditFilters = parseAdminAuditFilters(searchParams);
   const adminAuditLogId = parseAdminAuditLogId(searchParams);
   const contentModerationPostId = parseContentModerationPostId(searchParams);
@@ -110,6 +130,7 @@ export function AdminPage() {
   const systemOperationsAnnouncementFilters = parseSystemOperationsAnnouncementFilters(searchParams);
   const systemOperationsConfigId = parseSystemOperationsConfigId(searchParams);
   const systemOperationsConfigView = parseSystemOperationsConfigView(searchParams);
+  const commerceFinanceSellerId = parseCommerceFinanceSellerId(searchParams);
 
   const [selectedRoleId, setSelectedRoleId] = useState("");
   const [investigationTargetUser, setInvestigationTargetUser] = useState(null);
@@ -181,6 +202,18 @@ export function AdminPage() {
             sectionId === "orderSupport" && defaultTab === "webhook-logs"
               ? orderSupportWebhookFilters
               : undefined,
+          paymentFilters:
+            sectionId === "orderSupport" && defaultTab === "payment-detail"
+              ? orderSupportPaymentFilters
+              : undefined,
+          orderListFilters:
+            sectionId === "orderSupport" && defaultTab === "order-detail"
+              ? orderSupportOrderListFilters
+              : undefined,
+          shipmentListFilters:
+            sectionId === "orderSupport" && defaultTab === "shipment-detail"
+              ? orderSupportShipmentListFilters
+              : undefined,
           auditFilters: sectionId === "adminAudit" ? adminAuditFilters : undefined,
           logId: sectionId === "adminAudit" ? adminAuditLogId || undefined : undefined,
           postId: sectionId === "contentModeration" ? contentModerationPostId || undefined : undefined,
@@ -204,9 +237,12 @@ export function AdminPage() {
       contentModerationProductView,
       investigationUserId,
       orderSupportOrderId,
+      orderSupportOrderListFilters,
       orderSupportPaymentId,
       orderSupportShipmentId,
       orderSupportWebhookFilters,
+      orderSupportPaymentFilters,
+      orderSupportShipmentListFilters,
       setSearchParams,
     ],
   );
@@ -224,6 +260,18 @@ export function AdminPage() {
           webhookFilters:
             adminTopTab === "orderSupport" && childId === "webhook-logs"
               ? orderSupportWebhookFilters
+              : undefined,
+          paymentFilters:
+            adminTopTab === "orderSupport" && childId === "payment-detail"
+              ? orderSupportPaymentFilters
+              : undefined,
+          orderListFilters:
+            adminTopTab === "orderSupport" && childId === "order-detail"
+              ? orderSupportOrderListFilters
+              : undefined,
+          shipmentListFilters:
+            adminTopTab === "orderSupport" && childId === "shipment-detail"
+              ? orderSupportShipmentListFilters
               : undefined,
           auditFilters: adminTopTab === "adminAudit" ? adminAuditFilters : undefined,
           logId: adminTopTab === "adminAudit" ? adminAuditLogId || undefined : undefined,
@@ -255,9 +303,12 @@ export function AdminPage() {
       contentModerationProductView,
       investigationUserId,
       orderSupportOrderId,
+      orderSupportOrderListFilters,
       orderSupportPaymentId,
       orderSupportShipmentId,
       orderSupportWebhookFilters,
+      orderSupportPaymentFilters,
+      orderSupportShipmentListFilters,
       searchParams,
       setSearchParams,
     ],
@@ -299,6 +350,12 @@ export function AdminPage() {
           shipmentId: "shipmentId" in patch ? patch.shipmentId : orderSupportShipmentId,
           webhookFilters:
             activeChildTab === "webhook-logs" ? orderSupportWebhookFilters : undefined,
+          paymentFilters:
+            activeChildTab === "payment-detail" ? orderSupportPaymentFilters : undefined,
+          orderListFilters:
+            activeChildTab === "order-detail" ? orderSupportOrderListFilters : undefined,
+          shipmentListFilters:
+            activeChildTab === "shipment-detail" ? orderSupportShipmentListFilters : undefined,
           preserve: searchParams,
         }),
         { replace: true },
@@ -308,9 +365,12 @@ export function AdminPage() {
     [
       activeChildTab,
       orderSupportOrderId,
+      orderSupportOrderListFilters,
       orderSupportPaymentId,
       orderSupportShipmentId,
       orderSupportWebhookFilters,
+      orderSupportPaymentFilters,
+      orderSupportShipmentListFilters,
       searchParams,
       setSearchParams,
     ],
@@ -335,6 +395,126 @@ export function AdminPage() {
       orderSupportOrderId,
       orderSupportPaymentId,
       orderSupportShipmentId,
+      searchParams,
+      setSearchParams,
+    ],
+  );
+
+  const handleOrderListFiltersChange = useCallback(
+    (filters) => {
+      setSearchParams(
+        buildAdminSearchParams({
+          section: "orderSupport",
+          tab: "order-detail",
+          orderId: orderSupportOrderId,
+          paymentId: orderSupportPaymentId,
+          shipmentId: orderSupportShipmentId,
+          orderListFilters: filters,
+          preserve: searchParams,
+        }),
+        { replace: true },
+      );
+    },
+    [
+      orderSupportOrderId,
+      orderSupportPaymentId,
+      orderSupportShipmentId,
+      searchParams,
+      setSearchParams,
+    ],
+  );
+
+  const handleOrderSelect = useCallback(
+    (nextOrderId) => {
+      setSearchParams(
+        buildAdminSearchParams({
+          section: "orderSupport",
+          tab: "order-detail",
+          orderId: nextOrderId,
+          paymentId: orderSupportPaymentId,
+          shipmentId: orderSupportShipmentId,
+          orderListFilters: orderSupportOrderListFilters,
+          preserve: searchParams,
+        }),
+        { replace: true },
+      );
+    },
+    [
+      orderSupportPaymentId,
+      orderSupportShipmentId,
+      orderSupportOrderListFilters,
+      searchParams,
+      setSearchParams,
+    ],
+  );
+
+  const handlePaymentFiltersChange = useCallback(
+    (filters) => {
+      setSearchParams(
+        buildAdminSearchParams({
+          section: "orderSupport",
+          tab: "payment-detail",
+          orderId: orderSupportOrderId,
+          paymentId: orderSupportPaymentId,
+          shipmentId: orderSupportShipmentId,
+          paymentFilters: filters,
+          preserve: searchParams,
+        }),
+        { replace: true },
+      );
+    },
+    [
+      orderSupportOrderId,
+      orderSupportPaymentId,
+      orderSupportShipmentId,
+      searchParams,
+      setSearchParams,
+    ],
+  );
+
+  const handleShipmentListFiltersChange = useCallback(
+    (filters) => {
+      setSearchParams(
+        buildAdminSearchParams({
+          section: "orderSupport",
+          tab: "shipment-detail",
+          orderId: orderSupportOrderId,
+          paymentId: orderSupportPaymentId,
+          shipmentId: orderSupportShipmentId,
+          shipmentListFilters: filters,
+          preserve: searchParams,
+        }),
+        { replace: true },
+      );
+    },
+    [
+      orderSupportOrderId,
+      orderSupportPaymentId,
+      orderSupportShipmentId,
+      searchParams,
+      setSearchParams,
+    ],
+  );
+
+  const handleShipmentSelect = useCallback(
+    (nextShipmentId) => {
+      setSearchParams(
+        buildAdminSearchParams({
+          section: "orderSupport",
+          tab: "shipment-detail",
+          orderId: orderSupportOrderId,
+          paymentId: orderSupportPaymentId,
+          shipmentId: nextShipmentId,
+          shipmentListFilters: orderSupportShipmentListFilters,
+          preserve: searchParams,
+        }),
+        { replace: true },
+      );
+    },
+    [
+      orderSupportOrderId,
+      orderSupportPaymentId,
+      orderSupportShipmentListFilters,
       searchParams,
       setSearchParams,
     ],
@@ -510,6 +690,8 @@ export function AdminPage() {
     SYSTEM_OPERATIONS_TAB_COMPONENTS[activeChildTab] || SystemConfigsTab;
   const OrderSupportTabComponent =
     ORDER_SUPPORT_TAB_COMPONENTS[activeChildTab] || OrderSupportDetailTab;
+  const CommerceFinanceTabComponent =
+    COMMERCE_FINANCE_TAB_COMPONENTS[activeChildTab] || AdminFinanceOverviewTab;
 
   const roleTabProps = {
     onNotify,
@@ -527,11 +709,19 @@ export function AdminPage() {
 
   const orderSupportTabProps = {
     orderId: orderSupportOrderId,
+    orderListFilters: orderSupportOrderListFilters,
     paymentId: orderSupportPaymentId,
     shipmentId: orderSupportShipmentId,
     webhookFilters: orderSupportWebhookFilters,
+    paymentFilters: orderSupportPaymentFilters,
+    shipmentListFilters: orderSupportShipmentListFilters,
     onNavigate: handleSupportNavigate,
     onFiltersChange: handleWebhookFiltersChange,
+    onOrderListFiltersChange: handleOrderListFiltersChange,
+    onOrderSelect: handleOrderSelect,
+    onPaymentFiltersChange: handlePaymentFiltersChange,
+    onShipmentListFiltersChange: handleShipmentListFiltersChange,
+    onShipmentSelect: handleShipmentSelect,
     onNotify,
   };
 
@@ -589,15 +779,26 @@ export function AdminPage() {
     if (adminTopTab === "orderSupport") {
       return <OrderSupportTabComponent {...orderSupportTabProps} />;
     }
+    if (adminTopTab === "commerceFinance") {
+      if (CommerceFinanceTabComponent === AdminFinanceSellerDetailTab) {
+        return <CommerceFinanceTabComponent sellerId={commerceFinanceSellerId} />;
+      }
+      if (CommerceFinanceTabComponent === AdminFinancePayoutQueueTab) {
+        return <CommerceFinanceTabComponent onNotify={onNotify} />;
+      }
+      return <CommerceFinanceTabComponent />;
+    }
     return null;
   }, [
     AdminAuditTabComponent,
     ContentModerationTabComponent,
     InvestigationTabComponent,
     OrderSupportTabComponent,
+    CommerceFinanceTabComponent,
     SystemOperationsTabComponent,
     RoleTabComponent,
     adminTopTab,
+    commerceFinanceSellerId,
     adminAuditTabProps,
     contentModerationTabProps,
     investigationTabProps,

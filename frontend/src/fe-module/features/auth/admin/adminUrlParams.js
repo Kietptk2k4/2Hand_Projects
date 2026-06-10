@@ -2,6 +2,7 @@ import { DEFAULT_ADMIN_AUDIT_TAB } from "./adminAudit/adminAuditTabs.js";
 import { DEFAULT_CONTENT_MODERATION_TAB } from "./contentModeration/contentModerationTabs.js";
 import { DEFAULT_ORDER_SUPPORT_TAB } from "./orderSupport/orderSupportTabs.js";
 import { DEFAULT_SYSTEM_OPERATIONS_TAB } from "./systemOperations/systemOperationsTabs.js";
+import { DEFAULT_COMMERCE_FINANCE_TAB } from "./commerceFinance/commerceFinanceTabs.js";
 
 const VALID_SECTIONS = [
   "rolePermission",
@@ -10,6 +11,7 @@ const VALID_SECTIONS = [
   "contentModeration",
   "orderSupport",
   "systemOperations",
+  "commerceFinance",
 ];
 
 const LEGACY_SECTION_MAP = {
@@ -24,6 +26,7 @@ const DEFAULT_TAB_BY_SECTION = {
   contentModeration: DEFAULT_CONTENT_MODERATION_TAB,
   orderSupport: DEFAULT_ORDER_SUPPORT_TAB,
   systemOperations: DEFAULT_SYSTEM_OPERATIONS_TAB,
+  commerceFinance: DEFAULT_COMMERCE_FINANCE_TAB,
 };
 
 const SUPPORT_PARAM_KEYS = [
@@ -37,6 +40,53 @@ const SUPPORT_PARAM_KEYS = [
   "to",
   "page",
   "size",
+  "pay_status",
+  "pay_method",
+  "pay_order_id",
+  "pay_from",
+  "pay_to",
+  "pay_page",
+  "pay_size",
+  "sh_status",
+  "sh_carrier",
+  "sh_sort",
+  "sh_page",
+  "sh_size",
+  "ord_status",
+  "ord_method",
+  "ord_from",
+  "ord_to",
+  "ord_sort",
+  "ord_page",
+  "ord_size",
+];
+
+const ORDER_LIST_FILTER_KEYS = [
+  "ord_status",
+  "ord_method",
+  "ord_from",
+  "ord_to",
+  "ord_sort",
+  "ord_page",
+  "ord_size",
+];
+
+const SHIPMENT_LIST_FILTER_KEYS = [
+  "sh_status",
+  "sh_carrier",
+  "sh_sort",
+  "sh_page",
+  "sh_size",
+];
+
+const PAYMENT_FILTER_KEYS = [
+  "pay_status",
+  "pay_method",
+  "pay_order_id",
+  "pay_from",
+  "pay_to",
+  "pay_page",
+  "pay_size",
 ];
 
 const AUDIT_PARAM_KEYS = [
@@ -77,6 +127,7 @@ const MANAGED_PARAM_KEYS = new Set([
   "section",
   "tab",
   "userId",
+  "sellerId",
   ...SUPPORT_PARAM_KEYS,
   ...AUDIT_PARAM_KEYS,
   ...CONTENT_MODERATION_PARAM_KEYS,
@@ -125,6 +176,40 @@ export function parseOrderSupportWebhookFilters(searchParams) {
     to: searchParams.get("to") || "",
     page: searchParams.get("page") || "1",
     size: searchParams.get("size") || "20",
+  };
+}
+
+export function parseOrderSupportOrderListFilters(searchParams) {
+  return {
+    status: searchParams.get("ord_status") || "",
+    payment_method: searchParams.get("ord_method") || "",
+    from: searchParams.get("ord_from") || "",
+    to: searchParams.get("ord_to") || "",
+    sort: searchParams.get("ord_sort") || "created_at",
+    page: searchParams.get("ord_page") || "1",
+    size: searchParams.get("ord_size") || "20",
+  };
+}
+
+export function parseOrderSupportShipmentListFilters(searchParams) {
+  return {
+    status: searchParams.get("sh_status") || "",
+    carrier: searchParams.get("sh_carrier") || "",
+    sort: searchParams.get("sh_sort") || "updated_at",
+    page: searchParams.get("sh_page") || "1",
+    size: searchParams.get("sh_size") || "20",
+  };
+}
+
+export function parseOrderSupportPaymentFilters(searchParams) {
+  return {
+    status: searchParams.get("pay_status") || "",
+    payment_method: searchParams.get("pay_method") || "",
+    order_id: searchParams.get("pay_order_id") || "",
+    from: searchParams.get("pay_from") || "",
+    to: searchParams.get("pay_to") || "",
+    page: searchParams.get("pay_page") || "1",
+    size: searchParams.get("pay_size") || "20",
   };
 }
 
@@ -192,6 +277,10 @@ export function parseSystemOperationsConfigView(searchParams) {
 export function parseContentModerationProductView(searchParams) {
   const value = searchParams.get("productView") || "list";
   return value === "history" ? "history" : "list";
+}
+
+export function parseCommerceFinanceSellerId(searchParams) {
+  return searchParams.get("sellerId") || "";
 }
 
 function copyUnmanagedParams(next, preserve) {
@@ -274,14 +363,73 @@ function applyContentModerationParams(next, { postId, commentId, productId, prod
   if (productView && productView !== "list") next.set("productView", productView);
 }
 
+function applyPaymentFilterParams(next, paymentFilters) {
+  if (!paymentFilters) return;
+
+  const {
+    status,
+    payment_method: paymentMethod,
+    order_id: orderId,
+    from,
+    to,
+    page,
+    size,
+  } = paymentFilters;
+
+  if (status) next.set("pay_status", status);
+  if (paymentMethod) next.set("pay_method", paymentMethod);
+  if (orderId) next.set("pay_order_id", orderId);
+  if (from) next.set("pay_from", from);
+  if (to) next.set("pay_to", to);
+  if (page) next.set("pay_page", String(page));
+  if (size) next.set("pay_size", String(size));
+}
+
+function applyOrderListFilterParams(next, orderListFilters) {
+  if (!orderListFilters) return;
+
+  const {
+    status,
+    payment_method: paymentMethod,
+    from,
+    to,
+    sort,
+    page,
+    size,
+  } = orderListFilters;
+
+  if (status) next.set("ord_status", status);
+  if (paymentMethod) next.set("ord_method", paymentMethod);
+  if (from) next.set("ord_from", from);
+  if (to) next.set("ord_to", to);
+  if (sort && sort !== "created_at") next.set("ord_sort", sort);
+  if (page) next.set("ord_page", String(page));
+  if (size && String(size) !== "20") next.set("ord_size", String(size));
+}
+
+function applyShipmentListFilterParams(next, shipmentListFilters) {
+  if (!shipmentListFilters) return;
+
+  const { status, carrier, sort, page, size } = shipmentListFilters;
+  if (status) next.set("sh_status", status);
+  if (carrier) next.set("sh_carrier", carrier);
+  if (sort && sort !== "updated_at") next.set("sh_sort", sort);
+  if (page) next.set("sh_page", String(page));
+  if (size && String(size) !== "20") next.set("sh_size", String(size));
+}
+
 export function buildAdminSearchParams({
   section,
   tab,
   userId,
+  sellerId,
   orderId,
   paymentId,
   shipmentId,
   webhookFilters,
+  paymentFilters,
+  orderListFilters,
+  shipmentListFilters,
   auditFilters,
   logId,
   clearLogId = false,
@@ -305,6 +453,11 @@ export function buildAdminSearchParams({
   const resolvedUserId = userId ?? (preserve ? preserve.get("userId") : null);
   if (resolvedUserId) {
     next.set("userId", resolvedUserId);
+  }
+
+  const resolvedSellerId = sellerId ?? (preserve ? preserve.get("sellerId") : null);
+  if (resolvedSellerId) {
+    next.set("sellerId", resolvedSellerId);
   }
 
   const resolvedOrderId = orderId ?? (preserve ? preserve.get("orderId") : null);
@@ -342,6 +495,33 @@ export function buildAdminSearchParams({
       if (size) next.set("size", String(size));
     } else if (tab === "webhook-logs" && preserve) {
       for (const key of ["provider", "reference_id", "status", "from", "to", "page", "size"]) {
+        const value = preserve.get(key);
+        if (value) next.set(key, value);
+      }
+    }
+
+    if (paymentFilters) {
+      applyPaymentFilterParams(next, paymentFilters);
+    } else if (tab === "payment-detail" && preserve) {
+      for (const key of PAYMENT_FILTER_KEYS) {
+        const value = preserve.get(key);
+        if (value) next.set(key, value);
+      }
+    }
+
+    if (orderListFilters) {
+      applyOrderListFilterParams(next, orderListFilters);
+    } else if (tab === "order-detail" && preserve) {
+      for (const key of ORDER_LIST_FILTER_KEYS) {
+        const value = preserve.get(key);
+        if (value) next.set(key, value);
+      }
+    }
+
+    if (shipmentListFilters) {
+      applyShipmentListFilterParams(next, shipmentListFilters);
+    } else if (tab === "shipment-detail" && preserve) {
+      for (const key of SHIPMENT_LIST_FILTER_KEYS) {
         const value = preserve.get(key);
         if (value) next.set(key, value);
       }

@@ -6,9 +6,11 @@ import com.twohands.commerce_service.application.inventory.reserveinventory.Rese
 import com.twohands.commerce_service.application.order.common.InventoryReservedOutboxService;
 import com.twohands.commerce_service.application.order.createorder.CreateOrderCommand;
 import com.twohands.commerce_service.application.order.createorder.CreateOrderUseCase;
+import com.twohands.commerce_service.config.CommerceCheckoutProperties;
 import com.twohands.commerce_service.domain.checkout.CheckoutFromCartRepository;
 import com.twohands.commerce_service.domain.checkout.CheckoutFromCartRequest;
 import com.twohands.commerce_service.domain.checkout.CheckoutFromCartResult;
+import com.twohands.commerce_service.domain.checkout.CheckoutPaymentMethodPolicy;
 import com.twohands.commerce_service.domain.checkout.CheckoutPrepareOutcome;
 import com.twohands.commerce_service.domain.checkout.CheckoutPreparedData;
 import com.twohands.commerce_service.domain.order.CreateOrderResult;
@@ -27,24 +29,30 @@ public class CheckoutFromCartUseCase {
     private final CreateOrderUseCase createOrderUseCase;
     private final OutboxEventRepository outboxEventRepository;
     private final InventoryReservedOutboxService inventoryReservedOutboxService;
+    private final CommerceCheckoutProperties checkoutProperties;
 
     public CheckoutFromCartUseCase(
             CheckoutFromCartRepository checkoutFromCartRepository,
             ReserveInventoryUseCase reserveInventoryUseCase,
             CreateOrderUseCase createOrderUseCase,
             OutboxEventRepository outboxEventRepository,
-            InventoryReservedOutboxService inventoryReservedOutboxService
+            InventoryReservedOutboxService inventoryReservedOutboxService,
+            CommerceCheckoutProperties checkoutProperties
     ) {
         this.checkoutFromCartRepository = checkoutFromCartRepository;
         this.reserveInventoryUseCase = reserveInventoryUseCase;
         this.createOrderUseCase = createOrderUseCase;
         this.outboxEventRepository = outboxEventRepository;
         this.inventoryReservedOutboxService = inventoryReservedOutboxService;
+        this.checkoutProperties = checkoutProperties;
     }
 
     @Transactional
     public CheckoutFromCartResult execute(CheckoutFromCartCommand command) {
-        validatePaymentMethod(command.paymentMethod());
+        CheckoutPaymentMethodPolicy.validateForCheckout(
+                command.paymentMethod(),
+                checkoutProperties.isCodOnlyEnabled()
+        );
 
         CheckoutPrepareOutcome outcome = checkoutFromCartRepository.prepareCheckout(new CheckoutFromCartRequest(
                 command.buyerId(),
@@ -100,20 +108,6 @@ public class CheckoutFromCartUseCase {
             return "Don hang da duoc tao truoc do (idempotency).";
         }
         return "Checkout thanh cong.";
-    }
-
-    private void validatePaymentMethod(PaymentMethod paymentMethod) {
-        if (paymentMethod == null) {
-            throw new AppException(
-                    ErrorCode.VALIDATION_ERROR,
-                    "Payment method is required",
-                    "payment_method",
-                    "must not be null"
-            );
-        }
-        if (paymentMethod != PaymentMethod.COD && paymentMethod != PaymentMethod.PAYOS) {
-            throw new AppException(ErrorCode.INVALID_PAYMENT_METHOD);
-        }
     }
 
     private String resolvePayosCheckoutUrl(PaymentMethod paymentMethod) {

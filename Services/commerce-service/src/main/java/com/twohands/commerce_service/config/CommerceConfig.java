@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableConfigurationProperties({
+        CommerceCheckoutProperties.class,
+        CommerceFinanceProperties.class,
         CommerceIntegrationProperties.class,
         CommerceObjectStorageProperties.class
 })

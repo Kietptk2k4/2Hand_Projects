@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchCheckoutQuote, fetchShippingFee, submitCheckout } from "../api/checkoutApi";
 import { createUserAddress, fetchUserAddresses } from "../api/userAddressApi";
 import {
+  CHECKOUT_COD_ONLY_ENABLED,
   CHECKOUT_IDEMPOTENCY_STORAGE_KEY,
   DEFAULT_PAYMENT_METHOD,
   DEFAULT_SHIPMENT_TYPE,
@@ -47,7 +48,6 @@ export function useCheckout(cartItemIds) {
 
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
-  const [shipmentType, setShipmentType] = useState(DEFAULT_SHIPMENT_TYPE);
   const [paymentMethod, setPaymentMethod] = useState(DEFAULT_PAYMENT_METHOD);
   const [quote, setQuote] = useState(null);
   const [shippingFee, setShippingFee] = useState(null);
@@ -128,12 +128,12 @@ export function useCheckout(cartItemIds) {
         fetchCheckoutQuote({
           cartItemIds,
           addressId: selectedAddressId,
-          shipmentType,
+          shipmentType: DEFAULT_SHIPMENT_TYPE,
         }),
         fetchShippingFee({
           cartItemIds,
           addressId: selectedAddressId,
-          shipmentType,
+          shipmentType: DEFAULT_SHIPMENT_TYPE,
         }),
       ]);
 
@@ -155,7 +155,7 @@ export function useCheckout(cartItemIds) {
       setQuoteError(error?.message || "Không tính được tổng tiền. Vui lòng thử lại.");
       setStatus("ready");
     }
-  }, [cartItemIds, selectedAddressId, shipmentType, showSessionExpired, validate]);
+  }, [cartItemIds, selectedAddressId, showSessionExpired, validate]);
 
   useEffect(() => {
     if (!addressesLoaded || !selectedAddressId || !cartItemIds?.length) return;
@@ -171,17 +171,14 @@ export function useCheckout(cartItemIds) {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [addressesLoaded, selectedAddressId, shipmentType, cartItemIds, refreshQuote]);
+  }, [addressesLoaded, selectedAddressId, cartItemIds, refreshQuote]);
 
   const selectAddress = useCallback((addressId) => {
     setSelectedAddressId(addressId);
   }, []);
 
-  const selectShipment = useCallback((nextType) => {
-    setShipmentType(nextType);
-  }, []);
-
   const selectPayment = useCallback((nextMethod) => {
+    if (CHECKOUT_COD_ONLY_ENABLED && nextMethod !== "COD") return;
     setPaymentMethod(nextMethod);
   }, []);
 
@@ -214,11 +211,12 @@ export function useCheckout(cartItemIds) {
 
     try {
       const idempotencyKey = getOrCreateIdempotencyKey();
+      const effectivePaymentMethod = CHECKOUT_COD_ONLY_ENABLED ? "COD" : paymentMethod;
       const raw = await submitCheckout({
         cartItemIds,
         addressId: selectedAddressId,
-        paymentMethod,
-        shipmentType,
+        paymentMethod: effectivePaymentMethod,
+        shipmentType: DEFAULT_SHIPMENT_TYPE,
         idempotencyKey,
       });
       const result = mapCheckoutResponse(raw);
@@ -239,7 +237,6 @@ export function useCheckout(cartItemIds) {
     paymentMethod,
     quote,
     selectedAddressId,
-    shipmentType,
     showSessionExpired,
   ]);
 
@@ -250,7 +247,6 @@ export function useCheckout(cartItemIds) {
     addresses,
     addressLabelVersion,
     selectedAddressId,
-    shipmentType,
     paymentMethod,
     quote,
     shippingFee,
@@ -268,7 +264,6 @@ export function useCheckout(cartItemIds) {
       !isLoadingQuote &&
       !quoteError,
     selectAddress,
-    selectShipment,
     selectPayment,
     refreshQuote,
     submitOrder,

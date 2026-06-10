@@ -2,8 +2,11 @@ import { delay, http, HttpResponse } from "msw";
 import { mockUsers } from "../data/authData";
 import {
   getMockOrderSupportDetail,
+  getMockOrdersForSupport,
+  getMockPaymentsForSupport,
   getMockPaymentSupportDetail,
   getMockShipmentSupportDetail,
+  getMockShipmentSupportList,
   getMockWebhookLogs,
 } from "../data/adminOrderSupportData";
 import { apiError, apiSuccess } from "../utils/response";
@@ -27,6 +30,28 @@ function isValidUuid(value) {
 }
 
 export const adminOrderSupportHandlers = [
+  http.get("*/admin/api/v1/support/orders", async ({ request }) => {
+    await delay(300);
+    const actor = getActorFromRequest(request);
+    if (!actor) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+    if (!isAdminActor(actor)) {
+      return HttpResponse.json(apiError(403, "Ban khong co quyen truy cap."), { status: 403 });
+    }
+
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status") || "";
+    const paymentMethod = url.searchParams.get("payment_method") || "";
+    const sort = url.searchParams.get("sort") || "created_at";
+    const page = Number(url.searchParams.get("page") || 1);
+    const size = Number(url.searchParams.get("size") || 20);
+
+    const data = getMockOrdersForSupport({ status, payment_method: paymentMethod, sort, page, size });
+
+    return HttpResponse.json(apiSuccess(200, "Orders retrieved successfully", data), { status: 200 });
+  }),
+
   http.get("*/admin/api/v1/support/orders/:orderId", async ({ request, params }) => {
     await delay(300);
     const actor = getActorFromRequest(request);
@@ -53,6 +78,37 @@ export const adminOrderSupportHandlers = [
     );
   }),
 
+  http.get("*/admin/api/v1/support/payments", async ({ request }) => {
+    await delay(300);
+    const actor = getActorFromRequest(request);
+    if (!actor) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+    if (!isAdminActor(actor)) {
+      return HttpResponse.json(apiError(403, "Ban khong co quyen truy cap."), { status: 403 });
+    }
+
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status") || "";
+    const paymentMethod = url.searchParams.get("payment_method") || "";
+    const orderId = url.searchParams.get("order_id") || "";
+    const page = Number(url.searchParams.get("page") || 1);
+    const size = Number(url.searchParams.get("size") || 20);
+
+    const data = getMockPaymentsForSupport({
+      status,
+      payment_method: paymentMethod,
+      order_id: orderId,
+      page,
+      size,
+    });
+
+    return HttpResponse.json(
+      apiSuccess(200, "Payments retrieved successfully", data),
+      { status: 200 },
+    );
+  }),
+
   http.get("*/admin/api/v1/support/payments/:paymentId", async ({ request, params }) => {
     await delay(300);
     const actor = getActorFromRequest(request);
@@ -75,6 +131,31 @@ export const adminOrderSupportHandlers = [
 
     return HttpResponse.json(
       apiSuccess(200, "Payment support detail retrieved successfully", detail),
+      { status: 200 },
+    );
+  }),
+
+  http.get("*/admin/api/v1/support/shipments", async ({ request }) => {
+    await delay(300);
+    const actor = getActorFromRequest(request);
+    if (!actor) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+    if (!isAdminActor(actor)) {
+      return HttpResponse.json(apiError(403, "Ban khong co quyen truy cap."), { status: 403 });
+    }
+
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status") || "";
+    const carrier = url.searchParams.get("carrier") || "";
+    const sort = url.searchParams.get("sort") || "updated_at";
+    const page = Number(url.searchParams.get("page") || 1);
+    const size = Number(url.searchParams.get("size") || 20);
+
+    const data = getMockShipmentSupportList({ status, carrier, sort, page, size });
+
+    return HttpResponse.json(
+      apiSuccess(200, "Shipment support list retrieved successfully", data),
       { status: 200 },
     );
   }),

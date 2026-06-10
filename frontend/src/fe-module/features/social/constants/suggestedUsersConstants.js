@@ -1,0 +1,2 @@
+export const SUGGESTED_USERS_SIDEBAR_LIMIT = 5;
+export const SUGGESTED_USERS_PAGE_SIZE = 20;

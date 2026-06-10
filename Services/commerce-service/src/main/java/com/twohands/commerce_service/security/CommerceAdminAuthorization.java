@@ -14,7 +14,12 @@ public class CommerceAdminAuthorization {
     public static final String PERMISSION_ORDER_SUPPORT_READ = "ORDER_SUPPORT_READ";
     public static final String PERMISSION_PAYMENT_SUPPORT_READ = "PAYMENT_SUPPORT_READ";
     public static final String PERMISSION_SHIPMENT_SUPPORT_READ = "SHIPMENT_SUPPORT_READ";
+    public static final String PERMISSION_SHIPMENT_SUPPORT_WRITE = "SHIPMENT_SUPPORT_WRITE";
+    public static final String PERMISSION_SHIPMENT_SUPPORT_FORCE_WRITE = "SHIPMENT_SUPPORT_FORCE_WRITE";
     public static final String PERMISSION_WEBHOOK_SUPPORT_READ = "WEBHOOK_SUPPORT_READ";
+    public static final String PERMISSION_PAYOUT_SUPPORT_READ = "PAYOUT_SUPPORT_READ";
+    public static final String PERMISSION_PAYOUT_SUPPORT_APPROVE = "PAYOUT_SUPPORT_APPROVE";
+    public static final String PERMISSION_FINANCE_SUPPORT_READ = "FINANCE_SUPPORT_READ";
     private static final String ADMIN_ROLE = "ADMIN";
 
     public void requirePermission(AuthenticatedUser user, String permission) {

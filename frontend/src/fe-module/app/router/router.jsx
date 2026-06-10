@@ -23,6 +23,7 @@ import { SocialProfilePage } from "../../features/social/pages/SocialProfilePage
 import { SocialSavedPostsPage } from "../../features/social/pages/SocialSavedPostsPage";
 import { SocialSearchPostsPage } from "../../features/social/pages/SocialSearchPostsPage";
 import { SocialHashtagPostsPage } from "../../features/social/pages/SocialHashtagPostsPage";
+import { SocialSuggestedUsersPage } from "../../features/social/pages/SocialSuggestedUsersPage";
 import { CommerceHomePage } from "../../features/commerce/pages/CommerceHomePage";
 import { CommerceProductDetailPage } from "../../features/commerce/pages/CommerceProductDetailPage";
 import { CommerceCategoryProductsPage } from "../../features/commerce/pages/CommerceCategoryProductsPage";
@@ -43,6 +44,7 @@ import { CommerceShopSettingsPage } from "../../features/commerce/pages/Commerce
 import { CommerceSellerProductListPage } from "../../features/commerce/pages/CommerceSellerProductListPage";
 import { CommerceSellerProductFormPage } from "../../features/commerce/pages/CommerceSellerProductFormPage";
 import { CommerceSellerOrderListPage } from "../../features/commerce/pages/CommerceSellerOrderListPage";
+import { CommerceSellerAnalyticsPage } from "../../features/commerce/pages/CommerceSellerAnalyticsPage";
 import { CommerceSellerShipmentListPage } from "../../features/commerce/pages/CommerceSellerShipmentListPage";
 import { CommerceSellerShipmentDetailPage } from "../../features/commerce/pages/CommerceSellerShipmentDetailPage";
 import { CommerceSellerShopReviewsPage } from "../../features/commerce/pages/CommerceSellerShopReviewsPage";
@@ -103,6 +105,7 @@ export const router = createBrowserRouter([
           },
           { path: APP_ROUTES.socialFeed.slice(1), element: <SocialFeedPage /> },
           { path: APP_ROUTES.socialSavedPosts.slice(1), element: <SocialSavedPostsPage /> },
+          { path: APP_ROUTES.socialSuggestedUsers.slice(1), element: <SocialSuggestedUsersPage /> },
           { path: APP_ROUTES.socialSearchPosts.slice(1), element: <SocialSearchPostsPage /> },
           { path: APP_ROUTES.socialHashtagPosts.slice(1), element: <SocialHashtagPostsPage /> },
           { path: APP_ROUTES.socialProfile.slice(1), element: <SocialProfilePage /> },
@@ -177,6 +180,10 @@ export const router = createBrowserRouter([
               {
                 path: APP_ROUTES.commerceSellerReviews.slice(1),
                 element: <CommerceSellerShopReviewsPage />,
+              },
+              {
+                path: APP_ROUTES.commerceSellerAnalytics.slice(1),
+                element: <CommerceSellerAnalyticsPage />,
               },
             ],
           },

@@ -2,6 +2,7 @@ package com.twohands.commerce_service.unit.application.checkout;
 
 import com.twohands.commerce_service.application.checkout.checkoutfromcart.CheckoutFromCartCommand;
 import com.twohands.commerce_service.application.checkout.checkoutfromcart.CheckoutFromCartUseCase;
+import com.twohands.commerce_service.config.CommerceCheckoutProperties;
 import com.twohands.commerce_service.application.inventory.reserveinventory.ReserveInventoryUseCase;
 import com.twohands.commerce_service.application.order.common.InventoryReservedOutboxService;
 import com.twohands.commerce_service.domain.inventory.InventoryReservationLine;
@@ -53,6 +54,9 @@ class CheckoutFromCartUseCaseTest {
     @Mock
     private InventoryReservedOutboxService inventoryReservedOutboxService;
 
+    @Mock
+    private CommerceCheckoutProperties checkoutProperties;
+
     @InjectMocks
     private CheckoutFromCartUseCase useCase;
 
@@ -61,7 +65,9 @@ class CheckoutFromCartUseCaseTest {
     private final UUID paymentId = UUID.randomUUID();
 
     @Test
-    void shouldCheckoutWithPayos() {
+    void shouldCheckoutWithCodWhenCodOnlyEnabled() {
+        when(checkoutProperties.isCodOnlyEnabled()).thenReturn(true);
+
         Instant now = Instant.now();
         UUID productId = UUID.randomUUID();
         when(checkoutFromCartRepository.prepareCheckout(any())).thenReturn(CheckoutPrepareOutcome.prepared(
@@ -69,7 +75,7 @@ class CheckoutFromCartUseCaseTest {
                         buyerId,
                         BigDecimal.valueOf(900_000),
                         BigDecimal.valueOf(1_000_000),
-                        PaymentMethod.PAYOS,
+                        PaymentMethod.COD,
                         "idem-key",
                         List.of(),
                         List.of(new InventoryReservationLine(productId, 1)),
@@ -83,9 +89,9 @@ class CheckoutFromCartUseCaseTest {
         when(createOrderUseCase.execute(any())).thenReturn(new CreateOrderResult(
                 orderId,
                 paymentId,
-                OrderStatus.AWAITING_PAYMENT,
+                OrderStatus.PROCESSING,
                 PaymentStatus.PENDING,
-                PaymentMethod.PAYOS,
+                PaymentMethod.COD,
                 BigDecimal.valueOf(900_000),
                 BigDecimal.valueOf(1_000_000),
                 List.of()
@@ -95,17 +101,36 @@ class CheckoutFromCartUseCaseTest {
                 buyerId,
                 List.of(UUID.randomUUID()),
                 UUID.randomUUID(),
-                PaymentMethod.PAYOS,
+                PaymentMethod.COD,
                 null,
                 "idem-1"
         ));
 
-        assertThat(result.orderStatus()).isEqualTo(OrderStatus.AWAITING_PAYMENT);
-        assertThat(result.paymentMethod()).isEqualTo(PaymentMethod.PAYOS);
+        assertThat(result.orderStatus()).isEqualTo(OrderStatus.PROCESSING);
+        assertThat(result.paymentMethod()).isEqualTo(PaymentMethod.COD);
+    }
+
+    @Test
+    void shouldRejectPayosWhenCodOnlyEnabled() {
+        when(checkoutProperties.isCodOnlyEnabled()).thenReturn(true);
+
+        assertThatThrownBy(() -> useCase.execute(new CheckoutFromCartCommand(
+                buyerId,
+                List.of(UUID.randomUUID()),
+                UUID.randomUUID(),
+                PaymentMethod.PAYOS,
+                null,
+                "idem-1"
+        )))
+                .isInstanceOf(AppException.class)
+                .extracting(ex -> ((AppException) ex).getErrorCode())
+                .isEqualTo(ErrorCode.INVALID_PAYMENT_METHOD);
     }
 
     @Test
     void shouldRejectInvalidPaymentMethod() {
+        when(checkoutProperties.isCodOnlyEnabled()).thenReturn(true);
+
         assertThatThrownBy(() -> useCase.execute(new CheckoutFromCartCommand(
                 buyerId,
                 List.of(UUID.randomUUID()),

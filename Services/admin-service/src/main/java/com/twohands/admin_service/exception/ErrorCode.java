@@ -9,6 +9,7 @@ public enum ErrorCode {
 	UNAUTHORIZED("ADMIN-401", HttpStatus.UNAUTHORIZED, "Authentication required"),
 	FORBIDDEN("ADMIN-403", HttpStatus.FORBIDDEN, "Access denied"),
 	RESOURCE_NOT_FOUND("ADMIN-404", HttpStatus.NOT_FOUND, "Resource not found"),
+	SHIPMENT_STATUS_CONFLICT("ADMIN-409-SHIPMENT-STATUS", HttpStatus.CONFLICT, "Invalid shipment status transition"),
 	ENFORCEMENT_CONFLICT("ADMIN-409-ENFORCEMENT", HttpStatus.CONFLICT, "User already has an active enforcement of this type"),
 	SYSTEM_CONFIG_CONFLICT("ADMIN-409-CONFIG", HttpStatus.CONFLICT, "System config key already exists"),
 	SYSTEM_ANNOUNCEMENT_CONFLICT("ADMIN-409-ANNOUNCEMENT", HttpStatus.CONFLICT, "Only draft announcements can be published"),

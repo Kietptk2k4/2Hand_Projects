@@ -60,6 +60,11 @@ logging:
     org.springframework.jdbc: DEBUG
     
 commerce:
+  checkout:
+    cod-only-enabled: ${COMMERCE_CHECKOUT_COD_ONLY_ENABLED:true}
+  finance:
+    platform-commission-rate: ${COMMERCE_PLATFORM_COMMISSION_RATE:0.10}
+    min-payout-amount: ${COMMERCE_MIN_PAYOUT_AMOUNT:100000}
   object-storage:
     enabled: ${COMMERCE_MINIO_ENABLED:false}
     endpoint: ${COMMERCE_MINIO_ENDPOINT:http://localhost:9000}

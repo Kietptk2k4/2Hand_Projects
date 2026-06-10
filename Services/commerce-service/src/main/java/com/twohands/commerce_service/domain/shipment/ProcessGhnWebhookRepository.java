@@ -29,5 +29,5 @@ public interface ProcessGhnWebhookRepository {
             Instant occurredAt
     );
 
-    void updateOrderItemsForShipment(UUID shipmentId, String orderItemStatus, Instant occurredAt);
+    int updateOrderItemsForShipment(UUID shipmentId, String orderItemStatus, Instant occurredAt);
 }

@@ -179,7 +179,7 @@ public class ProcessGhnWebhookRepositoryAdapter implements ProcessGhnWebhookRepo
     }
 
     @Override
-    public void updateOrderItemsForShipment(UUID shipmentId, String orderItemStatus, Instant occurredAt) {
+    public int updateOrderItemsForShipment(UUID shipmentId, String orderItemStatus, Instant occurredAt) {
         String sql = """
                 UPDATE order_items
                 SET status = CAST(:itemStatus AS order_item_status),
@@ -187,7 +187,7 @@ public class ProcessGhnWebhookRepositoryAdapter implements ProcessGhnWebhookRepo
                 WHERE shipment_id = :shipmentId
                   AND status::text NOT IN ('COMPLETED', 'CANCELLED')
                 """;
-        jdbcTemplate.update(sql, new MapSqlParameterSource()
+        return jdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("shipmentId", shipmentId)
                 .addValue("itemStatus", orderItemStatus)
                 .addValue("now", Timestamp.from(occurredAt)));

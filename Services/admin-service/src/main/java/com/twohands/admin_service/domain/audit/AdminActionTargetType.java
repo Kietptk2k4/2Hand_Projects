@@ -14,6 +14,8 @@ public final class AdminActionTargetType {
 	public static final String PAYMENT = "PAYMENT";
 	public static final String SHIPMENT = "SHIPMENT";
 	public static final String WEBHOOK = "WEBHOOK";
+	public static final String PAYOUT_REQUEST = "PAYOUT_REQUEST";
+	public static final String PLATFORM_FINANCE = "PLATFORM_FINANCE";
 	public static final String SECURITY = "SECURITY";
 	public static final String ADMIN_SESSION = "ADMIN_SESSION";
 

@@ -11,7 +11,6 @@ import {
 import { ErrorState } from "../../../../../../shared/ui/PageState.jsx";
 import { ORDER_SUPPORT_PERMISSIONS } from "../../constants/orderSupportPermissions.js";
 import {
-  ORDER_SUPPORT_EMPTY_SHIPMENT_MESSAGE,
   ORDER_SUPPORT_MASKED_NOTICE,
   ORDER_SUPPORT_SHIPMENT_SUBTITLE,
   ORDER_SUPPORT_SHIPMENT_TITLE,
@@ -19,10 +18,11 @@ import {
 import { useOrderSupportPermissions } from "../../hooks/useOrderSupportPermissions.js";
 import { handleSupportLoadError } from "../../utils/orderSupportTabErrors.js";
 import { navigateToOrderDetail, navigateToWebhookLogs } from "../../utils/supportNavigation.js";
-import { SupportEmptyState } from "../SupportEmptyState.jsx";
+import { ShipmentSupportListPanel } from "../ShipmentSupportListPanel.jsx";
 import { SupportForbiddenState } from "../SupportForbiddenState.jsx";
 import { SupportStatusBadge } from "../SupportStatusBadge.jsx";
 import { SupportUnavailableState } from "../SupportUnavailableState.jsx";
+import { ShipmentStatusOverrideCard } from "../ShipmentStatusOverrideCard.jsx";
 
 function DetailRow({ label, value, mono = false }) {
   return (
@@ -35,9 +35,9 @@ function DetailRow({ label, value, mono = false }) {
   );
 }
 
-export function ShipmentSupportDetailTab({ shipmentId, onNavigate }) {
+function ShipmentDetailPanel({ shipmentId, onNavigate, onNotify }) {
   const { showSessionExpired } = useAuthSession();
-  const { canReadShipment } = useOrderSupportPermissions();
+  const { canReadShipment, canWriteShipment, canForceWriteShipment } = useOrderSupportPermissions();
   const [detail, setDetail] = useState(null);
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -76,64 +76,41 @@ export function ShipmentSupportDetailTab({ shipmentId, onNavigate }) {
   }, [shipmentId, fetchDetail]);
 
   if (!shipmentId) {
-    return (
-      <div>
-        <TabPanelHeader title={ORDER_SUPPORT_SHIPMENT_TITLE} subtitle={ORDER_SUPPORT_SHIPMENT_SUBTITLE} />
-        <SupportEmptyState message={ORDER_SUPPORT_EMPTY_SHIPMENT_MESSAGE} />
-      </div>
-    );
+    return null;
   }
 
   if (status === "loading" || status === "idle") {
-    return (
-      <div>
-        <TabPanelHeader title={ORDER_SUPPORT_SHIPMENT_TITLE} subtitle={ORDER_SUPPORT_SHIPMENT_SUBTITLE} />
-        <AccountSkeleton />
-      </div>
-    );
+    return <AccountSkeleton />;
   }
 
   if (status === "forbidden") {
-    return (
-      <div>
-        <TabPanelHeader title={ORDER_SUPPORT_SHIPMENT_TITLE} subtitle={ORDER_SUPPORT_SHIPMENT_SUBTITLE} />
-        <SupportForbiddenState message={errorMessage} />
-      </div>
-    );
+    return <SupportForbiddenState message={errorMessage} />;
   }
 
   if (status === "unavailable") {
-    return (
-      <div>
-        <TabPanelHeader title={ORDER_SUPPORT_SHIPMENT_TITLE} subtitle={ORDER_SUPPORT_SHIPMENT_SUBTITLE} />
-        <SupportUnavailableState message={errorMessage} />
-      </div>
-    );
+    return <SupportUnavailableState message={errorMessage} />;
   }
 
   if (status === "error") {
     return (
-      <div>
-        <TabPanelHeader title={ORDER_SUPPORT_SHIPMENT_TITLE} subtitle={ORDER_SUPPORT_SHIPMENT_SUBTITLE} />
-        <AccountCard className="border-error/30">
-          <ErrorState message={errorMessage} />
-          <button
-            type="button"
-            onClick={fetchDetail}
-            className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-          >
-            Thử lại
-          </button>
-        </AccountCard>
-      </div>
+      <AccountCard className="border-error/30">
+        <ErrorState message={errorMessage} />
+        <button
+          type="button"
+          onClick={fetchDetail}
+          className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+        >
+          Thử lại
+        </button>
+      </AccountCard>
     );
   }
 
   const address = detail.shipping_address;
 
   return (
-    <div className="space-y-6">
-      <TabPanelHeader title={ORDER_SUPPORT_SHIPMENT_TITLE} subtitle={ORDER_SUPPORT_SHIPMENT_SUBTITLE} />
+    <div className="space-y-6 border-t border-outline-variant pt-6">
+      <h3 className="text-base font-semibold text-on-surface">Chi tiết vận đơn</h3>
 
       {!canReadShipment ? (
         <SupportForbiddenState message="Tài khoản thiếu quyền SHIPMENT_SUPPORT_READ." />
@@ -187,6 +164,15 @@ export function ShipmentSupportDetailTab({ shipmentId, onNavigate }) {
           </button>
         ) : null}
       </AccountCard>
+
+      <ShipmentStatusOverrideCard
+        shipmentId={shipmentId}
+        detail={detail}
+        canWriteShipment={canWriteShipment}
+        canForceWriteShipment={canForceWriteShipment}
+        onSuccess={() => fetchDetail()}
+        onNotify={onNotify}
+      />
 
       {address ? (
         <AccountCard>
@@ -258,6 +244,34 @@ export function ShipmentSupportDetailTab({ shipmentId, onNavigate }) {
           </div>
         </AccountCard>
       ) : null}
+    </div>
+  );
+}
+
+export function ShipmentSupportDetailTab({
+  shipmentId,
+  shipmentListFilters,
+  onShipmentListFiltersChange,
+  onShipmentSelect,
+  onNavigate,
+  onNotify,
+}) {
+  return (
+    <div className="space-y-6">
+      <TabPanelHeader title={ORDER_SUPPORT_SHIPMENT_TITLE} subtitle={ORDER_SUPPORT_SHIPMENT_SUBTITLE} />
+
+      <ShipmentSupportListPanel
+        shipmentListFilters={shipmentListFilters}
+        onFiltersChange={onShipmentListFiltersChange}
+        selectedShipmentId={shipmentId}
+        onShipmentSelect={onShipmentSelect}
+      />
+
+      <ShipmentDetailPanel
+        shipmentId={shipmentId}
+        onNavigate={onNavigate}
+        onNotify={onNotify}
+      />
     </div>
   );
 }

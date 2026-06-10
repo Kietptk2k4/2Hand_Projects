@@ -34,17 +34,52 @@ function mapAxiosError(error) {
   };
 }
 
-async function request(method, url, { params } = {}) {
+async function request(method, url, { params, data } = {}) {
   try {
-    const response = await adminApiClient.request({ method, url, params });
+    const response = await adminApiClient.request({ method, url, params, data });
     return unwrapResponse(response);
   } catch (error) {
     throw mapAxiosError(error);
   }
 }
 
+export async function listOrdersForSupport({
+  status,
+  payment_method,
+  from,
+  to,
+  sort = "created_at",
+  page = 1,
+  size = 20,
+} = {}) {
+  const params = { page, size, sort };
+  if (status) params.status = status;
+  if (payment_method) params.payment_method = payment_method;
+  if (from) params.from = from;
+  if (to) params.to = to;
+  return request("get", "/admin/api/v1/support/orders", { params });
+}
+
 export async function getOrderSupportDetail(orderId) {
   return request("get", `/admin/api/v1/support/orders/${orderId}`);
+}
+
+export async function getPaymentsForSupport({
+  status,
+  payment_method,
+  order_id,
+  from,
+  to,
+  page = 1,
+  size = 20,
+} = {}) {
+  const params = { page, size };
+  if (status) params.status = status;
+  if (payment_method) params.payment_method = payment_method;
+  if (order_id) params.order_id = order_id;
+  if (from) params.from = from;
+  if (to) params.to = to;
+  return request("get", "/admin/api/v1/support/payments", { params });
 }
 
 export async function getPaymentSupportDetail(paymentId) {
@@ -53,6 +88,25 @@ export async function getPaymentSupportDetail(paymentId) {
 
 export async function getShipmentSupportDetail(shipmentId) {
   return request("get", `/admin/api/v1/support/shipments/${shipmentId}`);
+}
+
+export async function listShipmentSupport({
+  status,
+  carrier,
+  sort = "updated_at",
+  page = 1,
+  size = 20,
+} = {}) {
+  const params = { page, size, sort };
+  if (status) params.status = status;
+  if (carrier) params.carrier = carrier;
+  return request("get", "/admin/api/v1/support/shipments", { params });
+}
+
+export async function overrideShipmentStatus(shipmentId, { status, reason, force = false } = {}) {
+  return request("patch", `/admin/api/v1/support/shipments/${shipmentId}/status`, {
+    data: { status, reason, force: Boolean(force) },
+  });
 }
 
 export async function getWebhookLogsForSupport({

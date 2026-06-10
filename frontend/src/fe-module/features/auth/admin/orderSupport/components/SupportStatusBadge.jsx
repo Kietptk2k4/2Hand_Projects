@@ -1,8 +1,11 @@
 const STATUS_CLASS = {
   PAID: "bg-green-50 text-green-800",
-  PENDING: "bg-amber-50 text-amber-900",
+  PENDING: "bg-amber-50 text-amber-800",
+  PICKING_UP: "bg-indigo-50 text-indigo-800",
+  READY_TO_SHIP: "bg-sky-50 text-sky-800",
   FAILED: "bg-red-50 text-red-800",
   CANCELLED: "bg-gray-100 text-gray-700",
+  RETURNED: "bg-orange-50 text-orange-800",
   EXPIRED: "bg-gray-100 text-gray-700",
   SHIPPED: "bg-blue-50 text-blue-800",
   DELIVERED: "bg-green-50 text-green-800",

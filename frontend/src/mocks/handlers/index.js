@@ -37,6 +37,9 @@ import { commercePaymentHandlers } from "./commercePaymentHandlers";
 import { commerceSellerShopHandlers } from "./commerceSellerShopHandlers";
 import { commerceSellerProductHandlers } from "./commerceSellerProductHandlers";
 import { commerceSellerOrderHandlers } from "./commerceSellerOrderHandlers";
+import { commerceSellerFinanceHandlers } from "./commerceSellerFinanceHandlers";
+import { commerceAdminFinancePayoutHandlers } from "./commerceAdminFinancePayoutHandlers";
+import { commerceAdminFinancePlatformHandlers } from "./commerceAdminFinancePlatformHandlers";
 import { commerceSellerShipmentHandlers } from "./commerceSellerShipmentHandlers";
 import { commerceSellerShopReviewsHandlers } from "./commerceSellerShopReviewsHandlers";
 import { commerceAdminShopModerationHandlers } from "./commerceAdminShopModerationHandlers";
@@ -84,6 +87,9 @@ export const handlers = [
   ...commerceSellerShopHandlers,
   ...commerceSellerProductHandlers,
   ...commerceSellerOrderHandlers,
+  ...commerceSellerFinanceHandlers,
+  ...commerceAdminFinancePayoutHandlers,
+  ...commerceAdminFinancePlatformHandlers,
   ...commerceSellerShipmentHandlers,
   ...commerceSellerShopReviewsHandlers,
   ...commerceAdminShopModerationHandlers,

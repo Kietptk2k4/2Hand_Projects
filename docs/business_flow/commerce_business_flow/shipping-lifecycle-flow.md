@@ -16,6 +16,7 @@ In scope:
 - Cap nhat shipment status/history.
 - Cap nhat order item status tu shipment status.
 - Buyer/seller xem shipment.
+- Admin override shipment status (exception path) khi GHN webhook/sync khong kha dung.
 
 Out of scope:
 
@@ -28,7 +29,7 @@ Out of scope:
 
 - Buyer: xem shipment, tracking, estimated delivery date va shipping address snapshot.
 - Seller: tao shipment, nhap weight, theo doi shipment cua shop minh.
-- Admin: ho tro kiem tra shipment.
+- Admin: ho tro kiem tra shipment; override status noi bo (exception) voi audit.
 - System: xu ly GHN webhook, polling tracking neu can.
 - GHN: external shipping provider.
 
@@ -232,7 +233,68 @@ Processing steps:
 9. Insert outbox event.
 10. Mark webhook processed.
 
-## 10. GHN Status Mapping
+## 10. Admin Override Exception Path
+
+Luong ngoai le khi GHN webhook/sync khong cap nhat kip (sandbox, mat webhook, dieu tra support). Admin override **chi** doi trang thai noi bo Commerce — **khong** goi GHN API, **khong** dong bo nguoc len carrier.
+
+FR: `docs/feature_requirements/admin/FR_AdminOverrideShipmentStatus.md`
+
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant AdminAPI
+    participant CommerceAPI
+    participant ShipmentRepo
+    participant OrderItemRepo
+    participant HistoryRepo
+    participant AuditRepo
+    participant OutboxRepo
+
+    Admin->>AdminAPI: PATCH shipment status + reason
+    AdminAPI->>AdminAPI: Check SHIPMENT_SUPPORT_WRITE
+    AdminAPI->>CommerceAPI: Forward override request
+    CommerceAPI->>CommerceAPI: Validate transition policy
+    CommerceAPI->>ShipmentRepo: Lock and update shipment status
+    CommerceAPI->>HistoryRepo: Insert history raw_status=admin_override
+    CommerceAPI->>OrderItemRepo: Update attached order item statuses
+    CommerceAPI->>OutboxRepo: Insert shipment status event
+    CommerceAPI-->>AdminAPI: Override result
+    AdminAPI->>AuditRepo: Insert SHIPMENT_STATUS_OVERRIDE log
+    AdminAPI-->>Admin: Success response
+```
+
+Preconditions:
+
+- Admin co permission `SHIPMENT_SUPPORT_WRITE`.
+- `reason` bat buoc (audit), min 10 ky tu.
+- Shipment ton tai; transition hop le theo carrier policy (`GhnShipmentStatusPolicy` cho GHN).
+
+Rules:
+
+- **Khong** thay the webhook GHN — chi dung khi webhook/sync khong du hoac can unblock nghiep vu noi bo (vd. test COD/payout).
+- Ghi `shipment_status_history.raw_status = admin_override`.
+- Side effects giong webhook/sync: cap nhat `order_items`, outbox `COMMERCE_SHIPMENT_STATUS_CHANGED`.
+- `DELIVERED` khong auto-complete order — buyer confirm hoac job 7 ngay van ap dung.
+- Override `DELIVERED` voi COD **khong** chung minh GHN da thu tien.
+- Terminal status (`DELIVERED`, `CANCELLED`, `RETURNED`, `FAILED`) tu choi khi `force=false`.
+- `force=true` can `SHIPMENT_SUPPORT_FORCE_WRITE` (Super Admin).
+
+API:
+
+- Admin: `PATCH /admin/api/v1/support/shipments/{shipmentId}/status`
+- Commerce: `PATCH /commerce/api/v1/admin/support/shipments/{shipmentId}/status`
+
+Failure cases:
+
+- Missing permission -> 403.
+- Invalid transition -> 409.
+- Shipment not found -> 404.
+- Commerce unavailable -> 503.
+
+Manual QA checklist: `frontend/src/fe-module/features/auth/admin/orderSupport/CHECKLIST.md`  
+Admin support flow: `docs/business_flow/admin_business_flow/order-support-flow.md` (section 4)
+
+## 11. GHN Status Mapping
 
 Recommended mapping:
 
@@ -248,7 +310,7 @@ Recommended mapping:
 
 Raw status must be stored in `shipment_status_history.raw_status` for debugging.
 
-## 11. Buyer View Shipment Flow
+## 12. Buyer View Shipment Flow
 
 ```mermaid
 sequenceDiagram
@@ -280,7 +342,7 @@ Buyer response should include:
 - attached order items summary
 - shipping address snapshot
 
-## 12. Seller View Shipment Flow
+## 13. Seller View Shipment Flow
 
 Seller can view only shipments where `shipments.seller_id` belongs to their shop/user.
 
@@ -293,7 +355,7 @@ Seller response can include:
 
 Do not expose unrelated buyer payment provider details.
 
-## 13. Transaction And Consistency
+## 14. Transaction And Consistency
 
 Write operations needing transaction:
 
@@ -315,7 +377,7 @@ Concurrency:
 - Prevent two shipments for same order item using row lock or check `order_items.shipment_id IS NULL`.
 - Status transitions should be monotonic enough to avoid moving `DELIVERED` back to `SHIPPED` from delayed webhook.
 
-## 14. Events
+## 15. Events
 
 Recommended outbox events:
 
@@ -330,7 +392,7 @@ Event key examples:
 - `shipment:{shipment_id}:created`
 - `shipment:{shipment_id}:status:{new_status}`
 
-## 15. Acceptance Criteria
+## 16. Acceptance Criteria
 
 - Shipment cannot be created before order is `PROCESSING`.
 - Seller can create shipment only for own order items.
@@ -339,4 +401,6 @@ Event key examples:
 - Delivered shipment changes attached order items to `DELIVERED`, not `COMPLETED`.
 - Buyer confirm/auto-complete is required before order item becomes `COMPLETED`.
 - Tracking number is unique when present.
+- Admin override (exception path) updates internal shipment status with audit reason; does not call GHN.
+- Admin override writes `raw_status = admin_override` in shipment status history.
 

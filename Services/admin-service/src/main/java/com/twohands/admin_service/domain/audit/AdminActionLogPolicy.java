@@ -30,7 +30,8 @@ public final class AdminActionLogPolicy {
 			"SYSTEM_ANNOUNCEMENT_PUBLISH",
 			"SYSTEM_ANNOUNCEMENT_CANCEL",
 			"REFUND_EXECUTE",
-			"ADMIN_SESSION_REVOKE"
+			"ADMIN_SESSION_REVOKE",
+			"SHIPMENT_STATUS_OVERRIDE"
 	);
 
 	private AdminActionLogPolicy() {

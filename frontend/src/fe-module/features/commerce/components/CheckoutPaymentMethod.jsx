@@ -1,9 +1,14 @@
-import { PAYMENT_METHODS } from "../constants/checkoutConstants";
+import { CHECKOUT_COD_ONLY_ENABLED, PAYMENT_METHODS } from "../constants/checkoutConstants";
 
 export function CheckoutPaymentMethod({ paymentMethod, disabled = false, onSelect }) {
   return (
     <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
       <h2 className="mb-4 text-headline-sm font-semibold text-on-surface">Phương thức thanh toán</h2>
+      {CHECKOUT_COD_ONLY_ENABLED ? (
+        <p className="mb-4 text-body-sm text-on-surface-variant">
+          Hiện chỉ hỗ trợ thanh toán khi nhận hàng (COD). Bạn thanh toán trực tiếp cho shipper khi nhận hàng.
+        </p>
+      ) : null}
       <div className="flex flex-col gap-3">
         {PAYMENT_METHODS.map((option) => {
           const selected = paymentMethod === option.value;

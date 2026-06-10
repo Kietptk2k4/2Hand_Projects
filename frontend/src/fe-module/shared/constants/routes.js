@@ -18,6 +18,7 @@ export const APP_ROUTES = {
   commerceAdminProductRemoval: "/admin/commerce/products",
   socialFeed: "/social",
   socialSavedPosts: "/social/saved",
+  socialSuggestedUsers: "/social/suggestions",
   socialSearchPosts: "/social/search",
   socialHashtagPosts: "/social/tags/:hashtag",
   socialProfile: "/social/users/:userId",
@@ -46,5 +47,6 @@ export const APP_ROUTES = {
   commerceSellerShipments: "/commerce/seller/shipments",
   commerceSellerShipmentDetail: "/commerce/seller/shipments/:shipmentId",
   commerceSellerReviews: "/commerce/seller/reviews",
+  commerceSellerAnalytics: "/commerce/seller/analytics",
 };
 

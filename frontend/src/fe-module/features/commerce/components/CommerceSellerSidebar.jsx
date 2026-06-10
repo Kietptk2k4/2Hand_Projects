@@ -30,6 +30,12 @@ const SELLER_LINKS = [
     route: APP_ROUTES.commerceSellerReviews,
   },
   {
+    id: "seller-analytics",
+    icon: "analytics",
+    label: "Thống kê",
+    route: APP_ROUTES.commerceSellerAnalytics,
+  },
+  {
     id: "settings",
     icon: "settings",
     label: "Cài đặt",
@@ -67,6 +73,12 @@ function isSellerLinkActive(link, pathname) {
     return (
       pathname === APP_ROUTES.commerceSellerReviews ||
       pathname.startsWith(`${APP_ROUTES.commerceSellerReviews}/`)
+    );
+  }
+  if (link.id === "seller-analytics") {
+    return (
+      pathname === APP_ROUTES.commerceSellerAnalytics ||
+      pathname.startsWith(`${APP_ROUTES.commerceSellerAnalytics}/`)
     );
   }
   return pathname === link.route || pathname.startsWith(`${link.route}/`);

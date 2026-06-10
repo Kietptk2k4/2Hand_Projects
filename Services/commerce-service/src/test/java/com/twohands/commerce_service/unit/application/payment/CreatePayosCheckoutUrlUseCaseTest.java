@@ -2,6 +2,7 @@ package com.twohands.commerce_service.unit.application.payment;
 
 import com.twohands.commerce_service.application.payment.createpayoscheckouturl.CreatePayosCheckoutUrlCommand;
 import com.twohands.commerce_service.application.payment.createpayoscheckouturl.CreatePayosCheckoutUrlUseCase;
+import com.twohands.commerce_service.config.CommerceCheckoutProperties;
 import com.twohands.commerce_service.domain.order.OrderStatus;
 import com.twohands.commerce_service.domain.payment.CreatePayosCheckoutUrlRepository;
 import com.twohands.commerce_service.domain.payment.CreatePayosCheckoutUrlResult;
@@ -14,7 +15,6 @@ import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -29,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,7 +43,9 @@ class CreatePayosCheckoutUrlUseCaseTest {
     @Mock
     private PayosCheckoutUrlGateway payosCheckoutUrlGateway;
 
-    @InjectMocks
+    @Mock
+    private CommerceCheckoutProperties checkoutProperties;
+
     private CreatePayosCheckoutUrlUseCase useCase;
 
     private final UUID paymentId = UUID.randomUUID();
@@ -51,13 +54,19 @@ class CreatePayosCheckoutUrlUseCaseTest {
     private final Instant now = Instant.parse("2026-05-21T10:00:00Z");
     private final Clock clock = Clock.fixed(now, ZoneOffset.UTC);
 
-    @Test
-    void shouldReuseExistingNonExpiredCheckoutUrl() {
-        useCase = new CreatePayosCheckoutUrlUseCase(
+    private CreatePayosCheckoutUrlUseCase buildUseCase(boolean codOnlyEnabled) {
+        lenient().when(checkoutProperties.isCodOnlyEnabled()).thenReturn(codOnlyEnabled);
+        return new CreatePayosCheckoutUrlUseCase(
                 createPayosCheckoutUrlRepository,
                 payosCheckoutUrlGateway,
-                clock
+                clock,
+                checkoutProperties
         );
+    }
+
+    @Test
+    void shouldReuseExistingNonExpiredCheckoutUrl() {
+        useCase = buildUseCase(false);
         when(createPayosCheckoutUrlRepository.findPaymentForBuyer(paymentId, buyerId))
                 .thenReturn(Optional.of(pendingSnapshot(
                         "12345",
@@ -75,11 +84,7 @@ class CreatePayosCheckoutUrlUseCaseTest {
 
     @Test
     void shouldCreateNewCheckoutUrlWhenExistingExpired() {
-        useCase = new CreatePayosCheckoutUrlUseCase(
-                createPayosCheckoutUrlRepository,
-                payosCheckoutUrlGateway,
-                clock
-        );
+        useCase = buildUseCase(false);
         when(createPayosCheckoutUrlRepository.findPaymentForBuyer(paymentId, buyerId))
                 .thenReturn(Optional.of(pendingSnapshot(
                         "12345",
@@ -113,11 +118,7 @@ class CreatePayosCheckoutUrlUseCaseTest {
 
     @Test
     void shouldRejectWhenPaymentNotFound() {
-        useCase = new CreatePayosCheckoutUrlUseCase(
-                createPayosCheckoutUrlRepository,
-                payosCheckoutUrlGateway,
-                clock
-        );
+        useCase = buildUseCase(false);
         when(createPayosCheckoutUrlRepository.findPaymentForBuyer(paymentId, buyerId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> useCase.execute(new CreatePayosCheckoutUrlCommand(paymentId, buyerId)))
@@ -128,11 +129,7 @@ class CreatePayosCheckoutUrlUseCaseTest {
 
     @Test
     void shouldRejectWhenPaymentNotPending() {
-        useCase = new CreatePayosCheckoutUrlUseCase(
-                createPayosCheckoutUrlRepository,
-                payosCheckoutUrlGateway,
-                clock
-        );
+        useCase = buildUseCase(false);
         PaymentPayosSnapshot paid = new PaymentPayosSnapshot(
                 paymentId,
                 orderId,
@@ -156,12 +153,24 @@ class CreatePayosCheckoutUrlUseCaseTest {
     }
 
     @Test
+    void shouldRejectWhenCodOnlyEnabled() {
+        useCase = buildUseCase(true);
+        when(createPayosCheckoutUrlRepository.findPaymentForBuyer(paymentId, buyerId))
+                .thenReturn(Optional.of(pendingSnapshot(
+                        "12345",
+                        "https://pay.payos.vn/web/existing",
+                        now.plusSeconds(600)
+                )));
+
+        assertThatThrownBy(() -> useCase.execute(new CreatePayosCheckoutUrlCommand(paymentId, buyerId)))
+                .isInstanceOf(AppException.class)
+                .extracting(ex -> ((AppException) ex).getErrorCode())
+                .isEqualTo(ErrorCode.INVALID_PAYMENT_METHOD);
+    }
+
+    @Test
     void shouldRejectWhenOrderNotAwaitingPayment() {
-        useCase = new CreatePayosCheckoutUrlUseCase(
-                createPayosCheckoutUrlRepository,
-                payosCheckoutUrlGateway,
-                clock
-        );
+        useCase = buildUseCase(false);
         PaymentPayosSnapshot processing = new PaymentPayosSnapshot(
                 paymentId,
                 orderId,

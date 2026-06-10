@@ -1,7 +1,9 @@
 package com.twohands.admin_service.infrastructure.integration;
 
+import com.twohands.admin_service.domain.common.PagedResult;
 import com.twohands.admin_service.domain.integration.CommerceOrderSupportGateway;
 import com.twohands.admin_service.domain.support.OrderSupportDetail;
+import com.twohands.admin_service.domain.support.OrderSupportListEntry;
 import com.twohands.admin_service.exception.AppException;
 import com.twohands.admin_service.exception.ErrorCode;
 import org.slf4j.Logger;
@@ -11,6 +13,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
@@ -34,6 +37,68 @@ public class HttpCommerceOrderSupportGateway implements CommerceOrderSupportGate
 	@Override
 	public boolean isEnabled() {
 		return true;
+	}
+
+	@Override
+	public PagedResult<OrderSupportListEntry> searchOrders(
+			String status,
+			String paymentMethod,
+			String from,
+			String to,
+			String sort,
+			Integer page,
+			Integer size,
+			String bearerToken
+	) {
+		try {
+			CommerceOrdersSupportApiResponse body = restClient.get()
+					.uri(uriBuilder -> {
+						var builder = uriBuilder.path("/commerce/api/v1/admin/support/orders");
+						if (StringUtils.hasText(status)) {
+							builder.queryParam("status", status);
+						}
+						if (StringUtils.hasText(paymentMethod)) {
+							builder.queryParam("payment_method", paymentMethod);
+						}
+						if (StringUtils.hasText(from)) {
+							builder.queryParam("from", from);
+						}
+						if (StringUtils.hasText(to)) {
+							builder.queryParam("to", to);
+						}
+						if (StringUtils.hasText(sort)) {
+							builder.queryParam("sort", sort);
+						}
+						if (page != null) {
+							builder.queryParam("page", page);
+						}
+						if (size != null) {
+							builder.queryParam("size", size);
+						}
+						return builder.build();
+					})
+					.header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken)
+					.accept(MediaType.APPLICATION_JSON)
+					.retrieve()
+					.body(CommerceOrdersSupportApiResponse.class);
+
+			if (body == null || !body.success() || body.data() == null) {
+				throw new AppException(ErrorCode.SERVICE_UNAVAILABLE, "Commerce Service returned an invalid response");
+			}
+			return CommerceOrderSupportListMapper.toDomain(body.data());
+		} catch (RestClientResponseException ex) {
+			if (ex.getStatusCode().value() == 400) {
+				throw new AppException(ErrorCode.VALIDATION_ERROR, ErrorCode.VALIDATION_ERROR.defaultMessage());
+			}
+			if (ex.getStatusCode().value() == 403) {
+				throw new AppException(ErrorCode.FORBIDDEN, ErrorCode.FORBIDDEN.defaultMessage());
+			}
+			log.warn("Commerce order support list failed: status={}, message={}", ex.getStatusCode(), ex.getMessage());
+			throw new AppException(ErrorCode.SERVICE_UNAVAILABLE, "Commerce Service is unavailable");
+		} catch (RestClientException ex) {
+			log.warn("Commerce order support list failed: {}", ex.getMessage());
+			throw new AppException(ErrorCode.SERVICE_UNAVAILABLE, "Commerce Service is unavailable");
+		}
 	}
 
 	@Override
@@ -75,6 +140,12 @@ public class HttpCommerceOrderSupportGateway implements CommerceOrderSupportGate
 	private record CommerceOrderSupportApiResponse(
 			boolean success,
 			CommerceOrderSupportDetailPayload data
+	) {
+	}
+
+	private record CommerceOrdersSupportApiResponse(
+			boolean success,
+			CommerceOrdersSupportPayload data
 	) {
 	}
 }

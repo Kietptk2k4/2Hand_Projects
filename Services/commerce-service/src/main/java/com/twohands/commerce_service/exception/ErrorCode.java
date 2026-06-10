@@ -72,7 +72,12 @@ public enum ErrorCode {
     INVALID_REVIEW_MODERATION("COMMERCE-400-REVIEW-MODERATION", HttpStatus.BAD_REQUEST, "Invalid review moderation action"),
     SHOP_NOT_FOUND("COMMERCE-404-SHOP", HttpStatus.NOT_FOUND, "Shop not found"),
     INVALID_SHOP_MODERATION("COMMERCE-400-SHOP-MODERATION", HttpStatus.BAD_REQUEST, "Invalid shop moderation action"),
-    INVALID_SHOP_STATUS("COMMERCE-409-SHOP-STATUS", HttpStatus.CONFLICT, "Invalid shop status transition");
+    INVALID_SHOP_STATUS("COMMERCE-409-SHOP-STATUS", HttpStatus.CONFLICT, "Invalid shop status transition"),
+    PAYOUT_ACCOUNT_NOT_FOUND("COMMERCE-404-PAYOUT-ACCOUNT", HttpStatus.NOT_FOUND, "Payout account not found"),
+    PAYOUT_REQUEST_NOT_FOUND("COMMERCE-404-PAYOUT-REQUEST", HttpStatus.NOT_FOUND, "Payout request not found"),
+    INSUFFICIENT_PAYOUT_BALANCE("COMMERCE-409-PAYOUT-BALANCE", HttpStatus.CONFLICT, "Insufficient available balance for payout"),
+    PAYOUT_AMOUNT_BELOW_MINIMUM("COMMERCE-400-PAYOUT-MIN", HttpStatus.BAD_REQUEST, "Payout amount is below minimum"),
+    INVALID_PAYOUT_REQUEST_STATE("COMMERCE-409-PAYOUT-STATE", HttpStatus.CONFLICT, "Payout request status does not allow this action");
 
     private final String code;
     private final HttpStatus status;

@@ -2,6 +2,7 @@ package com.twohands.commerce_service.infrastructure.persistence.order;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.commerce_service.application.finance.recordsellerledgercredit.RecordSellerLedgerCreditService;
 import com.twohands.commerce_service.application.order.common.PaymentPaidOutboxService;
 import com.twohands.commerce_service.domain.order.CompleteOrderOutcome;
 import com.twohands.commerce_service.domain.order.CompleteOrderResult;
@@ -27,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +48,7 @@ public class DeliveredOrderCompletionRepositoryAdapter
     private final OutboxEventRepository outboxEventRepository;
     private final PaymentPaidOutboxService paymentPaidOutboxService;
     private final OrderCompletionRepository orderCompletionRepository;
+    private final RecordSellerLedgerCreditService recordSellerLedgerCreditService;
     private final ObjectMapper objectMapper;
 
     public DeliveredOrderCompletionRepositoryAdapter(
@@ -53,12 +56,14 @@ public class DeliveredOrderCompletionRepositoryAdapter
             OutboxEventRepository outboxEventRepository,
             PaymentPaidOutboxService paymentPaidOutboxService,
             OrderCompletionRepository orderCompletionRepository,
+            RecordSellerLedgerCreditService recordSellerLedgerCreditService,
             ObjectMapper objectMapper
     ) {
         this.jdbcTemplate = jdbcTemplate;
         this.outboxEventRepository = outboxEventRepository;
         this.paymentPaidOutboxService = paymentPaidOutboxService;
         this.orderCompletionRepository = orderCompletionRepository;
+        this.recordSellerLedgerCreditService = recordSellerLedgerCreditService;
         this.objectMapper = objectMapper;
     }
 
@@ -165,12 +170,14 @@ public class DeliveredOrderCompletionRepositoryAdapter
             return DeliveredOrderCompletionResult.noOp();
         }
 
-        int itemsCompleted = 0;
+        List<UUID> completedItemIds = new ArrayList<>();
         for (UUID orderItemId : orderItemIds) {
-            itemsCompleted += completeOrderItem(orderItemId, order.id, now);
+            if (completeOrderItem(orderItemId, order.id, now) > 0) {
+                completedItemIds.add(orderItemId);
+            }
         }
 
-        if (itemsCompleted == 0) {
+        if (completedItemIds.isEmpty()) {
             return new DeliveredOrderCompletionResult(0, false, false, false);
         }
 
@@ -183,6 +190,8 @@ public class DeliveredOrderCompletionRepositoryAdapter
             }
         }
 
+        recordSellerLedgerCreditService.recordCreditsForCompletedOrderItems(completedItemIds, now);
+
         CompleteOrderResult completion = orderCompletionRepository.completeIfEligible(
                 order.id,
                 context.reason(),
@@ -193,7 +202,7 @@ public class DeliveredOrderCompletionRepositoryAdapter
         boolean orderCompleted = completion.outcome() == CompleteOrderOutcome.COMPLETED;
 
         return new DeliveredOrderCompletionResult(
-                itemsCompleted,
+                completedItemIds.size(),
                 orderCompleted,
                 paymentMarkedPaid,
                 completion.outcome() == CompleteOrderOutcome.ALREADY_COMPLETED

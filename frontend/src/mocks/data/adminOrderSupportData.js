@@ -2,6 +2,62 @@ export const MOCK_ORDER_ID = "a1111111-1111-4111-8111-111111111101";
 export const MOCK_PAYMENT_ID = "a2222222-2222-4222-8222-222222222202";
 export const MOCK_SHIPMENT_ID = "a3333333-3333-4333-8333-333333333303";
 
+const MOCK_ORDERS_LIST = [
+  {
+    order_id: MOCK_ORDER_ID,
+    buyer_id: "b8b9bf76-2ab2-4a01-8f16-fd0f5f9f95d1",
+    order_status: "PROCESSING",
+    payment_status: "PAID",
+    payment_method: "PAYOS",
+    final_amount: 350000,
+    created_at: "2026-05-19T10:00:00Z",
+    updated_at: "2026-05-20T08:00:00Z",
+  },
+  {
+    order_id: "b1111111-1111-4111-8111-111111111102",
+    buyer_id: "b8b9bf76-2ab2-4a01-8f16-fd0f5f9f95d1",
+    order_status: "AWAITING_PAYMENT",
+    payment_status: "PENDING",
+    payment_method: "COD",
+    final_amount: 420000,
+    created_at: "2026-06-09T14:30:00Z",
+    updated_at: "2026-06-09T14:30:00Z",
+  },
+];
+
+export function getMockOrdersForSupport({
+  status,
+  payment_method,
+  sort = "created_at",
+  page = 1,
+  size = 20,
+} = {}) {
+  let items = [...MOCK_ORDERS_LIST];
+
+  if (status) {
+    items = items.filter((order) => order.order_status === status.toUpperCase());
+  }
+  if (payment_method) {
+    items = items.filter((order) => order.payment_method === payment_method.toUpperCase());
+  }
+
+  const sortKey = sort === "updated_at" ? "updated_at" : "created_at";
+  items.sort((a, b) => new Date(b[sortKey]).getTime() - new Date(a[sortKey]).getTime());
+
+  const totalElements = items.length;
+  const totalPages = Math.max(1, Math.ceil(totalElements / size));
+  const safePage = Math.min(Math.max(page, 1), totalPages);
+  const start = (safePage - 1) * size;
+
+  return {
+    page: safePage,
+    size,
+    total_elements: totalElements,
+    total_pages: totalPages,
+    orders: items.slice(start, start + size),
+  };
+}
+
 export function getMockOrderSupportDetail(orderId) {
   if (orderId !== MOCK_ORDER_ID) return null;
 
@@ -96,6 +152,66 @@ export function getMockOrderSupportDetail(orderId) {
   };
 }
 
+const MOCK_PAYMENT_COD_ID = "b2222222-2222-4222-8222-222222222203";
+
+const MOCK_PAYMENTS_LIST = [
+  {
+    payment_id: MOCK_PAYMENT_COD_ID,
+    order_id: "b1111111-1111-4111-8111-111111111102",
+    payment_method: "COD",
+    amount: 420000,
+    currency: "VND",
+    status: "PENDING",
+    paid_at: null,
+    created_at: "2026-06-09T14:30:00Z",
+  },
+  {
+    payment_id: MOCK_PAYMENT_ID,
+    order_id: MOCK_ORDER_ID,
+    payment_method: "PAYOS",
+    amount: 350000,
+    currency: "VND",
+    status: "PAID",
+    paid_at: "2026-05-20T08:00:00Z",
+    created_at: "2026-05-19T10:00:00Z",
+  },
+];
+
+export function getMockPaymentsForSupport({
+  status,
+  payment_method,
+  order_id,
+  page = 1,
+  size = 20,
+} = {}) {
+  let items = [...MOCK_PAYMENTS_LIST].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  );
+
+  if (status) {
+    items = items.filter((payment) => payment.status === status.toUpperCase());
+  }
+  if (payment_method) {
+    items = items.filter((payment) => payment.payment_method === payment_method.toUpperCase());
+  }
+  if (order_id) {
+    items = items.filter((payment) => payment.order_id === order_id);
+  }
+
+  const totalElements = items.length;
+  const totalPages = Math.max(1, Math.ceil(totalElements / size));
+  const safePage = Math.min(Math.max(page, 1), totalPages);
+  const start = (safePage - 1) * size;
+
+  return {
+    page: safePage,
+    size,
+    total_elements: totalElements,
+    total_pages: totalPages,
+    payments: items.slice(start, start + size),
+  };
+}
+
 export function getMockPaymentSupportDetail(paymentId) {
   if (paymentId !== MOCK_PAYMENT_ID) return null;
 
@@ -134,6 +250,64 @@ export function getMockPaymentSupportDetail(paymentId) {
         received_at: "2026-05-20T08:00:01Z",
       },
     ],
+  };
+}
+
+const MOCK_SHIPMENTS_LIST = [
+  {
+    shipment_id: MOCK_SHIPMENT_ID,
+    order_id: MOCK_ORDER_ID,
+    seller_id: "e6666666-6666-4666-8666-666666666606",
+    carrier: "GHN",
+    internal_status: "SHIPPED",
+    tracking_number: "TRACK-9",
+    ghn_order_code: "GHN-123",
+    shipped_at: "2026-05-20T08:00:00Z",
+    created_at: "2026-05-19T10:00:00Z",
+    updated_at: "2026-05-20T08:00:00Z",
+  },
+  {
+    shipment_id: "a4444444-4444-4444-8444-444444444404",
+    order_id: "b1111111-1111-4111-8111-111111111102",
+    seller_id: "e6666666-6666-4666-8666-666666666606",
+    carrier: "MANUAL",
+    internal_status: "PENDING",
+    tracking_number: null,
+    ghn_order_code: null,
+    shipped_at: null,
+    created_at: "2026-06-08T12:00:00Z",
+    updated_at: "2026-06-08T12:00:00Z",
+  },
+];
+
+export function getMockShipmentSupportList({ status, carrier, sort = "updated_at", page = 1, size = 20 } = {}) {
+  let items = [...MOCK_SHIPMENTS_LIST];
+
+  if (status) {
+    items = items.filter((row) => row.internal_status === status.toUpperCase());
+  }
+  if (carrier) {
+    items = items.filter((row) => row.carrier === carrier.toUpperCase());
+  }
+
+  const sortKey = sort || "updated_at";
+  items.sort((a, b) => {
+    const left = a[sortKey] ? new Date(a[sortKey]).getTime() : 0;
+    const right = b[sortKey] ? new Date(b[sortKey]).getTime() : 0;
+    return right - left;
+  });
+
+  const totalElements = items.length;
+  const totalPages = Math.max(1, Math.ceil(totalElements / size));
+  const safePage = Math.min(Math.max(page, 1), totalPages);
+  const start = (safePage - 1) * size;
+
+  return {
+    page: safePage,
+    size,
+    total_elements: totalElements,
+    total_pages: totalPages,
+    shipments: items.slice(start, start + size),
   };
 }
 

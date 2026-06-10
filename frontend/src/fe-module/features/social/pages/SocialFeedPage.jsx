@@ -144,7 +144,7 @@ export function SocialFeedPage() {
   const emptyMessage =
     activeTab === FEED_TABS.FOLLOWING
       ? "Bạn chưa theo dõi ai hoặc chưa có bài viết từ người bạn theo dõi."
-      : "Chưa có bài viết công khai nào trên feed toàn cầu.";
+      : "Chưa có bài viết công khai nào trên feed đề xuất.";
 
   return (
     <>

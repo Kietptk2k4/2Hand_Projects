@@ -1,5 +1,6 @@
 package com.twohands.commerce_service.application.payment.createpayoscheckouturl;
 
+import com.twohands.commerce_service.config.CommerceCheckoutProperties;
 import com.twohands.commerce_service.domain.order.OrderStatus;
 import com.twohands.commerce_service.domain.payment.CreatePayosCheckoutUrlRepository;
 import com.twohands.commerce_service.domain.payment.CreatePayosCheckoutUrlResult;
@@ -25,15 +26,18 @@ public class CreatePayosCheckoutUrlUseCase {
     private final CreatePayosCheckoutUrlRepository createPayosCheckoutUrlRepository;
     private final PayosCheckoutUrlGateway payosCheckoutUrlGateway;
     private final Clock clock;
+    private final CommerceCheckoutProperties checkoutProperties;
 
     public CreatePayosCheckoutUrlUseCase(
             CreatePayosCheckoutUrlRepository createPayosCheckoutUrlRepository,
             PayosCheckoutUrlGateway payosCheckoutUrlGateway,
-            Clock clock
+            Clock clock,
+            CommerceCheckoutProperties checkoutProperties
     ) {
         this.createPayosCheckoutUrlRepository = createPayosCheckoutUrlRepository;
         this.payosCheckoutUrlGateway = payosCheckoutUrlGateway;
         this.clock = clock;
+        this.checkoutProperties = checkoutProperties;
     }
 
     public CreatePayosCheckoutUrlResult execute(CreatePayosCheckoutUrlCommand command) {
@@ -77,6 +81,12 @@ public class CreatePayosCheckoutUrlUseCase {
     }
 
     private void validatePayosCheckoutEligible(PaymentPayosSnapshot payment) {
+        if (checkoutProperties.isCodOnlyEnabled()) {
+            throw new AppException(
+                    ErrorCode.INVALID_PAYMENT_METHOD,
+                    "PayOS checkout is disabled while cod-only mode is enabled"
+            );
+        }
         if (payment.paymentMethod() != PaymentMethod.PAYOS) {
             throw new AppException(
                     ErrorCode.INVALID_PAYMENT_METHOD,

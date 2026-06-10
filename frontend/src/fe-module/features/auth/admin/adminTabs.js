@@ -29,4 +29,9 @@ export const ADMIN_TOP_TABS = [
     labelVn: "Hỗ trợ đơn hàng",
     labelEn: "Order Support",
   },
+  {
+    id: "commerceFinance",
+    labelVn: "Tài chính thương mại",
+    labelEn: "Commerce Finance",
+  },
 ];

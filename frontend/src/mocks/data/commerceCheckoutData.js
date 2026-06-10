@@ -1,3 +1,4 @@
+import { CHECKOUT_COD_ONLY_ENABLED } from "../../fe-module/features/commerce/constants/checkoutConstants";
 import { findAddressForUser } from "./commerceAddressData";
 import { registerOrderFromCheckout } from "./commerceOrderListData";
 import { registerPaymentFromCheckout } from "./commercePaymentData";
@@ -166,6 +167,10 @@ export function processCheckout(userId, body) {
   } = body;
 
   if (!["COD", "PAYOS"].includes(paymentMethod)) {
+    return { error: "COMMERCE-400-PAYMENT-METHOD", status: 400 };
+  }
+
+  if (CHECKOUT_COD_ONLY_ENABLED && paymentMethod === "PAYOS") {
     return { error: "COMMERCE-400-PAYMENT-METHOD", status: 400 };
   }
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { getPaymentSupportDetail } from "../../api/orderSupportApi.js";
+import { getPaymentSupportDetail, getPaymentsForSupport } from "../../api/orderSupportApi.js";
 import { useAuthSession } from "../../../../hooks/useAuthSession.jsx";
 import { formatDateTime } from "../../../../security/utils/formatDateTime.js";
 import { formatVndPrice } from "../../../../../social/utils/formatPrice.js";
@@ -11,17 +11,19 @@ import {
 import { ErrorState } from "../../../../../../shared/ui/PageState.jsx";
 import { ORDER_SUPPORT_PERMISSIONS } from "../../constants/orderSupportPermissions.js";
 import {
-  ORDER_SUPPORT_EMPTY_PAYMENT_MESSAGE,
   ORDER_SUPPORT_PAYMENT_SUBTITLE,
   ORDER_SUPPORT_PAYMENT_TITLE,
 } from "../../constants/orderSupportUiStrings.js";
 import { useOrderSupportPermissions } from "../../hooks/useOrderSupportPermissions.js";
 import { handleSupportLoadError } from "../../utils/orderSupportTabErrors.js";
-import { navigateToOrderDetail, navigateToWebhookLogs } from "../../utils/supportNavigation.js";
-import { SupportEmptyState } from "../SupportEmptyState.jsx";
+import { navigateToOrderDetail, navigateToPaymentDetail, navigateToWebhookLogs } from "../../utils/supportNavigation.js";
 import { SupportForbiddenState } from "../SupportForbiddenState.jsx";
 import { SupportStatusBadge } from "../SupportStatusBadge.jsx";
 import { SupportUnavailableState } from "../SupportUnavailableState.jsx";
+
+const PAYMENT_STATUS_OPTIONS = ["", "PENDING", "PAID", "FAILED", "CANCELLED", "EXPIRED"];
+const PAYMENT_METHOD_OPTIONS = ["", "COD", "PAYOS"];
+const PAGE_SIZE = 20;
 
 function DetailRow({ label, value, mono = false }) {
   return (
@@ -34,7 +36,7 @@ function DetailRow({ label, value, mono = false }) {
   );
 }
 
-export function PaymentSupportDetailTab({ paymentId, orderId, onNavigate }) {
+function PaymentSupportDetailPanel({ paymentId, orderId, onNavigate }) {
   const { showSessionExpired } = useAuthSession();
   const { canReadPayment } = useOrderSupportPermissions();
   const [detail, setDetail] = useState(null);
@@ -74,57 +76,32 @@ export function PaymentSupportDetailTab({ paymentId, orderId, onNavigate }) {
     fetchDetail();
   }, [paymentId, fetchDetail]);
 
-  if (!paymentId) {
-    return (
-      <div>
-        <TabPanelHeader title={ORDER_SUPPORT_PAYMENT_TITLE} subtitle={ORDER_SUPPORT_PAYMENT_SUBTITLE} />
-        <SupportEmptyState message={ORDER_SUPPORT_EMPTY_PAYMENT_MESSAGE} />
-      </div>
-    );
-  }
+  if (!paymentId) return null;
 
   if (status === "loading" || status === "idle") {
-    return (
-      <div>
-        <TabPanelHeader title={ORDER_SUPPORT_PAYMENT_TITLE} subtitle={ORDER_SUPPORT_PAYMENT_SUBTITLE} />
-        <AccountSkeleton />
-      </div>
-    );
+    return <AccountSkeleton />;
   }
 
   if (status === "forbidden") {
-    return (
-      <div>
-        <TabPanelHeader title={ORDER_SUPPORT_PAYMENT_TITLE} subtitle={ORDER_SUPPORT_PAYMENT_SUBTITLE} />
-        <SupportForbiddenState message={errorMessage} />
-      </div>
-    );
+    return <SupportForbiddenState message={errorMessage} />;
   }
 
   if (status === "unavailable") {
-    return (
-      <div>
-        <TabPanelHeader title={ORDER_SUPPORT_PAYMENT_TITLE} subtitle={ORDER_SUPPORT_PAYMENT_SUBTITLE} />
-        <SupportUnavailableState message={errorMessage} />
-      </div>
-    );
+    return <SupportUnavailableState message={errorMessage} />;
   }
 
   if (status === "error") {
     return (
-      <div>
-        <TabPanelHeader title={ORDER_SUPPORT_PAYMENT_TITLE} subtitle={ORDER_SUPPORT_PAYMENT_SUBTITLE} />
-        <AccountCard className="border-error/30">
-          <ErrorState message={errorMessage} />
-          <button
-            type="button"
-            onClick={fetchDetail}
-            className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-          >
-            Thử lại
-          </button>
-        </AccountCard>
-      </div>
+      <AccountCard className="border-error/30">
+        <ErrorState message={errorMessage} />
+        <button
+          type="button"
+          onClick={fetchDetail}
+          className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+        >
+          Thử lại
+        </button>
+      </AccountCard>
     );
   }
 
@@ -132,8 +109,6 @@ export function PaymentSupportDetailTab({ paymentId, orderId, onNavigate }) {
 
   return (
     <div className="space-y-6">
-      <TabPanelHeader title={ORDER_SUPPORT_PAYMENT_TITLE} subtitle={ORDER_SUPPORT_PAYMENT_SUBTITLE} />
-
       {!canReadPayment ? (
         <SupportForbiddenState message="Tài khoản thiếu quyền PAYMENT_SUPPORT_READ." />
       ) : null}
@@ -246,6 +221,298 @@ export function PaymentSupportDetailTab({ paymentId, orderId, onNavigate }) {
           <p className="text-sm text-on-surface-variant">Chưa có webhook event.</p>
         )}
       </AccountCard>
+    </div>
+  );
+}
+
+export function PaymentSupportDetailTab({
+  paymentId,
+  orderId,
+  paymentFilters,
+  onNavigate,
+  onPaymentFiltersChange,
+}) {
+  const { showSessionExpired } = useAuthSession();
+  const { canReadPayment } = useOrderSupportPermissions();
+  const [listResult, setListResult] = useState(null);
+  const [listStatus, setListStatus] = useState("idle");
+  const [listErrorMessage, setListErrorMessage] = useState("");
+
+  const [draftFilters, setDraftFilters] = useState({
+    status: paymentFilters?.status || "",
+    payment_method: paymentFilters?.payment_method || "",
+    order_id: paymentFilters?.order_id || "",
+    from: paymentFilters?.from || "",
+    to: paymentFilters?.to || "",
+  });
+
+  useEffect(() => {
+    setDraftFilters({
+      status: paymentFilters?.status || "",
+      payment_method: paymentFilters?.payment_method || "",
+      order_id: paymentFilters?.order_id || "",
+      from: paymentFilters?.from || "",
+      to: paymentFilters?.to || "",
+    });
+  }, [paymentFilters]);
+
+  const fetchPayments = useCallback(async () => {
+    setListStatus("loading");
+    setListErrorMessage("");
+
+    try {
+      const data = await getPaymentsForSupport({
+        status: paymentFilters?.status || undefined,
+        payment_method: paymentFilters?.payment_method || undefined,
+        order_id: paymentFilters?.order_id || undefined,
+        from: paymentFilters?.from || undefined,
+        to: paymentFilters?.to || undefined,
+        page: Number(paymentFilters?.page) || 1,
+        size: Number(paymentFilters?.size) || PAGE_SIZE,
+      });
+      setListResult(data);
+      setListStatus("ready");
+    } catch (error) {
+      handleSupportLoadError(error, {
+        showSessionExpired,
+        setStatus: setListStatus,
+        setErrorMessage: setListErrorMessage,
+        permissionCode: ORDER_SUPPORT_PERMISSIONS.READ_PAYMENT,
+        actionLabel: "xem danh sách thanh toán",
+        fallbackMessage: "Không tải được danh sách thanh toán.",
+      });
+    }
+  }, [paymentFilters, showSessionExpired]);
+
+  useEffect(() => {
+    fetchPayments();
+  }, [fetchPayments]);
+
+  const handleApplyFilters = (event) => {
+    event.preventDefault();
+    onPaymentFiltersChange?.({
+      ...draftFilters,
+      page: 1,
+      size: PAGE_SIZE,
+    });
+  };
+
+  const handleClearFilters = () => {
+    const cleared = {
+      status: "",
+      payment_method: "",
+      order_id: "",
+      from: "",
+      to: "",
+      page: 1,
+      size: PAGE_SIZE,
+    };
+    setDraftFilters(cleared);
+    onPaymentFiltersChange?.(cleared);
+  };
+
+  const currentPage = Number(paymentFilters?.page) || 1;
+  const totalPages = listResult?.total_pages || 1;
+
+  const handlePageChange = (nextPage) => {
+    onPaymentFiltersChange?.({
+      ...paymentFilters,
+      page: nextPage,
+      size: PAGE_SIZE,
+    });
+  };
+
+  const handleSelectPayment = (selectedPaymentId) => {
+    onNavigate?.(navigateToPaymentDetail(selectedPaymentId, null, orderId));
+  };
+
+  return (
+    <div className="space-y-6">
+      <TabPanelHeader title={ORDER_SUPPORT_PAYMENT_TITLE} subtitle={ORDER_SUPPORT_PAYMENT_SUBTITLE} />
+
+      {!canReadPayment ? (
+        <SupportForbiddenState message="Tài khoản thiếu quyền PAYMENT_SUPPORT_READ." />
+      ) : null}
+
+      <AccountCard>
+        <form onSubmit={handleApplyFilters} className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-on-surface-variant">Trạng thái</label>
+            <select
+              value={draftFilters.status}
+              onChange={(e) => setDraftFilters((prev) => ({ ...prev, status: e.target.value }))}
+              className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
+            >
+              {PAYMENT_STATUS_OPTIONS.map((option) => (
+                <option key={option || "all"} value={option}>
+                  {option || "Tất cả"}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-on-surface-variant">Phương thức</label>
+            <select
+              value={draftFilters.payment_method}
+              onChange={(e) => setDraftFilters((prev) => ({ ...prev, payment_method: e.target.value }))}
+              className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
+            >
+              {PAYMENT_METHOD_OPTIONS.map((option) => (
+                <option key={option || "all"} value={option}>
+                  {option || "Tất cả"}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-on-surface-variant">Order ID</label>
+            <input
+              type="text"
+              value={draftFilters.order_id}
+              onChange={(e) => setDraftFilters((prev) => ({ ...prev, order_id: e.target.value }))}
+              placeholder="UUID đơn hàng"
+              className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-on-surface-variant">Từ (ISO)</label>
+            <input
+              type="datetime-local"
+              value={draftFilters.from}
+              onChange={(e) => setDraftFilters((prev) => ({ ...prev, from: e.target.value }))}
+              className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-on-surface-variant">Đến (ISO)</label>
+            <input
+              type="datetime-local"
+              value={draftFilters.to}
+              onChange={(e) => setDraftFilters((prev) => ({ ...prev, to: e.target.value }))}
+              className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+          </div>
+          <div className="flex items-end gap-2 md:col-span-2 lg:col-span-3">
+            <button
+              type="submit"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+            >
+              Áp dụng bộ lọc
+            </button>
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              className="rounded-lg border border-outline-variant px-4 py-2 text-sm font-medium text-on-surface-variant hover:bg-surface-container-low"
+            >
+              Xóa bộ lọc
+            </button>
+          </div>
+        </form>
+      </AccountCard>
+
+      {listStatus === "loading" ? <AccountSkeleton /> : null}
+      {listStatus === "forbidden" ? <SupportForbiddenState message={listErrorMessage} /> : null}
+      {listStatus === "unavailable" ? <SupportUnavailableState message={listErrorMessage} /> : null}
+
+      {listStatus === "error" ? (
+        <AccountCard className="border-error/30">
+          <ErrorState message={listErrorMessage} />
+          <button
+            type="button"
+            onClick={fetchPayments}
+            className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+          >
+            Thử lại
+          </button>
+        </AccountCard>
+      ) : null}
+
+      {listStatus === "ready" ? (
+        <AccountCard>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-on-surface-variant">
+              {listResult.total_elements ?? 0} thanh toán · Trang {listResult.page}/{totalPages}
+            </p>
+            <p className="text-xs text-on-surface-variant">Sắp xếp: mới nhất trước</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] text-left text-sm">
+              <thead>
+                <tr className="border-b border-outline-variant text-on-surface-variant">
+                  <th className="py-2 pr-4 font-medium">Tạo lúc</th>
+                  <th className="py-2 pr-4 font-medium">Payment ID</th>
+                  <th className="py-2 pr-4 font-medium">Order ID</th>
+                  <th className="py-2 pr-4 font-medium">Phương thức</th>
+                  <th className="py-2 pr-4 font-medium">Số tiền</th>
+                  <th className="py-2 font-medium">Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(listResult.payments ?? []).length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-6 text-center text-on-surface-variant">
+                      Không có thanh toán phù hợp bộ lọc.
+                    </td>
+                  </tr>
+                ) : (
+                  listResult.payments.map((payment) => {
+                    const isSelected = payment.payment_id === paymentId;
+                    return (
+                      <tr
+                        key={payment.payment_id}
+                        className={[
+                          "cursor-pointer border-b border-outline-variant/60 hover:bg-surface-container-low",
+                          isSelected ? "bg-primary/5" : "",
+                        ].join(" ")}
+                        onClick={() => handleSelectPayment(payment.payment_id)}
+                      >
+                        <td className="py-3 pr-4">{formatDateTime(payment.created_at)}</td>
+                        <td className="py-3 pr-4 font-mono text-xs">{payment.payment_id}</td>
+                        <td className="py-3 pr-4 font-mono text-xs">{payment.order_id}</td>
+                        <td className="py-3 pr-4">{payment.payment_method}</td>
+                        <td className="py-3 pr-4">{formatVndPrice(payment.amount)}</td>
+                        <td className="py-3">
+                          <SupportStatusBadge status={payment.status} />
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+          {totalPages > 1 ? (
+            <div className="mt-4 flex items-center justify-center gap-2">
+              <button
+                type="button"
+                disabled={currentPage <= 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+                className="rounded-lg border border-outline-variant px-3 py-1.5 text-sm disabled:opacity-40"
+              >
+                Trước
+              </button>
+              <span className="text-sm text-on-surface-variant">
+                {currentPage} / {totalPages}
+              </span>
+              <button
+                type="button"
+                disabled={currentPage >= totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+                className="rounded-lg border border-outline-variant px-3 py-1.5 text-sm disabled:opacity-40"
+              >
+                Sau
+              </button>
+            </div>
+          ) : null}
+        </AccountCard>
+      ) : null}
+
+      {paymentId ? (
+        <div>
+          <h3 className="mb-3 text-base font-semibold text-on-surface">Chi tiết thanh toán đang xem</h3>
+          <PaymentSupportDetailPanel paymentId={paymentId} orderId={orderId} onNavigate={onNavigate} />
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -31,7 +31,6 @@ export function CommerceCheckoutPage() {
     addresses,
     addressLabelVersion,
     selectedAddressId,
-    shipmentType,
     paymentMethod,
     quote,
     shippingFee,
@@ -43,7 +42,6 @@ export function CommerceCheckoutPage() {
     isEmptyAddresses,
     canSubmit,
     selectAddress,
-    selectShipment,
     selectPayment,
     refreshQuote,
     submitOrder,
@@ -163,11 +161,9 @@ export function CommerceCheckoutPage() {
               />
 
               <CheckoutShipmentOptions
-                shipmentType={shipmentType}
                 quote={quote}
                 shippingFee={shippingFee}
-                disabled={isLoadingQuote || !selectedAddressId}
-                onSelect={selectShipment}
+                isLoading={isLoadingQuote || !selectedAddressId}
               />
 
               <CheckoutPaymentMethod

@@ -3,6 +3,7 @@ import { ADMIN_AUDIT_TABS } from "../adminAudit/adminAuditTabs.js";
 import { CONTENT_MODERATION_TABS } from "../contentModeration/contentModerationTabs.js";
 import { ORDER_SUPPORT_TABS } from "../orderSupport/orderSupportTabs.js";
 import { SYSTEM_OPERATIONS_TABS } from "../systemOperations/systemOperationsTabs.js";
+import { COMMERCE_FINANCE_TABS } from "../commerceFinance/commerceFinanceTabs.js";
 import { USER_INVESTIGATION_TABS } from "../userInvestigation/userInvestigationTabs.js";
 import { ROLE_PERMISSION_TABS } from "../rolePermission/rolePermissionTabs.js";
 
@@ -13,6 +14,7 @@ const SECTION_CHILDREN = {
   contentModeration: CONTENT_MODERATION_TABS,
   orderSupport: ORDER_SUPPORT_TABS,
   systemOperations: SYSTEM_OPERATIONS_TABS,
+  commerceFinance: COMMERCE_FINANCE_TABS,
 };
 
 function ParentNavIcon({ sectionId, active }) {
