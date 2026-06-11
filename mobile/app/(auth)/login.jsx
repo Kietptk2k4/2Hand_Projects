@@ -82,7 +82,7 @@ export default function LoginScreen() {
         refreshToken: loginData.refresh_token,
       });
 
-      router.replace("/");
+      router.replace("/(tabs)/feed");
     } catch (error) {
       const serverFieldErrors = resolveFieldErrors(error?.errors);
       if (error?.code === 400 && Object.keys(serverFieldErrors).length > 0) {

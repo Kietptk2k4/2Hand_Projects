@@ -166,7 +166,8 @@ class CreatePostApiIntegrationTest {
                 userId.toString(),
                 "Selling item",
                 List.of(),
-                List.of(new CreatePostResult.ProductTagData(productId, new BigDecimal("150000"))),
+                List.of(new com.twohands.social_service.application.post.common.ProductTagSnapshotData(
+                        productId, new BigDecimal("150000"), "Item", null, null, true)),
                 "ACTIVE",
                 "PUBLIC",
                 true,

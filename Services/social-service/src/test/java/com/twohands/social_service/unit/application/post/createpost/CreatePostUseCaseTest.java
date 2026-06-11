@@ -1,6 +1,7 @@
 package com.twohands.social_service.unit.application.post.createpost;
 
 import com.twohands.social_service.application.post.common.PostMediaUrlValidator;
+import com.twohands.social_service.application.post.common.ProductTagSnapshotResolver;
 import com.twohands.social_service.application.post.common.ProductTagValidator;
 import com.twohands.social_service.application.post.createpost.CreatePostCommand;
 import com.twohands.social_service.application.post.createpost.CreatePostResult;
@@ -18,6 +19,7 @@ import com.twohands.social_service.domain.user.UserProjectionRepository;
 import com.twohands.social_service.testsupport.UserProjectionTestFixtures;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -40,8 +42,18 @@ class CreatePostUseCaseTest {
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
     private final UserWriteGuard userWriteGuard = new UserWriteGuard(userProjectionRepository);
     private final PostMediaUrlValidator postMediaUrlValidator = mock(PostMediaUrlValidator.class);
+    private final ProductTagSnapshotResolver productTagSnapshotResolver = mock(ProductTagSnapshotResolver.class);
     private final CreatePostUseCase useCase = new CreatePostUseCase(
-            postRepository, userWriteGuard, new ProductTagValidator(), postMediaUrlValidator);
+            postRepository,
+            userWriteGuard,
+            new ProductTagValidator(),
+            productTagSnapshotResolver,
+            postMediaUrlValidator);
+
+    @BeforeEach
+    void stubProductTagResolver() {
+        when(productTagSnapshotResolver.resolve(any())).thenAnswer(invocation -> invocation.getArgument(0));
+    }
 
     private Post buildSavedPost(UUID authorId, String postId, PostStatus status, PostVisibility visibility) {
         return new Post(
@@ -218,7 +230,7 @@ class CreatePostUseCaseTest {
                 .satisfies(ex -> {
                     AppException appEx = (AppException) ex;
                     assertThat(appEx.getErrorCode()).isEqualTo(ErrorCode.VALIDATION_ERROR);
-                    assertThat(appEx.getField()).isEqualTo("media[].type");
+                    assertThat(appEx.getField()).isEqualTo("media[0].type");
                 });
     }
 

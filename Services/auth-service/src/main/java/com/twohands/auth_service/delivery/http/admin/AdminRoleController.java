@@ -12,6 +12,9 @@ import com.twohands.auth_service.application.rbac.viewpermissionsofrole.ViewPerm
 import com.twohands.auth_service.application.rbac.viewpermissionsofrole.ViewPermissionsOfRoleUseCase;
 import com.twohands.auth_service.application.rbac.viewrolelist.ViewRoleListResult;
 import com.twohands.auth_service.application.rbac.viewrolelist.ViewRoleListUseCase;
+import com.twohands.auth_service.application.rbac.viewuserlistforrbac.ViewUserListForRbacCommand;
+import com.twohands.auth_service.application.rbac.viewuserlistforrbac.ViewUserListForRbacResult;
+import com.twohands.auth_service.application.rbac.viewuserlistforrbac.ViewUserListForRbacUseCase;
 import com.twohands.auth_service.common.dto.ApiResponse;
 import com.twohands.auth_service.delivery.http.admin.request.AssignRolesToUsersRequest;
 import com.twohands.auth_service.delivery.http.admin.response.AssignRolesToUsersResponse;
@@ -19,6 +22,7 @@ import com.twohands.auth_service.delivery.http.admin.response.CheckUserPermissio
 import com.twohands.auth_service.delivery.http.admin.response.RevokeRoleFromUserResponse;
 import com.twohands.auth_service.delivery.http.admin.response.ViewPermissionsOfRoleResponse;
 import com.twohands.auth_service.delivery.http.admin.response.ViewRoleListResponse;
+import com.twohands.auth_service.delivery.http.admin.response.ViewUserListForRbacResponse;
 import com.twohands.auth_service.exception.AppException;
 import com.twohands.auth_service.exception.ErrorCode;
 import jakarta.validation.Valid;
@@ -31,6 +35,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -44,19 +49,60 @@ public class AdminRoleController {
     private final ViewRoleListUseCase viewRoleListUseCase;
     private final ViewPermissionsOfRoleUseCase viewPermissionsOfRoleUseCase;
     private final CheckUserPermissionUseCase checkUserPermissionUseCase;
+    private final ViewUserListForRbacUseCase viewUserListForRbacUseCase;
 
     public AdminRoleController(
             AssignRolesToUsersUseCase assignRolesToUsersUseCase,
             RevokeRoleFromUserUseCase revokeRoleFromUserUseCase,
             ViewRoleListUseCase viewRoleListUseCase,
             ViewPermissionsOfRoleUseCase viewPermissionsOfRoleUseCase,
-            CheckUserPermissionUseCase checkUserPermissionUseCase
+            CheckUserPermissionUseCase checkUserPermissionUseCase,
+            ViewUserListForRbacUseCase viewUserListForRbacUseCase
     ) {
         this.assignRolesToUsersUseCase = assignRolesToUsersUseCase;
         this.revokeRoleFromUserUseCase = revokeRoleFromUserUseCase;
         this.viewRoleListUseCase = viewRoleListUseCase;
         this.viewPermissionsOfRoleUseCase = viewPermissionsOfRoleUseCase;
         this.checkUserPermissionUseCase = checkUserPermissionUseCase;
+        this.viewUserListForRbacUseCase = viewUserListForRbacUseCase;
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<ApiResponse<ViewUserListForRbacResponse>> viewUserListForRbac(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String sort,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size,
+            Authentication authentication
+    ) {
+        UUID actorUserId = extractUserId(authentication);
+        ViewUserListForRbacResult result = viewUserListForRbacUseCase.execute(
+                new ViewUserListForRbacCommand(actorUserId, status, q, sort, page, size)
+        );
+
+        ViewUserListForRbacResponse response = new ViewUserListForRbacResponse(
+                result.items().stream()
+                        .map(item -> new ViewUserListForRbacResponse.ItemData(
+                                item.id().toString(),
+                                item.email(),
+                                item.displayName(),
+                                item.status(),
+                                item.roleCodes(),
+                                item.createdAt()
+                        ))
+                        .toList(),
+                new ViewUserListForRbacResponse.PaginationData(
+                        result.pagination().page(),
+                        result.pagination().size(),
+                        result.pagination().totalItems(),
+                        result.pagination().totalPages(),
+                        result.pagination().hasNext()
+                )
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(HttpStatus.OK.value(), viewUserListForRbacUseCase.successMessage(), response));
     }
 
     @GetMapping("/roles")

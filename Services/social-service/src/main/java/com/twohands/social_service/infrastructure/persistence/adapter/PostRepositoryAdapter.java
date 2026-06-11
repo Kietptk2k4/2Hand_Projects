@@ -17,6 +17,10 @@ import com.twohands.social_service.infrastructure.persistence.mongo.document.Pos
 import com.twohands.social_service.infrastructure.persistence.mongo.repository.MongoPostRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -31,9 +35,11 @@ import java.util.Optional;
 public class PostRepositoryAdapter implements PostRepository {
 
     private final MongoPostRepository mongoPostRepository;
+    private final MongoTemplate mongoTemplate;
 
-    public PostRepositoryAdapter(MongoPostRepository mongoPostRepository) {
+    public PostRepositoryAdapter(MongoPostRepository mongoPostRepository, MongoTemplate mongoTemplate) {
         this.mongoPostRepository = mongoPostRepository;
+        this.mongoTemplate = mongoTemplate;
     }
 
     @Override
@@ -258,7 +264,7 @@ public class PostRepositoryAdapter implements PostRepository {
                 .map(m -> new PostDocument.MediaDocument(m.url(), m.type(), m.width(), m.height()))
                 .toList());
         doc.setProductTags(post.productTags().stream()
-                .map(pt -> new PostDocument.ProductTagDocument(pt.productId(), pt.price()))
+                .map(this::toProductTagDocument)
                 .toList());
         doc.setStatus(post.status().name());
         doc.setVisibility(post.visibility().name());
@@ -319,7 +325,36 @@ public class PostRepositoryAdapter implements PostRepository {
         );
     }
 
+    @Override
+    public long markProductTagsUnavailable(String productId) {
+        if (productId == null || productId.isBlank()) {
+            return 0;
+        }
+
+        Query query = Query.query(Criteria.where("product_tags.product_id").is(productId));
+        Update update = new Update().set("product_tags.$[tag].available", false);
+        update.filterArray(Criteria.where("tag.product_id").is(productId));
+
+        return mongoTemplate.updateMulti(query, update, PostDocument.class).getModifiedCount();
+    }
+
+    private PostDocument.ProductTagDocument toProductTagDocument(ProductTag tag) {
+        PostDocument.ProductTagDocument document = new PostDocument.ProductTagDocument(tag.productId(), tag.price());
+        document.setName(tag.name());
+        document.setImageUrl(tag.imageUrl());
+        document.setCategory(tag.category());
+        document.setAvailable(tag.available());
+        return document;
+    }
+
     private ProductTag toProductTag(PostDocument.ProductTagDocument pt) {
-        return new ProductTag(pt.getProductId(), pt.getPrice());
+        return new ProductTag(
+                pt.getProductId(),
+                pt.getPrice(),
+                pt.getName(),
+                pt.getImageUrl(),
+                pt.getCategory(),
+                pt.getAvailable()
+        );
     }
 }

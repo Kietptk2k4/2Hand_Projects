@@ -9,6 +9,7 @@ import com.twohands.social_service.domain.post.Post;
 import com.twohands.social_service.domain.post.PostLikeRepository;
 import com.twohands.social_service.domain.post.PostRepository;
 import com.twohands.social_service.domain.post.PostSaveRepository;
+import com.twohands.social_service.application.post.common.ProductTagSnapshotData;
 import com.twohands.social_service.domain.post.ProductTag;
 import com.twohands.social_service.domain.user.UserProjection;
 import com.twohands.social_service.domain.user.UserProjectionRepository;
@@ -118,8 +119,8 @@ public class ViewPostDetailUseCase {
         List<ViewPostDetailResult.MediaItemData> media = post.media().stream()
                 .map(this::toMedia)
                 .toList();
-        List<ViewPostDetailResult.ProductTagData> productTags = post.productTags().stream()
-                .map(this::toProductTag)
+        List<ProductTagSnapshotData> productTags = post.productTags().stream()
+                .map(ProductTagSnapshotData::fromDomain)
                 .toList();
 
         return new ViewPostDetailResult(
@@ -146,7 +147,4 @@ public class ViewPostDetailUseCase {
         return new ViewPostDetailResult.MediaItemData(mediaItem.url(), mediaItem.type(), mediaItem.width(), mediaItem.height());
     }
 
-    private ViewPostDetailResult.ProductTagData toProductTag(ProductTag productTag) {
-        return new ViewPostDetailResult.ProductTagData(productTag.productId(), productTag.price());
-    }
 }

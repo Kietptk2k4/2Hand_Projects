@@ -1,8 +1,8 @@
 package com.twohands.social_service.application.feed.viewglobalfeed;
 
+import com.twohands.social_service.application.post.common.ProductTagSnapshotData;
 import com.twohands.social_service.domain.post.PageResult;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public record ViewGlobalFeedResult(
@@ -32,16 +32,10 @@ public record ViewGlobalFeedResult(
             long replyCount,
             boolean likedByMe,
             List<String> hashtags,
-            List<ProductTagData> productTags,
+            List<ProductTagSnapshotData> productTags,
             boolean allowComments,
             String createdAt,
             String updatedAt
-    ) {
-    }
-
-    public record ProductTagData(
-            String productId,
-            BigDecimal price
     ) {
     }
 

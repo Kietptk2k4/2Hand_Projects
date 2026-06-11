@@ -4,8 +4,13 @@ export const colors = {
   surface: "#F9F9FF",
   surfaceContainerLow: "#F0F3FF",
   surfaceContainerLowest: "#FFFFFF",
+  surfaceContainerHigh: "#DEE8FF",
   onSurface: "#111C2D",
   onSurfaceVariant: "#424656",
+  outline: "#727687",
   outlineVariant: "#C2C6D8",
   error: "#BA1A1A",
+  errorContainer: "#FFDAD6",
+  onErrorContainer: "#93000A",
+  secondary: "#4648D4",
 };

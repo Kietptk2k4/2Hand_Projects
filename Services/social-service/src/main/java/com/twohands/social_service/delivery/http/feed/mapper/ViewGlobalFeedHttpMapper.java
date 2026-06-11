@@ -31,7 +31,14 @@ public class ViewGlobalFeedHttpMapper {
                 .toList();
         List<ViewGlobalFeedResponse.ProductTagResponse> productTags = item.productTags()
                 .stream()
-                .map(tag -> new ViewGlobalFeedResponse.ProductTagResponse(tag.productId(), tag.price()))
+                .map(tag -> new ViewGlobalFeedResponse.ProductTagResponse(
+                        tag.productId(),
+                        tag.price(),
+                        tag.name(),
+                        tag.imageUrl(),
+                        tag.category(),
+                        tag.available()
+                ))
                 .toList();
         return new ViewGlobalFeedResponse.PostItemResponse(
                 item.postId(),

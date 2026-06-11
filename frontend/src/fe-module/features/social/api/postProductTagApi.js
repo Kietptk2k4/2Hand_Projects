@@ -1,5 +1,5 @@
 import { fetchSellerProductList } from "../../commerce/api/sellerProductApi";
-import { fetchProductDetail } from "../../commerce/api/productDetailApi";
+import { fetchProductDetailIfAvailable } from "../../commerce/api/productDetailApi";
 import { mapProductDetailResponse } from "../../commerce/utils/productDetailMapper";
 import { mapSellerProductListResponse } from "../../commerce/utils/sellerProductMapper";
 import { mapAxiosError } from "./socialApiResponse";
@@ -8,7 +8,14 @@ import {
   mapSellerListItemToPickerProduct,
   TAGGABLE_PRODUCT_STATUSES,
 } from "../utils/postProductTagMapper";
-import { setCachedProductCatalogEntry } from "../utils/productTagEnrichmentCache";
+import {
+  getCachedProductCatalogEntry,
+  isProductCatalogEntryMissing,
+  markProductCatalogEntryMissing,
+  setCachedProductCatalogEntry,
+} from "../utils/productTagEnrichmentCache";
+
+const pendingCatalogLoads = new Map();
 
 export async function fetchTaggableSellerProducts({ q, page = 1, limit = 50 } = {}) {
   try {
@@ -39,15 +46,41 @@ export async function fetchTaggableSellerProducts({ q, page = 1, limit = 50 } = 
 export async function loadProductCatalogEntry(productId) {
   if (!productId) return null;
 
-  try {
-    const data = await fetchProductDetail(productId);
+  const cached = getCachedProductCatalogEntry(productId);
+  if (cached) return cached;
+
+  if (isProductCatalogEntryMissing(productId)) {
+    return null;
+  }
+
+  const pending = pendingCatalogLoads.get(productId);
+  if (pending) {
+    return pending;
+  }
+
+  const loadPromise = (async () => {
+    const data = await fetchProductDetailIfAvailable(productId);
+    if (!data) {
+      markProductCatalogEntryMissing(productId);
+      return null;
+    }
+
     const detail = mapProductDetailResponse(data);
     const entry = mapProductDetailToCatalogEntry(detail);
     if (entry) {
       setCachedProductCatalogEntry(productId, entry);
+      return entry;
     }
-    return entry;
-  } catch {
+
+    markProductCatalogEntryMissing(productId);
     return null;
+  })();
+
+  pendingCatalogLoads.set(productId, loadPromise);
+
+  try {
+    return await loadPromise;
+  } finally {
+    pendingCatalogLoads.delete(productId);
   }
 }

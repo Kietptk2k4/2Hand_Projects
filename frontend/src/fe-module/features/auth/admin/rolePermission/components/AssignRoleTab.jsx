@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { assignRoleToUser, getAdminRoles } from "../../../api/authApi";
 import { useAuthSession } from "../../../hooks/useAuthSession.jsx";
-import { ASSIGNABLE_USERS } from "../../constants/assignableUsers.js";
 import { resolveFieldErrors } from "../../utils/resolveFieldErrors.js";
 import {
   AccountCard,
@@ -13,17 +12,25 @@ import {
   TabPanelHeader,
 } from "../../../../../shared/ui/auth/authUi.jsx";
 import { ErrorState } from "../../../../../shared/ui/PageState.jsx";
+import { RbacUserListPanel } from "./RbacUserListPanel.jsx";
 
-export function AssignRoleTab({ onNotify }) {
+export function AssignRoleTab({
+  onNotify,
+  rbacUserListFilters,
+  rbacSelectedUserId,
+  onRbacUserListFiltersChange,
+  onRbacUserSelect,
+}) {
   const { showSessionExpired } = useAuthSession();
   const [roles, setRoles] = useState([]);
   const [rolesStatus, setRolesStatus] = useState("loading");
-  const [userId, setUserId] = useState("");
+  const [selectedUser, setSelectedUser] = useState(null);
   const [roleId, setRoleId] = useState("");
   const [fieldErrors, setFieldErrors] = useState({ userId: "", role_id: "" });
   const [globalError, setGlobalError] = useState("");
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [listRefreshKey, setListRefreshKey] = useState(0);
 
   const loadRoles = useCallback(async () => {
     setRolesStatus("loading");
@@ -44,12 +51,27 @@ export function AssignRoleTab({ onNotify }) {
     loadRoles();
   }, [loadRoles]);
 
-  const selectedUser = ASSIGNABLE_USERS.find((u) => u.id === userId);
+  useEffect(() => {
+    if (!rbacSelectedUserId) {
+      setSelectedUser(null);
+      return;
+    }
+    setFieldErrors((prev) => ({ ...prev, userId: "" }));
+  }, [rbacSelectedUserId]);
+
+  const handleUserSelect = (userId, userRow) => {
+    setSelectedUser(userRow || null);
+    setRoleId("");
+    setFieldErrors({ userId: "", role_id: "" });
+    setGlobalError("");
+    onRbacUserSelect?.(userId);
+  };
+
   const selectedRole = roles.find((r) => r.id === roleId);
 
   const validateForm = () => {
     const next = { userId: "", role_id: "" };
-    if (!userId) next.userId = "Vui lòng chọn người dùng.";
+    if (!rbacSelectedUserId) next.userId = "Vui lòng chọn người dùng.";
     if (!roleId) next.role_id = "Vui lòng chọn vai trò.";
     setFieldErrors(next);
     return !next.userId && !next.role_id;
@@ -68,10 +90,10 @@ export function AssignRoleTab({ onNotify }) {
     setFieldErrors({ userId: "", role_id: "" });
 
     try {
-      await assignRoleToUser(userId, { role_id: roleId });
+      await assignRoleToUser(rbacSelectedUserId, { role_id: roleId });
       setIsConfirmOpen(false);
-      setUserId("");
       setRoleId("");
+      setListRefreshKey((key) => key + 1);
       onNotify?.({ variant: "success", message: "Gán vai trò cho người dùng thành công." });
     } catch (error) {
       setIsConfirmOpen(false);
@@ -108,7 +130,7 @@ export function AssignRoleTab({ onNotify }) {
     return (
       <div>
         <TabPanelHeader title="Gán vai trò" subtitle="Gán vai trò cho người dùng trong hệ thống." />
-        <ErrorState message="Không tải duoc danh sách vai trò." />
+        <ErrorState message="Không tải được danh sách vai trò." />
         <PrimaryButton type="button" onClick={loadRoles} className="mt-4">
           Thử lại
         </PrimaryButton>
@@ -126,65 +148,76 @@ export function AssignRoleTab({ onNotify }) {
         </div>
       ) : null}
 
-      <AccountCard>
-        <form onSubmit={onRequestSubmit} className="space-y-5" noValidate>
-          <div className="flex flex-col gap-1.5">
-            <AccountFieldLabel htmlFor="assign-user" required>
-              User
-            </AccountFieldLabel>
-            <select
-              id="assign-user"
-              value={userId}
-              onChange={(e) => {
-                setUserId(e.target.value);
-                setFieldErrors((prev) => ({ ...prev, userId: "" }));
-              }}
-              className={[
-                "w-full rounded-lg border bg-white px-3 py-2.5 text-base outline-none",
-                fieldErrors.userId ? "border-error" : "border-outline-variant focus:border-primary",
-              ].join(" ")}
-            >
-              <option value="">Chọn người dùng...</option>
-              {ASSIGNABLE_USERS.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.email} ({user.display_name})
-                </option>
-              ))}
-            </select>
-            {fieldErrors.userId ? <p className="text-sm text-error">{fieldErrors.userId}</p> : null}
-          </div>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)]">
+        <RbacUserListPanel
+          userListFilters={rbacUserListFilters}
+          onFiltersChange={onRbacUserListFiltersChange}
+          selectedUserId={rbacSelectedUserId}
+          onUserSelect={handleUserSelect}
+          onSelectedUserSync={setSelectedUser}
+          listRefreshKey={listRefreshKey}
+        />
 
-          <div className="flex flex-col gap-1.5">
-            <AccountFieldLabel htmlFor="assign-role" required>
-              Role
-            </AccountFieldLabel>
-            <select
-              id="assign-role"
-              value={roleId}
-              onChange={(e) => {
-                setRoleId(e.target.value);
-                setFieldErrors((prev) => ({ ...prev, role_id: "" }));
-              }}
-              className={[
-                "w-full rounded-lg border bg-white px-3 py-2.5 text-base outline-none",
-                fieldErrors.role_id ? "border-error" : "border-outline-variant focus:border-primary",
-              ].join(" ")}
-            >
-              <option value="">Chọn vai trò...</option>
-              {roles.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {role.code} — {role.name}
-                </option>
-              ))}
-            </select>
-            {fieldErrors.role_id ? <p className="text-sm text-error">{fieldErrors.role_id}</p> : null}
-          </div>
+        <AccountCard>
+          <form onSubmit={onRequestSubmit} className="space-y-5" noValidate>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+                Người dùng đã chọn
+              </p>
+              {rbacSelectedUserId ? (
+                <div className="mt-2 text-sm text-on-surface">
+                  <p className="font-medium">{selectedUser?.email || rbacSelectedUserId}</p>
+                  {selectedUser?.display_name ? (
+                    <p className="text-on-surface-variant">{selectedUser.display_name}</p>
+                  ) : null}
+                </div>
+              ) : (
+                <p className="mt-2 text-sm text-on-surface-variant">
+                  Chọn một người dùng từ danh sách bên trái.
+                </p>
+              )}
+              {fieldErrors.userId ? <p className="mt-1 text-sm text-error">{fieldErrors.userId}</p> : null}
+            </div>
 
-          <PrimaryButton type="submit" disabled={isSubmitting}>
-            Gán vai trò
-          </PrimaryButton>
-        </form>
-      </AccountCard>
+            <div className="flex flex-col gap-2">
+              <AccountFieldLabel required>Vai trò</AccountFieldLabel>
+              <div className="space-y-2">
+                {roles.map((role) => (
+                  <label
+                    key={role.id}
+                    className={`flex cursor-pointer items-start gap-3 rounded-lg border px-3 py-2.5 ${
+                      roleId === role.id
+                        ? "border-primary bg-primary/5"
+                        : "border-outline-variant hover:bg-surface-container-low"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="assign-role"
+                      value={role.id}
+                      checked={roleId === role.id}
+                      onChange={() => {
+                        setRoleId(role.id);
+                        setFieldErrors((prev) => ({ ...prev, role_id: "" }));
+                      }}
+                      className="mt-1"
+                    />
+                    <span>
+                      <span className="block text-sm font-medium text-on-surface">{role.code}</span>
+                      <span className="block text-xs text-on-surface-variant">{role.name}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+              {fieldErrors.role_id ? <p className="text-sm text-error">{fieldErrors.role_id}</p> : null}
+            </div>
+
+            <PrimaryButton type="submit" disabled={isSubmitting || !rbacSelectedUserId}>
+              Gán vai trò
+            </PrimaryButton>
+          </form>
+        </AccountCard>
+      </div>
 
       {isConfirmOpen ? (
         <div
@@ -214,10 +247,10 @@ export function AssignRoleTab({ onNotify }) {
             </div>
             <div className="flex justify-end gap-3 border-t border-outline-variant bg-account-surface-low px-6 py-4">
               <SecondaryButton type="button" disabled={isSubmitting} onClick={() => setIsConfirmOpen(false)}>
-                Huy
+                Hủy
               </SecondaryButton>
               <PrimaryButton type="button" loading={isSubmitting} onClick={onConfirmAssign}>
-                Xac nhan
+                Xác nhận
               </PrimaryButton>
             </div>
           </div>

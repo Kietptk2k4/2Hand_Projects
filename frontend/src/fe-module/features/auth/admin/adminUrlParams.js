@@ -123,6 +123,15 @@ const SYSTEM_OPERATIONS_SELECTION_KEYS = ["configId", "configView"];
 
 const CONTENT_MODERATION_PARAM_KEYS = ["postId", "commentId", "productId", "productView"];
 
+const RBAC_USER_LIST_FILTER_KEYS = [
+  "rbac_status",
+  "rbac_q",
+  "rbac_sort",
+  "rbac_page",
+  "rbac_size",
+  "rbac_user_id",
+];
+
 const MANAGED_PARAM_KEYS = new Set([
   "section",
   "tab",
@@ -134,6 +143,7 @@ const MANAGED_PARAM_KEYS = new Set([
   ...SYSTEM_OPERATIONS_CONFIG_FILTER_KEYS,
   ...SYSTEM_OPERATIONS_ANNOUNCEMENT_FILTER_KEYS,
   ...SYSTEM_OPERATIONS_SELECTION_KEYS,
+  ...RBAC_USER_LIST_FILTER_KEYS,
 ]);
 
 export function parseAdminSection(searchParams) {
@@ -283,6 +293,20 @@ export function parseCommerceFinanceSellerId(searchParams) {
   return searchParams.get("sellerId") || "";
 }
 
+export function parseRbacUserListFilters(searchParams) {
+  return {
+    status: searchParams.get("rbac_status") || "",
+    q: searchParams.get("rbac_q") || "",
+    sort: searchParams.get("rbac_sort") || "email",
+    page: searchParams.get("rbac_page") || "1",
+    size: searchParams.get("rbac_size") || "20",
+  };
+}
+
+export function parseRbacSelectedUserId(searchParams) {
+  return searchParams.get("rbac_user_id") || "";
+}
+
 function copyUnmanagedParams(next, preserve) {
   if (!preserve) return;
   for (const [key, value] of preserve.entries()) {
@@ -418,6 +442,18 @@ function applyShipmentListFilterParams(next, shipmentListFilters) {
   if (size && String(size) !== "20") next.set("sh_size", String(size));
 }
 
+function applyRbacUserListFilterParams(next, rbacUserListFilters, rbacUserId) {
+  if (!rbacUserListFilters) return;
+
+  const { status, q, sort, page, size } = rbacUserListFilters;
+  if (status) next.set("rbac_status", status);
+  if (q) next.set("rbac_q", q);
+  if (sort && sort !== "email") next.set("rbac_sort", sort);
+  if (page) next.set("rbac_page", String(page));
+  if (size && String(size) !== "20") next.set("rbac_size", String(size));
+  if (rbacUserId) next.set("rbac_user_id", rbacUserId);
+}
+
 export function buildAdminSearchParams({
   section,
   tab,
@@ -442,6 +478,8 @@ export function buildAdminSearchParams({
   configId,
   configView,
   clearConfigSelection = false,
+  rbacUserListFilters,
+  rbacUserId,
   preserve,
 }) {
   const next = new URLSearchParams();
@@ -587,6 +625,15 @@ export function buildAdminSearchParams({
         productView ??
         (preserve?.get("productView") === "history" ? "history" : undefined),
     });
+  }
+
+  if (section === "rolePermission") {
+    const resolvedRbacFilters =
+      rbacUserListFilters ??
+      (preserve ? parseRbacUserListFilters(preserve) : undefined);
+    const resolvedRbacUserId =
+      rbacUserId ?? (preserve ? parseRbacSelectedUserId(preserve) || undefined : undefined);
+    applyRbacUserListFilterParams(next, resolvedRbacFilters, resolvedRbacUserId);
   }
 
   return next;

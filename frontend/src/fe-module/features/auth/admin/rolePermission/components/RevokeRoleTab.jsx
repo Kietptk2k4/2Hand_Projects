@@ -1,8 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getAdminRoles, revokeRoleFromUser } from "../../../api/authApi";
 import { useAuthSession } from "../../../hooks/useAuthSession.jsx";
-import { ASSIGNABLE_USERS } from "../../constants/assignableUsers.js";
-import { USER_ROLE_ASSIGNMENTS } from "../../constants/userRoleAssignments.js";
 import { resolveFieldErrors } from "../../utils/resolveFieldErrors.js";
 import {
   AccountCard,
@@ -14,18 +12,25 @@ import {
   TabPanelHeader,
 } from "../../../../../shared/ui/auth/authUi.jsx";
 import { ErrorState } from "../../../../../shared/ui/PageState.jsx";
+import { RbacUserListPanel } from "./RbacUserListPanel.jsx";
 
-export function RevokeRoleTab({ onNotify }) {
+export function RevokeRoleTab({
+  onNotify,
+  rbacUserListFilters,
+  rbacSelectedUserId,
+  onRbacUserListFiltersChange,
+  onRbacUserSelect,
+}) {
   const { showSessionExpired } = useAuthSession();
   const [roles, setRoles] = useState([]);
   const [rolesStatus, setRolesStatus] = useState("loading");
-  const [assignments, setAssignments] = useState(() => ({ ...USER_ROLE_ASSIGNMENTS }));
-  const [userId, setUserId] = useState("");
+  const [selectedUser, setSelectedUser] = useState(null);
   const [roleId, setRoleId] = useState("");
   const [fieldErrors, setFieldErrors] = useState({ userId: "", role_id: "" });
   const [globalError, setGlobalError] = useState("");
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [listRefreshKey, setListRefreshKey] = useState(0);
 
   const loadRoles = useCallback(async () => {
     setRolesStatus("loading");
@@ -46,23 +51,40 @@ export function RevokeRoleTab({ onNotify }) {
     loadRoles();
   }, [loadRoles]);
 
-  const assignedRoleId = userId ? assignments[userId] : "";
-  const assignableRoles = assignedRoleId ? roles.filter((r) => r.id === assignedRoleId) : [];
-  const selectedUser = ASSIGNABLE_USERS.find((u) => u.id === userId);
-  const selectedRole = roles.find((r) => r.id === roleId);
+  const userRoleCodes = selectedUser?.role_codes || [];
+  const assignableRoles = useMemo(
+    () => roles.filter((role) => userRoleCodes.includes(role.code)),
+    [roles, userRoleCodes],
+  );
 
-  const onUserChange = (nextUserId) => {
-    setUserId(nextUserId);
+  useEffect(() => {
+    if (!rbacSelectedUserId) {
+      setSelectedUser(null);
+      setRoleId("");
+      return;
+    }
+    if (assignableRoles.length === 1) {
+      setRoleId(assignableRoles[0].id);
+    } else {
+      setRoleId("");
+    }
     setFieldErrors((prev) => ({ ...prev, userId: "", role_id: "" }));
+  }, [rbacSelectedUserId, assignableRoles]);
+
+  const handleUserSelect = (userId, userRow) => {
+    setSelectedUser(userRow || null);
+    setRoleId("");
+    setFieldErrors({ userId: "", role_id: "" });
     setGlobalError("");
-    const nextRoleId = nextUserId ? assignments[nextUserId] || "" : "";
-    setRoleId(nextRoleId);
+    onRbacUserSelect?.(userId);
   };
+
+  const selectedRole = roles.find((r) => r.id === roleId);
 
   const validateForm = () => {
     const next = { userId: "", role_id: "" };
-    if (!userId) next.userId = "Vui lòng chọn người dùng.";
-    if (!assignedRoleId) next.role_id = "User chưa co role nao.";
+    if (!rbacSelectedUserId) next.userId = "Vui lòng chọn người dùng.";
+    if (assignableRoles.length === 0) next.role_id = "Người dùng chưa có vai trò nào.";
     else if (!roleId) next.role_id = "Vui lòng chọn vai trò.";
     setFieldErrors(next);
     return !next.userId && !next.role_id;
@@ -81,16 +103,11 @@ export function RevokeRoleTab({ onNotify }) {
     setFieldErrors({ userId: "", role_id: "" });
 
     try {
-      await revokeRoleFromUser(userId, roleId);
+      await revokeRoleFromUser(rbacSelectedUserId, roleId);
       setIsConfirmOpen(false);
-      setAssignments((prev) => {
-        const next = { ...prev };
-        delete next[userId];
-        return next;
-      });
-      setUserId("");
       setRoleId("");
-      onNotify?.({ variant: "success", message: "Thu hồi role khỏi người dùng thành công." });
+      setListRefreshKey((key) => key + 1);
+      onNotify?.({ variant: "success", message: "Thu hồi vai trò khỏi người dùng thành công." });
     } catch (error) {
       setIsConfirmOpen(false);
       if (error?.code === 401) {
@@ -99,15 +116,10 @@ export function RevokeRoleTab({ onNotify }) {
       }
       const serverErrors = resolveFieldErrors(error?.errors);
       if (error?.code === 409 && serverErrors.role_id === "ROLE_NOT_ASSIGNED") {
-        setAssignments((prev) => {
-          const next = { ...prev };
-          delete next[userId];
-          return next;
-        });
         setRoleId("");
         setFieldErrors((prev) => ({
           ...prev,
-          role_id: "User không con vai trò này.",
+          role_id: "Người dùng không còn vai trò này.",
         }));
       } else if (Object.keys(serverErrors).length > 0) {
         setFieldErrors((prev) => ({ ...prev, ...serverErrors }));
@@ -122,7 +134,7 @@ export function RevokeRoleTab({ onNotify }) {
   if (rolesStatus === "loading") {
     return (
       <div>
-        <TabPanelHeader title="Thu hồi vai trò" subtitle="Thu hồi role đã gán cho người dùng." />
+        <TabPanelHeader title="Thu hồi vai trò" subtitle="Thu hồi vai trò đã gán cho người dùng." />
         <AccountSkeleton />
       </div>
     );
@@ -131,8 +143,8 @@ export function RevokeRoleTab({ onNotify }) {
   if (rolesStatus === "error") {
     return (
       <div>
-        <TabPanelHeader title="Thu hồi vai trò" subtitle="Thu hồi role đã gán cho người dùng." />
-        <ErrorState message="Không tải duoc danh sách vai trò." />
+        <TabPanelHeader title="Thu hồi vai trò" subtitle="Thu hồi vai trò đã gán cho người dùng." />
+        <ErrorState message="Không tải được danh sách vai trò." />
         <PrimaryButton type="button" onClick={loadRoles} className="mt-4">
           Thử lại
         </PrimaryButton>
@@ -142,7 +154,7 @@ export function RevokeRoleTab({ onNotify }) {
 
   return (
     <div>
-      <TabPanelHeader title="Thu hồi vai trò" subtitle="Thu hồi role đã gán cho người dùng." />
+      <TabPanelHeader title="Thu hồi vai trò" subtitle="Thu hồi vai trò đã gán cho người dùng." />
 
       {globalError ? (
         <div className="mb-4">
@@ -150,66 +162,83 @@ export function RevokeRoleTab({ onNotify }) {
         </div>
       ) : null}
 
-      <AccountCard>
-        <form onSubmit={onRequestSubmit} className="space-y-5" noValidate>
-          <div className="flex flex-col gap-1.5">
-            <AccountFieldLabel htmlFor="revoke-user" required>
-              User
-            </AccountFieldLabel>
-            <select
-              id="revoke-user"
-              value={userId}
-              onChange={(e) => onUserChange(e.target.value)}
-              className={[
-                "w-full rounded-lg border bg-white px-3 py-2.5 text-base outline-none",
-                fieldErrors.userId ? "border-error" : "border-outline-variant focus:border-primary",
-              ].join(" ")}
-            >
-              <option value="">Chọn người dùng...</option>
-              {ASSIGNABLE_USERS.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.email} ({user.display_name})
-                </option>
-              ))}
-            </select>
-            {fieldErrors.userId ? <p className="text-sm text-error">{fieldErrors.userId}</p> : null}
-          </div>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)]">
+        <RbacUserListPanel
+          userListFilters={rbacUserListFilters}
+          onFiltersChange={onRbacUserListFiltersChange}
+          selectedUserId={rbacSelectedUserId}
+          onUserSelect={handleUserSelect}
+          onSelectedUserSync={setSelectedUser}
+          listRefreshKey={listRefreshKey}
+        />
 
-          <div className="flex flex-col gap-1.5">
-            <AccountFieldLabel htmlFor="revoke-role" required>
-              Role
-            </AccountFieldLabel>
-            <select
-              id="revoke-role"
-              value={roleId}
-              onChange={(e) => {
-                setRoleId(e.target.value);
-                setFieldErrors((prev) => ({ ...prev, role_id: "" }));
-              }}
-              disabled={!userId || !assignedRoleId}
-              className={[
-                "w-full rounded-lg border bg-white px-3 py-2.5 text-base outline-none disabled:cursor-not-allowed disabled:bg-account-surface-low",
-                fieldErrors.role_id ? "border-error" : "border-outline-variant focus:border-primary",
-              ].join(" ")}
-            >
-              <option value="">Chọn vai trò...</option>
-              {assignableRoles.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {role.code} — {role.name}
-                </option>
-              ))}
-            </select>
-            {userId && !assignedRoleId ? (
-              <p className="text-sm text-on-surface-variant">User chưa co role nao.</p>
-            ) : null}
-            {fieldErrors.role_id ? <p className="text-sm text-error">{fieldErrors.role_id}</p> : null}
-          </div>
+        <AccountCard>
+          <form onSubmit={onRequestSubmit} className="space-y-5" noValidate>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+                Người dùng đã chọn
+              </p>
+              {rbacSelectedUserId ? (
+                <div className="mt-2 text-sm text-on-surface">
+                  <p className="font-medium">{selectedUser?.email || rbacSelectedUserId}</p>
+                  {selectedUser?.display_name ? (
+                    <p className="text-on-surface-variant">{selectedUser.display_name}</p>
+                  ) : null}
+                </div>
+              ) : (
+                <p className="mt-2 text-sm text-on-surface-variant">
+                  Chọn một người dùng từ danh sách bên trái.
+                </p>
+              )}
+              {fieldErrors.userId ? <p className="mt-1 text-sm text-error">{fieldErrors.userId}</p> : null}
+            </div>
 
-          <PrimaryButton type="submit" disabled={isSubmitting || !assignedRoleId}>
-            Thu hồi role
-          </PrimaryButton>
-        </form>
-      </AccountCard>
+            <div className="flex flex-col gap-2">
+              <AccountFieldLabel required>Vai trò cần thu hồi</AccountFieldLabel>
+              {rbacSelectedUserId && assignableRoles.length === 0 ? (
+                <p className="text-sm text-on-surface-variant">Người dùng chưa có vai trò nào.</p>
+              ) : (
+                <div className="space-y-2">
+                  {assignableRoles.map((role) => (
+                    <label
+                      key={role.id}
+                      className={`flex cursor-pointer items-start gap-3 rounded-lg border px-3 py-2.5 ${
+                        roleId === role.id
+                          ? "border-primary bg-primary/5"
+                          : "border-outline-variant hover:bg-surface-container-low"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="revoke-role"
+                        value={role.id}
+                        checked={roleId === role.id}
+                        onChange={() => {
+                          setRoleId(role.id);
+                          setFieldErrors((prev) => ({ ...prev, role_id: "" }));
+                        }}
+                        className="mt-1"
+                      />
+                      <span>
+                        <span className="block text-sm font-medium text-on-surface">{role.code}</span>
+                        <span className="block text-xs text-on-surface-variant">{role.name}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
+              {fieldErrors.role_id ? <p className="text-sm text-error">{fieldErrors.role_id}</p> : null}
+            </div>
+
+            <PrimaryButton
+              type="submit"
+              disabled={isSubmitting || !rbacSelectedUserId || assignableRoles.length === 0}
+            >
+              Thu hồi vai trò
+            </PrimaryButton>
+          </form>
+        </AccountCard>
+      </div>
 
       {isConfirmOpen ? (
         <div
@@ -224,10 +253,10 @@ export function RevokeRoleTab({ onNotify }) {
           <div className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-lg">
             <div className="p-6">
               <h3 id="revoke-role-title" className="text-lg font-semibold text-on-surface">
-                Thu hồi role?
+                Thu hồi vai trò?
               </h3>
               <p className="mt-2 text-sm text-on-surface-variant">
-                Nguoi dung co the mat quyen truy cap lien quan den vai trò này.
+                Người dùng có thể mất quyền truy cập liên quan đến vai trò này.
               </p>
               {selectedUser && selectedRole ? (
                 <p className="mt-3 text-sm text-on-surface">
@@ -239,10 +268,10 @@ export function RevokeRoleTab({ onNotify }) {
             </div>
             <div className="flex justify-end gap-3 border-t border-outline-variant bg-account-surface-low px-6 py-4">
               <SecondaryButton type="button" disabled={isSubmitting} onClick={() => setIsConfirmOpen(false)}>
-                Huy
+                Hủy
               </SecondaryButton>
               <PrimaryButton type="button" loading={isSubmitting} onClick={onConfirmRevoke}>
-                Xac nhan
+                Xác nhận
               </PrimaryButton>
             </div>
           </div>

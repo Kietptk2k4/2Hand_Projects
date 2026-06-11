@@ -1,6 +1,7 @@
 package com.twohands.social_service.unit.application.post.editpost;
 
 import com.twohands.social_service.application.post.common.PostMediaUrlValidator;
+import com.twohands.social_service.application.post.common.ProductTagSnapshotResolver;
 import com.twohands.social_service.application.post.common.ProductTagValidator;
 import com.twohands.social_service.application.post.editpost.EditPostCommand;
 import com.twohands.social_service.application.post.editpost.EditPostResult;
@@ -18,6 +19,7 @@ import com.twohands.social_service.domain.user.UserProjectionRepository;
 import com.twohands.social_service.testsupport.UserProjectionTestFixtures;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -40,8 +42,18 @@ class EditPostUseCaseTest {
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
     private final UserWriteGuard userWriteGuard = new UserWriteGuard(userProjectionRepository);
     private final PostMediaUrlValidator postMediaUrlValidator = mock(PostMediaUrlValidator.class);
+    private final ProductTagSnapshotResolver productTagSnapshotResolver = mock(ProductTagSnapshotResolver.class);
     private final EditPostUseCase useCase = new EditPostUseCase(
-            postRepository, userWriteGuard, new ProductTagValidator(), postMediaUrlValidator);
+            postRepository,
+            userWriteGuard,
+            new ProductTagValidator(),
+            productTagSnapshotResolver,
+            postMediaUrlValidator);
+
+    @BeforeEach
+    void stubProductTagResolver() {
+        when(productTagSnapshotResolver.resolve(any())).thenAnswer(invocation -> invocation.getArgument(0));
+    }
 
     private Post buildExistingPost(UUID authorId, String postId, PostStatus status) {
         return new Post(

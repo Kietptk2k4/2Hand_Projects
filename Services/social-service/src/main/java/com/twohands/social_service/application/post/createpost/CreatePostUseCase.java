@@ -2,6 +2,8 @@ package com.twohands.social_service.application.post.createpost;
 
 import com.twohands.social_service.application.post.common.PostMediaDimensionValidator;
 import com.twohands.social_service.application.post.common.PostMediaUrlValidator;
+import com.twohands.social_service.application.post.common.ProductTagSnapshotData;
+import com.twohands.social_service.application.post.common.ProductTagSnapshotResolver;
 import com.twohands.social_service.application.post.common.ProductTagValidationItem;
 import com.twohands.social_service.application.post.common.ProductTagValidator;
 import com.twohands.social_service.domain.post.MediaItem;
@@ -31,16 +33,19 @@ public class CreatePostUseCase {
     private final PostRepository postRepository;
     private final UserWriteGuard userWriteGuard;
     private final ProductTagValidator productTagValidator;
+    private final ProductTagSnapshotResolver productTagSnapshotResolver;
     private final PostMediaUrlValidator postMediaUrlValidator;
 
     public CreatePostUseCase(
             PostRepository postRepository,
             UserWriteGuard userWriteGuard,
             ProductTagValidator productTagValidator,
+            ProductTagSnapshotResolver productTagSnapshotResolver,
             PostMediaUrlValidator postMediaUrlValidator) {
         this.postRepository = postRepository;
         this.userWriteGuard = userWriteGuard;
         this.productTagValidator = productTagValidator;
+        this.productTagSnapshotResolver = productTagSnapshotResolver;
         this.postMediaUrlValidator = postMediaUrlValidator;
     }
 
@@ -55,7 +60,7 @@ public class CreatePostUseCase {
         Instant now = Instant.now();
 
         List<MediaItem> media = toMediaItems(command.media());
-        List<ProductTag> productTags = toProductTags(command.productTags());
+        List<ProductTag> productTags = productTagSnapshotResolver.resolve(toProductTags(command.productTags()));
 
         Post post = new Post(
                 null,
@@ -165,8 +170,8 @@ public class CreatePostUseCase {
         List<CreatePostResult.MediaItemData> media = post.media().stream()
                 .map(m -> new CreatePostResult.MediaItemData(m.url(), m.type(), m.width(), m.height()))
                 .toList();
-        List<CreatePostResult.ProductTagData> productTags = post.productTags().stream()
-                .map(pt -> new CreatePostResult.ProductTagData(pt.productId(), pt.price()))
+        List<ProductTagSnapshotData> productTags = post.productTags().stream()
+                .map(ProductTagSnapshotData::fromDomain)
                 .toList();
         return new CreatePostResult(
                 post.id(),

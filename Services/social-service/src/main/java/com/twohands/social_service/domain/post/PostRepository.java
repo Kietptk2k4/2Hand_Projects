@@ -28,4 +28,6 @@ public interface PostRepository {
     PageResult<Post> searchPostsByHashtag(PostHashtagSearchQuery query, List<String> acceptedFolloweeAuthorIds);
 
     PageResult<Post> findAuthorPosts(AuthorPostsQuery query);
+
+    long markProductTagsUnavailable(String productId);
 }

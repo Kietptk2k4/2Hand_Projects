@@ -1,4 +1,15 @@
+import { useCallback, useState } from "react";
+import { ProductTagUnavailableModal } from "./ProductTagUnavailableModal";
 import { formatVndPrice } from "../utils/formatPrice";
+
+function handleViewProduct(tag, onViewProduct, showUnavailable) {
+  if (!tag?.productId) return;
+  if (tag.available === false) {
+    showUnavailable();
+    return;
+  }
+  onViewProduct?.(tag.productId);
+}
 
 function ProductThumbnail({ imageUrl, name }) {
   if (imageUrl) {
@@ -22,7 +33,7 @@ function ProductThumbnail({ imageUrl, name }) {
   );
 }
 
-function CompactStrip({ tags, onViewProduct }) {
+function CompactStrip({ tags, onViewProduct, showUnavailable }) {
   const count = tags.length;
   const first = tags[0];
   const label =
@@ -52,7 +63,7 @@ function CompactStrip({ tags, onViewProduct }) {
         type="button"
         onClick={(event) => {
           event.stopPropagation();
-          onViewProduct?.(first.productId);
+          handleViewProduct(first, onViewProduct, showUnavailable);
         }}
         className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-on-primary hover:bg-[#0050cb]"
       >
@@ -62,7 +73,7 @@ function CompactStrip({ tags, onViewProduct }) {
   );
 }
 
-function DetailList({ tags, onViewProduct }) {
+function DetailList({ tags, onViewProduct, showUnavailable }) {
   return (
     <ul className="max-h-80 space-y-2 overflow-y-auto">
       {tags.map((tag) => (
@@ -84,7 +95,7 @@ function DetailList({ tags, onViewProduct }) {
             type="button"
             onClick={(event) => {
               event.stopPropagation();
-              onViewProduct?.(tag.productId);
+              handleViewProduct(tag, onViewProduct, showUnavailable);
             }}
             className="shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-on-primary shadow-sm hover:bg-[#0050cb]"
           >
@@ -97,22 +108,40 @@ function DetailList({ tags, onViewProduct }) {
 }
 
 export function PostProductTagsBlock({ tags = [], variant = "compact", onViewProduct }) {
+  const [unavailableOpen, setUnavailableOpen] = useState(false);
+  const showUnavailable = useCallback(() => setUnavailableOpen(true), []);
+  const closeUnavailable = useCallback(() => setUnavailableOpen(false), []);
+
   if (!tags.length) return null;
 
   if (variant === "detail") {
     return (
-      <div className="mb-6" onClick={(event) => event.stopPropagation()} role="presentation">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-          Sản phẩm gắn kèm
-        </p>
-        <DetailList tags={tags} onViewProduct={onViewProduct} />
-      </div>
+      <>
+        <div className="mb-6" onClick={(event) => event.stopPropagation()} role="presentation">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+            Sản phẩm gắn kèm
+          </p>
+          <DetailList
+            tags={tags}
+            onViewProduct={onViewProduct}
+            showUnavailable={showUnavailable}
+          />
+        </div>
+        <ProductTagUnavailableModal isOpen={unavailableOpen} onClose={closeUnavailable} />
+      </>
     );
   }
 
   return (
-    <div className="mt-4" onClick={(event) => event.stopPropagation()} role="presentation">
-      <CompactStrip tags={tags} onViewProduct={onViewProduct} />
-    </div>
+    <>
+      <div className="mt-4" onClick={(event) => event.stopPropagation()} role="presentation">
+        <CompactStrip
+          tags={tags}
+          onViewProduct={onViewProduct}
+          showUnavailable={showUnavailable}
+        />
+      </div>
+      <ProductTagUnavailableModal isOpen={unavailableOpen} onClose={closeUnavailable} />
+    </>
   );
 }

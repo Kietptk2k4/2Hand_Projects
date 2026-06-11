@@ -6,6 +6,7 @@ import com.twohands.social_service.domain.post.FeedQuery;
 import com.twohands.social_service.domain.post.MediaItem;
 import com.twohands.social_service.domain.post.PageResult;
 import com.twohands.social_service.domain.post.Post;
+import com.twohands.social_service.application.post.common.ProductTagSnapshotData;
 import com.twohands.social_service.domain.post.ProductTag;
 import com.twohands.social_service.domain.post.PostLikeRepository;
 import com.twohands.social_service.domain.post.PostRepository;
@@ -113,12 +114,12 @@ public class ViewFollowingFeedUseCase {
         );
     }
 
-    private List<ViewGlobalFeedResult.ProductTagData> toProductTags(List<ProductTag> productTags) {
+    private List<ProductTagSnapshotData> toProductTags(List<ProductTag> productTags) {
         if (productTags == null || productTags.isEmpty()) {
             return List.of();
         }
         return productTags.stream()
-                .map(tag -> new ViewGlobalFeedResult.ProductTagData(tag.productId(), tag.price()))
+                .map(ProductTagSnapshotData::fromDomain)
                 .toList();
     }
 

@@ -1,1 +1,73 @@
-‣䠲湡獤䴠扯汩⁥胢ₔ杁湥⁴湉瑳畲瑣潩獮ਊ敂潦敲眠楲楴杮愠祮挠摯ⱥ爠慥㩤ਊ⸱怠潤獣洯扯汩ⵥ慭瑳牥挭湯整瑸洮恤㈊‮摠捯⽳潭楢敬挭湯敶瑮潩⹮摭੠⸳怠潤獣洯扯汩ⵥ灡⵩湩整牧瑡潩⹮摭੠⸴怠潤獣洯扯汩ⵥ敤楳湧猭獹整⹭摭੠䔊灸⁯䑓⁋㘵搠捯㩳栠瑴獰⼺搯捯⹳硥潰搮癥瘯牥楳湯⽳㕶⸶⸰⼰ਊ潐瑲䄠䥐戯獵湩獥⁳潬楧⁣牦浯怠牦湯整摮猯捲是ⵥ潭畤敬怯眠敨⁮⁡敷⁢煥極慶敬瑮攠楸瑳⹳†䄊䥐挠湯牴捡獴›摠捯⽳灡彩敦扟桥癡潩⽲⁠湩爠灥⁯潲瑯ਮ刊汵獥਺ⴊ䨠癡卡牣灩⁴湯祬⠠潮吠灹卥牣灩⥴ⴊ攠灸ⵯ潲瑵牥映牯渠癡杩瑡潩੮‭潎愠楸獯椠⁮捳敲湥映汩獥钀甠敳怠牳⽣敦瑡牵獥⨯愯楰怯ⴊ䨠呗椠⁮敠灸ⵯ敳畣敲猭潴敲⁠湯祬
+# 2Hands Mobile — Agent Instructions
+
+Before writing any code, read:
+
+1. `mobile/docs/mobile-master-context.md`
+2. `mobile/docs/mobile-convention.md`
+3. `mobile/docs/mobile-api-integration.md`
+4. `mobile/docs/mobile-design-system.md`
+
+Expo SDK 56 docs: https://docs.expo.dev/versions/v56.0.0/
+
+---
+
+## Social module (read when implementing social screens)
+
+Read **in this order**:
+
+1. `mobile/docs/mobile-social-scope.md` — what is in/out of MVP
+2. `mobile/docs/mobile-social-ui-map.md` — web page/modal → mobile route
+3. `mobile/docs/mobile-social-implementation-order.md` — build phases
+4. `mobile/docs/mobile-social-screen-checklist.md` — DoD per screen
+5. `mobile/docs/mobile-social-rn-adaptations.md` — web → React Native patterns
+
+API contracts: `docs/api_fe_behavior/social_api_fe_behavior/` (shared with web, do not duplicate).
+
+Web reference: `frontend/src/fe-module/features/social/`
+
+Start social work at **Phase 0** in `mobile-social-implementation-order.md` (`socialApiClient` + feed API) unless the task specifies a later phase.
+
+---
+
+## Auth module (existing)
+
+- Login: `app/(auth)/login.jsx`
+- API: `src/features/auth/api/authApi.js`
+- Tokens: `src/services/auth/tokenStorage.js` (expo-secure-store)
+
+---
+
+## Porting from web
+
+Port API/business logic from `frontend/src/fe-module/features/{domain}/` when a web equivalent exists.
+
+API behavior specs live in `docs/api_fe_behavior/` at repo root.
+
+---
+
+## Rules
+
+- JavaScript only (no TypeScript)
+- expo-router for navigation
+- No axios/fetch in `app/*.jsx` — use `src/features/*/api/`
+- JWT refresh token in expo-secure-store only
+- All `*.js`, `*.jsx`, `*.md` must be **UTF-8 without BOM** (Windows)
+- Do not modify backend services unless explicitly requested
+
+---
+
+## Prompt template (social screen)
+
+```text
+Implement [SCREEN] in mobile/ per mobile/docs/mobile-social-screen-checklist.md (section [N]).
+
+Read:
+- mobile/AGENTS.md
+- mobile/docs/mobile-social-scope.md
+- mobile/docs/mobile-social-ui-map.md
+- mobile/docs/mobile-social-rn-adaptations.md
+- docs/api_fe_behavior/social_api_fe_behavior/[API].md
+
+Port from frontend/src/fe-module/features/social/ as mapped in ui-map.
+UTF-8 files only. No API calls in app/*.jsx.
+```

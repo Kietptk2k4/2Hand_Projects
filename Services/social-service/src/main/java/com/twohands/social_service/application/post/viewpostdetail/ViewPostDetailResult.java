@@ -1,6 +1,7 @@
 package com.twohands.social_service.application.post.viewpostdetail;
 
-import java.math.BigDecimal;
+import com.twohands.social_service.application.post.common.ProductTagSnapshotData;
+
 import java.util.List;
 
 public record ViewPostDetailResult(
@@ -8,7 +9,7 @@ public record ViewPostDetailResult(
         AuthorSummary author,
         String caption,
         List<MediaItemData> media,
-        List<ProductTagData> productTags,
+        List<ProductTagSnapshotData> productTags,
         String visibility,
         String status,
         long likeCount,
@@ -36,9 +37,4 @@ public record ViewPostDetailResult(
     ) {
     }
 
-    public record ProductTagData(
-            String productId,
-            BigDecimal price
-    ) {
-    }
 }

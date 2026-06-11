@@ -2,6 +2,8 @@ package com.twohands.social_service.application.post.editpost;
 
 import com.twohands.social_service.application.post.common.PostMediaDimensionValidator;
 import com.twohands.social_service.application.post.common.PostMediaUrlValidator;
+import com.twohands.social_service.application.post.common.ProductTagSnapshotData;
+import com.twohands.social_service.application.post.common.ProductTagSnapshotResolver;
 import com.twohands.social_service.application.post.common.ProductTagValidationItem;
 import com.twohands.social_service.application.post.common.ProductTagValidator;
 import com.twohands.social_service.domain.post.MediaItem;
@@ -35,16 +37,19 @@ public class EditPostUseCase {
     private final PostRepository postRepository;
     private final UserWriteGuard userWriteGuard;
     private final ProductTagValidator productTagValidator;
+    private final ProductTagSnapshotResolver productTagSnapshotResolver;
     private final PostMediaUrlValidator postMediaUrlValidator;
 
     public EditPostUseCase(
             PostRepository postRepository,
             UserWriteGuard userWriteGuard,
             ProductTagValidator productTagValidator,
+            ProductTagSnapshotResolver productTagSnapshotResolver,
             PostMediaUrlValidator postMediaUrlValidator) {
         this.postRepository = postRepository;
         this.userWriteGuard = userWriteGuard;
         this.productTagValidator = productTagValidator;
+        this.productTagSnapshotResolver = productTagSnapshotResolver;
         this.postMediaUrlValidator = postMediaUrlValidator;
     }
 
@@ -170,9 +175,14 @@ public class EditPostUseCase {
     }
 
     private List<ProductTag> resolveProductTags(EditPostCommand command, Post existing) {
-        return command.productTags()
+        List<ProductTag> tags = command.productTags()
                 .map(items -> items.stream().map(i -> new ProductTag(i.productId(), i.price())).toList())
                 .orElse(existing.productTags());
+
+        if (command.productTags().isPresent()) {
+            return productTagSnapshotResolver.resolve(tags);
+        }
+        return tags;
     }
 
     private PostVisibility resolveVisibility(EditPostCommand command, Post existing) {
@@ -193,8 +203,8 @@ public class EditPostUseCase {
         List<EditPostResult.MediaItemData> media = post.media().stream()
                 .map(m -> new EditPostResult.MediaItemData(m.url(), m.type(), m.width(), m.height()))
                 .toList();
-        List<EditPostResult.ProductTagData> productTags = post.productTags().stream()
-                .map(pt -> new EditPostResult.ProductTagData(pt.productId(), pt.price()))
+        List<ProductTagSnapshotData> productTags = post.productTags().stream()
+                .map(ProductTagSnapshotData::fromDomain)
                 .toList();
         return new EditPostResult(
                 post.id(),

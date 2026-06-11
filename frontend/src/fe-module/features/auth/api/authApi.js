@@ -245,6 +245,18 @@ export async function getAdminRoles() {
   }
 }
 
+export async function getUsersForRbac({ status, q, sort = "email", page = 1, size = 20 } = {}) {
+  try {
+    const params = { sort, page, size };
+    if (status) params.status = status;
+    if (q) params.q = q;
+    const response = await apiClient.get("/api/v1/admin/users", { params });
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export async function getRolePermissions(roleId) {
   try {
     const response = await apiClient.get(`/api/v1/admin/roles/${roleId}/permissions`);

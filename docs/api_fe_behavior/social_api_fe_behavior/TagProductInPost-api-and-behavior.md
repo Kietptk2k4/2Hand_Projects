@@ -66,7 +66,14 @@ Feature này dùng chung contract của **Create Post** và **Edit Post**.
   "data": {
     "postId": "507f1f77bcf86cd799439011",
     "productTags": [
-      { "productId": "550e8400-e29b-41d4-a716-446655440000", "price": 150000 }
+      {
+        "productId": "550e8400-e29b-41d4-a716-446655440000",
+        "price": 150000,
+        "name": "Ao thun size M",
+        "imageUrl": "https://cdn.2hands.vn/commerce/p1.jpg",
+        "category": "Thoi trang",
+        "available": true
+      }
     ]
   },
   "errors": null,

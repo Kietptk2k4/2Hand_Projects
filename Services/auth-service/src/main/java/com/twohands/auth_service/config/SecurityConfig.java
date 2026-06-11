@@ -52,6 +52,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/change-password").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/admin/users").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/admin/roles").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/admin/roles/*/permissions").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/admin/users/*/permissions").authenticated()

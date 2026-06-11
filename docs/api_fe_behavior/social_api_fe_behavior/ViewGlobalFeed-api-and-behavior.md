@@ -43,7 +43,11 @@
         "productTags": [
           {
             "productId": "c1000000-0000-4000-8000-000000000001",
-            "price": 199000
+            "price": 199000,
+            "name": "iPhone 14",
+            "imageUrl": "https://cdn.2hands.vn/commerce/p1.jpg",
+            "category": "Dien thoai",
+            "available": true
           }
         ],
         "allowComments": true,

@@ -165,9 +165,12 @@ export function AppHeader({ className = "" }) {
                 type="search"
                 name="global-search"
                 placeholder="Tìm kiếm..."
-                value={socialSearchEnabled ? searchInput : undefined}
+                value={searchInput}
+                readOnly={!socialSearchEnabled}
+                aria-disabled={!socialSearchEnabled}
                 onChange={(event) => {
-                  if (socialSearchEnabled) setSearchInput(event.target.value);
+                  if (!socialSearchEnabled) return;
+                  setSearchInput(event.target.value);
                 }}
                 onFocus={() => {
                   if (!socialSearchEnabled) return;
@@ -181,7 +184,12 @@ export function AppHeader({ className = "" }) {
                     submitPostSearch();
                   }
                 }}
-                className="w-full rounded-lg border border-header-border bg-surface-container-lowest py-2 pl-10 pr-3 text-sm text-on-surface outline-none transition placeholder:text-header-muted focus:border-primary focus:ring-1 focus:ring-primary/30"
+                className={[
+                  "w-full rounded-lg border border-header-border bg-surface-container-lowest py-2 pl-10 pr-3 text-sm text-on-surface outline-none transition placeholder:text-header-muted focus:border-primary focus:ring-1 focus:ring-primary/30",
+                  !socialSearchEnabled ? "cursor-default opacity-70" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
               />
             </label>
             {searchOpen && socialSearchEnabled && searchPanelMode === "suggestions" ? (

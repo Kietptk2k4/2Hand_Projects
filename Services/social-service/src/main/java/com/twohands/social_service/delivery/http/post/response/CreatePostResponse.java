@@ -19,6 +19,13 @@ public record CreatePostResponse(
     public record MediaItemResponse(String url, String type, Integer width, Integer height) {
     }
 
-    public record ProductTagResponse(String productId, BigDecimal price) {
+    public record ProductTagResponse(
+            String productId,
+            BigDecimal price,
+            String name,
+            String imageUrl,
+            String category,
+            boolean available
+    ) {
     }
 }

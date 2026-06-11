@@ -32,6 +32,11 @@ public class SocialKafkaConsumerConfig {
     }
 
     @Bean
+    public String[] commerceProductRemovedEventTopics(SocialKafkaConsumerProperties properties) {
+        return properties.getCommerceProductRemovedTopics().toArray(String[]::new);
+    }
+
+    @Bean
     public ConsumerFactory<String, String> authUserEventConsumerFactory(SocialKafkaConsumerProperties properties) {
         Map<String, Object> config = new HashMap<>();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getBootstrapServers());

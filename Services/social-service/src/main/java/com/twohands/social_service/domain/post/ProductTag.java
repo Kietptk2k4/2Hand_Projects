@@ -4,6 +4,17 @@ import java.math.BigDecimal;
 
 public record ProductTag(
         String productId,
-        BigDecimal price
+        BigDecimal price,
+        String name,
+        String imageUrl,
+        String category,
+        Boolean available
 ) {
+    public ProductTag(String productId, BigDecimal price) {
+        this(productId, price, null, null, null, null);
+    }
+
+    public boolean isAvailable() {
+        return available == null || available;
+    }
 }

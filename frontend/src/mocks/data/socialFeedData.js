@@ -24,6 +24,24 @@ export const MOCK_FOLLOWEE_IDS = [
 
 const CDN = "https://images.unsplash.com";
 
+function productTagSnapshot({
+  productId,
+  price,
+  name = "Sản phẩm demo",
+  imageUrl = `${CDN}/photo-1523275335684-37898b6baf30?w=200&q=80`,
+  category = "",
+  available = true,
+}) {
+  return {
+    productId,
+    price,
+    name,
+    imageUrl,
+    category,
+    available,
+  };
+}
+
 function post(overrides) {
   return {
     visibility: "PUBLIC",
@@ -59,7 +77,12 @@ export const mockGlobalFeedPosts = [
       },
     ],
     productTags: [
-      { productId: "c1000000-0000-4000-8000-000000000001", price: 4500000 },
+      productTagSnapshot({
+        productId: "c1000000-0000-4000-8000-000000000001",
+        price: 4500000,
+        name: "MacBook Pro M3",
+        category: "Laptop",
+      }),
     ],
   }),
   post({
@@ -73,8 +96,18 @@ export const mockGlobalFeedPosts = [
     createdAt: "2026-05-28T14:30:00Z",
     updatedAt: "2026-05-28T14:30:00Z",
     productTags: [
-      { productId: "c1000000-0000-4000-8000-000000000001", price: 4500000 },
-      { productId: "c1000000-0000-4000-8000-000000000002", price: 935000 },
+      productTagSnapshot({
+        productId: "c1e19169-b062-4372-bb4e-8b7e3cc7871c",
+        price: 4500000,
+        name: "Sản phẩm đã gỡ",
+        available: false,
+      }),
+      productTagSnapshot({
+        productId: "c1000000-0000-4000-8000-000000000002",
+        price: 935000,
+        name: "Tai nghe Bluetooth",
+        category: "Phụ kiện",
+      }),
     ],
   }),
   post({

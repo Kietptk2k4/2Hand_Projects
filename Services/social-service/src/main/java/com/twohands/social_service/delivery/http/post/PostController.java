@@ -379,7 +379,7 @@ public class PostController {
                 .map(m -> new CreatePostResponse.MediaItemResponse(m.url(), m.type(), m.width(), m.height()))
                 .toList();
         List<CreatePostResponse.ProductTagResponse> productTags = result.productTags().stream()
-                .map(pt -> new CreatePostResponse.ProductTagResponse(pt.productId(), pt.price()))
+                .map(com.twohands.social_service.delivery.http.post.mapper.ProductTagHttpMapper::toCreateResponse)
                 .toList();
         return new CreatePostResponse(
                 result.postId(),
@@ -423,7 +423,7 @@ public class PostController {
                 .map(m -> new EditPostResponse.MediaItemResponse(m.url(), m.type(), m.width(), m.height()))
                 .toList();
         List<EditPostResponse.ProductTagResponse> productTags = result.productTags().stream()
-                .map(pt -> new EditPostResponse.ProductTagResponse(pt.productId(), pt.price()))
+                .map(com.twohands.social_service.delivery.http.post.mapper.ProductTagHttpMapper::toEditResponse)
                 .toList();
         return new EditPostResponse(
                 result.postId(),

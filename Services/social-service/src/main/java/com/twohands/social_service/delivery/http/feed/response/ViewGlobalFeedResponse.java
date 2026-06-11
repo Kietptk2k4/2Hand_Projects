@@ -26,7 +26,11 @@ public record ViewGlobalFeedResponse(
 
     public record ProductTagResponse(
             String productId,
-            BigDecimal price
+            BigDecimal price,
+            String name,
+            String imageUrl,
+            String category,
+            boolean available
     ) {
     }
 

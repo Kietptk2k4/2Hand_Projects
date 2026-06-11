@@ -90,7 +90,8 @@ class ViewGlobalFeedApiIntegrationTest {
                         3,
                         true,
                         List.of("tag1"),
-                        List.of(new ViewGlobalFeedResult.ProductTagData(productId, new BigDecimal("199000"))),
+                        List.of(new com.twohands.social_service.application.post.common.ProductTagSnapshotData(
+                                productId, new BigDecimal("199000"), "Phone", "https://cdn/p.jpg", "Mobile", true)),
                         true,
                         Instant.parse("2026-05-18T10:15:30Z").toString(),
                         Instant.parse("2026-05-18T10:20:30Z").toString()

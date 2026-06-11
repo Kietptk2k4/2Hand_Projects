@@ -1,6 +1,7 @@
 package com.twohands.social_service.application.post.editpost;
 
-import java.math.BigDecimal;
+import com.twohands.social_service.application.post.common.ProductTagSnapshotData;
+
 import java.util.List;
 
 public record EditPostResult(
@@ -8,7 +9,7 @@ public record EditPostResult(
         String authorId,
         String caption,
         List<MediaItemData> media,
-        List<ProductTagData> productTags,
+        List<ProductTagSnapshotData> productTags,
         String status,
         String visibility,
         boolean allowComments,
@@ -19,6 +20,4 @@ public record EditPostResult(
     public record MediaItemData(String url, String type, Integer width, Integer height) {
     }
 
-    public record ProductTagData(String productId, BigDecimal price) {
-    }
 }

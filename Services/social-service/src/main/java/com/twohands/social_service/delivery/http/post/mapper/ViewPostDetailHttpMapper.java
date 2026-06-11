@@ -19,7 +19,7 @@ public class ViewPostDetailHttpMapper {
                 .map(item -> new ViewPostDetailResponse.MediaItemResponse(item.url(), item.type(), item.width(), item.height()))
                 .toList();
         List<ViewPostDetailResponse.ProductTagResponse> productTags = result.productTags().stream()
-                .map(tag -> new ViewPostDetailResponse.ProductTagResponse(tag.productId(), tag.price()))
+                .map(ProductTagHttpMapper::toDetailResponse)
                 .toList();
 
         return new ViewPostDetailResponse(

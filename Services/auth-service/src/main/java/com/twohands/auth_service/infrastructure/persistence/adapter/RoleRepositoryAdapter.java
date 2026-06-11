@@ -74,7 +74,7 @@ public class RoleRepositoryAdapter implements RoleRepository {
         String sql = """
                 SELECT id, code, name, created_at, updated_at
                 FROM roles
-                ORDER BY created_at ASC
+                ORDER BY code ASC
                 """;
 
         return jdbcTemplate.query(

@@ -53,6 +53,10 @@ jwt:
   refresh-expiration: 2592000000
 
 social:
+  commerce:
+    base-url: ${COMMERCE_SERVICE_BASE_URL:http://localhost:3003}
+    connect-timeout-ms: ${SOCIAL_COMMERCE_CONNECT_TIMEOUT_MS:3000}
+    read-timeout-ms: ${SOCIAL_COMMERCE_READ_TIMEOUT_MS:5000}
   object-storage:
     enabled: ${SOCIAL_MINIO_ENABLED:false}
     endpoint: ${SOCIAL_MINIO_ENDPOINT:http://localhost:9000}
@@ -86,6 +90,9 @@ social:
       post-moderated-group-id: social-post-moderated
       post-moderated-topics:
         - admin.post.moderated
+      commerce-product-removed-group-id: social-commerce-product-removed
+      commerce-product-removed-topics:
+        - commerce.product.removed
       topics:
         - auth.user.created
         - auth.user.updated

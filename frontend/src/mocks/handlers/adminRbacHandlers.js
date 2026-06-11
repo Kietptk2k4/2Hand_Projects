@@ -29,7 +29,101 @@ function isValidUuid(value) {
   return UUID_RE.test(value || "");
 }
 
+function roleCodesForUser(userId) {
+  const roleId = mockUserRoleAssignments[userId];
+  if (!roleId) return [];
+  const role = mockRoles.find((r) => r.id === roleId);
+  return role ? [role.code] : [];
+}
+
+function buildRbacUserListItem(user) {
+  return {
+    id: user.id,
+    email: user.email,
+    display_name: user.display_name || "",
+    status: user.status,
+    role_codes: roleCodesForUser(user.id),
+    created_at: user.created_at || "2026-01-01T00:00:00Z",
+  };
+}
+
+function sortRbacUsers(items, sort) {
+  const sorted = [...items];
+  switch (sort) {
+    case "display_name":
+      sorted.sort((a, b) => (a.display_name || "").localeCompare(b.display_name || ""));
+      break;
+    case "created_at":
+      sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      break;
+    case "status":
+      sorted.sort((a, b) => a.status.localeCompare(b.status));
+      break;
+    case "email":
+    default:
+      sorted.sort((a, b) => a.email.localeCompare(b.email));
+      break;
+  }
+  return sorted;
+}
+
 export const adminRbacHandlers = [
+  http.get("*/api/v1/admin/users", async ({ request }) => {
+    await delay(300);
+    const actor = getActorFromRequest(request);
+    if (!actor) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+    if (!isAdminActor(actor)) {
+      return HttpResponse.json(apiError(403, "Ban khong co quyen truy cap."), { status: 403 });
+    }
+
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status") || "";
+    const q = (url.searchParams.get("q") || "").trim().toLowerCase();
+    const sort = url.searchParams.get("sort") || "email";
+    const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
+    const size = Math.max(1, Math.min(100, Number(url.searchParams.get("size")) || 20));
+
+    let items = mockUsers
+      .filter((user) => user.status !== "DELETED")
+      .map(buildRbacUserListItem);
+
+    if (status) {
+      items = items.filter((item) => item.status === status);
+    }
+
+    if (q) {
+      items = items.filter(
+        (item) =>
+          item.email.toLowerCase().includes(q) ||
+          (item.display_name || "").toLowerCase().includes(q)
+      );
+    }
+
+    items = sortRbacUsers(items, sort);
+
+    const totalItems = items.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / size));
+    const safePage = Math.min(page, totalPages);
+    const start = (safePage - 1) * size;
+    const pageItems = items.slice(start, start + size);
+
+    return HttpResponse.json(
+      apiSuccess(200, "Lay danh sach user thanh cong.", {
+        items: pageItems,
+        pagination: {
+          page: safePage,
+          size,
+          total_items: totalItems,
+          total_pages: totalPages,
+          has_next: safePage < totalPages,
+        },
+      }),
+      { status: 200 }
+    );
+  }),
+
   http.get("*/api/v1/admin/roles", async ({ request }) => {
     await delay(300);
     const actor = getActorFromRequest(request);

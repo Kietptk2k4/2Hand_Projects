@@ -1,14 +1,13 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getUserPermissions } from "../../../api/authApi";
 import { useAuthSession } from "../../../hooks/useAuthSession.jsx";
-import { ASSIGNABLE_USERS } from "../../constants/assignableUsers.js";
 import {
   AccountCard,
   AccountSkeleton,
-  PrimaryButton,
   TabPanelHeader,
 } from "../../../../../shared/ui/auth/authUi.jsx";
 import { EmptyState, ErrorState } from "../../../../../shared/ui/PageState.jsx";
+import { RbacUserListPanel } from "./RbacUserListPanel.jsx";
 
 function groupPermissionsByPrefix(codes) {
   const groups = {};
@@ -20,25 +19,38 @@ function groupPermissionsByPrefix(codes) {
   return groups;
 }
 
-export function PermissionsOfUserTab() {
+export function PermissionsOfUserTab({
+  rbacUserListFilters,
+  rbacSelectedUserId,
+  onRbacUserListFiltersChange,
+  onRbacUserSelect,
+}) {
   const { showSessionExpired } = useAuthSession();
-  const [userId, setUserId] = useState("");
+  const [selectedUser, setSelectedUser] = useState(null);
   const [resolvedUserId, setResolvedUserId] = useState("");
   const [permissions, setPermissions] = useState([]);
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const selectedUser = ASSIGNABLE_USERS.find((u) => u.id === userId);
+  const handleUserSelect = (userId, userRow) => {
+    setSelectedUser(userRow || null);
+    onRbacUserSelect?.(userId);
+  };
 
   const load = useCallback(async () => {
-    if (!userId) return;
+    if (!rbacSelectedUserId) {
+      setStatus("idle");
+      setPermissions([]);
+      setResolvedUserId("");
+      return;
+    }
 
     setStatus("loading");
     setErrorMessage("");
 
     try {
-      const data = await getUserPermissions(userId);
-      setResolvedUserId(data?.user_id || userId);
+      const data = await getUserPermissions(rbacSelectedUserId);
+      setResolvedUserId(data?.user_id || rbacSelectedUserId);
       setPermissions(data?.permissions || []);
       setStatus("ready");
     } catch (error) {
@@ -48,18 +60,22 @@ export function PermissionsOfUserTab() {
       }
       if (error?.code === 403) {
         setStatus("forbidden");
-        setErrorMessage(error?.message || "Bạn không co quyen truy cap.");
+        setErrorMessage(error?.message || "Bạn không có quyền truy cập.");
         return;
       }
       if (error?.code === 404) {
         setStatus("not_found");
-        setErrorMessage(error?.message || "Không tìm thay user.");
+        setErrorMessage(error?.message || "Không tìm thấy người dùng.");
         return;
       }
       setStatus("error");
-      setErrorMessage(error?.message || "Không tải duoc permission.");
+      setErrorMessage(error?.message || "Không tải được quyền.");
     }
-  }, [userId, showSessionExpired]);
+  }, [rbacSelectedUserId, showSessionExpired]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const codes = permissions.map((p) => p.code);
   const grouped = groupPermissionsByPrefix(codes);
@@ -68,77 +84,71 @@ export function PermissionsOfUserTab() {
     <div>
       <TabPanelHeader
         title="Quyền của người dùng"
-        subtitle="Xem permission hieu luc của người dùng (chi ma permission)."
+        subtitle="Xem permission hiệu lực của người dùng (chỉ mã permission)."
       />
 
-      <AccountCard className="mb-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-          <div className="min-w-0 flex-1">
-            <label htmlFor="user-perm-select" className="mb-1.5 block text-xs font-semibold text-on-surface">
-              User
-            </label>
-            <select
-              id="user-perm-select"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2.5 text-base outline-none focus:border-primary"
-            >
-              <option value="">Chọn người dùng...</option>
-              {ASSIGNABLE_USERS.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.email}
-                </option>
-              ))}
-            </select>
-          </div>
-          <PrimaryButton type="button" onClick={load} disabled={!userId}>
-            Tai permission
-          </PrimaryButton>
-        </div>
-      </AccountCard>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)]">
+        <RbacUserListPanel
+          userListFilters={rbacUserListFilters}
+          onFiltersChange={onRbacUserListFiltersChange}
+          selectedUserId={rbacSelectedUserId}
+          onUserSelect={handleUserSelect}
+          onSelectedUserSync={setSelectedUser}
+        />
 
-      {status === "loading" ? <AccountSkeleton /> : null}
-      {status === "forbidden" || status === "not_found" || status === "error" ? (
-        <ErrorState message={errorMessage} />
-      ) : null}
-
-      {status === "ready" ? (
-        <>
-          <AccountCard className="mb-4">
-            <p className="text-sm text-on-surface-variant">User ID</p>
-            <p className="mt-1 break-all font-mono text-sm text-on-surface">{resolvedUserId}</p>
-            {selectedUser ? (
-              <p className="mt-2 text-sm text-on-surface-variant">Email: {selectedUser.email}</p>
-            ) : null}
-          </AccountCard>
-
-          {permissions.length === 0 ? (
-            <EmptyState message="User chưa co permission nao." />
-          ) : (
+        <div className="space-y-4">
+          {!rbacSelectedUserId ? (
             <AccountCard>
-              <div className="flex flex-wrap gap-2">
-                {codes.map((code) => (
-                  <span
-                    key={code}
-                    className="inline-flex rounded-full bg-account-surface-low px-3 py-1 text-xs font-semibold text-on-surface"
-                  >
-                    {code}
-                  </span>
-                ))}
-              </div>
-
-              {Object.keys(grouped).length > 1 ? (
-                <p className="mt-4 text-xs text-on-surface-variant">
-                  Chi de hien thi — nhom theo prefix:{" "}
-                  {Object.entries(grouped)
-                    .map(([prefix, items]) => `${prefix} (${items.length})`)
-                    .join(", ")}
-                </p>
-              ) : null}
+              <p className="text-sm text-on-surface-variant">
+                Chọn một người dùng từ danh sách bên trái để xem quyền.
+              </p>
             </AccountCard>
-          )}
-        </>
-      ) : null}
+          ) : null}
+
+          {status === "loading" ? <AccountSkeleton /> : null}
+          {status === "forbidden" || status === "not_found" || status === "error" ? (
+            <ErrorState message={errorMessage} />
+          ) : null}
+
+          {status === "ready" ? (
+            <>
+              <AccountCard>
+                <p className="text-sm text-on-surface-variant">User ID</p>
+                <p className="mt-1 break-all font-mono text-sm text-on-surface">{resolvedUserId}</p>
+                {selectedUser ? (
+                  <p className="mt-2 text-sm text-on-surface-variant">Email: {selectedUser.email}</p>
+                ) : null}
+              </AccountCard>
+
+              {permissions.length === 0 ? (
+                <EmptyState message="Người dùng chưa có quyền nào." />
+              ) : (
+                <AccountCard>
+                  <div className="flex flex-wrap gap-2">
+                    {codes.map((code) => (
+                      <span
+                        key={code}
+                        className="inline-flex rounded-full bg-account-surface-low px-3 py-1 text-xs font-semibold text-on-surface"
+                      >
+                        {code}
+                      </span>
+                    ))}
+                  </div>
+
+                  {Object.keys(grouped).length > 1 ? (
+                    <p className="mt-4 text-xs text-on-surface-variant">
+                      Chỉ để hiển thị — nhóm theo prefix:{" "}
+                      {Object.entries(grouped)
+                        .map(([prefix, items]) => `${prefix} (${items.length})`)
+                        .join(", ")}
+                    </p>
+                  ) : null}
+                </AccountCard>
+              )}
+            </>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }
