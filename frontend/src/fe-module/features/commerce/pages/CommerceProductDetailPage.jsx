@@ -18,6 +18,7 @@ import {
   buildCommerceCategoryPath,
   buildCommerceProductReviewsPath,
   buildCommerceShopPath,
+  buildCommerceShopReviewsPath,
 } from "../utils/commerceRoutes";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
@@ -90,10 +91,10 @@ export function CommerceProductDetailPage() {
     navigate(buildCommerceProductReviewsPath(productId));
   }, [navigate, productId]);
 
-  const viewAllReviews = useCallback(
-    (targetProductId) => {
-      if (!targetProductId) return;
-      navigate(buildCommerceProductReviewsPath(targetProductId));
+  const viewAllShopReviews = useCallback(
+    (shopId) => {
+      if (!shopId) return;
+      navigate(buildCommerceShopReviewsPath(shopId));
     },
     [navigate]
   );
@@ -167,11 +168,30 @@ export function CommerceProductDetailPage() {
               />
             ) : null}
 
-            <ProductMediaGallery product={product} />
-
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10">
-              <div className="flex flex-col gap-8 lg:col-span-8">
+              <div className="lg:col-span-5">
+                <ProductMediaGallery product={product} />
+              </div>
+
+              <div className="flex flex-col gap-6 lg:col-span-7">
                 <ProductDetailInfo product={product} onOpenReviews={openReviews} />
+                <ProductDetailActionCard
+                  product={product}
+                  productImageUrl={productFlyImageUrl}
+                  onComingSoon={showComingSoon}
+                  onAddToCart={onAddToCart}
+                  onBuyNow={onBuyNow}
+                  isAddingToCart={isAddingToCart}
+                  isBuyingNow={isBuyingProduct(product.productId)}
+                />
+                <ProductDetailShopCard
+                  product={product}
+                  onVisitShop={visitShop}
+                  onViewAllReviews={viewAllShopReviews}
+                />
+              </div>
+
+              <div className="flex flex-col gap-8 lg:col-span-12">
                 <ProductDetailDescription product={product} />
                 <ProductDetailReviewsPreview
                   ratingSummary={previewRatingSummary}
@@ -183,28 +203,6 @@ export function CommerceProductDetailPage() {
                   onViewAll={openReviews}
                   onRetry={retryReviewsPreview}
                   onComingSoon={showComingSoon}
-                />
-              </div>
-
-              <div className="lg:col-span-4">
-                <ProductDetailActionCard
-                  product={product}
-                  productImageUrl={productFlyImageUrl}
-                  onComingSoon={showComingSoon}
-                  onAddToCart={onAddToCart}
-                  onBuyNow={onBuyNow}
-                  isAddingToCart={isAddingToCart}
-                  isBuyingNow={isBuyingProduct(product.productId)}
-                />
-                {/* <p className="mt-2 text-center text-xs text-on-surface-variant">
-                  <Link to={APP_ROUTES.commerceCart} className="text-primary hover:underline">
-                    Xem giỏ hàng
-                  </Link>
-                </p> */}
-                <ProductDetailShopCard
-                  product={product}
-                  onVisitShop={visitShop}
-                  onViewAllReviews={viewAllReviews}
                 />
               </div>
             </div>

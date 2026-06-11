@@ -1,9 +1,12 @@
+import { useNavigate } from "react-router-dom";
 import { formatVndPrice } from "../../social/utils/formatPrice";
+import { buildCommerceSellerProductEditPath } from "../utils/commerceRoutes";
 import { formatProductUpdatedAt } from "../utils/sellerProductMapper";
 import { SellerProductRowActions } from "./SellerProductRowActions";
 import { SellerProductStatusBadge } from "./SellerProductStatusBadge";
 
 export function SellerProductTable({ items, disabled, onAction, onEdit }) {
+  const navigate = useNavigate();
   return (
     <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
       <div className="overflow-x-auto">
@@ -28,8 +31,30 @@ export function SellerProductTable({ items, disabled, onAction, onEdit }) {
                 product.stockQuantity > 0 &&
                 product.stockQuantity <= product.lowStockThreshold;
 
+              const editPath = buildCommerceSellerProductEditPath(product.productId);
+
+              const openProduct = () => {
+                if (!product.productId) return;
+                navigate(editPath);
+              };
+
+              const handleRowKeyDown = (event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  openProduct();
+                }
+              };
+
               return (
-                <tr key={product.productId} className="hover:bg-surface-container-low/50">
+                <tr
+                  key={product.productId}
+                  onClick={openProduct}
+                  onKeyDown={handleRowKeyDown}
+                  tabIndex={0}
+                  role="link"
+                  aria-label={`Xem chi tiết ${product.title}`}
+                  className="cursor-pointer transition-colors hover:bg-surface-container-low/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
+                >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-outline-variant bg-surface-container-high">
@@ -87,7 +112,7 @@ export function SellerProductTable({ items, disabled, onAction, onEdit }) {
                   <td className="px-4 py-3 text-on-surface-variant">
                     {formatProductUpdatedAt(product.updatedAt)}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3" onClick={(event) => event.stopPropagation()}>
                     <SellerProductRowActions
                       product={product}
                       disabled={disabled}

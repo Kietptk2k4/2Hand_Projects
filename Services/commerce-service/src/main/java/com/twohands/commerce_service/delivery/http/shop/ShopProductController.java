@@ -2,13 +2,22 @@ package com.twohands.commerce_service.delivery.http.shop;
 
 import com.twohands.commerce_service.application.product.viewproductsbyshop.ViewProductsByShopCommand;
 import com.twohands.commerce_service.application.product.viewproductsbyshop.ViewProductsByShopUseCase;
+import com.twohands.commerce_service.application.review.viewpublicshopreviews.ViewPublicShopReviewsCommand;
+import com.twohands.commerce_service.application.review.viewpublicshopreviews.ViewPublicShopReviewsUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.common.pagination.PageMeta;
 import com.twohands.commerce_service.delivery.http.catalog.PageMetaResponse;
 import com.twohands.commerce_service.delivery.http.catalog.ProductCardResponse;
+import com.twohands.commerce_service.delivery.http.catalog.ProductReviewMediaResponse;
+import com.twohands.commerce_service.delivery.http.catalog.ProductReviewRatingSummaryResponse;
+import com.twohands.commerce_service.delivery.http.catalog.ProductReviewSellerReplyResponse;
 import com.twohands.commerce_service.domain.discovery.ProductCardSummary;
 import com.twohands.commerce_service.domain.discovery.PublicShopSummary;
 import com.twohands.commerce_service.domain.discovery.ViewProductsByShopResult;
+import com.twohands.commerce_service.domain.review.ProductReviewSellerReply;
+import com.twohands.commerce_service.domain.review.PublicShopReviewListItem;
+import com.twohands.commerce_service.domain.review.ReviewMediaItem;
+import com.twohands.commerce_service.domain.review.ViewPublicShopReviewsResult;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,9 +33,33 @@ import java.util.UUID;
 public class ShopProductController {
 
     private final ViewProductsByShopUseCase viewProductsByShopUseCase;
+    private final ViewPublicShopReviewsUseCase viewPublicShopReviewsUseCase;
 
-    public ShopProductController(ViewProductsByShopUseCase viewProductsByShopUseCase) {
+    public ShopProductController(
+            ViewProductsByShopUseCase viewProductsByShopUseCase,
+            ViewPublicShopReviewsUseCase viewPublicShopReviewsUseCase
+    ) {
         this.viewProductsByShopUseCase = viewProductsByShopUseCase;
+        this.viewPublicShopReviewsUseCase = viewPublicShopReviewsUseCase;
+    }
+
+    @GetMapping("/{shopId}/reviews")
+    public ResponseEntity<ApiResponse<ViewPublicShopReviewsResponse>> viewPublicShopReviews(
+            @PathVariable UUID shopId,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) Integer rating,
+            @RequestParam(required = false) String sort
+    ) {
+        ViewPublicShopReviewsResult result = viewPublicShopReviewsUseCase.execute(
+                new ViewPublicShopReviewsCommand(shopId, page, limit, rating, sort)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewPublicShopReviewsUseCase.successMessage(),
+                toShopReviewsResponse(result)
+        ));
     }
 
     @GetMapping("/{shopId}/products")
@@ -45,6 +78,54 @@ public class ShopProductController {
                 viewProductsByShopUseCase.successMessage(),
                 toResponse(result)
         ));
+    }
+
+    private ViewPublicShopReviewsResponse toShopReviewsResponse(ViewPublicShopReviewsResult result) {
+        PageMeta pagination = result.pagination();
+        return new ViewPublicShopReviewsResponse(
+                result.shopId(),
+                result.shopName(),
+                new ProductReviewRatingSummaryResponse(
+                        result.ratingSummary().ratingAvg(),
+                        result.ratingSummary().ratingCount()
+                ),
+                result.reviews().stream().map(this::toShopReviewItemResponse).toList(),
+                new PageMetaResponse(
+                        pagination.page(),
+                        pagination.limit(),
+                        pagination.totalItems(),
+                        pagination.totalPages(),
+                        pagination.hasNext()
+                )
+        );
+    }
+
+    private PublicShopReviewItemResponse toShopReviewItemResponse(PublicShopReviewListItem item) {
+        return new PublicShopReviewItemResponse(
+                item.reviewId(),
+                item.productNameSnapshot(),
+                item.rating(),
+                item.comment(),
+                item.createdAt(),
+                item.media().stream().map(this::toReviewMediaResponse).toList(),
+                item.sellerReply() == null ? null : toSellerReplyResponse(item.sellerReply())
+        );
+    }
+
+    private ProductReviewMediaResponse toReviewMediaResponse(ReviewMediaItem media) {
+        return new ProductReviewMediaResponse(
+                media.id(),
+                media.url(),
+                media.type()
+        );
+    }
+
+    private ProductReviewSellerReplyResponse toSellerReplyResponse(ProductReviewSellerReply reply) {
+        return new ProductReviewSellerReplyResponse(
+                reply.replyId(),
+                reply.content(),
+                reply.createdAt()
+        );
     }
 
     private ViewProductsByShopResponse toResponse(ViewProductsByShopResult result) {

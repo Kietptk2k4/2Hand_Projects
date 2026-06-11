@@ -12,6 +12,15 @@ export async function processSellerOrderItems(orderItemIds) {
   }
 }
 
+export async function fetchSellerOrderDetail(orderId) {
+  try {
+    const response = await commerceApiClient.get(`/commerce/api/v1/seller/orders/${orderId}`);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export async function fetchSellerOrderList({ page, limit, status, shipmentStatus }) {
   try {
     const params = { page, limit };

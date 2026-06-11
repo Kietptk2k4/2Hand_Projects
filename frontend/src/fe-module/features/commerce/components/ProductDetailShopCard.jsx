@@ -46,10 +46,10 @@ export function ProductDetailShopCard({ product, onVisitShop, onViewAllReviews }
 
       <button
         type="button"
-        onClick={() => onViewAllReviews?.(product.productId)}
+        onClick={() => onViewAllReviews?.(shop.shopId)}
         className="mt-2 w-full rounded-lg py-2 text-label-md text-primary hover:underline"
       >
-        Xem tất cả đánh giá
+        Xem tất cả đánh giá của shop
       </button>
     </aside>
   );

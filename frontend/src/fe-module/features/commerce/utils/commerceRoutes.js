@@ -20,6 +20,21 @@ export function buildCommerceShopPath(shopId) {
   return APP_ROUTES.commerceShopProducts.replace(":shopId", shopId);
 }
 
+export function buildCommerceSellerOrderDetailPath(orderId) {
+  return APP_ROUTES.commerceSellerOrderDetail.replace(":orderId", orderId);
+}
+
+export function buildCommerceSellerProductEditPath(productId) {
+  return APP_ROUTES.commerceSellerProductEdit.replace(":productId", productId);
+}
+
+export function buildCommerceShopReviewsPath(shopId, { rating } = {}) {
+  const base = APP_ROUTES.commerceShopReviews.replace(":shopId", shopId);
+  if (rating == null) return base;
+  const params = new URLSearchParams({ rating: String(rating) });
+  return `${base}?${params.toString()}`;
+}
+
 export function buildCommerceProductReviewsPath(productId, { rating } = {}) {
   const base = APP_ROUTES.commerceProductReviews.replace(":productId", productId);
   if (rating == null) return base;

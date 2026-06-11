@@ -67,6 +67,11 @@ public class ProductDiscoveryRepositoryAdapter implements ProductDiscoveryReposi
             WHERE p.status IN ('ACTIVE', 'OUT_OF_STOCK')
             """;
 
+    private static final String IN_STOCK_ONLY_PREDICATE = """
+              AND p.status = 'ACTIVE'
+              AND COALESCE(pi.stock_quantity, 0) > 0
+            """;
+
     private static final String SEARCH_KEYWORD_PREDICATE = """
               AND (
                   p.title ILIKE :pattern ESCAPE '\\'
@@ -155,7 +160,7 @@ public class ProductDiscoveryRepositoryAdapter implements ProductDiscoveryReposi
 
     @Override
     public long countAllVisibleProducts(Instant now) {
-        String sql = "SELECT COUNT(DISTINCT p.id) " + VISIBLE_PRODUCT_FROM;
+        String sql = "SELECT COUNT(DISTINCT p.id) " + VISIBLE_PRODUCT_FROM + IN_STOCK_ONLY_PREDICATE;
         Long count = jdbcTemplate.queryForObject(sql, baseParams(now), Long.class);
         return count == null ? 0 : count;
     }
@@ -168,6 +173,7 @@ public class ProductDiscoveryRepositoryAdapter implements ProductDiscoveryReposi
     ) {
         String sql = VISIBLE_PRODUCT_SELECT
                 + VISIBLE_PRODUCT_FROM
+                + IN_STOCK_ONLY_PREDICATE
                 + " ORDER BY " + orderByClause(sort)
                 + " LIMIT :limit OFFSET :offset";
 

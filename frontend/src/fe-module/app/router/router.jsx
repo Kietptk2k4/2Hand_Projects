@@ -29,6 +29,7 @@ import { CommerceProductDetailPage } from "../../features/commerce/pages/Commerc
 import { CommerceCategoryProductsPage } from "../../features/commerce/pages/CommerceCategoryProductsPage";
 import { CommerceSearchPage } from "../../features/commerce/pages/CommerceSearchPage";
 import { CommerceShopProductsPage } from "../../features/commerce/pages/CommerceShopProductsPage";
+import { CommerceShopReviewsPage } from "../../features/commerce/pages/CommerceShopReviewsPage";
 import { CommerceCartPage } from "../../features/commerce/pages/CommerceCartPage";
 import { CommerceUserAddressesPage } from "../../features/commerce/pages/CommerceUserAddressesPage";
 import { CommerceCheckoutPage } from "../../features/commerce/pages/CommerceCheckoutPage";
@@ -44,6 +45,7 @@ import { CommerceShopSettingsPage } from "../../features/commerce/pages/Commerce
 import { CommerceSellerProductListPage } from "../../features/commerce/pages/CommerceSellerProductListPage";
 import { CommerceSellerProductFormPage } from "../../features/commerce/pages/CommerceSellerProductFormPage";
 import { CommerceSellerOrderListPage } from "../../features/commerce/pages/CommerceSellerOrderListPage";
+import { CommerceSellerOrderDetailPage } from "../../features/commerce/pages/CommerceSellerOrderDetailPage";
 import { CommerceSellerAnalyticsPage } from "../../features/commerce/pages/CommerceSellerAnalyticsPage";
 import { CommerceSellerShipmentListPage } from "../../features/commerce/pages/CommerceSellerShipmentListPage";
 import { CommerceSellerShipmentDetailPage } from "../../features/commerce/pages/CommerceSellerShipmentDetailPage";
@@ -71,6 +73,10 @@ export const router = createBrowserRouter([
       {
         path: APP_ROUTES.commerceCategoryProducts.slice(1),
         element: <CommerceCategoryProductsPage />,
+      },
+      {
+        path: APP_ROUTES.commerceShopReviews.slice(1),
+        element: <CommerceShopReviewsPage />,
       },
       {
         path: APP_ROUTES.commerceShopProducts.slice(1),
@@ -164,6 +170,10 @@ export const router = createBrowserRouter([
               {
                 path: APP_ROUTES.commerceSellerProductEdit.slice(1),
                 element: <CommerceSellerProductFormPage mode="edit" />,
+              },
+              {
+                path: APP_ROUTES.commerceSellerOrderDetail.slice(1),
+                element: <CommerceSellerOrderDetailPage />,
               },
               {
                 path: APP_ROUTES.commerceSellerOrders.slice(1),

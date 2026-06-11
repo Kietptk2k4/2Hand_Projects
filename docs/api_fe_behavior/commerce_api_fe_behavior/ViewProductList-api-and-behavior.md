@@ -43,17 +43,18 @@ Buyer/guest xem danh sach san pham buyer-visible (discovery feed), read-only, co
 
 Chi tra product khi:
 
-- `products.status IN (ACTIVE, OUT_OF_STOCK)`
+- `products.status = ACTIVE`
+- `COALESCE(product_inventories.stock_quantity, 0) > 0` (con hang)
 - `seller_shops.status = ACTIVE`
 - `product_categories.is_active = true`
 - Co **active price** tai thoi diem query
 
-Product `DRAFT` / `PAUSED` / `ARCHIVED` / `REMOVED` va shop `SUSPENDED`/`CLOSED` **khong** xuat hien.
+Product `OUT_OF_STOCK`, het ton kho, `DRAFT` / `PAUSED` / `ARCHIVED` / `REMOVED` va shop `SUSPENDED`/`CLOSED` **khong** xuat hien.
 
 ## 4. FE Behavior
 
 - Mac dinh sort `NEWEST` (`created_at` DESC).
-- Out-of-stock van hien (`in_stock: false`, `status` co the `OUT_OF_STOCK`).
+- Commerce home chi hien san pham con hang (`in_stock: true`, `status: ACTIVE`).
 - Dung `pagination.has_next` cho load more.
 - Tim kiem keyword → `GET /products/search`. Loc category → `GET /categories/{id}/products`.
 

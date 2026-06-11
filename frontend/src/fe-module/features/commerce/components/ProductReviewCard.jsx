@@ -3,7 +3,7 @@ import { ProductReviewMediaStrip } from "./ProductReviewMediaStrip";
 import { ProductReviewSellerReply } from "./ProductReviewSellerReply";
 import { StarRating } from "./StarRating";
 
-export function ProductReviewCard({ review, onComingSoon }) {
+export function ProductReviewCard({ review, productName, onComingSoon }) {
   if (!review) return null;
 
   return (
@@ -17,7 +17,14 @@ export function ProductReviewCard({ review, onComingSoon }) {
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm font-semibold text-on-surface">Người mua</p>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-on-surface">Người mua</p>
+              {productName ? (
+                <p className="mt-0.5 line-clamp-1 text-xs text-on-surface-variant">
+                  Sản phẩm: {productName}
+                </p>
+              ) : null}
+            </div>
             <time className="text-xs text-on-surface-variant" dateTime={review.createdAt}>
               {formatReviewDate(review.createdAt)}
             </time>

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   MANUAL_NEXT_ACTIONS,
   SHIPMENT_STATUS_BADGE_CLASS,
@@ -35,12 +35,25 @@ function copyText(text) {
 }
 
 export function SellerShipmentCard({ item, disabled, isUpdating, onRequestStatusUpdate }) {
+  const navigate = useNavigate();
   const isManual = item.carrier === "MANUAL" || item.carrier === "SELF_DELIVERY";
   const tracking = item.trackingNumber || item.ghnOrderCode || "—";
   const detailPath = APP_ROUTES.commerceSellerShipmentDetail.replace(
     ":shipmentId",
     item.shipmentId,
   );
+
+  const openDetail = () => {
+    if (!item.shipmentId) return;
+    navigate(detailPath);
+  };
+
+  const handleCardKeyDown = (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openDetail();
+    }
+  };
 
   const badgeClass =
     SHIPMENT_STATUS_BADGE_CLASS[item.status] || "bg-surface-container-high text-on-surface";
@@ -50,8 +63,13 @@ export function SellerShipmentCard({ item, disabled, isUpdating, onRequestStatus
 
   return (
     <article
+      onClick={openDetail}
+      onKeyDown={handleCardKeyDown}
+      tabIndex={0}
+      role="link"
+      aria-label={`Xem chi tiết vận đơn ${tracking}`}
       className={[
-        "rounded-xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-sm",
+        "cursor-pointer rounded-xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-sm transition-colors hover:bg-surface-container-low/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         isManual ? "border-l-4 border-l-secondary" : "",
       ].join(" ")}
     >
@@ -85,8 +103,11 @@ export function SellerShipmentCard({ item, disabled, isUpdating, onRequestStatus
             <span className="text-label-sm text-on-surface-variant">Mã vận đơn:</span>
             <button
               type="button"
-              onClick={() => copyText(tracking)}
-              className="font-mono text-label-md font-semibold text-primary hover:underline"
+              onClick={(event) => {
+                event.stopPropagation();
+                copyText(tracking);
+              }}
+              className="relative z-10 font-mono text-label-md font-semibold text-primary hover:underline"
               title="Sao chép"
             >
               {tracking}
@@ -120,9 +141,12 @@ export function SellerShipmentCard({ item, disabled, isUpdating, onRequestStatus
                   key={action.status}
                   type="button"
                   disabled={disabled || isUpdating}
-                  onClick={() => onRequestStatusUpdate?.(item, action)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onRequestStatusUpdate?.(item, action);
+                  }}
                   className={[
-                    "rounded-lg px-3 py-2 text-label-sm font-medium disabled:opacity-50",
+                    "relative z-10 rounded-lg px-3 py-2 text-label-sm font-medium disabled:opacity-50",
                     action.status === "FAILED"
                       ? "border border-error text-error hover:bg-error-container/30"
                       : "border border-secondary text-secondary hover:bg-secondary/5",
@@ -133,12 +157,9 @@ export function SellerShipmentCard({ item, disabled, isUpdating, onRequestStatus
               ))
             : null}
 
-          <Link
-            to={detailPath}
-            className="rounded-lg border border-primary px-4 py-2 text-label-sm font-medium text-primary hover:bg-surface-container-low"
-          >
+          <span className="rounded-lg border border-primary px-4 py-2 text-label-sm font-medium text-primary">
             Chi tiết
-          </Link>
+          </span>
         </div>
       </div>
     </article>

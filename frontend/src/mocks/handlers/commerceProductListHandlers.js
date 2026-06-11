@@ -96,7 +96,10 @@ export const commerceProductListHandlers = [
 
     const { page, limit } = pagination;
     const { sort } = sortResult;
-    const sorted = sortProducts(mockCommerceProducts, sort);
+    const inStockProducts = mockCommerceProducts.filter(
+      (item) => item.status === "ACTIVE" && item.in_stock
+    );
+    const sorted = sortProducts(inStockProducts, sort);
     const data = paginateProducts(sorted, page, limit);
 
     return HttpResponse.json(

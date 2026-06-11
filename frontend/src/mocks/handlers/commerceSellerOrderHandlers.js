@@ -1,5 +1,6 @@
 import { delay, http, HttpResponse } from "msw";
 import {
+  getSellerOrderDetailForUser,
   listSellerOrdersForUser,
   processSellerOrderItemsForUser,
   validateSellerOrderListQuery,
@@ -26,6 +27,20 @@ function mapError(result) {
 }
 
 export const commerceSellerOrderHandlers = [
+  http.get("*/commerce/api/v1/seller/orders/:orderId", async ({ params, request }) => {
+    await delay(300);
+    const auth = requireAuth(request);
+    if (auth.error) return auth.error;
+
+    const result = getSellerOrderDetailForUser(auth.user.id, params.orderId);
+    if (result.error) return mapError(result);
+
+    return HttpResponse.json(
+      apiSuccess(200, "Lay chi tiet don hang seller thanh cong.", result.data),
+      { status: 200 },
+    );
+  }),
+
   http.get("*/commerce/api/v1/seller/orders", async ({ request }) => {
     await delay(300);
     const auth = requireAuth(request);

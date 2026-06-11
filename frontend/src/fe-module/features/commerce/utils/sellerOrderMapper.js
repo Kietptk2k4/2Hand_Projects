@@ -73,6 +73,33 @@ export function mapSellerOrderListResponse(data) {
   };
 }
 
+function mapShippingAddress(address) {
+  if (!address) return null;
+  return {
+    receiverName: pick(address, "receiverName", "receiver_name"),
+    phone: address.phone,
+    fullAddress: pick(address, "fullAddress", "full_address"),
+    addressDetail: pick(address, "addressDetail", "address_detail"),
+  };
+}
+
+export function mapSellerOrderDetail(data) {
+  if (!data) return null;
+
+  return {
+    orderId: pick(data, "orderId", "order_id"),
+    orderStatus: pick(data, "orderStatus", "order_status"),
+    orderPaymentStatus: pick(data, "orderPaymentStatus", "order_payment_status"),
+    orderPaymentMethod: pick(data, "orderPaymentMethod", "order_payment_method"),
+    orderCreatedAt: pick(data, "orderCreatedAt", "order_created_at"),
+    payment: mapPayment(data.payment),
+    sellerItemsSubtotal: data.seller_items_subtotal ?? data.sellerItemsSubtotal ?? 0,
+    sellerShippingTotal: data.seller_shipping_total ?? data.sellerShippingTotal ?? 0,
+    items: (data.items || []).map(mapSellerOrderListItem).filter(Boolean),
+    shippingAddress: mapShippingAddress(data.shipping_address ?? data.shippingAddress),
+  };
+}
+
 export function mapProcessSellerOrderItemsResponse(data) {
   if (!data) {
     return {

@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { formatVndPrice } from "../../social/utils/formatPrice";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 import { formatOrderPaymentSubline } from "../constants/sellerOrderConstants";
+import { buildCommerceSellerOrderDetailPath } from "../utils/commerceRoutes";
 import { formatShortOrderId } from "../utils/formatOrderDate";
 import { SellerOrderItemStatusBadge } from "./SellerOrderItemStatusBadge";
 import { SellerOrderShipmentCell } from "./SellerOrderShipmentCell";
@@ -14,6 +15,7 @@ export function SellerOrderTableRow({
   disabled,
   isProcessing,
 }) {
+  const navigate = useNavigate();
   const canSelect = item.itemStatus === "PENDING";
   const canCreateShipment =
     item.itemStatus === "PROCESSING" &&
@@ -25,6 +27,10 @@ export function SellerOrderTableRow({
     ? `${APP_ROUTES.commerceSellerShipments}?create=1&orderId=${encodeURIComponent(item.orderId)}&orderItemIds=${encodeURIComponent(item.orderItemId)}`
     : null;
   const shortId = formatShortOrderId(item.orderId);
+  const orderDetailPath = buildCommerceSellerOrderDetailPath(item.orderId);
+  const shipmentDetailPath = item.shipmentSummary?.shipmentId
+    ? APP_ROUTES.commerceSellerShipmentDetail.replace(":shipmentId", item.shipmentSummary.shipmentId)
+    : null;
   const paymentSubline = formatOrderPaymentSubline(item.orderPaymentStatus, item.orderPaymentMethod);
   const isPaid = item.orderPaymentStatus === "PAID";
 
@@ -33,14 +39,31 @@ export function SellerOrderTableRow({
     navigator.clipboard?.writeText(item.orderId).catch(() => {});
   };
 
+  const openDetail = () => {
+    if (!item.orderId) return;
+    navigate(orderDetailPath);
+  };
+
+  const handleRowKeyDown = (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openDetail();
+    }
+  };
+
   return (
     <tr
+      onClick={openDetail}
+      onKeyDown={handleRowKeyDown}
+      tabIndex={0}
+      role="link"
+      aria-label={`Xem chi tiết đơn ${shortId}`}
       className={[
-        "border-b border-outline-variant/60 transition-colors",
+        "cursor-pointer border-b border-outline-variant/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset",
         selected ? "bg-surface-container-low" : "hover:bg-surface-container-low/50",
       ].join(" ")}
     >
-      <td className="px-3 py-3">
+      <td className="px-3 py-3" onClick={(event) => event.stopPropagation()}>
         <input
           type="checkbox"
           checked={Boolean(selected)}
@@ -51,14 +74,21 @@ export function SellerOrderTableRow({
         />
       </td>
       <td className="px-3 py-3">
-        <button
-          type="button"
-          onClick={handleCopyOrderId}
-          className="font-mono text-label-md font-semibold text-primary hover:underline"
-          title="Sao chép mã đơn"
-        >
-          {shortId}
-        </button>
+        <div className="flex items-center gap-1">
+          <span className="font-mono text-label-md font-semibold text-primary">{shortId}</span>
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              handleCopyOrderId();
+            }}
+            className="relative z-10 text-on-surface-variant hover:text-primary"
+            title="Sao chép mã đơn"
+            aria-label="Sao chép mã đơn"
+          >
+            <span className="material-symbols-outlined text-[16px]">content_copy</span>
+          </button>
+        </div>
       </td>
       <td className="px-3 py-3">
         <div className="flex min-w-0 items-center gap-3">
@@ -98,23 +128,27 @@ export function SellerOrderTableRow({
           </div>
         </div>
       </td>
-      <td className="px-3 py-3">
-        <SellerOrderShipmentCell shipmentSummary={item.shipmentSummary} />
+      <td className="px-3 py-3" onClick={(event) => event.stopPropagation()}>
+        <SellerOrderShipmentCell
+          shipmentSummary={item.shipmentSummary}
+          detailHref={shipmentDetailPath}
+        />
       </td>
-      <td className="px-3 py-3 text-right">
+      <td className="px-3 py-3 text-right" onClick={(event) => event.stopPropagation()}>
         {canSelect ? (
           <button
             type="button"
             disabled={disabled || isProcessing}
             onClick={() => onPrepareRow?.(item)}
-            className="rounded-lg border border-primary px-2 py-1 text-label-sm font-medium text-primary hover:bg-surface-container-low disabled:opacity-50"
+            className="relative z-10 rounded-lg border border-primary px-2 py-1 text-label-sm font-medium text-primary hover:bg-surface-container-low disabled:opacity-50"
           >
             Chuẩn bị
           </button>
         ) : canCreateShipment ? (
           <Link
             to={createShipmentHref}
-            className="inline-block rounded-lg border border-secondary px-2 py-1 text-label-sm font-medium text-secondary hover:bg-secondary/5"
+            onClick={(event) => event.stopPropagation()}
+            className="relative z-10 inline-block rounded-lg border border-secondary px-2 py-1 text-label-sm font-medium text-secondary hover:bg-secondary/5"
           >
             Tạo vận đơn
           </Link>

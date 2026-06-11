@@ -10,6 +10,7 @@ import { SellerProductTable } from "../components/SellerProductTable";
 import { useRouteToastMessage } from "../hooks/useRouteToastMessage";
 import { useSellerProductActions } from "../hooks/useSellerProductActions";
 import { useSellerProductList } from "../hooks/useSellerProductList";
+import { buildCommerceSellerProductEditPath } from "../utils/commerceRoutes";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
 export function CommerceSellerProductListPage() {
@@ -54,11 +55,8 @@ export function CommerceSellerProductListPage() {
 
   const handleEdit = useCallback(
     (product) => {
-      const path = APP_ROUTES.commerceSellerProductEdit.replace(
-        ":productId",
-        product.productId,
-      );
-      navigate(path);
+      if (!product?.productId) return;
+      navigate(buildCommerceSellerProductEditPath(product.productId));
     },
     [navigate],
   );

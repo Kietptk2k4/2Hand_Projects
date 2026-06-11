@@ -525,6 +525,57 @@ export function syncSellerItemsForBuyerOrderStatus(
   }
 }
 
+export function getSellerOrderDetailForUser(userId, orderId) {
+  const shop = getShopBySellerId(userId);
+  if (!shop) {
+    return { error: "COMMERCE-409-SELLER-SHOP", status: 409, message: "Seller chua co shop." };
+  }
+
+  const records = sellerOrderItems.filter(
+    (row) => row.seller_id === userId && row.order_id === orderId,
+  );
+  if (records.length === 0) {
+    return { error: "COMMERCE-404-ORDER", status: 404, message: "Don hang khong ton tai." };
+  }
+
+  const first = records[0];
+  const sellerItemsSubtotal = records.reduce((sum, row) => sum + Number(row.final_price || 0), 0);
+  const sellerShippingTotal = records.reduce(
+    (sum, row) => sum + Number(row.shipping_fee_allocated || 0),
+    0,
+  );
+
+  let shipping_address = null;
+  const shipmentRow = records.find((row) => row.shipment_summary?.shipment_id);
+  if (
+    shipmentRow &&
+    ["PROCESSING", "COMPLETED"].includes(first.order_status) &&
+    shipmentRow.shipment_summary?.delivery_address_summary
+  ) {
+    shipping_address = {
+      receiver_name: "Người mua demo",
+      phone: "0900000000",
+      full_address: shipmentRow.shipment_summary.delivery_address_summary,
+      address_detail: shipmentRow.shipment_summary.delivery_address_summary,
+    };
+  }
+
+  return {
+    data: {
+      order_id: first.order_id,
+      order_status: first.order_status,
+      order_payment_status: first.order_payment_status,
+      order_payment_method: first.order_payment_method,
+      order_created_at: first.order_created_at,
+      payment: first.payment,
+      seller_items_subtotal: sellerItemsSubtotal,
+      seller_shipping_total: sellerShippingTotal,
+      items: records.map(toListRow),
+      shipping_address,
+    },
+  };
+}
+
 export function listSellerOrdersForUser(userId, { page, limit, status, shipment_status }) {
   const shop = getShopBySellerId(userId);
   if (!shop) {
