@@ -10,6 +10,15 @@ export async function loginWithEmail(payload) {
   }
 }
 
+export async function fetchPublicUserProfile(userId) {
+  try {
+    const response = await authApiClient.get(`/api/v1/users/${userId}/public-profile`);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export async function logoutWithRefreshToken(refreshToken) {
   try {
     const response = await authApiClient.post("/api/v1/auth/logout", {

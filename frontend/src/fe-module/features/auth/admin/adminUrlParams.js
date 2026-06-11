@@ -132,6 +132,32 @@ const RBAC_USER_LIST_FILTER_KEYS = [
   "rbac_user_id",
 ];
 
+const INVESTIGATION_USER_LIST_FILTER_KEYS = [
+  "inv_status",
+  "inv_q",
+  "inv_sort",
+  "inv_page",
+  "inv_size",
+];
+
+const POST_MODERATION_LIST_FILTER_KEYS = [
+  "post_mod_status",
+  "post_mod_moderation_status",
+  "post_mod_q",
+  "post_mod_sort",
+  "post_mod_page",
+  "post_mod_size",
+];
+
+const COMMENT_MODERATION_LIST_FILTER_KEYS = [
+  "cmt_mod_status",
+  "cmt_mod_post_id",
+  "cmt_mod_q",
+  "cmt_mod_sort",
+  "cmt_mod_page",
+  "cmt_mod_size",
+];
+
 const MANAGED_PARAM_KEYS = new Set([
   "section",
   "tab",
@@ -144,6 +170,9 @@ const MANAGED_PARAM_KEYS = new Set([
   ...SYSTEM_OPERATIONS_ANNOUNCEMENT_FILTER_KEYS,
   ...SYSTEM_OPERATIONS_SELECTION_KEYS,
   ...RBAC_USER_LIST_FILTER_KEYS,
+  ...INVESTIGATION_USER_LIST_FILTER_KEYS,
+  ...POST_MODERATION_LIST_FILTER_KEYS,
+  ...COMMENT_MODERATION_LIST_FILTER_KEYS,
 ]);
 
 export function parseAdminSection(searchParams) {
@@ -307,6 +336,38 @@ export function parseRbacSelectedUserId(searchParams) {
   return searchParams.get("rbac_user_id") || "";
 }
 
+export function parseInvestigationUserListFilters(searchParams) {
+  return {
+    status: searchParams.get("inv_status") || "",
+    q: searchParams.get("inv_q") || "",
+    sort: searchParams.get("inv_sort") || "created_at",
+    page: searchParams.get("inv_page") || "1",
+    size: searchParams.get("inv_size") || "20",
+  };
+}
+
+export function parsePostModerationListFilters(searchParams) {
+  return {
+    status: searchParams.get("post_mod_status") || "",
+    moderation_status: searchParams.get("post_mod_moderation_status") || "",
+    q: searchParams.get("post_mod_q") || "",
+    sort: searchParams.get("post_mod_sort") || "created_at",
+    page: searchParams.get("post_mod_page") || "1",
+    size: searchParams.get("post_mod_size") || "20",
+  };
+}
+
+export function parseCommentModerationListFilters(searchParams) {
+  return {
+    status: searchParams.get("cmt_mod_status") || "",
+    post_id: searchParams.get("cmt_mod_post_id") || "",
+    q: searchParams.get("cmt_mod_q") || "",
+    sort: searchParams.get("cmt_mod_sort") || "created_at",
+    page: searchParams.get("cmt_mod_page") || "1",
+    size: searchParams.get("cmt_mod_size") || "20",
+  };
+}
+
 function copyUnmanagedParams(next, preserve) {
   if (!preserve) return;
   for (const [key, value] of preserve.entries()) {
@@ -454,6 +515,42 @@ function applyRbacUserListFilterParams(next, rbacUserListFilters, rbacUserId) {
   if (rbacUserId) next.set("rbac_user_id", rbacUserId);
 }
 
+function applyInvestigationUserListFilterParams(next, investigationUserListFilters) {
+  if (!investigationUserListFilters) return;
+
+  const { status, q, sort, page, size } = investigationUserListFilters;
+  if (status) next.set("inv_status", status);
+  if (q) next.set("inv_q", q);
+  if (sort && sort !== "created_at") next.set("inv_sort", sort);
+  if (page) next.set("inv_page", String(page));
+  if (size && String(size) !== "20") next.set("inv_size", String(size));
+}
+
+function applyPostModerationListFilterParams(next, postModerationListFilters) {
+  if (!postModerationListFilters) return;
+
+  const { status, moderation_status: moderationStatus, q, sort, page, size } =
+    postModerationListFilters;
+  if (status) next.set("post_mod_status", status);
+  if (moderationStatus) next.set("post_mod_moderation_status", moderationStatus);
+  if (q) next.set("post_mod_q", q);
+  if (sort && sort !== "created_at") next.set("post_mod_sort", sort);
+  if (page) next.set("post_mod_page", String(page));
+  if (size && String(size) !== "20") next.set("post_mod_size", String(size));
+}
+
+function applyCommentModerationListFilterParams(next, commentModerationListFilters) {
+  if (!commentModerationListFilters) return;
+
+  const { status, post_id: postId, q, sort, page, size } = commentModerationListFilters;
+  if (status) next.set("cmt_mod_status", status);
+  if (postId) next.set("cmt_mod_post_id", postId);
+  if (q) next.set("cmt_mod_q", q);
+  if (sort && sort !== "created_at") next.set("cmt_mod_sort", sort);
+  if (page) next.set("cmt_mod_page", String(page));
+  if (size && String(size) !== "20") next.set("cmt_mod_size", String(size));
+}
+
 export function buildAdminSearchParams({
   section,
   tab,
@@ -480,6 +577,9 @@ export function buildAdminSearchParams({
   clearConfigSelection = false,
   rbacUserListFilters,
   rbacUserId,
+  investigationUserListFilters,
+  postModerationListFilters,
+  commentModerationListFilters,
   preserve,
 }) {
   const next = new URLSearchParams();
@@ -625,6 +725,16 @@ export function buildAdminSearchParams({
         productView ??
         (preserve?.get("productView") === "history" ? "history" : undefined),
     });
+    applyPostModerationListFilterParams(
+      next,
+      postModerationListFilters ??
+        (preserve ? parsePostModerationListFilters(preserve) : undefined),
+    );
+    applyCommentModerationListFilterParams(
+      next,
+      commentModerationListFilters ??
+        (preserve ? parseCommentModerationListFilters(preserve) : undefined),
+    );
   }
 
   if (section === "rolePermission") {
@@ -634,6 +744,13 @@ export function buildAdminSearchParams({
     const resolvedRbacUserId =
       rbacUserId ?? (preserve ? parseRbacSelectedUserId(preserve) || undefined : undefined);
     applyRbacUserListFilterParams(next, resolvedRbacFilters, resolvedRbacUserId);
+  }
+
+  if (section === "userInvestigation") {
+    const resolvedInvestigationFilters =
+      investigationUserListFilters ??
+      (preserve ? parseInvestigationUserListFilters(preserve) : undefined);
+    applyInvestigationUserListFilterParams(next, resolvedInvestigationFilters);
   }
 
   return next;

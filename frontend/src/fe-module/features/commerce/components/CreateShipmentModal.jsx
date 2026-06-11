@@ -23,8 +23,11 @@ export function CreateShipmentModal({
     setCarrier,
     shipmentType,
     setShipmentType,
-    weightGram,
-    setWeightGram,
+    estimatedWeightGram,
+    useWeightOverride,
+    setUseWeightOverride,
+    weightOverrideGram,
+    setWeightOverrideGram,
     trackingNumber,
     setTrackingNumber,
     showTrackingField,
@@ -170,19 +173,54 @@ export function CreateShipmentModal({
                 </select>
               </label>
 
-              <label className="block">
-                <span className="text-label-sm font-medium text-on-surface">
-                  Khối lượng (gram) — tùy chọn
-                </span>
+              <div className="rounded-lg border border-outline-variant/60 bg-surface-container-low px-3 py-3">
+                <p className="text-label-sm font-medium text-on-surface">Khối lượng ước tính</p>
+                <p className="mt-1 text-body-sm text-on-surface">
+                  {selectedItemIds.size > 0 && estimatedWeightGram > 0
+                    ? `${estimatedWeightGram.toLocaleString("vi-VN")} g`
+                    : selectedItemIds.size > 0
+                      ? "Chưa có khối lượng sản phẩm — hệ thống sẽ tính khi tạo vận đơn"
+                      : "Chọn mục hàng ở bước trước"}
+                </p>
+                <p className="mt-1 text-label-sm text-on-surface-variant">
+                  Tính từ khối lượng sản phẩm × số lượng. Để trống để hệ thống tự gửi cho GHN.
+                </p>
+              </div>
+
+              <label className="flex items-start gap-2">
                 <input
-                  type="number"
-                  min="1"
-                  value={weightGram}
-                  onChange={(e) => setWeightGram(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-body-sm"
-                  placeholder="VD: 800"
+                  type="checkbox"
+                  checked={useWeightOverride}
+                  onChange={(e) => {
+                    setUseWeightOverride(e.target.checked);
+                    if (!e.target.checked) setWeightOverrideGram("");
+                  }}
+                  className="mt-1 h-4 w-4 rounded border-outline-variant text-primary"
                 />
+                <span className="text-body-sm text-on-surface">
+                  Ghi đè cân thực tế (đóng gói khác khối lượng sản phẩm)
+                </span>
               </label>
+
+              {useWeightOverride ? (
+                <label className="block">
+                  <span className="text-label-sm font-medium text-on-surface">
+                    Khối lượng thực tế (gram)
+                  </span>
+                  <input
+                    type="number"
+                    min="1"
+                    value={weightOverrideGram}
+                    onChange={(e) => setWeightOverrideGram(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-body-sm"
+                    placeholder={
+                      estimatedWeightGram > 0
+                        ? `VD: ${estimatedWeightGram}`
+                        : "VD: 800"
+                    }
+                  />
+                </label>
+              ) : null}
 
               {showTrackingField ? (
                 <label className="block">

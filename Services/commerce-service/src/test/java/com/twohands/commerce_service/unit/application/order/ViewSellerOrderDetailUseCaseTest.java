@@ -96,6 +96,7 @@ class ViewSellerOrderDetailUseCaseTest {
                 orderId,
                 UUID.randomUUID(),
                 1,
+                450,
                 BigDecimal.valueOf(890000),
                 BigDecimal.valueOf(890000),
                 BigDecimal.valueOf(30000),

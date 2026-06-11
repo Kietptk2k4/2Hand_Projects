@@ -31,6 +31,7 @@ public class ViewSellerOrderDetailRepositoryAdapter implements ViewSellerOrderDe
     private static final String ITEMS_FROM = """
             FROM order_items oi
             INNER JOIN orders o ON o.id = oi.order_id
+            LEFT JOIN products prod ON prod.id = oi.product_id
             LEFT JOIN payments p ON p.order_id = o.id
             LEFT JOIN shipments sh ON sh.id = oi.shipment_id
             LEFT JOIN shipping_address_snapshots sas ON sas.shipment_id = sh.id
@@ -183,6 +184,7 @@ public class ViewSellerOrderDetailRepositoryAdapter implements ViewSellerOrderDe
                 UUID.fromString(rs.getString("order_id")),
                 UUID.fromString(rs.getString("product_id")),
                 rs.getInt("quantity"),
+                rs.getInt("line_weight_gram"),
                 rs.getBigDecimal("unit_price_snapshot"),
                 rs.getBigDecimal("final_price"),
                 rs.getBigDecimal("shipping_fee_allocated"),

@@ -1,0 +1,16 @@
+import { socialApiClient } from "../../../services/http/socialApiClient";
+import { mapAxiosError, unwrapResponse } from "./socialApiResponse";
+
+export async function fetchSuggestedUsers({ page = 0, limit = 20, size } = {}) {
+  try {
+    const response = await socialApiClient.get("/api/v1/social/users/suggestions", {
+      params: {
+        page,
+        limit: size ?? limit,
+      },
+    });
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}

@@ -129,6 +129,7 @@ public class SellerOrderController {
                 entry.orderId(),
                 entry.productId(),
                 entry.quantity(),
+                entry.lineWeightGram(),
                 entry.unitPriceSnapshot(),
                 entry.finalPrice(),
                 entry.shippingFeeAllocated(),

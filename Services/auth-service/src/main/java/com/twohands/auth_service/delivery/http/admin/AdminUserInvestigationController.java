@@ -3,6 +3,9 @@ package com.twohands.auth_service.delivery.http.admin;
 import com.twohands.auth_service.application.admin.searchusersforinvestigation.SearchUsersForInvestigationCommand;
 import com.twohands.auth_service.application.admin.searchusersforinvestigation.SearchUsersForInvestigationResult;
 import com.twohands.auth_service.application.admin.searchusersforinvestigation.SearchUsersForInvestigationUseCase;
+import com.twohands.auth_service.application.admin.viewuserlistforinvestigation.ViewUserListForInvestigationCommand;
+import com.twohands.auth_service.application.admin.viewuserlistforinvestigation.ViewUserListForInvestigationUseCase;
+import com.twohands.auth_service.application.rbac.viewuserlistforrbac.ViewUserListForRbacResult;
 import com.twohands.auth_service.application.admin.viewuserinvestigationprofile.ViewUserInvestigationProfileByAdminCommand;
 import com.twohands.auth_service.application.admin.viewuserinvestigationprofile.ViewUserInvestigationProfileByAdminResult;
 import com.twohands.auth_service.application.admin.viewuserinvestigationprofile.ViewUserInvestigationProfileByAdminUseCase;
@@ -16,6 +19,7 @@ import com.twohands.auth_service.application.admin.viewusersessionsforadmin.View
 import com.twohands.auth_service.application.admin.viewusersessionsforadmin.ViewUserSessionsForAdminUseCase;
 import com.twohands.auth_service.common.dto.ApiResponse;
 import com.twohands.auth_service.delivery.http.admin.response.SearchUsersForInvestigationResponse;
+import com.twohands.auth_service.delivery.http.admin.response.ViewUserListForRbacResponse;
 import com.twohands.auth_service.delivery.http.admin.response.ViewLoginHistoryForAdminResponse;
 import com.twohands.auth_service.delivery.http.admin.response.ViewUserInvestigationProfileByAdminResponse;
 import com.twohands.auth_service.delivery.http.admin.response.ViewUserSessionsForAdminResponse;
@@ -38,20 +42,70 @@ import java.util.UUID;
 public class AdminUserInvestigationController {
 
 	private final SearchUsersForInvestigationUseCase searchUsersForInvestigationUseCase;
+	private final ViewUserListForInvestigationUseCase viewUserListForInvestigationUseCase;
 	private final ViewUserInvestigationProfileByAdminUseCase viewUserInvestigationProfileByAdminUseCase;
 	private final ViewUserSessionsForAdminUseCase viewUserSessionsForAdminUseCase;
 	private final ViewLoginHistoryForAdminUseCase viewLoginHistoryForAdminUseCase;
 
 	public AdminUserInvestigationController(
 			SearchUsersForInvestigationUseCase searchUsersForInvestigationUseCase,
+			ViewUserListForInvestigationUseCase viewUserListForInvestigationUseCase,
 			ViewUserInvestigationProfileByAdminUseCase viewUserInvestigationProfileByAdminUseCase,
 			ViewUserSessionsForAdminUseCase viewUserSessionsForAdminUseCase,
 			ViewLoginHistoryForAdminUseCase viewLoginHistoryForAdminUseCase
 	) {
 		this.searchUsersForInvestigationUseCase = searchUsersForInvestigationUseCase;
+		this.viewUserListForInvestigationUseCase = viewUserListForInvestigationUseCase;
 		this.viewUserInvestigationProfileByAdminUseCase = viewUserInvestigationProfileByAdminUseCase;
 		this.viewUserSessionsForAdminUseCase = viewUserSessionsForAdminUseCase;
 		this.viewLoginHistoryForAdminUseCase = viewLoginHistoryForAdminUseCase;
+	}
+
+	@GetMapping("/investigation")
+	public ResponseEntity<ApiResponse<ViewUserListForRbacResponse>> viewUserListForInvestigation(
+			@RequestParam(required = false) String status,
+			@RequestParam(required = false) String q,
+			@RequestParam(required = false) String sort,
+			@RequestParam(defaultValue = "1") int page,
+			@RequestParam(defaultValue = "20") int size
+	) {
+		ViewUserListForRbacResult result = viewUserListForInvestigationUseCase.execute(
+				new ViewUserListForInvestigationCommand(
+						resolveAuthenticatedUserId(),
+						status,
+						q,
+						sort,
+						page,
+						size
+				)
+		);
+
+		ViewUserListForRbacResponse response = new ViewUserListForRbacResponse(
+				result.items().stream()
+						.map(item -> new ViewUserListForRbacResponse.ItemData(
+								item.id().toString(),
+								item.email(),
+								item.displayName(),
+								item.status(),
+								item.roleCodes(),
+								item.createdAt()
+						))
+						.toList(),
+				new ViewUserListForRbacResponse.PaginationData(
+						result.pagination().page(),
+						result.pagination().size(),
+						result.pagination().totalItems(),
+						result.pagination().totalPages(),
+						result.pagination().hasNext()
+				)
+		);
+
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(ApiResponse.success(
+						HttpStatus.OK.value(),
+						viewUserListForInvestigationUseCase.successMessage(),
+						response
+				));
 	}
 
 	@GetMapping("/search")

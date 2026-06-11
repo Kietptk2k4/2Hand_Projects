@@ -10,9 +10,19 @@ export const ROUTES = {
       ...(focusComments ? { focusComments: "1" } : {}),
     },
   }),
-  userProfile: (userId) => `/user/${userId}`,
+  postCreate: ({ pickMedia = false } = {}) => ({
+    pathname: "/post/create",
+    ...(pickMedia ? { params: { pickMedia: "1" } } : {}),
+  }),
+  postEdit: (postId) => ({
+    pathname: "/post/[postId]/edit",
+    params: { postId },
+  }),
+  userProfile: (userId) => `/profile/${userId}`,
+  profileFollowers: (userId) => `/profile/${userId}/followers`,
+  profileFollowing: (userId) => `/profile/${userId}/following`,
   saved: "/saved",
   search: "/search",
   suggestions: "/suggestions",
-  hashtag: (tag) => `/tags/${encodeURIComponent(tag)}`,
+  hashtag: (tag) => `/hashtag/${encodeURIComponent(String(tag).replace(/^#+/, ""))}`,
 };

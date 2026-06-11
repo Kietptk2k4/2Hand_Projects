@@ -9,7 +9,13 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { FEED_TABS } from "../constants/feedTabs";
+import { useCurrentUserId } from "../hooks/useCurrentUserId";
+import { useDeletePost } from "../hooks/useDeletePost";
 import { useFeed } from "../hooks/useFeed";
+import { useLikePost } from "../hooks/useLikePost";
+import { useSavePost } from "../hooks/useSavePost";
+import { FeedComposer } from "./FeedComposer";
+import { FeedHeaderActions } from "./FeedHeaderActions";
 import { FeedPostSkeleton } from "./FeedPostSkeleton";
 import { FeedTabs } from "./FeedTabs";
 import { PostCard } from "./PostCard";
@@ -24,6 +30,7 @@ const EMPTY_BY_TAB = {
 
 export function FeedScreen() {
   const [activeTab, setActiveTab] = useState(FEED_TABS.GLOBAL);
+  const currentUserId = useCurrentUserId();
   const {
     items,
     errorMessage,
@@ -33,6 +40,10 @@ export function FeedScreen() {
     loadMore,
     retry,
   } = useFeed(activeTab);
+
+  const { toggleLike, isLikingPost } = useLikePost();
+  const { toggleSave, isSavingPost } = useSavePost();
+  const { confirmDelete, isDeletingPost } = useDeletePost();
 
   const onOpenPost = useCallback((postId, options = {}) => {
     router.push(ROUTES.postDetail(postId, options));
@@ -48,8 +59,26 @@ export function FeedScreen() {
     router.push(ROUTES.hashtag(tag));
   }, []);
 
+  const onOpenCreatePost = useCallback(() => {
+    router.push(ROUTES.postCreate());
+  }, []);
+
+  const onOpenCreatePostWithPicker = useCallback(() => {
+    router.push(ROUTES.postCreate({ pickMedia: true }));
+  }, []);
+
+  const onEditPost = useCallback((postId) => {
+    if (!postId) return;
+    router.push(ROUTES.postEdit(postId));
+  }, []);
+
   const renderHeader = () => (
     <View style={styles.headerBlock}>
+      <FeedHeaderActions />
+      <FeedComposer
+        onOpenCreatePost={onOpenCreatePost}
+        onOpenCreatePostWithPicker={onOpenCreatePostWithPicker}
+      />
       <FeedTabs activeTab={activeTab} onChange={setActiveTab} />
     </View>
   );
@@ -90,9 +119,17 @@ export function FeedScreen() {
       renderItem={({ item }) => (
         <PostCard
           post={item}
+          currentUserId={currentUserId}
           onOpenPost={onOpenPost}
           onViewProfile={onViewProfile}
           onHashtagClick={onHashtagClick}
+          onToggleLike={toggleLike}
+          onToggleSave={toggleSave}
+          onEditPost={onEditPost}
+          onDeletePost={(postId) => confirmDelete(postId)}
+          isLikingPost={isLikingPost(item.postId)}
+          isSavingPost={isSavingPost(item.postId)}
+          isDeletingPost={isDeletingPost(item.postId)}
         />
       )}
       ListHeaderComponent={renderHeader}
@@ -123,6 +160,7 @@ const styles = StyleSheet.create({
   headerBlock: {
     marginBottom: 16,
     marginTop: 8,
+    gap: 16,
   },
   skeletonBlock: {
     gap: 0,

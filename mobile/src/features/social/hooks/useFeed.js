@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { fetchFollowingFeed, fetchGlobalFeed } from "../api/feedApi";
+import { feedKeys } from "../api/feedKeys";
 import { FEED_TABS, FEED_PAGE_SIZE } from "../constants/feedTabs";
 import { clearSessionTokens } from "../../../services/auth/tokenStorage";
 import { ROUTES } from "../../../shared/constants/routes";
@@ -16,81 +17,41 @@ async function handleSessionExpired() {
 }
 
 export function useFeed(activeTab) {
-  const [page, setPage] = useState(0);
-  const [items, setItems] = useState([]);
-  const [meta, setMeta] = useState(null);
-  const [status, setStatus] = useState("idle");
-  const [errorMessage, setErrorMessage] = useState("");
-  const requestIdRef = useRef(0);
-
-  const resetFeed = useCallback(() => {
-    setPage(0);
-    setItems([]);
-    setMeta(null);
-    setErrorMessage("");
-    setStatus("idle");
-  }, []);
-
-  const loadPage = useCallback(
-    async (targetPage, { append = false } = {}) => {
+  const query = useInfiniteQuery({
+    queryKey: feedKeys.tab(activeTab),
+    queryFn: async ({ pageParam = 0 }) => {
       const fetchFn = FETCH_BY_TAB[activeTab];
-      if (!fetchFn) return;
-
-      const requestId = ++requestIdRef.current;
-      setStatus(append ? "loadingMore" : "loading");
-      setErrorMessage("");
+      if (!fetchFn) {
+        return { items: [], meta: null };
+      }
 
       try {
-        const data = await fetchFn({ page: targetPage, size: FEED_PAGE_SIZE });
-        if (requestId !== requestIdRef.current) return;
-
-        const nextItems = data?.items || [];
-        setItems((prev) => (append ? [...prev, ...nextItems] : nextItems));
-        setMeta(data?.meta || null);
-        setPage(targetPage);
-        setStatus("ready");
+        return await fetchFn({ page: pageParam, size: FEED_PAGE_SIZE });
       } catch (error) {
-        if (requestId !== requestIdRef.current) return;
-
         if (error?.code === 401) {
           await handleSessionExpired();
-          return;
         }
-
-        setStatus("error");
-        setErrorMessage(error?.message || "Không tải được feed. Vui lòng thử lại.");
+        throw error;
       }
     },
-    [activeTab]
-  );
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage?.meta?.hasNext) return undefined;
+      return (lastPage.meta.page ?? 0) + 1;
+    },
+  });
 
-  useEffect(() => {
-    resetFeed();
-    loadPage(0, { append: false });
-  }, [activeTab, resetFeed, loadPage]);
-
-  const loadMore = useCallback(() => {
-    if (status === "loadingMore" || status === "loading" || !meta?.hasNext) return;
-    loadPage(page + 1, { append: true });
-  }, [loadPage, meta?.hasNext, page, status]);
-
-  const retry = useCallback(() => {
-    if (items.length > 0) {
-      loadPage(page, { append: false });
-      return;
-    }
-    loadPage(0, { append: false });
-  }, [items.length, loadPage, page]);
+  const items = query.data?.pages.flatMap((page) => page?.items || []) ?? [];
+  const meta = query.data?.pages.at(-1)?.meta ?? null;
 
   return {
     items,
     meta,
-    status,
-    errorMessage,
-    isInitialLoading: status === "loading" && items.length === 0,
-    isLoadingMore: status === "loadingMore",
+    errorMessage: query.error?.message || "",
+    isInitialLoading: query.isLoading,
+    isLoadingMore: query.isFetchingNextPage,
     hasNext: Boolean(meta?.hasNext),
-    loadMore,
-    retry,
+    loadMore: query.fetchNextPage,
+    retry: query.refetch,
   };
 }

@@ -20,8 +20,12 @@ public final class ViewUserListForRbacQueryPolicy {
     }
 
     public static RbacUserListSortField parseSortField(String rawSort) {
+        return parseSortField(rawSort, RbacUserListSortField.EMAIL);
+    }
+
+    public static RbacUserListSortField parseSortField(String rawSort, RbacUserListSortField defaultField) {
         if (rawSort == null || rawSort.isBlank()) {
-            return RbacUserListSortField.EMAIL;
+            return defaultField;
         }
 
         return switch (rawSort.trim().toLowerCase(Locale.ROOT)) {

@@ -38,6 +38,14 @@ public class JwtTokenProvider {
         return roles.stream().map(String::valueOf).toList();
     }
 
+    public List<String> getPermissions(String token) {
+        Object rawPermissions = parseClaims(token).get("permissions");
+        if (!(rawPermissions instanceof List<?> permissions)) {
+            return Collections.emptyList();
+        }
+        return permissions.stream().map(String::valueOf).toList();
+    }
+
     public boolean isValid(String token) {
         try {
             parseClaims(token);

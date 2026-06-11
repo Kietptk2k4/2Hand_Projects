@@ -1,19 +1,31 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { usePostAuthorDisplay } from "../hooks/usePostAuthorDisplay";
+import { resolvePostAuthorId, resolvePostIsOwner } from "../utils/resolvePostAuthorId";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
-import { formatSocialCount } from "../utils/formatSocialCount";
 import { PostCaption } from "./PostCaption";
 import { PostMediaCarousel } from "./PostMediaCarousel";
+import { PostActionBar } from "./PostActionBar";
+import { PostOptionsMenu } from "./PostOptionsMenu";
 import { colors } from "../../../shared/theme/colors";
 
 export function PostCard({
   post,
+  currentUserId,
   onOpenPost,
   onViewProfile,
   onHashtagClick,
+  onToggleLike,
+  onToggleSave,
+  onEditPost,
+  onDeletePost,
+  isLikingPost = false,
+  isSavingPost = false,
+  isDeletingPost = false,
 }) {
-  const author = usePostAuthorDisplay(post.authorId);
+  const authorId = resolvePostAuthorId(post);
+  const author = usePostAuthorDisplay(authorId);
+  const isOwner = resolvePostIsOwner(post, currentUserId);
 
   const openDetail = (options) => {
     onOpenPost?.(post.postId, options);
@@ -24,15 +36,15 @@ export function PostCard({
       <View style={styles.headerSection}>
         <View style={styles.header}>
           <Pressable
-            onPress={() => onViewProfile?.(post.authorId)}
+            onPress={() => onViewProfile?.(authorId)}
             style={styles.avatarButton}
-            accessibilityLabel="Xem ho so tac gia"
+            accessibilityLabel="Xem hồ sơ tác giả"
           >
             <Image source={{ uri: author.avatarUrl }} style={styles.avatar} />
           </Pressable>
           <Pressable
             style={styles.authorInfo}
-            onPress={() => onViewProfile?.(post.authorId)}
+            onPress={() => onViewProfile?.(authorId)}
           >
             <Text style={styles.authorName} numberOfLines={1}>
               {author.displayName}
@@ -43,28 +55,33 @@ export function PostCard({
               <Text style={styles.timeText}>{formatRelativeTime(post.createdAt)}</Text>
             </View>
           </Pressable>
+          {currentUserId ? (
+            <PostOptionsMenu
+              postId={post.postId}
+              isOwner={isOwner}
+              savedByMe={post.savedByMe}
+              onEdit={() => onEditPost?.(post.postId)}
+              onDelete={() => onDeletePost?.(post.postId)}
+              onToggleSave={() => onToggleSave?.(post.postId)}
+              isSaving={isSavingPost}
+              isDeleting={isDeletingPost}
+            />
+          ) : null}
         </View>
       </View>
 
       <PostMediaCarousel media={post.media} onMediaPress={() => openDetail()} />
 
-      <View style={styles.statsRow}>
-        <View style={styles.statsLeft}>
-          <View style={styles.statItem}>
-            <Ionicons name="thumbs-up-outline" size={20} color={colors.onSurfaceVariant} />
-            <Text style={styles.statText}>{formatSocialCount(post.likeCount) ?? "0"}</Text>
-          </View>
-          <Pressable
-            style={styles.statItem}
-            onPress={() => openDetail({ focusComments: true })}
-            accessibilityRole="button"
-            accessibilityLabel="Xem binh luan"
-          >
-            <Ionicons name="chatbubble-outline" size={20} color={colors.onSurfaceVariant} />
-            <Text style={styles.statText}>{formatSocialCount(post.replyCount) ?? "0"}</Text>
-          </Pressable>
-        </View>
-      </View>
+      <PostActionBar
+        postId={post.postId}
+        likedByMe={post.likedByMe}
+        likeCount={post.likeCount}
+        replyCount={post.replyCount}
+        allowComments={post.allowComments}
+        isLiking={isLikingPost}
+        onToggleLike={onToggleLike}
+        onOpenComments={() => openDetail({ focusComments: true })}
+      />
 
       {post.caption || (post.hashtags && post.hashtags.length > 0) ? (
         <View style={styles.captionSection}>
@@ -81,9 +98,9 @@ export function PostCard({
         style={styles.openButton}
         onPress={() => openDetail()}
         accessibilityRole="button"
-        accessibilityLabel="Xem chi tiet bai viet"
+        accessibilityLabel="Xem chi tiết bài viết"
       >
-        <Text style={styles.openButtonText}>Xem chi tiet</Text>
+        <Text style={styles.openButtonText}>Xem chi tiết</Text>
         <Ionicons name="chevron-forward" size={16} color={colors.primary} />
       </Pressable>
     </View>
@@ -141,31 +158,6 @@ const styles = StyleSheet.create({
   timeText: {
     fontSize: 12,
     color: colors.outline,
-  },
-  statsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderTopWidth: 1,
-    borderTopColor: colors.outlineVariant,
-    backgroundColor: colors.surface,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  statsLeft: {
-    flexDirection: "row",
-    gap: 16,
-  },
-  statItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    minHeight: 44,
-  },
-  statText: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: colors.onSurfaceVariant,
   },
   captionSection: {
     borderTopWidth: 1,

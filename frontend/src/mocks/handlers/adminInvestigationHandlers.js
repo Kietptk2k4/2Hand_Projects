@@ -1,5 +1,9 @@
 import { delay, http, HttpResponse } from "msw";
 import { mockLoginHistoryByUserId, mockSessionsByUserId, mockUsers } from "../data/authData";
+import {
+  mockRoles,
+  mockUserRoleAssignments,
+} from "../data/adminRbacData";
 import { apiError, apiSuccess } from "../utils/response";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -66,7 +70,97 @@ function mapUserForInvestigationSearch(user) {
   };
 }
 
+function roleCodesForUser(userId) {
+  const roleId = mockUserRoleAssignments[userId];
+  if (!roleId) return [];
+  const role = mockRoles.find((r) => r.id === roleId);
+  return role ? [role.code] : [];
+}
+
+function buildInvestigationUserListItem(user) {
+  return {
+    id: user.id,
+    email: user.email,
+    display_name: user.display_name || "",
+    status: user.status,
+    role_codes: roleCodesForUser(user.id),
+    created_at: user.created_at || "2026-01-01T00:00:00Z",
+  };
+}
+
+function sortInvestigationUsers(items, sort) {
+  const sorted = [...items];
+  switch (sort) {
+    case "display_name":
+      sorted.sort((a, b) => (a.display_name || "").localeCompare(b.display_name || ""));
+      break;
+    case "created_at":
+      sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      break;
+    case "status":
+      sorted.sort((a, b) => a.status.localeCompare(b.status));
+      break;
+    case "email":
+    default:
+      sorted.sort((a, b) => a.email.localeCompare(b.email));
+      break;
+  }
+  return sorted;
+}
+
 export const adminInvestigationHandlers = [
+  http.get("*/api/v1/admin/users/investigation", async ({ request }) => {
+    await delay(300);
+    const actor = getActorFromRequest(request);
+    if (!actor) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+    if (!isAdminActor(actor)) {
+      return HttpResponse.json(apiError(403, "Ban khong co quyen truy cap."), { status: 403 });
+    }
+
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status") || "";
+    const q = (url.searchParams.get("q") || "").trim().toLowerCase();
+    const sort = url.searchParams.get("sort") || "created_at";
+    const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
+    const size = Math.max(1, Math.min(50, Number(url.searchParams.get("size")) || 20));
+
+    let items = mockUsers
+      .filter((user) => user.status !== "DELETED")
+      .map(buildInvestigationUserListItem);
+
+    if (status) {
+      items = items.filter((item) => item.status === status);
+    }
+
+    if (q) {
+      items = items.filter((item) => item.email.toLowerCase().includes(q));
+    }
+
+    items = sortInvestigationUsers(items, sort);
+
+    const totalItems = items.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / size));
+    const safePage = Math.min(page, totalPages);
+    const start = (safePage - 1) * size;
+    const pageItems = items.slice(start, start + size);
+
+    return HttpResponse.json(
+      apiSuccess(200, "Lay danh sach user dieu tra thanh cong.", {
+        items: pageItems,
+        pagination: {
+          page: safePage,
+          size,
+          total_items: totalItems,
+          total_pages: totalPages,
+          has_next: safePage < totalPages,
+        },
+      }),
+      { status: 200 }
+    );
+  }),
+
   http.get("*/api/v1/admin/users/search", async ({ request }) => {
     await delay(250);
     const actor = getActorFromRequest(request);

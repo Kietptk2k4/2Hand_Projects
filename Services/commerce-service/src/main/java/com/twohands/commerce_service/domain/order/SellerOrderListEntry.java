@@ -12,6 +12,7 @@ public record SellerOrderListEntry(
         UUID orderId,
         UUID productId,
         int quantity,
+        int lineWeightGram,
         BigDecimal unitPriceSnapshot,
         BigDecimal finalPrice,
         BigDecimal shippingFeeAllocated,

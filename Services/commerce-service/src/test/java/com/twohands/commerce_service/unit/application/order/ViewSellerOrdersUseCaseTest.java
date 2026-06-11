@@ -114,6 +114,7 @@ class ViewSellerOrdersUseCaseTest {
                 orderId,
                 UUID.randomUUID(),
                 1,
+                500,
                 BigDecimal.valueOf(1_000_000),
                 BigDecimal.valueOf(1_000_000),
                 BigDecimal.valueOf(50_000),

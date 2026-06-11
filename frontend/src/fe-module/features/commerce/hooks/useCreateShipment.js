@@ -31,6 +31,15 @@ function isEligibleItem(item) {
   return item.orderPaymentStatus === "PAID";
 }
 
+function sumSelectedLineWeight(items, selectedItemIds) {
+  let total = 0;
+  for (const item of items) {
+    if (!selectedItemIds.has(item.orderItemId)) continue;
+    total += item.lineWeightGram ?? 0;
+  }
+  return total;
+}
+
 export function useCreateShipment({ open, prefillOrderId, prefillOrderItemIds }) {
   const { showSessionExpired } = useAuthSession();
   const [eligibleItems, setEligibleItems] = useState([]);
@@ -43,7 +52,8 @@ export function useCreateShipment({ open, prefillOrderId, prefillOrderItemIds })
   const [selectedItemIds, setSelectedItemIds] = useState(() => new Set());
   const [carrier, setCarrier] = useState("GHN");
   const [shipmentType, setShipmentType] = useState("STANDARD");
-  const [weightGram, setWeightGram] = useState("");
+  const [useWeightOverride, setUseWeightOverride] = useState(false);
+  const [weightOverrideGram, setWeightOverrideGram] = useState("");
   const [trackingNumber, setTrackingNumber] = useState("");
 
   const loadEligible = useCallback(async () => {
@@ -102,6 +112,11 @@ export function useCreateShipment({ open, prefillOrderId, prefillOrderItemIds })
     return ordersGrouped.get(orderId) || [];
   }, [orderId, ordersGrouped]);
 
+  const estimatedWeightGram = useMemo(
+    () => sumSelectedLineWeight(eligibleItems, selectedItemIds),
+    [eligibleItems, selectedItemIds],
+  );
+
   const toggleItem = useCallback((itemId) => {
     setSelectedItemIds((prev) => {
       const next = new Set(prev);
@@ -114,6 +129,8 @@ export function useCreateShipment({ open, prefillOrderId, prefillOrderItemIds })
   const handleOrderChange = useCallback((nextOrderId) => {
     setOrderId(nextOrderId);
     setSelectedItemIds(new Set());
+    setUseWeightOverride(false);
+    setWeightOverrideGram("");
   }, []);
 
   const showTrackingField = carrier === "MANUAL" || carrier === "SELF_DELIVERY";
@@ -123,7 +140,8 @@ export function useCreateShipment({ open, prefillOrderId, prefillOrderItemIds })
     setSelectedItemIds(new Set());
     setCarrier("GHN");
     setShipmentType("STANDARD");
-    setWeightGram("");
+    setUseWeightOverride(false);
+    setWeightOverrideGram("");
     setTrackingNumber("");
     setSubmitError("");
   }, []);
@@ -133,6 +151,14 @@ export function useCreateShipment({ open, prefillOrderId, prefillOrderItemIds })
     if (!orderId || orderItemIds.length === 0) {
       setSubmitError("Chọn đơn và ít nhất một mục hàng.");
       return null;
+    }
+
+    if (useWeightOverride) {
+      const parsed = Number(weightOverrideGram);
+      if (!Number.isFinite(parsed) || parsed < 1) {
+        setSubmitError("Khối lượng ghi đè phải là số nguyên dương (gram).");
+        return null;
+      }
     }
 
     setIsSubmitting(true);
@@ -145,7 +171,7 @@ export function useCreateShipment({ open, prefillOrderId, prefillOrderItemIds })
           orderItemIds,
           carrier,
           shipmentType,
-          weightGram,
+          weightGram: useWeightOverride ? weightOverrideGram : "",
           trackingNumber: showTrackingField ? trackingNumber : "",
         }),
       );
@@ -168,7 +194,8 @@ export function useCreateShipment({ open, prefillOrderId, prefillOrderItemIds })
     showTrackingField,
     showSessionExpired,
     trackingNumber,
-    weightGram,
+    useWeightOverride,
+    weightOverrideGram,
   ]);
 
   return {
@@ -184,8 +211,11 @@ export function useCreateShipment({ open, prefillOrderId, prefillOrderItemIds })
     setCarrier,
     shipmentType,
     setShipmentType,
-    weightGram,
-    setWeightGram,
+    estimatedWeightGram,
+    useWeightOverride,
+    setUseWeightOverride,
+    weightOverrideGram,
+    setWeightOverrideGram,
     trackingNumber,
     setTrackingNumber,
     showTrackingField,

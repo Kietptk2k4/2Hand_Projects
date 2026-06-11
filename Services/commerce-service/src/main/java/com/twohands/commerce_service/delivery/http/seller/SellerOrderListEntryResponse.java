@@ -15,6 +15,7 @@ public record SellerOrderListEntryResponse(
         @JsonProperty("order_id") UUID orderId,
         @JsonProperty("product_id") UUID productId,
         int quantity,
+        @JsonProperty("line_weight_gram") int lineWeightGram,
         @JsonProperty("unit_price_snapshot") BigDecimal unitPriceSnapshot,
         @JsonProperty("final_price") BigDecimal finalPrice,
         @JsonProperty("shipping_fee_allocated") BigDecimal shippingFeeAllocated,

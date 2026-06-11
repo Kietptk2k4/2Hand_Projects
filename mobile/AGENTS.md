@@ -29,11 +29,34 @@ Start social work at **Phase 0** in `mobile-social-implementation-order.md` (`so
 
 ---
 
+## Account module (read when implementing account settings)
+
+**Not the same as social profile.** Tab **Hồ sơ** = `ProfileScreen` (posts, follow). Account settings = `/account` hub (edit bio, avatar, privacy, delete).
+
+Read **in this order**:
+
+1. `mobile/docs/mobile-account-scope.md` — what is in/out of MVP
+2. `mobile/docs/mobile-account-ui-map.md` — web tab → mobile route
+3. `mobile/docs/mobile-account-implementation-order.md` — build phases
+4. `mobile/docs/mobile-account-screen-checklist.md` — DoD per screen
+5. `mobile/docs/mobile-account-rn-adaptations.md` — web → React Native patterns
+
+API contracts: `docs/api_fe_behavior/auth_api_fe_behavior/` (shared with web, do not duplicate).
+
+Web reference: `frontend/src/fe-module/features/auth/account/` + `AccountPage.jsx`
+
+Start account work at **Phase 0** in `mobile-account-implementation-order.md` (extend `authApi.js` + `accountSchemas`) unless the task specifies a later phase.
+
+After profile / avatar mutations: invalidate social profile cache for current user (`profileKeys`, `fetchPublicUserProfile`).
+
+---
+
 ## Auth module (existing)
 
 - Login: `app/(auth)/login.jsx`
-- API: `src/features/auth/api/authApi.js`
+- API: `src/features/auth/api/authApi.js` — extend for account (see account implementation order)
 - Tokens: `src/services/auth/tokenStorage.js` (expo-secure-store)
+- HTTP: `src/services/http/authApiClient.js`
 
 ---
 
@@ -70,4 +93,23 @@ Read:
 
 Port from frontend/src/fe-module/features/social/ as mapped in ui-map.
 UTF-8 files only. No API calls in app/*.jsx.
+```
+
+---
+
+## Prompt template (account screen)
+
+```text
+Implement [SCREEN] in mobile/ per mobile/docs/mobile-account-screen-checklist.md (section [N]).
+
+Read:
+- mobile/AGENTS.md
+- mobile/docs/mobile-account-scope.md
+- mobile/docs/mobile-account-ui-map.md
+- mobile/docs/mobile-account-rn-adaptations.md
+- docs/api_fe_behavior/auth_api_fe_behavior/[API].md
+
+Port from frontend/src/fe-module/features/auth/account/ as mapped in ui-map.
+UTF-8 files only. No API calls in app/*.jsx.
+Invalidate social profile cache after profile-changing mutations.
 ```

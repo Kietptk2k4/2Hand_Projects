@@ -1,6 +1,6 @@
 # Mobile Master Context - 2Hands
 
-Version: 1.1  
+Version: 1.2  
 Owner: Mobile Team  
 Purpose: Single source of truth for AI implementing the native Expo app.
 
@@ -50,13 +50,31 @@ Social API contracts (shared with web): `docs/api_fe_behavior/social_api_fe_beha
 
 Web implementation reference: `frontend/src/fe-module/features/social/`
 
-### 2.3 Repo-wide references
+### 2.3 Account module (when implementing account settings)
+
+**Social profile ≠ account settings.** `(tabs)/profile` shows posts and follow stats. Account settings (`/account`) is where users edit bio, avatar, privacy, and delete account — same as web `/account-profile`.
+
+Read in order:
+
+| # | Document | Purpose |
+|---|----------|---------|
+| 1 | `mobile/docs/mobile-account-scope.md` | MVP in/out of scope |
+| 2 | `mobile/docs/mobile-account-ui-map.md` | Routes, components, stitch refs |
+| 3 | `mobile/docs/mobile-account-implementation-order.md` | Phases 0–9, file checklist |
+| 4 | `mobile/docs/mobile-account-screen-checklist.md` | DoD per screen |
+| 5 | `mobile/docs/mobile-account-rn-adaptations.md` | Web → RN (hub menu, picker, forms) |
+
+Account API contracts (shared with web): `docs/api_fe_behavior/auth_api_fe_behavior/`
+
+Web implementation reference: `frontend/src/fe-module/features/auth/account/` + `pages/AccountPage.jsx`
+
+### 2.4 Repo-wide references
 
 - `docs/engineering_rules/api-standard.md` — response envelope
 - `docs/api_fe_behavior/*` — per-endpoint contract (same as web)
 - `frontend/src/fe-module/` — port business flow and API mapping from web
 
-### 2.4 Backend services (no changes from mobile)
+### 2.5 Backend services (no changes from mobile)
 
 | Service | Port (local) | API prefix |
 |---------|--------------|------------|
@@ -76,33 +94,47 @@ mobile/
 ├── app/                    # expo-router screens
 │   ├── (auth)/             # login, etc.
 │   ├── (tabs)/             # authenticated shell (feed, shop, profile)
-│   ├── post/               # create, detail, edit, likes
-│   ├── user/               # profile, followers
-│   └── ...                 # saved, search, tags, suggestions
+│   ├── account/            # account settings hub + child screens (to build)
+│   ├── post/               # create, detail, edit
+│   ├── profile/            # social profile, followers, following
+│   └── ...                 # saved, search, hashtag, suggestions
 ├── src/
 │   ├── features/
-│   │   ├── auth/           # EXISTS
-│   │   └── social/         # api, hooks, components (to build)
-│   ├── services/http/      # axios clients, refresh, unwrap
+│   │   ├── auth/           # login API + account settings (extend)
+│   │   └── social/         # feed, post, profile, discovery
+│   ├── services/http/      # authApiClient, socialApiClient, refresh, unwrap
 │   ├── services/auth/      # secure token storage
 │   └── shared/theme/       # colors, spacing tokens
-└── docs/                   # mobile conventions + social specs
+└── docs/                   # mobile conventions + social + account specs
 ```
 
 ---
 
-## 4) Module status
+## 4) Profile vs account (do not confuse)
+
+| | Social profile | Account settings |
+|--|----------------|------------------|
+| **Purpose** | View posts, follow, public identity | Manage own account data |
+| **Web** | `/social/users/:userId` | `/account-profile` |
+| **Mobile** | `(tabs)/profile` → `ProfileScreen` | `/account` hub (to build) |
+| **Service** | social-service + auth public profile | auth-service `/api/v1/users/me` |
+| **"Chỉnh sửa hồ sơ"** | Button on self profile → account edit | `EditProfileTab` / `/account/edit` |
+
+---
+
+## 5) Module status
 
 | Module | Status | Entry doc |
 |--------|--------|-----------|
-| Auth (login) | Scaffolded | `src/features/auth/` |
-| Social | Documented, not built | `mobile/docs/mobile-social-implementation-order.md` Phase 0 |
+| Auth (login) | Done | `src/features/auth/` |
+| Social | Done (v1) | `mobile/docs/mobile-social-implementation-order.md` |
+| Account settings | Documented, not built | `mobile/docs/mobile-account-implementation-order.md` Phase 0 |
 | Commerce | Not started | TBD (port from `frontend/.../commerce/`) |
 | Notification | Not started | TBD |
 
 ---
 
-## 5) Definition of Done (mobile feature)
+## 6) Definition of Done (mobile feature)
 
 - [ ] Screen in `app/` with loading / error / empty states
 - [ ] API via `src/features/*/api/` + `apiResponse.js` unwrap
@@ -110,11 +142,12 @@ mobile/
 - [ ] UI uses `src/shared/theme/colors.js` and design system doc
 - [ ] No secrets logged; tokens in SecureStore only
 - [ ] For social: checklist in `mobile-social-screen-checklist.md` completed
+- [ ] For account: checklist in `mobile-account-screen-checklist.md` completed
 - [ ] List files created/updated in PR or task summary
 
 ---
 
-## 6) Prompt Template for AI
+## 7) Prompt Template for AI
 
 ### Generic
 
@@ -149,12 +182,30 @@ Read:
 Port from frontend/src/fe-module/features/social/ as listed in ui-map.
 ```
 
+### Account screen
+
+```text
+Implement Phase [N] / screen [NAME] per mobile/docs/mobile-account-implementation-order.md.
+
+Read:
+- mobile/AGENTS.md
+- mobile/docs/mobile-account-scope.md
+- mobile/docs/mobile-account-ui-map.md
+- mobile/docs/mobile-account-screen-checklist.md (section [N])
+- mobile/docs/mobile-account-rn-adaptations.md
+- docs/api_fe_behavior/auth_api_fe_behavior/[API].md
+
+Port from frontend/src/fe-module/features/auth/account/ as listed in ui-map.
+Invalidate social profile cache after profile-changing mutations.
+```
+
 ---
 
-## 7) Conflict Resolution
+## 8) Conflict Resolution
 
 1. `mobile/docs/mobile-master-context.md`
 2. `mobile/docs/mobile-social-scope.md` (for social scope only)
-3. `mobile/docs/mobile-api-integration.md`
-4. `docs/api_fe_behavior/*`
-5. `frontend/src/fe-module/` (reference only)
+3. `mobile/docs/mobile-account-scope.md` (for account scope only)
+4. `mobile/docs/mobile-api-integration.md`
+5. `docs/api_fe_behavior/*`
+6. `frontend/src/fe-module/` (reference only)

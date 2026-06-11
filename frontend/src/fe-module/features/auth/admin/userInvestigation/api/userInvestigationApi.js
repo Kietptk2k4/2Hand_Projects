@@ -50,6 +50,19 @@ export async function searchInvestigationUsers(query, limit = 20) {
   });
 }
 
+export async function getUsersForInvestigation({
+  status,
+  q,
+  sort = "created_at",
+  page = 1,
+  size = 20,
+} = {}) {
+  const params = { sort, page, size };
+  if (status) params.status = status;
+  if (q) params.q = q;
+  return request(apiClient, "get", "/api/v1/admin/users/investigation", { params });
+}
+
 export async function getInvestigationProfile(userId) {
   return request(adminApiClient, "get", `/admin/api/v1/users/${userId}/profile`);
 }

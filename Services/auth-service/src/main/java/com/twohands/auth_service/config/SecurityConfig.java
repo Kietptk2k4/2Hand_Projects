@@ -59,6 +59,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/admin/users/*/roles").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/admin/users/*/roles/*").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/admin/users/search").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/admin/users/investigation").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/admin/users/*/investigation-profile").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/admin/users/*/sessions").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/admin/users/*/login-history").authenticated()

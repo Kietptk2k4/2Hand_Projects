@@ -36,6 +36,7 @@ export function mapSellerOrderListItem(item) {
     orderId: pick(item, "orderId", "order_id"),
     productId: pick(item, "productId", "product_id"),
     quantity: item.quantity,
+    lineWeightGram: item.line_weight_gram ?? item.lineWeightGram ?? 0,
     unitPriceSnapshot: item.unit_price_snapshot ?? item.unitPriceSnapshot,
     finalPrice: item.final_price ?? item.finalPrice,
     shippingFeeAllocated: item.shipping_fee_allocated ?? item.shippingFeeAllocated,

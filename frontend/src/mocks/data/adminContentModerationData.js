@@ -17,6 +17,7 @@
  * | review-moderation | restore | review.hidden |
  *
  * Write APIs: /admin/api/v1/... (admin-service)
+ * Social list APIs: GET /api/v1/social/admin/posts|comments (social-service)
  * Commerce list APIs: GET /commerce/api/v1/admin/... (unchanged)
  */
 export {
