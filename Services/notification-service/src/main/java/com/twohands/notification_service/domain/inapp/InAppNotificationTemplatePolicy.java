@@ -119,6 +119,10 @@ public final class InAppNotificationTemplatePolicy {
                     "Comment moderated",
                     "Your comment was moderated due to a policy enforcement action."
             );
+            case "COMMENT_RESTORED" -> new InAppNotificationTemplate(
+                    "Comment restored",
+                    "Your comment was restored after a policy review."
+            );
             case "PRODUCT_REMOVED" -> new InAppNotificationTemplate(
                     "Product removed",
                     "One of your products was removed."

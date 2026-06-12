@@ -81,6 +81,10 @@ public final class PushNotificationTemplatePolicy {
                     "Comment moderated",
                     "Your comment was moderated due to a policy enforcement action."
             );
+            case "COMMENT_RESTORED" -> new PushNotificationTemplate(
+                    "Comment restored",
+                    "Your comment was restored after a policy review."
+            );
             case "PRODUCT_REMOVED" -> new PushNotificationTemplate("Product removed", "One of your products was removed.");
             case "REVIEW_HIDDEN" -> new PushNotificationTemplate("Review hidden", "One of your reviews was hidden.");
             case "SHOP_SUSPENDED" -> new PushNotificationTemplate("Shop suspended", "Your shop has been suspended.");

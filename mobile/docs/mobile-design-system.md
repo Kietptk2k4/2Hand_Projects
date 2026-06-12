@@ -17,7 +17,7 @@ Social and commerce share the same **Service Professionalism** palette from stit
 
 ## 2. Colors
 
-Use `src/shared/theme/colors.js`:
+Use `useThemeColors()` from `src/shared/theme/useThemeColors.js` at runtime (preferred for screens). Static tokens in `src/shared/theme/colors.js`:
 
 | Token | Hex | Usage |
 |-------|-----|-------|
@@ -147,11 +147,27 @@ Icons: `@expo/vector-icons` (MaterialIcons / Ionicons). Do not use web Material 
 
 For each: read `DESIGN.md` + `screen.png`; use `code.html` as layout hint only (do not copy HTML/CSS).
 
-### Commerce
+### Commerce (buyer v1)
 
-| Screen | Stitch folder |
-|--------|---------------|
-| Home | `frontend/stitch/commerce_home/` |
+See also: `mobile/docs/mobile-commerce-ui-map.md`, `mobile-commerce-screen-checklist.md`, `mobile-commerce-rn-adaptations.md`.
+
+| Screen | Stitch folder | Web page |
+|--------|---------------|----------|
+| Shop home | `frontend/stitch/commerce_home/` | `CommerceHomePage.jsx` |
+| Search | — (use commerce_home grid) | `CommerceSearchPage.jsx` |
+| Category products | — | `CommerceCategoryProductsPage.jsx` |
+| Product detail | — | `CommerceProductDetailPage.jsx` |
+| Cart | — | `CommerceCartPage.jsx` |
+| Checkout | — | `CommerceCheckoutPage.jsx` |
+| Orders | — | `CommerceOrderListPage.jsx` |
+
+**ProductCard (commerce):**
+
+- Port from `frontend/.../commerce/components/ProductCard.jsx`
+- 2-column grid on phone; thumbnail via `resolveDevMediaUrl(product.thumbnailUrl)`
+- 1-of-1 inventory: disable add-to-cart when out of stock
+- Style with `useThemeColors()` — card `surfaceContainerLowest`, border `outlineVariant`, radius 16
+- Sale price: strikethrough original when `salePrice < price`
 
 ### Porting rules
 
@@ -169,3 +185,5 @@ For each: read `DESIGN.md` + `screen.png`; use `code.html` as layout hint only (
 | `mobile/docs/mobile-social-rn-adaptations.md` | FlatList, modals→screens, media |
 | `mobile/docs/mobile-social-screen-checklist.md` | Empty/error copy per screen |
 | `src/shared/theme/colors.js` | Runtime color tokens |
+| `mobile/docs/mobile-commerce-ui-map.md` | Commerce routes & stitch |
+| `mobile/docs/mobile-commerce-rn-adaptations.md` | ProductCard, PayOS, media |

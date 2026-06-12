@@ -68,13 +68,32 @@ Account API contracts (shared with web): `docs/api_fe_behavior/auth_api_fe_behav
 
 Web implementation reference: `frontend/src/fe-module/features/auth/account/` + `pages/AccountPage.jsx`
 
-### 2.4 Repo-wide references
+
+### 2.4 Commerce module (when implementing shop / checkout)
+
+**Buyer v1 only.** Seller defer Phase 9; admin never mobile.
+
+Read in order:
+
+| # | Document | Purpose |
+|---|----------|---------|
+| 1 | `mobile/docs/mobile-commerce-scope.md` | MVP in/out of scope |
+| 2 | `mobile/docs/mobile-commerce-ui-map.md` | Routes, components, stitch refs |
+| 3 | `mobile/docs/mobile-commerce-implementation-order.md` | Phases 0–8 buyer, Phase 9 seller defer |
+| 4 | `mobile/docs/mobile-commerce-screen-checklist.md` | DoD per screen |
+| 5 | `mobile/docs/mobile-commerce-rn-adaptations.md` | Web → RN (FlatList, PayOS, GHN) |
+
+Commerce API contracts (shared with web): `docs/api_fe_behavior/commerce_api_fe_behavior/`
+
+Web implementation reference: `frontend/src/fe-module/features/commerce/`
+
+### 2.5 Repo-wide references
 
 - `docs/engineering_rules/api-standard.md` — response envelope
 - `docs/api_fe_behavior/*` — per-endpoint contract (same as web)
 - `frontend/src/fe-module/` — port business flow and API mapping from web
 
-### 2.5 Backend services (no changes from mobile)
+### 2.6 Backend services (no changes from mobile)
 
 | Service | Port (local) | API prefix |
 |---------|--------------|------------|
@@ -94,18 +113,20 @@ mobile/
 ├── app/                    # expo-router screens
 │   ├── (auth)/             # login, etc.
 │   ├── (tabs)/             # authenticated shell (feed, shop, profile)
-│   ├── account/            # account settings hub + child screens (to build)
+│   ├── account/            # account settings hub + child screens
+│   ├── commerce/           # shop stack: product, cart, checkout, orders (to build)
 │   ├── post/               # create, detail, edit
 │   ├── profile/            # social profile, followers, following
 │   └── ...                 # saved, search, hashtag, suggestions
 ├── src/
 │   ├── features/
-│   │   ├── auth/           # login API + account settings (extend)
-│   │   └── social/         # feed, post, profile, discovery
-│   ├── services/http/      # authApiClient, socialApiClient, refresh, unwrap
+│   │   ├── auth/           # login API + account settings
+│   │   ├── social/         # feed, post, profile, discovery
+│   │   └── commerce/       # shop, cart, checkout, orders (to build)
+│   ├── services/http/      # authApiClient, socialApiClient, commerceApiClient, refresh
 │   ├── services/auth/      # secure token storage
 │   └── shared/theme/       # colors, spacing tokens
-└── docs/                   # mobile conventions + social + account specs
+└── docs/                   # mobile conventions + social + account + commerce specs
 ```
 
 ---
@@ -128,8 +149,8 @@ mobile/
 |--------|--------|-----------|
 | Auth (login) | Done | `src/features/auth/` |
 | Social | Done (v1) | `mobile/docs/mobile-social-implementation-order.md` |
-| Account settings | Documented, not built | `mobile/docs/mobile-account-implementation-order.md` Phase 0 |
-| Commerce | Not started | TBD (port from `frontend/.../commerce/`) |
+| Account settings | Done | `mobile/docs/mobile-account-implementation-order.md` |
+| Commerce | Documented, not built | `mobile/docs/mobile-commerce-implementation-order.md` Phase 0 |
 | Notification | Not started | TBD |
 
 ---
@@ -198,6 +219,23 @@ Read:
 Port from frontend/src/fe-module/features/auth/account/ as listed in ui-map.
 Invalidate social profile cache after profile-changing mutations.
 ```
+### Commerce screen
+
+```text
+Implement Phase [N] / screen [NAME] per mobile/docs/mobile-commerce-implementation-order.md.
+
+Read:
+- mobile/AGENTS.md
+- mobile/docs/mobile-commerce-scope.md
+- mobile/docs/mobile-commerce-ui-map.md
+- mobile/docs/mobile-commerce-screen-checklist.md (section [N])
+- mobile/docs/mobile-commerce-rn-adaptations.md
+- docs/api_fe_behavior/commerce_api_fe_behavior/[API].md
+
+Port from frontend/src/fe-module/features/commerce/ as listed in ui-map.
+Use useThemeColors() and resolveDevMediaUrl(). No seller/admin flows.
+```
+
 
 ---
 
@@ -206,6 +244,7 @@ Invalidate social profile cache after profile-changing mutations.
 1. `mobile/docs/mobile-master-context.md`
 2. `mobile/docs/mobile-social-scope.md` (for social scope only)
 3. `mobile/docs/mobile-account-scope.md` (for account scope only)
-4. `mobile/docs/mobile-api-integration.md`
-5. `docs/api_fe_behavior/*`
-6. `frontend/src/fe-module/` (reference only)
+4. `mobile/docs/mobile-commerce-scope.md` (for commerce scope only)
+5. `mobile/docs/mobile-api-integration.md`
+6. `docs/api_fe_behavior/*`
+7. `frontend/src/fe-module/` (reference only)

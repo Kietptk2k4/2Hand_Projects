@@ -26,7 +26,10 @@ public class SocialKafkaConsumerProperties {
             "admin.post.restored"
     );
     private String commentModeratedGroupId = "social-comment-moderated";
-    private List<String> commentModeratedTopics = List.of("admin.comment.moderated");
+    private List<String> commentModeratedTopics = List.of(
+            "admin.comment.moderated",
+            "admin.comment.restored"
+    );
     private String commerceProductRemovedGroupId = "social-commerce-product-removed";
     private List<String> commerceProductRemovedTopics = List.of("commerce.product.removed");
 

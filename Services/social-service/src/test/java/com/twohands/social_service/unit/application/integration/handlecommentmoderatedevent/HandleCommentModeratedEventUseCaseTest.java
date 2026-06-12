@@ -98,6 +98,46 @@ class HandleCommentModeratedEventUseCaseTest {
         verify(postRepository).decrementReplyCount("507f1f77bcf86cd799439011");
     }
 
+
+    @Test
+    void shouldRestoreRemovedCommentAndIncrementReplyCount() {
+        UUID eventId = UUID.randomUUID();
+        UUID moderationLogId = UUID.randomUUID();
+        String commentId = "507f1f77bcf86cd799439013";
+        Comment comment = buildComment(
+                commentId,
+                CommentStatus.DELETED,
+                CommentModerationStatus.REMOVED,
+                null
+        );
+
+        when(processedDomainEventRepository.existsByEventId(eventId)).thenReturn(false);
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+        when(commentRepository.save(any(Comment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        useCase.execute(new HandleCommentModeratedEventCommand(
+                eventId,
+                commentId,
+                moderationLogId,
+                CommentModerationAction.RESTORE,
+                "Appeal approved",
+                UUID.randomUUID(),
+                Instant.parse("2026-05-23T11:00:00Z")
+        ));
+
+        verify(commentRepository).save(org.mockito.ArgumentMatchers.argThat(saved ->
+                saved.status() == CommentStatus.ACTIVE
+                        && saved.moderationStatusOrDefault() == CommentModerationStatus.NONE
+                        && saved.deletedAt() == null
+        ));
+        verify(postRepository).incrementReplyCount("507f1f77bcf86cd799439011");
+        verify(processedDomainEventRepository).markProcessed(
+                eventId,
+                HandleCommentModeratedEventUseCase.CONSUMER_NAME,
+                "COMMENT_RESTORED"
+        );
+    }
+
     private Comment buildComment(
             String commentId,
             CommentStatus status,

@@ -18,11 +18,16 @@ import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 @Component
 @Order(45)
 public class CommentModeratedNotificationEventHandler implements NotificationEventHandler {
 
-    private static final String COMMENT_MODERATED = "COMMENT_MODERATED";
+    private static final Set<String> SUPPORTED_EVENT_TYPES = Set.of(
+            "COMMENT_MODERATED",
+            "COMMENT_RESTORED"
+    );
 
     private final CommentModeratedNotificationPayloadParser payloadParser;
     private final ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase;
@@ -43,7 +48,7 @@ public class CommentModeratedNotificationEventHandler implements NotificationEve
 
     @Override
     public boolean supports(String eventType) {
-        return COMMENT_MODERATED.equals(eventType);
+        return SUPPORTED_EVENT_TYPES.contains(eventType);
     }
 
     @Override
@@ -58,7 +63,7 @@ public class CommentModeratedNotificationEventHandler implements NotificationEve
         NotificationDeliveryDecision deliveryDecision;
         try {
             deliveryDecision = applyNotificationDeliveryRulesUseCase.execute(
-                    new ApplyNotificationDeliveryRulesCommand(context.authorUserId(), COMMENT_MODERATED)
+                    new ApplyNotificationDeliveryRulesCommand(context.authorUserId(), event.eventType())
             );
         } catch (DataAccessException ex) {
             return NotificationEventHandlerResult.failure(
@@ -75,7 +80,7 @@ public class CommentModeratedNotificationEventHandler implements NotificationEve
                         event.id(),
                         context.authorUserId(),
                         null,
-                        COMMENT_MODERATED,
+                        event.eventType(),
                         context.referenceType(),
                         context.referenceId(),
                         event.payload(),
@@ -91,7 +96,7 @@ public class CommentModeratedNotificationEventHandler implements NotificationEve
             SendPushNotificationResult pushResult = sendPushNotificationUseCase.execute(
                     new SendPushNotificationCommand(
                             context.authorUserId(),
-                            COMMENT_MODERATED,
+                            event.eventType(),
                             context.referenceType(),
                             context.referenceId(),
                             event.id(),

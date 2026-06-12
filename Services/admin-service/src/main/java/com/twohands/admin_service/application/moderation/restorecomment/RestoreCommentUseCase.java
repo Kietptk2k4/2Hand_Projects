@@ -82,8 +82,16 @@ public class RestoreCommentUseCase {
 		String note = ProductModerationPolicy.normalizeOptionalNote(command.note());
 		SocialContentModerationPolicy.validateRestoreCommentRequest(reason, note);
 
+		UUID authorUserId = null;
+		String postId = null;
 		if (socialCommentGateway.isEnabled()) {
 			socialCommentGateway.ensureCommentExists(commentId);
+			authorUserId = socialCommentGateway.findAuthorUserId(commentId)
+					.orElseThrow(() -> new AppException(
+							ErrorCode.RESOURCE_NOT_FOUND,
+							ErrorCode.RESOURCE_NOT_FOUND.defaultMessage()
+					));
+			postId = socialCommentGateway.findPostId(commentId).orElse(null);
 		}
 
 		Instant restoredAt = Instant.now();
@@ -110,7 +118,7 @@ public class RestoreCommentUseCase {
 			OutboxEvent outboxEvent = insertAdminOutboxEventUseCase.execute(new InsertAdminOutboxEventCommand(
 					OUTBOX_EVENT_TYPE,
 					resolveAggregateId(commentId),
-					outboxPayloadBuilder.buildCommentRestoredPayload(moderationLog, commentId)
+					outboxPayloadBuilder.buildCommentRestoredPayload(moderationLog, commentId, authorUserId, postId)
 			));
 
 			Map<String, Object> afterSummary = new LinkedHashMap<>();

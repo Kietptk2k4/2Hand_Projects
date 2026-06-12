@@ -2,7 +2,8 @@ package com.twohands.social_service.domain.comment;
 
 public enum CommentModerationAction {
     HIDE,
-    REMOVE;
+    REMOVE,
+    RESTORE;
 
     public static CommentModerationAction fromValue(String value) {
         if (value == null || value.isBlank()) {

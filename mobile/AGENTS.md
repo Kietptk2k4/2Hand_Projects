@@ -49,6 +49,28 @@ Start account work at **Phase 0** in `mobile-account-implementation-order.md` (e
 
 After profile / avatar mutations: invalidate social profile cache for current user (`profileKeys`, `fetchPublicUserProfile`).
 
+
+## Commerce module (read when implementing shop / checkout)
+
+**Buyer v1 only.** Seller flows defer Phase 9; admin never mobile.
+
+Read **in this order**:
+
+1. `mobile/docs/mobile-commerce-scope.md` — what is in/out of MVP
+2. `mobile/docs/mobile-commerce-ui-map.md` — web page → mobile route
+3. `mobile/docs/mobile-commerce-implementation-order.md` — build phases 0–8
+4. `mobile/docs/mobile-commerce-screen-checklist.md` — DoD per screen
+5. `mobile/docs/mobile-commerce-rn-adaptations.md` — web → React Native patterns
+
+API contracts: `docs/api_fe_behavior/commerce_api_fe_behavior/` (shared with web, do not duplicate).
+
+Web reference: `frontend/src/fe-module/features/commerce/`
+
+Start commerce work at **Phase 0** in `mobile-commerce-implementation-order.md` (`commerceApiClient` + product list API) unless the task specifies a later phase.
+
+Use `useThemeColors()` and `resolveDevMediaUrl()` on all commerce screens.
+
+
 ---
 
 ## Auth module (existing)
@@ -113,3 +135,25 @@ Port from frontend/src/fe-module/features/auth/account/ as mapped in ui-map.
 UTF-8 files only. No API calls in app/*.jsx.
 Invalidate social profile cache after profile-changing mutations.
 ```
+
+---
+
+## Prompt template (commerce screen)
+
+```text
+Implement [SCREEN] in mobile/ per mobile/docs/mobile-commerce-screen-checklist.md (section [N]).
+
+Read:
+- mobile/AGENTS.md
+- mobile/docs/mobile-commerce-scope.md
+- mobile/docs/mobile-commerce-ui-map.md
+- mobile/docs/mobile-commerce-rn-adaptations.md
+- docs/api_fe_behavior/commerce_api_fe_behavior/[API].md
+
+Port from frontend/src/fe-module/features/commerce/ as mapped in ui-map.
+UTF-8 files only. No API calls in app/*.jsx.
+Use useThemeColors() and resolveDevMediaUrl() on product/review images.
+Do not implement seller or admin flows.
+```
+
+

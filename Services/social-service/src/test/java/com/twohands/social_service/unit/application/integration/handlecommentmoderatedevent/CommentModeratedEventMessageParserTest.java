@@ -6,6 +6,7 @@ import com.twohands.social_service.application.integration.handlecommentmoderate
 import com.twohands.social_service.domain.comment.CommentModerationAction;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,5 +41,29 @@ class CommentModeratedEventMessageParserTest {
         assertThat(command.moderationLogId()).isEqualTo(moderationLogId);
         assertThat(command.action()).isEqualTo(CommentModerationAction.HIDE);
         assertThat(command.reason()).isEqualTo("Spam");
+    }
+
+    @Test
+    void shouldParseRestorePayload() {
+        UUID eventId = UUID.randomUUID();
+        UUID moderationLogId = UUID.randomUUID();
+        String raw = """
+                {
+                  "event_id": "%s",
+                  "payload": {
+                    "comment_id": "507f1f77bcf86cd799439011",
+                    "moderation_log_id": "%s",
+                    "action": "RESTORE",
+                    "reason": "Appeal approved",
+                    "restored_by": "%s",
+                    "restored_at": "2026-05-23T11:00:00Z"
+                  }
+                }
+                """.formatted(eventId, moderationLogId, UUID.randomUUID());
+
+        HandleCommentModeratedEventCommand command = parser.parse(raw);
+
+        assertThat(command.action()).isEqualTo(CommentModerationAction.RESTORE);
+        assertThat(command.moderatedAt()).isEqualTo(Instant.parse("2026-05-23T11:00:00Z"));
     }
 }

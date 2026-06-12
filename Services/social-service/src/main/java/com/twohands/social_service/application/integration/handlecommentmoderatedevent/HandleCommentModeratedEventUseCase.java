@@ -21,7 +21,8 @@ import java.util.UUID;
 public class HandleCommentModeratedEventUseCase {
 
     public static final String CONSUMER_NAME = "social-comment-moderated";
-    private static final String EVENT_TYPE = "COMMENT_MODERATED";
+    private static final String EVENT_TYPE_MODERATED = "COMMENT_MODERATED";
+    private static final String EVENT_TYPE_RESTORED = "COMMENT_RESTORED";
 
     private static final Logger log = LoggerFactory.getLogger(HandleCommentModeratedEventUseCase.class);
 
@@ -108,14 +109,19 @@ public class HandleCommentModeratedEventUseCase {
 
         Instant moderatedAt = command.moderatedAt() != null ? command.moderatedAt() : Instant.now();
         boolean wasPubliclyVisible = comment.isPubliclyVisible();
+        boolean wasDeleted = comment.status() == CommentStatus.DELETED;
         Comment updated = switch (command.action()) {
             case HIDE -> applyHide(comment, command, moderatedAt);
             case REMOVE -> applyRemove(comment, command, moderatedAt);
+            case RESTORE -> applyRestore(comment, command, moderatedAt);
         };
 
         commentRepository.save(updated);
         if (command.action() == CommentModerationAction.REMOVE && wasPubliclyVisible) {
             postRepository.decrementReplyCount(comment.postId());
+        }
+        if (command.action() == CommentModerationAction.RESTORE && wasDeleted) {
+            postRepository.incrementReplyCount(comment.postId());
         }
         markProcessed(command);
 
@@ -150,7 +156,7 @@ public class HandleCommentModeratedEventUseCase {
 
     private void requireAction(CommentModerationAction action) {
         if (action == null) {
-            throw new InvalidCommentModeratedEventException("action must be HIDE or REMOVE");
+            throw new InvalidCommentModeratedEventException("action must be HIDE, REMOVE, or RESTORE");
         }
     }
 
@@ -164,6 +170,8 @@ public class HandleCommentModeratedEventUseCase {
         return switch (command.action()) {
             case HIDE -> comment.moderationStatusOrDefault() == CommentModerationStatus.HIDDEN;
             case REMOVE -> comment.status() == CommentStatus.DELETED;
+            case RESTORE -> comment.status() == CommentStatus.ACTIVE
+                    && comment.moderationStatusOrDefault() == CommentModerationStatus.NONE;
         };
     }
 
@@ -205,11 +213,38 @@ public class HandleCommentModeratedEventUseCase {
         );
     }
 
+    private Comment applyRestore(Comment comment, HandleCommentModeratedEventCommand command, Instant restoredAt) {
+        return new Comment(
+                comment.id(),
+                comment.postId(),
+                comment.authorId(),
+                comment.parentCommentId(),
+                comment.contentText(),
+                comment.media(),
+                CommentStatus.ACTIVE,
+                CommentModerationStatus.NONE,
+                null,
+                moderationLogId(command),
+                comment.likeCount(),
+                comment.createdAt(),
+                restoredAt,
+                null
+        );
+    }
+
     private String moderationLogId(HandleCommentModeratedEventCommand command) {
         return command.moderationLogId() != null ? command.moderationLogId().toString() : null;
     }
 
     private void markProcessed(HandleCommentModeratedEventCommand command) {
-        processedDomainEventRepository.markProcessed(command.eventId(), CONSUMER_NAME, EVENT_TYPE);
+        processedDomainEventRepository.markProcessed(
+                command.eventId(),
+                CONSUMER_NAME,
+                resolveProcessedEventType(command.action())
+        );
+    }
+
+    private String resolveProcessedEventType(CommentModerationAction action) {
+        return action == CommentModerationAction.RESTORE ? EVENT_TYPE_RESTORED : EVENT_TYPE_MODERATED;
     }
 }

@@ -28,6 +28,7 @@ public final class NotificationDefaultChannelPolicy {
             Map.entry("USER_RESTRICTED", new DefaultChannelFlags(true, true, true)),
             Map.entry("POST_MODERATED", new DefaultChannelFlags(true, true, false)),
             Map.entry("COMMENT_MODERATED", new DefaultChannelFlags(true, true, false)),
+            Map.entry("COMMENT_RESTORED", new DefaultChannelFlags(true, true, false)),
             Map.entry("PRODUCT_REMOVED", new DefaultChannelFlags(true, true, false)),
             Map.entry("REVIEW_HIDDEN", new DefaultChannelFlags(true, false, false)),
             Map.entry("SHOP_SUSPENDED", new DefaultChannelFlags(true, true, true)),

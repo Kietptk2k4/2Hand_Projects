@@ -47,10 +47,13 @@ public class CommentModeratedEventMessageParser {
             UUID moderationLogId = uuid(payload, "moderation_log_id");
             CommentModerationAction action = CommentModerationAction.fromValue(text(payload, "action"));
             if (action == null) {
-                throw new InvalidCommentModeratedEventException("action must be HIDE or REMOVE");
+                throw new InvalidCommentModeratedEventException("action must be HIDE, REMOVE, or RESTORE");
             }
 
             Instant moderatedAt = instant(payload, "moderated_at");
+            if (moderatedAt == null) {
+                moderatedAt = instant(payload, "restored_at");
+            }
             if (moderatedAt == null) {
                 moderatedAt = instant(root, "occurred_at");
             }
@@ -61,7 +64,7 @@ public class CommentModeratedEventMessageParser {
                     moderationLogId,
                     action,
                     text(payload, "reason"),
-                    uuid(payload, "moderated_by"),
+                    firstUuid(payload, "moderated_by", "restored_by"),
                     moderatedAt
             );
         } catch (InvalidCommentModeratedEventException ex) {
@@ -79,6 +82,16 @@ public class CommentModeratedEventMessageParser {
         }
         String value = node.get(field).asText();
         return value.isBlank() ? null : value;
+    }
+
+    private UUID firstUuid(JsonNode node, String... fields) {
+        for (String field : fields) {
+            UUID value = uuid(node, field);
+            if (value != null) {
+                return value;
+            }
+        }
+        return null;
     }
 
     private UUID uuid(JsonNode node, String field) {

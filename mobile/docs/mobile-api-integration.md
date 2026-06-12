@@ -82,27 +82,51 @@ Then `clearSessionTokens()` locally.
 
 ---
 
-## 4. Service Clients (to add)
+## 4. Service Clients
 
-Mirror web clients in `frontend/src/fe-module/services/http/`:
+| Client file | Base URL env | Status |
+|-------------|--------------|--------|
+| `authApiClient.js` | `EXPO_PUBLIC_AUTH_SERVICE_BASE_URL` | Exists |
+| `socialApiClient.js` | `EXPO_PUBLIC_SOCIAL_SERVICE_BASE_URL` | Exists |
+| `commerceApiClient.js` | `EXPO_PUBLIC_COMMERCE_SERVICE_BASE_URL` | Phase 0 — create for commerce module |
+| `notificationApiClient.js` | `EXPO_PUBLIC_NOTIFICATION_SERVICE_BASE_URL` | Defer |
 
-| Client file (future) | Base URL env |
-|---------------------|--------------|
-| `commerceApiClient.js` | `EXPO_PUBLIC_COMMERCE_SERVICE_BASE_URL` |
-| `socialApiClient.js` | `EXPO_PUBLIC_SOCIAL_SERVICE_BASE_URL` |
-| `notificationApiClient.js` | `EXPO_PUBLIC_NOTIFICATION_SERVICE_BASE_URL` |
+### commerceApiClient
 
-Each should reuse the same refresh interceptor pattern as `authApiClient.js`.
+Mirror `frontend/src/fe-module/services/http/commerceApiClient.js`:
+
+- Base URL: `EXPO_PUBLIC_COMMERCE_SERVICE_BASE_URL` (local emulator: `http://10.0.2.2:3003`)
+- All commerce paths prefixed **`/commerce/api/v1`** (e.g. `GET /commerce/api/v1/products`)
+- Same JWT attach + 401 refresh interceptor pattern as `authApiClient.js`
+- Unwrap via `src/features/commerce/api/commerceApiResponse.js` (port from web)
+
+```javascript
+// Example
+const { data } = await commerceApiClient.get("/commerce/api/v1/products", {
+  params: { page: 0, size: 20 },
+});
+```
+
+
 
 ---
 
-## 5. PayOS (commerce)
+## 5. PayOS (commerce checkout)
 
-1. Checkout returns `payment_id`; `payos_checkout_url` may be null
-2. `POST /commerce/api/v1/payments/{paymentId}/payos-checkout-url`
-3. Open URL with `expo-web-browser` or `Linking.openURL`
-4. Return via deep link `twohands://commerce/checkout/payment-result?paymentId=...`
-5. Poll `GET /commerce/api/v1/payments/{paymentId}/status` — do not assume paid from redirect
+Commerce-service port **3003**. Payment endpoints under `/commerce/api/v1/payments/`.
+
+**Flow:**
+
+1. Checkout `CreateOrder` returns `payment_id`; initial response may have `payos_checkout_url: null`
+2. `POST /commerce/api/v1/payments/{paymentId}/payos-checkout-url` → open URL
+3. Mobile: `expo-web-browser` `openBrowserAsync(payosUrl)` (prefer over raw `Linking.openURL` for return handling)
+4. Return via deep link: `twohands://commerce/checkout/payment-result?paymentId={uuid}`
+5. **Poll** `GET /commerce/api/v1/payments/{paymentId}/status` until terminal state — do not assume paid from browser dismiss alone
+6. On success → navigate to checkout success or order detail
+
+Register `twohands` scheme in `app.json` linking config.
+
+Retry: when status allows, call payos-checkout-url again (see web `CommerceCheckoutPaymentResultPage`).
 
 ---
 
@@ -130,3 +154,18 @@ Per-feature specs live in repo root:
 `docs/api_fe_behavior/notification_api_fe_behavior/`
 
 Read the relevant file before implementing any screen.
+
+---
+
+## 8. Dev media URLs (`EXPO_PUBLIC_DEV_HOST`)
+
+Product and review images from MinIO may use `localhost` or `127.0.0.1` — unreachable from a physical phone.
+
+| Variable | Purpose |
+|----------|---------|
+| `EXPO_PUBLIC_DEV_HOST` | PC LAN IP (no protocol), e.g. `192.168.1.4` — rewrites media host in `resolveDevMediaUrl()` |
+
+Set in `mobile/.env` alongside service base URLs. Android emulator uses `10.0.2.2` for API URLs; media rewrite uses the same helper (`mobile/src/shared/utils/resolveDevMediaUrl.js`).
+
+**Rule:** pass every commerce product/review image URL through `resolveDevMediaUrl()` before `<Image />`.
+

@@ -32,8 +32,15 @@ public class CommentModerationOutboxPayloadBuilder {
 		return AdminOutboxPayloadSupport.serialize(objectMapper, payload);
 	}
 
-	public String buildCommentRestoredPayload(ContentModerationLog moderationLog, String commentId) {
+	public String buildCommentRestoredPayload(
+			ContentModerationLog moderationLog,
+			String commentId,
+			UUID authorUserId,
+			String postId
+	) {
 		Map<String, Object> payload = baseCommentModerationPayload(moderationLog, commentId);
+		AdminOutboxPayloadSupport.putUuid(payload, "author_user_id", authorUserId);
+		AdminOutboxPayloadSupport.putIfPresent(payload, "post_id", postId);
 		payload.put("restored_by", moderationLog.adminId().toString());
 		payload.put("restored_at", moderationLog.createdAt().toString());
 		return AdminOutboxPayloadSupport.serialize(objectMapper, payload);

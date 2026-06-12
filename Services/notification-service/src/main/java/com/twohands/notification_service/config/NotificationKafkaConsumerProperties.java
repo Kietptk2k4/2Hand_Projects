@@ -34,6 +34,7 @@ public class NotificationKafkaConsumerProperties {
             "admin.user.restricted",
             "admin.post.moderated",
             "admin.comment.moderated",
+            "admin.comment.restored",
             "admin.product.removed",
             "admin.review.hidden",
             "admin.shop.suspended",

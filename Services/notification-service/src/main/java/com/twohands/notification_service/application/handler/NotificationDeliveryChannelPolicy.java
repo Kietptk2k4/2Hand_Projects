@@ -25,6 +25,7 @@ public class NotificationDeliveryChannelPolicy {
     private static final Set<String> DEDICATED_ADMIN_MODERATION_NOTIFICATION_EVENTS = Set.of(
             "POST_MODERATED",
             "COMMENT_MODERATED",
+            "COMMENT_RESTORED",
             "PRODUCT_REMOVED",
             "REVIEW_HIDDEN",
             "SHOP_SUSPENDED",
