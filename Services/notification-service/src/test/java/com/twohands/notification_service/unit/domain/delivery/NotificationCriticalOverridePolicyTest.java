@@ -13,12 +13,14 @@ class NotificationCriticalOverridePolicyTest {
         assertTrue(NotificationCriticalOverridePolicy.forcesEmail("EMAIL_VERIFICATION_REQUESTED"));
         assertTrue(NotificationCriticalOverridePolicy.forcesEmail("PASSWORD_RESET_REQUESTED"));
         assertTrue(NotificationCriticalOverridePolicy.forcesEmail("USER_SUSPENDED"));
+        assertTrue(NotificationCriticalOverridePolicy.forcesEmail("USER_BANNED"));
         assertFalse(NotificationCriticalOverridePolicy.forcesEmail("POST_LIKED"));
     }
 
     @Test
     void forcesPushForAccountCriticalEvents() {
         assertTrue(NotificationCriticalOverridePolicy.forcesPush("USER_SUSPENDED"));
+        assertTrue(NotificationCriticalOverridePolicy.forcesPush("USER_BANNED"));
         assertFalse(NotificationCriticalOverridePolicy.forcesPush("POST_LIKED"));
     }
 

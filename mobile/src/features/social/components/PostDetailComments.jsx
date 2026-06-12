@@ -1,14 +1,47 @@
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { COMMENT_SORT_OPTIONS, EMPTY_COMMENTS_MESSAGE } from "../constants/commentConstants";
+import { useThemeColors } from "../../../shared/theme/useThemeColors";
+import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
 import { CommentItem } from "./CommentItem";
 import { CommentSkeleton } from "./CommentSkeleton";
-import { colors } from "../../../shared/theme/colors";
+
+function createStyles(colors) {
+  return {
+    container: { marginTop: 8 },
+    headerRow: { marginBottom: 12, gap: 8 },
+    title: { fontSize: 14, fontWeight: "600", color: colors.onSurface },
+    sortRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    sortChip: {
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+    },
+    sortChipActive: {
+      borderColor: colors.primary,
+      backgroundColor: colors.surfaceContainerLow,
+    },
+    sortText: { fontSize: 12, color: colors.onSurfaceVariant },
+    sortTextActive: { color: colors.primary, fontWeight: "600" },
+    submitError: { fontSize: 12, color: colors.error, marginBottom: 8 },
+    errorCard: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.error,
+      backgroundColor: colors.errorContainer,
+      padding: 12,
+      marginBottom: 12,
+    },
+    errorText: { fontSize: 14, color: colors.onErrorContainer },
+    retryButton: { marginTop: 8, alignSelf: "flex-start" },
+    retryButtonText: { fontSize: 14, fontWeight: "600", color: colors.primary },
+    emptyText: { fontSize: 14, color: colors.onSurfaceVariant, marginBottom: 8 },
+    loadMoreButton: { alignItems: "center", paddingVertical: 12, minHeight: 44 },
+    loadMoreText: { fontSize: 14, fontWeight: "600", color: colors.primary },
+    anchor: { height: 1, width: "100%" },
+  };
+}
 
 export function PostDetailComments({
   commentsState,
@@ -36,6 +69,9 @@ export function PostDetailComments({
     commentSort,
     setCommentSort,
   } = commentsState;
+
+  const colors = useThemeColors();
+  const styles = useThemedStyles(createStyles);
 
   return (
     <View style={styles.container}>
@@ -128,87 +164,3 @@ export function PostDetailComments({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    marginTop: 8,
-  },
-  headerRow: {
-    marginBottom: 12,
-    gap: 8,
-  },
-  title: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.onSurface,
-  },
-  sortRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  sortChip: {
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  sortChipActive: {
-    borderColor: colors.primary,
-    backgroundColor: colors.surfaceContainerLow,
-  },
-  sortText: {
-    fontSize: 12,
-    color: colors.onSurfaceVariant,
-  },
-  sortTextActive: {
-    color: colors.primary,
-    fontWeight: "600",
-  },
-  submitError: {
-    fontSize: 12,
-    color: colors.error,
-    marginBottom: 8,
-  },
-  errorCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.error,
-    backgroundColor: colors.errorContainer,
-    padding: 12,
-    marginBottom: 12,
-  },
-  errorText: {
-    fontSize: 14,
-    color: colors.onErrorContainer,
-  },
-  retryButton: {
-    marginTop: 8,
-    alignSelf: "flex-start",
-  },
-  retryButtonText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.primary,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: colors.onSurfaceVariant,
-    marginBottom: 8,
-  },
-  loadMoreButton: {
-    alignItems: "center",
-    paddingVertical: 12,
-    minHeight: 44,
-  },
-  loadMoreText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.primary,
-  },
-  anchor: {
-    height: 1,
-    width: "100%",
-  },
-});

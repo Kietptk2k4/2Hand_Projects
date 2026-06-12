@@ -1,17 +1,37 @@
 import { useMemo } from "react";
-import {
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Image, Pressable, ScrollView, View } from "react-native";
+import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
 import { getPostMediaUrl, isPostVideoMedia } from "../utils/postMediaType";
-import { colors } from "../../../shared/theme/colors";
+import { PostVideoPlayer } from "./PostVideoPlayer";
+
+function createStyles(colors) {
+  return {
+    single: {
+      width: "100%",
+      aspectRatio: 1,
+    },
+    strip: {
+      gap: 4,
+      paddingHorizontal: 0,
+    },
+    stripItem: {
+      width: 280,
+      aspectRatio: 1,
+    },
+    tile: {
+      overflow: "hidden",
+      backgroundColor: colors.surfaceContainerHigh,
+    },
+    image: {
+      width: "100%",
+      height: "100%",
+    },
+  };
+}
 
 export function PostMediaCarousel({ media = [], onMediaPress }) {
+  const styles = useThemedStyles(createStyles);
+
   const items = useMemo(
     () =>
       (media || [])
@@ -26,6 +46,7 @@ export function PostMediaCarousel({ media = [], onMediaPress }) {
     return (
       <MediaTile
         item={items[0]}
+        styles={styles}
         style={styles.single}
         onPress={onMediaPress ? () => onMediaPress(0) : undefined}
       />
@@ -42,6 +63,7 @@ export function PostMediaCarousel({ media = [], onMediaPress }) {
         <MediaTile
           key={`${item.url}-${index}`}
           item={item}
+          styles={styles}
           style={styles.stripItem}
           onPress={onMediaPress ? () => onMediaPress(index) : undefined}
         />
@@ -50,15 +72,12 @@ export function PostMediaCarousel({ media = [], onMediaPress }) {
   );
 }
 
-function MediaTile({ item, style, onPress }) {
+function MediaTile({ item, styles, style, onPress }) {
   const isVideo = isPostVideoMedia(item);
   const content = (
     <View style={[styles.tile, style]}>
       {isVideo ? (
-        <View style={styles.videoPlaceholder}>
-          <Ionicons name="play-circle" size={48} color={colors.onPrimary} />
-          <Text style={styles.videoLabel}>Video</Text>
-        </View>
+        <PostVideoPlayer uri={item.url} style={styles.image} />
       ) : (
         <Image source={{ uri: item.url }} style={styles.image} resizeMode="cover" />
       )}
@@ -73,39 +92,3 @@ function MediaTile({ item, style, onPress }) {
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  single: {
-    width: "100%",
-    aspectRatio: 1,
-  },
-  strip: {
-    gap: 4,
-    paddingHorizontal: 0,
-  },
-  stripItem: {
-    width: 280,
-    aspectRatio: 1,
-  },
-  tile: {
-    overflow: "hidden",
-    backgroundColor: colors.surfaceContainerHigh,
-  },
-  image: {
-    width: "100%",
-    height: "100%",
-  },
-  videoPlaceholder: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.onSurface,
-    minHeight: 200,
-  },
-  videoLabel: {
-    marginTop: 8,
-    color: colors.onPrimary,
-    fontSize: 14,
-    fontWeight: "600",
-  },
-});

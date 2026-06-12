@@ -25,4 +25,11 @@ export const ROUTES = {
   search: "/search",
   suggestions: "/suggestions",
   hashtag: (tag) => `/hashtag/${encodeURIComponent(String(tag).replace(/^#+/, ""))}`,
+  account: "/account",
+  accountInfo: "/account/info",
+  accountEdit: "/account/edit",
+  accountAvatar: "/account/avatar",
+  accountPrivacy: "/account/privacy",
+  accountSettings: "/account/settings",
+  accountDelete: "/account/delete",
 };

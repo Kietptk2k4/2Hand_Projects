@@ -8,6 +8,8 @@ public final class InAppNotificationTemplatePolicy {
     }
 
     public static final String SELLER_TEMPLATE_VARIANT = "seller";
+    public static final String HIDE_TEMPLATE_VARIANT = "hide";
+    public static final String REMOVE_TEMPLATE_VARIANT = "remove";
 
     public static Optional<InAppNotificationTemplate> resolve(String eventType) {
         return resolve(eventType, null);
@@ -33,6 +35,30 @@ public final class InAppNotificationTemplatePolicy {
             return Optional.of(new InAppNotificationTemplate(
                     "Review hidden on your product",
                     "A review on one of your products was hidden."
+            ));
+        }
+        if ("POST_MODERATED".equals(eventType) && HIDE_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new InAppNotificationTemplate(
+                    "Post hidden",
+                    "Your post was hidden due to a policy enforcement action."
+            ));
+        }
+        if ("POST_MODERATED".equals(eventType) && REMOVE_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new InAppNotificationTemplate(
+                    "Post removed",
+                    "Your post was removed due to a policy enforcement action."
+            ));
+        }
+        if ("COMMENT_MODERATED".equals(eventType) && HIDE_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new InAppNotificationTemplate(
+                    "Comment hidden",
+                    "Your comment was hidden due to a policy enforcement action."
+            ));
+        }
+        if ("COMMENT_MODERATED".equals(eventType) && REMOVE_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new InAppNotificationTemplate(
+                    "Comment removed",
+                    "Your comment was removed due to a policy enforcement action."
             ));
         }
         return Optional.ofNullable(switch (eventType) {
@@ -77,9 +103,21 @@ public final class InAppNotificationTemplatePolicy {
                     "Account suspended",
                     "Your account has been suspended."
             );
+            case "USER_BANNED" -> new InAppNotificationTemplate(
+                    "Account banned",
+                    "Your account has been banned."
+            );
             case "USER_RESTRICTED" -> new InAppNotificationTemplate(
                     "Account restricted",
                     "Some features on your account have been restricted."
+            );
+            case "POST_MODERATED" -> new InAppNotificationTemplate(
+                    "Post moderated",
+                    "Your post was moderated due to a policy enforcement action."
+            );
+            case "COMMENT_MODERATED" -> new InAppNotificationTemplate(
+                    "Comment moderated",
+                    "Your comment was moderated due to a policy enforcement action."
             );
             case "PRODUCT_REMOVED" -> new InAppNotificationTemplate(
                     "Product removed",

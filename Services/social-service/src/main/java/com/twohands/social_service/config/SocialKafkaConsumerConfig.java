@@ -32,6 +32,11 @@ public class SocialKafkaConsumerConfig {
     }
 
     @Bean
+    public String[] commentModeratedEventTopics(SocialKafkaConsumerProperties properties) {
+        return properties.getCommentModeratedTopics().toArray(String[]::new);
+    }
+
+    @Bean
     public String[] commerceProductRemovedEventTopics(SocialKafkaConsumerProperties properties) {
         return properties.getCommerceProductRemovedTopics().toArray(String[]::new);
     }

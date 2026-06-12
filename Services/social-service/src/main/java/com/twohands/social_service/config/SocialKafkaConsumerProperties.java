@@ -25,6 +25,8 @@ public class SocialKafkaConsumerProperties {
             "admin.post.moderated",
             "admin.post.restored"
     );
+    private String commentModeratedGroupId = "social-comment-moderated";
+    private List<String> commentModeratedTopics = List.of("admin.comment.moderated");
     private String commerceProductRemovedGroupId = "social-commerce-product-removed";
     private List<String> commerceProductRemovedTopics = List.of("commerce.product.removed");
 
@@ -74,6 +76,22 @@ public class SocialKafkaConsumerProperties {
 
     public void setPostModeratedTopics(List<String> postModeratedTopics) {
         this.postModeratedTopics = postModeratedTopics;
+    }
+
+    public String getCommentModeratedGroupId() {
+        return commentModeratedGroupId;
+    }
+
+    public void setCommentModeratedGroupId(String commentModeratedGroupId) {
+        this.commentModeratedGroupId = commentModeratedGroupId;
+    }
+
+    public List<String> getCommentModeratedTopics() {
+        return commentModeratedTopics;
+    }
+
+    public void setCommentModeratedTopics(List<String> commentModeratedTopics) {
+        this.commentModeratedTopics = commentModeratedTopics;
     }
 
     public String getCommerceProductRemovedGroupId() {

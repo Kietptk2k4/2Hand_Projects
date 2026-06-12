@@ -65,7 +65,7 @@ public class ViewCommentLikersUseCase {
 
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Comment khong ton tai."));
-        if (comment.status() != CommentStatus.ACTIVE) {
+        if (!comment.isPubliclyVisible()) {
             throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Comment khong ton tai hoac da bi xoa.");
         }
 

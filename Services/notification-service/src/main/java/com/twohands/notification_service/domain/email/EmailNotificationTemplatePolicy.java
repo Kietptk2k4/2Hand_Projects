@@ -91,6 +91,20 @@ public final class EmailNotificationTemplatePolicy {
                     )
             ),
             Map.entry(
+                    "USER_BANNED",
+                    new EmailNotificationTemplate(
+                            "Your 2Hands account has been banned",
+                            """
+                                    Hello,
+
+                                    Your account has been banned due to a policy enforcement action.
+                                    {{enforcement_reason_line}}{{enforcement_expires_at_line}}
+                                    Contact support if you need assistance.
+                                    """,
+                            Set.of("recipient_email")
+                    )
+            ),
+            Map.entry(
                     "USER_RESTRICTED",
                     new EmailNotificationTemplate(
                             "Your 2Hands account has been restricted",

@@ -53,6 +53,23 @@ class UserSuspendedNotificationIntegrationTest {
     }
 
     @Test
+    void process_notifiesTargetUserForBannedEvent() {
+        UUID userId = UUID.randomUUID();
+        UUID enforcementId = UUID.randomUUID();
+        UUID eventId = ingestBannedEvent(userId, enforcementId, "Confirmed payment fraud");
+
+        var result = processNotificationEventUseCase.execute(new ProcessNotificationEventCommand(eventId));
+
+        assertEquals(ProcessNotificationEventOutcome.COMPLETED, result.outcome());
+        assertEquals(1, countNotifications(eventId, userId));
+        assertEquals("USER_ENFORCEMENT", queryReferenceType(eventId, userId));
+        assertEquals(enforcementId.toString(), queryReferenceId(eventId, userId));
+        assertEquals("Account banned", queryTitle(eventId, userId));
+        assertTrue(queryMetadata(eventId, userId).contains("enforcement_reason"));
+        assertFalse(queryMetadata(eventId, userId).contains("enforced_by"));
+    }
+
+    @Test
     void process_notifiesTargetUserWithEnforcementReference() {
         UUID userId = UUID.randomUUID();
         UUID enforcementId = UUID.randomUUID();
@@ -113,6 +130,31 @@ class UserSuspendedNotificationIntegrationTest {
         processNotificationEventUseCase.execute(new ProcessNotificationEventCommand(eventId));
 
         assertEquals(1, countNotifications(eventId, userId));
+    }
+
+    private UUID ingestBannedEvent(UUID userId, UUID enforcementId, String description) {
+        var ingestResult = storeNotificationEventUseCase.execute(new NotificationEventIngestCommand(
+                UUID.randomUUID(),
+                null,
+                "USER_BANNED",
+                NotificationSourceService.ADMIN,
+                "USER_ENFORCEMENT",
+                enforcementId.toString(),
+                null,
+                userId,
+                """
+                        {
+                          "user_id":"%s",
+                          "enforcement_id":"%s",
+                          "action_type":"BAN",
+                          "reason_code":"FRAUD",
+                          "description":"%s",
+                          "expires_at":null,
+                          "enforced_by":"%s"
+                        }
+                        """.formatted(userId, enforcementId, description, UUID.randomUUID())
+        ));
+        return ingestResult.notificationEventId();
     }
 
     private UUID ingestSuspendedEvent(UUID userId, UUID enforcementId, String description) {

@@ -32,6 +32,15 @@ public class CommentDocument {
     @Field("status")
     private String status;
 
+    @Field("moderation_status")
+    private String moderationStatus;
+
+    @Field("moderation_reason")
+    private String moderationReason;
+
+    @Field("last_moderation_log_id")
+    private String lastModerationLogId;
+
     @Field("like_count")
     private long likeCount;
 
@@ -98,6 +107,30 @@ public class CommentDocument {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getModerationStatus() {
+        return moderationStatus;
+    }
+
+    public void setModerationStatus(String moderationStatus) {
+        this.moderationStatus = moderationStatus;
+    }
+
+    public String getModerationReason() {
+        return moderationReason;
+    }
+
+    public void setModerationReason(String moderationReason) {
+        this.moderationReason = moderationReason;
+    }
+
+    public String getLastModerationLogId() {
+        return lastModerationLogId;
+    }
+
+    public void setLastModerationLogId(String lastModerationLogId) {
+        this.lastModerationLogId = lastModerationLogId;
     }
 
     public long getLikeCount() {

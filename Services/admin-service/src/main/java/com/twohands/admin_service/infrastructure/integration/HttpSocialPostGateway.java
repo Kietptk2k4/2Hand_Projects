@@ -14,6 +14,9 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 
+import java.util.Optional;
+import java.util.UUID;
+
 @Component
 @ConditionalOnProperty(name = "admin.integrations.social.enabled", havingValue = "true")
 public class HttpSocialPostGateway implements SocialPostGateway {
@@ -35,6 +38,16 @@ public class HttpSocialPostGateway implements SocialPostGateway {
 
 	@Override
 	public void ensurePostExists(String postId) {
+		fetchPost(postId);
+	}
+
+	@Override
+	public Optional<UUID> findAuthorUserId(String postId) {
+		JsonNode data = fetchPost(postId);
+		return parseAuthorUserId(data);
+	}
+
+	private JsonNode fetchPost(String postId) {
 		try {
 			JsonNode root = restClient.get()
 					.uri("/api/v1/social/posts/{postId}", postId)
@@ -44,6 +57,11 @@ public class HttpSocialPostGateway implements SocialPostGateway {
 			if (root == null || !root.path("success").asBoolean(false)) {
 				throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND.defaultMessage());
 			}
+			JsonNode data = root.path("data");
+			if (data.isMissingNode() || data.isNull()) {
+				throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND.defaultMessage());
+			}
+			return data;
 		} catch (RestClientResponseException ex) {
 			if (ex.getStatusCode().value() == 404) {
 				throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND.defaultMessage());
@@ -54,6 +72,48 @@ public class HttpSocialPostGateway implements SocialPostGateway {
 			log.warn("Social post lookup failed: {}", ex.getMessage());
 			throw new AppException(ErrorCode.SERVICE_UNAVAILABLE, "Social Service is unavailable");
 		}
+	}
+
+	private Optional<UUID> parseAuthorUserId(JsonNode data) {
+		JsonNode author = data.path("author");
+		String authorId = firstNonBlank(
+				textValue(author, "userId"),
+				textValue(author, "user_id"),
+				textValue(data, "authorId"),
+				textValue(data, "author_id")
+		);
+		if (authorId == null) {
+			return Optional.empty();
+		}
+		try {
+			return Optional.of(UUID.fromString(authorId));
+		} catch (IllegalArgumentException ex) {
+			return Optional.empty();
+		}
+	}
+
+	private String textValue(JsonNode node, String field) {
+		if (node == null || node.isMissingNode() || node.isNull()) {
+			return null;
+		}
+		JsonNode valueNode = node.path(field);
+		if (valueNode.isMissingNode() || valueNode.isNull() || !valueNode.isValueNode()) {
+			return null;
+		}
+		String value = valueNode.asText();
+		if (value == null || value.isBlank()) {
+			return null;
+		}
+		return value.trim();
+	}
+
+	private String firstNonBlank(String... values) {
+		for (String value : values) {
+			if (value != null && !value.isBlank()) {
+				return value;
+			}
+		}
+		return null;
 	}
 
 	private String trimTrailingSlash(String baseUrl) {

@@ -1,10 +1,10 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useLayoutEffect, useMemo, useState } from "react";
+import { useNavigation } from "expo-router";
 import {
   ActivityIndicator,
   FlatList,
   Pressable,
   RefreshControl,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -22,10 +22,103 @@ import { useSavePost } from "../hooks/useSavePost";
 import { ProfileHeader } from "./ProfileHeader";
 import { ProfilePostsFilter } from "./ProfilePostsFilter";
 import { PostCard } from "./PostCard";
+import { AccountSettingsHeaderButton } from "../../auth/account/components/AccountSettingsHeaderButton";
+import { useAccountProfile } from "../../auth/account/hooks/useAccountProfile";
 import { ROUTES } from "../../../shared/constants/routes";
-import { colors } from "../../../shared/theme/colors";
+import { useThemeColors } from "../../../shared/theme/useThemeColors";
+import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
+import { resolveSelfProfileDetails } from "../utils/resolveProfileDetails";
+
+function createProfileScreenStyles(colors) {
+  return {
+    listContent: {
+      paddingBottom: 24,
+      flexGrow: 1,
+      backgroundColor: colors.surface,
+    },
+    centered: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 24,
+      backgroundColor: colors.surface,
+      gap: 12,
+    },
+    loadingText: {
+      fontSize: 14,
+      color: colors.onSurfaceVariant,
+    },
+    postsSection: {
+      marginTop: 8,
+      borderTopWidth: 1,
+      borderTopColor: colors.outlineVariant,
+      paddingTop: 16,
+    },
+    postsTitle: {
+      fontSize: 17,
+      fontWeight: "600",
+      color: colors.onSurface,
+      paddingHorizontal: 16,
+      marginBottom: 8,
+    },
+    postsLoading: {
+      paddingVertical: 24,
+    },
+    messageCard: {
+      marginHorizontal: 16,
+      marginTop: 8,
+      marginBottom: 16,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      backgroundColor: colors.surfaceContainerLowest,
+      padding: 20,
+      alignItems: "center",
+    },
+    errorCard: {
+      borderColor: colors.error,
+      backgroundColor: colors.errorContainer,
+    },
+    emptyTitle: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.onSurface,
+      textAlign: "center",
+      marginBottom: 6,
+    },
+    emptyText: {
+      fontSize: 14,
+      color: colors.onSurfaceVariant,
+      textAlign: "center",
+    },
+    errorText: {
+      fontSize: 14,
+      color: colors.onErrorContainer,
+      textAlign: "center",
+      marginBottom: 12,
+    },
+    retryButton: {
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      minHeight: 44,
+      paddingHorizontal: 20,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    retryButtonText: {
+      color: colors.onPrimary,
+      fontSize: 14,
+      fontWeight: "600",
+    },
+    footer: {
+      paddingVertical: 16,
+    },
+  };
+}
 
 function ProfilePostsEmpty({ isPrivateLocked }) {
+  const styles = useThemedStyles(createProfileScreenStyles);
+
   if (isPrivateLocked) {
     return (
       <View style={styles.messageCard}>
@@ -45,6 +138,8 @@ function ProfilePostsEmpty({ isPrivateLocked }) {
 }
 
 function ProfilePostsError({ message, errorCode, onRetry }) {
+  const styles = useThemedStyles(createProfileScreenStyles);
+
   return (
     <View style={[styles.messageCard, styles.errorCard]}>
       <Text style={styles.errorText}>{message}</Text>
@@ -58,7 +153,10 @@ function ProfilePostsError({ message, errorCode, onRetry }) {
 }
 
 export function ProfileScreen({ userId }) {
+  const colors = useThemeColors();
+  const styles = useThemedStyles(createProfileScreenStyles);
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
   const currentUserId = useCurrentUserId();
   const [statusFilter, setStatusFilter] = useState(DEFAULT_PROFILE_STATUS_FILTER);
 
@@ -71,15 +169,36 @@ export function ProfileScreen({ userId }) {
     retry: retryProfile,
   } = useProfile(userId);
 
-  const isSelf =
-    profile?.followStatus === "SELF" ||
-    Boolean(currentUserId && userId && currentUserId === userId);
+  const isSelfCandidate = Boolean(
+    currentUserId && userId && currentUserId === userId
+  );
 
-  const publicDetailsState = usePublicProfileDetails(userId, {
-    enabled: Boolean(userId) && Boolean(profile),
+  const isSelf = profile?.followStatus === "SELF" || isSelfCandidate;
+
+  const accountProfileState = useAccountProfile({
+    enabled: isSelfCandidate,
   });
 
-  const details = publicDetailsState.details;
+  const publicDetailsState = usePublicProfileDetails(userId, {
+    enabled: Boolean(userId) && Boolean(profile) && !isSelf,
+  });
+
+  const selfDetails = useMemo(() => {
+    if (!isSelf) return null;
+    return resolveSelfProfileDetails(accountProfileState.profile);
+  }, [accountProfileState.profile, isSelf]);
+
+  const details = isSelf ? selfDetails : publicDetailsState.details;
+  const isDetailsLoading = isSelf
+    ? accountProfileState.isLoading
+    : publicDetailsState.isLoading;
+  const detailsError = isSelf
+    ? accountProfileState.isError || accountProfileState.isEmpty
+      ? accountProfileState.errorMessage
+      : ""
+    : publicDetailsState.isError && publicDetailsState.errorCode !== 404
+      ? publicDetailsState.errorMessage
+      : "";
 
   const canViewPosts = Boolean(profile?.canViewFullProfile);
   const effectiveStatusFilter = isSelf ? statusFilter : "published";
@@ -123,16 +242,39 @@ export function ProfileScreen({ userId }) {
     router.push(ROUTES.profileFollowing(userId));
   }, [userId]);
 
+  const onEditProfilePress = useCallback(() => {
+    router.push(ROUTES.accountEdit);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!isSelf) {
+      navigation.setOptions({ headerRight: undefined });
+      return;
+    }
+
+    navigation.setOptions({
+      headerRight: () => <AccountSettingsHeaderButton />,
+    });
+  }, [isSelf, navigation]);
+
   const onRefresh = useCallback(async () => {
     await Promise.all([
       retryProfile(),
-      publicDetailsState.retry(),
+      isSelf ? accountProfileState.retry() : publicDetailsState.retry(),
       canViewPosts ? postsState.refetch() : Promise.resolve(),
     ]);
-  }, [canViewPosts, postsState, publicDetailsState, retryProfile]);
+  }, [
+    accountProfileState,
+    canViewPosts,
+    isSelf,
+    postsState,
+    publicDetailsState,
+    retryProfile,
+  ]);
 
   const isRefreshing =
-    postsState.isRefreshing || publicDetailsState.isLoading;
+    postsState.isRefreshing ||
+    (isSelf ? accountProfileState.isLoading : publicDetailsState.isLoading);
 
   const listHeader = useMemo(() => {
     if (!profile) return null;
@@ -142,17 +284,14 @@ export function ProfileScreen({ userId }) {
         <ProfileHeader
           profile={profile}
           details={details}
-          isDetailsLoading={!isSelf && publicDetailsState.isLoading}
-          detailsError={
-            !isSelf && publicDetailsState.isError && publicDetailsState.errorCode !== 404
-              ? publicDetailsState.errorMessage
-              : ""
-          }
+          isDetailsLoading={isDetailsLoading}
+          detailsError={detailsError}
           postCount={postsState.meta?.totalElements ?? null}
           onFollowPress={() => toggleFollow(profile)}
           isFollowLoading={isFollowLoading}
           onFollowersPress={onFollowersPress}
           onFollowingPress={onFollowingPress}
+          onEditProfilePress={onEditProfilePress}
         />
 
         <View style={styles.postsSection}>
@@ -193,8 +332,9 @@ export function ProfileScreen({ userId }) {
   }, [
     profile,
     details,
+    isDetailsLoading,
+    detailsError,
     isSelf,
-    publicDetailsState,
     postsState,
     statusFilter,
     canViewPosts,
@@ -202,6 +342,7 @@ export function ProfileScreen({ userId }) {
     isFollowLoading,
     onFollowersPress,
     onFollowingPress,
+    onEditProfilePress,
   ]);
 
   if (isProfileLoading && !profile) {
@@ -269,88 +410,3 @@ export function ProfileScreen({ userId }) {
     />
   );
 }
-
-const styles = StyleSheet.create({
-  listContent: {
-    paddingBottom: 24,
-    flexGrow: 1,
-    backgroundColor: colors.surface,
-  },
-  centered: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-    backgroundColor: colors.surface,
-    gap: 12,
-  },
-  loadingText: {
-    fontSize: 14,
-    color: colors.onSurfaceVariant,
-  },
-  postsSection: {
-    marginTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: colors.outlineVariant,
-    paddingTop: 16,
-  },
-  postsTitle: {
-    fontSize: 17,
-    fontWeight: "600",
-    color: colors.onSurface,
-    paddingHorizontal: 16,
-    marginBottom: 8,
-  },
-  postsLoading: {
-    paddingVertical: 24,
-  },
-  messageCard: {
-    marginHorizontal: 16,
-    marginTop: 8,
-    marginBottom: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    backgroundColor: colors.surfaceContainerLowest,
-    padding: 20,
-    alignItems: "center",
-  },
-  errorCard: {
-    borderColor: colors.error,
-    backgroundColor: colors.errorContainer,
-  },
-  emptyTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.onSurface,
-    textAlign: "center",
-    marginBottom: 6,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: colors.onSurfaceVariant,
-    textAlign: "center",
-  },
-  errorText: {
-    fontSize: 14,
-    color: colors.onErrorContainer,
-    textAlign: "center",
-    marginBottom: 12,
-  },
-  retryButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    minHeight: 44,
-    paddingHorizontal: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  retryButtonText: {
-    color: colors.onPrimary,
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  footer: {
-    paddingVertical: 16,
-  },
-});

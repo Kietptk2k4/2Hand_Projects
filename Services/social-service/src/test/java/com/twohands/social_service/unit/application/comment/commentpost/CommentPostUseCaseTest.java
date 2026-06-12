@@ -92,7 +92,8 @@ class CommentPostUseCaseTest {
             Comment c = inv.getArgument(0);
             return new Comment(
                     "comment-id", c.postId(), c.authorId(), c.parentCommentId(), c.contentText(),
-                    c.media(), c.status(), c.likeCount(), c.createdAt(), c.updatedAt(), c.deletedAt()
+                    c.media(), c.status(), c.moderationStatus(), c.moderationReason(),
+                    c.lastModerationLogId(), c.likeCount(), c.createdAt(), c.updatedAt(), c.deletedAt()
             );
         });
         when(outboxEventRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));

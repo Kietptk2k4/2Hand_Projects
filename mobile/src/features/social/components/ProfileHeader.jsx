@@ -1,11 +1,133 @@
-import { ActivityIndicator, Image, ImageBackground, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  ImageBackground,
+  Linking,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { COVER_IMAGE_URL } from "../constants/profileConstants";
+import { useThemeColors } from "../../../shared/theme/useThemeColors";
+import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
 import { FollowButton } from "./FollowButton";
 import { ProfileStats } from "./ProfileStats";
-import { colors } from "../../../shared/theme/colors";
 
 const DEFAULT_AVATAR = "https://i.pravatar.cc/200?img=11";
+
+function createStyles(colors) {
+  return {
+    root: {
+      backgroundColor: colors.surfaceContainerLowest,
+    },
+    cover: {
+      height: 140,
+      width: "100%",
+    },
+    coverOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: "rgba(0,0,0,0.15)",
+    },
+    body: {
+      alignItems: "center",
+      paddingHorizontal: 16,
+      paddingBottom: 16,
+      marginTop: -48,
+    },
+    avatarWrap: {
+      borderRadius: 64,
+      borderWidth: 4,
+      borderColor: colors.surfaceContainerLowest,
+      overflow: "hidden",
+      backgroundColor: colors.surfaceContainerHigh,
+    },
+    avatar: {
+      width: 96,
+      height: 96,
+    },
+    nameRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      marginTop: 12,
+    },
+    displayName: {
+      fontSize: 22,
+      fontWeight: "600",
+      color: colors.onSurface,
+      textAlign: "center",
+    },
+    username: {
+      marginTop: 4,
+      fontSize: 14,
+      color: colors.onSurfaceVariant,
+    },
+    privateNotice: {
+      marginTop: 8,
+      fontSize: 14,
+      color: colors.onSurfaceVariant,
+      textAlign: "center",
+    },
+    detailsLoader: {
+      marginTop: 12,
+    },
+    detailsError: {
+      marginTop: 8,
+      fontSize: 13,
+      color: colors.onErrorContainer,
+      textAlign: "center",
+    },
+    bio: {
+      marginTop: 8,
+      fontSize: 14,
+      lineHeight: 20,
+      color: colors.onSurfaceVariant,
+      textAlign: "center",
+      maxWidth: 320,
+    },
+    website: {
+      marginTop: 6,
+      fontSize: 14,
+      color: colors.primary,
+    },
+    socialLinks: {
+      marginTop: 8,
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "center",
+      gap: 12,
+    },
+    socialLink: {
+      fontSize: 14,
+      color: colors.primary,
+      textTransform: "capitalize",
+    },
+    actions: {
+      marginTop: 16,
+      alignItems: "center",
+    },
+    editButton: {
+      minHeight: 44,
+      minWidth: 168,
+      borderRadius: 8,
+      backgroundColor: colors.primary,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+    },
+    editButtonPressed: {
+      opacity: 0.92,
+    },
+    editButtonText: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.onPrimary,
+    },
+  };
+}
 
 export function ProfileHeader({
   profile,
@@ -17,7 +139,11 @@ export function ProfileHeader({
   isFollowLoading = false,
   onFollowersPress,
   onFollowingPress,
+  onEditProfilePress,
 }) {
+  const colors = useThemeColors();
+  const styles = useThemedStyles(createStyles);
+
   if (!profile) return null;
 
   const isSelf = profile.followStatus === "SELF";
@@ -67,7 +193,28 @@ export function ProfileHeader({
         ) : null}
 
         {showDetails && details?.website ? (
-          <Text style={styles.website}>{details.website}</Text>
+          <Pressable
+            onPress={() => Linking.openURL(details.website)}
+            accessibilityRole="link"
+          >
+            <Text style={styles.website}>{details.website}</Text>
+          </Pressable>
+        ) : null}
+
+        {showDetails && details?.socialLinks ? (
+          <View style={styles.socialLinks}>
+            {Object.entries(details.socialLinks)
+              .filter(([, url]) => String(url || "").trim())
+              .map(([platform, url]) => (
+                <Pressable
+                  key={platform}
+                  onPress={() => Linking.openURL(url)}
+                  accessibilityRole="link"
+                >
+                  <Text style={styles.socialLink}>{platform}</Text>
+                </Pressable>
+              ))}
+          </View>
         ) : null}
 
         <ProfileStats
@@ -80,9 +227,14 @@ export function ProfileHeader({
 
         <View style={styles.actions}>
           {isSelf ? (
-            <View style={styles.selfActions}>
-              <Text style={styles.selfHint}>Đây là hồ sơ của bạn</Text>
-            </View>
+            <Pressable
+              style={({ pressed }) => [styles.editButton, pressed && styles.editButtonPressed]}
+              onPress={onEditProfilePress}
+              accessibilityRole="button"
+              accessibilityLabel="Chỉnh sửa hồ sơ"
+            >
+              <Text style={styles.editButtonText}>Chỉnh sửa hồ sơ</Text>
+            </Pressable>
           ) : (
             <FollowButton
               followStatus={profile.followStatus}
@@ -95,90 +247,3 @@ export function ProfileHeader({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    backgroundColor: colors.surfaceContainerLowest,
-  },
-  cover: {
-    height: 140,
-    width: "100%",
-  },
-  coverOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.15)",
-  },
-  body: {
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    marginTop: -48,
-  },
-  avatarWrap: {
-    borderRadius: 64,
-    borderWidth: 4,
-    borderColor: colors.surfaceContainerLowest,
-    overflow: "hidden",
-    backgroundColor: colors.surfaceContainerHigh,
-  },
-  avatar: {
-    width: 96,
-    height: 96,
-  },
-  nameRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginTop: 12,
-  },
-  displayName: {
-    fontSize: 22,
-    fontWeight: "600",
-    color: colors.onSurface,
-    textAlign: "center",
-  },
-  username: {
-    marginTop: 4,
-    fontSize: 14,
-    color: colors.onSurfaceVariant,
-  },
-  privateNotice: {
-    marginTop: 8,
-    fontSize: 14,
-    color: colors.onSurfaceVariant,
-    textAlign: "center",
-  },
-  detailsLoader: {
-    marginTop: 12,
-  },
-  detailsError: {
-    marginTop: 8,
-    fontSize: 13,
-    color: colors.onErrorContainer,
-    textAlign: "center",
-  },
-  bio: {
-    marginTop: 8,
-    fontSize: 14,
-    lineHeight: 20,
-    color: colors.onSurfaceVariant,
-    textAlign: "center",
-    maxWidth: 320,
-  },
-  website: {
-    marginTop: 6,
-    fontSize: 14,
-    color: colors.primary,
-  },
-  actions: {
-    marginTop: 16,
-    alignItems: "center",
-  },
-  selfActions: {
-    paddingVertical: 8,
-  },
-  selfHint: {
-    fontSize: 14,
-    color: colors.onSurfaceVariant,
-  },
-});

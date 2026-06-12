@@ -18,10 +18,13 @@ public class NotificationDeliveryChannelPolicy {
 
     private static final Set<String> DEDICATED_ACCOUNT_ENFORCEMENT_NOTIFICATION_EVENTS = Set.of(
             "USER_SUSPENDED",
+            "USER_BANNED",
             "USER_RESTRICTED"
     );
 
     private static final Set<String> DEDICATED_ADMIN_MODERATION_NOTIFICATION_EVENTS = Set.of(
+            "POST_MODERATED",
+            "COMMENT_MODERATED",
             "PRODUCT_REMOVED",
             "REVIEW_HIDDEN",
             "SHOP_SUSPENDED",

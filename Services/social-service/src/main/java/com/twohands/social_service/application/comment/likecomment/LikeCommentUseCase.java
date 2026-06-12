@@ -44,7 +44,7 @@ public class LikeCommentUseCase {
         Comment comment = commentRepository.findById(command.commentId())
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Comment khong ton tai."));
 
-        if (comment.status() != CommentStatus.ACTIVE) {
+        if (!comment.isPubliclyVisible()) {
             throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Comment khong ton tai hoac da bi xoa.");
         }
 

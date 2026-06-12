@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   FlatList,
   Pressable,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -20,7 +19,72 @@ import { FeedPostSkeleton } from "./FeedPostSkeleton";
 import { FeedTabs } from "./FeedTabs";
 import { PostCard } from "./PostCard";
 import { ROUTES } from "../../../shared/constants/routes";
-import { colors } from "../../../shared/theme/colors";
+import { useThemeColors } from "../../../shared/theme/useThemeColors";
+import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
+
+function createStyles(colors) {
+  return {
+    listContent: {
+      paddingHorizontal: 16,
+      paddingTop: 8,
+      paddingBottom: 24,
+      flexGrow: 1,
+    },
+    headerBlock: {
+      marginBottom: 16,
+      marginTop: 8,
+      gap: 16,
+    },
+    skeletonBlock: {
+      gap: 0,
+    },
+    messageCard: {
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      backgroundColor: colors.surfaceContainerLowest,
+      padding: 24,
+      alignItems: "center",
+    },
+    errorCard: {
+      borderColor: colors.error,
+      backgroundColor: colors.errorContainer,
+    },
+    errorText: {
+      fontSize: 14,
+      color: colors.onErrorContainer,
+      textAlign: "center",
+      marginBottom: 16,
+    },
+    retryButton: {
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      minHeight: 44,
+      paddingHorizontal: 20,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    retryButtonText: {
+      color: colors.onPrimary,
+      fontSize: 14,
+      fontWeight: "600",
+    },
+    emptyIcon: {
+      fontSize: 36,
+      color: colors.outline,
+      marginBottom: 8,
+    },
+    emptyText: {
+      fontSize: 14,
+      color: colors.onSurfaceVariant,
+      textAlign: "center",
+      lineHeight: 20,
+    },
+    footer: {
+      paddingVertical: 16,
+    },
+  };
+}
 
 const EMPTY_BY_TAB = {
   [FEED_TABS.GLOBAL]: "Chưa có bài viết công khai nào trên feed đề xuất.",
@@ -29,6 +93,8 @@ const EMPTY_BY_TAB = {
 };
 
 export function FeedScreen() {
+  const colors = useThemeColors();
+  const styles = useThemedStyles(createStyles);
   const [activeTab, setActiveTab] = useState(FEED_TABS.GLOBAL);
   const currentUserId = useCurrentUserId();
   const {
@@ -149,65 +215,3 @@ export function FeedScreen() {
     />
   );
 }
-
-const styles = StyleSheet.create({
-  listContent: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 24,
-    flexGrow: 1,
-  },
-  headerBlock: {
-    marginBottom: 16,
-    marginTop: 8,
-    gap: 16,
-  },
-  skeletonBlock: {
-    gap: 0,
-  },
-  messageCard: {
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    backgroundColor: colors.surfaceContainerLowest,
-    padding: 24,
-    alignItems: "center",
-  },
-  errorCard: {
-    borderColor: colors.error,
-    backgroundColor: colors.errorContainer,
-  },
-  errorText: {
-    fontSize: 14,
-    color: colors.onErrorContainer,
-    textAlign: "center",
-    marginBottom: 16,
-  },
-  retryButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    minHeight: 44,
-    paddingHorizontal: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  retryButtonText: {
-    color: colors.onPrimary,
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  emptyIcon: {
-    fontSize: 36,
-    color: colors.outline,
-    marginBottom: 8,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: colors.onSurfaceVariant,
-    textAlign: "center",
-    lineHeight: 20,
-  },
-  footer: {
-    paddingVertical: 16,
-  },
-});

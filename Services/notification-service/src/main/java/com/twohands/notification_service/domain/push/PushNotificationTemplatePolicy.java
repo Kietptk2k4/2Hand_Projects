@@ -1,5 +1,7 @@
 package com.twohands.notification_service.domain.push;
 
+import com.twohands.notification_service.domain.inapp.InAppNotificationTemplatePolicy;
+
 import java.util.Optional;
 
 public final class PushNotificationTemplatePolicy {
@@ -23,6 +25,34 @@ public final class PushNotificationTemplatePolicy {
                     "You have received a new order."
             ));
         }
+        if ("POST_MODERATED".equals(eventType)
+                && InAppNotificationTemplatePolicy.HIDE_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new PushNotificationTemplate(
+                    "Post hidden",
+                    "Your post was hidden due to a policy enforcement action."
+            ));
+        }
+        if ("POST_MODERATED".equals(eventType)
+                && InAppNotificationTemplatePolicy.REMOVE_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new PushNotificationTemplate(
+                    "Post removed",
+                    "Your post was removed due to a policy enforcement action."
+            ));
+        }
+        if ("COMMENT_MODERATED".equals(eventType)
+                && InAppNotificationTemplatePolicy.HIDE_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new PushNotificationTemplate(
+                    "Comment hidden",
+                    "Your comment was hidden due to a policy enforcement action."
+            ));
+        }
+        if ("COMMENT_MODERATED".equals(eventType)
+                && InAppNotificationTemplatePolicy.REMOVE_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new PushNotificationTemplate(
+                    "Comment removed",
+                    "Your comment was removed due to a policy enforcement action."
+            ));
+        }
         return Optional.ofNullable(switch (eventType) {
             case "PASSWORD_CHANGED" -> new PushNotificationTemplate("Password changed", "Your account password was changed.");
             case "POST_LIKED" -> new PushNotificationTemplate("New like", "Someone liked your post.");
@@ -41,7 +71,16 @@ public final class PushNotificationTemplatePolicy {
                     "Tell us what you think about your order."
             );
             case "USER_SUSPENDED" -> new PushNotificationTemplate("Account suspended", "Your account has been suspended.");
+            case "USER_BANNED" -> new PushNotificationTemplate("Account banned", "Your account has been banned.");
             case "USER_RESTRICTED" -> new PushNotificationTemplate("Account restricted", "Your account access has been restricted.");
+            case "POST_MODERATED" -> new PushNotificationTemplate(
+                    "Post moderated",
+                    "Your post was moderated due to a policy enforcement action."
+            );
+            case "COMMENT_MODERATED" -> new PushNotificationTemplate(
+                    "Comment moderated",
+                    "Your comment was moderated due to a policy enforcement action."
+            );
             case "PRODUCT_REMOVED" -> new PushNotificationTemplate("Product removed", "One of your products was removed.");
             case "REVIEW_HIDDEN" -> new PushNotificationTemplate("Review hidden", "One of your reviews was hidden.");
             case "SHOP_SUSPENDED" -> new PushNotificationTemplate("Shop suspended", "Your shop has been suspended.");

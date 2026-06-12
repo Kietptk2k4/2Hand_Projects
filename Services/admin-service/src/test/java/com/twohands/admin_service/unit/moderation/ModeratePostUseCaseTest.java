@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -106,6 +107,27 @@ class ModeratePostUseCaseTest {
 
 		assertThat(result.action()).isEqualTo(ContentModerationAction.REMOVE);
 		assertThat(useCase.successMessage(ContentModerationAction.REMOVE)).isEqualTo("Post removed successfully");
+	}
+
+	@Test
+	void shouldIncludeAuthorUserIdInOutboxWhenSocialIntegrationEnabled() {
+		UUID adminId = UUID.randomUUID();
+		UUID authorId = UUID.randomUUID();
+		UUID outboxId = UUID.randomUUID();
+		Instant now = Instant.now();
+
+		when(adminAuthorizationService.requireCurrentAdminId()).thenReturn(adminId);
+		when(socialPostGateway.isEnabled()).thenReturn(true);
+		when(socialPostGateway.findAuthorUserId(POST_ID)).thenReturn(Optional.of(authorId));
+		when(contentModerationLogRepository.save(any(ContentModerationLog.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(insertAdminOutboxEventUseCase.execute(any(InsertAdminOutboxEventCommand.class)))
+				.thenReturn(new OutboxEvent(outboxId, "POST_MODERATED", UUID.randomUUID(), "{}", OutboxStatus.PENDING, 0, now, null, null));
+
+		useCase.execute(new ModeratePostCommand(POST_ID, ContentModerationAction.HIDE, "Spam content", null));
+
+		verify(socialPostGateway).ensurePostExists(POST_ID);
+		verify(socialPostGateway).findAuthorUserId(POST_ID);
+		verify(insertAdminOutboxEventUseCase).execute(any(InsertAdminOutboxEventCommand.class));
 	}
 
 	@Test

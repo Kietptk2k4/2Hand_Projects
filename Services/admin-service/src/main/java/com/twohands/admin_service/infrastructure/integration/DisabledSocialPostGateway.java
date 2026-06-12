@@ -17,4 +17,9 @@ public class DisabledSocialPostGateway implements SocialPostGateway {
 	public void ensurePostExists(String postId) {
 		// Post existence is validated when Social integration is enabled.
 	}
+
+	@Override
+	public java.util.Optional<java.util.UUID> findAuthorUserId(String postId) {
+		return java.util.Optional.empty();
+	}
 }

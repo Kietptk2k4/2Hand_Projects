@@ -6,6 +6,8 @@ import com.twohands.social_service.application.comment.deleteowncomment.DeleteOw
 import com.twohands.social_service.application.comment.likecomment.LikeCommentCommand;
 import com.twohands.social_service.application.comment.likecomment.LikeCommentResult;
 import com.twohands.social_service.application.comment.likecomment.LikeCommentUseCase;
+import com.twohands.social_service.application.comment.viewcomment.ViewCommentResult;
+import com.twohands.social_service.application.comment.viewcomment.ViewCommentUseCase;
 import com.twohands.social_service.application.comment.viewcommentlikers.ViewCommentLikersUseCase;
 import com.twohands.social_service.application.reaction.common.ViewLikeUsersResult;
 import com.twohands.social_service.application.comment.replycomment.ReplyCommentCommand;
@@ -16,6 +18,7 @@ import com.twohands.social_service.delivery.http.comment.request.ReplyCommentReq
 import com.twohands.social_service.delivery.http.comment.response.DeleteOwnCommentResponse;
 import com.twohands.social_service.delivery.http.comment.response.LikeCommentResponse;
 import com.twohands.social_service.delivery.http.comment.response.ReplyCommentResponse;
+import com.twohands.social_service.delivery.http.comment.response.ViewCommentResponse;
 import com.twohands.social_service.delivery.http.reaction.mapper.ViewLikeUsersHttpMapper;
 import com.twohands.social_service.delivery.http.reaction.response.ViewLikeUsersResponse;
 import com.twohands.social_service.domain.comment.CommentMediaItem;
@@ -43,6 +46,7 @@ public class CommentController {
     private final ReplyCommentUseCase replyCommentUseCase;
     private final DeleteOwnCommentUseCase deleteOwnCommentUseCase;
     private final LikeCommentUseCase likeCommentUseCase;
+    private final ViewCommentUseCase viewCommentUseCase;
     private final ViewCommentLikersUseCase viewCommentLikersUseCase;
     private final ViewLikeUsersHttpMapper viewLikeUsersHttpMapper;
 
@@ -50,14 +54,27 @@ public class CommentController {
             ReplyCommentUseCase replyCommentUseCase,
             DeleteOwnCommentUseCase deleteOwnCommentUseCase,
             LikeCommentUseCase likeCommentUseCase,
+            ViewCommentUseCase viewCommentUseCase,
             ViewCommentLikersUseCase viewCommentLikersUseCase,
             ViewLikeUsersHttpMapper viewLikeUsersHttpMapper
     ) {
         this.replyCommentUseCase = replyCommentUseCase;
         this.deleteOwnCommentUseCase = deleteOwnCommentUseCase;
         this.likeCommentUseCase = likeCommentUseCase;
+        this.viewCommentUseCase = viewCommentUseCase;
         this.viewCommentLikersUseCase = viewCommentLikersUseCase;
         this.viewLikeUsersHttpMapper = viewLikeUsersHttpMapper;
+    }
+
+    @GetMapping("/{commentId}")
+    public ResponseEntity<ApiResponse<ViewCommentResponse>> viewComment(@PathVariable String commentId) {
+        ViewCommentResult result = viewCommentUseCase.execute(commentId);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewCommentUseCase.successMessage(),
+                toViewCommentResponse(result)
+        ));
     }
 
     @PostMapping("/{commentId}/replies")
@@ -189,6 +206,16 @@ public class CommentController {
                 result.commentId(),
                 result.liked(),
                 result.likeCount()
+        );
+    }
+
+    private ViewCommentResponse toViewCommentResponse(ViewCommentResult result) {
+        return new ViewCommentResponse(
+                result.commentId(),
+                result.postId(),
+                new ViewCommentResponse.AuthorResponse(result.authorId()),
+                result.status(),
+                result.moderationStatus()
         );
     }
 }

@@ -15,6 +15,7 @@ public class AccountEnforcementEmailPayloadNormalizer {
 
     private static final Set<String> SUPPORTED_EVENT_TYPES = Set.of(
             "USER_SUSPENDED",
+            "USER_BANNED",
             "USER_RESTRICTED"
     );
 

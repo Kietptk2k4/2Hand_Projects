@@ -32,6 +32,8 @@ public class NotificationKafkaConsumerProperties {
             "admin.user.suspended",
             "admin.user.banned",
             "admin.user.restricted",
+            "admin.post.moderated",
+            "admin.comment.moderated",
             "admin.product.removed",
             "admin.review.hidden",
             "admin.shop.suspended",

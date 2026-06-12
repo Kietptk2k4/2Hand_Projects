@@ -71,7 +71,7 @@ Message khi `action=REMOVE`: `"Comment removed successfully"`.
 
 ## 5. Outbox payload
 
-`comment_id`, `moderation_log_id`, `action`, `reason`, `moderated_by`, `moderated_at`.
+`comment_id`, `moderation_log_id`, `action`, `reason`, `moderated_by`, `moderated_at`, `author_user_id` (khi social integration bật), `post_id` (khi có từ Social lookup).
 
 ## 6. FE Integration
 

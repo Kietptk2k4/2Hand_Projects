@@ -63,8 +63,9 @@ class UserSuspendedNotificationEventHandlerTest {
     }
 
     @Test
-    void supports_userSuspendedOnly() {
+    void supports_accountEnforcementSuspendAndBanEvents() {
         assertTrue(handler.supports("USER_SUSPENDED"));
+        assertTrue(handler.supports("USER_BANNED"));
         assertFalse(handler.supports("USER_RESTRICTED"));
     }
 
@@ -107,21 +108,55 @@ class UserSuspendedNotificationEventHandlerTest {
     }
 
     @Test
+    void handle_notifiesTargetUserForBannedEvent() {
+        when(payloadParser.parse(any())).thenReturn(new UserSuspendedNotificationContext(
+                TARGET_USER_ID,
+                "enforcement-2",
+                "Fraud",
+                null,
+                "USER_ENFORCEMENT",
+                "enforcement-2"
+        ));
+        when(applyNotificationDeliveryRulesUseCase.execute(any(ApplyNotificationDeliveryRulesCommand.class)))
+                .thenReturn(new NotificationDeliveryDecision(true, true, true));
+        when(sendPushNotificationUseCase.execute(any(SendPushNotificationCommand.class)))
+                .thenReturn(SendPushNotificationResult.sent(1, 0));
+
+        var result = handler.handle(sampleEvent("USER_BANNED"));
+
+        assertEquals(HandlerOutcome.SUCCESS, result.outcome());
+        verify(createInAppNotificationUseCase).execute(new CreateInAppNotificationCommand(
+                EVENT_ID,
+                TARGET_USER_ID,
+                null,
+                "USER_BANNED",
+                "USER_ENFORCEMENT",
+                "enforcement-2",
+                "{}",
+                null
+        ));
+    }
+
+    @Test
     void handle_returnsFailureWhenTargetUserMissing() {
         when(payloadParser.parse(any())).thenThrow(new IllegalArgumentException("target_user_id is required"));
 
-        var result = handler.handle(sampleEvent());
+        var result = handler.handle(sampleEvent("USER_SUSPENDED"));
 
         assertEquals(HandlerOutcome.FAILURE, result.outcome());
         assertEquals(NotificationFailurePolicy.PERMANENT, result.failurePolicy());
     }
 
     private NotificationEvent sampleEvent() {
+        return sampleEvent("USER_SUSPENDED");
+    }
+
+    private NotificationEvent sampleEvent(String eventType) {
         return new NotificationEvent(
                 EVENT_ID,
                 UUID.randomUUID(),
                 null,
-                "USER_SUSPENDED",
+                eventType,
                 NotificationSourceService.ADMIN,
                 "USER_ENFORCEMENT",
                 "enforcement-1",

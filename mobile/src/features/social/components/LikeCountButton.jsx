@@ -1,6 +1,35 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import { Pressable, Text } from "react-native";
 import { formatSocialCount } from "../utils/formatSocialCount";
-import { colors } from "../../../shared/theme/colors";
+import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
+
+function createStyles(colors) {
+  return {
+    capsule: {
+      minWidth: 48,
+      height: 32,
+      borderRadius: 16,
+      paddingHorizontal: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.surfaceContainerLow,
+      borderWidth: 1,
+      borderColor: colors.primary,
+    },
+    capsuleCompact: {
+      minWidth: 44,
+      height: 28,
+      paddingHorizontal: 10,
+    },
+    text: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.primary,
+    },
+    textCompact: {
+      fontSize: 12,
+    },
+  };
+}
 
 export function LikeCountButton({
   count,
@@ -8,6 +37,7 @@ export function LikeCountButton({
   size = "default",
   showZero = false,
 }) {
+  const styles = useThemedStyles(createStyles);
   const num = Number(count) || 0;
 
   if (num <= 0 && !showZero) return null;
@@ -30,30 +60,3 @@ export function LikeCountButton({
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  capsule: {
-    minWidth: 48,
-    height: 32,
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.surfaceContainerLow,
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  capsuleCompact: {
-    minWidth: 44,
-    height: 28,
-    paddingHorizontal: 10,
-  },
-  text: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.primary,
-  },
-  textCompact: {
-    fontSize: 12,
-  },
-});

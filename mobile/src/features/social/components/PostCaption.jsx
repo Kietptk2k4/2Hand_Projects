@@ -1,8 +1,28 @@
 import { useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { colors } from "../../../shared/theme/colors";
+import { Pressable, Text, View } from "react-native";
+import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
 
 const HASHTAG_REGEX = /#([\w\u00C0-\u024F\u1E00-\u1EFF]+)/g;
+
+function createStyles(colors) {
+  return {
+    caption: {
+      fontSize: 15,
+      lineHeight: 22,
+      color: colors.onSurface,
+    },
+    hashtag: {
+      color: colors.primary,
+      fontWeight: "500",
+    },
+    expand: {
+      marginTop: 4,
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.primary,
+    },
+  };
+}
 
 function buildCaptionParts(text, extraHashtags = []) {
   if (!text && extraHashtags.length === 0) return [];
@@ -42,6 +62,7 @@ function buildCaptionParts(text, extraHashtags = []) {
 }
 
 export function PostCaption({ caption, hashtags = [], onCaptionPress, onHashtagPress }) {
+  const styles = useThemedStyles(createStyles);
   const [expanded, setExpanded] = useState(false);
   const isLong = useMemo(() => (caption || "").length > 180, [caption]);
   const parts = useMemo(
@@ -98,21 +119,3 @@ export function PostCaption({ caption, hashtags = [], onCaptionPress, onHashtagP
 
   return body;
 }
-
-const styles = StyleSheet.create({
-  caption: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: colors.onSurface,
-  },
-  hashtag: {
-    color: colors.primary,
-    fontWeight: "500",
-  },
-  expand: {
-    marginTop: 4,
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.primary,
-  },
-});

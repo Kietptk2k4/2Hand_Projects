@@ -5,6 +5,7 @@ import com.twohands.social_service.domain.comment.CommentListQuery;
 import com.twohands.social_service.domain.comment.CommentMediaItem;
 import com.twohands.social_service.domain.comment.CommentRepository;
 import com.twohands.social_service.domain.comment.CommentSortOrder;
+import com.twohands.social_service.domain.comment.CommentModerationStatus;
 import com.twohands.social_service.domain.comment.CommentStatus;
 import com.twohands.social_service.domain.post.PageResult;
 import com.twohands.social_service.infrastructure.persistence.mongo.document.CommentDocument;
@@ -119,6 +120,9 @@ public class CommentRepositoryAdapter implements CommentRepository {
                 .map(m -> new CommentDocument.MediaDocument(m.url(), m.type()))
                 .toList());
         doc.setStatus(comment.status().name());
+        doc.setModerationStatus(comment.moderationStatusOrDefault().name());
+        doc.setModerationReason(comment.moderationReason());
+        doc.setLastModerationLogId(comment.lastModerationLogId());
         doc.setLikeCount(comment.likeCount());
         doc.setCreatedAt(comment.createdAt());
         doc.setUpdatedAt(comment.updatedAt());
@@ -139,6 +143,7 @@ public class CommentRepositoryAdapter implements CommentRepository {
                         .map(m -> new CommentMediaItem(m.getUrl(), m.getType()))
                         .toList()
                 : List.of();
+        CommentModerationStatus moderationStatus = parseModerationStatus(document.getModerationStatus());
         return new Comment(
                 document.getId(),
                 document.getPostId(),
@@ -147,10 +152,24 @@ public class CommentRepositoryAdapter implements CommentRepository {
                 document.getContentText(),
                 media,
                 CommentStatus.valueOf(document.getStatus()),
+                moderationStatus,
+                document.getModerationReason(),
+                document.getLastModerationLogId(),
                 document.getLikeCount(),
                 document.getCreatedAt(),
                 document.getUpdatedAt(),
                 document.getDeletedAt()
         );
+    }
+
+    private CommentModerationStatus parseModerationStatus(String rawStatus) {
+        if (rawStatus == null || rawStatus.isBlank()) {
+            return CommentModerationStatus.NONE;
+        }
+        try {
+            return CommentModerationStatus.valueOf(rawStatus);
+        } catch (IllegalArgumentException ex) {
+            return CommentModerationStatus.NONE;
+        }
     }
 }

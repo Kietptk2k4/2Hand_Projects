@@ -1,5 +1,6 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
-import { colors } from "../../../shared/theme/colors";
+import { ActivityIndicator, Pressable, Text } from "react-native";
+import { useThemeColors } from "../../../shared/theme/useThemeColors";
+import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
 
 function followButtonLabel(followStatus) {
   switch (followStatus) {
@@ -14,12 +15,48 @@ function followButtonLabel(followStatus) {
   }
 }
 
+function createStyles(colors) {
+  return {
+    button: {
+      minWidth: 140,
+      minHeight: 44,
+      borderRadius: 8,
+      paddingHorizontal: 20,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    primary: {
+      backgroundColor: colors.primary,
+    },
+    secondary: {
+      borderWidth: 2,
+      borderColor: colors.outlineVariant,
+      backgroundColor: colors.surfaceContainerLowest,
+    },
+    disabled: {
+      opacity: 0.6,
+    },
+    text: {
+      fontSize: 14,
+      fontWeight: "600",
+    },
+    primaryText: {
+      color: colors.onPrimary,
+    },
+    secondaryText: {
+      color: colors.onSurface,
+    },
+  };
+}
+
 export function FollowButton({
   followStatus,
   onPress,
   isLoading = false,
   disabled = false,
 }) {
+  const colors = useThemeColors();
+  const styles = useThemedStyles(createStyles);
   const label = followButtonLabel(followStatus);
   if (!label) return null;
 
@@ -47,35 +84,3 @@ export function FollowButton({
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    minWidth: 140,
-    minHeight: 44,
-    borderRadius: 8,
-    paddingHorizontal: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  primary: {
-    backgroundColor: colors.primary,
-  },
-  secondary: {
-    borderWidth: 2,
-    borderColor: colors.outlineVariant,
-    backgroundColor: colors.surfaceContainerLowest,
-  },
-  disabled: {
-    opacity: 0.6,
-  },
-  text: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  primaryText: {
-    color: colors.onPrimary,
-  },
-  secondaryText: {
-    color: colors.onSurface,
-  },
-});

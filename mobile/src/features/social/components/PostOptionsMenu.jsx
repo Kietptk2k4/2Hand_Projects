@@ -3,12 +3,64 @@ import {
   ActivityIndicator,
   Modal,
   Pressable,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "../../../shared/theme/colors";
+import { useThemeColors } from "../../../shared/theme/useThemeColors";
+import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
+
+function createStyles(colors) {
+  return {
+    trigger: {
+      width: 44,
+      height: 44,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    backdrop: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.4)",
+      justifyContent: "flex-end",
+    },
+    sheet: {
+      backgroundColor: colors.surfaceContainerLowest,
+      borderTopLeftRadius: 16,
+      borderTopRightRadius: 16,
+      paddingBottom: 24,
+      paddingTop: 8,
+    },
+    menuItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      paddingHorizontal: 20,
+      paddingVertical: 16,
+      minHeight: 48,
+    },
+    menuItemText: {
+      fontSize: 16,
+      color: colors.onSurface,
+    },
+    menuItemDanger: {
+      fontSize: 16,
+      color: colors.error,
+      fontWeight: "600",
+    },
+    cancelItem: {
+      marginTop: 8,
+      paddingVertical: 16,
+      alignItems: "center",
+      borderTopWidth: 1,
+      borderTopColor: colors.outlineVariant,
+    },
+    cancelText: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: colors.onSurfaceVariant,
+    },
+  };
+}
 
 export function PostOptionsMenu({
   postId,
@@ -20,6 +72,8 @@ export function PostOptionsMenu({
   isSaving = false,
   isDeleting = false,
 }) {
+  const colors = useThemeColors();
+  const styles = useThemedStyles(createStyles);
   const [open, setOpen] = useState(false);
   const busy = isSaving || isDeleting;
   const saveLabel = savedByMe ? "Bỏ lưu" : "Lưu bài";
@@ -100,53 +154,3 @@ export function PostOptionsMenu({
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  trigger: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  backdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
-  },
-  sheet: {
-    backgroundColor: colors.surfaceContainerLowest,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    paddingBottom: 24,
-    paddingTop: 8,
-  },
-  menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    minHeight: 48,
-  },
-  menuItemText: {
-    fontSize: 16,
-    color: colors.onSurface,
-  },
-  menuItemDanger: {
-    fontSize: 16,
-    color: colors.error,
-    fontWeight: "600",
-  },
-  cancelItem: {
-    marginTop: 8,
-    paddingVertical: 16,
-    alignItems: "center",
-    borderTopWidth: 1,
-    borderTopColor: colors.outlineVariant,
-  },
-  cancelText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.onSurfaceVariant,
-  },
-});

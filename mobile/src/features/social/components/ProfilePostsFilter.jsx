@@ -1,8 +1,45 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { PROFILE_STATUS_FILTERS } from "../constants/profileConstants";
-import { colors } from "../../../shared/theme/colors";
+import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
+
+function createStyles(colors) {
+  return {
+    row: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      paddingHorizontal: 16,
+      paddingBottom: 12,
+    },
+    chip: {
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      backgroundColor: colors.surfaceContainerLowest,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    chipActive: {
+      borderColor: colors.primary,
+      backgroundColor: colors.surfaceContainerLow,
+    },
+    chipText: {
+      fontSize: 13,
+      fontWeight: "500",
+      color: colors.onSurfaceVariant,
+    },
+    chipTextActive: {
+      color: colors.primary,
+    },
+    disabled: {
+      opacity: 0.5,
+    },
+  };
+}
 
 export function ProfilePostsFilter({ value, onChange, disabled = false }) {
+  const styles = useThemedStyles(createStyles);
+
   return (
     <View style={styles.row}>
       {PROFILE_STATUS_FILTERS.map((option) => {
@@ -23,36 +60,3 @@ export function ProfilePostsFilter({ value, onChange, disabled = false }) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-  },
-  chip: {
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    backgroundColor: colors.surfaceContainerLowest,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  chipActive: {
-    borderColor: colors.primary,
-    backgroundColor: colors.surfaceContainerLow,
-  },
-  chipText: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: colors.onSurfaceVariant,
-  },
-  chipTextActive: {
-    color: colors.primary,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-});

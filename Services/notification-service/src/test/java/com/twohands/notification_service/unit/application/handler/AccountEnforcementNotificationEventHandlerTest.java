@@ -49,6 +49,7 @@ class AccountEnforcementNotificationEventHandlerTest {
     @Test
     void supports_accountEnforcementEmailEventsOnly() {
         assertTrue(handler.supports("USER_SUSPENDED"));
+        assertTrue(handler.supports("USER_BANNED"));
         assertTrue(handler.supports("USER_RESTRICTED"));
         assertFalse(handler.supports("SHOP_SUSPENDED"));
         assertFalse(handler.supports("POST_LIKED"));

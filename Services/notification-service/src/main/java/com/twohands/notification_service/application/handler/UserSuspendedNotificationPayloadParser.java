@@ -22,7 +22,8 @@ public class UserSuspendedNotificationPayloadParser {
     }
 
     public UserSuspendedNotificationContext parse(NotificationEvent event) {
-        JsonNode payload = parsePayload(event.payload());
+        String eventType = event.eventType();
+        JsonNode payload = parsePayload(event, eventType);
 
         UUID targetUserId = firstUuid(
                 event.recipientUserId(),
@@ -30,7 +31,7 @@ public class UserSuspendedNotificationPayloadParser {
                 textField(payload, "user_id")
         );
         if (targetUserId == null) {
-            throw new IllegalArgumentException("target_user_id is required for USER_SUSPENDED notification event.");
+            throw new IllegalArgumentException("target_user_id is required for " + eventType + " notification event.");
         }
 
         String enforcementId = firstNonBlank(
@@ -38,7 +39,7 @@ public class UserSuspendedNotificationPayloadParser {
                 USER_ENFORCEMENT_AGGREGATE_TYPE.equalsIgnoreCase(event.aggregateType()) ? event.aggregateId() : null
         );
         if (enforcementId == null || enforcementId.isBlank()) {
-            throw new IllegalArgumentException("enforcement_id is required for USER_SUSPENDED notification event.");
+            throw new IllegalArgumentException("enforcement_id is required for " + eventType + " notification event.");
         }
 
         String enforcementReason = firstNonBlank(
@@ -68,7 +69,8 @@ public class UserSuspendedNotificationPayloadParser {
         );
     }
 
-    private JsonNode parsePayload(String rawPayload) {
+    private JsonNode parsePayload(NotificationEvent event, String eventType) {
+        String rawPayload = event.payload();
         if (rawPayload == null || rawPayload.isBlank()) {
             return objectMapper.createObjectNode();
         }
@@ -76,7 +78,7 @@ public class UserSuspendedNotificationPayloadParser {
             JsonNode node = objectMapper.readTree(rawPayload);
             return node == null || node.isNull() ? objectMapper.createObjectNode() : node;
         } catch (Exception ex) {
-            throw new IllegalArgumentException("USER_SUSPENDED event payload must be valid JSON.");
+            throw new IllegalArgumentException(eventType + " event payload must be valid JSON.");
         }
     }
 

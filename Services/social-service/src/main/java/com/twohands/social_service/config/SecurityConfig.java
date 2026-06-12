@@ -4,6 +4,7 @@ import com.twohands.social_service.security.RestAuthenticationEntryPoint;
 import com.twohands.social_service.security.jwt.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -36,6 +37,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/social/comments/*").permitAll()
                         .requestMatchers("/api/v1/social/feed/global").authenticated()
                         .requestMatchers("/api/v1/social/feed/following").authenticated()
                         .anyRequest().authenticated()

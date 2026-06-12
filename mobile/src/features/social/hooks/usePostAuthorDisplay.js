@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { resolveDevMediaUrl } from "../../../shared/utils/resolveDevMediaUrl";
 import { fetchSocialProfile } from "../api/profileApi";
 import { authorAvatarUrl, authorDisplayName } from "../utils/authorDisplay";
 import { getCachedAuthorProfile, setCachedAuthorProfile } from "../utils/authorProfileCache";
@@ -16,10 +17,11 @@ function mapProfileToAuthor(authorId, profile) {
       profile?.displayName ||
       profile?.display_name ||
       authorDisplayName(authorId),
-    avatarUrl:
+    avatarUrl: resolveDevMediaUrl(
       profile?.avatarUrl ||
-      profile?.avatar_url ||
-      authorAvatarUrl(authorId),
+        profile?.avatar_url ||
+        authorAvatarUrl(authorId)
+    ),
   };
 }
 

@@ -31,6 +31,8 @@ public class DomainEventTopicResolver {
             Map.entry("admin.user.suspended", "USER_SUSPENDED"),
             Map.entry("admin.user.banned", "USER_BANNED"),
             Map.entry("admin.user.restricted", "USER_RESTRICTED"),
+            Map.entry("admin.post.moderated", "POST_MODERATED"),
+            Map.entry("admin.comment.moderated", "COMMENT_MODERATED"),
             Map.entry("admin.product.removed", "PRODUCT_REMOVED"),
             Map.entry("admin.review.hidden", "REVIEW_HIDDEN"),
             Map.entry("admin.shop.suspended", "SHOP_SUSPENDED"),

@@ -1,3 +1,5 @@
+import { resolveDevMediaUrl } from "../../../shared/utils/resolveDevMediaUrl";
+
 export function normalizePublicProfile(data) {
   if (!data) return null;
 
@@ -11,11 +13,24 @@ export function normalizePublicProfile(data) {
     userId: data.user_id ?? data.userId ?? "",
     displayName: data.display_name ?? data.displayName ?? "",
     username: data.username ?? "",
-    avatarUrl: data.avatar_url ?? data.avatarUrl ?? "",
+    avatarUrl: resolveDevMediaUrl(data.avatar_url ?? data.avatarUrl ?? ""),
     bio: data.bio ?? "",
     website: data.website ?? "",
     socialLinks,
     isPrivate: Boolean(data.is_private ?? data.isPrivate),
+  };
+}
+
+export function resolveSelfProfileDetails(accountProfile) {
+  const profile = accountProfile?.profile ?? {};
+
+  return {
+    bio: profile.bio || "",
+    username: profile.username || "",
+    website: profile.website || "",
+    socialLinks: profile.social_links ?? profile.socialLinks ?? {},
+    isPrivate: Boolean(profile.is_private ?? profile.isPrivate),
+    showPrivateNotice: false,
   };
 }
 

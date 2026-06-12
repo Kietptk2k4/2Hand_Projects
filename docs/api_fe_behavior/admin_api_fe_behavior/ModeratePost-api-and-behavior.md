@@ -73,6 +73,8 @@ Message khi `action=REMOVE`: `"Post removed successfully"`.
 
 `post_id`, `moderation_log_id`, `action`, `reason`, `moderated_by`, `moderated_at`.
 
+Khi `admin.integrations.social.enabled=true`, payload them `author_user_id` (UUID tac gia post) de Notification Service deliver in-app/push.
+
 ## 6. FE Integration
 
 1. Màn post moderation → chọn Hide/Remove → nhập `reason` → `POST .../moderate`.

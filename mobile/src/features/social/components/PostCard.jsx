@@ -1,13 +1,92 @@
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { usePostAuthorDisplay } from "../hooks/usePostAuthorDisplay";
 import { resolvePostAuthorId, resolvePostIsOwner } from "../utils/resolvePostAuthorId";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
+import { useThemeColors } from "../../../shared/theme/useThemeColors";
+import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
 import { PostCaption } from "./PostCaption";
 import { PostMediaCarousel } from "./PostMediaCarousel";
 import { PostActionBar } from "./PostActionBar";
 import { PostOptionsMenu } from "./PostOptionsMenu";
-import { colors } from "../../../shared/theme/colors";
+
+function createStyles(colors) {
+  return {
+    card: {
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      backgroundColor: colors.surfaceContainerLowest,
+      marginBottom: 16,
+      overflow: "hidden",
+    },
+    headerSection: {
+      padding: 16,
+      paddingBottom: 12,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: 12,
+    },
+    avatarButton: {
+      width: 48,
+      height: 48,
+    },
+    avatar: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: colors.surfaceContainerHigh,
+    },
+    authorInfo: {
+      flex: 1,
+      minWidth: 0,
+    },
+    authorName: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.onSurface,
+    },
+    authorSubtitle: {
+      fontSize: 14,
+      color: colors.onSurfaceVariant,
+      marginTop: 2,
+    },
+    timeRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      marginTop: 4,
+    },
+    timeText: {
+      fontSize: 12,
+      color: colors.outline,
+    },
+    captionSection: {
+      borderTopWidth: 1,
+      borderTopColor: colors.outlineVariant,
+      paddingHorizontal: 16,
+      paddingTop: 12,
+      paddingBottom: 4,
+    },
+    openButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 4,
+      paddingVertical: 12,
+      borderTopWidth: 1,
+      borderTopColor: colors.outlineVariant,
+      minHeight: 44,
+    },
+    openButtonText: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.primary,
+    },
+  };
+}
 
 export function PostCard({
   post,
@@ -23,6 +102,8 @@ export function PostCard({
   isSavingPost = false,
   isDeletingPost = false,
 }) {
+  const colors = useThemeColors();
+  const styles = useThemedStyles(createStyles);
   const authorId = resolvePostAuthorId(post);
   const author = usePostAuthorDisplay(authorId);
   const isOwner = resolvePostIsOwner(post, currentUserId);
@@ -106,79 +187,3 @@ export function PostCard({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    backgroundColor: colors.surfaceContainerLowest,
-    marginBottom: 16,
-    overflow: "hidden",
-  },
-  headerSection: {
-    padding: 16,
-    paddingBottom: 12,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 12,
-  },
-  avatarButton: {
-    width: 48,
-    height: 48,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.surfaceContainerHigh,
-  },
-  authorInfo: {
-    flex: 1,
-    minWidth: 0,
-  },
-  authorName: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.onSurface,
-  },
-  authorSubtitle: {
-    fontSize: 14,
-    color: colors.onSurfaceVariant,
-    marginTop: 2,
-  },
-  timeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginTop: 4,
-  },
-  timeText: {
-    fontSize: 12,
-    color: colors.outline,
-  },
-  captionSection: {
-    borderTopWidth: 1,
-    borderTopColor: colors.outlineVariant,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 4,
-  },
-  openButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 4,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.outlineVariant,
-    minHeight: 44,
-  },
-  openButtonText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.primary,
-  },
-});

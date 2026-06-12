@@ -18,6 +18,7 @@ class NotificationRetentionPolicyTest {
     @Test
     void isRetainedNotificationType_protectsCriticalTypes() {
         assertTrue(NotificationRetentionPolicy.isRetainedNotificationType("USER_SUSPENDED"));
+        assertTrue(NotificationRetentionPolicy.isRetainedNotificationType("USER_BANNED"));
         assertTrue(NotificationRetentionPolicy.isRetainedNotificationType("SYSTEM_ANNOUNCEMENT_SENT"));
         assertFalse(NotificationRetentionPolicy.isRetainedNotificationType("POST_LIKED"));
     }

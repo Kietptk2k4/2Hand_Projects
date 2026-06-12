@@ -1,5 +1,7 @@
 import { DEFAULT_USER_DISPLAY_NAME } from "../constants/socialUiStrings";
 
+import { resolveDevMediaUrl } from "../../../shared/utils/resolveDevMediaUrl";
+
 export function mapSuggestedUser(item) {
   const mutualFollowCount = Number(
     item?.mutual_follow_count ?? item?.mutualFollowCount ?? 0
@@ -8,7 +10,7 @@ export function mapSuggestedUser(item) {
   return {
     userId: item?.user_id ?? item?.userId ?? "",
     displayName: item?.display_name ?? item?.displayName ?? DEFAULT_USER_DISPLAY_NAME,
-    avatarUrl: item?.avatar_url ?? item?.avatarUrl ?? "",
+    avatarUrl: resolveDevMediaUrl(item?.avatar_url ?? item?.avatarUrl ?? ""),
     followStatus: item?.follow_status ?? item?.followStatus ?? "NONE",
     mutualFollowCount: Number.isFinite(mutualFollowCount) ? mutualFollowCount : 0,
   };

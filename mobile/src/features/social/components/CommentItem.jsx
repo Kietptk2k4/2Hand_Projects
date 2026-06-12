@@ -1,16 +1,75 @@
 import { useEffect, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
+import { resolveDevMediaUrl } from "../../../shared/utils/resolveDevMediaUrl";
+import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
 import { DEFAULT_USER_DISPLAY_NAME } from "../constants/socialUiStrings";
 import { formatRelativeTime } from "../utils/formatRelativeTime";
 import { formatSocialCount } from "../utils/formatSocialCount";
 import { authorAvatarUrl } from "../utils/authorDisplay";
 import { CommentComposer } from "./CommentComposer";
 import { CommentMediaDisplay } from "./CommentMediaDisplay";
-import { colors } from "../../../shared/theme/colors";
+
+function createStyles(colors) {
+  return {
+    container: { marginBottom: 16 },
+    row: { flexDirection: "row", gap: 12 },
+    avatar: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: colors.surfaceContainerHigh,
+    },
+    content: { flex: 1, minWidth: 0 },
+    bubble: {
+      backgroundColor: colors.surfaceContainerLow,
+      borderRadius: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    authorName: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.onSurface,
+    },
+    commentText: {
+      marginTop: 4,
+      fontSize: 14,
+      lineHeight: 20,
+      color: colors.onSurface,
+    },
+    metaRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      alignItems: "center",
+      gap: 12,
+      marginTop: 6,
+    },
+    metaText: { fontSize: 12, color: colors.onSurfaceVariant },
+    metaAction: { fontSize: 12, fontWeight: "600", color: colors.primary },
+    replyComposerBlock: { marginTop: 8, gap: 8 },
+    cancelReply: { fontSize: 12, fontWeight: "600", color: colors.onSurfaceVariant },
+    repliesBlock: {
+      marginLeft: 52,
+      marginTop: 12,
+      paddingLeft: 12,
+      borderLeftWidth: 2,
+      borderLeftColor: colors.outlineVariant,
+      gap: 12,
+    },
+    replyRow: { flexDirection: "row", gap: 10 },
+    replyAvatar: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: colors.surfaceContainerHigh,
+    },
+  };
+}
 
 const DEFAULT_AVATAR = "https://i.pravatar.cc/80?img=11";
 
 function CommentMeta({
+  styles,
   createdAt,
   likeCount,
   showReply,
@@ -57,9 +116,11 @@ export function CommentItem({
   onSubmitReply,
   isSubmittingReply = false,
 }) {
+  const styles = useThemedStyles(createStyles);
   const [replyDraft, setReplyDraft] = useState("");
-  const avatarUrl =
-    comment.author?.avatarUrl || authorAvatarUrl(comment.author?.userId) || DEFAULT_AVATAR;
+  const avatarUrl = resolveDevMediaUrl(
+    comment.author?.avatarUrl || authorAvatarUrl(comment.author?.userId) || DEFAULT_AVATAR
+  );
   const displayName = comment.author?.displayName || DEFAULT_USER_DISPLAY_NAME;
   const authorUserId = comment.author?.userId;
   const isTopLevel = !comment.parentCommentId;
@@ -96,6 +157,7 @@ export function CommentItem({
             <CommentMediaDisplay media={comment.media} />
           </View>
           <CommentMeta
+            styles={styles}
             createdAt={comment.createdAt}
             likeCount={comment.likeCount ?? 0}
             showReply={isTopLevel}
@@ -129,10 +191,11 @@ export function CommentItem({
       {isRepliesExpanded ? (
         <View style={styles.repliesBlock}>
           {replies.map((reply) => {
-            const replyAvatar =
+            const replyAvatar = resolveDevMediaUrl(
               reply.author?.avatarUrl ||
-              authorAvatarUrl(reply.author?.userId) ||
-              DEFAULT_AVATAR;
+                authorAvatarUrl(reply.author?.userId) ||
+                DEFAULT_AVATAR
+            );
             const replyName = reply.author?.displayName || DEFAULT_USER_DISPLAY_NAME;
 
             return (
@@ -151,6 +214,7 @@ export function CommentItem({
                     <CommentMediaDisplay media={reply.media} />
                   </View>
                   <CommentMeta
+                    styles={styles}
                     createdAt={reply.createdAt}
                     likeCount={reply.likeCount ?? 0}
                     showReply={false}
@@ -168,83 +232,3 @@ export function CommentItem({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-  },
-  row: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.surfaceContainerHigh,
-  },
-  content: {
-    flex: 1,
-    minWidth: 0,
-  },
-  bubble: {
-    backgroundColor: colors.surfaceContainerLow,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  authorName: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.onSurface,
-  },
-  commentText: {
-    marginTop: 4,
-    fontSize: 14,
-    lineHeight: 20,
-    color: colors.onSurface,
-  },
-  metaRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "center",
-    gap: 12,
-    marginTop: 6,
-  },
-  metaText: {
-    fontSize: 12,
-    color: colors.onSurfaceVariant,
-  },
-  metaAction: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: colors.primary,
-  },
-  replyComposerBlock: {
-    marginTop: 8,
-    gap: 8,
-  },
-  cancelReply: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: colors.onSurfaceVariant,
-  },
-  repliesBlock: {
-    marginLeft: 52,
-    marginTop: 12,
-    paddingLeft: 12,
-    borderLeftWidth: 2,
-    borderLeftColor: colors.outlineVariant,
-    gap: 12,
-  },
-  replyRow: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  replyAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.surfaceContainerHigh,
-  },
-});

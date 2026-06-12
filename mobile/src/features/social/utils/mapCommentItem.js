@@ -1,5 +1,7 @@
 import { authorAvatarUrl, authorDisplayName } from "./authorDisplay";
 
+import { resolveDevMediaUrl } from "../../../shared/utils/resolveDevMediaUrl";
+
 function resolveAuthorFromApi(data) {
   const authorFromApi = data?.author;
   if (!authorFromApi) {
@@ -13,7 +15,7 @@ function resolveAuthorFromApi(data) {
   return {
     userId: authorFromApi.userId ?? data.authorId,
     displayName: authorFromApi.displayName,
-    avatarUrl: authorFromApi.avatarUrl ?? null,
+    avatarUrl: resolveDevMediaUrl(authorFromApi.avatarUrl ?? null),
   };
 }
 

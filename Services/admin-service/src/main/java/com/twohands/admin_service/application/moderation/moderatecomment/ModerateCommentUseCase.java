@@ -78,8 +78,16 @@ public class ModerateCommentUseCase {
 		String note = ProductModerationPolicy.normalizeOptionalNote(command.note());
 		SocialContentModerationPolicy.validateModerateCommentRequest(command.action(), reason, note);
 
+		UUID authorUserId = null;
+		String postId = null;
 		if (socialCommentGateway.isEnabled()) {
 			socialCommentGateway.ensureCommentExists(commentId);
+			authorUserId = socialCommentGateway.findAuthorUserId(commentId)
+					.orElseThrow(() -> new AppException(
+							ErrorCode.RESOURCE_NOT_FOUND,
+							ErrorCode.RESOURCE_NOT_FOUND.defaultMessage()
+					));
+			postId = socialCommentGateway.findPostId(commentId).orElse(null);
 		}
 
 		Instant moderatedAt = Instant.now();
@@ -107,7 +115,7 @@ public class ModerateCommentUseCase {
 			OutboxEvent outboxEvent = insertAdminOutboxEventUseCase.execute(new InsertAdminOutboxEventCommand(
 					OUTBOX_EVENT_TYPE,
 					resolveAggregateId(commentId),
-					outboxPayloadBuilder.buildCommentModeratedPayload(moderationLog, commentId)
+					outboxPayloadBuilder.buildCommentModeratedPayload(moderationLog, commentId, authorUserId, postId)
 			));
 
 			Map<String, Object> afterSummary = new LinkedHashMap<>();

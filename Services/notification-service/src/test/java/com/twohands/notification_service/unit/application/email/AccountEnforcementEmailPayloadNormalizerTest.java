@@ -43,6 +43,29 @@ class AccountEnforcementEmailPayloadNormalizerTest {
     }
 
     @Test
+    void normalizeForStorage_mapsAdminBannedPayloadToUserSafeFields() {
+        String result = normalizer.normalizeForStorage(
+                "USER_BANNED",
+                """
+                        {
+                          "user_id": "11111111-1111-1111-1111-111111111111",
+                          "enforcement_id": "22222222-2222-2222-2222-222222222222",
+                          "action_type": "BAN",
+                          "reason_code": "FRAUD",
+                          "description": "Confirmed payment fraud",
+                          "expires_at": null,
+                          "enforced_by": "33333333-3333-3333-3333-333333333333"
+                        }
+                        """
+        );
+
+        assertTrue(result.contains("\"target_user_id\":\"11111111-1111-1111-1111-111111111111\""));
+        assertTrue(result.contains("\"enforcement_reason\":\"Confirmed payment fraud\""));
+        assertFalse(result.contains("enforced_by"));
+        assertFalse(result.contains("\"description\""));
+    }
+
+    @Test
     void normalizeForStorage_redactsUnsafeDescriptionToReasonCodeFallback() {
         String result = normalizer.normalizeForStorage(
                 "USER_RESTRICTED",

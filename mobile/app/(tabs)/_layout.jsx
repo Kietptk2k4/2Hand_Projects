@@ -1,8 +1,11 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "../../src/shared/theme/colors";
+import { AccountSettingsHeaderButton } from "../../src/features/auth/account/components/AccountSettingsHeaderButton";
+import { useThemeColors } from "../../src/shared/theme/useThemeColors";
 
 export default function TabsLayout() {
+  const colors = useThemeColors();
+
   return (
     <Tabs
       screenOptions={{
@@ -41,6 +44,7 @@ export default function TabsLayout() {
         options={{
           title: "Hồ sơ",
           tabBarLabel: "Hồ sơ",
+          headerRight: () => <AccountSettingsHeaderButton />,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" size={size} color={color} />
           ),

@@ -8,6 +8,7 @@ public final class NotificationRetentionPolicy {
 
     private static final Set<String> RETAINED_NOTIFICATION_TYPES = Set.of(
             "USER_SUSPENDED",
+            "USER_BANNED",
             "USER_RESTRICTED",
             "SHOP_SUSPENDED",
             "PASSWORD_CHANGED",

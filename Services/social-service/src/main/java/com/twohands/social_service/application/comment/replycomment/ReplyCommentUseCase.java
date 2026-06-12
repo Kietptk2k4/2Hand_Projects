@@ -60,7 +60,7 @@ public class ReplyCommentUseCase {
         Comment parent = commentRepository.findById(command.parentCommentId())
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Comment cha khong ton tai."));
 
-        if (parent.status() != CommentStatus.ACTIVE) {
+        if (!parent.isPubliclyVisible()) {
             throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Comment cha da bi xoa, khong the tra loi.");
         }
 
@@ -82,6 +82,9 @@ public class ReplyCommentUseCase {
                 command.contentText(),
                 media,
                 CommentStatus.ACTIVE,
+                null,
+                null,
+                null,
                 0L,
                 now,
                 now,

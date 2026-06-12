@@ -19,6 +19,7 @@ public class AccountEnforcementNotificationEventHandler implements NotificationE
 
     private static final Set<String> ACCOUNT_ENFORCEMENT_EMAIL_EVENTS = Set.of(
             "USER_SUSPENDED",
+            "USER_BANNED",
             "USER_RESTRICTED"
     );
 

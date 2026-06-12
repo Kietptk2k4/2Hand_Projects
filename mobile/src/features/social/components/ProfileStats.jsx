@@ -1,6 +1,31 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { formatSocialCount } from "../utils/formatSocialCount";
-import { colors } from "../../../shared/theme/colors";
+import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
+
+function createStyles(colors) {
+  return {
+    row: {
+      flexDirection: "row",
+      justifyContent: "center",
+      gap: 32,
+      marginTop: 16,
+    },
+    stat: {
+      alignItems: "center",
+      minWidth: 72,
+    },
+    value: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: colors.onSurface,
+    },
+    label: {
+      fontSize: 13,
+      color: colors.onSurfaceVariant,
+      marginTop: 2,
+    },
+  };
+}
 
 export function ProfileStats({
   postCount,
@@ -9,6 +34,7 @@ export function ProfileStats({
   onFollowersPress,
   onFollowingPress,
 }) {
+  const styles = useThemedStyles(createStyles);
   const followers = formatSocialCount(followerCount);
   const following = formatSocialCount(followingCount);
   const posts = formatSocialCount(postCount);
@@ -38,26 +64,3 @@ export function ProfileStats({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 32,
-    marginTop: 16,
-  },
-  stat: {
-    alignItems: "center",
-    minWidth: 72,
-  },
-  value: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colors.onSurface,
-  },
-  label: {
-    fontSize: 13,
-    color: colors.onSurfaceVariant,
-    marginTop: 2,
-  },
-});

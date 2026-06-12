@@ -1,14 +1,13 @@
 package com.twohands.admin_service.application.moderation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.admin_service.application.outbox.AdminOutboxPayloadSupport;
 import com.twohands.admin_service.domain.moderation.ContentModerationLog;
-import com.twohands.admin_service.exception.AppException;
-import com.twohands.admin_service.exception.ErrorCode;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 public class CommentModerationOutboxPayloadBuilder {
@@ -19,18 +18,25 @@ public class CommentModerationOutboxPayloadBuilder {
 		this.objectMapper = objectMapper;
 	}
 
-	public String buildCommentModeratedPayload(ContentModerationLog moderationLog, String commentId) {
+	public String buildCommentModeratedPayload(
+			ContentModerationLog moderationLog,
+			String commentId,
+			UUID authorUserId,
+			String postId
+	) {
 		Map<String, Object> payload = baseCommentModerationPayload(moderationLog, commentId);
+		AdminOutboxPayloadSupport.putUuid(payload, "author_user_id", authorUserId);
+		AdminOutboxPayloadSupport.putIfPresent(payload, "post_id", postId);
 		payload.put("moderated_by", moderationLog.adminId().toString());
 		payload.put("moderated_at", moderationLog.createdAt().toString());
-		return serialize(payload);
+		return AdminOutboxPayloadSupport.serialize(objectMapper, payload);
 	}
 
 	public String buildCommentRestoredPayload(ContentModerationLog moderationLog, String commentId) {
 		Map<String, Object> payload = baseCommentModerationPayload(moderationLog, commentId);
 		payload.put("restored_by", moderationLog.adminId().toString());
 		payload.put("restored_at", moderationLog.createdAt().toString());
-		return serialize(payload);
+		return AdminOutboxPayloadSupport.serialize(objectMapper, payload);
 	}
 
 	private Map<String, Object> baseCommentModerationPayload(ContentModerationLog moderationLog, String commentId) {
@@ -38,15 +44,7 @@ public class CommentModerationOutboxPayloadBuilder {
 		payload.put("comment_id", commentId);
 		payload.put("moderation_log_id", moderationLog.id().toString());
 		payload.put("action", moderationLog.action().name());
-		payload.put("reason", moderationLog.reason());
+		AdminOutboxPayloadSupport.putIfPresent(payload, "reason", moderationLog.reason());
 		return payload;
-	}
-
-	private String serialize(Map<String, Object> payload) {
-		try {
-			return objectMapper.writeValueAsString(payload);
-		} catch (JsonProcessingException ex) {
-			throw new AppException(ErrorCode.INTERNAL_ERROR, "Failed to build outbox payload");
-		}
 	}
 }

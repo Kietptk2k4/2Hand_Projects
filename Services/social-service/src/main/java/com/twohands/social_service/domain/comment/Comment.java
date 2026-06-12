@@ -11,9 +11,19 @@ public record Comment(
         String contentText,
         List<CommentMediaItem> media,
         CommentStatus status,
+        CommentModerationStatus moderationStatus,
+        String moderationReason,
+        String lastModerationLogId,
         long likeCount,
         Instant createdAt,
         Instant updatedAt,
         Instant deletedAt
 ) {
+    public CommentModerationStatus moderationStatusOrDefault() {
+        return moderationStatus != null ? moderationStatus : CommentModerationStatus.NONE;
+    }
+
+    public boolean isPubliclyVisible() {
+        return status == CommentStatus.ACTIVE && !moderationStatusOrDefault().isHiddenFromDiscovery();
+    }
 }

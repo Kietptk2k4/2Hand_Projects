@@ -1,8 +1,47 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { formatSocialCount } from "../utils/formatSocialCount";
+import { useThemeColors } from "../../../shared/theme/useThemeColors";
+import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
 import { LikeCountButton } from "./LikeCountButton";
-import { colors } from "../../../shared/theme/colors";
+
+function createStyles(colors) {
+  return {
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      borderTopWidth: 1,
+      borderTopColor: colors.outlineVariant,
+      backgroundColor: colors.surface,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+    },
+    left: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 16,
+    },
+    likeGroup: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    actionButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      minHeight: 44,
+      minWidth: 44,
+      justifyContent: "center",
+    },
+    countText: {
+      fontSize: 14,
+      fontWeight: "500",
+      color: colors.onSurfaceVariant,
+    },
+  };
+}
 
 export function PostActionBar({
   postId,
@@ -15,6 +54,9 @@ export function PostActionBar({
   onOpenComments,
   onOpenLikesList,
 }) {
+  const colors = useThemeColors();
+  const styles = useThemedStyles(createStyles);
+
   return (
     <View style={styles.row}>
       <View style={styles.left}>
@@ -53,50 +95,10 @@ export function PostActionBar({
           accessibilityRole="button"
           accessibilityLabel="Binh luan"
         >
-          <Ionicons
-            name="chatbubble-outline"
-            size={22}
-            color={colors.onSurfaceVariant}
-          />
+          <Ionicons name="chatbubble-outline" size={22} color={colors.onSurfaceVariant} />
           <Text style={styles.countText}>{formatSocialCount(replyCount) ?? "0"}</Text>
         </Pressable>
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderTopWidth: 1,
-    borderTopColor: colors.outlineVariant,
-    backgroundColor: colors.surface,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  left: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-  },
-  likeGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  actionButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    minHeight: 44,
-    minWidth: 44,
-    justifyContent: "center",
-  },
-  countText: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: colors.onSurfaceVariant,
-  },
-});

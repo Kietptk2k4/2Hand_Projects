@@ -18,11 +18,16 @@ import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 @Component
 @Order(46)
 public class UserSuspendedNotificationEventHandler implements NotificationEventHandler {
 
-    private static final String USER_SUSPENDED = "USER_SUSPENDED";
+    private static final Set<String> SUPPORTED_EVENT_TYPES = Set.of(
+            "USER_SUSPENDED",
+            "USER_BANNED"
+    );
 
     private final UserSuspendedNotificationPayloadParser payloadParser;
     private final ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase;
@@ -43,11 +48,12 @@ public class UserSuspendedNotificationEventHandler implements NotificationEventH
 
     @Override
     public boolean supports(String eventType) {
-        return USER_SUSPENDED.equals(eventType);
+        return SUPPORTED_EVENT_TYPES.contains(eventType);
     }
 
     @Override
     public NotificationEventHandlerResult handle(NotificationEvent event) {
+        String eventType = event.eventType();
         UserSuspendedNotificationContext context;
         try {
             context = payloadParser.parse(event);
@@ -58,7 +64,7 @@ public class UserSuspendedNotificationEventHandler implements NotificationEventH
         NotificationDeliveryDecision deliveryDecision;
         try {
             deliveryDecision = applyNotificationDeliveryRulesUseCase.execute(
-                    new ApplyNotificationDeliveryRulesCommand(context.targetUserId(), USER_SUSPENDED)
+                    new ApplyNotificationDeliveryRulesCommand(context.targetUserId(), eventType)
             );
         } catch (DataAccessException ex) {
             return NotificationEventHandlerResult.failure(
@@ -75,7 +81,7 @@ public class UserSuspendedNotificationEventHandler implements NotificationEventH
                         event.id(),
                         context.targetUserId(),
                         null,
-                        USER_SUSPENDED,
+                        eventType,
                         context.referenceType(),
                         context.referenceId(),
                         event.payload(),
@@ -91,7 +97,7 @@ public class UserSuspendedNotificationEventHandler implements NotificationEventH
             SendPushNotificationResult pushResult = sendPushNotificationUseCase.execute(
                     new SendPushNotificationCommand(
                             context.targetUserId(),
-                            USER_SUSPENDED,
+                            eventType,
                             context.referenceType(),
                             context.referenceId(),
                             event.id(),

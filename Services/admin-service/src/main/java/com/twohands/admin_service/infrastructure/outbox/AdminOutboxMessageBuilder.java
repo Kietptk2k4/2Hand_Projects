@@ -61,6 +61,8 @@ public class AdminOutboxMessageBuilder {
 		addRecipient(recipientUserIds, text(map.get("seller_user_id")));
 		addRecipient(recipientUserIds, text(map.get("shop_owner_id")));
 		addRecipient(recipientUserIds, text(map.get("review_author_id")));
+		addRecipient(recipientUserIds, text(map.get("author_user_id")));
+		addRecipient(recipientUserIds, text(map.get("post_author_id")));
 
 		if (!recipientUserIds.isEmpty()) {
 			envelope.put("recipient_user_ids", recipientUserIds);

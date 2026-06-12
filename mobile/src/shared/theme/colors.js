@@ -1,16 +1,8 @@
-export const colors = {
-  primary: "#0050CB",
-  onPrimary: "#FFFFFF",
-  surface: "#F9F9FF",
-  surfaceContainerLow: "#F0F3FF",
-  surfaceContainerLowest: "#FFFFFF",
-  surfaceContainerHigh: "#DEE8FF",
-  onSurface: "#111C2D",
-  onSurfaceVariant: "#424656",
-  outline: "#727687",
-  outlineVariant: "#C2C6D8",
-  error: "#BA1A1A",
-  errorContainer: "#FFDAD6",
-  onErrorContainer: "#93000A",
-  secondary: "#4648D4",
-};
+import { lightPalette } from "./palettes";
+
+/** @deprecated Prefer useThemeColors() for theme-aware screens. */
+export const colors = lightPalette;
+
+export { darkPalette, lightPalette } from "./palettes";
+export { getThemeColors, useThemeColors } from "./useThemeColors";
+export { useThemedStyles } from "./useThemedStyles";

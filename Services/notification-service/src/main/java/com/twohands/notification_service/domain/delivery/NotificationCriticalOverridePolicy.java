@@ -12,6 +12,7 @@ public final class NotificationCriticalOverridePolicy {
 
     private static final Set<String> ACCOUNT_CRITICAL = Set.of(
             "USER_SUSPENDED",
+            "USER_BANNED",
             "USER_RESTRICTED",
             "SHOP_SUSPENDED",
             "PASSWORD_CHANGED"
