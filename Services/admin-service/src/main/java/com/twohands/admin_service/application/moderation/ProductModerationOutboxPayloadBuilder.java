@@ -31,8 +31,13 @@ public class ProductModerationOutboxPayloadBuilder {
 		return AdminOutboxPayloadSupport.serialize(objectMapper, payload);
 	}
 
-	public String buildProductRestoredPayload(ContentModerationLog moderationLog, UUID productId) {
+	public String buildProductRestoredPayload(
+			ContentModerationLog moderationLog,
+			UUID productId,
+			UUID sellerUserId
+	) {
 		Map<String, Object> payload = baseProductModerationPayload(moderationLog, productId);
+		AdminOutboxPayloadSupport.putUuid(payload, "seller_user_id", sellerUserId);
 		payload.put("restored_by", moderationLog.adminId().toString());
 		payload.put("restored_at", moderationLog.createdAt().toString());
 		return AdminOutboxPayloadSupport.serialize(objectMapper, payload);

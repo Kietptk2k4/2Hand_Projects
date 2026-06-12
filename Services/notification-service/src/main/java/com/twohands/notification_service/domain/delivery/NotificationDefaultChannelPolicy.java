@@ -30,6 +30,7 @@ public final class NotificationDefaultChannelPolicy {
             Map.entry("COMMENT_MODERATED", new DefaultChannelFlags(true, true, false)),
             Map.entry("COMMENT_RESTORED", new DefaultChannelFlags(true, true, false)),
             Map.entry("PRODUCT_REMOVED", new DefaultChannelFlags(true, true, false)),
+            Map.entry("PRODUCT_RESTORED", new DefaultChannelFlags(true, true, false)),
             Map.entry("REVIEW_HIDDEN", new DefaultChannelFlags(true, false, false)),
             Map.entry("SHOP_SUSPENDED", new DefaultChannelFlags(true, true, true)),
             Map.entry("SHOP_CLOSED", new DefaultChannelFlags(true, true, true)),

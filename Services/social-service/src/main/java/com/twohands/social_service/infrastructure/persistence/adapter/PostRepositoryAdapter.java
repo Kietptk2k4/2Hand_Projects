@@ -338,6 +338,19 @@ public class PostRepositoryAdapter implements PostRepository {
         return mongoTemplate.updateMulti(query, update, PostDocument.class).getModifiedCount();
     }
 
+    @Override
+    public long markProductTagsAvailable(String productId) {
+        if (productId == null || productId.isBlank()) {
+            return 0;
+        }
+
+        Query query = Query.query(Criteria.where("product_tags.product_id").is(productId));
+        Update update = new Update().set("product_tags.$[tag].available", true);
+        update.filterArray(Criteria.where("tag.product_id").is(productId));
+
+        return mongoTemplate.updateMulti(query, update, PostDocument.class).getModifiedCount();
+    }
+
     private PostDocument.ProductTagDocument toProductTagDocument(ProductTag tag) {
         PostDocument.ProductTagDocument document = new PostDocument.ProductTagDocument(tag.productId(), tag.price());
         document.setName(tag.name());

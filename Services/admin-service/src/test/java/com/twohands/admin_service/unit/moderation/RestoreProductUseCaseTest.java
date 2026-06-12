@@ -9,6 +9,7 @@ import com.twohands.admin_service.application.outbox.enqueue.InsertAdminOutboxEv
 import com.twohands.admin_service.application.outbox.enqueue.InsertAdminOutboxEventUseCase;
 import com.twohands.admin_service.constant.AdminPermission;
 import com.twohands.admin_service.domain.auth.AdminAuthorizationService;
+import com.twohands.admin_service.domain.integration.CommerceProductGateway;
 import com.twohands.admin_service.domain.moderation.ContentModerationAction;
 import com.twohands.admin_service.domain.moderation.ContentModerationLog;
 import com.twohands.admin_service.domain.moderation.ContentModerationLogRepository;
@@ -35,6 +36,7 @@ class RestoreProductUseCaseTest {
 
 	private final AdminAuthorizationService adminAuthorizationService = mock(AdminAuthorizationService.class);
 	private final ContentModerationLogRepository contentModerationLogRepository = mock(ContentModerationLogRepository.class);
+	private final CommerceProductGateway commerceProductGateway = mock(CommerceProductGateway.class);
 	private final InsertAdminOutboxEventUseCase insertAdminOutboxEventUseCase = mock(InsertAdminOutboxEventUseCase.class);
 	private final AdminActionAuditLogger adminActionAuditLogger = mock(AdminActionAuditLogger.class);
 
@@ -45,6 +47,7 @@ class RestoreProductUseCaseTest {
 		useCase = new RestoreProductUseCase(
 				adminAuthorizationService,
 				contentModerationLogRepository,
+				commerceProductGateway,
 				insertAdminOutboxEventUseCase,
 				new ProductModerationOutboxPayloadBuilder(new ObjectMapper()),
 				adminActionAuditLogger
@@ -59,6 +62,7 @@ class RestoreProductUseCaseTest {
 		Instant now = Instant.now();
 
 		when(adminAuthorizationService.requireCurrentAdminId()).thenReturn(adminId);
+		when(commerceProductGateway.isEnabled()).thenReturn(false);
 		when(contentModerationLogRepository.save(any(ContentModerationLog.class))).thenAnswer(invocation -> {
 			ContentModerationLog log = invocation.getArgument(0);
 			assertThat(log.targetType()).isEqualTo(ContentModerationTargetType.PRODUCT);

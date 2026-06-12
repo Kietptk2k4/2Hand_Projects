@@ -93,6 +93,9 @@ social:
       commerce-product-removed-group-id: social-commerce-product-removed
       commerce-product-removed-topics:
         - commerce.product.removed
+      commerce-product-restored-group-id: social-commerce-product-restored
+      commerce-product-restored-topics:
+        - commerce.product.restored
       topics:
         - auth.user.created
         - auth.user.updated

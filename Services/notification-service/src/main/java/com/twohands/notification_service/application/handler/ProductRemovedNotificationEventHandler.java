@@ -18,11 +18,16 @@ import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 @Component
 @Order(44)
 public class ProductRemovedNotificationEventHandler implements NotificationEventHandler {
 
-    private static final String PRODUCT_REMOVED = "PRODUCT_REMOVED";
+    private static final Set<String> SUPPORTED_EVENT_TYPES = Set.of(
+            "PRODUCT_REMOVED",
+            "PRODUCT_RESTORED"
+    );
 
     private final ProductRemovedNotificationPayloadParser payloadParser;
     private final ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase;
@@ -43,7 +48,7 @@ public class ProductRemovedNotificationEventHandler implements NotificationEvent
 
     @Override
     public boolean supports(String eventType) {
-        return PRODUCT_REMOVED.equals(eventType);
+        return SUPPORTED_EVENT_TYPES.contains(eventType);
     }
 
     @Override
@@ -58,7 +63,7 @@ public class ProductRemovedNotificationEventHandler implements NotificationEvent
         NotificationDeliveryDecision deliveryDecision;
         try {
             deliveryDecision = applyNotificationDeliveryRulesUseCase.execute(
-                    new ApplyNotificationDeliveryRulesCommand(context.sellerUserId(), PRODUCT_REMOVED)
+                    new ApplyNotificationDeliveryRulesCommand(context.sellerUserId(), event.eventType())
             );
         } catch (DataAccessException ex) {
             return NotificationEventHandlerResult.failure(
@@ -75,7 +80,7 @@ public class ProductRemovedNotificationEventHandler implements NotificationEvent
                         event.id(),
                         context.sellerUserId(),
                         null,
-                        PRODUCT_REMOVED,
+                        event.eventType(),
                         context.referenceType(),
                         context.referenceId(),
                         event.payload(),
@@ -91,7 +96,7 @@ public class ProductRemovedNotificationEventHandler implements NotificationEvent
             SendPushNotificationResult pushResult = sendPushNotificationUseCase.execute(
                     new SendPushNotificationCommand(
                             context.sellerUserId(),
-                            PRODUCT_REMOVED,
+                            event.eventType(),
                             context.referenceType(),
                             context.referenceId(),
                             event.id(),

@@ -5,11 +5,14 @@ import com.twohands.commerce_service.application.moderation.lookup.LookupReviewM
 import com.twohands.commerce_service.application.moderation.lookup.LookupShopModerationOwnerUseCase;
 import com.twohands.commerce_service.application.product.removeproductbyadmin.RemoveProductByAdminCommand;
 import com.twohands.commerce_service.application.product.removeproductbyadmin.RemoveProductByAdminUseCase;
+import com.twohands.commerce_service.application.product.restoreproductbyadmin.RestoreProductByAdminCommand;
+import com.twohands.commerce_service.application.product.restoreproductbyadmin.RestoreProductByAdminUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.moderation.ProductModerationOwner;
 import com.twohands.commerce_service.domain.moderation.ReviewModerationParties;
 import com.twohands.commerce_service.domain.moderation.ShopModerationOwner;
 import com.twohands.commerce_service.domain.product.RemoveProductByAdminResult;
+import com.twohands.commerce_service.domain.product.RestoreProductByAdminResult;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,17 +33,20 @@ public class CommerceInternalModerationController {
     private final LookupShopModerationOwnerUseCase lookupShopModerationOwnerUseCase;
     private final LookupReviewModerationPartiesUseCase lookupReviewModerationPartiesUseCase;
     private final RemoveProductByAdminUseCase removeProductByAdminUseCase;
+    private final RestoreProductByAdminUseCase restoreProductByAdminUseCase;
 
     public CommerceInternalModerationController(
             LookupProductModerationOwnerUseCase lookupProductModerationOwnerUseCase,
             LookupShopModerationOwnerUseCase lookupShopModerationOwnerUseCase,
             LookupReviewModerationPartiesUseCase lookupReviewModerationPartiesUseCase,
-            RemoveProductByAdminUseCase removeProductByAdminUseCase
+            RemoveProductByAdminUseCase removeProductByAdminUseCase,
+            RestoreProductByAdminUseCase restoreProductByAdminUseCase
     ) {
         this.lookupProductModerationOwnerUseCase = lookupProductModerationOwnerUseCase;
         this.lookupShopModerationOwnerUseCase = lookupShopModerationOwnerUseCase;
         this.lookupReviewModerationPartiesUseCase = lookupReviewModerationPartiesUseCase;
         this.removeProductByAdminUseCase = removeProductByAdminUseCase;
+        this.restoreProductByAdminUseCase = restoreProductByAdminUseCase;
     }
 
     @PostMapping("/products/{productId}/remove")
@@ -55,6 +61,21 @@ public class CommerceInternalModerationController {
                 HttpStatus.OK.value(),
                 removeProductByAdminUseCase.successMessage(result.alreadyRemoved()),
                 InternalRemoveProductResponse.from(result)
+        ));
+    }
+
+    @PostMapping("/products/{productId}/restore")
+    public ResponseEntity<ApiResponse<InternalRestoreProductResponse>> restoreProduct(
+            @PathVariable UUID productId,
+            @RequestBody @Valid InternalRestoreProductRequest request
+    ) {
+        RestoreProductByAdminResult result = restoreProductByAdminUseCase.execute(
+                new RestoreProductByAdminCommand(request.restoredByAdminId(), productId, request.reason())
+        );
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                restoreProductByAdminUseCase.successMessage(result.alreadyRestored()),
+                InternalRestoreProductResponse.from(result)
         ));
     }
 

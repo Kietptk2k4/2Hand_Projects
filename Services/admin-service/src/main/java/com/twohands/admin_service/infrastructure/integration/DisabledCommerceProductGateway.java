@@ -29,4 +29,9 @@ public class DisabledCommerceProductGateway implements CommerceProductGateway {
 	public void removeProduct(UUID productId, UUID adminId, String reason) {
 		// No-op when Commerce integration is disabled.
 	}
+
+	@Override
+	public void restoreProduct(UUID productId, UUID adminId, String reason) {
+		// No-op when Commerce integration is disabled.
+	}
 }

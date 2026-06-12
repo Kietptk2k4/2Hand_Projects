@@ -2,7 +2,7 @@
 
 ## 1. Business Goal
 
-Cho phép admin **restore** sản phẩm đã bị moderation remove/hide: ghi moderation log, audit và publish `PRODUCT_RESTORED`. Commerce Service (consumer) validate readiness và quyết định trạng thái cuối (`ACTIVE`, `OUT_OF_STOCK`, `PAUSED`, …).
+Cho phép admin **restore** sản phẩm đã bị moderation remove: ghi moderation log, audit và publish `PRODUCT_RESTORED`. Khi `admin.integrations.commerce.enabled=true`, Admin gọi HTTP Commerce internal restore trước khi ghi outbox; Commerce quyết định trạng thái cuối (`ACTIVE` hoặc `OUT_OF_STOCK` theo stock) và publish `COMMERCE_PRODUCT_RESTORED`.
 
 ## 2. API Contract
 
@@ -63,12 +63,12 @@ Cho phép admin **restore** sản phẩm đã bị moderation remove/hide: ghi m
 
 ## 5. Outbox payload
 
-`product_id`, `moderation_log_id`, `action`, `reason`, `restored_by`, `restored_at`.
+`product_id`, `moderation_log_id`, `action`, `reason`, `restored_by`, `restored_at`, `seller_user_id` (khi commerce integration bật).
 
 ## 6. FE Integration
 
 1. Màn moderation history / product detail → nhập `reason` → `POST .../restore`.
-2. Commerce cập nhật trạng thái qua consumer event (response admin không chứa `status` cuối).
+2. Commerce cập nhật trạng thái qua HTTP sync (response admin không chứa `status` cuối).
 3. Hiển thị message success; refresh khi có API moderation history.
 
 ## 7. Related

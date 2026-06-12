@@ -12,4 +12,6 @@ public interface CommerceProductGateway {
 	Optional<UUID> findSellerUserId(UUID productId);
 
 	void removeProduct(UUID productId, UUID adminId, String reason);
+
+	void restoreProduct(UUID productId, UUID adminId, String reason);
 }

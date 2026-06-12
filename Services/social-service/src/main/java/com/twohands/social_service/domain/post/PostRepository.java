@@ -30,4 +30,6 @@ public interface PostRepository {
     PageResult<Post> findAuthorPosts(AuthorPostsQuery query);
 
     long markProductTagsUnavailable(String productId);
+
+    long markProductTagsAvailable(String productId);
 }

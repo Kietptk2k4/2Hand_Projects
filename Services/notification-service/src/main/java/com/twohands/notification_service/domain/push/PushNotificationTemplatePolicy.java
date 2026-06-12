@@ -86,6 +86,10 @@ public final class PushNotificationTemplatePolicy {
                     "Your comment was restored after a policy review."
             );
             case "PRODUCT_REMOVED" -> new PushNotificationTemplate("Product removed", "One of your products was removed.");
+            case "PRODUCT_RESTORED" -> new PushNotificationTemplate(
+                    "Product restored",
+                    "One of your products was restored after a policy review."
+            );
             case "REVIEW_HIDDEN" -> new PushNotificationTemplate("Review hidden", "One of your reviews was hidden.");
             case "SHOP_SUSPENDED" -> new PushNotificationTemplate("Shop suspended", "Your shop has been suspended.");
             case "SHOP_CLOSED" -> new PushNotificationTemplate("Shop closed", "Your shop has been closed.");

@@ -49,6 +49,34 @@ public class HttpCommerceProductGateway implements CommerceProductGateway {
 	}
 
 	@Override
+	public void restoreProduct(UUID productId, UUID adminId, String reason) {
+		try {
+			JsonNode root = restClient.post()
+					.uri("/commerce/api/v1/internal/moderation/products/{productId}/restore", productId)
+					.contentType(MediaType.APPLICATION_JSON)
+					.body(Map.of(
+							"restored_by_admin_id", adminId.toString(),
+							"reason", reason
+					))
+					.retrieve()
+					.body(JsonNode.class);
+			CommerceIntegrationJsonSupport.requireSuccess(root);
+		} catch (RestClientResponseException ex) {
+			if (ex.getStatusCode().value() == 404) {
+				throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND.defaultMessage());
+			}
+			if (ex.getStatusCode().value() == 409) {
+				throw new AppException(ErrorCode.BAD_REQUEST, "Commerce rejected product restore");
+			}
+			log.warn("Commerce product restore failed: status={}, message={}", ex.getStatusCode(), ex.getMessage());
+			throw new AppException(ErrorCode.SERVICE_UNAVAILABLE, "Commerce Service is unavailable");
+		} catch (RestClientException ex) {
+			log.warn("Commerce product restore failed: {}", ex.getMessage());
+			throw new AppException(ErrorCode.SERVICE_UNAVAILABLE, "Commerce Service is unavailable");
+		}
+	}
+
+	@Override
 	public void removeProduct(UUID productId, UUID adminId, String reason) {
 		try {
 			JsonNode root = restClient.post()

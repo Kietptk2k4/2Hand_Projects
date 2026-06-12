@@ -12,7 +12,7 @@ import java.util.Set;
 @Component
 public class AdminProductModerationPayloadNormalizer {
 
-    private static final Set<String> SUPPORTED_EVENT_TYPES = Set.of("PRODUCT_REMOVED");
+    private static final Set<String> SUPPORTED_EVENT_TYPES = Set.of("PRODUCT_REMOVED", "PRODUCT_RESTORED");
 
     private static final Set<String> STRIP_FIELDS = Set.of(
             "removed_by",

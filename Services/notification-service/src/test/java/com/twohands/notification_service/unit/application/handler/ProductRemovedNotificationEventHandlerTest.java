@@ -63,9 +63,10 @@ class ProductRemovedNotificationEventHandlerTest {
     }
 
     @Test
-    void supports_productRemovedOnly() {
+    void supports_productModerationEvents() {
         assertTrue(handler.supports("PRODUCT_REMOVED"));
-        assertFalse(handler.supports("PRODUCT_RESTORED"));
+        assertTrue(handler.supports("PRODUCT_RESTORED"));
+        assertFalse(handler.supports("POST_MODERATED"));
     }
 
     @Test
@@ -105,6 +106,58 @@ class ProductRemovedNotificationEventHandlerTest {
 
         assertEquals(HandlerOutcome.FAILURE, result.outcome());
         assertEquals(NotificationFailurePolicy.PERMANENT, result.failurePolicy());
+    }
+
+    @Test
+    void handle_notifiesSellerOnRestore() {
+        when(payloadParser.parse(any())).thenReturn(new ProductRemovedNotificationContext(
+                SELLER_ID,
+                "product-1",
+                "Appeal approved",
+                "PRODUCT",
+                "product-1"
+        ));
+        when(applyNotificationDeliveryRulesUseCase.execute(any(ApplyNotificationDeliveryRulesCommand.class)))
+                .thenReturn(new NotificationDeliveryDecision(true, true, false));
+        when(sendPushNotificationUseCase.execute(any(SendPushNotificationCommand.class)))
+                .thenReturn(SendPushNotificationResult.sent(1, 0));
+
+        var result = handler.handle(restoredEvent());
+
+        assertEquals(HandlerOutcome.SUCCESS, result.outcome());
+        verify(createInAppNotificationUseCase).execute(new CreateInAppNotificationCommand(
+                EVENT_ID,
+                SELLER_ID,
+                null,
+                "PRODUCT_RESTORED",
+                "PRODUCT",
+                "product-1",
+                "{}",
+                null
+        ));
+    }
+
+    private NotificationEvent restoredEvent() {
+        return new NotificationEvent(
+                EVENT_ID,
+                UUID.randomUUID(),
+                null,
+                "PRODUCT_RESTORED",
+                NotificationSourceService.ADMIN,
+                "PRODUCT",
+                "product-1",
+                null,
+                SELLER_ID,
+                "{}",
+                NotificationEventStatus.PROCESSING,
+                0,
+                5,
+                null,
+                Instant.now(),
+                "worker",
+                Instant.now(),
+                null
+        );
     }
 
     private NotificationEvent sampleEvent() {

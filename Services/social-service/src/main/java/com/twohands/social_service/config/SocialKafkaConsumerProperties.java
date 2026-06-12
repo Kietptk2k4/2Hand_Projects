@@ -32,6 +32,8 @@ public class SocialKafkaConsumerProperties {
     );
     private String commerceProductRemovedGroupId = "social-commerce-product-removed";
     private List<String> commerceProductRemovedTopics = List.of("commerce.product.removed");
+    private String commerceProductRestoredGroupId = "social-commerce-product-restored";
+    private List<String> commerceProductRestoredTopics = List.of("commerce.product.restored");
 
     public boolean isEnabled() {
         return enabled;
@@ -111,5 +113,21 @@ public class SocialKafkaConsumerProperties {
 
     public void setCommerceProductRemovedTopics(List<String> commerceProductRemovedTopics) {
         this.commerceProductRemovedTopics = commerceProductRemovedTopics;
+    }
+
+    public String getCommerceProductRestoredGroupId() {
+        return commerceProductRestoredGroupId;
+    }
+
+    public void setCommerceProductRestoredGroupId(String commerceProductRestoredGroupId) {
+        this.commerceProductRestoredGroupId = commerceProductRestoredGroupId;
+    }
+
+    public List<String> getCommerceProductRestoredTopics() {
+        return commerceProductRestoredTopics;
+    }
+
+    public void setCommerceProductRestoredTopics(List<String> commerceProductRestoredTopics) {
+        this.commerceProductRestoredTopics = commerceProductRestoredTopics;
     }
 }

@@ -127,6 +127,10 @@ public final class InAppNotificationTemplatePolicy {
                     "Product removed",
                     "One of your products was removed."
             );
+            case "PRODUCT_RESTORED" -> new InAppNotificationTemplate(
+                    "Product restored",
+                    "One of your products was restored after a policy review."
+            );
             case "REVIEW_HIDDEN" -> new InAppNotificationTemplate(
                     "Review hidden",
                     "One of your reviews was hidden."

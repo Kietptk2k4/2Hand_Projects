@@ -21,7 +21,7 @@ public class ProductRemovedNotificationPayloadParser {
     }
 
     public ProductRemovedNotificationContext parse(NotificationEvent event) {
-        JsonNode payload = parsePayload(event.payload());
+        JsonNode payload = parsePayload(event.payload(), event.eventType());
 
         UUID sellerUserId = firstUuid(
                 event.recipientUserId(),
@@ -30,7 +30,9 @@ public class ProductRemovedNotificationPayloadParser {
                 textField(payload, "owner_user_id")
         );
         if (sellerUserId == null) {
-            throw new IllegalArgumentException("seller_user_id is required for PRODUCT_REMOVED notification event.");
+            throw new IllegalArgumentException(
+                    "seller_user_id is required for " + event.eventType() + " notification event."
+            );
         }
 
         String productId = firstNonBlank(
@@ -38,12 +40,15 @@ public class ProductRemovedNotificationPayloadParser {
                 PRODUCT_AGGREGATE_TYPE.equalsIgnoreCase(event.aggregateType()) ? event.aggregateId() : null
         );
         if (productId == null || productId.isBlank()) {
-            throw new IllegalArgumentException("product_id is required for PRODUCT_REMOVED notification event.");
+            throw new IllegalArgumentException(
+                    "product_id is required for " + event.eventType() + " notification event."
+            );
         }
 
         String removalReason = firstNonBlank(
                 textField(payload, "removal_reason"),
-                textField(payload, "user_reason")
+                textField(payload, "user_reason"),
+                textField(payload, "reason")
         );
 
         return new ProductRemovedNotificationContext(
@@ -55,7 +60,7 @@ public class ProductRemovedNotificationPayloadParser {
         );
     }
 
-    private JsonNode parsePayload(String rawPayload) {
+    private JsonNode parsePayload(String rawPayload, String eventType) {
         if (rawPayload == null || rawPayload.isBlank()) {
             return objectMapper.createObjectNode();
         }
@@ -63,7 +68,7 @@ public class ProductRemovedNotificationPayloadParser {
             JsonNode node = objectMapper.readTree(rawPayload);
             return node == null || node.isNull() ? objectMapper.createObjectNode() : node;
         } catch (Exception ex) {
-            throw new IllegalArgumentException("PRODUCT_REMOVED event payload must be valid JSON.");
+            throw new IllegalArgumentException(eventType + " event payload must be valid JSON.");
         }
     }
 
