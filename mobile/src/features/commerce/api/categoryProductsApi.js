@@ -10,7 +10,7 @@ export async function fetchCategoryProducts({
 } = {}) {
   try {
     const response = await commerceApiClient.get(
-      /commerce/api/v1/categories//products,
+      `/commerce/api/v1/categories/${categoryId}/products`,
       {
         params: {
           page,

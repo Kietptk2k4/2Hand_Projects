@@ -1,4 +1,4 @@
-import { CommercePlaceholderScreen } from "../../../../../src/features/commerce/components/CommercePlaceholderScreen";
+import { CommercePlaceholderScreen } from "../../../../src/features/commerce/components/CommercePlaceholderScreen";
 
 export default function CommerceReviewsRoute() {
   return (

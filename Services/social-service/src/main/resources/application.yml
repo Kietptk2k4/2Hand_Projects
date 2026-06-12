@@ -90,6 +90,11 @@ social:
       post-moderated-group-id: social-post-moderated
       post-moderated-topics:
         - admin.post.moderated
+        - admin.post.restored
+      comment-moderated-group-id: social-comment-moderated
+      comment-moderated-topics:
+        - admin.comment.moderated
+        - admin.comment.restored
       commerce-product-removed-group-id: social-commerce-product-removed
       commerce-product-removed-topics:
         - commerce.product.removed

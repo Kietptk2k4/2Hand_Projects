@@ -37,7 +37,7 @@ export function getCartItemCountLabel(cart) {
   if (!cart) return '';
   const total = cart.items.length;
   if (total === 0) return 'Giỏ hàng trống';
-  return ${total} sản phẩm trong giỏ hàng;
+  return `${total} sản phẩm trong giỏ hàng`;
 }
 
 export function getCartBadgeCountFromMapped(cart) {
