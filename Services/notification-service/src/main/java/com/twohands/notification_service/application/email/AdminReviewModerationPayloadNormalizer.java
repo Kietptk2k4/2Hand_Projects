@@ -12,7 +12,11 @@ import java.util.Set;
 @Component
 public class AdminReviewModerationPayloadNormalizer {
 
-    private static final Set<String> SUPPORTED_EVENT_TYPES = Set.of("REVIEW_HIDDEN");
+    private static final Set<String> SUPPORTED_EVENT_TYPES = Set.of(
+            "REVIEW_HIDDEN",
+            "REVIEW_REMOVED",
+            "REVIEW_RESTORED"
+    );
 
     private static final Set<String> STRIP_FIELDS = Set.of(
             "hidden_by",
@@ -48,6 +52,8 @@ public class AdminReviewModerationPayloadNormalizer {
             String userFacingReason = AccountEnforcementEmailReasonPolicy.resolveUserFacingReason(
                     firstNonBlank(
                             textValue(normalized, "hidden_reason"),
+                            textValue(normalized, "removal_reason"),
+                            textValue(normalized, "restored_reason"),
                             textValue(normalized, "reason"),
                             textValue(normalized, "description")
                     ),
@@ -57,7 +63,12 @@ public class AdminReviewModerationPayloadNormalizer {
             normalized.remove("reason");
             normalized.remove("description");
             if (userFacingReason != null && !userFacingReason.isBlank()) {
-                normalized.put("hidden_reason", userFacingReason);
+                String reasonField = switch (eventType) {
+                    case "REVIEW_REMOVED" -> "removal_reason";
+                    case "REVIEW_RESTORED" -> "restored_reason";
+                    default -> "hidden_reason";
+                };
+                normalized.put(reasonField, userFacingReason);
             }
 
             return objectMapper.writeValueAsString(normalized);

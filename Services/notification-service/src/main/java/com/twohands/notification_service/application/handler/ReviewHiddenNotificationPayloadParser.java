@@ -35,9 +35,11 @@ public class ReviewHiddenNotificationPayloadParser {
                 textField(payload, "seller_id")
         );
 
+        String eventType = event.eventType() == null ? "REVIEW_HIDDEN" : event.eventType();
+
         if (reviewAuthorId == null && sellerUserId == null) {
             throw new IllegalArgumentException(
-                    "review_author_id or seller_user_id is required for REVIEW_HIDDEN notification event."
+                    "review_author_id or seller_user_id is required for " + eventType + " notification event."
             );
         }
 
@@ -46,11 +48,14 @@ public class ReviewHiddenNotificationPayloadParser {
                 REVIEW_AGGREGATE_TYPE.equalsIgnoreCase(event.aggregateType()) ? event.aggregateId() : null
         );
         if (reviewId == null || reviewId.isBlank()) {
-            throw new IllegalArgumentException("review_id is required for REVIEW_HIDDEN notification event.");
+            throw new IllegalArgumentException("review_id is required for " + eventType + " notification event.");
         }
 
         String hiddenReason = firstNonBlank(
                 textField(payload, "hidden_reason"),
+                textField(payload, "removal_reason"),
+                textField(payload, "restored_reason"),
+                textField(payload, "reason"),
                 textField(payload, "user_reason")
         );
 
@@ -72,7 +77,7 @@ public class ReviewHiddenNotificationPayloadParser {
             JsonNode node = objectMapper.readTree(rawPayload);
             return node == null || node.isNull() ? objectMapper.createObjectNode() : node;
         } catch (Exception ex) {
-            throw new IllegalArgumentException("REVIEW_HIDDEN event payload must be valid JSON.");
+            throw new IllegalArgumentException("Review moderation event payload must be valid JSON.");
         }
     }
 

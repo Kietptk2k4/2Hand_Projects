@@ -4,6 +4,11 @@ import com.twohands.notification_service.application.delivery.ApplyNotificationD
 import com.twohands.notification_service.application.delivery.ApplyNotificationDeliveryRulesUseCase;
 import com.twohands.notification_service.application.inapp.CreateInAppNotificationCommand;
 import com.twohands.notification_service.application.inapp.CreateInAppNotificationUseCase;
+import com.twohands.notification_service.application.push.PushNotificationHandlerSupport;
+import com.twohands.notification_service.application.push.SendPushNotificationCommand;
+import com.twohands.notification_service.application.push.SendPushNotificationOutcome;
+import com.twohands.notification_service.application.push.SendPushNotificationResult;
+import com.twohands.notification_service.application.push.SendPushNotificationUseCase;
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
 import com.twohands.notification_service.domain.admin.ReviewHiddenNotificationContext;
 import com.twohands.notification_service.domain.delivery.NotificationDeliveryDecision;
@@ -14,31 +19,44 @@ import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Component
 @Order(43)
 public class ReviewHiddenNotificationEventHandler implements NotificationEventHandler {
 
-    private static final String REVIEW_HIDDEN = "REVIEW_HIDDEN";
+    private static final Set<String> SUPPORTED_EVENT_TYPES = Set.of(
+            "REVIEW_HIDDEN",
+            "REVIEW_REMOVED",
+            "REVIEW_RESTORED"
+    );
+
+    private static final Set<String> PUSH_ENABLED_EVENT_TYPES = Set.of(
+            "REVIEW_REMOVED",
+            "REVIEW_RESTORED"
+    );
 
     private final ReviewHiddenNotificationPayloadParser payloadParser;
     private final ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase;
     private final CreateInAppNotificationUseCase createInAppNotificationUseCase;
+    private final SendPushNotificationUseCase sendPushNotificationUseCase;
 
     public ReviewHiddenNotificationEventHandler(
             ReviewHiddenNotificationPayloadParser payloadParser,
             ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase,
-            CreateInAppNotificationUseCase createInAppNotificationUseCase
+            CreateInAppNotificationUseCase createInAppNotificationUseCase,
+            SendPushNotificationUseCase sendPushNotificationUseCase
     ) {
         this.payloadParser = payloadParser;
         this.applyNotificationDeliveryRulesUseCase = applyNotificationDeliveryRulesUseCase;
         this.createInAppNotificationUseCase = createInAppNotificationUseCase;
+        this.sendPushNotificationUseCase = sendPushNotificationUseCase;
     }
 
     @Override
     public boolean supports(String eventType) {
-        return REVIEW_HIDDEN.equals(eventType);
+        return SUPPORTED_EVENT_TYPES.contains(eventType);
     }
 
     @Override
@@ -74,10 +92,11 @@ public class ReviewHiddenNotificationEventHandler implements NotificationEventHa
             ReviewHiddenNotificationContext context,
             UUID recipientId
     ) {
+        String eventType = event.eventType();
         NotificationDeliveryDecision deliveryDecision;
         try {
             deliveryDecision = applyNotificationDeliveryRulesUseCase.execute(
-                    new ApplyNotificationDeliveryRulesCommand(recipientId, REVIEW_HIDDEN)
+                    new ApplyNotificationDeliveryRulesCommand(recipientId, eventType)
             );
         } catch (DataAccessException ex) {
             return RecipientDeliveryResult.failed(
@@ -88,31 +107,58 @@ public class ReviewHiddenNotificationEventHandler implements NotificationEventHa
             );
         }
 
-        if (!deliveryDecision.inApp()) {
-            return RecipientDeliveryResult.notDelivered();
-        }
-
         String templateVariant = isSellerRecipient(context, recipientId)
                 ? InAppNotificationTemplatePolicy.SELLER_TEMPLATE_VARIANT
                 : null;
 
-        try {
-            createInAppNotificationUseCase.execute(new CreateInAppNotificationCommand(
-                    event.id(),
-                    recipientId,
-                    null,
-                    REVIEW_HIDDEN,
-                    context.referenceType(),
-                    context.referenceId(),
-                    event.payload(),
-                    templateVariant
-            ));
-            return RecipientDeliveryResult.delivered();
-        } catch (AppException ex) {
-            return RecipientDeliveryResult.failed(
-                    NotificationEventHandlerResult.failure(ex.getMessage(), resolveFailurePolicy(ex))
-            );
+        boolean delivered = false;
+
+        if (deliveryDecision.inApp()) {
+            try {
+                createInAppNotificationUseCase.execute(new CreateInAppNotificationCommand(
+                        event.id(),
+                        recipientId,
+                        null,
+                        eventType,
+                        context.referenceType(),
+                        context.referenceId(),
+                        event.payload(),
+                        templateVariant
+                ));
+                delivered = true;
+            } catch (AppException ex) {
+                return RecipientDeliveryResult.failed(
+                        NotificationEventHandlerResult.failure(ex.getMessage(), resolveFailurePolicy(ex))
+                );
+            }
         }
+
+        if (PUSH_ENABLED_EVENT_TYPES.contains(eventType) && deliveryDecision.push()) {
+            SendPushNotificationResult pushResult = sendPushNotificationUseCase.execute(
+                    new SendPushNotificationCommand(
+                            recipientId,
+                            eventType,
+                            context.referenceType(),
+                            context.referenceId(),
+                            event.id(),
+                            templateVariant
+                    )
+            );
+
+            var pushFailure = PushNotificationHandlerSupport.mapFailure(pushResult);
+            if (pushFailure.isPresent()) {
+                return RecipientDeliveryResult.failed(pushFailure.get());
+            }
+            if (pushResult.outcome() == SendPushNotificationOutcome.SENT) {
+                delivered = true;
+            }
+        }
+
+        if (!delivered) {
+            return RecipientDeliveryResult.notDelivered();
+        }
+
+        return RecipientDeliveryResult.delivered();
     }
 
     private boolean isSellerRecipient(ReviewHiddenNotificationContext context, UUID recipientId) {

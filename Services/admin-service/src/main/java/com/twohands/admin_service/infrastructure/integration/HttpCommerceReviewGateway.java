@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import java.util.Map;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
@@ -34,6 +35,44 @@ public class HttpCommerceReviewGateway implements CommerceReviewGateway {
 	@Override
 	public boolean isEnabled() {
 		return true;
+	}
+
+	@Override
+	public void removeReview(UUID reviewId, UUID adminId, String reason) {
+		moderateReview(reviewId, adminId, "HIDE", reason);
+	}
+
+	@Override
+	public void restoreReview(UUID reviewId, UUID adminId, String reason) {
+		moderateReview(reviewId, adminId, "RESTORE", reason);
+	}
+
+	private void moderateReview(UUID reviewId, UUID adminId, String action, String reason) {
+		try {
+			JsonNode root = restClient.post()
+					.uri("/commerce/api/v1/internal/moderation/reviews/{reviewId}/moderate", reviewId)
+					.contentType(MediaType.APPLICATION_JSON)
+					.body(Map.of(
+							"moderated_by_admin_id", adminId.toString(),
+							"action", action,
+							"reason", reason
+					))
+					.retrieve()
+					.body(JsonNode.class);
+			CommerceIntegrationJsonSupport.requireSuccess(root);
+		} catch (RestClientResponseException ex) {
+			if (ex.getStatusCode().value() == 404) {
+				throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND.defaultMessage());
+			}
+			if (ex.getStatusCode().value() == 409) {
+				throw new AppException(ErrorCode.BAD_REQUEST, "Commerce rejected review moderation");
+			}
+			log.warn("Commerce review moderation failed: status={}, message={}", ex.getStatusCode(), ex.getMessage());
+			throw new AppException(ErrorCode.SERVICE_UNAVAILABLE, "Commerce Service is unavailable");
+		} catch (RestClientException ex) {
+			log.warn("Commerce review moderation failed: {}", ex.getMessage());
+			throw new AppException(ErrorCode.SERVICE_UNAVAILABLE, "Commerce Service is unavailable");
+		}
 	}
 
 	@Override

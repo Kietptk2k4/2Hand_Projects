@@ -27,6 +27,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -83,6 +84,28 @@ class RestoreReviewUseCaseTest {
 				AdminPermission.REVIEW_HIDE
 		);
 		verify(insertAdminOutboxEventUseCase).execute(any(InsertAdminOutboxEventCommand.class));
+	}
+
+	@Test
+	void shouldSyncRestoreWithCommerceWhenEnabled() {
+		UUID adminId = UUID.randomUUID();
+		UUID reviewId = UUID.randomUUID();
+		UUID authorId = UUID.randomUUID();
+		UUID sellerId = UUID.randomUUID();
+		UUID outboxId = UUID.randomUUID();
+		Instant now = Instant.now();
+
+		when(adminAuthorizationService.requireCurrentAdminId()).thenReturn(adminId);
+		when(commerceReviewGateway.isEnabled()).thenReturn(true);
+		when(commerceReviewGateway.findReviewParties(reviewId))
+				.thenReturn(java.util.Optional.of(new CommerceReviewGateway.CommerceReviewParties(authorId, sellerId)));
+		when(contentModerationLogRepository.save(any(ContentModerationLog.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(insertAdminOutboxEventUseCase.execute(any(InsertAdminOutboxEventCommand.class)))
+				.thenReturn(new OutboxEvent(outboxId, "REVIEW_RESTORED", reviewId, "{}", OutboxStatus.PENDING, 0, now, null, null));
+
+		useCase.execute(new RestoreReviewCommand(reviewId, "False positive", null));
+
+		verify(commerceReviewGateway).restoreReview(eq(reviewId), eq(adminId), eq("False positive"));
 	}
 
 	@Test

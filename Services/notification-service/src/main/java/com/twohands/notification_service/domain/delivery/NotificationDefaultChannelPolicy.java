@@ -32,6 +32,8 @@ public final class NotificationDefaultChannelPolicy {
             Map.entry("PRODUCT_REMOVED", new DefaultChannelFlags(true, true, false)),
             Map.entry("PRODUCT_RESTORED", new DefaultChannelFlags(true, true, false)),
             Map.entry("REVIEW_HIDDEN", new DefaultChannelFlags(true, false, false)),
+            Map.entry("REVIEW_REMOVED", new DefaultChannelFlags(true, true, false)),
+            Map.entry("REVIEW_RESTORED", new DefaultChannelFlags(true, true, false)),
             Map.entry("SHOP_SUSPENDED", new DefaultChannelFlags(true, true, true)),
             Map.entry("SHOP_CLOSED", new DefaultChannelFlags(true, true, true)),
             Map.entry("SYSTEM_ANNOUNCEMENT_SENT", new DefaultChannelFlags(true, true, false)),

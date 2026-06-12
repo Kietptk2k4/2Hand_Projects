@@ -37,6 +37,8 @@ public class DomainEventTopicResolver {
             Map.entry("admin.product.removed", "PRODUCT_REMOVED"),
             Map.entry("admin.product.restored", "PRODUCT_RESTORED"),
             Map.entry("admin.review.hidden", "REVIEW_HIDDEN"),
+            Map.entry("admin.review.removed", "REVIEW_REMOVED"),
+            Map.entry("admin.review.restored", "REVIEW_RESTORED"),
             Map.entry("admin.shop.suspended", "SHOP_SUSPENDED"),
             Map.entry("admin.shop.closed", "SHOP_CLOSED"),
             Map.entry("admin.announcement.published", "SYSTEM_ANNOUNCEMENT_PUBLISHED"),

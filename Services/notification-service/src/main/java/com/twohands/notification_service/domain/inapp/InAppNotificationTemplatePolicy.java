@@ -37,6 +37,18 @@ public final class InAppNotificationTemplatePolicy {
                     "A review on one of your products was hidden."
             ));
         }
+        if ("REVIEW_REMOVED".equals(eventType) && SELLER_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new InAppNotificationTemplate(
+                    "Review removed on your product",
+                    "A review on one of your products was removed."
+            ));
+        }
+        if ("REVIEW_RESTORED".equals(eventType) && SELLER_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new InAppNotificationTemplate(
+                    "Review restored on your product",
+                    "A review on one of your products was restored after a policy review."
+            ));
+        }
         if ("POST_MODERATED".equals(eventType) && HIDE_TEMPLATE_VARIANT.equals(templateVariant)) {
             return Optional.of(new InAppNotificationTemplate(
                     "Post hidden",
@@ -134,6 +146,14 @@ public final class InAppNotificationTemplatePolicy {
             case "REVIEW_HIDDEN" -> new InAppNotificationTemplate(
                     "Review hidden",
                     "One of your reviews was hidden."
+            );
+            case "REVIEW_REMOVED" -> new InAppNotificationTemplate(
+                    "Review removed",
+                    "One of your reviews was removed."
+            );
+            case "REVIEW_RESTORED" -> new InAppNotificationTemplate(
+                    "Review restored",
+                    "One of your reviews was restored after a policy review."
             );
             case "SHOP_SUSPENDED" -> new InAppNotificationTemplate(
                     "Shop suspended",

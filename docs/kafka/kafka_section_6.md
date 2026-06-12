@@ -116,7 +116,9 @@ Mọi `event_type` trong `AdminOutboxTopicResolver.java` đều được map san
 | `admin.shop.closed` | ✓ | — | ✓ `SHOP_CLOSED` (**6E**) | `shop_owner_id` trong payload |
 | `admin.announcement.cancelled` | ✓ | — | ✓ `SYSTEM_ANNOUNCEMENT_CANCELLED` (**6E**) | Soft-delete in-app theo `announcement_id` |
 | `admin.product.removed` | ✓ | — | ✓ `PRODUCT_REMOVED` | Payload enrich **6B** |
-| `admin.review.hidden` | ✓ | — | ✓ `REVIEW_HIDDEN` | Payload enrich **6B** |
+| `admin.review.hidden` | ✓ | — | ✓ `REVIEW_HIDDEN` | Payload enrich **6B**; in-app only |
+| `admin.review.removed` | ✓ | — | ✓ `REVIEW_REMOVED` | HTTP sync Commerce HIDE; in-app + push |
+| `admin.review.restored` | ✓ | — | ✓ `REVIEW_RESTORED` | HTTP sync Commerce RESTORE; in-app + push |
 | `admin.shop.suspended` | ✓ | — | ✓ `SHOP_SUSPENDED` | Payload enrich **6B** |
 | `admin.announcement.published` | ✓ | — | ✓ fan-out → `SYSTEM_ANNOUNCEMENT_SENT` | Audience **6B** |
 
@@ -124,7 +126,7 @@ Mọi `event_type` trong `AdminOutboxTopicResolver.java` đều được map san
 
 Publish vẫn có trên Kafka; consumer **chưa** subscribe trong 6E:
 
-`admin.product.restored`, `admin.review.removed`, `admin.review.restored`, `admin.shop.restored`, `admin.comment.moderated`, `admin.comment.restored`, `admin.config.updated`
+`admin.product.restored`, `admin.shop.restored`, `admin.comment.moderated`, `admin.comment.restored`, `admin.config.updated`
 
 **Commerce Kafka consumer cho `admin.*`:** không có — by design.
 
@@ -590,6 +592,8 @@ Luồng đầy đủ: **Admin API** → `admin_db.outbox_events` → Kafka `admi
 | `admin.product.removed` | `PRODUCT_REMOVED` | `ProductRemovedNotificationEventHandler` | in-app + push |
 | `admin.shop.suspended` | `SHOP_SUSPENDED` | `ShopSuspendedNotificationEventHandler` (+ email chain) | in-app + push + email |
 | `admin.review.hidden` | `REVIEW_HIDDEN` | `ReviewHiddenNotificationEventHandler` | in-app only |
+| `admin.review.removed` | `REVIEW_REMOVED` | `ReviewHiddenNotificationEventHandler` | in-app + push |
+| `admin.review.restored` | `REVIEW_RESTORED` | `ReviewHiddenNotificationEventHandler` | in-app + push |
 | `admin.announcement.published` | `SYSTEM_ANNOUNCEMENT_PUBLISHED` | alias → `SYSTEM_ANNOUNCEMENT_SENT` → fan-out | in-app + push |
 
 **Không subscribe:** `admin.post.moderated` (Social only — **N8** negative), `admin.user.enforcement_revoked` / `expired`, restore/comment/config topics (**6E**).

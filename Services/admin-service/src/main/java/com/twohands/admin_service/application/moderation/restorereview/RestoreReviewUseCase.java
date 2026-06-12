@@ -80,6 +80,7 @@ public class RestoreReviewUseCase {
 					));
 			reviewAuthorId = parties.reviewAuthorId();
 			sellerUserId = parties.sellerUserId();
+			commerceReviewGateway.restoreReview(command.reviewId(), adminId, reason);
 		}
 
 		Instant restoredAt = Instant.now();
@@ -124,6 +125,7 @@ public class RestoreReviewUseCase {
 			if (note != null) {
 				requestSummary.put("note", note);
 			}
+			requestSummary.put("commerce_integration", commerceReviewGateway.isEnabled());
 
 			adminActionAuditLogger.logCritical(
 					adminId,

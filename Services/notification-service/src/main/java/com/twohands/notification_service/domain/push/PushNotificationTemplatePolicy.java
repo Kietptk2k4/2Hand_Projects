@@ -53,6 +53,18 @@ public final class PushNotificationTemplatePolicy {
                     "Your comment was removed due to a policy enforcement action."
             ));
         }
+        if ("REVIEW_REMOVED".equals(eventType) && SELLER_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new PushNotificationTemplate(
+                    "Review removed on your product",
+                    "A review on one of your products was removed."
+            ));
+        }
+        if ("REVIEW_RESTORED".equals(eventType) && SELLER_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new PushNotificationTemplate(
+                    "Review restored on your product",
+                    "A review on one of your products was restored after a policy review."
+            ));
+        }
         return Optional.ofNullable(switch (eventType) {
             case "PASSWORD_CHANGED" -> new PushNotificationTemplate("Password changed", "Your account password was changed.");
             case "POST_LIKED" -> new PushNotificationTemplate("New like", "Someone liked your post.");
@@ -91,6 +103,11 @@ public final class PushNotificationTemplatePolicy {
                     "One of your products was restored after a policy review."
             );
             case "REVIEW_HIDDEN" -> new PushNotificationTemplate("Review hidden", "One of your reviews was hidden.");
+            case "REVIEW_REMOVED" -> new PushNotificationTemplate("Review removed", "One of your reviews was removed.");
+            case "REVIEW_RESTORED" -> new PushNotificationTemplate(
+                    "Review restored",
+                    "One of your reviews was restored after a policy review."
+            );
             case "SHOP_SUSPENDED" -> new PushNotificationTemplate("Shop suspended", "Your shop has been suspended.");
             case "SHOP_CLOSED" -> new PushNotificationTemplate("Shop closed", "Your shop has been closed.");
             case "USER_ENFORCEMENT_REVOKED" -> new PushNotificationTemplate(

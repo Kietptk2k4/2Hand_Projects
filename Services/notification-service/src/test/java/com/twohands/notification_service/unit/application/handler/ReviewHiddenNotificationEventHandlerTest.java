@@ -7,6 +7,10 @@ import com.twohands.notification_service.application.handler.ReviewHiddenNotific
 import com.twohands.notification_service.application.handler.ReviewHiddenNotificationPayloadParser;
 import com.twohands.notification_service.application.inapp.CreateInAppNotificationCommand;
 import com.twohands.notification_service.application.inapp.CreateInAppNotificationUseCase;
+import com.twohands.notification_service.application.push.SendPushNotificationCommand;
+import com.twohands.notification_service.application.push.SendPushNotificationOutcome;
+import com.twohands.notification_service.application.push.SendPushNotificationResult;
+import com.twohands.notification_service.application.push.SendPushNotificationUseCase;
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
 import com.twohands.notification_service.domain.admin.ReviewHiddenNotificationContext;
 import com.twohands.notification_service.domain.delivery.NotificationDeliveryDecision;
@@ -48,6 +52,9 @@ class ReviewHiddenNotificationEventHandlerTest {
     @Mock
     private CreateInAppNotificationUseCase createInAppNotificationUseCase;
 
+    @Mock
+    private SendPushNotificationUseCase sendPushNotificationUseCase;
+
     private ReviewHiddenNotificationEventHandler handler;
 
     @BeforeEach
@@ -55,13 +62,16 @@ class ReviewHiddenNotificationEventHandlerTest {
         handler = new ReviewHiddenNotificationEventHandler(
                 payloadParser,
                 applyNotificationDeliveryRulesUseCase,
-                createInAppNotificationUseCase
+                createInAppNotificationUseCase,
+                sendPushNotificationUseCase
         );
     }
 
     @Test
-    void supports_reviewHiddenOnly() {
+    void supports_reviewModerationEvents() {
         assertTrue(handler.supports("REVIEW_HIDDEN"));
+        assertTrue(handler.supports("REVIEW_REMOVED"));
+        assertTrue(handler.supports("REVIEW_RESTORED"));
         assertFalse(handler.supports("PRODUCT_REMOVED"));
     }
 
@@ -114,6 +124,28 @@ class ReviewHiddenNotificationEventHandlerTest {
     }
 
     @Test
+    void handle_notifiesAuthorAndSellerInAppAndPushForRemoved() {
+        when(payloadParser.parse(any())).thenReturn(new ReviewHiddenNotificationContext(
+                AUTHOR_ID,
+                SELLER_ID,
+                "review-1",
+                "Policy violation",
+                "REVIEW",
+                "review-1"
+        ));
+        when(applyNotificationDeliveryRulesUseCase.execute(any(ApplyNotificationDeliveryRulesCommand.class)))
+                .thenReturn(new NotificationDeliveryDecision(true, true, false));
+        when(sendPushNotificationUseCase.execute(any(SendPushNotificationCommand.class)))
+                .thenReturn(SendPushNotificationResult.sent(1, 0));
+
+        var result = handler.handle(sampleEvent("REVIEW_REMOVED"));
+
+        assertEquals(HandlerOutcome.SUCCESS, result.outcome());
+        verify(createInAppNotificationUseCase, times(2)).execute(any(CreateInAppNotificationCommand.class));
+        verify(sendPushNotificationUseCase, times(2)).execute(any(SendPushNotificationCommand.class));
+    }
+
+    @Test
     void handle_deduplicatesWhenAuthorIsSeller() {
         when(payloadParser.parse(any())).thenReturn(new ReviewHiddenNotificationContext(
                 AUTHOR_ID,
@@ -142,11 +174,15 @@ class ReviewHiddenNotificationEventHandlerTest {
     }
 
     private NotificationEvent sampleEvent() {
+        return sampleEvent("REVIEW_HIDDEN");
+    }
+
+    private NotificationEvent sampleEvent(String eventType) {
         return new NotificationEvent(
                 EVENT_ID,
                 UUID.randomUUID(),
                 null,
-                "REVIEW_HIDDEN",
+                eventType,
                 NotificationSourceService.ADMIN,
                 "REVIEW",
                 "review-1",

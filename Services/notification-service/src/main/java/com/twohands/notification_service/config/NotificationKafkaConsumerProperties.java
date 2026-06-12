@@ -38,6 +38,8 @@ public class NotificationKafkaConsumerProperties {
             "admin.product.removed",
             "admin.product.restored",
             "admin.review.hidden",
+            "admin.review.removed",
+            "admin.review.restored",
             "admin.shop.suspended",
             "admin.shop.closed",
             "admin.announcement.published",

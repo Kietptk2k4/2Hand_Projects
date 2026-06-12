@@ -20,4 +20,14 @@ public class DisabledCommerceReviewGateway implements CommerceReviewGateway {
 	public Optional<CommerceReviewParties> findReviewParties(UUID reviewId) {
 		return Optional.empty();
 	}
+
+	@Override
+	public void removeReview(UUID reviewId, UUID adminId, String reason) {
+		// No-op when Commerce integration is disabled.
+	}
+
+	@Override
+	public void restoreReview(UUID reviewId, UUID adminId, String reason) {
+		// No-op when Commerce integration is disabled.
+	}
 }

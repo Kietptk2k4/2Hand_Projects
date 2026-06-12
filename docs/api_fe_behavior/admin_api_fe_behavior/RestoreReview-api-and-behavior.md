@@ -2,7 +2,7 @@
 
 ## 1. Business Goal
 
-Cho phép admin **restore** review đã bị hide/remove: ghi moderation log, audit và publish `REVIEW_RESTORED`. Commerce Service (consumer) validate eligibility, đặt trạng thái cuối và tính lại rating summary nếu cần.
+Cho phép admin **restore** review đã bị hide/remove: đồng bộ HTTP sang Commerce (`action=RESTORE`), ghi moderation log, audit và publish `REVIEW_RESTORED` cho Notification. Commerce validate eligibility, đặt trạng thái `VISIBLE` và tính lại rating summary nếu cần.
 
 ## 2. API Contract
 
@@ -60,16 +60,17 @@ Cho phép admin **restore** review đã bị hide/remove: ghi moderation log, au
 - Critical audit `REVIEW_RESTORE`.
 - Outbox `REVIEW_RESTORED` → topic `admin.review.restored`.
 - `note` chỉ lưu moderation/audit; **không** đưa vào outbox payload.
+- Khi `admin.integrations.commerce.enabled=true`: Admin gọi `POST /commerce/api/v1/internal/moderation/reviews/{reviewId}/moderate` với `action=RESTORE` **trước** ghi log/outbox.
 - Commerce owns trạng thái cuối (`VISIBLE`, …) và rating effects.
 
 ## 5. Outbox payload
 
-`review_id`, `moderation_log_id`, `action`, `reason`, `restored_by`, `restored_at`.
+`review_id`, `moderation_log_id`, `action`, `reason`, `review_author_id`, `seller_user_id`, `restored_by`, `restored_at`.
 
 ## 6. FE Integration
 
 1. Màn review moderation history → Restore → nhập `reason` → `POST .../restore`.
-2. Commerce consumer xử lý event; không hiển thị status cuối trong response admin.
+2. Commerce được sync qua HTTP internal moderate; Notification nhận `admin.review.restored` (in-app + push cho author và seller).
 3. Toast success; refresh list/history.
 
 ## 7. Related

@@ -80,6 +80,7 @@ public class RemoveReviewUseCase {
 					));
 			reviewAuthorId = parties.reviewAuthorId();
 			sellerUserId = parties.sellerUserId();
+			commerceReviewGateway.removeReview(command.reviewId(), adminId, reason);
 		}
 
 		Instant removedAt = Instant.now();
@@ -124,6 +125,7 @@ public class RemoveReviewUseCase {
 			if (note != null) {
 				requestSummary.put("note", note);
 			}
+			requestSummary.put("commerce_integration", commerceReviewGateway.isEnabled());
 
 			adminActionAuditLogger.logCritical(
 					adminId,

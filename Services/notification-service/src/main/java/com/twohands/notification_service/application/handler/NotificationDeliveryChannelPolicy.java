@@ -29,6 +29,8 @@ public class NotificationDeliveryChannelPolicy {
             "PRODUCT_REMOVED",
             "PRODUCT_RESTORED",
             "REVIEW_HIDDEN",
+            "REVIEW_REMOVED",
+            "REVIEW_RESTORED",
             "SHOP_SUSPENDED",
             "SHOP_CLOSED"
     );
