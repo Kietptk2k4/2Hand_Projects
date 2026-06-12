@@ -18,11 +18,16 @@ import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 @Component
 @Order(48)
 public class ShopSuspendedNotificationEventHandler implements NotificationEventHandler {
 
-    private static final String SHOP_SUSPENDED = "SHOP_SUSPENDED";
+    private static final Set<String> SUPPORTED_EVENT_TYPES = Set.of(
+            "SHOP_SUSPENDED",
+            "SHOP_RESTORED"
+    );
 
     private final ShopSuspendedNotificationPayloadParser payloadParser;
     private final ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase;
@@ -43,7 +48,7 @@ public class ShopSuspendedNotificationEventHandler implements NotificationEventH
 
     @Override
     public boolean supports(String eventType) {
-        return SHOP_SUSPENDED.equals(eventType);
+        return SUPPORTED_EVENT_TYPES.contains(eventType);
     }
 
     @Override
@@ -55,10 +60,11 @@ public class ShopSuspendedNotificationEventHandler implements NotificationEventH
             return NotificationEventHandlerResult.failure(ex.getMessage(), NotificationFailurePolicy.PERMANENT);
         }
 
+        String eventType = event.eventType();
         NotificationDeliveryDecision deliveryDecision;
         try {
             deliveryDecision = applyNotificationDeliveryRulesUseCase.execute(
-                    new ApplyNotificationDeliveryRulesCommand(context.shopOwnerId(), SHOP_SUSPENDED)
+                    new ApplyNotificationDeliveryRulesCommand(context.shopOwnerId(), eventType)
             );
         } catch (DataAccessException ex) {
             return NotificationEventHandlerResult.failure(
@@ -75,7 +81,7 @@ public class ShopSuspendedNotificationEventHandler implements NotificationEventH
                         event.id(),
                         context.shopOwnerId(),
                         null,
-                        SHOP_SUSPENDED,
+                        eventType,
                         context.referenceType(),
                         context.referenceId(),
                         event.payload(),
@@ -91,7 +97,7 @@ public class ShopSuspendedNotificationEventHandler implements NotificationEventH
             SendPushNotificationResult pushResult = sendPushNotificationUseCase.execute(
                     new SendPushNotificationCommand(
                             context.shopOwnerId(),
-                            SHOP_SUSPENDED,
+                            eventType,
                             context.referenceType(),
                             context.referenceId(),
                             event.id(),

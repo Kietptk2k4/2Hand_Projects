@@ -20,4 +20,19 @@ public class DisabledCommerceShopGateway implements CommerceShopGateway {
 	public Optional<UUID> findShopOwnerId(UUID shopId) {
 		return Optional.empty();
 	}
+
+	@Override
+	public void suspendShop(UUID shopId, UUID adminId, String reason) {
+		// No-op when Commerce integration is disabled.
+	}
+
+	@Override
+	public void closeShop(UUID shopId, UUID adminId, String reason) {
+		// No-op when Commerce integration is disabled.
+	}
+
+	@Override
+	public void restoreShop(UUID shopId, UUID adminId, String reason) {
+		// No-op when Commerce integration is disabled.
+	}
 }

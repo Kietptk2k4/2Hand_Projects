@@ -2,7 +2,7 @@
 
 ## 1. Business Goal
 
-Cho phép admin **close** shop seller trên Commerce: ghi moderation log, audit và publish `SHOP_CLOSED`. Commerce Service (consumer) đặt `seller_shops.status = CLOSED` và chặn hoạt động commerce mới; đơn hiện có vẫn support được.
+Cho phép admin **close** shop seller trên Commerce: đồng bộ HTTP sang Commerce (`action=CLOSE`), ghi moderation log, audit và publish `SHOP_CLOSED` cho Notification. Commerce đặt `seller_shops.status = CLOSED` và chặn hoạt động commerce mới; đơn hiện có vẫn support được.
 
 ## 2. API Contract
 
@@ -60,11 +60,12 @@ Cho phép admin **close** shop seller trên Commerce: ghi moderation log, audit 
 - Critical audit `SHOP_CLOSE`.
 - Outbox `SHOP_CLOSED` → topic `admin.shop.closed`.
 - `note` chỉ lưu moderation/audit; **không** đưa vào outbox payload.
+- Khi `admin.integrations.commerce.enabled=true`: Admin gọi `POST /commerce/api/v1/internal/moderation/shops/{shopId}/moderate` với `action=CLOSE` **trước** ghi log/outbox.
 - Commerce chặn commerce activity mới khi shop closed.
 
 ## 5. Outbox payload
 
-`shop_id`, `moderation_log_id`, `action`, `reason`, `closed_by`, `closed_at`.
+`shop_id`, `moderation_log_id`, `action`, `reason`, `shop_owner_id`, `closed_by`, `closed_at`.
 
 ## 6. FE Integration
 

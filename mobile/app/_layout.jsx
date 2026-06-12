@@ -37,6 +37,7 @@ function RootNavigator() {
       <Stack.Screen name="search/index" options={{ title: "Tìm kiếm" }} />
       <Stack.Screen name="suggestions/index" options={{ title: "Gợi ý theo dõi" }} />
       <Stack.Screen name="account" options={{ headerShown: false }} />
+      <Stack.Screen name="commerce" options={{ headerShown: false }} />
     </Stack>
   );
 }

@@ -119,14 +119,15 @@ Mọi `event_type` trong `AdminOutboxTopicResolver.java` đều được map san
 | `admin.review.hidden` | ✓ | — | ✓ `REVIEW_HIDDEN` | Payload enrich **6B**; in-app only |
 | `admin.review.removed` | ✓ | — | ✓ `REVIEW_REMOVED` | HTTP sync Commerce HIDE; in-app + push |
 | `admin.review.restored` | ✓ | — | ✓ `REVIEW_RESTORED` | HTTP sync Commerce RESTORE; in-app + push |
-| `admin.shop.suspended` | ✓ | — | ✓ `SHOP_SUSPENDED` | Payload enrich **6B** |
+| `admin.shop.suspended` | ✓ | — | ✓ `SHOP_SUSPENDED` | HTTP sync Commerce SUSPEND; in-app + push + email |
+| `admin.shop.restored` | ✓ | — | ✓ `SHOP_RESTORED` | HTTP sync Commerce RESTORE; in-app + push |
 | `admin.announcement.published` | ✓ | — | ✓ fan-out → `SYSTEM_ANNOUNCEMENT_SENT` | Audience **6B** |
 
 ### Out of scope MVP (chưa làm trong **6E**)
 
 Publish vẫn có trên Kafka; consumer **chưa** subscribe trong 6E:
 
-`admin.product.restored`, `admin.shop.restored`, `admin.comment.moderated`, `admin.comment.restored`, `admin.config.updated`
+`admin.comment.moderated`, `admin.comment.restored`, `admin.config.updated`
 
 **Commerce Kafka consumer cho `admin.*`:** không có — by design.
 
@@ -591,6 +592,7 @@ Luồng đầy đủ: **Admin API** → `admin_db.outbox_events` → Kafka `admi
 | `admin.user.banned` | `USER_BANNED` | ⚠️ **không có handler** → FAILED permanent (dùng **suspend** cho N1) |
 | `admin.product.removed` | `PRODUCT_REMOVED` | `ProductRemovedNotificationEventHandler` | in-app + push |
 | `admin.shop.suspended` | `SHOP_SUSPENDED` | `ShopSuspendedNotificationEventHandler` (+ email chain) | in-app + push + email |
+| `admin.shop.restored` | `SHOP_RESTORED` | `ShopSuspendedNotificationEventHandler` | in-app + push |
 | `admin.review.hidden` | `REVIEW_HIDDEN` | `ReviewHiddenNotificationEventHandler` | in-app only |
 | `admin.review.removed` | `REVIEW_REMOVED` | `ReviewHiddenNotificationEventHandler` | in-app + push |
 | `admin.review.restored` | `REVIEW_RESTORED` | `ReviewHiddenNotificationEventHandler` | in-app + push |

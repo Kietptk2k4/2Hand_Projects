@@ -32,7 +32,8 @@ public class NotificationDeliveryChannelPolicy {
             "REVIEW_REMOVED",
             "REVIEW_RESTORED",
             "SHOP_SUSPENDED",
-            "SHOP_CLOSED"
+            "SHOP_CLOSED",
+            "SHOP_RESTORED"
     );
 
     private static final Set<String> DEDICATED_ACCOUNT_ENFORCEMENT_LIFTED_EVENTS = Set.of(

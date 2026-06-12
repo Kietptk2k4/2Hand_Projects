@@ -70,6 +70,8 @@ import { ROUTES } from "../../../shared/constants/routes";
 import { useThemeColors } from "../../../shared/theme/useThemeColors";
 import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
 import { PostVideoPlayer } from "./PostVideoPlayer";
+import { PostProductTagsBlock } from "./PostProductTagsBlock";
+import { resolvePostProductTags } from "../utils/mapProductTagsFromApi";
 
 const DEFAULT_AVATAR = "https://i.pravatar.cc/96?img=11";
 
@@ -235,6 +237,7 @@ export function PostDetailScreen({ postId, focusComments = false }) {
   const commentsDisabled = post?.allowComments === false;
 
   const isOwner = resolvePostIsOwner(post, currentUserId);
+  const productTags = resolvePostProductTags(post);
 
 
 
@@ -476,6 +479,12 @@ export function PostDetailScreen({ postId, focusComments = false }) {
 
           </View>
 
+        ) : null}
+
+        {productTags.length > 0 ? (
+          <View style={styles.captionBlock}>
+            <PostProductTagsBlock tags={productTags} variant="detail" />
+          </View>
         ) : null}
 
 

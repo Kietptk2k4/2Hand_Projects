@@ -163,6 +163,10 @@ public final class InAppNotificationTemplatePolicy {
                     "Shop closed",
                     "Your shop has been closed."
             );
+            case "SHOP_RESTORED" -> new InAppNotificationTemplate(
+                    "Shop reopened",
+                    "Your shop has been reopened after a policy review."
+            );
             case "USER_ENFORCEMENT_REVOKED" -> new InAppNotificationTemplate(
                     "Account restriction lifted",
                     "An account restriction on your profile was revoked."

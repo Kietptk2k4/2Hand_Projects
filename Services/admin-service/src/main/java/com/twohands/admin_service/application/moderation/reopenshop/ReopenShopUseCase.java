@@ -77,6 +77,7 @@ public class ReopenShopUseCase {
 							ErrorCode.RESOURCE_NOT_FOUND,
 							ErrorCode.RESOURCE_NOT_FOUND.defaultMessage()
 					));
+			commerceShopGateway.restoreShop(command.shopId(), adminId, reason);
 		}
 
 		Instant reopenedAt = Instant.now();
@@ -116,6 +117,7 @@ public class ReopenShopUseCase {
 			if (note != null) {
 				requestSummary.put("note", note);
 			}
+			requestSummary.put("commerce_integration", commerceShopGateway.isEnabled());
 
 			adminActionAuditLogger.logCritical(
 					adminId,

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import java.util.Map;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
@@ -34,6 +35,49 @@ public class HttpCommerceShopGateway implements CommerceShopGateway {
 	@Override
 	public boolean isEnabled() {
 		return true;
+	}
+
+	@Override
+	public void suspendShop(UUID shopId, UUID adminId, String reason) {
+		moderateShop(shopId, adminId, "SUSPEND", reason);
+	}
+
+	@Override
+	public void closeShop(UUID shopId, UUID adminId, String reason) {
+		moderateShop(shopId, adminId, "CLOSE", reason);
+	}
+
+	@Override
+	public void restoreShop(UUID shopId, UUID adminId, String reason) {
+		moderateShop(shopId, adminId, "RESTORE", reason);
+	}
+
+	private void moderateShop(UUID shopId, UUID adminId, String action, String reason) {
+		try {
+			JsonNode root = restClient.post()
+					.uri("/commerce/api/v1/internal/moderation/shops/{shopId}/moderate", shopId)
+					.contentType(MediaType.APPLICATION_JSON)
+					.body(Map.of(
+							"moderated_by_admin_id", adminId.toString(),
+							"action", action,
+							"reason", reason
+					))
+					.retrieve()
+					.body(JsonNode.class);
+			CommerceIntegrationJsonSupport.requireSuccess(root);
+		} catch (RestClientResponseException ex) {
+			if (ex.getStatusCode().value() == 404) {
+				throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, ErrorCode.RESOURCE_NOT_FOUND.defaultMessage());
+			}
+			if (ex.getStatusCode().value() == 409) {
+				throw new AppException(ErrorCode.BAD_REQUEST, "Commerce rejected shop moderation");
+			}
+			log.warn("Commerce shop moderation failed: status={}, message={}", ex.getStatusCode(), ex.getMessage());
+			throw new AppException(ErrorCode.SERVICE_UNAVAILABLE, "Commerce Service is unavailable");
+		} catch (RestClientException ex) {
+			log.warn("Commerce shop moderation failed: {}", ex.getMessage());
+			throw new AppException(ErrorCode.SERVICE_UNAVAILABLE, "Commerce Service is unavailable");
+		}
 	}
 
 	@Override

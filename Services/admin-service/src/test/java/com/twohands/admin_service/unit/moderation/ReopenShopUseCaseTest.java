@@ -27,6 +27,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -83,6 +84,26 @@ class ReopenShopUseCaseTest {
 				AdminPermission.SHOP_SUSPEND
 		);
 		verify(insertAdminOutboxEventUseCase).execute(any(InsertAdminOutboxEventCommand.class));
+	}
+
+	@Test
+	void shouldSyncRestoreWithCommerceWhenEnabled() {
+		UUID adminId = UUID.randomUUID();
+		UUID shopId = UUID.randomUUID();
+		UUID ownerId = UUID.randomUUID();
+		UUID outboxId = UUID.randomUUID();
+		Instant now = Instant.now();
+
+		when(adminAuthorizationService.requireCurrentAdminId()).thenReturn(adminId);
+		when(commerceShopGateway.isEnabled()).thenReturn(true);
+		when(commerceShopGateway.findShopOwnerId(shopId)).thenReturn(java.util.Optional.of(ownerId));
+		when(contentModerationLogRepository.save(any(ContentModerationLog.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(insertAdminOutboxEventUseCase.execute(any(InsertAdminOutboxEventCommand.class)))
+				.thenReturn(new OutboxEvent(outboxId, "SHOP_RESTORED", shopId, "{}", OutboxStatus.PENDING, 0, now, null, null));
+
+		useCase.execute(new ReopenShopCommand(shopId, "Appeal approved", null));
+
+		verify(commerceShopGateway).restoreShop(eq(shopId), eq(adminId), eq("Appeal approved"));
 	}
 
 	@Test

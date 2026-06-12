@@ -42,6 +42,7 @@ public class NotificationKafkaConsumerProperties {
             "admin.review.restored",
             "admin.shop.suspended",
             "admin.shop.closed",
+            "admin.shop.restored",
             "admin.announcement.published",
             "admin.announcement.cancelled",
             "admin.user.enforcement_revoked",

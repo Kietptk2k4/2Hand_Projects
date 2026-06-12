@@ -2,7 +2,7 @@
 
 ## 1. Business Goal
 
-Cho phép admin **reopen** shop đã bị suspend/close: ghi moderation log, audit và publish `SHOP_RESTORED`. Commerce Service (consumer) áp dụng trạng thái shop cuối cùng; admin **không** auto republish sản phẩm đã remove/archive.
+Cho phép admin **reopen** shop đã bị suspend/close: đồng bộ HTTP sang Commerce (`action=RESTORE`), ghi moderation log, audit và publish `SHOP_RESTORED` cho Notification. Commerce áp dụng trạng thái `ACTIVE`; admin **không** auto republish sản phẩm đã remove/archive.
 
 ## 2. API Contract
 
@@ -61,11 +61,12 @@ Cho phép admin **reopen** shop đã bị suspend/close: ghi moderation log, aud
 - Critical audit `SHOP_RESTORE`.
 - Outbox `SHOP_RESTORED` → topic `admin.shop.restored`.
 - `note` chỉ lưu moderation/audit; **không** đưa vào outbox payload.
+- Khi `admin.integrations.commerce.enabled=true`: Admin gọi `POST /commerce/api/v1/internal/moderation/shops/{shopId}/moderate` với `action=RESTORE` **trước** ghi log/outbox.
 - Commerce validate transition shop (vd. suspend/close → active).
 
 ## 5. Outbox payload
 
-`shop_id`, `moderation_log_id`, `action`, `reason`, `restored_by`, `restored_at`.
+`shop_id`, `moderation_log_id`, `action`, `reason`, `shop_owner_id`, `restored_by`, `restored_at`.
 
 ## 6. FE Integration
 

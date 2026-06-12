@@ -27,6 +27,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -80,6 +81,26 @@ class SuspendShopUseCaseTest {
 		assertThat(result.outboxEventId()).isEqualTo(outboxId);
 		verify(adminAuthorizationService).requirePermission(AdminPermission.SHOP_SUSPEND);
 		verify(insertAdminOutboxEventUseCase).execute(any(InsertAdminOutboxEventCommand.class));
+	}
+
+	@Test
+	void shouldSyncSuspendWithCommerceWhenEnabled() {
+		UUID adminId = UUID.randomUUID();
+		UUID shopId = UUID.randomUUID();
+		UUID ownerId = UUID.randomUUID();
+		UUID outboxId = UUID.randomUUID();
+		Instant now = Instant.now();
+
+		when(adminAuthorizationService.requireCurrentAdminId()).thenReturn(adminId);
+		when(commerceShopGateway.isEnabled()).thenReturn(true);
+		when(commerceShopGateway.findShopOwnerId(shopId)).thenReturn(java.util.Optional.of(ownerId));
+		when(contentModerationLogRepository.save(any(ContentModerationLog.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(insertAdminOutboxEventUseCase.execute(any(InsertAdminOutboxEventCommand.class)))
+				.thenReturn(new OutboxEvent(outboxId, "SHOP_SUSPENDED", shopId, "{}", OutboxStatus.PENDING, 0, now, null, null));
+
+		useCase.execute(new SuspendShopCommand(shopId, "Policy violation", null));
+
+		verify(commerceShopGateway).suspendShop(eq(shopId), eq(adminId), eq("Policy violation"));
 	}
 
 	@Test

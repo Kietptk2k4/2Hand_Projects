@@ -8,4 +8,10 @@ public interface CommerceShopGateway {
 	boolean isEnabled();
 
 	Optional<UUID> findShopOwnerId(UUID shopId);
+
+	void suspendShop(UUID shopId, UUID adminId, String reason);
+
+	void closeShop(UUID shopId, UUID adminId, String reason);
+
+	void restoreShop(UUID shopId, UUID adminId, String reason);
 }

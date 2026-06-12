@@ -9,8 +9,12 @@ import com.twohands.commerce_service.application.product.restoreproductbyadmin.R
 import com.twohands.commerce_service.application.product.restoreproductbyadmin.RestoreProductByAdminUseCase;
 import com.twohands.commerce_service.application.review.moderatereview.ModerateReviewCommand;
 import com.twohands.commerce_service.application.review.moderatereview.ModerateReviewUseCase;
+import com.twohands.commerce_service.application.shop.moderateshop.ModerateShopCommand;
+import com.twohands.commerce_service.application.shop.moderateshop.ModerateShopUseCase;
 import com.twohands.commerce_service.domain.review.ModerateReviewResult;
 import com.twohands.commerce_service.domain.review.ReviewModerationAction;
+import com.twohands.commerce_service.domain.shop.ModerateShopResult;
+import com.twohands.commerce_service.domain.shop.ShopModerationAction;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.moderation.ProductModerationOwner;
 import com.twohands.commerce_service.domain.moderation.ReviewModerationParties;
@@ -39,6 +43,7 @@ public class CommerceInternalModerationController {
     private final RemoveProductByAdminUseCase removeProductByAdminUseCase;
     private final RestoreProductByAdminUseCase restoreProductByAdminUseCase;
     private final ModerateReviewUseCase moderateReviewUseCase;
+    private final ModerateShopUseCase moderateShopUseCase;
 
     public CommerceInternalModerationController(
             LookupProductModerationOwnerUseCase lookupProductModerationOwnerUseCase,
@@ -46,7 +51,8 @@ public class CommerceInternalModerationController {
             LookupReviewModerationPartiesUseCase lookupReviewModerationPartiesUseCase,
             RemoveProductByAdminUseCase removeProductByAdminUseCase,
             RestoreProductByAdminUseCase restoreProductByAdminUseCase,
-            ModerateReviewUseCase moderateReviewUseCase
+            ModerateReviewUseCase moderateReviewUseCase,
+            ModerateShopUseCase moderateShopUseCase
     ) {
         this.lookupProductModerationOwnerUseCase = lookupProductModerationOwnerUseCase;
         this.lookupShopModerationOwnerUseCase = lookupShopModerationOwnerUseCase;
@@ -54,6 +60,7 @@ public class CommerceInternalModerationController {
         this.removeProductByAdminUseCase = removeProductByAdminUseCase;
         this.restoreProductByAdminUseCase = restoreProductByAdminUseCase;
         this.moderateReviewUseCase = moderateReviewUseCase;
+        this.moderateShopUseCase = moderateShopUseCase;
     }
 
     @PostMapping("/products/{productId}/remove")
@@ -95,6 +102,25 @@ public class CommerceInternalModerationController {
                 HttpStatus.OK.value(),
                 "Product moderation owner resolved",
                 ProductModerationOwnerResponse.from(owner)
+        ));
+    }
+
+    @PostMapping("/shops/{shopId}/moderate")
+    public ResponseEntity<ApiResponse<InternalModerateShopResponse>> moderateShop(
+            @PathVariable UUID shopId,
+            @RequestBody @Valid InternalModerateShopRequest request
+    ) {
+        ShopModerationAction action = ShopModerationAction.valueOf(request.action().trim().toUpperCase());
+        ModerateShopResult result = moderateShopUseCase.execute(new ModerateShopCommand(
+                request.moderatedByAdminId(),
+                shopId,
+                action,
+                request.reason()
+        ));
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                moderateShopUseCase.successMessage(action, result.alreadyModerated()),
+                InternalModerateShopResponse.from(result)
         ));
     }
 

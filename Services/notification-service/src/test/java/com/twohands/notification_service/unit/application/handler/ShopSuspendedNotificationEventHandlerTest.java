@@ -63,9 +63,40 @@ class ShopSuspendedNotificationEventHandlerTest {
     }
 
     @Test
-    void supports_shopSuspendedOnly() {
+    void supports_shopModerationEvents() {
         assertTrue(handler.supports("SHOP_SUSPENDED"));
+        assertTrue(handler.supports("SHOP_RESTORED"));
         assertFalse(handler.supports("USER_SUSPENDED"));
+    }
+
+    @Test
+    void handle_notifiesShopOwnerForRestored() {
+        when(payloadParser.parse(any())).thenReturn(new ShopSuspendedNotificationContext(
+                SHOP_OWNER_ID,
+                "shop-1",
+                "Appeal approved",
+                null,
+                "SHOP",
+                "shop-1"
+        ));
+        when(applyNotificationDeliveryRulesUseCase.execute(any(ApplyNotificationDeliveryRulesCommand.class)))
+                .thenReturn(new NotificationDeliveryDecision(true, true, false));
+        when(sendPushNotificationUseCase.execute(any(SendPushNotificationCommand.class)))
+                .thenReturn(SendPushNotificationResult.sent(1, 0));
+
+        var result = handler.handle(sampleEvent("SHOP_RESTORED"));
+
+        assertEquals(HandlerOutcome.SUCCESS, result.outcome());
+        verify(createInAppNotificationUseCase).execute(new CreateInAppNotificationCommand(
+                EVENT_ID,
+                SHOP_OWNER_ID,
+                null,
+                "SHOP_RESTORED",
+                "SHOP",
+                "shop-1",
+                "{}",
+                null
+        ));
     }
 
     @Test
@@ -99,11 +130,15 @@ class ShopSuspendedNotificationEventHandlerTest {
     }
 
     private NotificationEvent sampleEvent() {
+        return sampleEvent("SHOP_SUSPENDED");
+    }
+
+    private NotificationEvent sampleEvent(String eventType) {
         return new NotificationEvent(
                 EVENT_ID,
                 UUID.randomUUID(),
                 null,
-                "SHOP_SUSPENDED",
+                eventType,
                 NotificationSourceService.ADMIN,
                 "SHOP",
                 "shop-1",

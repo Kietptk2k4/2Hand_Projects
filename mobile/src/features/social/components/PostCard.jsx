@@ -9,6 +9,8 @@ import { PostCaption } from "./PostCaption";
 import { PostMediaCarousel } from "./PostMediaCarousel";
 import { PostActionBar } from "./PostActionBar";
 import { PostOptionsMenu } from "./PostOptionsMenu";
+import { PostProductTagsBlock } from "./PostProductTagsBlock";
+import { resolvePostProductTags } from "../utils/mapProductTagsFromApi";
 
 function createStyles(colors) {
   return {
@@ -107,6 +109,7 @@ export function PostCard({
   const authorId = resolvePostAuthorId(post);
   const author = usePostAuthorDisplay(authorId);
   const isOwner = resolvePostIsOwner(post, currentUserId);
+  const productTags = resolvePostProductTags(post);
 
   const openDetail = (options) => {
     onOpenPost?.(post.postId, options);
@@ -172,6 +175,12 @@ export function PostCard({
             onCaptionPress={() => openDetail()}
             onHashtagClick={onHashtagClick}
           />
+        </View>
+      ) : null}
+
+      {productTags.length > 0 ? (
+        <View style={{ paddingHorizontal: 16 }}>
+          <PostProductTagsBlock tags={productTags} variant="compact" />
         </View>
       ) : null}
 

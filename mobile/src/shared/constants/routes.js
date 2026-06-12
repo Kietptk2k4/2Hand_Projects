@@ -56,6 +56,11 @@ export const ROUTES = {
   }),
   commerceCart: "/commerce/cart",
   commerceAddresses: "/commerce/addresses",
+  commerceAddressCreate: "/commerce/addresses/create",
+  commerceAddressEdit: (addressId) => ({
+    pathname: "/commerce/addresses/[addressId]",
+    params: { addressId: String(addressId) },
+  }),
   commerceCheckout: "/commerce/checkout",
   commerceCheckoutPaymentResult: (paymentId) => ({
     pathname: "/commerce/checkout/payment-result",
@@ -77,11 +82,12 @@ export const ROUTES = {
       shipmentId: String(shipmentId),
     },
   }),
-  commerceReviewCreate: (productId, orderId) => ({
+  commerceReviewCreate: (productId, orderId, orderItemId) => ({
     pathname: "/commerce/reviews/new",
     params: {
       ...(productId ? { productId: String(productId) } : {}),
       ...(orderId ? { orderId: String(orderId) } : {}),
+      ...(orderItemId ? { orderItemId: String(orderItemId) } : {}),
     },
   }),
   commerceReviewEdit: (reviewId) => ({

@@ -74,6 +74,7 @@ public class SuspendShopUseCase {
 							ErrorCode.RESOURCE_NOT_FOUND,
 							ErrorCode.RESOURCE_NOT_FOUND.defaultMessage()
 					));
+			commerceShopGateway.suspendShop(command.shopId(), adminId, reason);
 		}
 
 		Instant suspendedAt = Instant.now();

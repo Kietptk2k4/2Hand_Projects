@@ -1,6 +1,7 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { AccountSettingsHeaderButton } from "../../src/features/auth/account/components/AccountSettingsHeaderButton";
+import { CommerceStackHeaderActions } from "../../src/features/commerce/components/CommerceStackHeaderActions";
 import { useThemeColors } from "../../src/shared/theme/useThemeColors";
 
 export default function TabsLayout() {
@@ -34,6 +35,7 @@ export default function TabsLayout() {
         options={{
           title: "Cửa hàng",
           tabBarLabel: "Cửa hàng",
+          headerRight: () => <CommerceStackHeaderActions />,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="bag-outline" size={size} color={color} />
           ),

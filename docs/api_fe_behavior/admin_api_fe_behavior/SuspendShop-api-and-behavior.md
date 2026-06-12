@@ -2,7 +2,7 @@
 
 ## 1. Business Goal
 
-Cho phép admin **suspend** shop seller trên Commerce: ghi moderation log, audit và publish `SHOP_SUSPENDED`. Commerce Service (consumer) đặt `seller_shops.status = SUSPENDED` và chặn publish/checkout mới; đơn hiện có vẫn support được.
+Cho phép admin **suspend** shop seller trên Commerce: đồng bộ HTTP sang Commerce (`action=SUSPEND`), ghi moderation log, audit và publish `SHOP_SUSPENDED` cho Notification. Commerce đặt `seller_shops.status = SUSPENDED` và chặn publish/checkout mới; đơn hiện có vẫn support được.
 
 ## 2. API Contract
 
@@ -60,11 +60,12 @@ Cho phép admin **suspend** shop seller trên Commerce: ghi moderation log, audi
 - Critical audit `SHOP_SUSPEND`.
 - Outbox `SHOP_SUSPENDED` → topic `admin.shop.suspended`.
 - `note` chỉ lưu moderation/audit; **không** đưa vào outbox payload.
+- Khi `admin.integrations.commerce.enabled=true`: Admin gọi `POST /commerce/api/v1/internal/moderation/shops/{shopId}/moderate` với `action=SUSPEND` **trước** ghi log/outbox.
 - Commerce chặn publish sản phẩm mới và checkout mới khi shop suspended.
 
 ## 5. Outbox payload
 
-`shop_id`, `moderation_log_id`, `action`, `reason`, `suspended_by`, `suspended_at`.
+`shop_id`, `moderation_log_id`, `action`, `reason`, `shop_owner_id`, `suspension_reason`, `suspended_by`, `suspended_at`.
 
 ## 6. FE Integration
 

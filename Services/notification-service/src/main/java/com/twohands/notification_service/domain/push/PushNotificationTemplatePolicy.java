@@ -110,6 +110,10 @@ public final class PushNotificationTemplatePolicy {
             );
             case "SHOP_SUSPENDED" -> new PushNotificationTemplate("Shop suspended", "Your shop has been suspended.");
             case "SHOP_CLOSED" -> new PushNotificationTemplate("Shop closed", "Your shop has been closed.");
+            case "SHOP_RESTORED" -> new PushNotificationTemplate(
+                    "Shop reopened",
+                    "Your shop has been reopened after a policy review."
+            );
             case "USER_ENFORCEMENT_REVOKED" -> new PushNotificationTemplate(
                     "Account restriction lifted",
                     "An account restriction was revoked."

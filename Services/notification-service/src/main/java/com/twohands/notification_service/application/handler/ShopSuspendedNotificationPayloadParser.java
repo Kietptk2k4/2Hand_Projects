@@ -29,8 +29,10 @@ public class ShopSuspendedNotificationPayloadParser {
                 textField(payload, "owner_id"),
                 textField(payload, "seller_user_id")
         );
+        String eventType = event.eventType() == null ? "SHOP_SUSPENDED" : event.eventType();
+
         if (shopOwnerId == null) {
-            throw new IllegalArgumentException("shop_owner_id is required for SHOP_SUSPENDED notification event.");
+            throw new IllegalArgumentException("shop_owner_id is required for " + eventType + " notification event.");
         }
 
         String shopId = firstNonBlank(
@@ -38,11 +40,13 @@ public class ShopSuspendedNotificationPayloadParser {
                 SHOP_AGGREGATE_TYPE.equalsIgnoreCase(event.aggregateType()) ? event.aggregateId() : null
         );
         if (shopId == null || shopId.isBlank()) {
-            throw new IllegalArgumentException("shop_id is required for SHOP_SUSPENDED notification event.");
+            throw new IllegalArgumentException("shop_id is required for " + eventType + " notification event.");
         }
 
         String suspensionReason = firstNonBlank(
                 textField(payload, "suspension_reason"),
+                textField(payload, "restored_reason"),
+                textField(payload, "reason"),
                 textField(payload, "enforcement_reason")
         );
 
@@ -70,7 +74,7 @@ public class ShopSuspendedNotificationPayloadParser {
             JsonNode node = objectMapper.readTree(rawPayload);
             return node == null || node.isNull() ? objectMapper.createObjectNode() : node;
         } catch (Exception ex) {
-            throw new IllegalArgumentException("SHOP_SUSPENDED event payload must be valid JSON.");
+            throw new IllegalArgumentException("Shop moderation event payload must be valid JSON.");
         }
     }
 

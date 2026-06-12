@@ -12,7 +12,10 @@ import java.util.Set;
 @Component
 public class AdminShopModerationPayloadNormalizer {
 
-    private static final Set<String> SUPPORTED_EVENT_TYPES = Set.of("SHOP_SUSPENDED");
+    private static final Set<String> SUPPORTED_EVENT_TYPES = Set.of(
+            "SHOP_SUSPENDED",
+            "SHOP_RESTORED"
+    );
 
     private static final Set<String> STRIP_FIELDS = Set.of(
             "suspended_by",
@@ -51,14 +54,19 @@ public class AdminShopModerationPayloadNormalizer {
             String userFacingReason = AccountEnforcementEmailReasonPolicy.resolveUserFacingReason(
                     firstNonBlank(
                             textValue(normalized, "suspension_reason"),
+                            textValue(normalized, "restored_reason"),
                             textValue(normalized, "reason"),
                             textValue(normalized, "description")
                     ),
                     textValue(normalized, "reason_code")
             );
             if (userFacingReason != null && !userFacingReason.isBlank()) {
-                normalized.put("suspension_reason", userFacingReason);
-                normalized.put("enforcement_reason", userFacingReason);
+                if ("SHOP_RESTORED".equals(eventType)) {
+                    normalized.put("restored_reason", userFacingReason);
+                } else {
+                    normalized.put("suspension_reason", userFacingReason);
+                    normalized.put("enforcement_reason", userFacingReason);
+                }
             }
 
             String expiresAt = firstNonBlank(

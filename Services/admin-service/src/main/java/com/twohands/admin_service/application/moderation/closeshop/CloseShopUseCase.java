@@ -74,6 +74,7 @@ public class CloseShopUseCase {
 							ErrorCode.RESOURCE_NOT_FOUND,
 							ErrorCode.RESOURCE_NOT_FOUND.defaultMessage()
 					));
+			commerceShopGateway.closeShop(command.shopId(), adminId, reason);
 		}
 
 		Instant closedAt = Instant.now();
@@ -113,6 +114,7 @@ public class CloseShopUseCase {
 			if (note != null) {
 				requestSummary.put("note", note);
 			}
+			requestSummary.put("commerce_integration", commerceShopGateway.isEnabled());
 
 			adminActionAuditLogger.logCritical(
 					adminId,
