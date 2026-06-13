@@ -10,10 +10,12 @@ import java.util.Map;
 public class SocialOutboxTopicResolver {
 
     private static final Map<String, String> EVENT_TYPE_TO_TOPIC = Map.of(
+            "POST_CREATED", "social.post.created",
             "POST_LIKED", "social.post.liked",
             "COMMENT_LIKED", "social.comment.liked",
             "COMMENT_CREATED", "social.comment.created",
-            "USER_FOLLOWED", "social.user.followed"
+            "USER_FOLLOWED", "social.user.followed",
+            "USER_AVATAR_UPDATED", "social.user.avatar_updated"
     );
 
     public String resolve(String eventType) {

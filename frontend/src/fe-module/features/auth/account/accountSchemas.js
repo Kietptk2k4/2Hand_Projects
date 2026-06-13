@@ -70,3 +70,5 @@ export function mapSocialLinksToRows(socialLinks = {}) {
 
 export const AVATAR_MAX_BYTES = 5 * 1024 * 1024;
 export const AVATAR_ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+export const COVER_MAX_BYTES = AVATAR_MAX_BYTES;
+export const COVER_ALLOWED_TYPES = AVATAR_ALLOWED_TYPES;

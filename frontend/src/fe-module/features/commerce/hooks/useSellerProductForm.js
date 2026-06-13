@@ -22,15 +22,24 @@ import {
   WIZARD_SESSION_KEY,
 } from "../constants/sellerProductConstants";
 import {
+  createStep3Baseline,
   detailToFormState,
+  isStep1Dirty,
+  isStep2Dirty,
+  isStep3Dirty,
   mapCreateProductPayload,
   mapCreateProductResponse,
+  mapProductCoreResponse,
   mapSellerProductDetailResponse,
   mapUpdateInventoryPayload,
   mapUpdatePricePayload,
   mapUpdateProductAttributesPayload,
   mapUpdateProductMediaPayload,
   mapUpdateProductPayload,
+  mergeProductCoreIntoForm,
+  pickStep1FormSlice,
+  pickStep2FormSlice,
+  resolveInitialWizardStep,
 } from "../utils/sellerProductMapper";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 
@@ -56,13 +65,26 @@ function writeSessionProductId(id) {
   }
 }
 
-export function useSellerProductForm({ mode, productId: routeProductId }) {
+function syncBaselinesFromDetail(step1BaselineRef, step2BaselineRef, step3BaselineRef, formState, media, attrs) {
+  step1BaselineRef.current = pickStep1FormSlice(formState);
+  step2BaselineRef.current = pickStep2FormSlice(formState);
+  step3BaselineRef.current = createStep3Baseline(media, attrs);
+}
+
+export function useSellerProductForm({ mode, productId: routeProductId, initialStep }) {
   const { showSessionExpired } = useAuthSession();
   const { sellerOptions: categories, isLoading: isLoadingCategories } = useCommerceCategories({
     leafOnly: true,
     includeProductCounts: false,
   });
   const isEdit = mode === "edit";
+
+  const initialStepRef = useRef(initialStep);
+  const hasResolvedInitialStepRef = useRef(false);
+  const initialProductIdRef = useRef(isEdit ? routeProductId || "" : readSessionProductId());
+  const step1BaselineRef = useRef(null);
+  const step2BaselineRef = useRef(null);
+  const step3BaselineRef = useRef(null);
 
   const [step, setStep] = useState(1);
   const [productId, setProductId] = useState(isEdit ? routeProductId || "" : readSessionProductId());
@@ -102,49 +124,82 @@ export function useSellerProductForm({ mode, productId: routeProductId }) {
     [showSessionExpired],
   );
 
-  const applyDetail = useCallback((detail) => {
-    const formState = detailToFormState(detail);
-    if (formState) setForm(formState);
-    setAttributes(
-      (detail.attributes || []).map((a) => ({
+  const applyDetail = useCallback(
+    (detail, { setInitialStep = false } = {}) => {
+      const formState = detailToFormState(detail);
+      const attrs = (detail.attributes || []).map((a) => ({
         name: a.name,
         value: a.value,
-      })),
-    );
-    setMediaUrls(detail.mediaUrls?.length ? [...detail.mediaUrls] : []);
-    setStatus(detail.status || "DRAFT");
-    setDetailFlags({
-      hasPrice: detail.hasPrice,
-      hasInventory: detail.hasInventory,
-      hasMedia: detail.hasMedia,
-    });
-    setProductId(detail.productId);
-    if (!isEdit) writeSessionProductId(detail.productId);
-  }, [isEdit]);
+      }));
+      const media = detail.mediaUrls?.length ? [...detail.mediaUrls] : [];
 
-  const loadProduct = useCallback(async () => {
-    const id = isEdit ? routeProductId : productId;
-    if (!id) {
-      setIsLoading(false);
-      return;
-    }
+      if (formState) setForm(formState);
+      setAttributes(attrs);
+      setMediaUrls(media);
+      setStatus(detail.status || "DRAFT");
+      setDetailFlags({
+        hasPrice: detail.hasPrice,
+        hasInventory: detail.hasInventory,
+        hasMedia: detail.hasMedia,
+      });
+      setProductId(detail.productId);
+      if (!isEdit) writeSessionProductId(detail.productId);
 
-    setIsLoading(true);
-    setApiError("");
-    try {
-      const data = await fetchSellerProductDetail(id);
-      const detail = mapSellerProductDetailResponse(data);
-      if (!detail) throw new Error("Không tải được sản phẩm.");
-      applyDetail(detail);
-    } catch (error) {
-      handleApiError(error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [applyDetail, handleApiError, isEdit, productId, routeProductId]);
+      if (formState) {
+        syncBaselinesFromDetail(step1BaselineRef, step2BaselineRef, step3BaselineRef, formState, media, attrs);
+      }
+
+      if (setInitialStep && !hasResolvedInitialStepRef.current) {
+        const shouldResolveStep =
+          isEdit || (detail.productId && detail.productId === initialProductIdRef.current);
+        if (shouldResolveStep) {
+          setStep(
+            resolveInitialWizardStep({
+              mode: isEdit ? "edit" : "create",
+              detail,
+              requestedStep: initialStepRef.current,
+            }),
+          );
+        }
+        hasResolvedInitialStepRef.current = true;
+        initialStepRef.current = undefined;
+      }
+    },
+    [isEdit],
+  );
+
+  const loadProduct = useCallback(
+    async ({ setInitialStep = false } = {}) => {
+      const id = isEdit ? routeProductId : productId;
+      if (!id) {
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setApiError("");
+      try {
+        const data = await fetchSellerProductDetail(id);
+        const detail = mapSellerProductDetailResponse(data);
+        if (!detail) throw new Error("Không tải được sản phẩm.");
+        applyDetail(detail, { setInitialStep });
+      } catch (error) {
+        handleApiError(error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [applyDetail, handleApiError, isEdit, productId, routeProductId],
+  );
 
   const loadProductRef = useRef(loadProduct);
   loadProductRef.current = loadProduct;
+
+  useEffect(() => {
+    hasResolvedInitialStepRef.current = false;
+    initialStepRef.current = initialStep;
+    initialProductIdRef.current = isEdit ? routeProductId || "" : readSessionProductId();
+  }, [initialStep, isEdit, routeProductId]);
 
   useEffect(() => {
     const id = isEdit ? routeProductId : productId;
@@ -152,7 +207,7 @@ export function useSellerProductForm({ mode, productId: routeProductId }) {
       if (isEdit) setIsLoading(false);
       return;
     }
-    loadProductRef.current();
+    loadProductRef.current({ setInitialStep: !hasResolvedInitialStepRef.current });
   }, [isEdit, routeProductId, productId]);
 
   const validateStep1 = useCallback(() => {
@@ -252,8 +307,16 @@ export function useSellerProductForm({ mode, productId: routeProductId }) {
     try {
       if (productId) {
         const data = await updateProduct(productId, mapUpdateProductPayload(form));
-        const detail = mapSellerProductDetailResponse(data);
-        if (detail) applyDetail(detail);
+        const core = mapProductCoreResponse(data);
+        if (core) {
+          setForm((prev) => {
+            const merged = mergeProductCoreIntoForm(prev, core);
+            step1BaselineRef.current = pickStep1FormSlice(merged);
+            return merged;
+          });
+          if (core.status) setStatus(core.status);
+          setLastSavedAt(core.updatedAt ? new Date(core.updatedAt) : new Date());
+        }
       } else {
         const created = await createProduct(mapCreateProductPayload(form));
         const product = mapCreateProductResponse(created);
@@ -262,15 +325,15 @@ export function useSellerProductForm({ mode, productId: routeProductId }) {
         setProductId(id);
         writeSessionProductId(id);
         setStatus(product.status || "DRAFT");
+        setLastSavedAt(new Date());
       }
-      setLastSavedAt(new Date());
       return true;
     } catch (error) {
       return handleApiError(error);
     } finally {
       setIsSubmitting(false);
     }
-  }, [applyDetail, canEdit, form, handleApiError, isEdit, productId, validateStep1]);
+  }, [canEdit, form, handleApiError, productId, validateStep1]);
 
   const saveStep2 = useCallback(async () => {
     if (!productId || !validateStep2() || !canEdit) return false;
@@ -310,12 +373,47 @@ export function useSellerProductForm({ mode, productId: routeProductId }) {
     }
   }, [attributes, canEdit, handleApiError, loadProduct, mediaUrls, productId, validateStep3]);
 
+  const isCurrentStepDirty = useCallback(() => {
+    if (step === 1) {
+      if (!productId) return true;
+      return isStep1Dirty(form, step1BaselineRef.current);
+    }
+    if (step === 2) return isStep2Dirty(form, step2BaselineRef.current);
+    if (step === 3) return isStep3Dirty(mediaUrls, attributes, step3BaselineRef.current);
+    return false;
+  }, [attributes, form, mediaUrls, productId, step]);
+
+  const persistCurrentStep = useCallback(
+    async ({ force = false } = {}) => {
+      if (step === 1) {
+        if (!productId) return saveStep1();
+        if (!force && !isStep1Dirty(form, step1BaselineRef.current)) {
+          return validateStep1();
+        }
+        return saveStep1();
+      }
+      if (step === 2) {
+        if (!productId) return false;
+        if (!force && !isStep2Dirty(form, step2BaselineRef.current)) {
+          return validateStep2();
+        }
+        return saveStep2();
+      }
+      if (step === 3) {
+        if (!productId) return false;
+        if (!force && !isStep3Dirty(mediaUrls, attributes, step3BaselineRef.current)) {
+          return validateStep3();
+        }
+        return saveStep3();
+      }
+      return true;
+    },
+    [attributes, form, mediaUrls, productId, saveStep1, saveStep2, saveStep3, step, validateStep1, validateStep2, validateStep3],
+  );
+
   const saveCurrentStep = useCallback(async () => {
-    if (step === 1) return saveStep1();
-    if (step === 2) return saveStep2();
-    if (step === 3) return saveStep3();
-    return true;
-  }, [saveStep1, saveStep2, saveStep3, step]);
+    return persistCurrentStep();
+  }, [persistCurrentStep]);
 
   const publishProductAction = useCallback(async () => {
     if (!productId) return { ok: false };
@@ -343,7 +441,7 @@ export function useSellerProductForm({ mode, productId: routeProductId }) {
       if (targetStep > maxUnlockedStep && !isSequentialForward) return false;
 
       if (targetStep > step && canEdit) {
-        const ok = await saveCurrentStep();
+        const ok = await persistCurrentStep();
         if (!ok) return false;
       }
 
@@ -351,7 +449,7 @@ export function useSellerProductForm({ mode, productId: routeProductId }) {
       setApiError("");
       return true;
     },
-    [canEdit, maxUnlockedStep, saveCurrentStep, step],
+    [canEdit, maxUnlockedStep, persistCurrentStep, step],
   );
 
   const goNext = useCallback(async () => {
@@ -367,11 +465,13 @@ export function useSellerProductForm({ mode, productId: routeProductId }) {
 
   const saveDraftShortcut = useCallback(async () => {
     if (!canEdit) return false;
-    if (step === 1) return saveStep1();
-    if (step === 2) return saveStep2();
-    if (step === 3) return saveStep3();
+    if (step === 4) return true;
+    if (!isCurrentStepDirty()) return "no_changes";
+    if (step === 1) return (await saveStep1()) ? true : false;
+    if (step === 2) return (await saveStep2()) ? true : false;
+    if (step === 3) return (await saveStep3()) ? true : false;
     return true;
-  }, [canEdit, saveStep1, saveStep2, saveStep3, step]);
+  }, [canEdit, isCurrentStepDirty, saveStep1, saveStep2, saveStep3, step]);
 
   const reviewChecklist = useMemo(
     () => ({

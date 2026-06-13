@@ -27,6 +27,8 @@ public record ViewAccountResponse(
             String displayName,
             @JsonProperty("avatar_url")
             String avatarUrl,
+            @JsonProperty("cover_url")
+            String coverUrl,
             String bio,
             String website,
             @JsonProperty("social_links")

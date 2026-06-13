@@ -21,22 +21,31 @@ public class StubAvatarUploadStorageAdapter implements AvatarUploadStoragePort {
 
     @Override
     public AvatarUploadIntent createUploadIntent(UUID userId, String contentType, Instant expiresAt) {
+        return createIntent(userId, contentType, expiresAt, "avatars");
+    }
+
+    @Override
+    public AvatarUploadIntent createCoverUploadIntent(UUID userId, String contentType, Instant expiresAt) {
+        return createIntent(userId, contentType, expiresAt, "covers");
+    }
+
+    private AvatarUploadIntent createIntent(UUID userId, String contentType, Instant expiresAt, String prefix) {
         String extension = switch (contentType) {
             case "image/jpeg" -> "jpg";
             case "image/png" -> "png";
             case "image/webp" -> "webp";
             default -> "bin";
         };
-        String objectKey = "avatars/" + userId + "/" + UUID.randomUUID() + "." + extension;
+        String objectKey = prefix + "/" + userId + "/" + UUID.randomUUID() + "." + extension;
         String base = properties.getPublicUrl();
         if (base.endsWith("/")) {
             base = base.substring(0, base.length() - 1);
         }
-        String avatarUrl = base + "/" + objectKey;
+        String publicUrl = base + "/" + objectKey;
         return new AvatarUploadIntent(
                 "https://minio.local/presigned-stub/" + objectKey,
                 objectKey,
-                avatarUrl,
+                publicUrl,
                 expiresAt
         );
     }

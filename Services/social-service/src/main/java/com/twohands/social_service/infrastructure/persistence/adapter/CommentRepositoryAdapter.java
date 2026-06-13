@@ -14,6 +14,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -23,9 +26,14 @@ import java.util.Optional;
 public class CommentRepositoryAdapter implements CommentRepository {
 
     private final MongoCommentRepository mongoCommentRepository;
+    private final MongoTemplate mongoTemplate;
 
-    public CommentRepositoryAdapter(MongoCommentRepository mongoCommentRepository) {
+    public CommentRepositoryAdapter(
+            MongoCommentRepository mongoCommentRepository,
+            MongoTemplate mongoTemplate
+    ) {
         this.mongoCommentRepository = mongoCommentRepository;
+        this.mongoTemplate = mongoTemplate;
     }
 
     @Override
@@ -84,11 +92,8 @@ public class CommentRepositoryAdapter implements CommentRepository {
 
     @Override
     public long countActiveReplies(String postId, String parentCommentId) {
-        return mongoCommentRepository.countByPostIdAndStatusAndParentCommentId(
-                postId,
-                CommentStatus.ACTIVE.name(),
-                parentCommentId
-        );
+        Query query = new Query(buildVisibleActiveCommentCriteria(postId, parentCommentId));
+        return mongoTemplate.count(query, CommentDocument.class);
     }
 
     @Override
@@ -128,6 +133,22 @@ public class CommentRepositoryAdapter implements CommentRepository {
         doc.setUpdatedAt(comment.updatedAt());
         doc.setDeletedAt(comment.deletedAt());
         return doc;
+    }
+
+    private Criteria buildVisibleActiveCommentCriteria(String postId, String parentCommentId) {
+        Criteria criteria = Criteria.where("post_id").is(postId)
+                .and("status").is(CommentStatus.ACTIVE.name());
+        if (parentCommentId == null) {
+            criteria = criteria.and("parent_comment_id").is(null);
+        } else {
+            criteria = criteria.and("parent_comment_id").is(parentCommentId);
+        }
+        Criteria moderationCriteria = new Criteria().orOperator(
+                Criteria.where("moderation_status").exists(false),
+                Criteria.where("moderation_status").is(null),
+                Criteria.where("moderation_status").is(CommentModerationStatus.NONE.name())
+        );
+        return new Criteria().andOperator(criteria, moderationCriteria);
     }
 
     private Sort toSort(CommentSortOrder sort) {

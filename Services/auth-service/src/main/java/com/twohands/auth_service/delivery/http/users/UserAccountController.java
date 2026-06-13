@@ -10,6 +10,11 @@ import com.twohands.auth_service.application.useraccount.trackloginhistory.Track
 import com.twohands.auth_service.application.useraccount.avatarupload.CreateAvatarUploadUrlCommand;
 import com.twohands.auth_service.application.useraccount.avatarupload.CreateAvatarUploadUrlResult;
 import com.twohands.auth_service.application.useraccount.avatarupload.CreateAvatarUploadUrlUseCase;
+import com.twohands.auth_service.application.useraccount.coverupload.CreateCoverUploadUrlCommand;
+import com.twohands.auth_service.application.useraccount.coverupload.CreateCoverUploadUrlResult;
+import com.twohands.auth_service.application.useraccount.coverupload.CreateCoverUploadUrlUseCase;
+import com.twohands.auth_service.application.useraccount.updatecover.UpdateCoverCommand;
+import com.twohands.auth_service.application.useraccount.updatecover.UpdateCoverUseCase;
 import com.twohands.auth_service.application.useraccount.updateavatar.UpdateAvatarCommand;
 import com.twohands.auth_service.application.useraccount.updateavatar.UpdateAvatarUseCase;
 import com.twohands.auth_service.application.useraccount.updateprofile.UpdateProfileCommand;
@@ -26,7 +31,9 @@ import com.twohands.auth_service.delivery.http.users.request.SoftDeleteAccountRe
 import com.twohands.auth_service.delivery.http.users.request.TogglePrivacyRequest;
 import com.twohands.auth_service.delivery.http.users.request.CreateAvatarUploadUrlRequest;
 import com.twohands.auth_service.delivery.http.users.request.UpdateAvatarRequest;
+import com.twohands.auth_service.delivery.http.users.request.UpdateCoverRequest;
 import com.twohands.auth_service.delivery.http.users.response.CreateAvatarUploadUrlResponse;
+import com.twohands.auth_service.delivery.http.users.response.CreateCoverUploadUrlResponse;
 import com.twohands.auth_service.delivery.http.users.request.UpdateProfileRequest;
 import com.twohands.auth_service.delivery.http.users.request.UpdateUserSettingsRequest;
 import com.twohands.auth_service.delivery.http.users.response.TrackLoginHistoryResponse;
@@ -57,7 +64,9 @@ public class UserAccountController {
     private final ViewAccountUseCase viewAccountUseCase;
     private final UpdateProfileUseCase updateProfileUseCase;
     private final UpdateAvatarUseCase updateAvatarUseCase;
+    private final UpdateCoverUseCase updateCoverUseCase;
     private final CreateAvatarUploadUrlUseCase createAvatarUploadUrlUseCase;
+    private final CreateCoverUploadUrlUseCase createCoverUploadUrlUseCase;
     private final TogglePrivacyUseCase togglePrivacyUseCase;
     private final UpdateUserSettingsUseCase updateUserSettingsUseCase;
     private final SoftDeleteAccountUseCase softDeleteAccountUseCase;
@@ -69,7 +78,9 @@ public class UserAccountController {
             ViewAccountUseCase viewAccountUseCase,
             UpdateProfileUseCase updateProfileUseCase,
             UpdateAvatarUseCase updateAvatarUseCase,
+            UpdateCoverUseCase updateCoverUseCase,
             CreateAvatarUploadUrlUseCase createAvatarUploadUrlUseCase,
+            CreateCoverUploadUrlUseCase createCoverUploadUrlUseCase,
             TogglePrivacyUseCase togglePrivacyUseCase,
             UpdateUserSettingsUseCase updateUserSettingsUseCase,
             SoftDeleteAccountUseCase softDeleteAccountUseCase,
@@ -80,7 +91,9 @@ public class UserAccountController {
         this.viewAccountUseCase = viewAccountUseCase;
         this.updateProfileUseCase = updateProfileUseCase;
         this.updateAvatarUseCase = updateAvatarUseCase;
+        this.updateCoverUseCase = updateCoverUseCase;
         this.createAvatarUploadUrlUseCase = createAvatarUploadUrlUseCase;
+        this.createCoverUploadUrlUseCase = createCoverUploadUrlUseCase;
         this.togglePrivacyUseCase = togglePrivacyUseCase;
         this.updateUserSettingsUseCase = updateUserSettingsUseCase;
         this.softDeleteAccountUseCase = softDeleteAccountUseCase;
@@ -106,6 +119,7 @@ public class UserAccountController {
                 new ViewAccountResponse.ProfileData(
                         result.profile().displayName(),
                         result.profile().avatarUrl(),
+                        result.profile().coverUrl(),
                         result.profile().bio(),
                         result.profile().website(),
                         result.profile().socialLinks(),
@@ -236,6 +250,45 @@ public class UserAccountController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(HttpStatus.OK.value(), updateAvatarUseCase.successMessage(), null));
+    }
+
+    @PostMapping("/cover/upload-url")
+    public ResponseEntity<ApiResponse<CreateCoverUploadUrlResponse>> createCoverUploadUrl(
+            @Valid @RequestBody CreateAvatarUploadUrlRequest request,
+            Authentication authentication
+    ) {
+        UUID userId = extractUserId(authentication);
+        CreateCoverUploadUrlResult result = createCoverUploadUrlUseCase.execute(
+                new CreateCoverUploadUrlCommand(userId, request.contentType(), request.fileSizeBytes())
+        );
+
+        CreateCoverUploadUrlResponse response = new CreateCoverUploadUrlResponse(
+                result.uploadUrl(),
+                result.objectKey(),
+                result.coverUrl(),
+                result.expiresAt().toString(),
+                result.maxFileSizeBytes(),
+                result.allowedContentTypes()
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        createCoverUploadUrlUseCase.successMessage(),
+                        response
+                ));
+    }
+
+    @PatchMapping("/cover")
+    public ResponseEntity<ApiResponse<Void>> updateCover(
+            @Valid @RequestBody UpdateCoverRequest request,
+            Authentication authentication
+    ) {
+        UUID userId = extractUserId(authentication);
+        updateCoverUseCase.execute(new UpdateCoverCommand(userId, request.coverUrl()));
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(HttpStatus.OK.value(), updateCoverUseCase.successMessage(), null));
     }
 
     @PatchMapping("/privacy")

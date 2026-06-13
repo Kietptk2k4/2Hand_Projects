@@ -1,11 +1,16 @@
 package com.twohands.social_service.unit.application.post.createpost;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.social_service.application.post.common.PostCreatedOutboxService;
 import com.twohands.social_service.application.post.common.PostMediaUrlValidator;
 import com.twohands.social_service.application.post.common.ProductTagSnapshotResolver;
 import com.twohands.social_service.application.post.common.ProductTagValidator;
 import com.twohands.social_service.application.post.createpost.CreatePostCommand;
 import com.twohands.social_service.application.post.createpost.CreatePostResult;
 import com.twohands.social_service.application.post.createpost.CreatePostUseCase;
+import com.twohands.social_service.domain.follow.FollowRepository;
+import com.twohands.social_service.domain.outbox.OutboxEvent;
+import com.twohands.social_service.domain.outbox.OutboxEventRepository;
 import com.twohands.social_service.domain.post.ProductTag;
 import com.twohands.social_service.domain.post.MediaItem;
 import com.twohands.social_service.domain.post.Post;
@@ -33,18 +38,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class CreatePostUseCaseTest {
 
     private final PostRepository postRepository = mock(PostRepository.class);
+    private final OutboxEventRepository outboxEventRepository = mock(OutboxEventRepository.class);
+    private final FollowRepository followRepository = mock(FollowRepository.class);
+    private final PostCreatedOutboxService postCreatedOutboxService = new PostCreatedOutboxService(new ObjectMapper());
     private final UserProjectionRepository userProjectionRepository = mock(UserProjectionRepository.class);
     private final UserWriteGuard userWriteGuard = new UserWriteGuard(userProjectionRepository);
     private final PostMediaUrlValidator postMediaUrlValidator = mock(PostMediaUrlValidator.class);
     private final ProductTagSnapshotResolver productTagSnapshotResolver = mock(ProductTagSnapshotResolver.class);
     private final CreatePostUseCase useCase = new CreatePostUseCase(
             postRepository,
+            outboxEventRepository,
+            followRepository,
+            postCreatedOutboxService,
             userWriteGuard,
             new ProductTagValidator(),
             productTagSnapshotResolver,
@@ -111,6 +123,74 @@ class CreatePostUseCaseTest {
     }
 
     @Test
+    void shouldPublishPostCreatedOutboxWhenPublishedWithFollowers() {
+        UUID authorId = UUID.randomUUID();
+        UUID followerId = UUID.randomUUID();
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
+        when(followRepository.findAcceptedFollowerIds(authorId)).thenReturn(List.of(followerId));
+        when(postRepository.save(any())).thenAnswer(inv -> {
+            Post p = inv.getArgument(0);
+            return buildSavedPost(authorId, "507f1f77bcf86cd799439011", p.status(), p.visibility());
+        });
+
+        CreatePostCommand command = new CreatePostCommand(
+                authorId,
+                "Hello world",
+                List.of(new CreatePostCommand.MediaItemCommand("https://cdn/1.jpg", "IMAGE", null, null)),
+                List.of(),
+                "PUBLIC",
+                true,
+                List.of("spring"),
+                true
+        );
+
+        useCase.execute(command);
+
+        ArgumentCaptor<OutboxEvent> outboxCaptor = ArgumentCaptor.forClass(OutboxEvent.class);
+        verify(outboxEventRepository).save(outboxCaptor.capture());
+        assertThat(outboxCaptor.getValue().eventType()).isEqualTo("POST_CREATED");
+        assertThat(outboxCaptor.getValue().aggregateId()).isEqualTo("507f1f77bcf86cd799439011");
+    }
+
+    @Test
+    void shouldNotPublishPostCreatedOutboxForDraft() {
+        UUID authorId = UUID.randomUUID();
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
+        when(postRepository.save(any())).thenAnswer(inv -> {
+            Post p = inv.getArgument(0);
+            return buildSavedPost(authorId, "draft-id", p.status(), p.visibility());
+        });
+
+        CreatePostCommand command = new CreatePostCommand(
+                authorId, "Draft caption", List.of(), List.of(), "FOLLOWERS", true, List.of(), false
+        );
+
+        useCase.execute(command);
+
+        verify(outboxEventRepository, never()).save(any());
+        verify(followRepository, never()).findAcceptedFollowerIds(any());
+    }
+
+    @Test
+    void shouldNotPublishPostCreatedOutboxWhenNoFollowers() {
+        UUID authorId = UUID.randomUUID();
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
+        when(followRepository.findAcceptedFollowerIds(authorId)).thenReturn(List.of());
+        when(postRepository.save(any())).thenAnswer(inv -> {
+            Post p = inv.getArgument(0);
+            return buildSavedPost(authorId, "507f1f77bcf86cd799439011", p.status(), p.visibility());
+        });
+
+        CreatePostCommand command = new CreatePostCommand(
+                authorId, "Hello", List.of(), List.of(), "PUBLIC", true, List.of(), true
+        );
+
+        useCase.execute(command);
+
+        verify(outboxEventRepository, never()).save(any());
+    }
+
+    @Test
     void shouldCreateDraftPostWhenPublishIsFalse() {
         UUID authorId = UUID.randomUUID();
         when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
@@ -163,7 +243,7 @@ class CreatePostUseCaseTest {
     void shouldThrowForbiddenWhenUserIsSuspended() {
         UUID authorId = UUID.randomUUID();
         when(userProjectionRepository.findByUserId(authorId))
-                .thenReturn(Optional.of(new UserProjection(authorId.toString(), "SUSPENDED", "User", null, false)));
+                .thenReturn(Optional.of(new UserProjection(authorId.toString(), "SUSPENDED", "User", null, null, false)));
 
         CreatePostCommand command = new CreatePostCommand(
                 authorId, "caption", List.of(), List.of(), "PUBLIC", true, List.of(), true

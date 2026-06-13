@@ -15,7 +15,7 @@ import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 
 const MIN_PAYOUT_AMOUNT = 100_000;
 
-export function useSellerPayout({ onSuccess } = {}) {
+export function useSellerPayout({ onSuccess, onFinanceChange } = {}) {
   const { showSessionExpired } = useAuthSession();
   const [accounts, setAccounts] = useState([]);
   const [requests, setRequests] = useState([]);
@@ -100,13 +100,14 @@ export function useSellerPayout({ onSuccess } = {}) {
           await load();
         }
         onSuccess?.("Đã gửi yêu cầu rút tiền.");
+        await onFinanceChange?.();
         setActionStatus("idle");
       } catch (error) {
         setErrorMessage(error?.message || "Không tạo được yêu cầu rút tiền.");
         setActionStatus("error");
       }
     },
-    [load, onSuccess],
+    [load, onFinanceChange, onSuccess],
   );
 
   const cancelRequest = useCallback(
@@ -120,13 +121,14 @@ export function useSellerPayout({ onSuccess } = {}) {
           prev.map((item) => (item.id === payoutRequestId ? mapped || { ...item, status: "CANCELLED" } : item)),
         );
         onSuccess?.("Đã hủy yêu cầu rút tiền.");
+        await onFinanceChange?.();
         setActionStatus("idle");
       } catch (error) {
         setErrorMessage(error?.message || "Không hủy được yêu cầu.");
         setActionStatus("error");
       }
     },
-    [onSuccess],
+    [onFinanceChange, onSuccess],
   );
 
   return {

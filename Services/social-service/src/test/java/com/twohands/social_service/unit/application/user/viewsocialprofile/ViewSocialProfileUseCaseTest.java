@@ -38,7 +38,7 @@ class ViewSocialProfileUseCaseTest {
         UUID targetId = UUID.randomUUID();
 
         when(userProjectionRepository.findByUserId(targetId))
-                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "ACTIVE", "User B", "https://avatar", false)));
+                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "ACTIVE", "User B", "https://avatar", null, false)));
         when(followRepository.findByFollowerIdAndFolloweeId(viewerId, targetId)).thenReturn(Optional.empty());
         when(followRepository.countAcceptedFollowers(targetId)).thenReturn(10L);
         when(followRepository.countAcceptedFollowing(targetId)).thenReturn(5L);
@@ -58,7 +58,7 @@ class ViewSocialProfileUseCaseTest {
         UUID targetId = UUID.randomUUID();
 
         when(userProjectionRepository.findByUserId(targetId))
-                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "ACTIVE", "User B", "https://avatar", true)));
+                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "ACTIVE", "User B", "https://avatar", null, true)));
         when(followRepository.findByFollowerIdAndFolloweeId(viewerId, targetId)).thenReturn(Optional.empty());
 
         ViewSocialProfileResult result = useCase.execute(new ViewSocialProfileCommand(viewerId, targetId));
@@ -76,7 +76,7 @@ class ViewSocialProfileUseCaseTest {
         UUID targetId = UUID.randomUUID();
 
         when(userProjectionRepository.findByUserId(targetId))
-                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "ACTIVE", "User B", "https://avatar", true)));
+                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "ACTIVE", "User B", "https://avatar", null, true)));
         when(followRepository.findByFollowerIdAndFolloweeId(viewerId, targetId))
                 .thenReturn(Optional.of(new Follow(viewerId, targetId, FollowStatus.ACCEPTED, Instant.now())));
         when(followRepository.countAcceptedFollowers(targetId)).thenReturn(3L);
@@ -94,7 +94,7 @@ class ViewSocialProfileUseCaseTest {
         UUID userId = UUID.randomUUID();
 
         when(userProjectionRepository.findByUserId(userId))
-                .thenReturn(Optional.of(new UserProjection(userId.toString(), "ACTIVE", "Me", "https://avatar", true)));
+                .thenReturn(Optional.of(new UserProjection(userId.toString(), "ACTIVE", "Me", "https://avatar", null, true)));
         when(followRepository.countAcceptedFollowers(userId)).thenReturn(2L);
         when(followRepository.countAcceptedFollowing(userId)).thenReturn(4L);
 
@@ -121,7 +121,7 @@ class ViewSocialProfileUseCaseTest {
         UUID viewerId = UUID.randomUUID();
         UUID targetId = UUID.randomUUID();
         when(userProjectionRepository.findByUserId(targetId))
-                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "DELETED", "User", null, false)));
+                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "DELETED", "User", null, null, false)));
 
         assertThatThrownBy(() -> useCase.execute(new ViewSocialProfileCommand(viewerId, targetId)))
                 .isInstanceOf(AppException.class)

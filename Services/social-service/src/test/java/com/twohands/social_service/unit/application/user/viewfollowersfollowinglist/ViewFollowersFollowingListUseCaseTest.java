@@ -42,11 +42,11 @@ class ViewFollowersFollowingListUseCaseTest {
         Instant followedAt = Instant.now();
 
         when(userProjectionRepository.findByUserId(targetId))
-                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "ACTIVE", "Target", null, false)));
+                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "ACTIVE", "Target", null, null, false)));
         when(followRepository.findAcceptedFollowersPage(targetId, 0, 20))
                 .thenReturn(new PageResult<>(List.of(new FollowRelationEntry(followerId, followedAt)), 0, 20, 1, 1, false));
         when(userProjectionRepository.findByUserId(followerId))
-                .thenReturn(Optional.of(new UserProjection(followerId.toString(), "ACTIVE", "Follower", "https://avatar", false)));
+                .thenReturn(Optional.of(new UserProjection(followerId.toString(), "ACTIVE", "Follower", "https://avatar", null, false)));
 
         ViewFollowersFollowingListResult result = useCase.execute(
                 new ViewFollowersFollowingListCommand(viewerId, targetId, RelationListType.FOLLOWERS, 0, 20)
@@ -64,11 +64,11 @@ class ViewFollowersFollowingListUseCaseTest {
         UUID followeeId = UUID.randomUUID();
 
         when(userProjectionRepository.findByUserId(targetId))
-                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "ACTIVE", "Target", null, false)));
+                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "ACTIVE", "Target", null, null, false)));
         when(followRepository.findAcceptedFollowingPage(targetId, 0, 20))
                 .thenReturn(new PageResult<>(List.of(new FollowRelationEntry(followeeId, Instant.now())), 0, 20, 1, 1, false));
         when(userProjectionRepository.findByUserId(followeeId))
-                .thenReturn(Optional.of(new UserProjection(followeeId.toString(), "ACTIVE", "Followee", null, false)));
+                .thenReturn(Optional.of(new UserProjection(followeeId.toString(), "ACTIVE", "Followee", null, null, false)));
 
         ViewFollowersFollowingListResult result = useCase.execute(
                 new ViewFollowersFollowingListCommand(viewerId, targetId, RelationListType.FOLLOWING, 0, 20)
@@ -83,7 +83,7 @@ class ViewFollowersFollowingListUseCaseTest {
         UUID targetId = UUID.randomUUID();
 
         when(userProjectionRepository.findByUserId(targetId))
-                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "ACTIVE", "Target", null, true)));
+                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "ACTIVE", "Target", null, null, true)));
         when(followRepository.findByFollowerIdAndFolloweeId(viewerId, targetId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> useCase.execute(
@@ -99,7 +99,7 @@ class ViewFollowersFollowingListUseCaseTest {
         UUID targetId = UUID.randomUUID();
 
         when(userProjectionRepository.findByUserId(targetId))
-                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "ACTIVE", "Target", null, true)));
+                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "ACTIVE", "Target", null, null, true)));
         when(followRepository.findByFollowerIdAndFolloweeId(viewerId, targetId))
                 .thenReturn(Optional.of(new Follow(viewerId, targetId, FollowStatus.ACCEPTED, Instant.now())));
         when(followRepository.findAcceptedFollowersPage(targetId, 0, 20))

@@ -70,6 +70,12 @@ public class SocialOutboxMessageBuilder {
         );
         if (recipientId != null) {
             envelope.put("recipient_user_ids", List.of(recipientId));
+            return;
+        }
+
+        Object followerIds = map.get("follower_user_ids");
+        if (followerIds instanceof List<?> list && !list.isEmpty()) {
+            envelope.put("recipient_user_ids", list);
         }
     }
 

@@ -104,6 +104,7 @@ class ViewPublicUserProfileUseCaseTest {
                 targetUserId,
                 "Public User",
                 "https://minio.local/2hands-avatar/public-user.png",
+                null,
                 "Bio text",
                 "https://example.com",
                 Map.of("github", "https://github.com/public-user"),

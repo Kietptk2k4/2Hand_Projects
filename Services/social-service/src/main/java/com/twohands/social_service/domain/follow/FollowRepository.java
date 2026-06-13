@@ -11,6 +11,8 @@ public interface FollowRepository {
 
     List<UUID> findAcceptedFolloweeIds(UUID followerId);
 
+    List<UUID> findAcceptedFollowerIds(UUID followeeId);
+
     Optional<Follow> findByFollowerIdAndFolloweeId(UUID followerId, UUID followeeId);
 
     void save(Follow follow);

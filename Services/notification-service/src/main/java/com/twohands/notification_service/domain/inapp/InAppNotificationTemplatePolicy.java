@@ -74,8 +74,16 @@ public final class InAppNotificationTemplatePolicy {
             ));
         }
         return Optional.ofNullable(switch (eventType) {
+            case "POST_CREATED" -> new InAppNotificationTemplate(
+                    "New post",
+                    "Someone you follow shared a new post."
+            );
             case "POST_LIKED" -> new InAppNotificationTemplate("New like", "Someone liked your post.");
             case "USER_FOLLOWED" -> new InAppNotificationTemplate("New follower", "Someone started following you.");
+            case "USER_AVATAR_UPDATED" -> new InAppNotificationTemplate(
+                    "Avatar updated",
+                    "Someone you follow updated their profile photo."
+            );
             case "COMMENT_CREATED" -> new InAppNotificationTemplate("New comment", "Someone commented on your post.");
             case "COMMENT_REPLIED" -> new InAppNotificationTemplate("New reply", "Someone replied to your comment.");
             case "COMMENT_LIKED" -> new InAppNotificationTemplate("Comment liked", "Someone liked your comment.");

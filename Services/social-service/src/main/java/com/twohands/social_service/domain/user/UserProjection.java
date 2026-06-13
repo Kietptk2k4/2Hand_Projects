@@ -5,6 +5,7 @@ public record UserProjection(
         String status,
         String displayName,
         String avatarUrl,
+        String coverUrl,
         Boolean isPrivate
 ) {
     public boolean isPrivateProfile() {

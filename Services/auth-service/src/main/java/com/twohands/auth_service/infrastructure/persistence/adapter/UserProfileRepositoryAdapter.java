@@ -32,7 +32,7 @@ public class UserProfileRepositoryAdapter implements UserProfileRepository {
     @Override
     public Optional<UserProfile> findByUserId(UUID userId) {
         String sql = """
-                SELECT user_id, display_name, avatar_url, bio, website, %s as social_links,
+                SELECT user_id, display_name, avatar_url, cover_url, bio, website, %s as social_links,
                        is_private, created_at, updated_at
                 FROM user_profiles
                 WHERE user_id = :userId
@@ -46,8 +46,8 @@ public class UserProfileRepositoryAdapter implements UserProfileRepository {
     @Override
     public UserProfile save(UserProfile profile) {
         String sql = """
-                INSERT INTO user_profiles(user_id, display_name, avatar_url, bio, website, social_links, is_private, created_at, updated_at)
-                VALUES (:userId, :displayName, :avatarUrl, :bio, :website, %s, :isPrivate, :createdAt, :updatedAt)
+                INSERT INTO user_profiles(user_id, display_name, avatar_url, cover_url, bio, website, social_links, is_private, created_at, updated_at)
+                VALUES (:userId, :displayName, :avatarUrl, :coverUrl, :bio, :website, %s, :isPrivate, :createdAt, :updatedAt)
                 """.formatted(sqlDialect.castJsonb("socialLinks"));
 
         String socialLinksJson = toSocialLinksJson(profile);
@@ -56,6 +56,7 @@ public class UserProfileRepositoryAdapter implements UserProfileRepository {
                 .addValue("userId", profile.userId())
                 .addValue("displayName", profile.displayName())
                 .addValue("avatarUrl", profile.avatarUrl())
+                .addValue("coverUrl", profile.coverUrl())
                 .addValue("bio", profile.bio())
                 .addValue("website", profile.website())
                 .addValue("socialLinks", socialLinksJson)
@@ -72,6 +73,7 @@ public class UserProfileRepositoryAdapter implements UserProfileRepository {
                 UPDATE user_profiles
                 SET display_name = :displayName,
                     avatar_url = :avatarUrl,
+                    cover_url = :coverUrl,
                     bio = :bio,
                     website = :website,
                     social_links = %s,
@@ -84,6 +86,7 @@ public class UserProfileRepositoryAdapter implements UserProfileRepository {
                 .addValue("userId", profile.userId())
                 .addValue("displayName", profile.displayName())
                 .addValue("avatarUrl", profile.avatarUrl())
+                .addValue("coverUrl", profile.coverUrl())
                 .addValue("bio", profile.bio())
                 .addValue("website", profile.website())
                 .addValue("socialLinks", toSocialLinksJson(profile))

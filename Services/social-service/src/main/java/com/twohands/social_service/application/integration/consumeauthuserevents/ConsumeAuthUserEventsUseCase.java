@@ -1,6 +1,9 @@
 package com.twohands.social_service.application.integration.consumeauthuserevents;
 
+import com.twohands.social_service.application.integration.common.UserAvatarUpdatedOutboxService;
+import com.twohands.social_service.domain.follow.FollowRepository;
 import com.twohands.social_service.domain.integration.ProcessedDomainEventRepository;
+import com.twohands.social_service.domain.outbox.OutboxEventRepository;
 import com.twohands.social_service.domain.user.UserProjection;
 import com.twohands.social_service.domain.user.UserProjectionRepository;
 import org.slf4j.Logger;
@@ -8,6 +11,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -19,13 +25,22 @@ public class ConsumeAuthUserEventsUseCase {
 
     private final ProcessedDomainEventRepository processedDomainEventRepository;
     private final UserProjectionRepository userProjectionRepository;
+    private final OutboxEventRepository outboxEventRepository;
+    private final FollowRepository followRepository;
+    private final UserAvatarUpdatedOutboxService userAvatarUpdatedOutboxService;
 
     public ConsumeAuthUserEventsUseCase(
             ProcessedDomainEventRepository processedDomainEventRepository,
-            UserProjectionRepository userProjectionRepository
+            UserProjectionRepository userProjectionRepository,
+            OutboxEventRepository outboxEventRepository,
+            FollowRepository followRepository,
+            UserAvatarUpdatedOutboxService userAvatarUpdatedOutboxService
     ) {
         this.processedDomainEventRepository = processedDomainEventRepository;
         this.userProjectionRepository = userProjectionRepository;
+        this.outboxEventRepository = outboxEventRepository;
+        this.followRepository = followRepository;
+        this.userAvatarUpdatedOutboxService = userAvatarUpdatedOutboxService;
     }
 
     @Transactional
@@ -44,8 +59,10 @@ public class ConsumeAuthUserEventsUseCase {
         }
 
         String targetStatus = resolveTargetStatus(command);
-        UserProjection merged = mergeProjection(command, targetStatus);
+        UserProjection existing = userProjectionRepository.findByUserId(command.userId()).orElse(null);
+        UserProjection merged = mergeProjection(command, targetStatus, existing);
         UserProjection saved = userProjectionRepository.upsert(merged);
+        maybePublishAvatarUpdated(command, existing, saved);
 
         processedDomainEventRepository.markProcessed(
                 command.eventId(),
@@ -92,9 +109,11 @@ public class ConsumeAuthUserEventsUseCase {
         };
     }
 
-    private UserProjection mergeProjection(ConsumeAuthUserEventCommand command, String targetStatus) {
-        UserProjection existing = userProjectionRepository.findByUserId(command.userId()).orElse(null);
-
+    private UserProjection mergeProjection(
+            ConsumeAuthUserEventCommand command,
+            String targetStatus,
+            UserProjection existing
+    ) {
         String status = targetStatus != null
                 ? targetStatus
                 : existing != null ? existing.status() : "ACTIVE";
@@ -102,6 +121,9 @@ public class ConsumeAuthUserEventsUseCase {
         String avatarUrl = command.avatarUrl() != null
                 ? command.avatarUrl()
                 : existing != null ? existing.avatarUrl() : null;
+        String coverUrl = command.coverUrl() != null
+                ? command.coverUrl()
+                : existing != null ? existing.coverUrl() : null;
         Boolean isPrivate = command.isPrivate() != null
                 ? command.isPrivate()
                 : existing != null ? existing.isPrivate() : false;
@@ -111,6 +133,7 @@ public class ConsumeAuthUserEventsUseCase {
                 status,
                 displayName,
                 avatarUrl,
+                coverUrl,
                 isPrivate
         );
     }
@@ -166,5 +189,45 @@ public class ConsumeAuthUserEventsUseCase {
 
     private String firstNonBlank(String value, String fallback) {
         return value != null && !value.isBlank() ? value : fallback;
+    }
+
+    private void maybePublishAvatarUpdated(
+            ConsumeAuthUserEventCommand command,
+            UserProjection existing,
+            UserProjection saved
+    ) {
+        if (command.eventType() != AuthUserEventType.USER_UPDATED) {
+            return;
+        }
+        if (command.avatarUrl() == null || command.avatarUrl().isBlank()) {
+            return;
+        }
+        String previousAvatar = existing != null ? existing.avatarUrl() : null;
+        if (Objects.equals(previousAvatar, saved.avatarUrl())) {
+            return;
+        }
+        if (saved.isDeleted() || saved.isSuspended()) {
+            return;
+        }
+
+        List<UUID> followerIds = followRepository.findAcceptedFollowerIds(command.userId());
+        if (followerIds.isEmpty()) {
+            return;
+        }
+
+        Instant now = Instant.now();
+        outboxEventRepository.save(userAvatarUpdatedOutboxService.build(
+                command.userId(),
+                saved.displayName(),
+                saved.avatarUrl(),
+                followerIds,
+                now
+        ));
+
+        log.info(
+                "Queued avatar updated notification event. userId={}, followerCount={}",
+                command.userId(),
+                followerIds.size()
+        );
     }
 }

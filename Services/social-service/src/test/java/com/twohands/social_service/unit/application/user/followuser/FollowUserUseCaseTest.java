@@ -55,7 +55,7 @@ class FollowUserUseCaseTest {
 
         when(userProjectionRepository.findByUserId(followerId)).thenReturn(UserProjectionTestFixtures.activeOptional(followerId));
         when(userProjectionRepository.findByUserId(followeeId))
-                .thenReturn(Optional.of(new UserProjection(followeeId.toString(), "ACTIVE", "User B", null, false)));
+                .thenReturn(Optional.of(new UserProjection(followeeId.toString(), "ACTIVE", "User B", null, null, false)));
         when(followRepository.findByFollowerIdAndFolloweeId(followerId, followeeId)).thenReturn(Optional.empty());
         when(outboxEventRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -81,7 +81,7 @@ class FollowUserUseCaseTest {
 
         when(userProjectionRepository.findByUserId(followerId)).thenReturn(UserProjectionTestFixtures.activeOptional(followerId));
         when(userProjectionRepository.findByUserId(followeeId))
-                .thenReturn(Optional.of(new UserProjection(followeeId.toString(), "ACTIVE", "User B", null, true)));
+                .thenReturn(Optional.of(new UserProjection(followeeId.toString(), "ACTIVE", "User B", null, null, true)));
         when(followRepository.findByFollowerIdAndFolloweeId(followerId, followeeId)).thenReturn(Optional.empty());
         when(outboxEventRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -102,7 +102,7 @@ class FollowUserUseCaseTest {
 
         when(userProjectionRepository.findByUserId(followerId)).thenReturn(UserProjectionTestFixtures.activeOptional(followerId));
         when(userProjectionRepository.findByUserId(followeeId))
-                .thenReturn(Optional.of(new UserProjection(followeeId.toString(), "ACTIVE", "User B", null, false)));
+                .thenReturn(Optional.of(new UserProjection(followeeId.toString(), "ACTIVE", "User B", null, null, false)));
         when(followRepository.findByFollowerIdAndFolloweeId(followerId, followeeId)).thenReturn(Optional.of(existing));
 
         FollowUserResult result = useCase.execute(new FollowUserCommand(followerId, followeeId));
@@ -140,7 +140,7 @@ class FollowUserUseCaseTest {
     void shouldThrowForbiddenWhenFollowerIsSuspended() {
         UUID followerId = UUID.randomUUID();
         when(userProjectionRepository.findByUserId(followerId))
-                .thenReturn(Optional.of(new UserProjection(followerId.toString(), "SUSPENDED", "User", null, false)));
+                .thenReturn(Optional.of(new UserProjection(followerId.toString(), "SUSPENDED", "User", null, null, false)));
 
         assertThatThrownBy(() -> useCase.execute(new FollowUserCommand(followerId, UUID.randomUUID())))
                 .isInstanceOf(AppException.class)

@@ -67,8 +67,16 @@ public final class PushNotificationTemplatePolicy {
         }
         return Optional.ofNullable(switch (eventType) {
             case "PASSWORD_CHANGED" -> new PushNotificationTemplate("Password changed", "Your account password was changed.");
+            case "POST_CREATED" -> new PushNotificationTemplate(
+                    "New post",
+                    "Someone you follow shared a new post."
+            );
             case "POST_LIKED" -> new PushNotificationTemplate("New like", "Someone liked your post.");
             case "USER_FOLLOWED" -> new PushNotificationTemplate("New follower", "Someone started following you.");
+            case "USER_AVATAR_UPDATED" -> new PushNotificationTemplate(
+                    "Avatar updated",
+                    "Someone you follow updated their profile photo."
+            );
             case "COMMENT_CREATED" -> new PushNotificationTemplate("New comment", "Someone commented on your post.");
             case "COMMENT_REPLIED" -> new PushNotificationTemplate("New reply", "Someone replied to your comment.");
             case "COMMENT_LIKED" -> new PushNotificationTemplate("Comment liked", "Someone liked your comment.");

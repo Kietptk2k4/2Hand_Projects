@@ -37,7 +37,9 @@ export function ProfileHero({
   if (!profile) return null;
 
   const isSelf = profile.followStatus === "SELF";
+  const isPrivateAccount = Boolean(profile.is_private ?? profile.isPrivate);
   const followLabel = followButtonLabel(profile.followStatus);
+  const showFollowButton = Boolean(followLabel) && !isPrivateAccount;
   const followerDisplay = formatSocialCount(profile.followerCount);
   const followingDisplay = formatSocialCount(profile.followingCount);
   const showCounters = followerDisplay !== null && followingDisplay !== null;
@@ -73,7 +75,7 @@ export function ProfileHero({
           <h1 className="text-center text-2xl font-semibold text-on-surface md:text-3xl">
             {profile.displayName}
           </h1>
-          {profile.isPrivate ? (
+          {isPrivateAccount ? (
             <span
               className="material-symbols-outlined text-on-surface-variant"
               title="Tài khoản riêng tư"
@@ -192,7 +194,7 @@ export function ProfileHero({
                 Cài đặt tài khoản
               </Link>
             </>
-          ) : followLabel ? (
+          ) : showFollowButton ? (
             <button
               type="button"
               onClick={onFollowClick}

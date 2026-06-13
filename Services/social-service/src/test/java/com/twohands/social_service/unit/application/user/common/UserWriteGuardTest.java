@@ -47,7 +47,7 @@ class UserWriteGuardTest {
     void shouldRejectWriteWhenUserSuspended() {
         UUID userId = UUID.randomUUID();
         when(userProjectionRepository.findByUserId(userId)).thenReturn(Optional.of(
-                new UserProjection(userId.toString(), "SUSPENDED", "User", null, false)
+                new UserProjection(userId.toString(), "SUSPENDED", "User", null, null, false)
         ));
 
         assertThatThrownBy(() -> guard.assertCanWrite(userId))
@@ -59,7 +59,7 @@ class UserWriteGuardTest {
     void shouldRejectWriteWhenUserDeleted() {
         UUID userId = UUID.randomUUID();
         when(userProjectionRepository.findByUserId(userId)).thenReturn(Optional.of(
-                new UserProjection(userId.toString(), "DELETED", "User", null, false)
+                new UserProjection(userId.toString(), "DELETED", "User", null, null, false)
         ));
 
         assertThatThrownBy(() -> guard.assertCanWrite(userId))

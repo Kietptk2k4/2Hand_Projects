@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS user_profiles (
     user_id UUID PRIMARY KEY,
     display_name VARCHAR(100) NOT NULL,
     avatar_url TEXT,
+    cover_url TEXT,
     bio TEXT,
     website TEXT,
     social_links CLOB,

@@ -22,6 +22,9 @@ public class UserProjectionDocument {
     @Field("avatar_url")
     private String avatarUrl;
 
+    @Field("cover_url")
+    private String coverUrl;
+
     @Field("is_private")
     private Boolean isPrivate;
 
@@ -45,6 +48,10 @@ public class UserProjectionDocument {
         return avatarUrl;
     }
 
+    public String getCoverUrl() {
+        return coverUrl;
+    }
+
     public Boolean getIsPrivate() {
         return isPrivate;
     }
@@ -63,6 +70,10 @@ public class UserProjectionDocument {
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
+    }
+
+    public void setCoverUrl(String coverUrl) {
+        this.coverUrl = coverUrl;
     }
 
     public void setIsPrivate(Boolean isPrivate) {

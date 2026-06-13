@@ -76,6 +76,9 @@ public class UserProjectionRepositoryAdapter implements UserProjectionRepository
         if (projection.avatarUrl() != null) {
             document.setAvatarUrl(projection.avatarUrl());
         }
+        if (projection.coverUrl() != null) {
+            document.setCoverUrl(projection.coverUrl());
+        }
         if (projection.isPrivate() != null) {
             document.setIsPrivate(projection.isPrivate());
         }
@@ -106,6 +109,7 @@ public class UserProjectionRepositoryAdapter implements UserProjectionRepository
                 doc.getStatus(),
                 doc.getDisplayName(),
                 doc.getAvatarUrl(),
+                doc.getCoverUrl(),
                 doc.getIsPrivate()
         );
     }

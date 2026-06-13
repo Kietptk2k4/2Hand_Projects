@@ -180,6 +180,24 @@ export async function updateMyAvatar(payload) {
   }
 }
 
+export async function requestCoverUploadUrl(payload) {
+  try {
+    const response = await apiClient.post("/api/v1/users/me/cover/upload-url", payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function updateMyCover(payload) {
+  try {
+    const response = await apiClient.patch("/api/v1/users/me/cover", payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export async function updateMyPrivacy(payload) {
   try {
     const response = await apiClient.patch("/api/v1/users/me/privacy", payload);

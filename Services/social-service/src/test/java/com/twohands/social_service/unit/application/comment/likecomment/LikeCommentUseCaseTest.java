@@ -147,7 +147,7 @@ class LikeCommentUseCaseTest {
     void shouldThrowForbiddenWhenUserIsSuspended() {
         UUID userId = UUID.randomUUID();
         when(userProjectionRepository.findByUserId(userId))
-                .thenReturn(Optional.of(new UserProjection(userId.toString(), "SUSPENDED", "User", null, false)));
+                .thenReturn(Optional.of(new UserProjection(userId.toString(), "SUSPENDED", "User", null, null, false)));
 
         assertThatThrownBy(() -> useCase.execute(new LikeCommentCommand(userId, "comment-id")))
                 .isInstanceOf(AppException.class)

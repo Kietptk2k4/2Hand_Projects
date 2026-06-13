@@ -258,6 +258,32 @@ class UserAccountIntegrationTest {
     }
 
     @Test
+    void updateCoverShouldPersistAndWriteOutbox() throws Exception {
+        TestUser user = insertFullUser("update_cover@example.com");
+
+        Map<String, Object> request = Map.of("cover_url", "https://minio.local/2hands-cover/u1.png");
+
+        mockMvc.perform(patch("/api/v1/users/me/cover")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(user.userId(), user.email()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        String coverUrl = jdbcTemplate.queryForObject(
+                "SELECT cover_url FROM user_profiles WHERE user_id = ?",
+                String.class,
+                user.userId()
+        );
+        Integer outboxCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM outbox_events WHERE event_type = 'USER_UPDATED' AND status = 'PENDING'",
+                Integer.class
+        );
+        assertEquals("https://minio.local/2hands-cover/u1.png", coverUrl);
+        assertEquals(1, outboxCount);
+    }
+
+    @Test
     void togglePrivacyShouldPersistAndWriteOutbox() throws Exception {
         TestUser user = insertFullUser("toggle_privacy@example.com");
 

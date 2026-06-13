@@ -11,7 +11,7 @@ public final class UserProjectionTestFixtures {
     }
 
     public static UserProjection active(UUID userId) {
-        return new UserProjection(userId.toString(), "ACTIVE", "User", null, false);
+        return new UserProjection(userId.toString(), "ACTIVE", "User", null, null, false);
     }
 
     public static Optional<UserProjection> activeOptional(UUID userId) {
@@ -19,7 +19,7 @@ public final class UserProjectionTestFixtures {
     }
 
     public static UserProjection deleted(UUID userId) {
-        return new UserProjection(userId.toString(), "DELETED", "User", null, false);
+        return new UserProjection(userId.toString(), "DELETED", "User", null, null, false);
     }
 
     public static Optional<UserProjection> deletedOptional(UUID userId) {

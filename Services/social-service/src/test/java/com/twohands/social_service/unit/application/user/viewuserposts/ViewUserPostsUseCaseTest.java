@@ -159,7 +159,7 @@ class ViewUserPostsUseCaseTest {
         UUID targetId = UUID.randomUUID();
 
         when(userProjectionRepository.findByUserId(targetId))
-                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "DELETED", "User", null, false)));
+                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "DELETED", "User", null, null, false)));
 
         assertThatThrownBy(() -> useCase.execute(viewerId, targetId, 0, 20, "published"))
                 .isInstanceOf(AppException.class)
@@ -167,7 +167,7 @@ class ViewUserPostsUseCaseTest {
     }
 
     private UserProjection activeProjection(UUID userId, boolean isPrivate) {
-        return new UserProjection(userId.toString(), "ACTIVE", "User", "https://avatar", isPrivate);
+        return new UserProjection(userId.toString(), "ACTIVE", "User", "https://avatar", null, isPrivate);
     }
 
     private Post buildPost(String postId, String authorId, PostStatus status, PostVisibility visibility) {

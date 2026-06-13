@@ -44,6 +44,7 @@ public class ViewSellerOrderDetailRepositoryAdapter implements ViewSellerOrderDe
                    oi.order_id,
                    oi.product_id,
                    oi.quantity,
+                   COALESCE(prod.weight_gram, 0) * oi.quantity AS line_weight_gram,
                    oi.unit_price_snapshot,
                    oi.final_price,
                    oi.shipping_fee_allocated,

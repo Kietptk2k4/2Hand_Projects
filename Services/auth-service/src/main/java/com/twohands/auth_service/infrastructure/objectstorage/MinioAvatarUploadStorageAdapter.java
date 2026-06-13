@@ -33,9 +33,23 @@ public class MinioAvatarUploadStorageAdapter implements AvatarUploadStoragePort 
 
     @Override
     public AvatarUploadIntent createUploadIntent(UUID userId, String contentType, Instant expiresAt) {
+        return createUploadIntentForPrefix(userId, contentType, expiresAt, "avatars");
+    }
+
+    @Override
+    public AvatarUploadIntent createCoverUploadIntent(UUID userId, String contentType, Instant expiresAt) {
+        return createUploadIntentForPrefix(userId, contentType, expiresAt, "covers");
+    }
+
+    private AvatarUploadIntent createUploadIntentForPrefix(
+            UUID userId,
+            String contentType,
+            Instant expiresAt,
+            String prefix
+    ) {
         String extension = resolveExtension(contentType);
-        String objectKey = "avatars/" + userId + "/" + UUID.randomUUID() + "." + extension;
-        String avatarUrl = buildPublicUrl(objectKey);
+        String objectKey = prefix + "/" + userId + "/" + UUID.randomUUID() + "." + extension;
+        String publicUrl = buildPublicUrl(objectKey);
 
         try {
             String uploadUrl = minioClient.getPresignedObjectUrl(
@@ -49,13 +63,13 @@ public class MinioAvatarUploadStorageAdapter implements AvatarUploadStoragePort 
             );
 
             log.info(
-                    "Avatar upload URL issued. userId={}, objectKey={}, expiresAt={}",
+                    "Profile image upload URL issued. userId={}, objectKey={}, expiresAt={}",
                     userId,
                     objectKey,
                     expiresAt
             );
 
-            return new AvatarUploadIntent(uploadUrl, objectKey, avatarUrl, expiresAt);
+            return new AvatarUploadIntent(uploadUrl, objectKey, publicUrl, expiresAt);
         } catch (Exception ex) {
             throw new AppException(
                     ErrorCode.OBJECT_STORAGE_UNAVAILABLE,

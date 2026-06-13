@@ -65,6 +65,7 @@ class ViewUserInvestigationProfileByAdminUseCaseTest {
 				userId,
 				"Investigation User",
 				"https://cdn.example/avatar.png",
+				null,
 				"Bio",
 				"https://example.com",
 				java.util.Map.of(),

@@ -11,6 +11,7 @@ public record ConsumeAuthUserEventCommand(
         String displayName,
         String email,
         String avatarUrl,
+        String coverUrl,
         Boolean isPrivate,
         String actionType,
         Instant occurredAt

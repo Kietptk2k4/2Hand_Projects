@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { FeedToast } from "../../social/components/FeedToast";
 import { CommerceShell } from "../components/CommerceShell";
 import { SellerProductInfoStep } from "../components/SellerProductInfoStep";
@@ -13,12 +13,14 @@ import { APP_ROUTES } from "../../../shared/constants/routes";
 
 export function CommerceSellerProductFormPage({ mode: modeProp }) {
   const { productId: routeProductId } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const mode = modeProp || (routeProductId ? "edit" : "create");
+  const initialStep = searchParams.get("step");
 
   const [toastMessage, setToastMessage] = useState("");
 
-  const wizard = useSellerProductForm({ mode, productId: routeProductId });
+  const wizard = useSellerProductForm({ mode, productId: routeProductId, initialStep });
   const {
     step,
     form,
@@ -57,8 +59,12 @@ export function CommerceSellerProductFormPage({ mode: modeProp }) {
   }, [listPath, navigate]);
 
   const handleSaveDraft = useCallback(async () => {
-    const ok = await saveDraftShortcut();
-    if (!ok) return;
+    const result = await saveDraftShortcut();
+    if (result === false) return;
+    if (result === "no_changes") {
+      setToastMessage("Không có thay đổi");
+      return;
+    }
     setToastMessage("Đã lưu nháp");
     if (step === 4 || !productId) {
       setTimeout(navigateToList, 600);

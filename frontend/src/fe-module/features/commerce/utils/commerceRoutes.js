@@ -24,8 +24,11 @@ export function buildCommerceSellerOrderDetailPath(orderId) {
   return APP_ROUTES.commerceSellerOrderDetail.replace(":orderId", orderId);
 }
 
-export function buildCommerceSellerProductEditPath(productId) {
-  return APP_ROUTES.commerceSellerProductEdit.replace(":productId", productId);
+export function buildCommerceSellerProductEditPath(productId, { step } = {}) {
+  const base = APP_ROUTES.commerceSellerProductEdit.replace(":productId", productId);
+  if (step == null) return base;
+  const params = new URLSearchParams({ step: String(step) });
+  return `${base}?${params.toString()}`;
 }
 
 export function buildCommerceShopReviewsPath(shopId, { rating } = {}) {

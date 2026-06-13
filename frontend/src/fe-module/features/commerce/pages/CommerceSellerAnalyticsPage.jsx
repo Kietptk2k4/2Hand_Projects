@@ -84,7 +84,9 @@ export function CommerceSellerAnalyticsPage() {
 
         <SellerPayoutSection
           availableBalance={summary?.balance?.availableBalance ?? 0}
+          pendingPayoutAmount={summary?.balance?.pendingPayoutAmount ?? 0}
           onNotify={setToastMessage}
+          onFinanceChange={retry}
         />
 
         <section className="mb-8">

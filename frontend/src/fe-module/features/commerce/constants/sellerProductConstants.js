@@ -52,6 +52,25 @@ export const EMPTY_PRODUCT_ATTRIBUTES = [];
 
 export const WIZARD_SESSION_KEY = "commerce-seller-product-wizard-id";
 
+export const SELLER_PRODUCT_STEP1_FORM_KEYS = [
+  "productType",
+  "categoryId",
+  "brandId",
+  "condition",
+  "title",
+  "description",
+  "weightGram",
+];
+
+export const SELLER_PRODUCT_STEP2_FORM_KEYS = [
+  "price",
+  "salePrice",
+  "saleStartAt",
+  "saleEndAt",
+  "stockQuantity",
+  "lowStockThreshold",
+];
+
 export const READ_ONLY_STATUSES = ["ARCHIVED"];
 
 export const EMPTY_CREATE_PRODUCT_FORM = {

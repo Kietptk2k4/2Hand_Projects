@@ -59,6 +59,7 @@ public class ViewAccountUseCase {
                 new ViewAccountResult.ProfileData(
                         profile.displayName(),
                         profile.avatarUrl(),
+                        profile.coverUrl(),
                         profile.bio(),
                         profile.website(),
                         profile.socialLinks(),

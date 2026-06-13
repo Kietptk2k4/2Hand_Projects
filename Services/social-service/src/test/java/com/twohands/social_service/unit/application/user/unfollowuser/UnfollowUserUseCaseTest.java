@@ -66,7 +66,7 @@ class UnfollowUserUseCaseTest {
     void shouldThrowForbiddenWhenFollowerIsSuspended() {
         UUID followerId = UUID.randomUUID();
         when(userProjectionRepository.findByUserId(followerId))
-                .thenReturn(Optional.of(new UserProjection(followerId.toString(), "SUSPENDED", "User", null, false)));
+                .thenReturn(Optional.of(new UserProjection(followerId.toString(), "SUSPENDED", "User", null, null, false)));
 
         assertThatThrownBy(() -> useCase.execute(new UnfollowUserCommand(followerId, UUID.randomUUID())))
                 .isInstanceOf(AppException.class)

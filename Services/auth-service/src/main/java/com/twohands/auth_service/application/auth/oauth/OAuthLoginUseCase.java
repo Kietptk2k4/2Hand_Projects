@@ -91,6 +91,7 @@ public class OAuthLoginUseCase {
                     profile.avatarUrl(),
                     null,
                     null,
+                    null,
                     java.util.Map.of(),
                     false,
                     now,

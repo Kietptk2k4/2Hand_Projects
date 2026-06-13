@@ -10,8 +10,13 @@ const STATUS_LABELS = {
   CANCELLED: "Đã hủy",
 };
 
-export function SellerPayoutSection({ availableBalance = 0, onNotify }) {
-  const payout = useSellerPayout({ onSuccess: onNotify });
+export function SellerPayoutSection({
+  availableBalance = 0,
+  pendingPayoutAmount = 0,
+  onNotify,
+  onFinanceChange,
+}) {
+  const payout = useSellerPayout({ onSuccess: onNotify, onFinanceChange });
   const [accountForm, setAccountForm] = useState({
     bankName: "",
     bankAccountName: "",
@@ -36,11 +41,23 @@ export function SellerPayoutSection({ availableBalance = 0, onNotify }) {
           <p className="mt-1 text-body-md text-on-surface-variant">
             Tối thiểu {formatVndPrice(payout.minPayoutAmount)}. Số dư khả dụng:{" "}
             <span className="font-medium text-primary">{formatVndPrice(availableBalance)}</span>
+            {pendingPayoutAmount > 0 ? (
+              <>
+                {" "}
+                · Đang chờ rút:{" "}
+                <span className="font-medium text-on-surface">
+                  {formatVndPrice(pendingPayoutAmount)}
+                </span>
+              </>
+            ) : null}
           </p>
         </div>
         <button
           type="button"
-          onClick={payout.reload}
+          onClick={() => {
+            payout.reload();
+            onFinanceChange?.();
+          }}
           disabled={payout.isLoading}
           className="rounded-lg border border-outline-variant px-3 py-2 text-label-md text-on-surface hover:bg-surface-container-high disabled:opacity-60"
         >

@@ -22,6 +22,7 @@ public record ViewAccountResult(
     public record ProfileData(
             String displayName,
             String avatarUrl,
+            String coverUrl,
             String bio,
             String website,
             Map<String, String> socialLinks,

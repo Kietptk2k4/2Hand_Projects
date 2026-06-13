@@ -90,7 +90,7 @@ class UploadPostMediaUseCaseTest {
         UUID userId = UUID.randomUUID();
         when(userProjectionRepository.findByUserId(userId)).thenReturn(java.util.Optional.of(
                 new com.twohands.social_service.domain.user.UserProjection(
-                        userId.toString(), "SUSPENDED", "User", null, false)
+                        userId.toString(), "SUSPENDED", "User", null, null, false)
         ));
 
         assertThatThrownBy(() -> useCase.execute(

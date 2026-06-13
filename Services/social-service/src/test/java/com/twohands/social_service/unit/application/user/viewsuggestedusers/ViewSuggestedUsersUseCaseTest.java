@@ -43,8 +43,8 @@ class ViewSuggestedUsersUseCaseTest {
         when(followRepository.findFolloweeIdsByFollowerId(viewerId)).thenReturn(List.of());
         when(userProjectionRepository.findActiveSuggestionCandidatesExcluding(any(), anyInt()))
                 .thenReturn(List.of(
-                        new UserProjection(lowMutualId.toString(), "ACTIVE", "Beta User", null, false),
-                        new UserProjection(highMutualId.toString(), "ACTIVE", "Alpha User", "https://avatar", false)
+                        new UserProjection(lowMutualId.toString(), "ACTIVE", "Beta User", null, null, false),
+                        new UserProjection(highMutualId.toString(), "ACTIVE", "Alpha User", "https://avatar", null, false)
                 ));
         when(suggestedUsersRepository.findMutualFollowCounts(eq(viewerId), any()))
                 .thenReturn(Map.of(highMutualId, 3L, lowMutualId, 1L));

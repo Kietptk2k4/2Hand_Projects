@@ -9,8 +9,10 @@ import java.util.Set;
 public class NotificationDeliveryChannelPolicy {
 
     private static final Set<String> DEDICATED_SOCIAL_NOTIFICATION_EVENTS = Set.of(
+            "POST_CREATED",
             "POST_LIKED",
             "USER_FOLLOWED",
+            "USER_AVATAR_UPDATED",
             "COMMENT_CREATED",
             "COMMENT_REPLIED",
             "COMMENT_LIKED"

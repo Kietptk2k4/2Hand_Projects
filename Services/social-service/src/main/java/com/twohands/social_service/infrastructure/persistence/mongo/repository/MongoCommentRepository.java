@@ -47,24 +47,6 @@ public interface MongoCommentRepository extends MongoRepository<CommentDocument,
             Pageable pageable
     );
 
-    @Query("""
-            {
-              'post_id': ?0,
-              'status': ?1,
-              'parent_comment_id': ?2,
-              '$or': [
-                { 'moderation_status': { '$exists': false } },
-                { 'moderation_status': null },
-                { 'moderation_status': 'NONE' }
-              ]
-            }
-            """)
-    long countByPostIdAndStatusAndParentCommentId(
-            String postId,
-            String status,
-            String parentCommentId
-    );
-
     Optional<CommentDocument> findByIdAndPostIdAndStatus(
             String id,
             String postId,

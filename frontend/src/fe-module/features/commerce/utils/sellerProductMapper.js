@@ -1,4 +1,8 @@
 import { DEFAULT_BRAND_ID } from "../constants/sellerProductBrands";
+import {
+  SELLER_PRODUCT_STEP1_FORM_KEYS,
+  SELLER_PRODUCT_STEP2_FORM_KEYS,
+} from "../constants/sellerProductConstants";
 
 function pick(obj, camel, snake) {
   return obj?.[camel] ?? obj?.[snake];
@@ -153,6 +157,117 @@ export function mapCreateProductPayload(form) {
 
 export function mapCreateProductResponse(data) {
   return mapSellerProductListItem(data);
+}
+
+export function mapProductCoreResponse(data) {
+  const item = mapSellerProductListItem(data);
+  if (!item) return null;
+
+  return {
+    ...item,
+    brandId: pick(data, "brandId", "brand_id"),
+  };
+}
+
+export function mergeProductCoreIntoForm(prevForm, core) {
+  if (!core) return prevForm;
+
+  return {
+    ...prevForm,
+    productType: core.productType || prevForm.productType,
+    categoryId: core.categoryId ?? prevForm.categoryId,
+    brandId: core.brandId || prevForm.brandId || DEFAULT_BRAND_ID,
+    condition: core.condition || prevForm.condition,
+    title: core.title ?? prevForm.title,
+    description: core.description ?? prevForm.description,
+    weightGram: core.weightGram != null ? String(core.weightGram) : prevForm.weightGram,
+  };
+}
+
+export function pickStep1FormSlice(form) {
+  const slice = {};
+  for (const key of SELLER_PRODUCT_STEP1_FORM_KEYS) {
+    slice[key] = form[key];
+  }
+  return slice;
+}
+
+export function pickStep2FormSlice(form) {
+  const slice = {};
+  for (const key of SELLER_PRODUCT_STEP2_FORM_KEYS) {
+    slice[key] = form[key];
+  }
+  return slice;
+}
+
+function stableJson(value) {
+  return JSON.stringify(value);
+}
+
+export function normalizeStep1ForCompare(form) {
+  return mapUpdateProductPayload(form);
+}
+
+export function normalizeStep2ForCompare(form) {
+  return {
+    price: form.price === "" ? "" : String(Number(form.price)),
+    salePrice: form.salePrice === "" ? "" : String(Number(form.salePrice)),
+    stockQuantity: form.stockQuantity === "" ? "" : String(Number(form.stockQuantity)),
+    lowStockThreshold:
+      form.lowStockThreshold === "" || form.lowStockThreshold == null
+        ? "0"
+        : String(Number(form.lowStockThreshold)),
+  };
+}
+
+export function normalizeStep3ForCompare(mediaUrls, attributes) {
+  return {
+    mediaUrls: (mediaUrls || []).filter(Boolean),
+    attributes: (attributes || []).map((attr) => ({
+      name: (attr.name || "").trim(),
+      value: (attr.value || "").trim(),
+    })),
+  };
+}
+
+export function createStep3Baseline(mediaUrls, attributes) {
+  return normalizeStep3ForCompare(mediaUrls, attributes);
+}
+
+export function isStep1Dirty(currentForm, baselineForm) {
+  if (!baselineForm) return true;
+  return (
+    stableJson(normalizeStep1ForCompare(currentForm)) !==
+    stableJson(normalizeStep1ForCompare(baselineForm))
+  );
+}
+
+export function isStep2Dirty(currentForm, baselineForm) {
+  if (!baselineForm) return true;
+  return (
+    stableJson(normalizeStep2ForCompare(currentForm)) !==
+    stableJson(normalizeStep2ForCompare(baselineForm))
+  );
+}
+
+export function isStep3Dirty(mediaUrls, attributes, baseline) {
+  if (!baseline) return true;
+  return (
+    stableJson(normalizeStep3ForCompare(mediaUrls, attributes)) !== stableJson(baseline)
+  );
+}
+
+export function resolveInitialWizardStep({ mode, detail, requestedStep }) {
+  const parsed = Number(requestedStep);
+  if (Number.isInteger(parsed) && parsed >= 1 && parsed <= 4) {
+    return parsed;
+  }
+
+  if (!detail) return 1;
+  if (!detail.hasPrice || !detail.hasInventory) return 2;
+  if (!detail.hasMedia) return 3;
+  if (mode === "edit") return 4;
+  return 1;
 }
 
 export function mapUpdatePricePayload(form) {

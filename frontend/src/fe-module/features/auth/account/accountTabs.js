@@ -14,7 +14,7 @@ export const ACCOUNT_TABS = [
   {
     id: "avatar",
     labelEn: "Update Avatar",
-    labelVn: "Ảnh đại diện",
+    labelVn: "Ảnh hồ sơ",
     icon: "avatar",
   },
   {

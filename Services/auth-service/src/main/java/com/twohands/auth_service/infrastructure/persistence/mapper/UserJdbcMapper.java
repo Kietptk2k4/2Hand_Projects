@@ -47,6 +47,7 @@ public class UserJdbcMapper {
                 UUID.fromString(rs.getString("user_id")),
                 rs.getString("display_name"),
                 rs.getString("avatar_url"),
+                rs.getString("cover_url"),
                 rs.getString("bio"),
                 rs.getString("website"),
                 parseSocialLinks(rs.getString("social_links")),

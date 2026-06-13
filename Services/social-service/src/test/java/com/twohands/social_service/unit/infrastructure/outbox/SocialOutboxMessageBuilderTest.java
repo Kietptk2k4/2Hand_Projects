@@ -55,4 +55,36 @@ class SocialOutboxMessageBuilderTest {
         assertThat(envelope.get("actor_id")).isEqualTo(actorId.toString());
         assertThat(envelope.get("recipient_user_ids")).isEqualTo(List.of(recipientId.toString()));
     }
+
+    @Test
+    void buildEnvelopeShouldSetRecipientListFromFollowerUserIds() {
+        UUID eventId = UUID.randomUUID();
+        UUID actorId = UUID.randomUUID();
+        UUID followerA = UUID.randomUUID();
+        UUID followerB = UUID.randomUUID();
+        String payloadJson = """
+                {
+                  "actor_id": "%s",
+                  "user_id": "%s",
+                  "avatar_url": "https://cdn.2hands.vn/new.png",
+                  "follower_user_ids": ["%s", "%s"]
+                }
+                """.formatted(actorId, actorId, followerA, followerB);
+
+        OutboxEvent event = new OutboxEvent(
+                eventId,
+                "USER_AVATAR_UPDATED",
+                actorId.toString(),
+                payloadJson,
+                OutboxStatus.PENDING,
+                0,
+                Instant.parse("2026-06-04T10:00:00Z"),
+                null,
+                null
+        );
+
+        Map<String, Object> envelope = messageBuilder.buildEnvelope(event);
+
+        assertThat(envelope.get("recipient_user_ids")).isEqualTo(List.of(followerA.toString(), followerB.toString()));
+    }
 }

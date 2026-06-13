@@ -1,11 +1,14 @@
 package com.twohands.social_service.application.post.createpost;
 
+import com.twohands.social_service.application.post.common.PostCreatedOutboxService;
 import com.twohands.social_service.application.post.common.PostMediaDimensionValidator;
 import com.twohands.social_service.application.post.common.PostMediaUrlValidator;
 import com.twohands.social_service.application.post.common.ProductTagSnapshotData;
 import com.twohands.social_service.application.post.common.ProductTagSnapshotResolver;
 import com.twohands.social_service.application.post.common.ProductTagValidationItem;
 import com.twohands.social_service.application.post.common.ProductTagValidator;
+import com.twohands.social_service.domain.follow.FollowRepository;
+import com.twohands.social_service.domain.outbox.OutboxEventRepository;
 import com.twohands.social_service.domain.post.MediaItem;
 import com.twohands.social_service.domain.post.Post;
 import com.twohands.social_service.domain.post.PostRepository;
@@ -21,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class CreatePostUseCase {
@@ -31,6 +35,9 @@ public class CreatePostUseCase {
     private static final int MAX_HASHTAG_LENGTH = 100;
 
     private final PostRepository postRepository;
+    private final OutboxEventRepository outboxEventRepository;
+    private final FollowRepository followRepository;
+    private final PostCreatedOutboxService postCreatedOutboxService;
     private final UserWriteGuard userWriteGuard;
     private final ProductTagValidator productTagValidator;
     private final ProductTagSnapshotResolver productTagSnapshotResolver;
@@ -38,11 +45,17 @@ public class CreatePostUseCase {
 
     public CreatePostUseCase(
             PostRepository postRepository,
+            OutboxEventRepository outboxEventRepository,
+            FollowRepository followRepository,
+            PostCreatedOutboxService postCreatedOutboxService,
             UserWriteGuard userWriteGuard,
             ProductTagValidator productTagValidator,
             ProductTagSnapshotResolver productTagSnapshotResolver,
             PostMediaUrlValidator postMediaUrlValidator) {
         this.postRepository = postRepository;
+        this.outboxEventRepository = outboxEventRepository;
+        this.followRepository = followRepository;
+        this.postCreatedOutboxService = postCreatedOutboxService;
         this.userWriteGuard = userWriteGuard;
         this.productTagValidator = productTagValidator;
         this.productTagSnapshotResolver = productTagSnapshotResolver;
@@ -83,7 +96,31 @@ public class CreatePostUseCase {
         );
 
         Post saved = postRepository.save(post);
+        maybePublishPostCreated(command, saved, now);
         return toResult(saved);
+    }
+
+    private void maybePublishPostCreated(CreatePostCommand command, Post saved, Instant now) {
+        if (!command.publish() || saved.status() != PostStatus.ACTIVE) {
+            return;
+        }
+        if (saved.id() == null || saved.id().isBlank()) {
+            return;
+        }
+
+        List<UUID> followerIds = followRepository.findAcceptedFollowerIds(command.authorId());
+        if (followerIds.isEmpty()) {
+            return;
+        }
+
+        outboxEventRepository.save(postCreatedOutboxService.build(
+                saved.id(),
+                command.authorId(),
+                saved.visibility().name(),
+                saved.caption(),
+                followerIds,
+                now
+        ));
     }
 
     public String successMessage() {
