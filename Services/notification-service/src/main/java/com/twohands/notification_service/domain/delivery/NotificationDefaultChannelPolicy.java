@@ -19,6 +19,7 @@ public final class NotificationDefaultChannelPolicy {
             Map.entry("PAYMENT_SUCCESS", new DefaultChannelFlags(true, true, true)),
             Map.entry("PAYMENT_FAILED", new DefaultChannelFlags(true, true, false)),
             Map.entry("SHIPMENT_CREATED", new DefaultChannelFlags(true, false, false)),
+            Map.entry("SHIPMENT_READY_TO_SHIP", new DefaultChannelFlags(true, true, false)),
             Map.entry("SHIPMENT_SHIPPED", new DefaultChannelFlags(true, true, false)),
             Map.entry("SHIPMENT_DELIVERED", new DefaultChannelFlags(true, true, false)),
             Map.entry("ORDER_COMPLETED", new DefaultChannelFlags(true, true, false)),

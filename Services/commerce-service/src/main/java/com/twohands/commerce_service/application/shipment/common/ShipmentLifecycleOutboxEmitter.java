@@ -19,17 +19,20 @@ import java.util.UUID;
 public class ShipmentLifecycleOutboxEmitter {
 
     private final OutboxEventRepository outboxEventRepository;
+    private final ShipmentReadyToShipOutboxService shipmentReadyToShipOutboxService;
     private final ShipmentShippedOutboxService shipmentShippedOutboxService;
     private final ShipmentDeliveredOutboxService shipmentDeliveredOutboxService;
     private final OrderBuyerRepository orderBuyerRepository;
 
     public ShipmentLifecycleOutboxEmitter(
             OutboxEventRepository outboxEventRepository,
+            ShipmentReadyToShipOutboxService shipmentReadyToShipOutboxService,
             ShipmentShippedOutboxService shipmentShippedOutboxService,
             ShipmentDeliveredOutboxService shipmentDeliveredOutboxService,
             OrderBuyerRepository orderBuyerRepository
     ) {
         this.outboxEventRepository = outboxEventRepository;
+        this.shipmentReadyToShipOutboxService = shipmentReadyToShipOutboxService;
         this.shipmentShippedOutboxService = shipmentShippedOutboxService;
         this.shipmentDeliveredOutboxService = shipmentDeliveredOutboxService;
         this.orderBuyerRepository = orderBuyerRepository;
@@ -42,12 +45,25 @@ public class ShipmentLifecycleOutboxEmitter {
             String trackingOverride
     ) {
         Map<UUID, UUID> buyerIdCache = new HashMap<>();
-        if (newStatus != ShipmentStatus.SHIPPED && newStatus != ShipmentStatus.DELIVERED) {
+        if (newStatus != ShipmentStatus.READY_TO_SHIP
+                && newStatus != ShipmentStatus.SHIPPED
+                && newStatus != ShipmentStatus.DELIVERED) {
             return;
         }
 
         UUID buyerId = resolveBuyerId(shipment.orderId(), buyerIdCache);
         String trackingCode = resolveTrackingCode(shipment, trackingOverride);
+
+        if (newStatus == ShipmentStatus.READY_TO_SHIP) {
+            outboxEventRepository.save(shipmentReadyToShipOutboxService.build(
+                    shipment.shipmentId(),
+                    shipment.orderId(),
+                    buyerId,
+                    shipment.sellerId(),
+                    trackingCode,
+                    occurredAt
+            ));
+        }
 
         if (newStatus == ShipmentStatus.SHIPPED) {
             outboxEventRepository.save(shipmentShippedOutboxService.build(

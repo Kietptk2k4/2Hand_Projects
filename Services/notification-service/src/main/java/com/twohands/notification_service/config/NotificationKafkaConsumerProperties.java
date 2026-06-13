@@ -25,6 +25,7 @@ public class NotificationKafkaConsumerProperties {
             "commerce.payment.paid",
             "commerce.payment.failed",
             "commerce.shipment.created",
+            "commerce.shipment.ready_to_ship",
             "commerce.shipment.shipped",
             "commerce.shipment.delivered",
             "commerce.order.completed",

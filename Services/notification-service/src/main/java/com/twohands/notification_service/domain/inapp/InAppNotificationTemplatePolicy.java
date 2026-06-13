@@ -95,6 +95,10 @@ public final class InAppNotificationTemplatePolicy {
                     "Shipment created",
                     "A shipment has been created for your order."
             );
+            case "SHIPMENT_READY_TO_SHIP" -> new InAppNotificationTemplate(
+                    "Shipment ready",
+                    "Your package is ready to ship."
+            );
             case "SHIPMENT_SHIPPED" -> new InAppNotificationTemplate(
                     "Order shipped",
                     "Your order is on the way."

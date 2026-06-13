@@ -24,6 +24,7 @@ public class DomainEventTopicResolver {
             Map.entry("commerce.payment.paid", "COMMERCE_PAYMENT_PAID"),
             Map.entry("commerce.payment.failed", "COMMERCE_PAYMENT_FAILED"),
             Map.entry("commerce.shipment.created", "COMMERCE_SHIPMENT_CREATED"),
+            Map.entry("commerce.shipment.ready_to_ship", "COMMERCE_SHIPMENT_READY_TO_SHIP"),
             Map.entry("commerce.shipment.shipped", "COMMERCE_SHIPMENT_SHIPPED"),
             Map.entry("commerce.shipment.delivered", "COMMERCE_SHIPMENT_DELIVERED"),
             Map.entry("commerce.order.completed", "COMMERCE_ORDER_COMPLETED"),

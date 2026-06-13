@@ -2,6 +2,7 @@ package com.twohands.commerce_service.unit.application.shipment.common;
 
 import com.twohands.commerce_service.application.shipment.common.ShipmentDeliveredOutboxService;
 import com.twohands.commerce_service.application.shipment.common.ShipmentLifecycleOutboxEmitter;
+import com.twohands.commerce_service.application.shipment.common.ShipmentReadyToShipOutboxService;
 import com.twohands.commerce_service.application.shipment.common.ShipmentShippedOutboxService;
 import com.twohands.commerce_service.domain.order.OrderBuyerRepository;
 import com.twohands.commerce_service.domain.outbox.OutboxEvent;
@@ -33,6 +34,9 @@ class ShipmentLifecycleOutboxEmitterTest {
     private OutboxEventRepository outboxEventRepository;
 
     @Mock
+    private ShipmentReadyToShipOutboxService shipmentReadyToShipOutboxService;
+
+    @Mock
     private ShipmentShippedOutboxService shipmentShippedOutboxService;
 
     @Mock
@@ -53,10 +57,25 @@ class ShipmentLifecycleOutboxEmitterTest {
     void setUp() {
         emitter = new ShipmentLifecycleOutboxEmitter(
                 outboxEventRepository,
+                shipmentReadyToShipOutboxService,
                 shipmentShippedOutboxService,
                 shipmentDeliveredOutboxService,
                 orderBuyerRepository
         );
+    }
+
+    @Test
+    void emitsReadyToShipOutboxWhenStatusIsReadyToShip() {
+        SellerShipmentRecord shipment = record(ShipmentStatus.PENDING, "TRK-1", null);
+        when(orderBuyerRepository.findBuyerIdByOrderId(orderId)).thenReturn(Optional.of(buyerId));
+        when(shipmentReadyToShipOutboxService.build(shipmentId, orderId, buyerId, sellerId, "TRK-1", now))
+                .thenReturn(sampleOutbox(ShipmentReadyToShipOutboxService.EVENT_TYPE));
+
+        emitter.emitDedicatedNotificationEvents(shipment, ShipmentStatus.READY_TO_SHIP, now, null);
+
+        verify(outboxEventRepository).save(any(OutboxEvent.class));
+        verify(shipmentShippedOutboxService, never()).build(any(), any(), any(), any(), any(), any());
+        verify(shipmentDeliveredOutboxService, never()).build(any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -86,10 +105,10 @@ class ShipmentLifecycleOutboxEmitterTest {
     }
 
     @Test
-    void skipsWhenStatusIsNotTerminalForNotification() {
+    void skipsWhenStatusIsNotNotificationMilestone() {
         SellerShipmentRecord shipment = record(ShipmentStatus.PENDING, null, null);
 
-        emitter.emitDedicatedNotificationEvents(shipment, ShipmentStatus.READY_TO_SHIP, now, null);
+        emitter.emitDedicatedNotificationEvents(shipment, ShipmentStatus.PICKING_UP, now, null);
 
         verify(outboxEventRepository, never()).save(any());
         verify(orderBuyerRepository, never()).findBuyerIdByOrderId(any());

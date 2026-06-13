@@ -75,6 +75,10 @@ public final class PushNotificationTemplatePolicy {
             case "ORDER_CREATED" -> new PushNotificationTemplate("Order confirmed", "Your order has been created.");
             case "PAYMENT_SUCCESS" -> new PushNotificationTemplate("Payment received", "Your payment was successful.");
             case "PAYMENT_FAILED" -> new PushNotificationTemplate("Payment failed", "Your payment could not be completed.");
+            case "SHIPMENT_READY_TO_SHIP" -> new PushNotificationTemplate(
+                    "Shipment ready",
+                    "Your package is ready to ship."
+            );
             case "SHIPMENT_SHIPPED" -> new PushNotificationTemplate("Order shipped", "Your order is on the way.");
             case "SHIPMENT_DELIVERED" -> new PushNotificationTemplate("Order delivered", "Your order has been delivered.");
             case "ORDER_COMPLETED" -> new PushNotificationTemplate("Order completed", "Your order is complete.");
