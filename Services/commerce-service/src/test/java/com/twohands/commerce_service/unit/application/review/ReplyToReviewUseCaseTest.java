@@ -71,7 +71,7 @@ class ReplyToReviewUseCaseTest {
         when(replyToReviewRepository.existsReplyByReviewId(reviewId)).thenReturn(false);
         when(replyToReviewRepository.insertReply(eq(reviewId), eq(sellerId), eq("Thank you!"), eq(now)))
                 .thenReturn(created);
-        when(reviewRepliedOutboxService.build(any(), any(), any(), any(), any()))
+        when(reviewRepliedOutboxService.build(any(), any(), any(), any(), any(), any()))
                 .thenReturn(sampleOutbox());
 
         ReplyToReviewResult result = useCase.execute(
@@ -85,7 +85,7 @@ class ReplyToReviewUseCaseTest {
     @Test
     void shouldRejectWhenReviewNotOwned() {
         ReviewForSellerReply review = new ReviewForSellerReply(
-                reviewId, UUID.randomUUID(), buyerId, ReviewStatus.VISIBLE
+                reviewId, UUID.randomUUID(), buyerId, UUID.randomUUID(), ReviewStatus.VISIBLE
         );
         when(replyToReviewRepository.findReviewById(reviewId)).thenReturn(Optional.of(review));
 
@@ -98,7 +98,7 @@ class ReplyToReviewUseCaseTest {
     @Test
     void shouldRejectHiddenReview() {
         ReviewForSellerReply review = new ReviewForSellerReply(
-                reviewId, sellerId, buyerId, ReviewStatus.HIDDEN
+                reviewId, sellerId, buyerId, UUID.randomUUID(), ReviewStatus.HIDDEN
         );
         when(replyToReviewRepository.findReviewById(reviewId)).thenReturn(Optional.of(review));
 
@@ -130,7 +130,7 @@ class ReplyToReviewUseCaseTest {
     }
 
     private ReviewForSellerReply visibleReview() {
-        return new ReviewForSellerReply(reviewId, sellerId, buyerId, ReviewStatus.VISIBLE);
+        return new ReviewForSellerReply(reviewId, sellerId, buyerId, UUID.randomUUID(), ReviewStatus.VISIBLE);
     }
 
     private OutboxEvent sampleOutbox() {

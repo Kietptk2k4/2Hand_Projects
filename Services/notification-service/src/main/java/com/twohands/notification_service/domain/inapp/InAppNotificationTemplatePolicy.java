@@ -135,6 +135,10 @@ public final class InAppNotificationTemplatePolicy {
                     "Review your purchase",
                     "Share your experience with a product from your recent order."
             );
+            case "REVIEW_REPLIED" -> new InAppNotificationTemplate(
+                    "Seller replied to your review",
+                    "The shop responded to your product review."
+            );
             case "USER_SUSPENDED" -> new InAppNotificationTemplate(
                     "Account suspended",
                     "Your account has been suspended."

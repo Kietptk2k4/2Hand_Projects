@@ -48,3 +48,7 @@ export function buildCommerceProductReviewsPath(productId, { rating } = {}) {
   const params = new URLSearchParams({ rating: String(rating) });
   return `${base}?${params.toString()}`;
 }
+
+export function buildCommerceProductDetailPath(productId) {
+  return APP_ROUTES.commerceProductDetail.replace(":productId", productId);
+}

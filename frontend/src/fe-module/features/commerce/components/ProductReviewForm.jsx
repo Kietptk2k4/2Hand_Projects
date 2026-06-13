@@ -16,6 +16,7 @@ export function ProductReviewForm({
   initialRating = 0,
   initialComment = "",
   existingMediaCount = 0,
+  existingMedia = [],
   maxMedia = MAX_REVIEW_MEDIA,
   reviewStatus = "VISIBLE",
   onSubmit,
@@ -141,6 +142,7 @@ export function ProductReviewForm({
             Ảnh / video đính kèm
           </label>
           <ReviewMediaPicker
+            existingMedia={existingMedia}
             existingMediaCount={existingMediaCount}
             maxMedia={maxMedia}
             disabled={isBusy || !canUploadMedia}

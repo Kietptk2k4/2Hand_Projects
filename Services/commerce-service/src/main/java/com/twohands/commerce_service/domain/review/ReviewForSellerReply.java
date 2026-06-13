@@ -6,6 +6,7 @@ public record ReviewForSellerReply(
         UUID reviewId,
         UUID sellerId,
         UUID buyerId,
+        UUID productId,
         ReviewStatus status
 ) {
     public boolean isOwnedBy(UUID sellerId) {

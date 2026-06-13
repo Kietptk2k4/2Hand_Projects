@@ -18,6 +18,7 @@ function NotificationTypeIcon({ type }) {
     SHIPMENT_DELIVERED: "inventory_2",
     ORDER_COMPLETED: "check_circle",
     REVIEW_REMINDER: "rate_review",
+    REVIEW_REPLIED: "forum",
     USER_SUSPENDED: "gavel",
     USER_RESTRICTED: "shield",
     PRODUCT_REMOVED: "inventory",

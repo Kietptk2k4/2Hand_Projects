@@ -165,13 +165,26 @@ public class ViewOrderDetailRepositoryAdapter implements ViewOrderDetailReposito
 
     private List<ViewOrderDetailItem> loadOrderItems(UUID orderId) {
         String sql = """
-                SELECT id, product_id, seller_id, shipment_id, quantity, status::text AS item_status,
-                       unit_price_snapshot, final_price, sku_snapshot, product_name_snapshot,
-                       image_snapshot, attributes_snapshot::text AS attributes_snapshot,
-                       shop_name_snapshot, shipping_fee_allocated, completed_at
-                FROM order_items
-                WHERE order_id = :orderId
-                ORDER BY created_at ASC
+                SELECT oi.id,
+                       oi.product_id,
+                       oi.seller_id,
+                       oi.shipment_id,
+                       oi.quantity,
+                       oi.status::text AS item_status,
+                       oi.unit_price_snapshot,
+                       oi.final_price,
+                       oi.sku_snapshot,
+                       oi.product_name_snapshot,
+                       oi.image_snapshot,
+                       oi.attributes_snapshot::text AS attributes_snapshot,
+                       oi.shop_name_snapshot,
+                       oi.shipping_fee_allocated,
+                       oi.completed_at,
+                       r.id AS review_id
+                FROM order_items oi
+                LEFT JOIN reviews r ON r.order_item_id = oi.id
+                WHERE oi.order_id = :orderId
+                ORDER BY oi.created_at ASC
                 """;
         return jdbcTemplate.query(
                 sql,
@@ -191,7 +204,8 @@ public class ViewOrderDetailRepositoryAdapter implements ViewOrderDetailReposito
                         rs.getString("attributes_snapshot"),
                         rs.getString("shop_name_snapshot"),
                         rs.getBigDecimal("shipping_fee_allocated"),
-                        optionalInstant(rs.getTimestamp("completed_at"))
+                        optionalInstant(rs.getTimestamp("completed_at")),
+                        optionalUuid(rs.getString("review_id"))
                 )
         );
     }

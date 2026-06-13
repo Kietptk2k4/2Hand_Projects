@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { formatVndPrice } from "../../social/utils/formatPrice";
 import { ITEM_STATUS_BADGE_CLASS, ITEM_STATUS_LABELS } from "../constants/orderDetailConstants";
 import { APP_ROUTES } from "../../../shared/constants/routes";
+import { buildCommerceProductDetailPath } from "../utils/commerceRoutes";
 
 function parseAttributes(attributesSnapshot) {
   if (!attributesSnapshot) return null;
@@ -49,32 +50,67 @@ export function OrderDetailItemsSection({ orderId, items }) {
           const canReview = item.status === "COMPLETED";
           const hasReview = Boolean(item.reviewId);
 
+          const productDetailPath = item.productId
+            ? buildCommerceProductDetailPath(item.productId)
+            : null;
+
           return (
             <div
               key={item.orderItemId}
               className="flex flex-col gap-3 border-b border-outline-variant pb-4 last:border-0 last:pb-0 sm:flex-row sm:items-start"
             >
-              <div className="h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-outline-variant bg-surface-container-high">
-                {item.imageSnapshot ? (
-                  <img
-                    src={item.imageSnapshot}
-                    alt=""
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center">
-                    <span className="material-symbols-outlined text-2xl text-outline" aria-hidden="true">
-                      inventory_2
-                    </span>
-                  </div>
-                )}
-              </div>
+              {productDetailPath ? (
+                <Link
+                  to={productDetailPath}
+                  className="h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-outline-variant bg-surface-container-high hover:opacity-90"
+                >
+                  {item.imageSnapshot ? (
+                    <img
+                      src={item.imageSnapshot}
+                      alt=""
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <span className="material-symbols-outlined text-2xl text-outline" aria-hidden="true">
+                        inventory_2
+                      </span>
+                    </div>
+                  )}
+                </Link>
+              ) : (
+                <div className="h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-outline-variant bg-surface-container-high">
+                  {item.imageSnapshot ? (
+                    <img
+                      src={item.imageSnapshot}
+                      alt=""
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <span className="material-symbols-outlined text-2xl text-outline" aria-hidden="true">
+                        inventory_2
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="min-w-0 flex-1">
-                <h3 className="text-body-md font-medium text-on-surface">
-                  {item.productNameSnapshot}
-                </h3>
+                {productDetailPath ? (
+                  <Link
+                    to={productDetailPath}
+                    className="text-body-md font-medium text-on-surface hover:text-primary hover:underline"
+                  >
+                    {item.productNameSnapshot}
+                  </Link>
+                ) : (
+                  <h3 className="text-body-md font-medium text-on-surface">
+                    {item.productNameSnapshot}
+                  </h3>
+                )}
                 {item.shopNameSnapshot ? (
                   <p className="mt-0.5 text-body-sm text-on-surface-variant">
                     {item.shopNameSnapshot}

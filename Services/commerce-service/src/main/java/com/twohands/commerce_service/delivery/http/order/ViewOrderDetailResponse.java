@@ -65,7 +65,8 @@ public record ViewOrderDetailResponse(
             @JsonProperty("attributes_snapshot") String attributesSnapshot,
             @JsonProperty("shop_name_snapshot") String shopNameSnapshot,
             @JsonProperty("shipping_fee_allocated") BigDecimal shippingFeeAllocated,
-            @JsonProperty("completed_at") Instant completedAt
+            @JsonProperty("completed_at") Instant completedAt,
+            @JsonProperty("review_id") UUID reviewId
     ) {
     }
 

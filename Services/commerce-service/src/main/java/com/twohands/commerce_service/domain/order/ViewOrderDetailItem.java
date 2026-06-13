@@ -19,6 +19,7 @@ public record ViewOrderDetailItem(
         String attributesSnapshot,
         String shopNameSnapshot,
         BigDecimal shippingFeeAllocated,
-        Instant completedAt
+        Instant completedAt,
+        UUID reviewId
 ) {
 }

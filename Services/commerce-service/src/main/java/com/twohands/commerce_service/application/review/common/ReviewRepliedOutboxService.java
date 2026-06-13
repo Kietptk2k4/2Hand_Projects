@@ -30,6 +30,7 @@ public class ReviewRepliedOutboxService {
             UUID reviewId,
             UUID sellerId,
             UUID buyerId,
+            UUID productId,
             Instant repliedAt
     ) {
         Map<String, Object> payload = new LinkedHashMap<>();
@@ -37,6 +38,7 @@ public class ReviewRepliedOutboxService {
         payload.put("review_id", reviewId.toString());
         payload.put("seller_id", sellerId.toString());
         payload.put("buyer_id", buyerId.toString());
+        payload.put("product_id", productId.toString());
         payload.put("replied_at", repliedAt.toString());
 
         return new OutboxEvent(

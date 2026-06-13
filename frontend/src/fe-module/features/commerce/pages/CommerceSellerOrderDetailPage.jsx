@@ -16,6 +16,7 @@ import { useSellerOrderDetail } from "../hooks/useSellerOrderDetail";
 import { formatOrderDate, formatShortOrderId } from "../utils/formatOrderDate";
 import { formatVndPrice } from "../../social/utils/formatPrice";
 import { APP_ROUTES } from "../../../shared/constants/routes";
+import { buildCommerceProductDetailPath } from "../utils/commerceRoutes";
 
 export function CommerceSellerOrderDetailPage() {
   const { orderId } = useParams();
@@ -187,10 +188,31 @@ export function CommerceSellerOrderDetailPage() {
                       )
                     : null;
 
+                  const productDetailPath = item.productId
+                    ? buildCommerceProductDetailPath(item.productId)
+                    : null;
+
                   return (
                     <article key={item.orderItemId} className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start">
                       <div className="flex min-w-0 flex-1 items-start gap-3">
-                        {item.imageSnapshot ? (
+                        {productDetailPath ? (
+                          <Link
+                            to={productDetailPath}
+                            className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-outline-variant hover:opacity-90"
+                          >
+                            {item.imageSnapshot ? (
+                              <img
+                                src={item.imageSnapshot}
+                                alt=""
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-surface-container-high">
+                                <span className="material-symbols-outlined text-on-surface-variant">image</span>
+                              </div>
+                            )}
+                          </Link>
+                        ) : item.imageSnapshot ? (
                           <img
                             src={item.imageSnapshot}
                             alt=""
@@ -202,7 +224,16 @@ export function CommerceSellerOrderDetailPage() {
                           </div>
                         )}
                         <div className="min-w-0 flex-1">
-                          <p className="text-body-md font-medium text-on-surface">{item.productNameSnapshot}</p>
+                          {productDetailPath ? (
+                            <Link
+                              to={productDetailPath}
+                              className="text-body-md font-medium text-on-surface hover:text-primary hover:underline"
+                            >
+                              {item.productNameSnapshot}
+                            </Link>
+                          ) : (
+                            <p className="text-body-md font-medium text-on-surface">{item.productNameSnapshot}</p>
+                          )}
                           <p className="mt-1 text-body-sm text-on-surface-variant">
                             SL: {item.quantity} · {formatVndPrice(item.finalPrice)}
                           </p>

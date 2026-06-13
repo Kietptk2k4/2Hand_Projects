@@ -63,6 +63,7 @@ public class ReplyToReviewUseCase {
                 created.reviewId(),
                 created.sellerId(),
                 review.buyerId(),
+                review.productId(),
                 now
         ));
 

@@ -39,6 +39,11 @@ export function mapReviewForEditResponse(data) {
     finalPrice: pick(data, "finalPrice", "final_price"),
     completedAt: pick(data, "completedAt", "completed_at"),
     mediaCount: pick(data, "mediaCount", "media_count") ?? 0,
+    media: (data.media || []).map((item) => ({
+      id: item.id,
+      url: item.url,
+      type: item.type,
+    })),
   };
 }
 

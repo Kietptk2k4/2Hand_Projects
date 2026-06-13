@@ -72,7 +72,8 @@ public final class ViewOrderDetailResponseFactory {
 				item.attributesSnapshot(),
 				item.shopNameSnapshot(),
 				item.shippingFeeAllocated(),
-				item.completedAt()
+				item.completedAt(),
+				item.reviewId()
 		);
 	}
 

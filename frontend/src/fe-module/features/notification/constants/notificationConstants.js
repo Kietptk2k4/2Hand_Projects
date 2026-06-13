@@ -33,6 +33,7 @@ export const NOTIFICATION_EVENT_GROUPS = [
       "SHIPMENT_DELIVERED",
       "ORDER_COMPLETED",
       "REVIEW_REMINDER",
+      "REVIEW_REPLIED",
     ],
   },
   {
@@ -77,6 +78,7 @@ export const NOTIFICATION_EVENT_LABELS = {
   SHIPMENT_DELIVERED: "Giao h\u00e0ng th\u00e0nh c\u00f4ng",
   ORDER_COMPLETED: "Ho\u00e0n t\u1ea5t \u0111\u01a1n h\u00e0ng",
   REVIEW_REMINDER: "Nh\u1eafc \u0111\u00e1nh gi\u00e1",
+  REVIEW_REPLIED: "Shop ph\u1ea3n h\u1ed3i \u0111\u00e1nh gi\u00e1",
   USER_SUSPENDED: "T\u00e0i kho\u1ea3n b\u1ecb \u0111\u00ecnh ch\u1ec9",
   USER_RESTRICTED: "T\u00e0i kho\u1ea3n b\u1ecb h\u1ea1n ch\u1ebf",
   PRODUCT_REMOVED: "S\u1ea3n ph\u1ea9m b\u1ecb g\u1ee1",

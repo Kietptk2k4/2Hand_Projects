@@ -114,6 +114,7 @@ class ViewOrderDetailUseCaseTest {
                         "{\"color\":\"black\"}",
                         "Tech Shop",
                         new BigDecimal("50000"),
+                        null,
                         null
                 )),
                 List.of(new ViewOrderDetailShipment(

@@ -16,7 +16,8 @@ function buildPreviewEntry(file) {
 }
 
 export function ReviewMediaPicker({
-  existingMediaCount = 0,
+  existingMedia = [],
+  existingMediaCount,
   maxMedia = MAX_REVIEW_MEDIA,
   disabled = false,
   onFilesChange,
@@ -25,8 +26,10 @@ export function ReviewMediaPicker({
   const [entries, setEntries] = useState([]);
   const [validationError, setValidationError] = useState("");
 
-  const remainingSlots = Math.max(0, maxMedia - existingMediaCount - entries.length);
-  const totalSelected = existingMediaCount + entries.length;
+  const persistedCount =
+    existingMediaCount ?? (Array.isArray(existingMedia) ? existingMedia.length : 0);
+  const remainingSlots = Math.max(0, maxMedia - persistedCount - entries.length);
+  const totalSelected = persistedCount + entries.length;
 
   useEffect(() => {
     onFilesChange?.(entries.map((entry) => entry.file));
@@ -51,7 +54,7 @@ export function ReviewMediaPicker({
   const handleFilesPicked = useCallback(
     (fileList) => {
       setValidationError("");
-      const result = validateReviewMediaSelection(fileList, existingMediaCount + entries.length);
+      const result = validateReviewMediaSelection(fileList, persistedCount + entries.length);
       if (!result.valid) {
         setValidationError(result.message);
         return;
@@ -63,7 +66,7 @@ export function ReviewMediaPicker({
         inputRef.current.value = "";
       }
     },
-    [entries.length, existingMediaCount],
+    [entries.length, persistedCount],
   );
 
   const handleInputChange = useCallback(
@@ -129,6 +132,39 @@ export function ReviewMediaPicker({
 
       {validationError ? (
         <p className="mt-2 text-body-sm text-error">{validationError}</p>
+      ) : null}
+
+      {existingMedia?.length > 0 ? (
+        <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {existingMedia.map((item) => {
+            const isVideo = String(item.type).toUpperCase() === "VIDEO";
+            return (
+              <li
+                key={item.id || item.url}
+                className="relative overflow-hidden rounded-lg border border-outline-variant bg-surface-container-high"
+              >
+                {isVideo ? (
+                  <video
+                    src={item.url}
+                    className="aspect-square w-full object-cover"
+                    muted
+                    playsInline
+                  />
+                ) : (
+                  <img src={item.url} alt="" className="aspect-square w-full object-cover" />
+                )}
+                <span className="absolute bottom-1 left-1 rounded bg-on-surface/70 px-1.5 py-0.5 text-label-sm text-on-primary">
+                  Đã tải
+                </span>
+                {isVideo ? (
+                  <span className="absolute right-1 top-1 rounded bg-on-surface/70 px-1.5 py-0.5 text-label-sm text-on-primary">
+                    Video
+                  </span>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
       ) : null}
 
       {entries.length > 0 ? (

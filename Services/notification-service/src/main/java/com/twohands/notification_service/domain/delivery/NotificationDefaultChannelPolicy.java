@@ -27,6 +27,7 @@ public final class NotificationDefaultChannelPolicy {
             Map.entry("ORDER_COMPLETED", new DefaultChannelFlags(true, true, false)),
             Map.entry("PAYOUT_REQUEST_APPROVED", new DefaultChannelFlags(true, true, false)),
             Map.entry("REVIEW_REMINDER", new DefaultChannelFlags(true, true, false)),
+            Map.entry("REVIEW_REPLIED", new DefaultChannelFlags(true, true, false)),
             Map.entry("USER_SUSPENDED", new DefaultChannelFlags(true, true, true)),
             Map.entry("USER_BANNED", new DefaultChannelFlags(true, true, true)),
             Map.entry("USER_RESTRICTED", new DefaultChannelFlags(true, true, true)),

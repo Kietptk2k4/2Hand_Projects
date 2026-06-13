@@ -30,6 +30,7 @@ export function CommerceWriteEditReviewPage() {
     orderId,
     reviewStatus,
     existingMediaCount,
+    existingMedia,
     isLoading,
     isError,
     errorMessage,
@@ -190,6 +191,7 @@ export function CommerceWriteEditReviewPage() {
                 initialRating={initialRating}
                 initialComment={initialComment}
                 existingMediaCount={existingMediaCount}
+                existingMedia={existingMedia}
                 reviewStatus={reviewStatus}
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}

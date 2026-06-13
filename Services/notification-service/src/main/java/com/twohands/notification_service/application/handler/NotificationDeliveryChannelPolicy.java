@@ -68,7 +68,9 @@ public class NotificationDeliveryChannelPolicy {
             "PAYOUT_REQUEST_APPROVED",
             "COMMERCE_PAYOUT_REQUEST_APPROVED",
             "REVIEW_REMINDER",
-            "COMMERCE_REVIEW_REMINDER"
+            "COMMERCE_REVIEW_REMINDER",
+            "REVIEW_REPLIED",
+            "COMMERCE_REVIEW_REPLIED"
     );
 
     private static final Set<String> SOCIAL_IN_APP_EVENTS = Set.of();

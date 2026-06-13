@@ -31,9 +31,14 @@ public class ReplyToReviewRepositoryAdapter implements ReplyToReviewRepository {
     @Override
     public Optional<ReviewForSellerReply> findReviewById(UUID reviewId) {
         String sql = """
-                SELECT id, seller_id, buyer_id, status::text AS status
-                FROM reviews
-                WHERE id = :reviewId
+                SELECT r.id,
+                       r.seller_id,
+                       r.buyer_id,
+                       oi.product_id,
+                       r.status::text AS status
+                FROM reviews r
+                INNER JOIN order_items oi ON oi.id = r.order_item_id
+                WHERE r.id = :reviewId
                 """;
         List<ReviewForSellerReply> rows = jdbcTemplate.query(
                 sql,
@@ -78,6 +83,7 @@ public class ReplyToReviewRepositoryAdapter implements ReplyToReviewRepository {
                 UUID.fromString(rs.getString("id")),
                 UUID.fromString(rs.getString("seller_id")),
                 UUID.fromString(rs.getString("buyer_id")),
+                UUID.fromString(rs.getString("product_id")),
                 ReviewStatus.valueOf(rs.getString("status"))
         );
     }

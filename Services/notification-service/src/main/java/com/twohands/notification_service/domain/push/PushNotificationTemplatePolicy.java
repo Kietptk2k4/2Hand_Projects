@@ -106,6 +106,10 @@ public final class PushNotificationTemplatePolicy {
                     "Review your purchase",
                     "Tell us what you think about your order."
             );
+            case "REVIEW_REPLIED" -> new PushNotificationTemplate(
+                    "Seller replied to your review",
+                    "The shop responded to your product review."
+            );
             case "USER_SUSPENDED" -> new PushNotificationTemplate("Account suspended", "Your account has been suspended.");
             case "USER_BANNED" -> new PushNotificationTemplate("Account banned", "Your account has been banned.");
             case "USER_RESTRICTED" -> new PushNotificationTemplate("Account restricted", "Your account access has been restricted.");
