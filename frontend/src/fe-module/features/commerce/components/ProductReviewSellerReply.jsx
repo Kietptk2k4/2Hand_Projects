@@ -1,11 +1,16 @@
 import { formatReviewDate } from "../utils/formatReviewDate";
+import { ReviewShopLink } from "./ReviewShopLink";
 
-export function ProductReviewSellerReply({ sellerReply }) {
+export function ProductReviewSellerReply({ sellerReply, shop }) {
   if (!sellerReply) return null;
 
   return (
     <div className="mt-4 rounded-lg border border-outline-variant bg-surface-container-low p-4">
-      <p className="text-label-sm font-semibold text-primary">Phản hồi từ shop</p>
+      <ReviewShopLink
+        shopId={shop?.shopId}
+        shopName={shop?.shopName}
+        avatarUrl={shop?.avatarUrl}
+      />
       <p className="mt-2 text-sm text-on-surface">{sellerReply.content}</p>
       {sellerReply.createdAt ? (
         <p className="mt-2 text-xs text-on-surface-variant">

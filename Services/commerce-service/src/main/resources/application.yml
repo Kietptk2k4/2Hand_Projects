@@ -123,6 +123,9 @@ commerce:
       cron: ${COMMERCE_SYNC_CART_ITEM_STATUS_CRON:0 */5 * * * *}
       batch-size: ${COMMERCE_SYNC_CART_ITEM_STATUS_BATCH_SIZE:100}
   integrations:
+    auth:
+      enabled: ${COMMERCE_AUTH_INTEGRATION_ENABLED:true}
+      base-url: ${COMMERCE_AUTH_INTEGRATION_BASE_URL:http://localhost:3001}
     payos:
       enabled: ${COMMERCE_PAYOS_ENABLED:false}
       base-url: ${COMMERCE_PAYOS_BASE_URL:https://api-merchant.payos.vn}

@@ -8,7 +8,8 @@ import org.springframework.context.annotation.Configuration;
         CommerceCheckoutProperties.class,
         CommerceFinanceProperties.class,
         CommerceIntegrationProperties.class,
-        CommerceObjectStorageProperties.class
+        CommerceObjectStorageProperties.class,
+        CommerceAuthIntegrationProperties.class
 })
 public class CommerceConfig {
 }

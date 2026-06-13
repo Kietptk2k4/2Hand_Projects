@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { APP_ROUTES } from "../../../shared/constants/routes";
+import { buildCommerceShopPath } from "../../commerce/utils/commerceRoutes";
 import { COVER_IMAGE_URL } from "../constants/socialProfileConstants";
 import { formatSocialCount } from "../utils/formatSocialCount";
+import { ProfileImageLightbox } from "./ProfileImageLightbox";
 
 const DEFAULT_AVATAR = "https://i.pravatar.cc/200?img=11";
 
@@ -20,6 +23,7 @@ function followButtonLabel(followStatus) {
 
 export function ProfileHero({
   profile,
+  coverImageUrl,
   bio,
   website,
   socialLinks = {},
@@ -33,7 +37,10 @@ export function ProfileHero({
   isFollowLoading = false,
   followDisabled = false,
   followDisabledTitle,
+  commerceShop,
 }) {
+  const [imagePreview, setImagePreview] = useState(null);
+
   if (!profile) return null;
 
   const isSelf = profile.followStatus === "SELF";
@@ -48,28 +55,39 @@ export function ProfileHero({
   );
   const hasWebsite = Boolean(String(website || "").trim());
   const showDetails = !showPrivateNotice && !isDetailsLoading && !detailsError;
+  const resolvedCoverUrl =
+    String(coverImageUrl || profile.coverUrl || profile.cover_url || "").trim() || COVER_IMAGE_URL;
+  const avatarUrl = profile.avatarUrl || DEFAULT_AVATAR;
 
   return (
     <section className="relative w-full">
-      <div
-        className="relative h-48 w-full overflow-hidden bg-surface-container-highest md:h-64"
+      <button
+        type="button"
+        onClick={() => setImagePreview("cover")}
+        className="relative block h-48 w-full cursor-zoom-in overflow-hidden bg-surface-container-highest md:h-64"
+        aria-label="Xem ảnh bìa"
         style={{
-          backgroundImage: `url('${COVER_IMAGE_URL}')`,
+          backgroundImage: `url('${resolvedCoverUrl}')`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-t from-on-background/20 to-transparent" />
-      </div>
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-on-background/20 to-transparent" />
+      </button>
 
       <div className="relative z-10 flex flex-col items-center px-4 md:px-8 -mt-16 md:-mt-20">
-        <div className="h-32 w-32 overflow-hidden rounded-full border-4 border-surface bg-surface-container shadow-sm md:h-40 md:w-40">
+        <button
+          type="button"
+          onClick={() => setImagePreview("avatar")}
+          className="h-32 w-32 cursor-zoom-in overflow-hidden rounded-full border-4 border-surface bg-surface-container shadow-sm transition-opacity hover:opacity-95 md:h-40 md:w-40"
+          aria-label="Xem ảnh đại diện"
+        >
           <img
-            src={profile.avatarUrl || DEFAULT_AVATAR}
+            src={avatarUrl}
             alt=""
             className="h-full w-full object-cover"
           />
-        </div>
+        </button>
 
         <div className="mt-4 flex items-center gap-1">
           <h1 className="text-center text-2xl font-semibold text-on-surface md:text-3xl">
@@ -179,6 +197,17 @@ export function ProfileHero({
         ) : null}
 
         <div className="mt-4 flex flex-wrap justify-center gap-3">
+          {commerceShop?.hasShop && commerceShop.shopId ? (
+            <Link
+              to={buildCommerceShopPath(commerceShop.shopId)}
+              className="inline-flex items-center gap-2 rounded-lg border-2 border-outline-variant px-5 py-2.5 text-sm font-medium text-on-surface transition-colors hover:border-primary hover:text-primary"
+            >
+              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                storefront
+              </span>
+              {commerceShop.shopName ? `Shop: ${commerceShop.shopName}` : "Xem shop"}
+            </Link>
+          ) : null}
           {isSelf ? (
             <>
               <Link
@@ -218,6 +247,22 @@ export function ProfileHero({
           ) : null}
         </div>
       </div>
+
+      {imagePreview === "avatar" ? (
+        <ProfileImageLightbox
+          imageUrl={avatarUrl}
+          label="Ảnh đại diện"
+          onClose={() => setImagePreview(null)}
+        />
+      ) : null}
+
+      {imagePreview === "cover" ? (
+        <ProfileImageLightbox
+          imageUrl={resolvedCoverUrl}
+          label="Ảnh bìa"
+          onClose={() => setImagePreview(null)}
+        />
+      ) : null}
     </section>
   );
 }

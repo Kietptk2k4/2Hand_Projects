@@ -133,15 +133,6 @@ export function OrderDetailItemsSection({ orderId, items }) {
                     Viết đánh giá
                   </button>
                 ) : null}
-
-                {canReview && hasReview ? (
-                  <Link
-                    to={APP_ROUTES.commerceReviewEdit.replace(":reviewId", item.reviewId)}
-                    className="mt-3 inline-block rounded-lg border border-primary px-4 py-2 text-label-md font-medium text-primary hover:bg-surface-container-low"
-                  >
-                    Sửa đánh giá
-                  </Link>
-                ) : null}
               </div>
 
               <span className={`self-start rounded-full px-2.5 py-0.5 text-label-sm ${statusClass}`}>

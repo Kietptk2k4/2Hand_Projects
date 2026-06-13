@@ -92,7 +92,8 @@ class ViewProductsByShopUseCaseTest {
                         BigDecimal.valueOf(4.5),
                         10,
                         false,
-                        null
+                        null,
+                        UUID.randomUUID()
                 ),
                 List.of(),
                 PageMeta.of(1, 20, 0)
@@ -138,7 +139,8 @@ class ViewProductsByShopUseCaseTest {
                         BigDecimal.valueOf(4.5),
                         10,
                         false,
-                        null
+                        null,
+                        UUID.randomUUID()
                 ),
                 List.of(new ProductCardSummary(
                         UUID.randomUUID(),

@@ -153,6 +153,12 @@ function canViewFullProfile(viewerId, targetId, profile, followStatus) {
   return followStatus === "ACCEPTED";
 }
 
+function resolveMockCoverUrl(userId, base) {
+  if (base.coverUrl) return base.coverUrl;
+  const authUser = mockUsers.find((user) => user.id === userId);
+  return authUser?.cover_url || null;
+}
+
 export function buildSocialProfile(userId, viewerId) {
   if (!isKnownUser(userId)) return null;
 
@@ -172,6 +178,7 @@ export function buildSocialProfile(userId, viewerId) {
     userId,
     displayName: base.displayName,
     avatarUrl: base.avatarUrl,
+    coverUrl: resolveMockCoverUrl(userId, base),
     isPrivate: base.isPrivate,
     followerCount: hideCounters ? null : base.followerCount,
     followingCount: hideCounters ? null : base.followingCount,

@@ -38,7 +38,7 @@ class ViewSocialProfileUseCaseTest {
         UUID targetId = UUID.randomUUID();
 
         when(userProjectionRepository.findByUserId(targetId))
-                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "ACTIVE", "User B", "https://avatar", null, false)));
+                .thenReturn(Optional.of(new UserProjection(targetId.toString(), "ACTIVE", "User B", "https://avatar", "https://cover", false)));
         when(followRepository.findByFollowerIdAndFolloweeId(viewerId, targetId)).thenReturn(Optional.empty());
         when(followRepository.countAcceptedFollowers(targetId)).thenReturn(10L);
         when(followRepository.countAcceptedFollowing(targetId)).thenReturn(5L);
@@ -50,6 +50,7 @@ class ViewSocialProfileUseCaseTest {
         assertThat(result.followingCount()).isEqualTo(5L);
         assertThat(result.followStatus()).isEqualTo("NONE");
         assertThat(result.isPrivate()).isFalse();
+        assertThat(result.coverUrl()).isEqualTo("https://cover");
     }
 
     @Test

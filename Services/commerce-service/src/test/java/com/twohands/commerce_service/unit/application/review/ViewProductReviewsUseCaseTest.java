@@ -1,11 +1,13 @@
 package com.twohands.commerce_service.unit.application.review;
 
+import com.twohands.commerce_service.application.review.common.ReviewBuyerEnrichmentService;
 import com.twohands.commerce_service.application.review.viewproductreviews.ViewProductReviewsCommand;
 import com.twohands.commerce_service.application.review.viewproductreviews.ViewProductReviewsUseCase;
 import com.twohands.commerce_service.common.pagination.PageMeta;
 import com.twohands.commerce_service.domain.review.ProductReviewListItem;
 import com.twohands.commerce_service.domain.review.ProductReviewRatingSummary;
 import com.twohands.commerce_service.domain.review.ProductReviewSort;
+import com.twohands.commerce_service.domain.review.ReviewShopSummary;
 import com.twohands.commerce_service.domain.review.ViewProductReviewsRepository;
 import com.twohands.commerce_service.domain.review.ViewProductReviewsResult;
 import com.twohands.commerce_service.exception.AppException;
@@ -28,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,17 +41,25 @@ class ViewProductReviewsUseCaseTest {
     @Mock
     private ViewProductReviewsRepository viewProductReviewsRepository;
 
+    @Mock
+    private ReviewBuyerEnrichmentService reviewBuyerEnrichmentService;
+
     private ViewProductReviewsUseCase useCase;
 
     private final UUID productId = UUID.randomUUID();
+    private final UUID shopId = UUID.randomUUID();
+    private final UUID buyerId = UUID.randomUUID();
     private final Instant now = Instant.parse("2026-05-21T10:00:00Z");
 
     @BeforeEach
     void setUp() {
         useCase = new ViewProductReviewsUseCase(
                 viewProductReviewsRepository,
+                reviewBuyerEnrichmentService,
                 Clock.fixed(now, ZoneOffset.UTC)
         );
+        lenient().when(reviewBuyerEnrichmentService.enrichProductReviews(any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Test
@@ -109,9 +120,13 @@ class ViewProductReviewsUseCaseTest {
     private ViewProductReviewsResult sampleResult() {
         return new ViewProductReviewsResult(
                 productId,
+                new ReviewShopSummary(shopId, "Test Shop", "http://avatar", UUID.randomUUID()),
                 new ProductReviewRatingSummary(BigDecimal.valueOf(4.5), 2),
                 List.of(new ProductReviewListItem(
                         UUID.randomUUID(),
+                        buyerId,
+                        "Buyer",
+                        null,
                         5,
                         "Great product",
                         now,

@@ -7,8 +7,11 @@ import com.twohands.commerce_service.application.review.updateproductreview.Upda
 import com.twohands.commerce_service.application.review.uploadreviewmedia.ReviewMediaFileCommand;
 import com.twohands.commerce_service.application.review.uploadreviewmedia.UploadReviewMediaCommand;
 import com.twohands.commerce_service.application.review.uploadreviewmedia.UploadReviewMediaUseCase;
+import com.twohands.commerce_service.application.review.viewreviewcontext.ViewReviewContextCommand;
+import com.twohands.commerce_service.application.review.viewreviewcontext.ViewReviewContextUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.domain.review.CreateProductReviewResult;
+import com.twohands.commerce_service.domain.review.ReviewContextSnapshot;
 import com.twohands.commerce_service.domain.review.ReviewMediaItem;
 import com.twohands.commerce_service.domain.review.UpdateProductReviewResult;
 import com.twohands.commerce_service.domain.review.UploadReviewMediaResult;
@@ -20,11 +23,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,15 +46,35 @@ public class ReviewController {
     private final CreateProductReviewUseCase createProductReviewUseCase;
     private final UpdateProductReviewUseCase updateProductReviewUseCase;
     private final UploadReviewMediaUseCase uploadReviewMediaUseCase;
+    private final ViewReviewContextUseCase viewReviewContextUseCase;
 
     public ReviewController(
             CreateProductReviewUseCase createProductReviewUseCase,
             UpdateProductReviewUseCase updateProductReviewUseCase,
-            UploadReviewMediaUseCase uploadReviewMediaUseCase
+            UploadReviewMediaUseCase uploadReviewMediaUseCase,
+            ViewReviewContextUseCase viewReviewContextUseCase
     ) {
         this.createProductReviewUseCase = createProductReviewUseCase;
         this.updateProductReviewUseCase = updateProductReviewUseCase;
         this.uploadReviewMediaUseCase = uploadReviewMediaUseCase;
+        this.viewReviewContextUseCase = viewReviewContextUseCase;
+    }
+
+    @GetMapping("/context")
+    public ResponseEntity<ApiResponse<ViewReviewContextResponse>> viewReviewContext(
+            @RequestParam("order_item_id") UUID orderItemId,
+            Authentication authentication
+    ) {
+        UUID buyerId = resolveUserId(authentication);
+        ReviewContextSnapshot snapshot = viewReviewContextUseCase.execute(
+                new ViewReviewContextCommand(buyerId, orderItemId)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewReviewContextUseCase.successMessage(),
+                ViewReviewContextResponse.from(snapshot)
+        ));
     }
 
     @PatchMapping("/{reviewId}")

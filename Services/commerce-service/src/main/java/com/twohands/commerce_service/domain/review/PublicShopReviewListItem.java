@@ -6,6 +6,9 @@ import java.util.UUID;
 
 public record PublicShopReviewListItem(
         UUID reviewId,
+        UUID buyerId,
+        String buyerDisplayName,
+        String buyerAvatarUrl,
         String productNameSnapshot,
         int rating,
         String comment,

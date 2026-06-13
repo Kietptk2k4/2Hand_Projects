@@ -26,6 +26,7 @@ public class ViewProductsByShopRepositoryAdapter implements ViewProductsByShopRe
 
     private static final String ACTIVE_PUBLIC_SHOP_SQL = """
             SELECT s.id AS shop_id,
+                   s.seller_id,
                    s.shop_name,
                    s.description,
                    s.avatar_url,
@@ -91,7 +92,8 @@ public class ViewProductsByShopRepositoryAdapter implements ViewProductsByShopRe
                 ratingAvg == null ? BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP) : ratingAvg.setScale(2, RoundingMode.HALF_UP),
                 rs.getInt("rating_count"),
                 rs.getBoolean("shop_vacation"),
-                rs.getString("vacation_message")
+                rs.getString("vacation_message"),
+                UUID.fromString(rs.getString("seller_id"))
         );
     }
 }

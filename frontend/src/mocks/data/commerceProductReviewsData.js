@@ -46,6 +46,9 @@ function buildReview(productId, index, rating) {
 
   return {
     review_id: `r1000000-0000-4000-8000-${seed}`,
+    buyer_id: `b1000000-0000-4000-8000-${seed}`,
+    buyer_display_name: `Người mua ${index + 1}`,
+    buyer_avatar_url: `https://i.pravatar.cc/80?img=${(index % 70) + 1}`,
     rating,
     comment,
     created_at: createdAt,
@@ -161,6 +164,12 @@ export function buildProductReviewsResponse(productId, { page, limit, rating, so
 
   return {
     product_id: productId,
+    shop: {
+      shop_id: "s1000000-0000-4000-8000-000000000001",
+      shop_name: "Demo Vintage Shop",
+      avatar_url: "https://i.pravatar.cc/120?img=12",
+      seller_id: "a1000000-0000-4000-8000-000000000001",
+    },
     rating_summary: ratingSummary,
     reviews: slice,
     pagination: {

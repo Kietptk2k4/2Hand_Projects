@@ -1,3 +1,6 @@
+import { Link } from "react-router-dom";
+import { buildSocialProfilePath } from "../../social/utils/socialProfileRoutes";
+
 export function ShopStorefrontHero({ shop, onComingSoon }) {
   if (!shop) return null;
 
@@ -54,7 +57,19 @@ export function ShopStorefrontHero({ shop, onComingSoon }) {
             </p>
           ) : null}
 
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
+          {shop.sellerId ? (
+            <Link
+              to={buildSocialProfilePath(shop.sellerId)}
+              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+            >
+              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                person
+              </span>
+              Xem hồ sơ chủ shop
+            </Link>
+          ) : null}
+
+          {/* <div className="mt-6 flex flex-wrap justify-center gap-3">
             <button
               type="button"
               onClick={onComingSoon}
@@ -69,7 +84,7 @@ export function ShopStorefrontHero({ shop, onComingSoon }) {
             >
               Nhắn tin
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
     </section>

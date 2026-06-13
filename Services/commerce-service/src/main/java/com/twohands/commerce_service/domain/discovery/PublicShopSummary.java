@@ -12,6 +12,7 @@ public record PublicShopSummary(
         BigDecimal ratingAvg,
         int ratingCount,
         boolean shopVacation,
-        String vacationMessage
+        String vacationMessage,
+        UUID sellerId
 ) {
 }

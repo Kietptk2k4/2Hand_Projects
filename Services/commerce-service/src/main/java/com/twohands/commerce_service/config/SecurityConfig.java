@@ -47,6 +47,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/commerce/api/v1/products/*/reviews").permitAll()
                         .requestMatchers(HttpMethod.GET, "/commerce/api/v1/shops/*/products").permitAll()
                         .requestMatchers(HttpMethod.GET, "/commerce/api/v1/shops/*/reviews").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/commerce/api/v1/users/*/shop").permitAll()
                         .requestMatchers("/commerce/api/v1/internal/moderation/**").permitAll()
                         .anyRequest().authenticated()
                 )

@@ -20,6 +20,7 @@ export function useProductReviews(productId) {
   const [searchParams, setSearchParams] = useSearchParams();
   const ratingFilter = parseRatingParam(searchParams.get("rating"));
 
+  const [shop, setShop] = useState(null);
   const [sort, setSort] = useState(DEFAULT_SORT);
   const [page, setPage] = useState(1);
   const [reviews, setReviews] = useState([]);
@@ -58,6 +59,7 @@ export function useProductReviews(productId) {
         if (requestId !== requestIdRef.current) return;
 
         const data = mapProductReviewsResponse(raw);
+        setShop(data.shop);
         setReviews((prev) => (append ? [...prev, ...data.reviews] : data.reviews));
         setRatingSummary(data.ratingSummary);
         setPagination(data.pagination);
@@ -159,6 +161,7 @@ export function useProductReviews(productId) {
   }, [loadPage, page, resetAndFetch, reviews.length]);
 
   return {
+    shop,
     reviews,
     ratingSummary,
     pagination,

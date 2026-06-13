@@ -10,6 +10,9 @@ import java.util.UUID;
 
 public record PublicShopReviewItemResponse(
         @JsonProperty("review_id") UUID reviewId,
+        @JsonProperty("buyer_id") UUID buyerId,
+        @JsonProperty("buyer_display_name") String buyerDisplayName,
+        @JsonProperty("buyer_avatar_url") String buyerAvatarUrl,
         @JsonProperty("product_name_snapshot") String productNameSnapshot,
         int rating,
         String comment,

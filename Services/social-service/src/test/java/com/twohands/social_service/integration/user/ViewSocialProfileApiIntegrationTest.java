@@ -86,6 +86,7 @@ class ViewSocialProfileApiIntegrationTest {
                 targetId.toString(),
                 "User B",
                 "https://avatar",
+                "https://cover",
                 false,
                 10L,
                 5L,
@@ -102,6 +103,7 @@ class ViewSocialProfileApiIntegrationTest {
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.message").value("Lay social profile thanh cong."))
                 .andExpect(jsonPath("$.data.userId").value(targetId.toString()))
+                .andExpect(jsonPath("$.data.coverUrl").value("https://cover"))
                 .andExpect(jsonPath("$.data.followerCount").value(10))
                 .andExpect(jsonPath("$.data.followingCount").value(5))
                 .andExpect(jsonPath("$.data.canViewFullProfile").value(true));

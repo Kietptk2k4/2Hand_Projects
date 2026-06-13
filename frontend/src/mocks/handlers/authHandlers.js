@@ -259,6 +259,7 @@ export const authHandlers = [
         profile: {
           display_name: user.display_name,
           avatar_url: user.avatar_url,
+          cover_url: user.cover_url ?? null,
           bio: user.bio,
           website: user.website,
           social_links: user.social_links,
@@ -353,6 +354,58 @@ export const authHandlers = [
     }
     user.avatar_url = body.avatar_url;
     return HttpResponse.json(apiSuccess(200, "Cap nhat avatar thanh cong.", null), { status: 200 });
+  }),
+
+  http.post("*/api/v1/users/me/cover/upload-url", async ({ request }) => {
+    await delay(350);
+    const user = getUserByToken(request);
+    if (!user) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+    const body = await request.json();
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowed.includes(body?.content_type)) {
+      return HttpResponse.json(
+        apiError(400, "Dinh dang khong duoc ho tro.", [{ field: "content_type", reason: "INVALID" }]),
+        { status: 400 }
+      );
+    }
+    if (!body?.file_size_bytes || body.file_size_bytes > 5_242_880) {
+      return HttpResponse.json(
+        apiError(400, "Tep vuot qua 5MB.", [{ field: "file_size_bytes", reason: "TOO_LARGE" }]),
+        { status: 400 }
+      );
+    }
+    const objectKey = `covers/${user.id}/${crypto.randomUUID()}.png`;
+    const coverUrl = `https://cdn.2hands.vn/${objectKey}`;
+    return HttpResponse.json(
+      apiSuccess(200, "Tao link upload cover thanh cong.", {
+        upload_url: `https://mock-minio.2hands.vn/upload/${objectKey}`,
+        object_key: objectKey,
+        cover_url: coverUrl,
+        expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+        max_file_size_bytes: 5_242_880,
+        allowed_content_types: allowed,
+      }),
+      { status: 200 }
+    );
+  }),
+
+  http.patch("*/api/v1/users/me/cover", async ({ request }) => {
+    await delay(300);
+    const user = getUserByToken(request);
+    if (!user) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+    const body = await request.json();
+    if (!body?.cover_url) {
+      return HttpResponse.json(
+        apiError(400, "Validation failed", [{ field: "cover_url", reason: "Required" }]),
+        { status: 400 }
+      );
+    }
+    user.cover_url = body.cover_url;
+    return HttpResponse.json(apiSuccess(200, "Cap nhat cover thanh cong.", null), { status: 200 });
   }),
 
   http.patch("*/api/v1/users/me/privacy", async ({ request }) => {

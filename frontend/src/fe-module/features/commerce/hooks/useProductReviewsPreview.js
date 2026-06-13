@@ -7,6 +7,7 @@ import {
 import { mapProductReviewsResponse } from "../utils/productReviewsMapper";
 
 export function useProductReviewsPreview(productId) {
+  const [shop, setShop] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [ratingSummary, setRatingSummary] = useState({ ratingAvg: 0, ratingCount: 0 });
   const [status, setStatus] = useState("idle");
@@ -26,6 +27,7 @@ export function useProductReviewsPreview(productId) {
         sort: DEFAULT_SORT,
       });
       const data = mapProductReviewsResponse(raw);
+      setShop(data.shop);
       setReviews(data.reviews);
       setRatingSummary(data.ratingSummary);
       setStatus("ready");
@@ -41,6 +43,7 @@ export function useProductReviewsPreview(productId) {
   }, [load]);
 
   return {
+    shop,
     reviews,
     ratingSummary,
     isLoading: status === "loading",

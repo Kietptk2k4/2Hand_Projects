@@ -8,6 +8,7 @@ import com.twohands.commerce_service.domain.review.ProductReviewSellerReply;
 import com.twohands.commerce_service.domain.review.ProductReviewSort;
 import com.twohands.commerce_service.domain.review.ReviewMediaItem;
 import com.twohands.commerce_service.domain.review.ReviewMediaType;
+import com.twohands.commerce_service.domain.review.ReviewShopSummary;
 import com.twohands.commerce_service.domain.review.ViewProductReviewsRepository;
 import com.twohands.commerce_service.domain.review.ViewProductReviewsResult;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -75,6 +76,8 @@ public class ViewProductReviewsRepositoryAdapter implements ViewProductReviewsRe
             return Optional.empty();
         }
 
+        ReviewShopSummary shop = loadProductShopSummary(productId)
+                .orElse(null);
         ProductReviewRatingSummary ratingSummary = loadRatingSummary(productId);
         MapSqlParameterSource reviewParams = reviewParams(productId, ratingFilter);
 
@@ -90,6 +93,9 @@ public class ViewProductReviewsRepositoryAdapter implements ViewProductReviewsRe
         List<ProductReviewListItem> reviews = reviewRows.stream()
                 .map(row -> new ProductReviewListItem(
                         row.reviewId(),
+                        row.buyerId(),
+                        null,
+                        null,
                         row.rating(),
                         row.comment(),
                         row.createdAt(),
@@ -100,10 +106,34 @@ public class ViewProductReviewsRepositoryAdapter implements ViewProductReviewsRe
 
         return Optional.of(new ViewProductReviewsResult(
                 productId,
+                shop,
                 ratingSummary,
                 reviews,
                 PageMeta.of(pageQuery.page(), pageQuery.limit(), totalItems)
         ));
+    }
+
+    private Optional<ReviewShopSummary> loadProductShopSummary(UUID productId) {
+        String sql = """
+                SELECT s.id AS shop_id,
+                       s.shop_name,
+                       s.avatar_url,
+                       s.seller_id
+                FROM products p
+                INNER JOIN seller_shops s ON s.id = p.shop_id
+                WHERE p.id = :productId
+                """;
+        List<ReviewShopSummary> shops = jdbcTemplate.query(
+                sql,
+                new MapSqlParameterSource("productId", productId),
+                (rs, rowNum) -> new ReviewShopSummary(
+                        UUID.fromString(rs.getString("shop_id")),
+                        rs.getString("shop_name"),
+                        rs.getString("avatar_url"),
+                        UUID.fromString(rs.getString("seller_id"))
+                )
+        );
+        return shops.isEmpty() ? Optional.empty() : Optional.of(shops.getFirst());
     }
 
     private boolean isProductBuyerVisible(UUID productId, Instant now) {
@@ -153,6 +183,7 @@ public class ViewProductReviewsRepositoryAdapter implements ViewProductReviewsRe
     ) {
         String sql = """
                 SELECT r.id AS review_id,
+                       r.buyer_id,
                        r.rating,
                        r.comment,
                        r.created_at
@@ -247,6 +278,7 @@ public class ViewProductReviewsRepositoryAdapter implements ViewProductReviewsRe
         Timestamp createdAt = rs.getTimestamp("created_at");
         return new ReviewRow(
                 UUID.fromString(rs.getString("review_id")),
+                UUID.fromString(rs.getString("buyer_id")),
                 rs.getInt("rating"),
                 rs.getString("comment"),
                 createdAt == null ? null : createdAt.toInstant()
@@ -255,6 +287,7 @@ public class ViewProductReviewsRepositoryAdapter implements ViewProductReviewsRe
 
     private record ReviewRow(
             UUID reviewId,
+            UUID buyerId,
             int rating,
             String comment,
             Instant createdAt

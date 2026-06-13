@@ -12,6 +12,7 @@ function mapShopSummary(shop) {
     ratingCount: shop.rating_count,
     shopVacation: shop.shop_vacation,
     vacationMessage: shop.vacation_message,
+    sellerId: shop.seller_id ?? null,
   };
 }
 

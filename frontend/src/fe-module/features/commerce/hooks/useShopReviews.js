@@ -23,6 +23,7 @@ export function useShopReviews(shopId) {
   const [sort, setSort] = useState(DEFAULT_SORT);
   const [page, setPage] = useState(1);
   const [shopName, setShopName] = useState("");
+  const [shopMeta, setShopMeta] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [ratingSummary, setRatingSummary] = useState({ ratingAvg: 0, ratingCount: 0 });
   const [pagination, setPagination] = useState(null);
@@ -60,6 +61,16 @@ export function useShopReviews(shopId) {
 
         const data = mapShopReviewsResponse(raw);
         setShopName(data.shopName || "");
+        setShopMeta(
+          data.shopId
+            ? {
+                shopId: data.shopId,
+                shopName: data.shopName,
+                avatarUrl: data.shopAvatarUrl,
+                sellerId: data.sellerId,
+              }
+            : null
+        );
         setReviews((prev) => (append ? [...prev, ...data.reviews] : data.reviews));
         setRatingSummary(data.ratingSummary);
         setPagination(data.pagination);
@@ -162,6 +173,7 @@ export function useShopReviews(shopId) {
 
   return {
     shopName,
+    shop: shopMeta,
     reviews,
     ratingSummary,
     pagination,

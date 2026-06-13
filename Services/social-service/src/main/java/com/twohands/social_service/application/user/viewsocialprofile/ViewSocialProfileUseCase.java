@@ -56,6 +56,7 @@ public class ViewSocialProfileUseCase {
                 target.userId(),
                 target.displayName(),
                 target.avatarUrl(),
+                target.coverUrl(),
                 target.isPrivateProfile(),
                 followerCount,
                 followingCount,

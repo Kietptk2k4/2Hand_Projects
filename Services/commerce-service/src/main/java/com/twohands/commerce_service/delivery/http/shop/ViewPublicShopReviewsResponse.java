@@ -10,6 +10,8 @@ import java.util.UUID;
 public record ViewPublicShopReviewsResponse(
         @JsonProperty("shop_id") UUID shopId,
         @JsonProperty("shop_name") String shopName,
+        @JsonProperty("shop_avatar_url") String shopAvatarUrl,
+        @JsonProperty("seller_id") UUID sellerId,
         @JsonProperty("rating_summary") ProductReviewRatingSummaryResponse ratingSummary,
         List<PublicShopReviewItemResponse> reviews,
         PageMetaResponse pagination

@@ -18,6 +18,7 @@ export function CommerceShopReviewsPage() {
 
   const {
     shopName,
+    shop,
     reviews,
     ratingSummary,
     sort,
@@ -155,6 +156,7 @@ export function CommerceShopReviewsPage() {
                         key={review.reviewId}
                         review={review}
                         productName={review.productName}
+                        shop={shop}
                         onComingSoon={showComingSoon}
                       />
                     ))}

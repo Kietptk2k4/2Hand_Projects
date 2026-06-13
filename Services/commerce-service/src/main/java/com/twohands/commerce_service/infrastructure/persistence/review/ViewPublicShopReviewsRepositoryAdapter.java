@@ -32,7 +32,9 @@ public class ViewPublicShopReviewsRepositoryAdapter implements ViewPublicShopRev
 
     private static final String ACTIVE_SHOP_SQL = """
             SELECT s.id AS shop_id,
-                   s.shop_name
+                   s.shop_name,
+                   s.avatar_url,
+                   s.seller_id
             FROM seller_shops s
             WHERE s.id = :shopId
               AND s.status = 'ACTIVE'
@@ -82,6 +84,9 @@ public class ViewPublicShopReviewsRepositoryAdapter implements ViewPublicShopRev
         List<PublicShopReviewListItem> reviews = reviewRows.stream()
                 .map(row -> new PublicShopReviewListItem(
                         row.reviewId(),
+                        row.buyerId(),
+                        null,
+                        null,
                         row.productNameSnapshot(),
                         row.rating(),
                         row.comment(),
@@ -94,6 +99,8 @@ public class ViewPublicShopReviewsRepositoryAdapter implements ViewPublicShopRev
         return Optional.of(new ViewPublicShopReviewsResult(
                 shop.shopId(),
                 shop.shopName(),
+                shop.shopAvatarUrl(),
+                shop.sellerId(),
                 ratingSummary,
                 reviews,
                 PageMeta.of(pageQuery.page(), pageQuery.limit(), totalItems)
@@ -133,6 +140,7 @@ public class ViewPublicShopReviewsRepositoryAdapter implements ViewPublicShopRev
     ) {
         String sql = """
                 SELECT r.id AS review_id,
+                       r.buyer_id,
                        oi.product_name_snapshot,
                        r.rating,
                        r.comment,
@@ -227,7 +235,9 @@ public class ViewPublicShopReviewsRepositoryAdapter implements ViewPublicShopRev
     private ShopRow mapShopRow(ResultSet rs, int rowNum) throws SQLException {
         return new ShopRow(
                 UUID.fromString(rs.getString("shop_id")),
-                rs.getString("shop_name")
+                rs.getString("shop_name"),
+                rs.getString("avatar_url"),
+                UUID.fromString(rs.getString("seller_id"))
         );
     }
 
@@ -235,6 +245,7 @@ public class ViewPublicShopReviewsRepositoryAdapter implements ViewPublicShopRev
         Timestamp createdAt = rs.getTimestamp("created_at");
         return new ReviewRow(
                 UUID.fromString(rs.getString("review_id")),
+                UUID.fromString(rs.getString("buyer_id")),
                 rs.getString("product_name_snapshot"),
                 rs.getInt("rating"),
                 rs.getString("comment"),
@@ -242,11 +253,12 @@ public class ViewPublicShopReviewsRepositoryAdapter implements ViewPublicShopRev
         );
     }
 
-    private record ShopRow(UUID shopId, String shopName) {
+    private record ShopRow(UUID shopId, String shopName, String shopAvatarUrl, UUID sellerId) {
     }
 
     private record ReviewRow(
             UUID reviewId,
+            UUID buyerId,
             String productNameSnapshot,
             int rating,
             String comment,

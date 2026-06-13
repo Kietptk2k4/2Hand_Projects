@@ -211,6 +211,7 @@ public class UserController {
                 result.userId(),
                 result.displayName(),
                 result.avatarUrl(),
+                result.coverUrl(),
                 result.isPrivate(),
                 result.followerCount(),
                 result.followingCount(),

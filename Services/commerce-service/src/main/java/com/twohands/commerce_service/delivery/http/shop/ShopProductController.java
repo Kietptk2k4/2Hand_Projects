@@ -85,6 +85,8 @@ public class ShopProductController {
         return new ViewPublicShopReviewsResponse(
                 result.shopId(),
                 result.shopName(),
+                result.shopAvatarUrl(),
+                result.sellerId(),
                 new ProductReviewRatingSummaryResponse(
                         result.ratingSummary().ratingAvg(),
                         result.ratingSummary().ratingCount()
@@ -103,6 +105,9 @@ public class ShopProductController {
     private PublicShopReviewItemResponse toShopReviewItemResponse(PublicShopReviewListItem item) {
         return new PublicShopReviewItemResponse(
                 item.reviewId(),
+                item.buyerId(),
+                item.buyerDisplayName(),
+                item.buyerAvatarUrl(),
                 item.productNameSnapshot(),
                 item.rating(),
                 item.comment(),
@@ -153,7 +158,8 @@ public class ShopProductController {
                 shop.ratingAvg(),
                 shop.ratingCount(),
                 shop.shopVacation(),
-                shop.vacationMessage()
+                shop.vacationMessage(),
+                shop.sellerId()
         );
     }
 

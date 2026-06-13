@@ -21,6 +21,7 @@ export function CommerceProductReviewsPage() {
   const { product: productDetail, isLoading: isDetailLoading } = useProductDetail(productId);
 
   const {
+    shop,
     reviews,
     ratingSummary,
     sort,
@@ -177,6 +178,7 @@ export function CommerceProductReviewsPage() {
                       <ProductReviewCard
                         key={review.reviewId}
                         review={review}
+                        shop={shop}
                         onComingSoon={showComingSoon}
                       />
                     ))}

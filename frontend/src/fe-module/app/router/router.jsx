@@ -130,10 +130,6 @@ export const router = createBrowserRouter([
             path: APP_ROUTES.commerceReviewCreate.slice(1),
             element: <CommerceWriteEditReviewPage />,
           },
-          {
-            path: APP_ROUTES.commerceReviewEdit.slice(1),
-            element: <CommerceWriteEditReviewPage />,
-          },
           { path: APP_ROUTES.commerceCheckout.slice(1), element: <CommerceCheckoutPage /> },
           {
             path: APP_ROUTES.commerceCheckoutPaymentResult.slice(1),

@@ -4,6 +4,7 @@ import { StarRating } from "./StarRating";
 export function ProductDetailReviewsPreview({
   ratingSummary,
   reviews,
+  shop,
   isLoading,
   isEmpty,
   hasMoreReviews,
@@ -92,6 +93,7 @@ export function ProductDetailReviewsPreview({
             <ProductReviewCard
               key={review.reviewId}
               review={review}
+              shop={shop}
               onComingSoon={onComingSoon}
             />
           ))}

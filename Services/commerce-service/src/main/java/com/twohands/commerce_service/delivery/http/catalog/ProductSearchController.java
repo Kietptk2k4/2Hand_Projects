@@ -19,6 +19,7 @@ import com.twohands.commerce_service.domain.product.ViewProductDetailResult;
 import com.twohands.commerce_service.domain.review.ProductReviewListItem;
 import com.twohands.commerce_service.domain.review.ProductReviewSellerReply;
 import com.twohands.commerce_service.domain.review.ReviewMediaItem;
+import com.twohands.commerce_service.domain.review.ReviewShopSummary;
 import com.twohands.commerce_service.domain.review.ViewProductReviewsResult;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -124,6 +125,7 @@ public class ProductSearchController {
         PageMeta pagination = result.pagination();
         return new ViewProductReviewsResponse(
                 result.productId(),
+                toShopSummaryResponse(result.shop()),
                 new ProductReviewRatingSummaryResponse(
                         result.ratingSummary().ratingAvg(),
                         result.ratingSummary().ratingCount()
@@ -139,9 +141,24 @@ public class ProductSearchController {
         );
     }
 
+    private ReviewShopSummaryResponse toShopSummaryResponse(ReviewShopSummary shop) {
+        if (shop == null) {
+            return null;
+        }
+        return new ReviewShopSummaryResponse(
+                shop.shopId(),
+                shop.shopName(),
+                shop.avatarUrl(),
+                shop.sellerId()
+        );
+    }
+
     private ProductReviewItemResponse toReviewItemResponse(ProductReviewListItem item) {
         return new ProductReviewItemResponse(
                 item.reviewId(),
+                item.buyerId(),
+                item.buyerDisplayName(),
+                item.buyerAvatarUrl(),
                 item.rating(),
                 item.comment(),
                 item.createdAt(),

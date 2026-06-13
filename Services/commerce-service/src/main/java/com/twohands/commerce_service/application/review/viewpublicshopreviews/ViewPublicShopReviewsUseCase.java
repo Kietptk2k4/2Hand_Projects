@@ -1,5 +1,6 @@
 package com.twohands.commerce_service.application.review.viewpublicshopreviews;
 
+import com.twohands.commerce_service.application.review.common.ReviewBuyerEnrichmentService;
 import com.twohands.commerce_service.common.pagination.PageQuery;
 import com.twohands.commerce_service.domain.review.ProductReviewSort;
 import com.twohands.commerce_service.domain.review.ViewPublicShopReviewsRepository;
@@ -19,9 +20,14 @@ public class ViewPublicShopReviewsUseCase {
     private static final int MAX_RATING = 5;
 
     private final ViewPublicShopReviewsRepository viewPublicShopReviewsRepository;
+    private final ReviewBuyerEnrichmentService reviewBuyerEnrichmentService;
 
-    public ViewPublicShopReviewsUseCase(ViewPublicShopReviewsRepository viewPublicShopReviewsRepository) {
+    public ViewPublicShopReviewsUseCase(
+            ViewPublicShopReviewsRepository viewPublicShopReviewsRepository,
+            ReviewBuyerEnrichmentService reviewBuyerEnrichmentService
+    ) {
         this.viewPublicShopReviewsRepository = viewPublicShopReviewsRepository;
+        this.reviewBuyerEnrichmentService = reviewBuyerEnrichmentService;
     }
 
     @Transactional(readOnly = true)
@@ -32,6 +38,15 @@ public class ViewPublicShopReviewsUseCase {
 
         return viewPublicShopReviewsRepository
                 .findVisibleShopReviews(command.shopId(), ratingFilter, sort, pageQuery)
+                .map(result -> new ViewPublicShopReviewsResult(
+                        result.shopId(),
+                        result.shopName(),
+                        result.shopAvatarUrl(),
+                        result.sellerId(),
+                        result.ratingSummary(),
+                        reviewBuyerEnrichmentService.enrichShopReviews(result.reviews()),
+                        result.pagination()
+                ))
                 .orElseThrow(() -> new AppException(ErrorCode.SHOP_NOT_FOUND));
     }
 

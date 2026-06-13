@@ -8,6 +8,8 @@ import java.util.UUID;
 public record ViewPublicShopReviewsResult(
         UUID shopId,
         String shopName,
+        String shopAvatarUrl,
+        UUID sellerId,
         ProductReviewRatingSummary ratingSummary,
         List<PublicShopReviewListItem> reviews,
         PageMeta pagination

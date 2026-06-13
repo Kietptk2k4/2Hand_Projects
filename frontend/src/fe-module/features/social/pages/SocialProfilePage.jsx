@@ -25,6 +25,7 @@ import { LikesListModal } from "../components/LikesListModal";
 import { useFollowActions } from "../hooks/useFollowActions";
 import { useFollowListModal } from "../hooks/useFollowListModal";
 import { useLikesListModal } from "../hooks/useLikesListModal";
+import { usePublicShopByUser } from "../../commerce/hooks/usePublicShopByUser";
 import { buildSocialProfilePath } from "../utils/socialProfileRoutes";
 
 export function SocialProfilePage() {
@@ -51,9 +52,16 @@ export function SocialProfilePage() {
     retry: retryPublicProfile,
   } = usePublicUserProfile(userId, { enabled: Boolean(userId) && !isSelfBySession });
 
+  const { shop: commerceShop } = usePublicShopByUser(userId, {
+    enabled: Boolean(userId),
+  });
+
   const profileDetails = isSelf
     ? resolveSelfProfileDetails(accountProfile, user)
     : resolvePublicProfileDetails(publicProfile);
+  const accountCoverUrl = accountProfile?.profile?.cover_url ?? accountProfile?.profile?.coverUrl ?? "";
+  const coverImageUrl =
+    profile?.coverUrl || profile?.cover_url || (isSelf ? accountCoverUrl : "") || "";
   const canViewPosts = Boolean(profile?.canViewFullProfile);
   const effectiveStatusFilter = isSelf ? statusFilter : "published";
 
@@ -181,6 +189,7 @@ export function SocialProfilePage() {
           <>
             <ProfileHero
               profile={profile}
+              coverImageUrl={coverImageUrl}
               bio={profileDetails.bio}
               website={profileDetails.website}
               socialLinks={profileDetails.socialLinks}
@@ -198,6 +207,7 @@ export function SocialProfilePage() {
               followDisabledTitle={followDisabledTitle}
               onFollowersClick={() => openFollowList("followers")}
               onFollowingClick={() => openFollowList("following")}
+              commerceShop={commerceShop}
             />
 
             <section className="mt-10 px-4 md:px-8">

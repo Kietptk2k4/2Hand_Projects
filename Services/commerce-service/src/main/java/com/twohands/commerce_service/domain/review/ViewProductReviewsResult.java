@@ -7,6 +7,7 @@ import java.util.UUID;
 
 public record ViewProductReviewsResult(
         UUID productId,
+        ReviewShopSummary shop,
         ProductReviewRatingSummary ratingSummary,
         List<ProductReviewListItem> reviews,
         PageMeta pagination

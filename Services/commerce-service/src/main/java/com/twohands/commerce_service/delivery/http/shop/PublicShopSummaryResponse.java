@@ -14,6 +14,7 @@ public record PublicShopSummaryResponse(
         @JsonProperty("rating_avg") BigDecimal ratingAvg,
         @JsonProperty("rating_count") int ratingCount,
         @JsonProperty("shop_vacation") boolean shopVacation,
-        @JsonProperty("vacation_message") String vacationMessage
+        @JsonProperty("vacation_message") String vacationMessage,
+        @JsonProperty("seller_id") UUID sellerId
 ) {
 }

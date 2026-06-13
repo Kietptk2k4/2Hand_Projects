@@ -32,6 +32,7 @@ export function CommerceProductDetailPage() {
     useProductDetail(productId);
 
   const {
+    shop: previewShop,
     reviews: previewReviews,
     ratingSummary: previewRatingSummary,
     isLoading: isReviewsPreviewLoading,
@@ -196,6 +197,7 @@ export function CommerceProductDetailPage() {
                 <ProductDetailReviewsPreview
                   ratingSummary={previewRatingSummary}
                   reviews={previewReviews}
+                  shop={previewShop}
                   isLoading={isReviewsPreviewLoading}
                   isEmpty={isReviewsPreviewEmpty}
                   hasMoreReviews={hasMoreReviews}

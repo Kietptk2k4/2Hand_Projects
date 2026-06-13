@@ -7,6 +7,7 @@ import java.util.UUID;
 
 public record ViewProductReviewsResponse(
         @JsonProperty("product_id") UUID productId,
+        ReviewShopSummaryResponse shop,
         @JsonProperty("rating_summary") ProductReviewRatingSummaryResponse ratingSummary,
         List<ProductReviewItemResponse> reviews,
         PageMetaResponse pagination

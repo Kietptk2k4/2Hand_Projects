@@ -1,3 +1,5 @@
+import { mapReviewBuyerFields } from "./reviewParticipantMapper";
+
 export function mapShopReviewsResponse(data) {
   if (!data) return null;
 
@@ -6,12 +8,15 @@ export function mapShopReviewsResponse(data) {
   return {
     shopId: data.shop_id,
     shopName: data.shop_name,
+    shopAvatarUrl: data.shop_avatar_url ?? null,
+    sellerId: data.seller_id ?? null,
     ratingSummary: {
       ratingAvg: summary.rating_avg ?? 0,
       ratingCount: summary.rating_count ?? 0,
     },
     reviews: (data.reviews || []).map((review) => ({
       reviewId: review.review_id,
+      ...mapReviewBuyerFields(review),
       productName: review.product_name_snapshot,
       rating: review.rating,
       comment: review.comment,

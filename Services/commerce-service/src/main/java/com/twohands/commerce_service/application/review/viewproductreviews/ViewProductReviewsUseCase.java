@@ -1,5 +1,6 @@
 package com.twohands.commerce_service.application.review.viewproductreviews;
 
+import com.twohands.commerce_service.application.review.common.ReviewBuyerEnrichmentService;
 import com.twohands.commerce_service.common.pagination.PageQuery;
 import com.twohands.commerce_service.domain.review.ProductReviewSort;
 import com.twohands.commerce_service.domain.review.ViewProductReviewsRepository;
@@ -21,10 +22,16 @@ public class ViewProductReviewsUseCase {
     private static final int MAX_RATING = 5;
 
     private final ViewProductReviewsRepository viewProductReviewsRepository;
+    private final ReviewBuyerEnrichmentService reviewBuyerEnrichmentService;
     private final Clock clock;
 
-    public ViewProductReviewsUseCase(ViewProductReviewsRepository viewProductReviewsRepository, Clock clock) {
+    public ViewProductReviewsUseCase(
+            ViewProductReviewsRepository viewProductReviewsRepository,
+            ReviewBuyerEnrichmentService reviewBuyerEnrichmentService,
+            Clock clock
+    ) {
         this.viewProductReviewsRepository = viewProductReviewsRepository;
+        this.reviewBuyerEnrichmentService = reviewBuyerEnrichmentService;
         this.clock = clock;
     }
 
@@ -42,6 +49,13 @@ public class ViewProductReviewsUseCase {
                         pageQuery,
                         clock.instant()
                 )
+                .map(result -> new ViewProductReviewsResult(
+                        result.productId(),
+                        result.shop(),
+                        result.ratingSummary(),
+                        reviewBuyerEnrichmentService.enrichProductReviews(result.reviews()),
+                        result.pagination()
+                ))
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 

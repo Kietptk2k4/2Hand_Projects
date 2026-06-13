@@ -30,6 +30,7 @@ Buyer/guest xem danh sach review **VISIBLE** cua san pham buyer-visible, kem rat
 | Field | Mo ta |
 |-------|-------|
 | `product_id` | UUID san pham |
+| `shop` | Shop cua san pham: `shop_id`, `shop_name`, `avatar_url`, `seller_id` (nullable neu khong load duoc) |
 | `rating_summary` | `rating_avg`, `rating_count` (chi review `VISIBLE` cua product) |
 | `reviews[]` | Trang review |
 | `pagination` | `page`, `limit`, `total_items`, `total_pages`, `has_next` |
@@ -39,13 +40,16 @@ Buyer/guest xem danh sach review **VISIBLE** cua san pham buyer-visible, kem rat
 | Field | Mo ta |
 |-------|-------|
 | `review_id` | UUID |
+| `buyer_id` | UUID buyer — FE link toi social profile |
+| `buyer_display_name` | Ten hien thi (Auth profile hoac fallback `Người mua`) |
+| `buyer_avatar_url` | URL avatar buyer (nullable) |
 | `rating` | 1–5 |
 | `comment` | Nullable |
 | `created_at` | Thoi gian tao |
 | `media[]` | `media_id`, `url` (MinIO `2hands-commerce-review`), `media_type` |
 | `seller_reply` | `reply_id`, `content`, `created_at` hoac `null` |
 
-**Khong** tra `buyer_id`, `seller_id`, review `HIDDEN`, moderation fields.
+**Khong** tra `seller_id` tren review item, review `HIDDEN`, moderation fields.
 
 ## 3. Visibility rules
 
