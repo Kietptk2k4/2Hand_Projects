@@ -34,6 +34,7 @@ class PostCreatedOutboxServiceTest {
         OutboxEvent event = outboxService.build(
                 "post-1",
                 authorId,
+                "Alice",
                 "PUBLIC",
                 "Hello followers",
                 List.of(followerA, followerB),
@@ -47,6 +48,7 @@ class PostCreatedOutboxServiceTest {
         assertThat(payload.get("post_id").asText()).isEqualTo("post-1");
         assertThat(payload.get("actor_id").asText()).isEqualTo(authorId.toString());
         assertThat(payload.get("post_author_id").asText()).isEqualTo(authorId.toString());
+        assertThat(payload.get("actor_display_name").asText()).isEqualTo("Alice");
         assertThat(payload.get("visibility").asText()).isEqualTo("PUBLIC");
         assertThat(payload.get("caption_preview").asText()).isEqualTo("Hello followers");
         assertThat(payload.get("follower_user_ids")).hasSize(2);

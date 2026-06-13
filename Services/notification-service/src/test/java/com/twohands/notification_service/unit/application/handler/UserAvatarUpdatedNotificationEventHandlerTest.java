@@ -103,6 +103,7 @@ class UserAvatarUpdatedNotificationEventHandlerTest {
         verify(createInAppNotificationUseCase, org.mockito.Mockito.times(2)).execute(captor.capture());
         assertTrue(captor.getAllValues().stream().anyMatch(cmd -> followerA.equals(cmd.userId())));
         assertTrue(captor.getAllValues().stream().anyMatch(cmd -> followerB.equals(cmd.userId())));
+        assertTrue(captor.getAllValues().stream().allMatch(cmd -> "User A".equals(cmd.actorDisplayName())));
     }
 
     private NotificationEvent sampleEvent(UUID eventId, UUID actorId) {

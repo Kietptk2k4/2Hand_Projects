@@ -16,6 +16,8 @@ import com.twohands.social_service.domain.post.PostModerationStatus;
 import com.twohands.social_service.domain.post.PostStatus;
 import com.twohands.social_service.domain.post.PostVisibility;
 import com.twohands.social_service.domain.post.ProductTag;
+import com.twohands.social_service.domain.user.UserProjection;
+import com.twohands.social_service.domain.user.UserProjectionRepository;
 import com.twohands.social_service.application.user.common.UserWriteGuard;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
@@ -38,6 +40,7 @@ public class CreatePostUseCase {
     private final OutboxEventRepository outboxEventRepository;
     private final FollowRepository followRepository;
     private final PostCreatedOutboxService postCreatedOutboxService;
+    private final UserProjectionRepository userProjectionRepository;
     private final UserWriteGuard userWriteGuard;
     private final ProductTagValidator productTagValidator;
     private final ProductTagSnapshotResolver productTagSnapshotResolver;
@@ -48,6 +51,7 @@ public class CreatePostUseCase {
             OutboxEventRepository outboxEventRepository,
             FollowRepository followRepository,
             PostCreatedOutboxService postCreatedOutboxService,
+            UserProjectionRepository userProjectionRepository,
             UserWriteGuard userWriteGuard,
             ProductTagValidator productTagValidator,
             ProductTagSnapshotResolver productTagSnapshotResolver,
@@ -56,6 +60,7 @@ public class CreatePostUseCase {
         this.outboxEventRepository = outboxEventRepository;
         this.followRepository = followRepository;
         this.postCreatedOutboxService = postCreatedOutboxService;
+        this.userProjectionRepository = userProjectionRepository;
         this.userWriteGuard = userWriteGuard;
         this.productTagValidator = productTagValidator;
         this.productTagSnapshotResolver = productTagSnapshotResolver;
@@ -116,11 +121,18 @@ public class CreatePostUseCase {
         outboxEventRepository.save(postCreatedOutboxService.build(
                 saved.id(),
                 command.authorId(),
+                resolveAuthorDisplayName(command.authorId()),
                 saved.visibility().name(),
                 saved.caption(),
                 followerIds,
                 now
         ));
+    }
+
+    private String resolveAuthorDisplayName(UUID authorId) {
+        return userProjectionRepository.findByUserId(authorId)
+                .map(UserProjection::displayName)
+                .orElse(null);
     }
 
     public String successMessage() {

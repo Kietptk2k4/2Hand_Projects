@@ -1,5 +1,7 @@
 package com.twohands.notification_service.domain.inapp;
 
+import com.twohands.notification_service.domain.social.SocialNotificationTemplatePolicy;
+
 import java.util.Optional;
 
 public final class InAppNotificationTemplatePolicy {
@@ -13,6 +15,25 @@ public final class InAppNotificationTemplatePolicy {
 
     public static Optional<InAppNotificationTemplate> resolve(String eventType) {
         return resolve(eventType, null);
+    }
+
+    public static Optional<InAppNotificationTemplate> resolve(
+            String eventType,
+            String templateVariant,
+            String actorDisplayName
+    ) {
+        if (eventType == null || eventType.isBlank()) {
+            return Optional.empty();
+        }
+        if (templateVariant == null) {
+            if ("POST_CREATED".equals(eventType)) {
+                return Optional.of(SocialNotificationTemplatePolicy.postCreatedInApp(actorDisplayName));
+            }
+            if ("USER_AVATAR_UPDATED".equals(eventType)) {
+                return Optional.of(SocialNotificationTemplatePolicy.avatarUpdatedInApp(actorDisplayName));
+            }
+        }
+        return resolve(eventType, templateVariant);
     }
 
     public static Optional<InAppNotificationTemplate> resolve(String eventType, String templateVariant) {

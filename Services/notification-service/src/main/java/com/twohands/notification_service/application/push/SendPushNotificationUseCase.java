@@ -86,7 +86,8 @@ public class SendPushNotificationUseCase {
 
         PushNotificationTemplate template = PushNotificationTemplatePolicy.resolve(
                         command.eventType(),
-                        command.templateVariant()
+                        command.templateVariant(),
+                        command.actorDisplayName()
                 )
                 .orElse(null);
         if (template == null) {

@@ -29,6 +29,7 @@ public class PostCreatedOutboxService {
     public OutboxEvent build(
             String postId,
             UUID authorId,
+            String actorDisplayName,
             String visibility,
             String caption,
             List<UUID> followerUserIds,
@@ -40,6 +41,7 @@ public class PostCreatedOutboxService {
         payload.put("actor_id", author);
         payload.put("user_id", author);
         payload.put("post_author_id", author);
+        putIfPresent(payload, "actor_display_name", actorDisplayName);
         putIfPresent(payload, "visibility", visibility);
         putIfPresent(payload, "caption_preview", captionPreview(caption));
         payload.put(

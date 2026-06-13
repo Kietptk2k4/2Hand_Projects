@@ -57,6 +57,7 @@ class CreatePostUseCaseTest {
             outboxEventRepository,
             followRepository,
             postCreatedOutboxService,
+            userProjectionRepository,
             userWriteGuard,
             new ProductTagValidator(),
             productTagSnapshotResolver,
@@ -126,7 +127,9 @@ class CreatePostUseCaseTest {
     void shouldPublishPostCreatedOutboxWhenPublishedWithFollowers() {
         UUID authorId = UUID.randomUUID();
         UUID followerId = UUID.randomUUID();
-        when(userProjectionRepository.findByUserId(authorId)).thenReturn(UserProjectionTestFixtures.activeOptional(authorId));
+        when(userProjectionRepository.findByUserId(authorId)).thenReturn(Optional.of(
+                new UserProjection(authorId.toString(), "ACTIVE", "Alice", null, null, false)
+        ));
         when(followRepository.findAcceptedFollowerIds(authorId)).thenReturn(List.of(followerId));
         when(postRepository.save(any())).thenAnswer(inv -> {
             Post p = inv.getArgument(0);
@@ -150,6 +153,7 @@ class CreatePostUseCaseTest {
         verify(outboxEventRepository).save(outboxCaptor.capture());
         assertThat(outboxCaptor.getValue().eventType()).isEqualTo("POST_CREATED");
         assertThat(outboxCaptor.getValue().aggregateId()).isEqualTo("507f1f77bcf86cd799439011");
+        assertThat(outboxCaptor.getValue().payload()).contains("\"actor_display_name\":\"Alice\"");
     }
 
     @Test

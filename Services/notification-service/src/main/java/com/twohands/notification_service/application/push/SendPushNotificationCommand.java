@@ -8,7 +8,8 @@ public record SendPushNotificationCommand(
         String referenceType,
         String referenceId,
         UUID notificationEventId,
-        String templateVariant
+        String templateVariant,
+        String actorDisplayName
 ) {
     public SendPushNotificationCommand(
             UUID recipientUserId,
@@ -17,6 +18,17 @@ public record SendPushNotificationCommand(
             String referenceId,
             UUID notificationEventId
     ) {
-        this(recipientUserId, eventType, referenceType, referenceId, notificationEventId, null);
+        this(recipientUserId, eventType, referenceType, referenceId, notificationEventId, null, null);
+    }
+
+    public SendPushNotificationCommand(
+            UUID recipientUserId,
+            String eventType,
+            String referenceType,
+            String referenceId,
+            UUID notificationEventId,
+            String templateVariant
+    ) {
+        this(recipientUserId, eventType, referenceType, referenceId, notificationEventId, templateVariant, null);
     }
 }

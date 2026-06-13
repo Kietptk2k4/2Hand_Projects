@@ -85,6 +85,7 @@ class PostCreatedNotificationEventHandlerTest {
                 actorId,
                 actorId,
                 "post-1",
+                "Alice",
                 List.of(followerA, followerB)
         ));
         when(applySkipSelfNotificationUseCase.execute(any(ApplySkipSelfNotificationCommand.class)))
@@ -104,6 +105,7 @@ class PostCreatedNotificationEventHandlerTest {
         assertTrue(captor.getAllValues().stream().anyMatch(cmd -> followerA.equals(cmd.userId())));
         assertTrue(captor.getAllValues().stream().anyMatch(cmd -> followerB.equals(cmd.userId())));
         assertTrue(captor.getAllValues().stream().allMatch(cmd -> "post-1".equals(cmd.referenceId())));
+        assertTrue(captor.getAllValues().stream().allMatch(cmd -> "Alice".equals(cmd.actorDisplayName())));
     }
 
     private NotificationEvent sampleEvent(UUID eventId, UUID actorId) {

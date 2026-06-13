@@ -1,6 +1,7 @@
 package com.twohands.notification_service.domain.push;
 
 import com.twohands.notification_service.domain.inapp.InAppNotificationTemplatePolicy;
+import com.twohands.notification_service.domain.social.SocialNotificationTemplatePolicy;
 
 import java.util.Optional;
 
@@ -13,6 +14,25 @@ public final class PushNotificationTemplatePolicy {
 
     public static Optional<PushNotificationTemplate> resolve(String eventType) {
         return resolve(eventType, null);
+    }
+
+    public static Optional<PushNotificationTemplate> resolve(
+            String eventType,
+            String templateVariant,
+            String actorDisplayName
+    ) {
+        if (eventType == null || eventType.isBlank()) {
+            return Optional.empty();
+        }
+        if (templateVariant == null) {
+            if ("POST_CREATED".equals(eventType)) {
+                return Optional.of(SocialNotificationTemplatePolicy.postCreatedPush(actorDisplayName));
+            }
+            if ("USER_AVATAR_UPDATED".equals(eventType)) {
+                return Optional.of(SocialNotificationTemplatePolicy.avatarUpdatedPush(actorDisplayName));
+            }
+        }
+        return resolve(eventType, templateVariant);
     }
 
     public static Optional<PushNotificationTemplate> resolve(String eventType, String templateVariant) {

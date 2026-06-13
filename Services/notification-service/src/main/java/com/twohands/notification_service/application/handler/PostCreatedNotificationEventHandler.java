@@ -132,7 +132,9 @@ public class PostCreatedNotificationEventHandler implements NotificationEventHan
                         POST_CREATED,
                         REFERENCE_TYPE,
                         context.postId(),
-                        event.payload()
+                        event.payload(),
+                        null,
+                        context.actorDisplayName()
                 ));
                 delivered = true;
             } catch (AppException ex) {
@@ -152,7 +154,9 @@ public class PostCreatedNotificationEventHandler implements NotificationEventHan
                             POST_CREATED,
                             REFERENCE_TYPE,
                             context.postId(),
-                            event.id()
+                            event.id(),
+                            null,
+                            context.actorDisplayName()
                     )
             );
 

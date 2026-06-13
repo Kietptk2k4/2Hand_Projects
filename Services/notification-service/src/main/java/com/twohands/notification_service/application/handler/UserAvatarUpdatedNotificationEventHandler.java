@@ -133,7 +133,9 @@ public class UserAvatarUpdatedNotificationEventHandler implements NotificationEv
                         USER_AVATAR_UPDATED,
                         REFERENCE_TYPE,
                         referenceId,
-                        event.payload()
+                        event.payload(),
+                        null,
+                        context.displayName()
                 ));
                 delivered = true;
             } catch (AppException ex) {
@@ -153,7 +155,9 @@ public class UserAvatarUpdatedNotificationEventHandler implements NotificationEv
                             USER_AVATAR_UPDATED,
                             REFERENCE_TYPE,
                             referenceId,
-                            event.id()
+                            event.id(),
+                            null,
+                            context.displayName()
                     )
             );
 

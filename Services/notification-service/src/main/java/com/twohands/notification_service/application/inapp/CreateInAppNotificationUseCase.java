@@ -31,7 +31,8 @@ public class CreateInAppNotificationUseCase {
 
         InAppNotificationTemplate template = InAppNotificationTemplatePolicy.resolve(
                         command.eventType(),
-                        command.templateVariant()
+                        command.templateVariant(),
+                        command.actorDisplayName()
                 )
                 .orElseThrow(() -> new AppException(
                         ErrorCode.UNKNOWN_EVENT_TYPE,

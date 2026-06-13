@@ -54,7 +54,13 @@ public class PostCreatedNotificationPayloadParser {
             throw new IllegalArgumentException("follower_user_ids is required for POST_CREATED notification event.");
         }
 
-        return new PostCreatedNotificationContext(actorId, postAuthorId, postId.trim(), followerUserIds);
+        return new PostCreatedNotificationContext(
+                actorId,
+                postAuthorId,
+                postId.trim(),
+                SocialNotificationPayloadSupport.parseActorDisplayName(payload),
+                followerUserIds
+        );
     }
 
     private JsonNode parsePayload(String rawPayload) {

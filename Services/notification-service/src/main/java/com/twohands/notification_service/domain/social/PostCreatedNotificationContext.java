@@ -7,6 +7,7 @@ public record PostCreatedNotificationContext(
         UUID actorId,
         UUID postAuthorId,
         String postId,
+        String actorDisplayName,
         List<UUID> followerUserIds
 ) {
 }
