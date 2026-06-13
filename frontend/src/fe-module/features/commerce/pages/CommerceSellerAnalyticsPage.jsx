@@ -82,12 +82,14 @@ export function CommerceSellerAnalyticsPage() {
           <SellerRevenueBucketCards summary={summary} isLoading={isLoading} />
         </section>
 
-        <SellerPayoutSection
+        <div id="payout">
+          <SellerPayoutSection
           availableBalance={summary?.balance?.availableBalance ?? 0}
           pendingPayoutAmount={summary?.balance?.pendingPayoutAmount ?? 0}
           onNotify={setToastMessage}
           onFinanceChange={retry}
-        />
+          />
+        </div>
 
         <section className="mb-8">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

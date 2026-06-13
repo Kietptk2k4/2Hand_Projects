@@ -98,7 +98,7 @@ class OrderCreatedNotificationEventHandlerTest {
                 "ORDER_CREATED",
                 "ORDER",
                 "order-1",
-                "{}",
+                "{\"recipient_audience\":\"buyer\"}",
                 null
         ));
         verify(createInAppNotificationUseCase).execute(new CreateInAppNotificationCommand(
@@ -108,7 +108,7 @@ class OrderCreatedNotificationEventHandlerTest {
                 "ORDER_CREATED",
                 "ORDER",
                 "order-1",
-                "{}",
+                "{\"recipient_audience\":\"seller\"}",
                 InAppNotificationTemplatePolicy.SELLER_TEMPLATE_VARIANT
         ));
         verify(sendPushNotificationUseCase).execute(new SendPushNotificationCommand(

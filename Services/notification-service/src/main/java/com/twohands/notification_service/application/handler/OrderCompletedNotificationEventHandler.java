@@ -12,6 +12,7 @@ import com.twohands.notification_service.application.push.SendPushNotificationUs
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
 import com.twohands.notification_service.domain.commerce.OrderCompletedNotificationContext;
 import com.twohands.notification_service.domain.delivery.NotificationDeliveryDecision;
+import com.twohands.notification_service.domain.inapp.InAppNotificationTemplatePolicy;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
 import com.twohands.notification_service.domain.notificationevent.NotificationEventTypeAliasResolver;
 import com.twohands.notification_service.exception.AppException;
@@ -20,6 +21,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Component
 @Order(42)
@@ -70,55 +72,37 @@ public class OrderCompletedNotificationEventHandler implements NotificationEvent
             return NotificationEventHandlerResult.failure(ex.getMessage(), NotificationFailurePolicy.PERMANENT);
         }
 
-        NotificationDeliveryDecision deliveryDecision;
-        try {
-            deliveryDecision = applyNotificationDeliveryRulesUseCase.execute(
-                    new ApplyNotificationDeliveryRulesCommand(context.buyerId(), ORDER_COMPLETED)
-            );
-        } catch (DataAccessException ex) {
-            return NotificationEventHandlerResult.failure(
-                    "Failed to load notification delivery settings",
-                    NotificationFailurePolicy.RETRYABLE
-            );
-        }
-
         boolean delivered = false;
 
-        if (deliveryDecision.inApp()) {
-            try {
-                createInAppNotificationUseCase.execute(new CreateInAppNotificationCommand(
-                        event.id(),
-                        context.buyerId(),
-                        null,
-                        ORDER_COMPLETED,
-                        REFERENCE_TYPE,
-                        context.orderId(),
-                        event.payload(),
-                        null
-                ));
-                delivered = true;
-            } catch (AppException ex) {
-                return NotificationEventHandlerResult.failure(ex.getMessage(), resolveFailurePolicy(ex));
-            }
+        RecipientDeliveryResult buyerResult = notifyRecipient(
+                event,
+                context,
+                context.buyerId(),
+                null,
+                CommerceNotificationPayloadSupport.RECIPIENT_AUDIENCE_BUYER
+        );
+        if (buyerResult.failed()) {
+            return buyerResult.failure();
+        }
+        if (buyerResult.delivered()) {
+            delivered = true;
         }
 
-        if (deliveryDecision.push()) {
-            SendPushNotificationResult pushResult = sendPushNotificationUseCase.execute(
-                    new SendPushNotificationCommand(
-                            context.buyerId(),
-                            ORDER_COMPLETED,
-                            REFERENCE_TYPE,
-                            context.orderId(),
-                            event.id(),
-                            null
-                    )
-            );
-
-            var pushFailure = PushNotificationHandlerSupport.mapFailure(pushResult);
-            if (pushFailure.isPresent()) {
-                return pushFailure.get();
+        for (UUID sellerId : context.sellerIds()) {
+            if (sellerId.equals(context.buyerId())) {
+                continue;
             }
-            if (pushResult.outcome() == SendPushNotificationOutcome.SENT) {
+            RecipientDeliveryResult sellerResult = notifyRecipient(
+                    event,
+                    context,
+                    sellerId,
+                    InAppNotificationTemplatePolicy.SELLER_TEMPLATE_VARIANT,
+                    CommerceNotificationPayloadSupport.RECIPIENT_AUDIENCE_SELLER
+            );
+            if (sellerResult.failed()) {
+                return sellerResult.failure();
+            }
+            if (sellerResult.delivered()) {
                 delivered = true;
             }
         }
@@ -130,6 +114,78 @@ public class OrderCompletedNotificationEventHandler implements NotificationEvent
         return NotificationEventHandlerResult.success();
     }
 
+    private RecipientDeliveryResult notifyRecipient(
+            NotificationEvent event,
+            OrderCompletedNotificationContext context,
+            UUID recipientId,
+            String templateVariant,
+            String recipientAudience
+    ) {
+        String metadata = CommerceNotificationPayloadSupport.withRecipientAudience(
+                event.payload(),
+                recipientAudience
+        );
+
+        NotificationDeliveryDecision deliveryDecision;
+        try {
+            deliveryDecision = applyNotificationDeliveryRulesUseCase.execute(
+                    new ApplyNotificationDeliveryRulesCommand(recipientId, ORDER_COMPLETED)
+            );
+        } catch (DataAccessException ex) {
+            return RecipientDeliveryResult.failed(
+                    "Failed to load notification delivery settings",
+                    NotificationFailurePolicy.RETRYABLE
+            );
+        }
+
+        boolean recipientDelivered = false;
+        UUID actorId = CommerceNotificationPayloadSupport.RECIPIENT_AUDIENCE_SELLER.equals(recipientAudience)
+                ? context.buyerId()
+                : null;
+
+        if (deliveryDecision.inApp()) {
+            try {
+                createInAppNotificationUseCase.execute(new CreateInAppNotificationCommand(
+                        event.id(),
+                        recipientId,
+                        actorId,
+                        ORDER_COMPLETED,
+                        REFERENCE_TYPE,
+                        context.orderId(),
+                        metadata,
+                        templateVariant
+                ));
+                recipientDelivered = true;
+            } catch (AppException ex) {
+                return RecipientDeliveryResult.failed(ex.getMessage(), resolveFailurePolicy(ex));
+            }
+        }
+
+        if (deliveryDecision.push()) {
+            SendPushNotificationResult pushResult = sendPushNotificationUseCase.execute(
+                    new SendPushNotificationCommand(
+                            recipientId,
+                            ORDER_COMPLETED,
+                            REFERENCE_TYPE,
+                            context.orderId(),
+                            event.id(),
+                            templateVariant
+                    )
+            );
+
+            var pushFailure = PushNotificationHandlerSupport.mapFailure(pushResult);
+            if (pushFailure.isPresent()) {
+                NotificationEventHandlerResult failure = pushFailure.get();
+                return RecipientDeliveryResult.failed(failure.errorMessage(), failure.failurePolicy());
+            }
+            if (pushResult.outcome() == SendPushNotificationOutcome.SENT) {
+                recipientDelivered = true;
+            }
+        }
+
+        return RecipientDeliveryResult.delivered(recipientDelivered);
+    }
+
     private String canonicalEventType(String eventType) {
         return eventTypeAliasResolver.resolve(eventType);
     }
@@ -139,5 +195,20 @@ public class OrderCompletedNotificationEventHandler implements NotificationEvent
             case UNKNOWN_EVENT_TYPE, INVALID_EVENT_PAYLOAD, VALIDATION_ERROR -> NotificationFailurePolicy.PERMANENT;
             default -> NotificationFailurePolicy.RETRYABLE;
         };
+    }
+
+    private record RecipientDeliveryResult(boolean delivered, boolean failed, String failureReason, NotificationFailurePolicy failurePolicy) {
+
+        static RecipientDeliveryResult delivered(boolean delivered) {
+            return new RecipientDeliveryResult(delivered, false, null, null);
+        }
+
+        static RecipientDeliveryResult failed(String reason, NotificationFailurePolicy policy) {
+            return new RecipientDeliveryResult(false, true, reason, policy);
+        }
+
+        NotificationEventHandlerResult failure() {
+            return NotificationEventHandlerResult.failure(failureReason, failurePolicy);
+        }
     }
 }

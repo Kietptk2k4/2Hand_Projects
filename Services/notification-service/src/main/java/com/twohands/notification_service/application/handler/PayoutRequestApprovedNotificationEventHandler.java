@@ -10,7 +10,7 @@ import com.twohands.notification_service.application.push.SendPushNotificationOu
 import com.twohands.notification_service.application.push.SendPushNotificationResult;
 import com.twohands.notification_service.application.push.SendPushNotificationUseCase;
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
-import com.twohands.notification_service.domain.commerce.OrderCreatedNotificationContext;
+import com.twohands.notification_service.domain.commerce.PayoutRequestApprovedNotificationContext;
 import com.twohands.notification_service.domain.delivery.NotificationDeliveryDecision;
 import com.twohands.notification_service.domain.inapp.InAppNotificationTemplatePolicy;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
@@ -21,25 +21,27 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
-import java.util.UUID;
 
 @Component
-@Order(34)
-public class OrderCreatedNotificationEventHandler implements NotificationEventHandler {
+@Order(43)
+public class PayoutRequestApprovedNotificationEventHandler implements NotificationEventHandler {
 
-    private static final String ORDER_CREATED = "ORDER_CREATED";
-    private static final String REFERENCE_TYPE = "ORDER";
-    private static final Set<String> SUPPORTED_EVENT_TYPES = Set.of(ORDER_CREATED, "COMMERCE_ORDER_CREATED");
+    private static final String PAYOUT_REQUEST_APPROVED = "PAYOUT_REQUEST_APPROVED";
+    private static final String REFERENCE_TYPE = "PAYOUT_REQUEST";
+    private static final Set<String> SUPPORTED_EVENT_TYPES = Set.of(
+            PAYOUT_REQUEST_APPROVED,
+            "COMMERCE_PAYOUT_REQUEST_APPROVED"
+    );
 
     private final NotificationEventTypeAliasResolver eventTypeAliasResolver;
-    private final OrderCreatedNotificationPayloadParser payloadParser;
+    private final PayoutRequestApprovedNotificationPayloadParser payloadParser;
     private final ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase;
     private final CreateInAppNotificationUseCase createInAppNotificationUseCase;
     private final SendPushNotificationUseCase sendPushNotificationUseCase;
 
-    public OrderCreatedNotificationEventHandler(
+    public PayoutRequestApprovedNotificationEventHandler(
             NotificationEventTypeAliasResolver eventTypeAliasResolver,
-            OrderCreatedNotificationPayloadParser payloadParser,
+            PayoutRequestApprovedNotificationPayloadParser payloadParser,
             ApplyNotificationDeliveryRulesUseCase applyNotificationDeliveryRulesUseCase,
             CreateInAppNotificationUseCase createInAppNotificationUseCase,
             SendPushNotificationUseCase sendPushNotificationUseCase
@@ -58,80 +60,32 @@ public class OrderCreatedNotificationEventHandler implements NotificationEventHa
 
     @Override
     public NotificationEventHandlerResult handle(NotificationEvent event) {
-        if (!ORDER_CREATED.equals(canonicalEventType(event.eventType()))) {
+        if (!PAYOUT_REQUEST_APPROVED.equals(canonicalEventType(event.eventType()))) {
             return NotificationEventHandlerResult.failure(
-                    "Unsupported order created event type",
+                    "Unsupported payout request approved event type",
                     NotificationFailurePolicy.PERMANENT
             );
         }
 
-        OrderCreatedNotificationContext context;
+        PayoutRequestApprovedNotificationContext context;
         try {
             context = payloadParser.parse(event);
         } catch (IllegalArgumentException ex) {
             return NotificationEventHandlerResult.failure(ex.getMessage(), NotificationFailurePolicy.PERMANENT);
         }
 
-        boolean delivered = false;
-
-        RecipientDeliveryResult buyerResult = notifyRecipient(
-                event,
-                context,
-                context.buyerId(),
-                null,
-                CommerceNotificationPayloadSupport.RECIPIENT_AUDIENCE_BUYER
-        );
-        if (buyerResult.failed()) {
-            return buyerResult.failure();
-        }
-        if (buyerResult.delivered()) {
-            delivered = true;
-        }
-
-        for (UUID sellerId : context.sellerIds()) {
-            if (sellerId.equals(context.buyerId())) {
-                continue;
-            }
-            RecipientDeliveryResult sellerResult = notifyRecipient(
-                    event,
-                    context,
-                    sellerId,
-                    InAppNotificationTemplatePolicy.SELLER_TEMPLATE_VARIANT,
-                    CommerceNotificationPayloadSupport.RECIPIENT_AUDIENCE_SELLER
-            );
-            if (sellerResult.failed()) {
-                return sellerResult.failure();
-            }
-            if (sellerResult.delivered()) {
-                delivered = true;
-            }
-        }
-
-        if (!delivered) {
-            return NotificationEventHandlerResult.noOp();
-        }
-
-        return NotificationEventHandlerResult.success();
-    }
-
-    private RecipientDeliveryResult notifyRecipient(
-            NotificationEvent event,
-            OrderCreatedNotificationContext context,
-            UUID recipientId,
-            String templateVariant,
-            String recipientAudience
-    ) {
         String metadata = CommerceNotificationPayloadSupport.withRecipientAudience(
                 event.payload(),
-                recipientAudience
+                CommerceNotificationPayloadSupport.RECIPIENT_AUDIENCE_SELLER
         );
+
         NotificationDeliveryDecision deliveryDecision;
         try {
             deliveryDecision = applyNotificationDeliveryRulesUseCase.execute(
-                    new ApplyNotificationDeliveryRulesCommand(recipientId, ORDER_CREATED)
+                    new ApplyNotificationDeliveryRulesCommand(context.sellerId(), PAYOUT_REQUEST_APPROVED)
             );
         } catch (DataAccessException ex) {
-            return RecipientDeliveryResult.failed(
+            return NotificationEventHandlerResult.failure(
                     "Failed to load notification delivery settings",
                     NotificationFailurePolicy.RETRYABLE
             );
@@ -143,43 +97,46 @@ public class OrderCreatedNotificationEventHandler implements NotificationEventHa
             try {
                 createInAppNotificationUseCase.execute(new CreateInAppNotificationCommand(
                         event.id(),
-                        recipientId,
-                        context.buyerId(),
-                        ORDER_CREATED,
+                        context.sellerId(),
+                        null,
+                        PAYOUT_REQUEST_APPROVED,
                         REFERENCE_TYPE,
-                        context.orderId(),
+                        context.payoutRequestId(),
                         metadata,
-                        templateVariant
+                        InAppNotificationTemplatePolicy.SELLER_TEMPLATE_VARIANT
                 ));
                 delivered = true;
             } catch (AppException ex) {
-                return RecipientDeliveryResult.failed(ex.getMessage(), resolveFailurePolicy(ex));
+                return NotificationEventHandlerResult.failure(ex.getMessage(), resolveFailurePolicy(ex));
             }
         }
 
         if (deliveryDecision.push()) {
             SendPushNotificationResult pushResult = sendPushNotificationUseCase.execute(
                     new SendPushNotificationCommand(
-                            recipientId,
-                            ORDER_CREATED,
+                            context.sellerId(),
+                            PAYOUT_REQUEST_APPROVED,
                             REFERENCE_TYPE,
-                            context.orderId(),
+                            context.payoutRequestId(),
                             event.id(),
-                            templateVariant
+                            InAppNotificationTemplatePolicy.SELLER_TEMPLATE_VARIANT
                     )
             );
 
             var pushFailure = PushNotificationHandlerSupport.mapFailure(pushResult);
             if (pushFailure.isPresent()) {
-                NotificationEventHandlerResult failure = pushFailure.get();
-                return RecipientDeliveryResult.failed(failure.errorMessage(), failure.failurePolicy());
+                return pushFailure.get();
             }
             if (pushResult.outcome() == SendPushNotificationOutcome.SENT) {
                 delivered = true;
             }
         }
 
-        return RecipientDeliveryResult.delivered(delivered);
+        if (!delivered) {
+            return NotificationEventHandlerResult.noOp();
+        }
+
+        return NotificationEventHandlerResult.success();
     }
 
     private String canonicalEventType(String eventType) {
@@ -191,20 +148,5 @@ public class OrderCreatedNotificationEventHandler implements NotificationEventHa
             case UNKNOWN_EVENT_TYPE, INVALID_EVENT_PAYLOAD, VALIDATION_ERROR -> NotificationFailurePolicy.PERMANENT;
             default -> NotificationFailurePolicy.RETRYABLE;
         };
-    }
-
-    private record RecipientDeliveryResult(boolean delivered, boolean failed, String failureReason, NotificationFailurePolicy failurePolicy) {
-
-        static RecipientDeliveryResult delivered(boolean delivered) {
-            return new RecipientDeliveryResult(delivered, false, null, null);
-        }
-
-        static RecipientDeliveryResult failed(String reason, NotificationFailurePolicy policy) {
-            return new RecipientDeliveryResult(false, true, reason, policy);
-        }
-
-        NotificationEventHandlerResult failure() {
-            return NotificationEventHandlerResult.failure(failureReason, failurePolicy);
-        }
     }
 }

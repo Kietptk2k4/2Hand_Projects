@@ -1,5 +1,6 @@
 package com.twohands.commerce_service.unit.infrastructure.outbox;
 
+import com.twohands.commerce_service.application.finance.payout.common.PayoutRequestApprovedOutboxService;
 import com.twohands.commerce_service.application.order.common.InventoryReleasedOutboxService;
 import com.twohands.commerce_service.application.order.common.InventoryReservedOutboxService;
 import com.twohands.commerce_service.application.order.common.OrderCancelledOutboxService;
@@ -116,5 +117,7 @@ class CommerceOutboxTopicResolverTest {
                 .isEqualTo("commerce.shop.closed");
         assertThat(resolver.resolve(ShopRestoredOutboxService.EVENT_TYPE))
                 .isEqualTo("commerce.shop.restored");
+        assertThat(resolver.resolve(PayoutRequestApprovedOutboxService.EVENT_TYPE))
+                .isEqualTo("commerce.payout.request_approved");
     }
 }

@@ -24,12 +24,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -77,7 +79,8 @@ class OrderCompletedNotificationEventHandlerTest {
                 BUYER_ID,
                 "order-1",
                 "ORD-1",
-                "2026-05-25T12:00:00Z"
+                "2026-05-25T12:00:00Z",
+                List.of()
         ));
         when(applyNotificationDeliveryRulesUseCase.execute(any(ApplyNotificationDeliveryRulesCommand.class)))
                 .thenReturn(new NotificationDeliveryDecision(true, true, false));
@@ -94,7 +97,7 @@ class OrderCompletedNotificationEventHandlerTest {
                 "ORDER_COMPLETED",
                 "ORDER",
                 "order-1",
-                "{}",
+                "{\"recipient_audience\":\"buyer\"}",
                 null
         ));
         verify(sendPushNotificationUseCase).execute(new SendPushNotificationCommand(

@@ -46,7 +46,8 @@ public class CommerceOutboxTopicResolver {
             Map.entry("COMMERCE_SHOP_VACATION_UPDATED", "commerce.shop.vacation.updated"),
             Map.entry("COMMERCE_SHOP_SUSPENDED", "commerce.shop.suspended"),
             Map.entry("COMMERCE_SHOP_CLOSED", "commerce.shop.closed"),
-            Map.entry("COMMERCE_SHOP_RESTORED", "commerce.shop.restored")
+            Map.entry("COMMERCE_SHOP_RESTORED", "commerce.shop.restored"),
+            Map.entry("COMMERCE_PAYOUT_REQUEST_APPROVED", "commerce.payout.request_approved")
     );
 
     public String resolve(String eventType) {

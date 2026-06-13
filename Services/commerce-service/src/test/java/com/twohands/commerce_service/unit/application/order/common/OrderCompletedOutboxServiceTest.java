@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,6 +33,7 @@ class OrderCompletedOutboxServiceTest {
         OutboxEvent event = outboxService.build(
                 orderId,
                 buyerId,
+                List.of(),
                 "BUYER_CONFIRM_RECEIVED",
                 "BUYER",
                 completedAt

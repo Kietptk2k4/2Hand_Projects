@@ -9,8 +9,12 @@ import com.twohands.commerce_service.exception.ErrorCode;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Component
@@ -25,7 +29,14 @@ public class OrderCompletedOutboxService {
         this.objectMapper = objectMapper;
     }
 
-    public OutboxEvent build(UUID orderId, UUID buyerId, String reason, String completedBy, Instant completedAt) {
+    public OutboxEvent build(
+            UUID orderId,
+            UUID buyerId,
+            List<UUID> sellerIds,
+            String reason,
+            String completedBy,
+            Instant completedAt
+    ) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("order_id", orderId.toString());
         payload.put("buyer_id", buyerId.toString());
@@ -33,6 +44,11 @@ public class OrderCompletedOutboxService {
         payload.put("completed_at", completedAt.toString());
         payload.put("completed_by", completedBy);
         payload.put("order_code", orderId.toString());
+
+        List<String> distinctSellerIds = distinctSellerIdStrings(sellerIds);
+        if (!distinctSellerIds.isEmpty()) {
+            payload.put("seller_ids", distinctSellerIds);
+        }
 
         return new OutboxEvent(
                 UUID.randomUUID(),
@@ -47,6 +63,19 @@ public class OrderCompletedOutboxService {
                 null,
                 null
         );
+    }
+
+    private List<String> distinctSellerIdStrings(List<UUID> sellerIds) {
+        if (sellerIds == null || sellerIds.isEmpty()) {
+            return List.of();
+        }
+        Set<String> distinct = new LinkedHashSet<>();
+        for (UUID sellerId : sellerIds) {
+            if (sellerId != null) {
+                distinct.add(sellerId.toString());
+            }
+        }
+        return new ArrayList<>(distinct);
     }
 
     private String serialize(Map<String, Object> payload) {

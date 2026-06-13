@@ -14,6 +14,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.UUID;
 
 @Repository
 public class ReserveInventoryRepositoryAdapter implements ReserveInventoryRepository {
@@ -50,6 +51,26 @@ public class ReserveInventoryRepositoryAdapter implements ReserveInventoryReposi
                 throw new AppException(ErrorCode.OUT_OF_STOCK, "Insufficient stock for checkout");
             }
         }
+    }
+
+    @Override
+    public void syncOutOfStockProductStatuses(List<UUID> productIds, Instant updatedAt) {
+        if (productIds == null || productIds.isEmpty()) {
+            return;
+        }
+        String sql = """
+                UPDATE products p
+                SET status = CAST('OUT_OF_STOCK' AS product_status),
+                    updated_at = :now
+                FROM product_inventories pi
+                WHERE p.id = pi.product_id
+                  AND p.id IN (:productIds)
+                  AND p.status = CAST('ACTIVE' AS product_status)
+                  AND pi.stock_quantity = 0
+                """;
+        jdbcTemplate.update(sql, new MapSqlParameterSource()
+                .addValue("productIds", productIds)
+                .addValue("now", Timestamp.from(updatedAt)));
     }
 
     private void lockInventories(List<UUID> productIds) {

@@ -1,5 +1,6 @@
 import { APP_ROUTES } from "../../../shared/constants/routes";
 import { parseNotificationMetadata } from "./notificationMapper";
+import { buildCommerceSellerOrderDetailPath } from "../../commerce/utils/commerceRoutes";
 
 function readMetadataField(notification, ...keys) {
   const metadata =
@@ -25,6 +26,10 @@ function buildSocialPostPath(postId, { focusComments = false } = {}) {
   return `${APP_ROUTES.socialFeed}?${params.toString()}`;
 }
 
+function isSellerAudience(notification) {
+  return readMetadataField(notification, "recipient_audience") === "seller";
+}
+
 export function hasNotificationDeepLink(notification) {
   return Boolean(resolveNotificationDeepLink(notification));
 }
@@ -39,15 +44,26 @@ export function resolveNotificationDeepLink(notification) {
 
   switch (referenceType) {
     case "ORDER":
+      if (isSellerAudience(notification)) {
+        return buildCommerceSellerOrderDetailPath(referenceId);
+      }
       return APP_ROUTES.commerceOrderDetail.replace(":orderId", referenceId);
     case "PAYMENT": {
       const orderId = readMetadataField(notification, "order_id", "orderId");
       if (orderId) {
+        if (isSellerAudience(notification)) {
+          return buildCommerceSellerOrderDetailPath(orderId);
+        }
         return APP_ROUTES.commerceOrderDetail.replace(":orderId", orderId);
       }
-      return APP_ROUTES.commerceOrders;
+      return isSellerAudience(notification)
+        ? APP_ROUTES.commerceSellerOrders
+        : APP_ROUTES.commerceOrders;
     }
     case "SHIPMENT": {
+      if (isSellerAudience(notification)) {
+        return APP_ROUTES.commerceSellerShipmentDetail.replace(":shipmentId", referenceId);
+      }
       const orderId = readMetadataField(notification, "order_id", "orderId");
       if (orderId) {
         return APP_ROUTES.commerceShipmentTracking
@@ -56,6 +72,8 @@ export function resolveNotificationDeepLink(notification) {
       }
       return APP_ROUTES.commerceOrders;
     }
+    case "PAYOUT_REQUEST":
+      return `${APP_ROUTES.commerceSellerAnalytics}#payout`;
     case "PRODUCT":
       return APP_ROUTES.commerceProductDetail.replace(":productId", referenceId);
     case "SHOP":

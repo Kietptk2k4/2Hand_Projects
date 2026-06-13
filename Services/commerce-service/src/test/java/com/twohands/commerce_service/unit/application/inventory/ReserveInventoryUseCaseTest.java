@@ -3,6 +3,8 @@ package com.twohands.commerce_service.unit.application.inventory;
 import com.twohands.commerce_service.application.inventory.reserveinventory.ReserveInventoryCommand;
 import com.twohands.commerce_service.application.inventory.reserveinventory.ReserveInventoryResult;
 import com.twohands.commerce_service.application.inventory.reserveinventory.ReserveInventoryUseCase;
+import com.twohands.commerce_service.application.cart.synccartitemstatus.SyncCartItemStatusUseCase;
+import com.twohands.commerce_service.domain.cart.SyncCartItemStatusResult;
 import com.twohands.commerce_service.domain.inventory.InventoryReservationLine;
 import com.twohands.commerce_service.domain.inventory.ReserveInventoryRepository;
 import com.twohands.commerce_service.exception.AppException;
@@ -20,14 +22,19 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ReserveInventoryUseCaseTest {
 
     @Mock
     private ReserveInventoryRepository reserveInventoryRepository;
+
+    @Mock
+    private SyncCartItemStatusUseCase syncCartItemStatusUseCase;
 
     @InjectMocks
     private ReserveInventoryUseCase useCase;
@@ -37,6 +44,8 @@ class ReserveInventoryUseCaseTest {
 
     @Test
     void shouldReserveInventoryInSortedProductOrder() {
+        when(syncCartItemStatusUseCase.syncByProductId(any())).thenReturn(SyncCartItemStatusResult.empty());
+
         UUID productB = UUID.fromString("00000000-0000-0000-0000-000000000002");
         UUID productA = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
@@ -53,12 +62,15 @@ class ReserveInventoryUseCaseTest {
 
         ArgumentCaptor<List<InventoryReservationLine>> linesCaptor = ArgumentCaptor.forClass(List.class);
         verify(reserveInventoryRepository).reserveAll(linesCaptor.capture(), eq(now));
+        verify(reserveInventoryRepository).syncOutOfStockProductStatuses(eq(List.of(productA, productB)), eq(now));
         assertThat(linesCaptor.getValue()).extracting(InventoryReservationLine::productId)
                 .containsExactly(productA, productB);
     }
 
     @Test
     void shouldMergeDuplicateProductLines() {
+        when(syncCartItemStatusUseCase.syncByProductId(any())).thenReturn(SyncCartItemStatusResult.empty());
+
         ReserveInventoryResult result = useCase.execute(new ReserveInventoryCommand(
                 List.of(
                         new InventoryReservationLine(productId, 2),

@@ -66,7 +66,13 @@ public class ShipmentCreatedNotificationEventHandler implements NotificationEven
 
         boolean delivered = false;
 
-        RecipientDeliveryResult buyerResult = notifyRecipient(event, context, context.buyerId(), null);
+        RecipientDeliveryResult buyerResult = notifyRecipient(
+                event,
+                context,
+                context.buyerId(),
+                null,
+                CommerceNotificationPayloadSupport.RECIPIENT_AUDIENCE_BUYER
+        );
         if (buyerResult.failed()) {
             return buyerResult.failure();
         }
@@ -79,7 +85,8 @@ public class ShipmentCreatedNotificationEventHandler implements NotificationEven
                     event,
                     context,
                     context.sellerId(),
-                    InAppNotificationTemplatePolicy.SELLER_TEMPLATE_VARIANT
+                    InAppNotificationTemplatePolicy.SELLER_TEMPLATE_VARIANT,
+                    CommerceNotificationPayloadSupport.RECIPIENT_AUDIENCE_SELLER
             );
             if (sellerResult.failed()) {
                 return sellerResult.failure();
@@ -100,8 +107,13 @@ public class ShipmentCreatedNotificationEventHandler implements NotificationEven
             NotificationEvent event,
             ShipmentCreatedNotificationContext context,
             UUID recipientId,
-            String templateVariant
+            String templateVariant,
+            String recipientAudience
     ) {
+        String metadata = CommerceNotificationPayloadSupport.withRecipientAudience(
+                event.payload(),
+                recipientAudience
+        );
         NotificationDeliveryDecision deliveryDecision;
         try {
             deliveryDecision = applyNotificationDeliveryRulesUseCase.execute(
@@ -126,7 +138,7 @@ public class ShipmentCreatedNotificationEventHandler implements NotificationEven
                     SHIPMENT_CREATED,
                     REFERENCE_TYPE,
                     context.shipmentId(),
-                    event.payload(),
+                    metadata,
                     templateVariant
             ));
             return RecipientDeliveryResult.delivered(true);

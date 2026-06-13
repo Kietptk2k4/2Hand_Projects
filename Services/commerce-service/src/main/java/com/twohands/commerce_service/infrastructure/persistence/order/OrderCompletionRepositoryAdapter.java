@@ -95,8 +95,9 @@ public class OrderCompletionRepositoryAdapter implements OrderCompletionReposito
         }
 
         insertOrderStatusHistory(orderId, order.status, reason, changedBy, now);
+        List<UUID> sellerIds = findDistinctSellerIds(orderId);
         outboxEventRepository.save(
-                orderCompletedOutboxService.build(orderId, order.buyerId, reason, completedByOutbox, now)
+                orderCompletedOutboxService.build(orderId, order.buyerId, sellerIds, reason, completedByOutbox, now)
         );
 
         return new CompleteOrderResult(CompleteOrderOutcome.COMPLETED, orderId, now);
@@ -152,6 +153,20 @@ public class OrderCompletionRepositoryAdapter implements OrderCompletionReposito
                 Boolean.class
         );
         return Boolean.TRUE.equals(allCompleted);
+    }
+
+    private List<UUID> findDistinctSellerIds(UUID orderId) {
+        String sql = """
+                SELECT DISTINCT seller_id
+                FROM order_items
+                WHERE order_id = :orderId
+                  AND seller_id IS NOT NULL
+                """;
+        return jdbcTemplate.query(
+                sql,
+                new MapSqlParameterSource("orderId", orderId),
+                (rs, rowNum) -> UUID.fromString(rs.getString("seller_id"))
+        );
     }
 
     private void insertOrderStatusHistory(

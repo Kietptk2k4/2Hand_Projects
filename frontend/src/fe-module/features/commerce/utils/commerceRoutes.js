@@ -31,6 +31,10 @@ export function buildCommerceSellerProductEditPath(productId, { step } = {}) {
   return `${base}?${params.toString()}`;
 }
 
+export function buildCommerceSellerShipmentDetailPath(shipmentId) {
+  return APP_ROUTES.commerceSellerShipmentDetail.replace(":shipmentId", shipmentId);
+}
+
 export function buildCommerceShopReviewsPath(shopId, { rating } = {}) {
   const base = APP_ROUTES.commerceShopReviews.replace(":shopId", shopId);
   if (rating == null) return base;

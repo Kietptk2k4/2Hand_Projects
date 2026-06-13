@@ -1,5 +1,6 @@
 package com.twohands.commerce_service.application.inventory.reserveinventory;
 
+import com.twohands.commerce_service.application.cart.synccartitemstatus.SyncCartItemStatusUseCase;
 import com.twohands.commerce_service.domain.inventory.InventoryReservationLine;
 import com.twohands.commerce_service.domain.inventory.ReserveInventoryRepository;
 import com.twohands.commerce_service.domain.order.OrderItemQuantity;
@@ -17,9 +18,14 @@ import java.util.UUID;
 public class ReserveInventoryUseCase {
 
     private final ReserveInventoryRepository reserveInventoryRepository;
+    private final SyncCartItemStatusUseCase syncCartItemStatusUseCase;
 
-    public ReserveInventoryUseCase(ReserveInventoryRepository reserveInventoryRepository) {
+    public ReserveInventoryUseCase(
+            ReserveInventoryRepository reserveInventoryRepository,
+            SyncCartItemStatusUseCase syncCartItemStatusUseCase
+    ) {
         this.reserveInventoryRepository = reserveInventoryRepository;
+        this.syncCartItemStatusUseCase = syncCartItemStatusUseCase;
     }
 
     @Transactional
@@ -31,6 +37,15 @@ public class ReserveInventoryUseCase {
 
         validateQuantities(normalized);
         reserveInventoryRepository.reserveAll(normalized, command.occurredAt());
+
+        List<UUID> productIds = normalized.stream()
+                .map(InventoryReservationLine::productId)
+                .distinct()
+                .toList();
+        reserveInventoryRepository.syncOutOfStockProductStatuses(productIds, command.occurredAt());
+        for (UUID productId : productIds) {
+            syncCartItemStatusUseCase.syncByProductId(productId);
+        }
 
         List<OrderItemQuantity> reservedItems = normalized.stream()
                 .map(line -> new OrderItemQuantity(line.productId(), line.productId(), line.quantity()))

@@ -2,6 +2,7 @@ package com.twohands.notification_service.application.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twohands.notification_service.application.handler.CommerceNotificationPayloadSupport;
 import com.twohands.notification_service.domain.commerce.OrderCompletedNotificationContext;
 import com.twohands.notification_service.domain.commerce.ShipmentDeliveredTimestampPolicy;
 import com.twohands.notification_service.domain.notificationevent.NotificationEvent;
@@ -54,7 +55,8 @@ public class OrderCompletedNotificationPayloadParser {
                 buyerId,
                 orderId.trim(),
                 orderCode.trim(),
-                completedAt
+                completedAt,
+                CommerceNotificationPayloadSupport.parseSellerIds(payload, textField(payload, "seller_id"))
         );
     }
 

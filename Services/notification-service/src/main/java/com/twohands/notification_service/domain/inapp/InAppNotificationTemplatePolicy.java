@@ -31,6 +31,18 @@ public final class InAppNotificationTemplatePolicy {
                     "A shipment was created for an order you are fulfilling."
             ));
         }
+        if ("ORDER_COMPLETED".equals(eventType) && SELLER_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new InAppNotificationTemplate(
+                    "Order completed",
+                    "The buyer confirmed receipt for an order."
+            ));
+        }
+        if ("PAYOUT_REQUEST_APPROVED".equals(eventType) && SELLER_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new InAppNotificationTemplate(
+                    "Payout approved",
+                    "Your withdrawal request has been approved."
+            ));
+        }
         if ("REVIEW_HIDDEN".equals(eventType) && SELLER_TEMPLATE_VARIANT.equals(templateVariant)) {
             return Optional.of(new InAppNotificationTemplate(
                     "Review hidden on your product",

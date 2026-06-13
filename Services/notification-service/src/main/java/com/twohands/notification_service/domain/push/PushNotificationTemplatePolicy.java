@@ -25,6 +25,18 @@ public final class PushNotificationTemplatePolicy {
                     "You have received a new order."
             ));
         }
+        if ("ORDER_COMPLETED".equals(eventType) && SELLER_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new PushNotificationTemplate(
+                    "Order completed",
+                    "The buyer confirmed receipt for an order."
+            ));
+        }
+        if ("PAYOUT_REQUEST_APPROVED".equals(eventType) && SELLER_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new PushNotificationTemplate(
+                    "Payout approved",
+                    "Your withdrawal request has been approved."
+            ));
+        }
         if ("POST_MODERATED".equals(eventType)
                 && InAppNotificationTemplatePolicy.HIDE_TEMPLATE_VARIANT.equals(templateVariant)) {
             return Optional.of(new PushNotificationTemplate(
