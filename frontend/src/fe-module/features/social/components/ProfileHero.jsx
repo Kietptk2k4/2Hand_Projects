@@ -216,12 +216,12 @@ export function ProfileHero({
               >
                 Chỉnh sửa hồ sơ
               </Link>
-              <Link
+              {/* <Link
                 to={APP_ROUTES.account}
                 className="rounded-lg border-2 border-outline-variant px-5 py-2.5 text-sm font-medium text-on-surface transition-colors hover:border-primary hover:text-primary"
               >
                 Cài đặt tài khoản
-              </Link>
+              </Link> */}
             </>
           ) : showFollowButton ? (
             <button

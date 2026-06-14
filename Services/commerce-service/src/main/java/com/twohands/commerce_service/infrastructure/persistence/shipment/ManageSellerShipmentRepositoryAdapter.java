@@ -1,5 +1,6 @@
 package com.twohands.commerce_service.infrastructure.persistence.shipment;
 
+import com.twohands.commerce_service.domain.order.CommerceBuyerSummary;
 import com.twohands.commerce_service.domain.shipment.ManageSellerShipmentRepository;
 import com.twohands.commerce_service.domain.shipment.SellerShipmentDetail;
 import com.twohands.commerce_service.domain.shipment.SellerShipmentRecord;
@@ -48,7 +49,13 @@ public class ManageSellerShipmentRepositoryAdapter implements ManageSellerShipme
         ShipmentAddressSnapshot address = loadAddressSnapshot(shipmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.INTERNAL_ERROR, "Shipping address snapshot missing"));
         List<ShipmentOrderItemSummary> items = loadOrderItems(shipmentId);
-        return Optional.of(new SellerShipmentDetail(shipment.get(), address, items));
+        UUID buyerId = loadOrderBuyerId(shipment.get().orderId());
+        return Optional.of(new SellerShipmentDetail(
+                shipment.get(),
+                address,
+                items,
+                new CommerceBuyerSummary(buyerId, null, null)
+        ));
     }
 
     @Override
@@ -199,6 +206,20 @@ public class ManageSellerShipmentRepositoryAdapter implements ManageSellerShipme
                 )
         );
         return rows.isEmpty() ? Optional.empty() : Optional.of(rows.getFirst());
+    }
+
+    private UUID loadOrderBuyerId(UUID orderId) {
+        String sql = """
+                SELECT buyer_id
+                FROM orders
+                WHERE id = :orderId
+                """;
+        List<UUID> rows = jdbcTemplate.query(
+                sql,
+                new MapSqlParameterSource("orderId", orderId),
+                (rs, rowNum) -> UUID.fromString(rs.getString("buyer_id"))
+        );
+        return rows.isEmpty() ? null : rows.getFirst();
     }
 
     private List<ShipmentOrderItemSummary> loadOrderItems(UUID shipmentId) {

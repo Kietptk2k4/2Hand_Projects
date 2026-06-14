@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { FeedToast } from "../../social/components/FeedToast";
+import { ReviewAuthorLink } from "../components/ReviewAuthorLink";
 import { CommerceShell } from "../components/CommerceShell";
 import { OrderDetailShippingAddress } from "../components/OrderDetailShippingAddress";
 import { SellerShipmentUpdateConfirmDialog } from "../components/SellerShipmentUpdateConfirmDialog";
@@ -135,6 +136,15 @@ export function CommerceSellerShipmentDetailPage() {
                 <span className="text-label-sm text-on-surface-variant">
                   Đơn {formatShortOrderId(detail.orderId)}
                 </span>
+              </div>
+
+              <div className="mt-4">
+                <p className="mb-2 text-label-sm text-on-surface-variant">Người mua</p>
+                <ReviewAuthorLink
+                  buyerId={detail.buyerId}
+                  displayName={detail.buyerDisplayName}
+                  avatarUrl={detail.buyerAvatarUrl}
+                />
               </div>
 
               <dl className="mt-6 grid gap-4 sm:grid-cols-2">

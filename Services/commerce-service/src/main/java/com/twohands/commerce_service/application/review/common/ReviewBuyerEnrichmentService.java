@@ -2,6 +2,7 @@ package com.twohands.commerce_service.application.review.common;
 
 import com.twohands.commerce_service.domain.integration.UserPublicProfileReadPort;
 import com.twohands.commerce_service.domain.integration.UserPublicProfileSummary;
+import com.twohands.commerce_service.domain.order.CommerceBuyerSummary;
 import com.twohands.commerce_service.domain.review.ProductReviewListItem;
 import com.twohands.commerce_service.domain.review.PublicShopReviewListItem;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,18 @@ public class ReviewBuyerEnrichmentService {
         return reviews.stream()
                 .map(review -> enrichProductReview(review, profiles))
                 .toList();
+    }
+
+    public CommerceBuyerSummary enrichBuyer(UUID buyerId) {
+        if (buyerId == null) {
+            return CommerceBuyerSummary.empty();
+        }
+        UserPublicProfileSummary profile = loadProfiles(Set.of(buyerId)).get(buyerId);
+        return new CommerceBuyerSummary(
+                buyerId,
+                resolveDisplayName(profile),
+                resolveAvatarUrl(profile)
+        );
     }
 
     public List<PublicShopReviewListItem> enrichShopReviews(List<PublicShopReviewListItem> reviews) {

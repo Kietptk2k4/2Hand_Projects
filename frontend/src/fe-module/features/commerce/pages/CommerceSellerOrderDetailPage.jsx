@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { FeedToast } from "../../social/components/FeedToast";
+import { ReviewAuthorLink } from "../components/ReviewAuthorLink";
 import { CommerceShell } from "../components/CommerceShell";
 import { OrderDetailShippingAddress } from "../components/OrderDetailShippingAddress";
 import { SellerOrderItemStatusBadge } from "../components/SellerOrderItemStatusBadge";
@@ -124,6 +125,14 @@ export function CommerceSellerOrderDetailPage() {
                   <p className="mt-1 text-body-sm text-on-surface-variant">
                     Đặt lúc {formatOrderDate(detail.orderCreatedAt)}
                   </p>
+                  <div className="mt-4">
+                    <p className="mb-2 text-label-sm text-on-surface-variant">Người mua</p>
+                    <ReviewAuthorLink
+                      buyerId={detail.buyerId}
+                      displayName={detail.buyerDisplayName}
+                      avatarUrl={detail.buyerAvatarUrl}
+                    />
+                  </div>
                 </div>
                 <div className="text-right text-body-sm text-on-surface-variant">
                   <p>{paymentSubline}</p>

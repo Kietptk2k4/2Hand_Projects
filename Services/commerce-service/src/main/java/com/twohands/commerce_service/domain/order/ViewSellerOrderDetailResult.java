@@ -1,7 +1,6 @@
 package com.twohands.commerce_service.domain.order;
 
-import com.twohands.commerce_service.domain.payment.PaymentMethod;
-import com.twohands.commerce_service.domain.payment.PaymentStatus;
+import com.twohands.commerce_service.domain.payment.PaymentMethod;import com.twohands.commerce_service.domain.payment.PaymentStatus;
 import com.twohands.commerce_service.domain.shipment.ShipmentAddressSnapshot;
 
 import java.math.BigDecimal;
@@ -19,6 +18,7 @@ public record ViewSellerOrderDetailResult(
         BigDecimal sellerItemsSubtotal,
         BigDecimal sellerShippingTotal,
         List<SellerOrderListEntry> items,
-        ShipmentAddressSnapshot shippingAddress
+        ShipmentAddressSnapshot shippingAddress,
+        CommerceBuyerSummary buyer
 ) {
 }

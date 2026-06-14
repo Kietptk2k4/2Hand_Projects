@@ -1,3 +1,5 @@
+import { mapReviewBuyerFields } from "./reviewParticipantMapper";
+
 function pick(obj, camel, snake) {
   return obj?.[camel] ?? obj?.[snake];
 }
@@ -77,6 +79,7 @@ export function mapSellerShipmentDetail(data) {
       quantity: row.quantity,
       status: row.status,
     })),
+    ...mapReviewBuyerFields(data),
   };
 }
 

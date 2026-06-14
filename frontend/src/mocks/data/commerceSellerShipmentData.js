@@ -5,6 +5,7 @@ import {
   attachShipmentToOrderItems,
   findSellerOrderItemsByIds,
   getAllSellerOrderItemRecords,
+  MOCK_SELLER_ORDER_BUYER_PROFILE,
   setSellerOrderItemsStatus,
 } from "./commerceSellerOrderData";
 
@@ -171,6 +172,7 @@ function toDetailResponse(record) {
       quantity: item.quantity,
       status: item.item_status,
     })),
+    ...MOCK_SELLER_ORDER_BUYER_PROFILE,
   };
 }
 

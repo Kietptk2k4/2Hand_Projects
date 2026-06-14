@@ -1,17 +1,29 @@
 import { useCallback, useEffect, useState } from "react";
 
+function getCommerceMediaUrl(item) {
+  return item?.mediaUrl ?? item?.url ?? "";
+}
+
 function isVideoItem(item) {
   return item?.mediaType === "VIDEO";
 }
+
+const DIALOG_LABELS = {
+  product: { image: "Xem ảnh sản phẩm", video: "Xem video sản phẩm" },
+  review: { image: "Xem ảnh đánh giá", video: "Xem video đánh giá" },
+};
 
 export function ProductMediaLightbox({
   items = [],
   initialIndex = 0,
   title = "",
+  variant = "product",
   onClose,
   onIndexChange,
 }) {
-  const filteredItems = (items || []).filter((item) => item?.mediaUrl);
+  const filteredItems = (items || []).filter((item) => getCommerceMediaUrl(item));
+  const labels = DIALOG_LABELS[variant] ?? DIALOG_LABELS.product;
+  const imageAlt = variant === "review" ? "Ảnh đánh giá" : title || "Ảnh sản phẩm";
   const [activeIndex, setActiveIndex] = useState(() =>
     Math.min(Math.max(initialIndex, 0), Math.max(filteredItems.length - 1, 0))
   );
@@ -75,7 +87,7 @@ export function ProductMediaLightbox({
       className="fixed inset-0 z-[70] flex items-center justify-center bg-on-background/85 p-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
-      aria-label={isVideo ? "Xem video sản phẩm" : "Xem ảnh sản phẩm"}
+      aria-label={isVideo ? labels.video : labels.image}
       onClick={handleClose}
     >
       <button
@@ -127,8 +139,8 @@ export function ProductMediaLightbox({
       >
         {isVideo ? (
           <video
-            key={current.mediaUrl}
-            src={current.mediaUrl}
+            key={getCommerceMediaUrl(current)}
+            src={getCommerceMediaUrl(current)}
             className="max-h-[85vh] max-w-full rounded-lg bg-on-background"
             controls
             autoPlay
@@ -136,8 +148,8 @@ export function ProductMediaLightbox({
           />
         ) : (
           <img
-            src={current.mediaUrl}
-            alt={title || "Ảnh sản phẩm"}
+            src={getCommerceMediaUrl(current)}
+            alt={imageAlt}
             className="max-h-[85vh] max-w-full rounded-lg object-contain"
           />
         )}

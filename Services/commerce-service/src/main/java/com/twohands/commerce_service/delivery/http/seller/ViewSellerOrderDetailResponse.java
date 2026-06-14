@@ -20,6 +20,9 @@ public record ViewSellerOrderDetailResponse(
         @JsonProperty("seller_items_subtotal") BigDecimal sellerItemsSubtotal,
         @JsonProperty("seller_shipping_total") BigDecimal sellerShippingTotal,
         List<SellerOrderListEntryResponse> items,
-        @JsonProperty("shipping_address") ShippingAddressSnapshotResponse shippingAddress
+        @JsonProperty("shipping_address") ShippingAddressSnapshotResponse shippingAddress,
+        @JsonProperty("buyer_id") UUID buyerId,
+        @JsonProperty("buyer_display_name") String buyerDisplayName,
+        @JsonProperty("buyer_avatar_url") String buyerAvatarUrl
 ) {
 }

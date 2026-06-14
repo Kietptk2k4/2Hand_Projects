@@ -1,8 +1,10 @@
 package com.twohands.commerce_service.unit.application.shipment;
 
+import com.twohands.commerce_service.application.shipment.common.SellerShipmentBuyerEnrichmentService;
 import com.twohands.commerce_service.application.shipment.updatesellershipment.UpdateSellerShipmentCommand;
 import com.twohands.commerce_service.application.shipment.updatesellershipment.UpdateSellerShipmentTransactionService;
 import com.twohands.commerce_service.application.shipment.updatesellershipment.UpdateSellerShipmentUseCase;
+import com.twohands.commerce_service.domain.order.CommerceBuyerSummary;
 import com.twohands.commerce_service.domain.shipment.ManageSellerShipmentRepository;
 import com.twohands.commerce_service.domain.shipment.SellerShipmentDetail;
 import com.twohands.commerce_service.domain.shipment.SellerShipmentRecord;
@@ -30,6 +32,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,6 +46,9 @@ class UpdateSellerShipmentUseCaseTest {
     @Mock
     private UpdateSellerShipmentTransactionService updateSellerShipmentTransactionService;
 
+    @Mock
+    private SellerShipmentBuyerEnrichmentService sellerShipmentBuyerEnrichmentService;
+
     private UpdateSellerShipmentUseCase useCase;
 
     private final UUID sellerId = UUID.randomUUID();
@@ -55,8 +61,10 @@ class UpdateSellerShipmentUseCaseTest {
         useCase = new UpdateSellerShipmentUseCase(
                 manageSellerShipmentRepository,
                 updateSellerShipmentTransactionService,
+                sellerShipmentBuyerEnrichmentService,
                 Clock.fixed(now, ZoneOffset.UTC)
         );
+        lenient().when(sellerShipmentBuyerEnrichmentService.enrich(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Test
@@ -161,7 +169,8 @@ class UpdateSellerShipmentUseCaseTest {
                 ),
                 List.of(new ShipmentOrderItemSummary(
                         UUID.randomUUID(), "Product", 1, "PROCESSING"
-                ))
+                )),
+                CommerceBuyerSummary.empty()
         );
     }
 }

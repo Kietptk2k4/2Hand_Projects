@@ -8,6 +8,7 @@ import com.twohands.commerce_service.domain.order.ViewSellerOrderDetailResult;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.common.pagination.PageMeta;
 import com.twohands.commerce_service.delivery.http.catalog.PageMetaResponse;
+import com.twohands.commerce_service.domain.order.CommerceBuyerSummary;
 import com.twohands.commerce_service.domain.order.SellerOrderListEntry;
 import com.twohands.commerce_service.domain.order.SellerOrderListPaymentSummary;
 import com.twohands.commerce_service.domain.order.SellerOrderListShipmentSummary;
@@ -80,6 +81,9 @@ public class SellerOrderController {
     }
 
     private ViewSellerOrderDetailResponse toDetailResponse(ViewSellerOrderDetailResult result) {
+        CommerceBuyerSummary buyer = result.buyer() == null
+                ? CommerceBuyerSummary.empty()
+                : result.buyer();
         return new ViewSellerOrderDetailResponse(
                 result.orderId(),
                 result.orderStatus(),
@@ -90,7 +94,10 @@ public class SellerOrderController {
                 result.sellerItemsSubtotal(),
                 result.sellerShippingTotal(),
                 result.items().stream().map(this::toEntryResponse).toList(),
-                toShippingAddressResponse(result.shippingAddress())
+                toShippingAddressResponse(result.shippingAddress()),
+                buyer.buyerId(),
+                buyer.displayName(),
+                buyer.avatarUrl()
         );
     }
 

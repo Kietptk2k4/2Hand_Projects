@@ -1,5 +1,6 @@
 package com.twohands.commerce_service.infrastructure.persistence.order;
 
+import com.twohands.commerce_service.domain.order.CommerceBuyerSummary;
 import com.twohands.commerce_service.domain.order.OrderItemStatus;
 import com.twohands.commerce_service.domain.order.OrderStatus;
 import com.twohands.commerce_service.domain.order.SellerOrderListEntry;
@@ -99,6 +100,7 @@ public class ViewSellerOrderDetailRepositoryAdapter implements ViewSellerOrderDe
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         ShipmentAddressSnapshot shippingAddress = resolveShippingAddress(first.orderStatus(), items);
+        UUID buyerId = loadOrderBuyerId(sellerId, orderId);
 
         return Optional.of(new ViewSellerOrderDetailResult(
                 first.orderId(),
@@ -110,7 +112,8 @@ public class ViewSellerOrderDetailRepositoryAdapter implements ViewSellerOrderDe
                 itemsSubtotal,
                 shippingTotal,
                 items,
-                shippingAddress
+                shippingAddress,
+                new CommerceBuyerSummary(buyerId, null, null)
         ));
     }
 
@@ -155,6 +158,25 @@ public class ViewSellerOrderDetailRepositoryAdapter implements ViewSellerOrderDe
                 )
         );
         return rows.isEmpty() ? Optional.empty() : Optional.of(rows.getFirst());
+    }
+
+    private UUID loadOrderBuyerId(UUID sellerId, UUID orderId) {
+        String sql = """
+                SELECT o.buyer_id
+                FROM order_items oi
+                INNER JOIN orders o ON o.id = oi.order_id
+                WHERE oi.seller_id = :sellerId
+                  AND oi.order_id = :orderId
+                LIMIT 1
+                """;
+        List<UUID> rows = jdbcTemplate.query(
+                sql,
+                new MapSqlParameterSource()
+                        .addValue("sellerId", sellerId)
+                        .addValue("orderId", orderId),
+                (rs, rowNum) -> UUID.fromString(rs.getString("buyer_id"))
+        );
+        return rows.isEmpty() ? null : rows.getFirst();
     }
 
     private SellerOrderListEntry mapEntry(ResultSet rs, int rowNum) throws SQLException {

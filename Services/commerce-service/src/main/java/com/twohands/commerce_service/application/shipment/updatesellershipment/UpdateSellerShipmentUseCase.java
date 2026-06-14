@@ -1,5 +1,6 @@
 package com.twohands.commerce_service.application.shipment.updatesellershipment;
 
+import com.twohands.commerce_service.application.shipment.common.SellerShipmentBuyerEnrichmentService;
 import com.twohands.commerce_service.domain.shipment.ManageSellerShipmentRepository;
 import com.twohands.commerce_service.domain.shipment.ManualShipmentStatusPolicy;
 import com.twohands.commerce_service.domain.shipment.SellerShipmentDetail;
@@ -18,15 +19,18 @@ public class UpdateSellerShipmentUseCase {
 
     private final ManageSellerShipmentRepository manageSellerShipmentRepository;
     private final UpdateSellerShipmentTransactionService updateSellerShipmentTransactionService;
+    private final SellerShipmentBuyerEnrichmentService sellerShipmentBuyerEnrichmentService;
     private final Clock clock;
 
     public UpdateSellerShipmentUseCase(
             ManageSellerShipmentRepository manageSellerShipmentRepository,
             UpdateSellerShipmentTransactionService updateSellerShipmentTransactionService,
+            SellerShipmentBuyerEnrichmentService sellerShipmentBuyerEnrichmentService,
             Clock clock
     ) {
         this.manageSellerShipmentRepository = manageSellerShipmentRepository;
         this.updateSellerShipmentTransactionService = updateSellerShipmentTransactionService;
+        this.sellerShipmentBuyerEnrichmentService = sellerShipmentBuyerEnrichmentService;
         this.clock = clock;
     }
 
@@ -117,8 +121,9 @@ public class UpdateSellerShipmentUseCase {
     }
 
     private SellerShipmentDetail loadDetail(java.util.UUID shipmentId, java.util.UUID sellerId) {
-        return manageSellerShipmentRepository.findDetailForSeller(shipmentId, sellerId)
+        SellerShipmentDetail detail = manageSellerShipmentRepository.findDetailForSeller(shipmentId, sellerId)
                 .orElseThrow(() -> new AppException(ErrorCode.SHIPMENT_NOT_FOUND));
+        return sellerShipmentBuyerEnrichmentService.enrich(detail);
     }
 
     private ShipmentStatus parseStatus(String raw) {

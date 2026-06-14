@@ -2,6 +2,8 @@ package com.twohands.commerce_service.unit.application.order;
 
 import com.twohands.commerce_service.application.order.viewsellerorderdetail.ViewSellerOrderDetailCommand;
 import com.twohands.commerce_service.application.order.viewsellerorderdetail.ViewSellerOrderDetailUseCase;
+import com.twohands.commerce_service.application.review.common.ReviewBuyerEnrichmentService;
+import com.twohands.commerce_service.domain.order.CommerceBuyerSummary;
 import com.twohands.commerce_service.domain.order.OrderItemStatus;
 import com.twohands.commerce_service.domain.order.OrderStatus;
 import com.twohands.commerce_service.domain.order.SellerOrderListEntry;
@@ -29,6 +31,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,15 +44,30 @@ class ViewSellerOrderDetailUseCaseTest {
     @Mock
     private ViewSellerOrderDetailRepository viewSellerOrderDetailRepository;
 
+    @Mock
+    private ReviewBuyerEnrichmentService reviewBuyerEnrichmentService;
+
     private ViewSellerOrderDetailUseCase useCase;
 
     private final UUID sellerId = UUID.randomUUID();
     private final UUID orderId = UUID.randomUUID();
+    private final UUID buyerId = UUID.randomUUID();
     private final Instant now = Instant.parse("2026-05-21T10:00:00Z");
 
     @BeforeEach
     void setUp() {
-        useCase = new ViewSellerOrderDetailUseCase(sellerShopRepository, viewSellerOrderDetailRepository);
+        useCase = new ViewSellerOrderDetailUseCase(
+                sellerShopRepository,
+                viewSellerOrderDetailRepository,
+                reviewBuyerEnrichmentService
+        );
+        lenient().when(reviewBuyerEnrichmentService.enrichBuyer(any())).thenAnswer(invocation -> {
+            UUID id = invocation.getArgument(0);
+            if (id == null) {
+                return CommerceBuyerSummary.empty();
+            }
+            return new CommerceBuyerSummary(id, "Người mua", null);
+        });
     }
 
     @Test
@@ -122,7 +141,8 @@ class ViewSellerOrderDetailUseCaseTest {
                 BigDecimal.valueOf(890000),
                 BigDecimal.valueOf(30000),
                 List.of(item),
-                null
+                null,
+                new CommerceBuyerSummary(buyerId, null, null)
         );
     }
 }

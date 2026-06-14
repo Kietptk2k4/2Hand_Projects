@@ -1,3 +1,5 @@
+import { mapReviewBuyerFields } from "./reviewParticipantMapper";
+
 function pick(obj, camel, snake) {
   return obj?.[camel] ?? obj?.[snake];
 }
@@ -98,6 +100,7 @@ export function mapSellerOrderDetail(data) {
     sellerShippingTotal: data.seller_shipping_total ?? data.sellerShippingTotal ?? 0,
     items: (data.items || []).map(mapSellerOrderListItem).filter(Boolean),
     shippingAddress: mapShippingAddress(data.shipping_address ?? data.shippingAddress),
+    ...mapReviewBuyerFields(data),
   };
 }
 

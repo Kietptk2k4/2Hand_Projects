@@ -1,6 +1,7 @@
 package com.twohands.commerce_service.application.shipment.cancelghnshipment;
 
 import com.twohands.commerce_service.application.shipment.common.GhnShipmentStatusUpdateService;
+import com.twohands.commerce_service.application.shipment.common.SellerShipmentBuyerEnrichmentService;
 import com.twohands.commerce_service.domain.shipment.GhnCancelOrderGateway;
 import com.twohands.commerce_service.domain.shipment.ManageSellerShipmentRepository;
 import com.twohands.commerce_service.domain.shipment.SellerShipmentDetail;
@@ -28,15 +29,18 @@ public class CancelGhnShipmentUseCase {
     private final ManageSellerShipmentRepository manageSellerShipmentRepository;
     private final GhnCancelOrderGateway ghnCancelOrderGateway;
     private final GhnShipmentStatusUpdateService ghnShipmentStatusUpdateService;
+    private final SellerShipmentBuyerEnrichmentService sellerShipmentBuyerEnrichmentService;
 
     public CancelGhnShipmentUseCase(
             ManageSellerShipmentRepository manageSellerShipmentRepository,
             GhnCancelOrderGateway ghnCancelOrderGateway,
-            GhnShipmentStatusUpdateService ghnShipmentStatusUpdateService
+            GhnShipmentStatusUpdateService ghnShipmentStatusUpdateService,
+            SellerShipmentBuyerEnrichmentService sellerShipmentBuyerEnrichmentService
     ) {
         this.manageSellerShipmentRepository = manageSellerShipmentRepository;
         this.ghnCancelOrderGateway = ghnCancelOrderGateway;
         this.ghnShipmentStatusUpdateService = ghnShipmentStatusUpdateService;
+        this.sellerShipmentBuyerEnrichmentService = sellerShipmentBuyerEnrichmentService;
     }
 
     @Transactional
@@ -63,8 +67,9 @@ public class CancelGhnShipmentUseCase {
         ghnCancelOrderGateway.cancelOrder(shipment.ghnOrderCode());
         ghnShipmentStatusUpdateService.apply(shipment, "cancel", shipment.ghnOrderCode());
 
-        return manageSellerShipmentRepository.findDetailForSeller(command.shipmentId(), command.sellerId())
+        SellerShipmentDetail detail = manageSellerShipmentRepository.findDetailForSeller(command.shipmentId(), command.sellerId())
                 .orElseThrow(() -> new AppException(ErrorCode.SHIPMENT_NOT_FOUND));
+        return sellerShipmentBuyerEnrichmentService.enrich(detail);
     }
 
     public String successMessage() {

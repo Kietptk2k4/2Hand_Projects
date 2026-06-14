@@ -29,6 +29,9 @@ public record SellerShipmentDetailResponse(
         @JsonProperty("created_at") Instant createdAt,
         @JsonProperty("updated_at") Instant updatedAt,
         @JsonProperty("shipping_address") ShippingAddressSnapshotResponse shippingAddress,
-        @JsonProperty("order_items") List<ShipmentOrderItemSummaryResponse> orderItems
+        @JsonProperty("order_items") List<ShipmentOrderItemSummaryResponse> orderItems,
+        @JsonProperty("buyer_id") UUID buyerId,
+        @JsonProperty("buyer_display_name") String buyerDisplayName,
+        @JsonProperty("buyer_avatar_url") String buyerAvatarUrl
 ) {
 }

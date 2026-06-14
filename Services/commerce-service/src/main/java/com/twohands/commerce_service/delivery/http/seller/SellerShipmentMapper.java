@@ -2,6 +2,7 @@ package com.twohands.commerce_service.delivery.http.seller;
 
 import com.twohands.commerce_service.common.pagination.PageMeta;
 import com.twohands.commerce_service.delivery.http.catalog.PageMetaResponse;
+import com.twohands.commerce_service.domain.order.CommerceBuyerSummary;
 import com.twohands.commerce_service.domain.shipment.SellerShipmentDetail;
 import com.twohands.commerce_service.domain.shipment.SellerShipmentListEntry;
 import com.twohands.commerce_service.domain.shipment.SellerShipmentRecord;
@@ -45,6 +46,9 @@ final class SellerShipmentMapper {
 
     static SellerShipmentDetailResponse toDetailResponse(SellerShipmentDetail detail) {
         SellerShipmentRecord shipment = detail.shipment();
+        CommerceBuyerSummary buyer = detail.buyer() == null
+                ? CommerceBuyerSummary.empty()
+                : detail.buyer();
         return new SellerShipmentDetailResponse(
                 shipment.shipmentId(),
                 shipment.orderId(),
@@ -78,7 +82,10 @@ final class SellerShipmentMapper {
                                 item.quantity(),
                                 item.status()
                         ))
-                        .toList()
+                        .toList(),
+                buyer.buyerId(),
+                buyer.displayName(),
+                buyer.avatarUrl()
         );
     }
 }

@@ -1,6 +1,15 @@
 import { MOCK_CART_DEMO_USER_ID } from "./commerceCartData";
 import { MOCK_DEMO_SELLER_SHOP_ID, getShopBySellerId } from "./commerceSellerShopData";
 
+/** Demo buyer for seller order/shipment detail (social profile link QA) */
+export const MOCK_SELLER_ORDER_BUYER_ID = "b1000000-0000-4000-8000-000000000001";
+
+export const MOCK_SELLER_ORDER_BUYER_PROFILE = {
+  buyer_id: MOCK_SELLER_ORDER_BUYER_ID,
+  buyer_display_name: "Lan Nguyễn",
+  buyer_avatar_url: "https://i.pravatar.cc/150?u=seller-order-buyer",
+};
+
 /** QA — demo seller (active@2hands.vn) order item IDs */
 export const MOCK_SELLER_ORDER_ITEM_PENDING = "so2000000-0000-4000-8000-000000000001";
 export const MOCK_SELLER_ORDER_ITEM_PROCESSING = "so2000000-0000-4000-8000-000000000002";
@@ -574,6 +583,7 @@ export function getSellerOrderDetailForUser(userId, orderId) {
       seller_shipping_total: sellerShippingTotal,
       items: records.map(toListRow),
       shipping_address,
+      ...MOCK_SELLER_ORDER_BUYER_PROFILE,
     },
   };
 }
