@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   fetchSellerShipmentDetail,
   updateSellerShipment,
+  cancelSellerShipment,
 } from "../api/sellerShipmentApi";
 import { mapSellerShipmentApiError } from "../constants/sellerShipmentConstants";
 import {
@@ -24,8 +25,10 @@ export function useSellerShipmentDetail(shipmentId) {
   const [detail, setDetail] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [updateError, setUpdateError] = useState("");
+  const [cancelError, setCancelError] = useState("");
   const [isNotFound, setIsNotFound] = useState(false);
   const requestIdRef = useRef(0);
 
@@ -97,17 +100,45 @@ export function useSellerShipmentDetail(shipmentId) {
   );
 
   const clearUpdateError = useCallback(() => setUpdateError(""), []);
+  const clearCancelError = useCallback(() => setCancelError(""), []);
+
+  const cancelShipment = useCallback(async () => {
+    if (!shipmentId) return null;
+
+    setIsCancelling(true);
+    setCancelError("");
+
+    try {
+      const raw = await cancelSellerShipment(shipmentId);
+      const mapped = mapSellerShipmentDetail(raw);
+      setDetail(mapped);
+      return mapped;
+    } catch (error) {
+      if (isUnauthorizedError(error)) {
+        showSessionExpired(error?.message);
+        throw error;
+      }
+      setCancelError(mapSellerShipmentApiError(error));
+      return null;
+    } finally {
+      setIsCancelling(false);
+    }
+  }, [shipmentId, showSessionExpired]);
 
   return {
     detail,
     isLoading,
     isUpdating,
+    isCancelling,
     errorMessage,
     updateError,
+    cancelError,
     isNotFound,
     retry: load,
     refresh: load,
     patchShipment,
+    cancelShipment,
     clearUpdateError,
+    clearCancelError,
   };
 }

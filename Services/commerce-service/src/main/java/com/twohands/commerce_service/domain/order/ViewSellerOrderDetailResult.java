@@ -19,6 +19,7 @@ public record ViewSellerOrderDetailResult(
         BigDecimal sellerShippingTotal,
         List<SellerOrderListEntry> items,
         ShipmentAddressSnapshot shippingAddress,
-        CommerceBuyerSummary buyer
+        CommerceBuyerSummary buyer,
+        PaymentRefundRequestSummary activeRefundRequest
 ) {
 }

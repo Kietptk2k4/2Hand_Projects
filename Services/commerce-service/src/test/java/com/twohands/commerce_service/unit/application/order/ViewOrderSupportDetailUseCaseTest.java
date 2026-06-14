@@ -43,8 +43,9 @@ class ViewOrderSupportDetailUseCaseTest {
 				null,
 				null,
 				List.of(),
-				List.of(),
-				List.of()
+                List.of(),
+                List.of(),
+				null
 		);
 		when(repository.findByOrderId(orderId)).thenReturn(Optional.of(expected));
 

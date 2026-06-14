@@ -48,5 +48,6 @@ export function mapCheckoutResponse(data) {
     orderStatus: data.order_status,
     finalAmount: data.final_amount,
     payosCheckoutUrl: data.payos_checkout_url,
+    redirect: data.redirect,
   };
 }

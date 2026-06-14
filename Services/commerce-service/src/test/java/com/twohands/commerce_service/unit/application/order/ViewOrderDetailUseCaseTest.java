@@ -145,7 +145,8 @@ class ViewOrderDetailUseCaseTest {
                         "SYSTEM",
                         null,
                         now
-                ))
+                )),
+                null
         );
     }
 }

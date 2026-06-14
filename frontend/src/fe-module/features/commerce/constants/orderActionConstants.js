@@ -17,6 +17,9 @@ export function mapOrderActionApiError(error) {
 }
 
 export function buildCancelOrderSuccessToast(result) {
+  if (result?.pendingRefund) {
+    return "Yêu cầu hủy đơn đã được ghi nhận. Đơn hàng đang chờ hoàn tiền.";
+  }
   if (result?.alreadyCancelled) {
     return "Đơn hàng đã được hủy trước đó.";
   }

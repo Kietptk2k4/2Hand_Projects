@@ -22,6 +22,7 @@ public class ShipmentLifecycleOutboxEmitter {
     private final ShipmentReadyToShipOutboxService shipmentReadyToShipOutboxService;
     private final ShipmentShippedOutboxService shipmentShippedOutboxService;
     private final ShipmentDeliveredOutboxService shipmentDeliveredOutboxService;
+    private final ShipmentCancelledOutboxService shipmentCancelledOutboxService;
     private final OrderBuyerRepository orderBuyerRepository;
 
     public ShipmentLifecycleOutboxEmitter(
@@ -29,12 +30,14 @@ public class ShipmentLifecycleOutboxEmitter {
             ShipmentReadyToShipOutboxService shipmentReadyToShipOutboxService,
             ShipmentShippedOutboxService shipmentShippedOutboxService,
             ShipmentDeliveredOutboxService shipmentDeliveredOutboxService,
+            ShipmentCancelledOutboxService shipmentCancelledOutboxService,
             OrderBuyerRepository orderBuyerRepository
     ) {
         this.outboxEventRepository = outboxEventRepository;
         this.shipmentReadyToShipOutboxService = shipmentReadyToShipOutboxService;
         this.shipmentShippedOutboxService = shipmentShippedOutboxService;
         this.shipmentDeliveredOutboxService = shipmentDeliveredOutboxService;
+        this.shipmentCancelledOutboxService = shipmentCancelledOutboxService;
         this.orderBuyerRepository = orderBuyerRepository;
     }
 
@@ -86,6 +89,23 @@ public class ShipmentLifecycleOutboxEmitter {
                     occurredAt
             ));
         }
+    }
+
+    public void emitCancelledNotificationEvent(
+            SellerShipmentRecord shipment,
+            Instant occurredAt,
+            String trackingOverride
+    ) {
+        UUID buyerId = resolveBuyerId(shipment.orderId(), new HashMap<>());
+        String trackingCode = resolveTrackingCode(shipment, trackingOverride);
+        outboxEventRepository.save(shipmentCancelledOutboxService.build(
+                shipment.shipmentId(),
+                shipment.orderId(),
+                buyerId,
+                shipment.sellerId(),
+                trackingCode,
+                occurredAt
+        ));
     }
 
     private UUID resolveBuyerId(UUID orderId, Map<UUID, UUID> buyerIdCache) {

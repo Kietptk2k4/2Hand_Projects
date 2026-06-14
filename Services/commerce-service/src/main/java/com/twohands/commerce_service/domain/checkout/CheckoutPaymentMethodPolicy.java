@@ -28,7 +28,9 @@ public final class CheckoutPaymentMethodPolicy {
             );
         }
 
-        if (paymentMethod != PaymentMethod.COD && paymentMethod != PaymentMethod.PAYOS) {
+        if (paymentMethod != PaymentMethod.COD
+                && paymentMethod != PaymentMethod.PAYOS
+                && paymentMethod != PaymentMethod.VNPAY) {
             throw new AppException(ErrorCode.INVALID_PAYMENT_METHOD);
         }
     }

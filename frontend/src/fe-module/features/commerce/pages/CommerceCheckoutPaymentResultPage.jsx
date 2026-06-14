@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { createPayOsCheckoutUrl } from "../api/paymentApi";
+import { createPayOsCheckoutUrl, retryVnpayPayment } from "../api/paymentApi";
 import { CommerceShell } from "../components/CommerceShell";
 import { PaymentStatusPanel } from "../components/PaymentStatusPanel";
 import { canRetryPayment } from "../constants/paymentStatusLabels";
 import { usePaymentStatus } from "../hooks/usePaymentStatus";
-import { mapPayOsCheckoutUrlResponse } from "../utils/paymentMapper";
+import { mapPayOsCheckoutUrlResponse, mapVnpayRetryResponse } from "../utils/paymentMapper";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
 const UUID_REGEX =
@@ -37,6 +37,7 @@ export function CommerceCheckoutPaymentResultPage() {
     orderStatus,
     orderPaymentStatus,
     payosCheckoutUrl,
+    paymentMethod,
     isLoading,
     error,
     refresh,
@@ -57,6 +58,21 @@ export function CommerceCheckoutPaymentResultPage() {
 
     setIsRetrying(true);
     try {
+      if (paymentMethod === "VNPAY") {
+        if (!orderId) {
+          await refresh();
+          return;
+        }
+        const raw = await retryVnpayPayment(orderId);
+        const redirect = mapVnpayRetryResponse(raw)?.redirect;
+        if (redirect) {
+          window.location.assign(redirect);
+          return;
+        }
+        await refresh();
+        return;
+      }
+
       let url = payosCheckoutUrl;
       if (!url) {
         const raw = await createPayOsCheckoutUrl(paymentId);
@@ -72,7 +88,7 @@ export function CommerceCheckoutPaymentResultPage() {
     } finally {
       setIsRetrying(false);
     }
-  }, [paymentId, payosCheckoutUrl, refresh]);
+  }, [orderId, paymentId, paymentMethod, payosCheckoutUrl, refresh]);
 
   if (!isValidPaymentId) {
     return null;
@@ -94,6 +110,7 @@ export function CommerceCheckoutPaymentResultPage() {
           showRetry={showRetry}
           onRetryPayment={showRetry ? handleRetryPayment : undefined}
           isRetrying={isRetrying}
+          paymentMethod={paymentMethod}
         />
       </div>
     </CommerceShell>

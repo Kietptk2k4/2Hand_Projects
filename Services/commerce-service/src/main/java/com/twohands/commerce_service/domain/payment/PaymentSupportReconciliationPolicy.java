@@ -22,7 +22,7 @@ public final class PaymentSupportReconciliationPolicy {
         return switch (paymentStatus) {
             case PAID -> hasValidProcessedWebhook ? "RECONCILED" : "OUTSTANDING";
             case PENDING -> hasValidProcessedWebhook ? "WEBHOOK_RECEIVED" : "AWAITING_WEBHOOK";
-            case FAILED, CANCELLED, EXPIRED -> hasValidProcessedWebhook ? "TERMINAL_RECONCILED" : "TERMINAL_OUTSTANDING";
+            case FAILED, CANCELLED, EXPIRED, REFUNDED -> hasValidProcessedWebhook ? "TERMINAL_RECONCILED" : "TERMINAL_OUTSTANDING";
         };
     }
 }

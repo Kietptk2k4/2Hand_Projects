@@ -17,6 +17,7 @@ public class ShipmentStatusTransitionService {
     private final OutboxEventRepository outboxEventRepository;
     private final ShipmentStatusChangedOutboxService shipmentStatusChangedOutboxService;
     private final ShipmentLifecycleOutboxEmitter shipmentLifecycleOutboxEmitter;
+    private final ShipmentCancelledOutboxService shipmentCancelledOutboxService;
     private final Clock clock;
 
     public ShipmentStatusTransitionService(
@@ -24,12 +25,14 @@ public class ShipmentStatusTransitionService {
             OutboxEventRepository outboxEventRepository,
             ShipmentStatusChangedOutboxService shipmentStatusChangedOutboxService,
             ShipmentLifecycleOutboxEmitter shipmentLifecycleOutboxEmitter,
+            ShipmentCancelledOutboxService shipmentCancelledOutboxService,
             Clock clock
     ) {
         this.processGhnWebhookRepository = processGhnWebhookRepository;
         this.outboxEventRepository = outboxEventRepository;
         this.shipmentStatusChangedOutboxService = shipmentStatusChangedOutboxService;
         this.shipmentLifecycleOutboxEmitter = shipmentLifecycleOutboxEmitter;
+        this.shipmentCancelledOutboxService = shipmentCancelledOutboxService;
         this.clock = clock;
     }
 
@@ -73,6 +76,13 @@ public class ShipmentStatusTransitionService {
                 ))
                 .orElse(0);
 
+        if (newStatus == ShipmentStatus.CANCELLED) {
+            orderItemsUpdated = processGhnWebhookRepository.releaseOrderItemsFromCancelledShipment(
+                    shipment.shipmentId(),
+                    occurredAt
+            );
+        }
+
         outboxEventRepository.save(shipmentStatusChangedOutboxService.build(
                 shipment.shipmentId(),
                 shipment.orderId(),
@@ -88,6 +98,14 @@ public class ShipmentStatusTransitionService {
                 occurredAt,
                 trackingNumber
         );
+
+        if (newStatus == ShipmentStatus.CANCELLED) {
+            shipmentLifecycleOutboxEmitter.emitCancelledNotificationEvent(
+                    shipment,
+                    occurredAt,
+                    trackingNumber
+            );
+        }
 
         return ShipmentStatusTransitionResult.applied(shipment, newStatus, orderItemsUpdated);
     }

@@ -59,6 +59,7 @@ import { PaymentSupportDetailTab } from "../admin/orderSupport/components/tabs/P
 import { ShipmentSupportDetailTab } from "../admin/orderSupport/components/tabs/ShipmentSupportDetailTab.jsx";
 import { AdminSupportTargetBar } from "../admin/orderSupport/components/AdminSupportTargetBar.jsx";
 import { WebhookLogsSupportTab } from "../admin/orderSupport/components/tabs/WebhookLogsSupportTab.jsx";
+import { AdminRefundApprovalsTab } from "../admin/orderSupport/components/tabs/AdminRefundApprovalsTab.jsx";
 import { AdminFinanceOverviewTab } from "../admin/commerceFinance/components/tabs/AdminFinanceOverviewTab.jsx";
 import { AdminFinanceCodPipelineTab } from "../admin/commerceFinance/components/tabs/AdminFinanceCodPipelineTab.jsx";
 import { AdminFinanceTopSellersTab } from "../admin/commerceFinance/components/tabs/AdminFinanceTopSellersTab.jsx";
@@ -105,6 +106,7 @@ const ORDER_SUPPORT_TAB_COMPONENTS = {
   "order-detail": OrderSupportDetailTab,
   "payment-detail": PaymentSupportDetailTab,
   "shipment-detail": ShipmentSupportDetailTab,
+  "refund-approvals": AdminRefundApprovalsTab,
   "webhook-logs": WebhookLogsSupportTab,
 };
 
@@ -959,6 +961,9 @@ export function AdminPage() {
       return <SystemOperationsTabComponent {...systemOperationsTabProps} />;
     }
     if (adminTopTab === "orderSupport") {
+      if (OrderSupportTabComponent === AdminRefundApprovalsTab) {
+        return <OrderSupportTabComponent onNotify={onNotify} />;
+      }
       return <OrderSupportTabComponent {...orderSupportTabProps} />;
     }
     if (adminTopTab === "commerceFinance") {
@@ -1034,7 +1039,7 @@ export function AdminPage() {
           </>
         ) : null}
 
-        {adminTopTab === "orderSupport" ? (
+        {adminTopTab === "orderSupport" && activeChildTab !== "refund-approvals" ? (
           <AdminSupportTargetBar
             activeTab={activeChildTab}
             targetIds={{

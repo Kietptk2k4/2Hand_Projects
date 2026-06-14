@@ -19,6 +19,8 @@ public class CommerceAdminAuthorization {
     public static final String PERMISSION_WEBHOOK_SUPPORT_READ = "WEBHOOK_SUPPORT_READ";
     public static final String PERMISSION_PAYOUT_SUPPORT_READ = "PAYOUT_SUPPORT_READ";
     public static final String PERMISSION_PAYOUT_SUPPORT_APPROVE = "PAYOUT_SUPPORT_APPROVE";
+    public static final String PERMISSION_REFUND_SUPPORT_READ = "REFUND_SUPPORT_READ";
+    public static final String PERMISSION_REFUND_SUPPORT_APPROVE = "REFUND_SUPPORT_APPROVE";
     public static final String PERMISSION_FINANCE_SUPPORT_READ = "FINANCE_SUPPORT_READ";
     private static final String ADMIN_ROLE = "ADMIN";
 

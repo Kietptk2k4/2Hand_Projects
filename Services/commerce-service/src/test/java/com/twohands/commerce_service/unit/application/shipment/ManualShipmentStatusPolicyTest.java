@@ -20,6 +20,10 @@ class ManualShipmentStatusPolicyTest {
                 ShipmentStatus.SHIPPED, ShipmentStatus.DELIVERED)).isTrue();
         assertThat(ManualShipmentStatusPolicy.canTransition(
                 ShipmentStatus.SHIPPED, ShipmentStatus.FAILED)).isTrue();
+        assertThat(ManualShipmentStatusPolicy.canTransition(
+                ShipmentStatus.PENDING, ShipmentStatus.CANCELLED)).isTrue();
+        assertThat(ManualShipmentStatusPolicy.canTransition(
+                ShipmentStatus.READY_TO_SHIP, ShipmentStatus.CANCELLED)).isTrue();
     }
 
     @Test

@@ -12,6 +12,28 @@ export async function createPayOsCheckoutUrl(paymentId) {
   }
 }
 
+export async function createVnpayCheckoutUrl(paymentId) {
+  try {
+    const response = await commerceApiClient.post(
+      `/commerce/api/v1/payments/${paymentId}/vnpay-checkout-url`
+    );
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function retryVnpayPayment(orderId) {
+  try {
+    const response = await commerceApiClient.post(
+      `/commerce/api/v1/orders/${orderId}/payments/vnpay/retry`
+    );
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 function buildStatusQueryParams({ mockPaid, mockFailed, mockExpired } = {}) {
   const params = {};
   if (mockPaid) params.mockPaid = "1";

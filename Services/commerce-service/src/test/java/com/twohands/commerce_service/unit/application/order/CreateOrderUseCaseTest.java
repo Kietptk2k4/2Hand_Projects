@@ -195,6 +195,7 @@ class CreateOrderUseCaseTest {
     @Test
     void shouldResolveInitialStatusByPaymentMethod() {
         assertThat(useCase.resolveInitialOrderStatus(PaymentMethod.PAYOS)).isEqualTo(OrderStatus.AWAITING_PAYMENT);
+        assertThat(useCase.resolveInitialOrderStatus(PaymentMethod.VNPAY)).isEqualTo(OrderStatus.AWAITING_PAYMENT);
         assertThat(useCase.resolveInitialOrderStatus(PaymentMethod.COD)).isEqualTo(OrderStatus.PROCESSING);
     }
 

@@ -58,7 +58,7 @@ public class UnpaidOrderCancellationRepositoryAdapter implements UnpaidOrderCanc
                 WHERE o.status IN ('CREATED', 'AWAITING_PAYMENT')
                   AND o.payment_status = 'PENDING'
                   AND p.status = 'PENDING'
-                  AND p.payment_method = 'PAYOS'
+                  AND p.payment_method IN ('PAYOS', 'VNPAY')
                   AND (
                     (p.expired_at IS NOT NULL AND p.expired_at < :now)
                     OR (p.checkout_url_expired_at IS NOT NULL AND p.checkout_url_expired_at < :now)

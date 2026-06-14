@@ -7,6 +7,7 @@ public class CommerceIntegrationProperties {
 
     private final Ghn ghn = new Ghn();
     private final Payos payos = new Payos();
+    private final Vnpay vnpay = new Vnpay();
 
     public Ghn getGhn() {
         return ghn;
@@ -14,6 +15,10 @@ public class CommerceIntegrationProperties {
 
     public Payos getPayos() {
         return payos;
+    }
+
+    public Vnpay getVnpay() {
+        return vnpay;
     }
 
     public static class Ghn {
@@ -247,6 +252,80 @@ public class CommerceIntegrationProperties {
                     && checksumKey != null && !checksumKey.isBlank()
                     && returnUrl != null && !returnUrl.isBlank()
                     && cancelUrl != null && !cancelUrl.isBlank();
+        }
+    }
+
+    public static class Vnpay {
+        private boolean enabled;
+        private String tmnCode;
+        private String hashSecret;
+        private String payUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+        private String returnUrl;
+        private String frontendReturnBaseUrl = "http://localhost:5173";
+        private boolean mockFallbackEnabled = true;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getTmnCode() {
+            return tmnCode;
+        }
+
+        public void setTmnCode(String tmnCode) {
+            this.tmnCode = tmnCode;
+        }
+
+        public String getHashSecret() {
+            return hashSecret;
+        }
+
+        public void setHashSecret(String hashSecret) {
+            this.hashSecret = hashSecret;
+        }
+
+        public String getPayUrl() {
+            return payUrl;
+        }
+
+        public void setPayUrl(String payUrl) {
+            this.payUrl = payUrl;
+        }
+
+        public String getReturnUrl() {
+            return returnUrl;
+        }
+
+        public void setReturnUrl(String returnUrl) {
+            this.returnUrl = returnUrl;
+        }
+
+        public String getFrontendReturnBaseUrl() {
+            return frontendReturnBaseUrl;
+        }
+
+        public void setFrontendReturnBaseUrl(String frontendReturnBaseUrl) {
+            this.frontendReturnBaseUrl = frontendReturnBaseUrl;
+        }
+
+        public boolean isMockFallbackEnabled() {
+            return mockFallbackEnabled;
+        }
+
+        public void setMockFallbackEnabled(boolean mockFallbackEnabled) {
+            this.mockFallbackEnabled = mockFallbackEnabled;
+        }
+
+        public boolean isLiveClientConfigured() {
+            return enabled
+                    && tmnCode != null && !tmnCode.isBlank()
+                    && hashSecret != null && !hashSecret.isBlank()
+                    && payUrl != null && !payUrl.isBlank()
+                    && returnUrl != null && !returnUrl.isBlank();
         }
     }
 }

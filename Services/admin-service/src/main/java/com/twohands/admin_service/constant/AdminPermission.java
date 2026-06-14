@@ -44,6 +44,8 @@ public final class AdminPermission {
 	public static final String WEBHOOK_SUPPORT_READ = "WEBHOOK_SUPPORT_READ";
 	public static final String PAYOUT_SUPPORT_READ = "PAYOUT_SUPPORT_READ";
 	public static final String PAYOUT_SUPPORT_APPROVE = "PAYOUT_SUPPORT_APPROVE";
+	public static final String REFUND_SUPPORT_READ = "REFUND_SUPPORT_READ";
+	public static final String REFUND_SUPPORT_APPROVE = "REFUND_SUPPORT_APPROVE";
 	public static final String FINANCE_SUPPORT_READ = "FINANCE_SUPPORT_READ";
 
 	private static final Set<String> KNOWN_CODES = Set.of(
@@ -83,6 +85,8 @@ public final class AdminPermission {
 			WEBHOOK_SUPPORT_READ,
 			PAYOUT_SUPPORT_READ,
 			PAYOUT_SUPPORT_APPROVE,
+			REFUND_SUPPORT_READ,
+			REFUND_SUPPORT_APPROVE,
 			FINANCE_SUPPORT_READ
 	);
 

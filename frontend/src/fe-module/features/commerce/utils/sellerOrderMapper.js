@@ -100,7 +100,19 @@ export function mapSellerOrderDetail(data) {
     sellerShippingTotal: data.seller_shipping_total ?? data.sellerShippingTotal ?? 0,
     items: (data.items || []).map(mapSellerOrderListItem).filter(Boolean),
     shippingAddress: mapShippingAddress(data.shipping_address ?? data.shippingAddress),
+    activeRefundRequest: mapActiveRefundRequest(data.active_refund_request),
     ...mapReviewBuyerFields(data),
+  };
+}
+
+function mapActiveRefundRequest(refund) {
+  if (!refund) return null;
+  return {
+    refundRequestId: refund.refund_request_id ?? refund.refundRequestId,
+    status: refund.status,
+    requestedBy: refund.requested_by ?? refund.requestedBy,
+    amount: refund.amount,
+    requestedAt: refund.requested_at ?? refund.requestedAt,
   };
 }
 

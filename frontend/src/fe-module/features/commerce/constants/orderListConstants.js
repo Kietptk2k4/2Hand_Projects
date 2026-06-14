@@ -34,6 +34,7 @@ export const ORDER_PAYMENT_STATUS_LABELS = {
 
 export const PAYMENT_METHOD_LABELS = {
   PAYOS: "PayOS",
+  VNPAY: "VNPay",
   COD: "Thanh toán khi nhận hàng",
 };
 

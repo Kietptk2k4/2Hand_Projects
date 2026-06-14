@@ -38,6 +38,7 @@ export const APP_ROUTES = {
   commerceShipmentTracking: "/commerce/orders/:orderId/shipments/:shipmentId",
   commerceCheckout: "/commerce/checkout",
   commerceCheckoutSuccess: "/commerce/checkout/success",
+  commerceCheckoutVnpayReturn: "/commerce/checkout/vnpay-return",
   commerceCheckoutPaymentResult: "/commerce/checkout/payment-result",
   commerceCreateShop: "/commerce/seller/shop/create",
   commerceShopSettings: "/commerce/seller/shop/settings",

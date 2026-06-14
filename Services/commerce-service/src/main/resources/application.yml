@@ -136,6 +136,14 @@ commerce:
       cancel-url: ${COMMERCE_PAYOS_CANCEL_URL:}
       mock-fallback-enabled: ${COMMERCE_PAYOS_MOCK_FALLBACK_ENABLED:true}
       webhook-secret: ${COMMERCE_PAYOS_WEBHOOK_SECRET:}
+    vnpay:
+      enabled: ${COMMERCE_VNPAY_ENABLED:false}
+      tmn-code: ${COMMERCE_VNPAY_TMN_CODE:}
+      hash-secret: ${COMMERCE_VNPAY_HASH_SECRET:}
+      pay-url: ${COMMERCE_VNPAY_PAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
+      return-url: ${COMMERCE_VNPAY_RETURN_URL:}
+      frontend-return-base-url: ${COMMERCE_VNPAY_FRONTEND_RETURN_BASE_URL:http://localhost:5173}
+      mock-fallback-enabled: ${COMMERCE_VNPAY_MOCK_FALLBACK_ENABLED:true}
     ghn:
       enabled: ${COMMERCE_GHN_ENABLED:false}
       mock-fallback-enabled: ${COMMERCE_GHN_MOCK_FALLBACK_ENABLED:true}

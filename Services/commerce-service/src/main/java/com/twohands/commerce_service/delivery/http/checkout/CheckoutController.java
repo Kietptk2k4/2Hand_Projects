@@ -128,7 +128,8 @@ public class CheckoutController {
                 result.paymentStatus(),
                 result.orderStatus(),
                 result.finalAmount(),
-                result.payosCheckoutUrl()
+                result.payosCheckoutUrl(),
+                result.redirect()
         );
     }
 }

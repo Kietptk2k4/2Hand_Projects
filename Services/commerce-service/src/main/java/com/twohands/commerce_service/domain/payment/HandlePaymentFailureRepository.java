@@ -10,6 +10,8 @@ public interface HandlePaymentFailureRepository {
 
     Optional<LockedPaymentContext> lockPaymentByPayosOrderCode(String payosOrderCode);
 
+    Optional<LockedPaymentContext> lockPaymentByVnpayTxnRef(String vnpayTxnRef);
+
     HandlePaymentFailureResult handleFailure(
             LockedPaymentContext payment,
             PaymentStatus terminalStatus,

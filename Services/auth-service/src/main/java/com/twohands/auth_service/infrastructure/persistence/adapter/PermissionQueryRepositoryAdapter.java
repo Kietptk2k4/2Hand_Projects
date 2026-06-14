@@ -92,4 +92,21 @@ public class PermissionQueryRepositoryAdapter implements PermissionQueryReposito
                 )
         );
     }
+
+    @Override
+    public List<PermissionData> findAllPermissions() {
+        String sql = """
+                SELECT code, description
+                FROM permissions
+                ORDER BY code ASC
+                """;
+
+        return jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> new PermissionData(
+                        rs.getString("code"),
+                        rs.getString("description")
+                )
+        );
+    }
 }

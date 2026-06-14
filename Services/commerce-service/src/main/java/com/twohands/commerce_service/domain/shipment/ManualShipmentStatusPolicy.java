@@ -9,8 +9,8 @@ import java.util.Set;
 public final class ManualShipmentStatusPolicy {
 
     private static final Map<ShipmentStatus, Set<ShipmentStatus>> ALLOWED_TRANSITIONS = Map.of(
-            ShipmentStatus.PENDING, Set.of(ShipmentStatus.READY_TO_SHIP),
-            ShipmentStatus.READY_TO_SHIP, Set.of(ShipmentStatus.SHIPPED),
+            ShipmentStatus.PENDING, Set.of(ShipmentStatus.READY_TO_SHIP, ShipmentStatus.CANCELLED),
+            ShipmentStatus.READY_TO_SHIP, Set.of(ShipmentStatus.SHIPPED, ShipmentStatus.CANCELLED),
             ShipmentStatus.SHIPPED, Set.of(ShipmentStatus.DELIVERED, ShipmentStatus.FAILED)
     );
 

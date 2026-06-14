@@ -1,5 +1,6 @@
 package com.twohands.commerce_service.unit.application.shipment.common;
 
+import com.twohands.commerce_service.application.shipment.common.ShipmentCancelledOutboxService;
 import com.twohands.commerce_service.application.shipment.common.ShipmentDeliveredOutboxService;
 import com.twohands.commerce_service.application.shipment.common.ShipmentLifecycleOutboxEmitter;
 import com.twohands.commerce_service.application.shipment.common.ShipmentReadyToShipOutboxService;
@@ -43,6 +44,9 @@ class ShipmentLifecycleOutboxEmitterTest {
     private ShipmentDeliveredOutboxService shipmentDeliveredOutboxService;
 
     @Mock
+    private ShipmentCancelledOutboxService shipmentCancelledOutboxService;
+
+    @Mock
     private OrderBuyerRepository orderBuyerRepository;
 
     private ShipmentLifecycleOutboxEmitter emitter;
@@ -60,6 +64,7 @@ class ShipmentLifecycleOutboxEmitterTest {
                 shipmentReadyToShipOutboxService,
                 shipmentShippedOutboxService,
                 shipmentDeliveredOutboxService,
+                shipmentCancelledOutboxService,
                 orderBuyerRepository
         );
     }
@@ -101,6 +106,18 @@ class ShipmentLifecycleOutboxEmitterTest {
         emitter.emitDedicatedNotificationEvents(shipment, ShipmentStatus.DELIVERED, now, null);
 
         verify(shipmentShippedOutboxService, never()).build(any(), any(), any(), any(), any(), any());
+        verify(outboxEventRepository).save(any(OutboxEvent.class));
+    }
+
+    @Test
+    void emitsCancelledOutbox() {
+        SellerShipmentRecord shipment = record(ShipmentStatus.PENDING, "TRK-1", null);
+        when(orderBuyerRepository.findBuyerIdByOrderId(orderId)).thenReturn(Optional.of(buyerId));
+        when(shipmentCancelledOutboxService.build(shipmentId, orderId, buyerId, sellerId, "TRK-1", now))
+                .thenReturn(sampleOutbox(ShipmentCancelledOutboxService.EVENT_TYPE));
+
+        emitter.emitCancelledNotificationEvent(shipment, now, null);
+
         verify(outboxEventRepository).save(any(OutboxEvent.class));
     }
 

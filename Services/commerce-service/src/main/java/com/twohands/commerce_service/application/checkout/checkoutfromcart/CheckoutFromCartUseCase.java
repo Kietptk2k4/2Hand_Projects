@@ -15,11 +15,16 @@ import com.twohands.commerce_service.domain.checkout.CheckoutPrepareOutcome;
 import com.twohands.commerce_service.domain.checkout.CheckoutPreparedData;
 import com.twohands.commerce_service.domain.order.CreateOrderResult;
 import com.twohands.commerce_service.domain.outbox.OutboxEventRepository;
+import com.twohands.commerce_service.application.payment.createvnpaycheckouturl.CreateVnpayCheckoutUrlCommand;
+import com.twohands.commerce_service.application.payment.createvnpaycheckouturl.CreateVnpayCheckoutUrlUseCase;
+import com.twohands.commerce_service.domain.payment.CreateVnpayCheckoutUrlResult;
 import com.twohands.commerce_service.domain.payment.PaymentMethod;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Service
 public class CheckoutFromCartUseCase {
@@ -30,6 +35,7 @@ public class CheckoutFromCartUseCase {
     private final OutboxEventRepository outboxEventRepository;
     private final InventoryReservedOutboxService inventoryReservedOutboxService;
     private final CommerceCheckoutProperties checkoutProperties;
+    private final CreateVnpayCheckoutUrlUseCase createVnpayCheckoutUrlUseCase;
 
     public CheckoutFromCartUseCase(
             CheckoutFromCartRepository checkoutFromCartRepository,
@@ -37,7 +43,8 @@ public class CheckoutFromCartUseCase {
             CreateOrderUseCase createOrderUseCase,
             OutboxEventRepository outboxEventRepository,
             InventoryReservedOutboxService inventoryReservedOutboxService,
-            CommerceCheckoutProperties checkoutProperties
+            CommerceCheckoutProperties checkoutProperties,
+            CreateVnpayCheckoutUrlUseCase createVnpayCheckoutUrlUseCase
     ) {
         this.checkoutFromCartRepository = checkoutFromCartRepository;
         this.reserveInventoryUseCase = reserveInventoryUseCase;
@@ -45,6 +52,7 @@ public class CheckoutFromCartUseCase {
         this.outboxEventRepository = outboxEventRepository;
         this.inventoryReservedOutboxService = inventoryReservedOutboxService;
         this.checkoutProperties = checkoutProperties;
+        this.createVnpayCheckoutUrlUseCase = createVnpayCheckoutUrlUseCase;
     }
 
     @Transactional
@@ -99,6 +107,7 @@ public class CheckoutFromCartUseCase {
                 orderResult.status(),
                 orderResult.finalAmount(),
                 resolvePayosCheckoutUrl(orderResult.paymentMethod()),
+                resolveVnpayRedirect(orderResult.paymentMethod(), orderResult.paymentId(), prepared.buyerId()),
                 false
         );
     }
@@ -115,5 +124,15 @@ public class CheckoutFromCartUseCase {
             return null;
         }
         return null;
+    }
+
+    private String resolveVnpayRedirect(PaymentMethod paymentMethod, UUID paymentId, UUID buyerId) {
+        if (paymentMethod != PaymentMethod.VNPAY) {
+            return null;
+        }
+        CreateVnpayCheckoutUrlResult result = createVnpayCheckoutUrlUseCase.execute(
+                new CreateVnpayCheckoutUrlCommand(paymentId, buyerId, "127.0.0.1")
+        );
+        return result.checkoutUrl();
     }
 }

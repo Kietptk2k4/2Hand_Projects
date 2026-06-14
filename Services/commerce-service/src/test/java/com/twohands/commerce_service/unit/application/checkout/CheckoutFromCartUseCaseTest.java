@@ -57,6 +57,9 @@ class CheckoutFromCartUseCaseTest {
     @Mock
     private CommerceCheckoutProperties checkoutProperties;
 
+    @Mock
+    private com.twohands.commerce_service.application.payment.createvnpaycheckouturl.CreateVnpayCheckoutUrlUseCase createVnpayCheckoutUrlUseCase;
+
     @InjectMocks
     private CheckoutFromCartUseCase useCase;
 

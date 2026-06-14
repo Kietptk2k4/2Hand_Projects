@@ -73,6 +73,7 @@ public class CreatePaymentRepositoryAdapter implements CreatePaymentRepository {
 
     private void insertPayment(CreatePaymentRequest request, Instant now) {
         Instant expiredAt = request.paymentMethod() == PaymentMethod.PAYOS
+                || request.paymentMethod() == PaymentMethod.VNPAY
                 ? now.plusSeconds(paymentTtlMinutes * 60L)
                 : null;
 

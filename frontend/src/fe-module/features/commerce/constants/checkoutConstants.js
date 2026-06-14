@@ -18,8 +18,11 @@ export const PAYMENT_METHODS = CHECKOUT_COD_ONLY_ENABLED
   ? [{ value: "COD", label: "Thanh toán khi nhận hàng (COD)" }]
   : [
       { value: "PAYOS", label: "Thanh toán PayOS" },
+      { value: "VNPAY", label: "Thanh toán VNPay" },
       { value: "COD", label: "Thanh toán khi nhận hàng (COD)" },
     ];
+
+export const ONLINE_PAYMENT_METHODS = new Set(["PAYOS", "VNPAY"]);
 
 export const QUOTE_DISCLAIMER =
   "Giá và phí vận chuyển mang tính tạm tính; có thể thay đổi khi đặt hàng.";

@@ -1,4 +1,8 @@
 import { MOCK_CART_DEMO_USER_ID } from "./commerceCartData";
+import {
+  getActiveRefundRequestForOrder,
+  queueRefundRequestForOrder,
+} from "./commerceOrderDetailData";
 import { MOCK_DEMO_SELLER_SHOP_ID, getShopBySellerId } from "./commerceSellerShopData";
 
 /** Demo buyer for seller order/shipment detail (social profile link QA) */
@@ -583,8 +587,93 @@ export function getSellerOrderDetailForUser(userId, orderId) {
       seller_shipping_total: sellerShippingTotal,
       items: records.map(toListRow),
       shipping_address,
+      active_refund_request: getActiveRefundRequestForOrder(orderId),
       ...MOCK_SELLER_ORDER_BUYER_PROFILE,
     },
+  };
+}
+
+const BLOCKING_SHIPMENT_STATUSES = new Set(["SHIPPED", "DELIVERED", "RETURNED"]);
+
+export function cancelSellerOrderForUser(userId, orderId, reason) {
+  const shop = getShopBySellerId(userId);
+  if (!shop) {
+    return { error: "COMMERCE-409-SELLER-SHOP", status: 409, message: "Seller chua co shop." };
+  }
+
+  const records = sellerOrderItems.filter(
+    (row) => row.seller_id === userId && row.order_id === orderId,
+  );
+  if (records.length === 0) {
+    return { error: "COMMERCE-404-ORDER", status: 404, message: "Don hang khong ton tai." };
+  }
+
+  const first = records[0];
+  if (first.order_status === "CANCELLED") {
+    return {
+      data: {
+        order_id: orderId,
+        status: "CANCELLED",
+        cancelled_at: first.item_updated_at,
+        already_cancelled: true,
+      },
+      message: "Don hang da duoc huy truoc do.",
+    };
+  }
+
+  if (getActiveRefundRequestForOrder(orderId)) {
+    const active = getActiveRefundRequestForOrder(orderId);
+    return {
+      data: {
+        order_id: orderId,
+        status: "PROCESSING",
+        cancelled_at: active.requested_at,
+        pending_refund: true,
+        refund_request_id: active.refund_request_id,
+      },
+      message: "Yeu cau huy don da duoc ghi nhan. Don hang dang cho hoan tien.",
+    };
+  }
+
+  const hasBlockingShipment = records.some((row) =>
+    BLOCKING_SHIPMENT_STATUSES.has(row.shipment_summary?.status),
+  );
+
+  if (
+    first.order_payment_method === "VNPAY" &&
+    first.order_payment_status === "PAID" &&
+    first.order_status === "PROCESSING" &&
+    !hasBlockingShipment
+  ) {
+    return queueRefundRequestForOrder(orderId, {
+      final_amount: records.reduce((sum, row) => sum + Number(row.final_price || 0), 0),
+    }, "SELLER", String(reason ?? "").trim() || "SELLER_CANCELLED");
+  }
+
+  if (
+    first.order_payment_method !== "COD" ||
+    first.order_payment_status !== "PENDING" ||
+    first.order_status !== "PROCESSING" ||
+    hasBlockingShipment
+  ) {
+    return { error: "COMMERCE-409-ORDER-NOT-CANCELLABLE", status: 409 };
+  }
+
+  const cancelledAt = new Date().toISOString();
+  for (const row of records) {
+    row.item_status = "CANCELLED";
+    row.order_status = "CANCELLED";
+    row.order_payment_status = "CANCELLED";
+    row.item_updated_at = cancelledAt;
+  }
+
+  return {
+    data: {
+      order_id: orderId,
+      status: "CANCELLED",
+      cancelled_at: cancelledAt,
+    },
+    message: "Huy don hang thanh cong.",
   };
 }
 

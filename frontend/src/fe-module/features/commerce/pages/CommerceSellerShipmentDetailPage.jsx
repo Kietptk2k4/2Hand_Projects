@@ -9,6 +9,7 @@ import {
   MANUAL_NEXT_ACTIONS,
   SHIPMENT_STATUS_BADGE_CLASS,
   SHIPMENT_STATUS_LABELS,
+  canCancelSellerShipment,
 } from "../constants/sellerShipmentConstants";
 import { useSellerShipmentDetail } from "../hooks/useSellerShipmentDetail";
 import { formatShortOrderId } from "../utils/formatOrderDate";
@@ -24,25 +25,39 @@ export function CommerceSellerShipmentDetailPage() {
   const [trackingDraft, setTrackingDraft] = useState("");
   const [pendingAction, setPendingAction] = useState(null);
   const [pendingTrackingSave, setPendingTrackingSave] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   const {
     detail,
     isLoading,
     isUpdating,
+    isCancelling,
     errorMessage,
     updateError,
+    cancelError,
     isNotFound,
     retry,
     patchShipment,
+    cancelShipment,
     clearUpdateError,
+    clearCancelError,
   } = useSellerShipmentDetail(shipmentId);
 
   const isGhn = detail?.carrier === "GHN";
   const isManual = detail?.carrier === "MANUAL" || detail?.carrier === "SELF_DELIVERY";
   const canEdit = isManual && detail && !TERMINAL.includes(detail.status);
+  const canCancel = detail && canCancelSellerShipment(detail);
 
   const nextAction = detail ? MANUAL_NEXT_ACTIONS[detail.status] : null;
   const nextActions = Array.isArray(nextAction) ? nextAction : nextAction ? [nextAction] : [];
+
+  const handleConfirmCancel = useCallback(async () => {
+    const result = await cancelShipment();
+    if (result) {
+      setShowCancelConfirm(false);
+      setToastMessage("Đã hủy vận đơn. Các mục đơn đã được trả về trạng thái xử lý.");
+    }
+  }, [cancelShipment]);
 
   const handleConfirmStatus = useCallback(async () => {
     if (!pendingAction) return;
@@ -213,6 +228,29 @@ export function CommerceSellerShipmentDetailPage() {
               </ul>
             </section>
 
+            {canCancel ? (
+              <section className="mt-6 rounded-xl border border-error/30 bg-error-container/20 p-6">
+                <h2 className="text-headline-sm font-semibold text-on-surface">Hủy vận đơn</h2>
+                <p className="mt-2 text-body-sm text-on-surface-variant">
+                  {isGhn
+                    ? "Hủy đơn GHN trên hệ thống và gọi API hủy bên GHN. Người mua sẽ được thông báo."
+                    : "Hủy vận đơn thủ công. Các mục đơn sẽ quay lại trạng thái xử lý để tạo vận đơn mới."}
+                </p>
+                {cancelError ? <p className="mt-2 text-sm text-error">{cancelError}</p> : null}
+                <button
+                  type="button"
+                  disabled={isCancelling || isUpdating}
+                  onClick={() => {
+                    clearCancelError();
+                    setShowCancelConfirm(true);
+                  }}
+                  className="mt-4 rounded-lg border border-error px-4 py-2 text-label-md font-medium text-error disabled:opacity-50"
+                >
+                  Hủy vận đơn
+                </button>
+              </section>
+            ) : null}
+
             {canEdit ? (
               <section className="mt-6 rounded-xl border border-secondary/30 bg-surface-container-low p-6">
                 <h2 className="text-headline-sm font-semibold text-on-surface">Cập nhật vận đơn</h2>
@@ -263,6 +301,19 @@ export function CommerceSellerShipmentDetailPage() {
           </>
         ) : null}
       </div>
+
+      <SellerShipmentUpdateConfirmDialog
+        open={showCancelConfirm}
+        title="Xác nhận hủy vận đơn"
+        description="Bạn có chắc muốn hủy vận đơn này? Hành động này không thể hoàn tác."
+        confirmLabel="Hủy vận đơn"
+        isProcessing={isCancelling}
+        errorMessage={cancelError}
+        onCancel={() => {
+          if (!isCancelling) setShowCancelConfirm(false);
+        }}
+        onConfirm={handleConfirmCancel}
+      />
 
       <SellerShipmentUpdateConfirmDialog
         open={Boolean(pendingAction)}

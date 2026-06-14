@@ -30,4 +30,6 @@ public interface ProcessGhnWebhookRepository {
     );
 
     int updateOrderItemsForShipment(UUID shipmentId, String orderItemStatus, Instant occurredAt);
+
+    int releaseOrderItemsFromCancelledShipment(UUID shipmentId, Instant occurredAt);
 }

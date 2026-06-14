@@ -51,7 +51,8 @@ public class ViewSellerOrderDetailUseCase {
                 result.sellerShippingTotal(),
                 result.items(),
                 result.shippingAddress(),
-                buyer
+                buyer,
+                result.activeRefundRequest()
         );
     }
 

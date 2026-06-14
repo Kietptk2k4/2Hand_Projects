@@ -6,6 +6,7 @@ import com.twohands.commerce_service.domain.order.OrderStatusHistoryEntry;
 import com.twohands.commerce_service.domain.order.ShippingAddressSnapshot;
 import com.twohands.commerce_service.domain.order.ViewOrderDetailItem;
 import com.twohands.commerce_service.domain.order.ViewOrderDetailPaymentSummary;
+import com.twohands.commerce_service.domain.order.PaymentRefundRequestRepository;
 import com.twohands.commerce_service.domain.order.ViewOrderDetailRepository;
 import com.twohands.commerce_service.domain.order.ViewOrderDetailResult;
 import com.twohands.commerce_service.domain.order.ViewOrderDetailShipment;
@@ -37,9 +38,14 @@ import java.util.UUID;
 public class ViewOrderDetailRepositoryAdapter implements ViewOrderDetailRepository {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final PaymentRefundRequestRepository paymentRefundRequestRepository;
 
-    public ViewOrderDetailRepositoryAdapter(NamedParameterJdbcTemplate jdbcTemplate) {
+    public ViewOrderDetailRepositoryAdapter(
+            NamedParameterJdbcTemplate jdbcTemplate,
+            PaymentRefundRequestRepository paymentRefundRequestRepository
+    ) {
         this.jdbcTemplate = jdbcTemplate;
+        this.paymentRefundRequestRepository = paymentRefundRequestRepository;
     }
 
     @Override
@@ -77,7 +83,8 @@ public class ViewOrderDetailRepositoryAdapter implements ViewOrderDetailReposito
                 payment,
                 items,
                 shipments,
-                orderTimeline
+                orderTimeline,
+                paymentRefundRequestRepository.findSummaryByOrderId(orderId).orElse(null)
         ));
     }
 

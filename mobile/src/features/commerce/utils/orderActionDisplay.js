@@ -1,10 +1,17 @@
-const CANCELLABLE_ORDER_STATUSES = new Set(["CREATED", "AWAITING_PAYMENT"]);
 const INACTIVE_SHIPMENT_STATUSES = new Set(["PENDING", "CANCELLED"]);
+
+function isBuyerCancellableOrderStatus(order) {
+  const status = order.orderStatus;
+  if (status === "CREATED" || status === "AWAITING_PAYMENT") {
+    return true;
+  }
+  return status === "PROCESSING" && order.paymentMethod === "COD";
+}
 
 export function canCancelOrder(order) {
   if (!order) return false;
-  if (!CANCELLABLE_ORDER_STATUSES.has(order.orderStatus)) return false;
   if (order.orderPaymentStatus !== "PENDING") return false;
+  if (!isBuyerCancellableOrderStatus(order)) return false;
 
   const shipments = order.shipments || [];
   if (!shipments.length) return true;
@@ -31,11 +38,11 @@ export function canConfirmOrderReceived(order) {
 export function getCancelBlockReason(order) {
   if (!order) return "";
   if (order.orderStatus === "CANCELLED") return "Đơn đã được hủy.";
-  if (!CANCELLABLE_ORDER_STATUSES.has(order.orderStatus)) {
-    return "Chỉ hủy được khi đơn chưa thanh toán và chưa giao hàng.";
-  }
   if (order.orderPaymentStatus !== "PENDING") {
     return "Đơn đã thanh toán, không thể hủy qua luồng này.";
+  }
+  if (!isBuyerCancellableOrderStatus(order)) {
+    return "Chỉ hủy được khi đơn chưa thanh toán và chưa giao hàng.";
   }
   const shipments = order.shipments || [];
   if (shipments.some((s) => !INACTIVE_SHIPMENT_STATUSES.has(s.status))) {

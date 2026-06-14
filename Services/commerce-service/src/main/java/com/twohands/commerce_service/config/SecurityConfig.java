@@ -38,6 +38,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/commerce/api/v1/payments/webhooks/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/commerce/api/v1/payments/vnpay/return").permitAll()
                         .requestMatchers("/commerce/api/v1/shipments/webhooks/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/commerce/api/v1/categories").permitAll()
                         .requestMatchers(HttpMethod.GET, "/commerce/api/v1/categories/*/products").permitAll()

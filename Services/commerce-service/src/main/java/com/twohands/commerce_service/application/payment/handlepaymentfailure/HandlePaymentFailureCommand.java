@@ -7,6 +7,7 @@ import java.util.UUID;
 public record HandlePaymentFailureCommand(
         UUID paymentId,
         String payosOrderCode,
+        String vnpayTxnRef,
         PaymentStatus terminalStatus,
         String reason,
         String changedBy,
@@ -27,7 +28,7 @@ public record HandlePaymentFailureCommand(
             String changedBy,
             String historyPayloadJson
     ) {
-        return new HandlePaymentFailureCommand(paymentId, null, terminalStatus, reason, changedBy, historyPayloadJson);
+        return new HandlePaymentFailureCommand(paymentId, null, null, terminalStatus, reason, changedBy, historyPayloadJson);
     }
 
     public static HandlePaymentFailureCommand byPayosOrderCode(
@@ -37,6 +38,16 @@ public record HandlePaymentFailureCommand(
             String changedBy,
             String historyPayloadJson
     ) {
-        return new HandlePaymentFailureCommand(null, payosOrderCode, terminalStatus, reason, changedBy, historyPayloadJson);
+        return new HandlePaymentFailureCommand(null, payosOrderCode, null, terminalStatus, reason, changedBy, historyPayloadJson);
+    }
+
+    public static HandlePaymentFailureCommand byVnpayTxnRef(
+            String vnpayTxnRef,
+            PaymentStatus terminalStatus,
+            String reason,
+            String changedBy,
+            String historyPayloadJson
+    ) {
+        return new HandlePaymentFailureCommand(null, null, vnpayTxnRef, terminalStatus, reason, changedBy, historyPayloadJson);
     }
 }

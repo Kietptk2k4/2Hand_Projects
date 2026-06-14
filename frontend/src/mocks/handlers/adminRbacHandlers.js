@@ -3,11 +3,14 @@ import { mockUsers } from "../data/authData";
 import {
   ADMIN_USER_ID,
   ROLE_IDS,
+  assignMockPermissionToRole,
   mockAssignableUsers,
+  mockPermissionsCatalog,
   mockRolePermissionsByRoleId,
   mockRoles,
   mockUserPermissionsByUserId,
   mockUserRoleAssignments,
+  revokeMockPermissionFromRole,
 } from "../data/adminRbacData";
 import { apiError, apiSuccess } from "../utils/response";
 
@@ -166,6 +169,111 @@ export const adminRbacHandlers = [
       apiSuccess(200, "Lay danh sach permission cua role thanh cong.", {
         role: { id: role.id, code: role.code, name: role.name },
         permissions: mockRolePermissionsByRoleId[roleId] || [],
+      }),
+      { status: 200 }
+    );
+  }),
+
+  http.get("*/api/v1/admin/permissions", async ({ request }) => {
+    await delay(300);
+    const actor = getActorFromRequest(request);
+    if (!actor) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+    if (!isAdminActor(actor)) {
+      return HttpResponse.json(apiError(403, "Ban khong co quyen truy cap."), { status: 403 });
+    }
+
+    return HttpResponse.json(
+      apiSuccess(200, "Lay danh sach permission thanh cong.", {
+        permissions: mockPermissionsCatalog,
+      }),
+      { status: 200 }
+    );
+  }),
+
+  http.post("*/api/v1/admin/roles/:roleId/permissions", async ({ request, params }) => {
+    await delay(400);
+    const actor = getActorFromRequest(request);
+    if (!actor) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+    if (!isAdminActor(actor)) {
+      return HttpResponse.json(apiError(403, "Ban khong co quyen truy cap."), { status: 403 });
+    }
+
+    const roleId = params.roleId;
+    const body = await request.json();
+
+    if (!isValidUuid(roleId) || !body?.permission_code) {
+      return HttpResponse.json(
+        apiError(400, "Du lieu khong hop le.", [{ field: "permission_code", reason: "REQUIRED" }]),
+        { status: 400 }
+      );
+    }
+
+    const role = mockRoles.find((r) => r.id === roleId);
+    if (!role) {
+      return HttpResponse.json(apiError(404, "Khong tim thay role."), { status: 404 });
+    }
+
+    const result = assignMockPermissionToRole(roleId, body.permission_code);
+    if (result.error === "NOT_FOUND") {
+      return HttpResponse.json(apiError(404, "Khong tim thay permission."), { status: 404 });
+    }
+    if (result.error === "ALREADY_ASSIGNED") {
+      return HttpResponse.json(
+        apiError(409, "Resource conflict", [{ field: "permission_code", reason: "ALREADY_ASSIGNED" }]),
+        { status: 409 }
+      );
+    }
+
+    return HttpResponse.json(
+      apiSuccess(200, "Gan permission cho role thanh cong.", {
+        role_id: roleId,
+        permission_code: body.permission_code,
+      }),
+      { status: 200 }
+    );
+  }),
+
+  http.delete("*/api/v1/admin/roles/:roleId/permissions/:permissionCode", async ({ request, params }) => {
+    await delay(400);
+    const actor = getActorFromRequest(request);
+    if (!actor) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+    if (!isAdminActor(actor)) {
+      return HttpResponse.json(apiError(403, "Ban khong co quyen truy cap."), { status: 403 });
+    }
+
+    const roleId = params.roleId;
+    const permissionCode = params.permissionCode;
+
+    if (!isValidUuid(roleId) || !permissionCode) {
+      return HttpResponse.json(
+        apiError(400, "Du lieu khong hop le.", [{ field: "permissionCode", reason: "INVALID_FORMAT" }]),
+        { status: 400 }
+      );
+    }
+
+    const role = mockRoles.find((r) => r.id === roleId);
+    if (!role) {
+      return HttpResponse.json(apiError(404, "Khong tim thay role."), { status: 404 });
+    }
+
+    const result = revokeMockPermissionFromRole(roleId, permissionCode);
+    if (result.error === "NOT_ASSIGNED") {
+      return HttpResponse.json(
+        apiError(409, "Resource conflict", [{ field: "permission_code", reason: "NOT_ASSIGNED" }]),
+        { status: 409 }
+      );
+    }
+
+    return HttpResponse.json(
+      apiSuccess(200, "Thu hoi permission khoi role thanh cong.", {
+        role_id: roleId,
+        permission_code: permissionCode,
       }),
       { status: 200 }
     );

@@ -15,6 +15,18 @@ const DEFAULT_SHIPPING_ADDRESS = {
   full_address: "123 Nguyễn Văn Linh, Phường Tân Phong, Quận 7, TP. Hồ Chí Minh",
 };
 
+const refundRequestsByOrderId = new Map();
+
+export function getActiveRefundRequestForOrder(orderId) {
+  return refundRequestsByOrderId.get(orderId) || null;
+}
+
+function attachActiveRefundRequest(data) {
+  const active = getActiveRefundRequestForOrder(data.order_id);
+  if (!active) return data;
+  return { ...data, active_refund_request: active };
+}
+
 function offsetIso(baseIso, hours) {
   const date = new Date(baseIso);
   date.setHours(date.getHours() + hours);
@@ -345,7 +357,7 @@ export function getOrderDetailForUser(userId, orderId) {
     return { error: "COMMERCE-404-ORDER", status: 404 };
   }
   const data = buildDetailFromSummary(summary);
-  return { data: enrichOrderItemsWithReviewIds(data) };
+  return { data: enrichOrderItemsWithReviewIds(attachActiveRefundRequest(data)) };
 }
 
 function enrichOrderItemsWithReviewIds(data) {
@@ -366,20 +378,36 @@ export function getOrderTrackStatusForUser(userId, orderId) {
   return { data: buildTrackStatusFromSummary(summary) };
 }
 
-const CANCELLABLE_ORDER_STATUSES = new Set(["CREATED", "AWAITING_PAYMENT"]);
-const INACTIVE_SHIPMENT_STATUSES = new Set(["PENDING", "CANCELLED"]);
-const BLOCKING_SHIPMENT_STATUSES = new Set([
-  "PICKING_UP",
-  "READY_TO_SHIP",
-  "SHIPPED",
-  "DELIVERED",
-  "IN_TRANSIT",
-  "OUT_FOR_DELIVERY",
-]);
+const CANCELLABLE_ORDER_STATUSES = new Set(["CREATED", "AWAITING_PAYMENT", "PROCESSING"]);
+const BLOCKING_SHIPMENT_STATUSES = new Set(["SHIPPED", "DELIVERED", "RETURNED", "IN_TRANSIT", "OUT_FOR_DELIVERY"]);
 
 function hasBlockingShipment(summary) {
   const statuses = summary.shipment_summary?.statuses || [];
   return statuses.some((status) => BLOCKING_SHIPMENT_STATUSES.has(status));
+}
+
+export function queueRefundRequestForOrder(orderId, summary, requestedBy, reason) {
+  const refundRequestId = `rf-${orderId.slice(-8)}`;
+  const requestedAt = new Date().toISOString();
+  const active = {
+    refund_request_id: refundRequestId,
+    status: "REQUESTED",
+    requested_by: requestedBy,
+    amount: summary.final_amount,
+    requested_at: requestedAt,
+  };
+  refundRequestsByOrderId.set(orderId, active);
+  return {
+    data: {
+      order_id: orderId,
+      status: "PROCESSING",
+      cancelled_at: requestedAt,
+      pending_refund: true,
+      refund_request_id: refundRequestId,
+      reason,
+    },
+    message: "Yeu cau huy don da duoc ghi nhan. Don hang dang cho hoan tien.",
+  };
 }
 
 export function cancelOrderForUser(userId, orderId, reason) {
@@ -400,10 +428,34 @@ export function cancelOrderForUser(userId, orderId, reason) {
     };
   }
 
+  if (getActiveRefundRequestForOrder(orderId)) {
+    const active = getActiveRefundRequestForOrder(orderId);
+    return {
+      data: {
+        order_id: orderId,
+        status: "PROCESSING",
+        cancelled_at: active.requested_at,
+        pending_refund: true,
+        refund_request_id: active.refund_request_id,
+      },
+      message: "Yeu cau huy don da duoc ghi nhan. Don hang dang cho hoan tien.",
+    };
+  }
+
+  if (
+    summary.payment_method === "VNPAY" &&
+    summary.order_payment_status === "PAID" &&
+    summary.order_status === "PROCESSING" &&
+    !hasBlockingShipment(summary)
+  ) {
+    return queueRefundRequestForOrder(orderId, summary, "BUYER", String(reason ?? "").trim() || "BUYER_CANCELLED");
+  }
+
   if (
     !CANCELLABLE_ORDER_STATUSES.has(summary.order_status) ||
     summary.order_payment_status !== "PENDING" ||
-    hasBlockingShipment(summary)
+    hasBlockingShipment(summary) ||
+    (summary.order_status === "PROCESSING" && summary.payment_method !== "COD")
   ) {
     return { error: "COMMERCE-409-ORDER-NOT-CANCELLABLE", status: 409 };
   }

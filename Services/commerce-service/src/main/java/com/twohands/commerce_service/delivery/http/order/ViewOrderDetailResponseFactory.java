@@ -27,7 +27,23 @@ public final class ViewOrderDetailResponseFactory {
 				toPaymentSummaryResponse(result.payment()),
 				result.items().stream().map(ViewOrderDetailResponseFactory::toOrderItemDetailResponse).toList(),
 				result.shipments().stream().map(ViewOrderDetailResponseFactory::toShipmentDetailResponse).toList(),
-				result.orderTimeline().stream().map(ViewOrderDetailResponseFactory::toOrderDetailTimelineEntry).toList()
+				result.orderTimeline().stream().map(ViewOrderDetailResponseFactory::toOrderDetailTimelineEntry).toList(),
+				toActiveRefundRequestResponse(result.activeRefundRequest())
+		);
+	}
+
+	private static ViewOrderDetailResponse.ActiveRefundRequestResponse toActiveRefundRequestResponse(
+			com.twohands.commerce_service.domain.order.PaymentRefundRequestSummary refundRequest
+	) {
+		if (refundRequest == null) {
+			return null;
+		}
+		return new ViewOrderDetailResponse.ActiveRefundRequestResponse(
+				refundRequest.refundRequestId(),
+				refundRequest.status().name(),
+				refundRequest.requestedBy().name(),
+				refundRequest.amount(),
+				refundRequest.requestedAt()
 		);
 	}
 

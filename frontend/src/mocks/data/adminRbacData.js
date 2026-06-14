@@ -32,25 +32,48 @@ export const mockRoles = [
 ];
 
 export const mockPermissionsCatalog = [
+  { code: "ADMIN_ACCESS", description: "Access admin dashboard" },
   { code: "ASSIGN_ROLE", description: "Assign roles to users" },
   { code: "USER_READ", description: "Read user information" },
   { code: "USER_UPDATE", description: "Update user information" },
   { code: "USER_DELETE", description: "Soft delete user accounts" },
-  { code: "ROLE_READ", description: "View roles and permissions" },
+  { code: "USER_SUSPEND", description: "Suspend user account" },
+  { code: "USER_BAN", description: "Ban user account" },
+  { code: "USER_INVESTIGATION_READ", description: "Read user profile for investigation" },
+  { code: "ORDER_SUPPORT_READ", description: "Read order support detail" },
+  { code: "PAYMENT_SUPPORT_READ", description: "Read payment support detail" },
+  { code: "SHIPMENT_SUPPORT_READ", description: "Read shipment support detail" },
+  { code: "SHIPMENT_SUPPORT_WRITE", description: "Override shipment status for support" },
+  { code: "WEBHOOK_SUPPORT_READ", description: "Read webhook logs for support" },
+  { code: "REFUND_SUPPORT_READ", description: "Read refund approval queue" },
+  { code: "REFUND_SUPPORT_APPROVE", description: "Confirm or reject refund requests" },
+  { code: "ADMIN_AUDIT_READ", description: "Read admin audit logs" },
+  { code: "SYSTEM_CONFIG_VIEW", description: "View system configuration" },
 ];
 
 export const mockRolePermissionsByRoleId = {
   [ROLE_IDS.ADMIN]: [
+    { code: "ADMIN_ACCESS", description: "Access admin dashboard" },
     { code: "ASSIGN_ROLE", description: "Assign roles to users" },
     { code: "USER_READ", description: "Read user information" },
     { code: "USER_UPDATE", description: "Update user information" },
     { code: "USER_DELETE", description: "Soft delete user accounts" },
-    { code: "ROLE_READ", description: "View roles and permissions" },
+    { code: "USER_SUSPEND", description: "Suspend user account" },
+    { code: "USER_INVESTIGATION_READ", description: "Read user profile for investigation" },
+    { code: "ORDER_SUPPORT_READ", description: "Read order support detail" },
+    { code: "PAYMENT_SUPPORT_READ", description: "Read payment support detail" },
+    { code: "SHIPMENT_SUPPORT_READ", description: "Read shipment support detail" },
+    { code: "SHIPMENT_SUPPORT_WRITE", description: "Override shipment status for support" },
+    { code: "WEBHOOK_SUPPORT_READ", description: "Read webhook logs for support" },
+    { code: "REFUND_SUPPORT_READ", description: "Read refund approval queue" },
+    { code: "REFUND_SUPPORT_APPROVE", description: "Confirm or reject refund requests" },
+    { code: "ADMIN_AUDIT_READ", description: "Read admin audit logs" },
+    { code: "SYSTEM_CONFIG_VIEW", description: "View system configuration" },
   ],
   [ROLE_IDS.MODERATOR]: [
     { code: "USER_READ", description: "Read user information" },
     { code: "USER_UPDATE", description: "Update user information" },
-    { code: "ROLE_READ", description: "View roles and permissions" },
+    { code: "USER_INVESTIGATION_READ", description: "Read user profile for investigation" },
   ],
   [ROLE_IDS.USER]: [{ code: "USER_READ", description: "Read user information" }],
 };
@@ -71,7 +94,7 @@ export const mockUserPermissionsByUserId = Object.fromEntries(
   Object.entries(mockUserRoleAssignments).map(([userId, roleId]) => [
     userId,
     permissionsForRoleId(roleId),
-  ])
+  ]),
 );
 
 export const mockAssignableUsers = [
@@ -91,3 +114,36 @@ export const mockAssignableUsers = [
     display_name: "Admin User",
   },
 ];
+
+function syncUserPermissionsForRole(roleId) {
+  Object.entries(mockUserRoleAssignments).forEach(([userId, assignedRoleId]) => {
+    if (assignedRoleId === roleId) {
+      mockUserPermissionsByUserId[userId] = permissionsForRoleId(roleId);
+    }
+  });
+}
+
+export function assignMockPermissionToRole(roleId, permissionCode) {
+  const catalogItem = mockPermissionsCatalog.find((item) => item.code === permissionCode);
+  if (!catalogItem) return { error: "NOT_FOUND" };
+
+  const current = mockRolePermissionsByRoleId[roleId] || [];
+  if (current.some((item) => item.code === permissionCode)) {
+    return { error: "ALREADY_ASSIGNED" };
+  }
+
+  mockRolePermissionsByRoleId[roleId] = [...current, catalogItem];
+  syncUserPermissionsForRole(roleId);
+  return { ok: true };
+}
+
+export function revokeMockPermissionFromRole(roleId, permissionCode) {
+  const current = mockRolePermissionsByRoleId[roleId] || [];
+  if (!current.some((item) => item.code === permissionCode)) {
+    return { error: "NOT_ASSIGNED" };
+  }
+
+  mockRolePermissionsByRoleId[roleId] = current.filter((item) => item.code !== permissionCode);
+  syncUserPermissionsForRole(roleId);
+  return { ok: true };
+}

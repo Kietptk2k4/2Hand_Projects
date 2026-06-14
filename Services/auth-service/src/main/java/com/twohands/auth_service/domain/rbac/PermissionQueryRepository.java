@@ -13,6 +13,8 @@ public interface PermissionQueryRepository {
 
     List<PermissionData> findPermissionsByRoleId(UUID roleId);
 
+    List<PermissionData> findAllPermissions();
+
     record PermissionData(String code, String description) {
     }
 }

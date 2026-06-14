@@ -81,6 +81,14 @@ public class HandlePaymentFailureRepositoryAdapter implements HandlePaymentFailu
     }
 
     @Override
+    public Optional<LockedPaymentContext> lockPaymentByVnpayTxnRef(String vnpayTxnRef) {
+        return lockPayment(
+                "p.vnpay_txn_ref = :vnpayTxnRef",
+                new MapSqlParameterSource("vnpayTxnRef", vnpayTxnRef)
+        );
+    }
+
+    @Override
     public HandlePaymentFailureResult handleFailure(
             LockedPaymentContext payment,
             PaymentStatus terminalStatus,

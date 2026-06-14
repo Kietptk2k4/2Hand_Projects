@@ -3,6 +3,7 @@ import { getAddressesForUser } from "./commerceAddressData";
 import { getShopBySellerId } from "./commerceSellerShopData";
 import {
   attachShipmentToOrderItems,
+  findSellerOrderItem,
   findSellerOrderItemsByIds,
   getAllSellerOrderItemRecords,
   MOCK_SELLER_ORDER_BUYER_PROFILE,
@@ -384,6 +385,45 @@ function applyShipmentStatusToItems(userId, record, newStatus) {
 
   const summary = buildShipmentSummaryFromRecord({ ...record, status: newStatus });
   attachShipmentToOrderItems(userId, record.order_item_ids, record.shipment_id, summary);
+}
+
+function canCancelShipment(carrier, status) {
+  if (carrier === "GHN") {
+    return ["PENDING", "PICKING_UP", "READY_TO_SHIP"].includes(status);
+  }
+  if (carrier === "MANUAL" || carrier === "SELF_DELIVERY") {
+    return ["PENDING", "READY_TO_SHIP"].includes(status);
+  }
+  return false;
+}
+
+function releaseOrderItemsFromCancelledShipment(userId, orderItemIds) {
+  const now = new Date().toISOString();
+  for (const id of orderItemIds) {
+    const item = findSellerOrderItem(userId, id);
+    if (!item) continue;
+    item.shipment_summary = null;
+    item.item_status = "PROCESSING";
+    item.item_updated_at = now;
+  }
+}
+
+export function cancelSellerShipmentForSeller(userId, shipmentId) {
+  const record = shipmentsById.get(shipmentId);
+  if (!record || record.seller_id !== userId) {
+    return { error: "COMMERCE-404-SHIPMENT", status: 404 };
+  }
+
+  if (!canCancelShipment(record.carrier, record.status)) {
+    return { error: "COMMERCE-409-SHIPMENT-STATUS", status: 409 };
+  }
+
+  const now = new Date().toISOString();
+  record.status = "CANCELLED";
+  record.updated_at = now;
+  releaseOrderItemsFromCancelledShipment(userId, record.order_item_ids);
+
+  return { data: toDetailResponse(record) };
 }
 
 export function updateSellerShipmentForSeller(userId, shipmentId, body) {

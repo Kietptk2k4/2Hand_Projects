@@ -35,6 +35,61 @@ function errorResponse(result) {
 
 export const commercePaymentHandlers = [
   http.post(
+    "*/commerce/api/v1/payments/:paymentId/vnpay-checkout-url",
+    async ({ params, request }) => {
+      await delay(400);
+      const auth = requireAuth(request);
+      if (auth.error) return auth.error;
+
+      const paymentId = params.paymentId;
+      if (!UUID_REGEX.test(paymentId)) {
+        return HttpResponse.json(apiError("COMMERCE-404-PAYMENT", "Payment khong hop le."), {
+          status: 404,
+        });
+      }
+
+      const result = createOrGetPayOsUrl(paymentId, auth.user.id);
+      if (result.error) return errorResponse(result);
+
+      return HttpResponse.json(
+        apiSuccess(200, "Tao link thanh toan VNPay thanh cong.", {
+          payment_id: paymentId,
+          order_id: result.data.order_id,
+          txn_ref: `mock-txn-${Date.now()}`,
+          redirect: `https://mock.vnpay.local/checkout?payment_id=${paymentId}`,
+        }),
+        { status: 200 }
+      );
+    }
+  ),
+
+  http.post(
+    "*/commerce/api/v1/orders/:orderId/payments/vnpay/retry",
+    async ({ params, request }) => {
+      await delay(400);
+      const auth = requireAuth(request);
+      if (auth.error) return auth.error;
+
+      const orderId = params.orderId;
+      if (!UUID_REGEX.test(orderId)) {
+        return HttpResponse.json(apiError("COMMERCE-404-ORDER", "Don hang khong hop le."), {
+          status: 404,
+        });
+      }
+
+      return HttpResponse.json(
+        apiSuccess(200, "Tao lai link thanh toan VNPay thanh cong.", {
+          order_id: orderId,
+          payment_id: `p1000000-0000-4000-8000-${Date.now().toString().slice(-11)}`,
+          txn_ref: `${orderId}-${Date.now()}`,
+          redirect: `https://mock.vnpay.local/checkout?order_id=${orderId}`,
+        }),
+        { status: 200 }
+      );
+    }
+  ),
+
+  http.post(
     "*/commerce/api/v1/payments/:paymentId/payos-checkout-url",
     async ({ params, request }) => {
       await delay(400);

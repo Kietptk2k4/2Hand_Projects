@@ -9,11 +9,16 @@ import { SellerOrderProcessConfirmDialog } from "../components/SellerOrderProces
 import { SellerOrderShipmentCell } from "../components/SellerOrderShipmentCell";
 import {
   buildProcessSuccessToast,
+  canCancelSellerOrder,
   formatOrderPaymentSubline,
+  isSellerOrderPendingRefund,
   PAYMENT_METHOD_LABELS,
 } from "../constants/sellerOrderConstants";
+import { buildCancelOrderSuccessToast } from "../constants/orderActionConstants";
+import { useCancelSellerOrder } from "../hooks/useCancelSellerOrder";
 import { useProcessSellerOrderItems } from "../hooks/useProcessSellerOrderItems";
 import { useSellerOrderDetail } from "../hooks/useSellerOrderDetail";
+import { CancelOrderConfirmDialog } from "../components/CancelOrderConfirmDialog";
 import { formatOrderDate, formatShortOrderId } from "../utils/formatOrderDate";
 import { formatVndPrice } from "../../social/utils/formatPrice";
 import { APP_ROUTES } from "../../../shared/constants/routes";
@@ -24,6 +29,7 @@ export function CommerceSellerOrderDetailPage() {
   const navigate = useNavigate();
   const [toastMessage, setToastMessage] = useState("");
   const [confirmItems, setConfirmItems] = useState(null);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   const { detail, isLoading, isNotFound, isError, errorMessage, reload } = useSellerOrderDetail(orderId);
 
@@ -44,6 +50,25 @@ export function CommerceSellerOrderDetailPage() {
   const { isProcessing, processError, process, clearError } = useProcessSellerOrderItems({
     onSuccess: handleProcessSuccess,
   });
+
+  const handleCancelSuccess = useCallback(
+    (result) => {
+      setShowCancelDialog(false);
+      reload();
+      setToastMessage(buildCancelOrderSuccessToast(result));
+    },
+    [reload],
+  );
+
+  const {
+    isCancelling,
+    errorMessage: cancelError,
+    cancel,
+    clearError: clearCancelError,
+  } = useCancelSellerOrder({ onSuccess: handleCancelSuccess });
+
+  const canCancel = detail && canCancelSellerOrder(detail);
+  const pendingRefund = detail && isSellerOrderPendingRefund(detail);
 
   const openConfirmForItems = useCallback(
     (items) => {
@@ -165,6 +190,35 @@ export function CommerceSellerOrderDetailPage() {
                 </div>
               </div>
             </header>
+
+            {pendingRefund ? (
+              <div className="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-body-sm text-amber-950">
+                Đơn hàng đang chờ hoàn tiền — admin sẽ xác nhận sau khi hoàn tiền VNPay.
+              </div>
+            ) : null}
+
+            {canCancel ? (
+              <section className="mb-6 rounded-xl border border-error/30 bg-error-container/20 p-5">
+                <h2 className="text-headline-sm font-semibold text-on-surface">Hủy đơn hàng</h2>
+                <p className="mt-2 text-body-sm text-on-surface-variant">
+                  {detail.orderPaymentMethod === "VNPAY" && detail.orderPaymentStatus === "PAID"
+                    ? "Đơn VNPay đã thanh toán sẽ chuyển sang trạng thái chờ hoàn tiền."
+                    : "Hủy ngay và hoàn trả tồn kho cho đơn COD."}
+                </p>
+                {cancelError ? <p className="mt-2 text-sm text-error">{cancelError}</p> : null}
+                <button
+                  type="button"
+                  disabled={isCancelling || isProcessing}
+                  onClick={() => {
+                    clearCancelError();
+                    setShowCancelDialog(true);
+                  }}
+                  className="mt-4 rounded-lg border border-error px-4 py-2 text-label-md font-medium text-error disabled:opacity-50"
+                >
+                  Hủy đơn hàng
+                </button>
+              </section>
+            ) : null}
 
             {detail.shippingAddress ? (
               <div className="mb-6">
@@ -292,6 +346,20 @@ export function CommerceSellerOrderDetailPage() {
           </>
         ) : null}
       </div>
+
+      <CancelOrderConfirmDialog
+        open={showCancelDialog}
+        orderLabel={shortId}
+        isSubmitting={isCancelling}
+        submitError={cancelError}
+        onClose={() => {
+          if (!isCancelling) setShowCancelDialog(false);
+        }}
+        onConfirm={async ({ reason }) => {
+          if (!detail?.orderId) return;
+          await cancel(detail.orderId, { reason });
+        }}
+      />
 
       <SellerOrderProcessConfirmDialog
         open={Boolean(confirmItems?.length)}

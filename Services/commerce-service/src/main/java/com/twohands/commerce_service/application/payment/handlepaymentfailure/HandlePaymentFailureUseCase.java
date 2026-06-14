@@ -67,6 +67,9 @@ public class HandlePaymentFailureUseCase {
         if (StringUtils.hasText(command.payosOrderCode())) {
             return handlePaymentFailureRepository.lockPaymentByPayosOrderCode(command.payosOrderCode().trim());
         }
+        if (StringUtils.hasText(command.vnpayTxnRef())) {
+            return handlePaymentFailureRepository.lockPaymentByVnpayTxnRef(command.vnpayTxnRef().trim());
+        }
         return java.util.Optional.empty();
     }
 
@@ -86,8 +89,10 @@ public class HandlePaymentFailureUseCase {
     }
 
     private void validateCommand(HandlePaymentFailureCommand command) {
-        if (command.paymentId() == null && !StringUtils.hasText(command.payosOrderCode())) {
-            throw new AppException(ErrorCode.VALIDATION_ERROR, "paymentId or payosOrderCode is required");
+        if (command.paymentId() == null
+                && !StringUtils.hasText(command.payosOrderCode())
+                && !StringUtils.hasText(command.vnpayTxnRef())) {
+            throw new AppException(ErrorCode.VALIDATION_ERROR, "paymentId, payosOrderCode, or vnpayTxnRef is required");
         }
         if (!StringUtils.hasText(command.reason())) {
             throw new AppException(ErrorCode.VALIDATION_ERROR, "reason is required");

@@ -6,4 +6,6 @@ import java.util.UUID;
 public interface OrderCancellationRepository {
 
     BuyerOrderCancellationResult cancelByBuyer(UUID orderId, UUID buyerId, String reason, Instant now);
+
+    BuyerOrderCancellationResult cancelBySeller(UUID orderId, UUID sellerId, String reason, Instant now);
 }

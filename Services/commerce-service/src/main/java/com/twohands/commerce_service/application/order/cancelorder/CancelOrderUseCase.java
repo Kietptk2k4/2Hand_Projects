@@ -30,6 +30,10 @@ public class CancelOrderUseCase {
                 now
         );
 
+        return mapResult(command.orderId(), result);
+    }
+
+    public static CancelOrderResult mapResult(java.util.UUID orderId, BuyerOrderCancellationResult result) {
         return switch (result.outcome()) {
             case NOT_FOUND -> throw new AppException(ErrorCode.ORDER_NOT_FOUND);
             case NOT_CANCELLABLE -> throw new AppException(
@@ -37,22 +41,33 @@ public class CancelOrderUseCase {
                     "Order cannot be cancelled in its current state"
             );
             case ALREADY_CANCELLED -> new CancelOrderResult(
-                    command.orderId(),
+                    orderId,
                     OrderStatus.CANCELLED,
                     result.cancelledAt(),
                     true
             );
             case CANCELLED -> new CancelOrderResult(
-                    command.orderId(),
+                    orderId,
                     OrderStatus.CANCELLED,
                     result.cancelledAt(),
                     false
             );
+            case PENDING_REFUND, REFUND_ALREADY_REQUESTED -> new CancelOrderResult(
+                    orderId,
+                    OrderStatus.PROCESSING,
+                    result.cancelledAt(),
+                    false,
+                    true,
+                    result.refundRequestId()
+            );
         };
     }
 
-    public String successMessage(boolean alreadyCancelled) {
-        if (alreadyCancelled) {
+    public String successMessage(CancelOrderResult result) {
+        if (result.pendingRefund()) {
+            return "Yeu cau huy don da duoc ghi nhan. Don hang dang cho hoan tien.";
+        }
+        if (result.alreadyCancelled()) {
             return "Don hang da duoc huy truoc do.";
         }
         return "Huy don hang thanh cong.";

@@ -75,7 +75,42 @@ export const ORDER_PAYMENT_STATUS_LABELS = {
 export const PAYMENT_METHOD_LABELS = {
   PAYOS: "PayOS",
   COD: "COD",
+  VNPAY: "VNPay",
 };
+
+const BLOCKING_SHIPMENT_STATUSES = new Set(["SHIPPED", "DELIVERED", "RETURNED"]);
+
+export function isSellerOrderPendingRefund(detail) {
+  return Boolean(detail?.activeRefundRequest);
+}
+
+export function canCancelSellerOrder(detail) {
+  if (!detail) return false;
+  if (isSellerOrderPendingRefund(detail)) return false;
+  if (detail.orderStatus === "CANCELLED") return false;
+
+  const shipments = (detail.items || [])
+    .map((item) => item.shipment)
+    .filter(Boolean);
+
+  if (shipments.some((shipment) => BLOCKING_SHIPMENT_STATUSES.has(shipment.status))) {
+    return false;
+  }
+
+  if (
+    detail.orderPaymentMethod === "VNPAY" &&
+    detail.orderPaymentStatus === "PAID" &&
+    detail.orderStatus === "PROCESSING"
+  ) {
+    return true;
+  }
+
+  return (
+    detail.orderPaymentMethod === "COD" &&
+    detail.orderPaymentStatus === "PENDING" &&
+    detail.orderStatus === "PROCESSING"
+  );
+}
 
 export function formatOrderPaymentSubline(orderPaymentStatus, orderPaymentMethod) {
   if (orderPaymentMethod === "COD") return "COD";
@@ -98,6 +133,7 @@ export const SELLER_ORDER_ERROR_MESSAGES = {
   "COMMERCE-400-VALIDATION": "Chưa chọn mục đơn hoặc dữ liệu không hợp lệ.",
   "COMMERCE-404-ORDER-ITEM": "Một hoặc nhiều mục đơn không tồn tại.",
   "COMMERCE-409-ORDER-PROCESSING": "Đơn hàng chưa sẵn sàng xử lý.",
+  "COMMERCE-409-ORDER-NOT-CANCELLABLE": "Không thể hủy đơn ở trạng thái hiện tại.",
   "COMMERCE-409-PAYMENT-STATE": "Thanh toán PayOS chưa hoàn tất.",
   "COMMERCE-409-ORDER-ITEM-PROCESS": "Trạng thái mục đơn không cho phép thao tác này.",
   "COMMERCE-409-SELLER-SHOP": "Bạn chưa có cửa hàng. Hãy tạo shop trước khi xem đơn bán.",

@@ -1,10 +1,15 @@
 package com.twohands.commerce_service.delivery.http.seller;
 
+import com.twohands.commerce_service.application.order.cancelsellerorder.CancelSellerOrderCommand;
+import com.twohands.commerce_service.application.order.cancelsellerorder.CancelSellerOrderUseCase;
+import com.twohands.commerce_service.application.order.cancelorder.CancelOrderResult;
 import com.twohands.commerce_service.application.order.viewsellerorderdetail.ViewSellerOrderDetailCommand;
 import com.twohands.commerce_service.application.order.viewsellerorderdetail.ViewSellerOrderDetailUseCase;
 import com.twohands.commerce_service.application.order.viewsellerorders.ViewSellerOrdersCommand;
 import com.twohands.commerce_service.application.order.viewsellerorders.ViewSellerOrdersUseCase;
 import com.twohands.commerce_service.domain.order.ViewSellerOrderDetailResult;
+import com.twohands.commerce_service.delivery.http.order.CancelOrderRequest;
+import com.twohands.commerce_service.delivery.http.order.CancelOrderResponse;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.common.pagination.PageMeta;
 import com.twohands.commerce_service.delivery.http.catalog.PageMetaResponse;
@@ -20,6 +25,7 @@ import com.twohands.commerce_service.security.AuthenticatedUser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,13 +40,42 @@ public class SellerOrderController {
 
     private final ViewSellerOrdersUseCase viewSellerOrdersUseCase;
     private final ViewSellerOrderDetailUseCase viewSellerOrderDetailUseCase;
+    private final CancelSellerOrderUseCase cancelSellerOrderUseCase;
 
     public SellerOrderController(
             ViewSellerOrdersUseCase viewSellerOrdersUseCase,
-            ViewSellerOrderDetailUseCase viewSellerOrderDetailUseCase
+            ViewSellerOrderDetailUseCase viewSellerOrderDetailUseCase,
+            CancelSellerOrderUseCase cancelSellerOrderUseCase
     ) {
         this.viewSellerOrdersUseCase = viewSellerOrdersUseCase;
         this.viewSellerOrderDetailUseCase = viewSellerOrderDetailUseCase;
+        this.cancelSellerOrderUseCase = cancelSellerOrderUseCase;
+    }
+
+    @PostMapping("/{orderId}/cancel")
+    public ResponseEntity<ApiResponse<CancelOrderResponse>> cancelSellerOrder(
+            @PathVariable UUID orderId,
+            @org.springframework.web.bind.annotation.RequestBody(required = false) CancelOrderRequest request,
+            Authentication authentication
+    ) {
+        UUID sellerId = resolveUserId(authentication);
+        String reason = request == null ? null : request.reason();
+
+        CancelOrderResult result = cancelSellerOrderUseCase.execute(
+                new CancelSellerOrderCommand(sellerId, orderId, reason)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                cancelSellerOrderUseCase.successMessage(result),
+                new CancelOrderResponse(
+                        result.orderId(),
+                        result.status(),
+                        result.cancelledAt(),
+                        result.pendingRefund(),
+                        result.refundRequestId()
+                )
+        ));
     }
 
     @GetMapping("/{orderId}")
@@ -97,7 +132,23 @@ public class SellerOrderController {
                 toShippingAddressResponse(result.shippingAddress()),
                 buyer.buyerId(),
                 buyer.displayName(),
-                buyer.avatarUrl()
+                buyer.avatarUrl(),
+                toActiveRefundRequestResponse(result.activeRefundRequest())
+        );
+    }
+
+    private ViewSellerOrderDetailResponse.ActiveRefundRequestResponse toActiveRefundRequestResponse(
+            com.twohands.commerce_service.domain.order.PaymentRefundRequestSummary refundRequest
+    ) {
+        if (refundRequest == null) {
+            return null;
+        }
+        return new ViewSellerOrderDetailResponse.ActiveRefundRequestResponse(
+                refundRequest.refundRequestId(),
+                refundRequest.status().name(),
+                refundRequest.requestedBy().name(),
+                refundRequest.amount(),
+                refundRequest.requestedAt()
         );
     }
 

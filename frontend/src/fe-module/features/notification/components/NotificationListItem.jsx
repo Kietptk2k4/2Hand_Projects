@@ -14,6 +14,7 @@ function NotificationTypeIcon({ type }) {
     PAYMENT_FAILED: "error",
     SHIPMENT_CREATED: "local_shipping",
     SHIPMENT_READY_TO_SHIP: "inventory_2",
+    SHIPMENT_CANCELLED: "cancel",
     SHIPMENT_SHIPPED: "local_shipping",
     SHIPMENT_DELIVERED: "inventory_2",
     ORDER_COMPLETED: "check_circle",

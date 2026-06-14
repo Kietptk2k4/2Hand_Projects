@@ -18,6 +18,8 @@ public class CommerceShipmentNotificationPayloadNormalizer {
             "COMMERCE_SHIPMENT_CREATED",
             "SHIPMENT_READY_TO_SHIP",
             "COMMERCE_SHIPMENT_READY_TO_SHIP",
+            "SHIPMENT_CANCELLED",
+            "COMMERCE_SHIPMENT_CANCELLED",
             "SHIPMENT_SHIPPED",
             "COMMERCE_SHIPMENT_SHIPPED",
             "SHIPMENT_DELIVERED",

@@ -47,7 +47,26 @@ class CancelOrderUseCaseTest {
         assertThat(result.orderId()).isEqualTo(orderId);
         assertThat(result.status()).isEqualTo(OrderStatus.CANCELLED);
         assertThat(result.alreadyCancelled()).isFalse();
-        assertThat(useCase.successMessage(false)).isEqualTo("Huy don hang thanh cong.");
+        assertThat(useCase.successMessage(result)).isEqualTo("Huy don hang thanh cong.");
+    }
+
+    @Test
+    void shouldQueueRefundForVnpayPaidOrder() {
+        UUID refundRequestId = UUID.randomUUID();
+        when(orderCancellationRepository.cancelByBuyer(any(), any(), any(), any(Instant.class)))
+                .thenReturn(new BuyerOrderCancellationResult(
+                        BuyerOrderCancelOutcome.PENDING_REFUND,
+                        orderId,
+                        now,
+                        refundRequestId
+                ));
+
+        CancelOrderResult result = useCase.execute(new CancelOrderCommand(buyerId, orderId, null));
+
+        assertThat(result.pendingRefund()).isTrue();
+        assertThat(result.refundRequestId()).isEqualTo(refundRequestId);
+        assertThat(result.status()).isEqualTo(OrderStatus.PROCESSING);
+        assertThat(useCase.successMessage(result)).contains("cho hoan tien");
     }
 
     @Test
@@ -58,7 +77,7 @@ class CancelOrderUseCaseTest {
         CancelOrderResult result = useCase.execute(new CancelOrderCommand(buyerId, orderId, null));
 
         assertThat(result.alreadyCancelled()).isTrue();
-        assertThat(useCase.successMessage(true)).isEqualTo("Don hang da duoc huy truoc do.");
+        assertThat(useCase.successMessage(result)).isEqualTo("Don hang da duoc huy truoc do.");
     }
 
     @Test

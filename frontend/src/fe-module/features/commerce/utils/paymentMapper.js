@@ -10,6 +10,28 @@ export function mapPayOsCheckoutUrlResponse(data) {
   };
 }
 
+export function mapVnpayCheckoutUrlResponse(data) {
+  if (!data) return null;
+
+  return {
+    paymentId: data.payment_id,
+    orderId: data.order_id,
+    txnRef: data.txn_ref,
+    redirect: data.redirect,
+  };
+}
+
+export function mapVnpayRetryResponse(data) {
+  if (!data) return null;
+
+  return {
+    orderId: data.order_id,
+    paymentId: data.payment_id,
+    txnRef: data.txn_ref,
+    redirect: data.redirect,
+  };
+}
+
 export function mapPaymentStatusResponse(data) {
   if (!data) return null;
 

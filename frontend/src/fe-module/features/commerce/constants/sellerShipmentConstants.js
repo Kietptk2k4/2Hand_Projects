@@ -52,6 +52,18 @@ export const MANUAL_NEXT_ACTIONS = {
   ],
 };
 
+const GHN_CANCELLABLE_STATUSES = ["PENDING", "PICKING_UP", "READY_TO_SHIP"];
+const MANUAL_CANCELLABLE_STATUSES = ["PENDING", "READY_TO_SHIP"];
+
+export function canCancelSellerShipment({ carrier, status } = {}) {
+  if (!carrier || !status) return false;
+  if (carrier === "GHN") return GHN_CANCELLABLE_STATUSES.includes(status);
+  if (carrier === "MANUAL" || carrier === "SELF_DELIVERY") {
+    return MANUAL_CANCELLABLE_STATUSES.includes(status);
+  }
+  return false;
+}
+
 export const SELLER_SHIPMENT_ERROR_MESSAGES = {
   "COMMERCE-401": "Phiên đăng nhập không hợp lệ.",
   "COMMERCE-400": "Vui lòng nhập trạng thái hoặc mã vận đơn.",

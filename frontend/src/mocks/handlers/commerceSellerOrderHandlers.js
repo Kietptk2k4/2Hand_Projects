@@ -1,5 +1,6 @@
 import { delay, http, HttpResponse } from "msw";
 import {
+  cancelSellerOrderForUser,
   getSellerOrderDetailForUser,
   listSellerOrdersForUser,
   processSellerOrderItemsForUser,
@@ -84,6 +85,27 @@ export const commerceSellerOrderHandlers = [
 
     return HttpResponse.json(
       apiSuccess(200, "Danh dau chuan bi hang thanh cong.", result.data),
+      { status: 200 },
+    );
+  }),
+
+  http.post("*/commerce/api/v1/seller/orders/:orderId/cancel", async ({ params, request }) => {
+    await delay(400);
+    const auth = requireAuth(request);
+    if (auth.error) return auth.error;
+
+    let body = {};
+    try {
+      body = await request.json();
+    } catch {
+      body = {};
+    }
+
+    const result = cancelSellerOrderForUser(auth.user.id, params.orderId, body?.reason);
+    if (result.error) return mapError(result);
+
+    return HttpResponse.json(
+      apiSuccess(200, result.message || "Huy don hang thanh cong.", result.data),
       { status: 200 },
     );
   }),

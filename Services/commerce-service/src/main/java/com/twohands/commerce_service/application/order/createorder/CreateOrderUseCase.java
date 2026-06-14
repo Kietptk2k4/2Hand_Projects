@@ -104,7 +104,10 @@ public class CreateOrderUseCase {
     }
 
     public OrderStatus resolveInitialOrderStatus(PaymentMethod paymentMethod) {
-        return paymentMethod == PaymentMethod.PAYOS ? OrderStatus.AWAITING_PAYMENT : OrderStatus.PROCESSING;
+        if (paymentMethod == PaymentMethod.PAYOS || paymentMethod == PaymentMethod.VNPAY) {
+            return OrderStatus.AWAITING_PAYMENT;
+        }
+        return OrderStatus.PROCESSING;
     }
 
     private List<UUID> distinctSellerIds(List<CreateOrderItemResult> orderItems) {

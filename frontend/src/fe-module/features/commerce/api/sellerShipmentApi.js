@@ -45,3 +45,14 @@ export async function updateSellerShipment(shipmentId, payload) {
     throw mapAxiosError(error);
   }
 }
+
+export async function cancelSellerShipment(shipmentId) {
+  try {
+    const response = await commerceApiClient.post(
+      `/commerce/api/v1/seller/shipments/${shipmentId}/cancel`,
+    );
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}

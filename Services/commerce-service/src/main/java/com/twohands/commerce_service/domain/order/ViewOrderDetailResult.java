@@ -22,6 +22,7 @@ public record ViewOrderDetailResult(
         ViewOrderDetailPaymentSummary payment,
         List<ViewOrderDetailItem> items,
         List<ViewOrderDetailShipment> shipments,
-        List<OrderStatusHistoryEntry> orderTimeline
+        List<OrderStatusHistoryEntry> orderTimeline,
+        PaymentRefundRequestSummary activeRefundRequest
 ) {
 }

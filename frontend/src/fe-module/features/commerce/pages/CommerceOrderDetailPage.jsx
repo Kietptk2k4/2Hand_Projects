@@ -23,9 +23,11 @@ import { useConfirmOrderReceived } from "../hooks/useConfirmOrderReceived";
 import { useOrderDetail } from "../hooks/useOrderDetail";
 import { useOrderTrackStatus } from "../hooks/useOrderTrackStatus";
 import { isOrderCancelledDueToPayment } from "../constants/paymentStatusLabels";
-import { canCancelOrder, canConfirmOrderReceived } from "../utils/orderActionDisplay";
+import { canCancelOrder, canConfirmOrderReceived, isPendingRefund } from "../utils/orderActionDisplay";
 import { formatOrderDate, formatShortOrderId } from "../utils/formatOrderDate";
 import { APP_ROUTES } from "../../../shared/constants/routes";
+import { ONLINE_PAYMENT_METHODS } from "../constants/checkoutConstants";
+import { RetryVnpayPaymentButton } from "../components/RetryVnpayPaymentButton";
 
 export function CommerceOrderDetailPage() {
   const { orderId } = useParams();
@@ -81,9 +83,10 @@ export function CommerceOrderDetailPage() {
 
   const showPayNow =
     order?.orderStatus === "AWAITING_PAYMENT" &&
-    order?.paymentMethod === "PAYOS" &&
+    ONLINE_PAYMENT_METHODS.has(order?.paymentMethod) &&
     order?.payment?.paymentId &&
     !isOrderCancelledDueToPayment(order.orderStatus, order.orderPaymentStatus);
+  const isVnpayPayNow = showPayNow && order?.paymentMethod === "VNPAY";
 
   const showPaymentFailureBanner = isOrderCancelledDueToPayment(
     order?.orderStatus,
@@ -91,6 +94,7 @@ export function CommerceOrderDetailPage() {
   );
 
   const showCancel = canCancelOrder(order);
+  const showPendingRefund = isPendingRefund(order);
   const showConfirm = canConfirmOrderReceived(order);
   const isMutating = isCancelling || isConfirming;
 
@@ -223,7 +227,10 @@ export function CommerceOrderDetailPage() {
                       Đã nhận hàng
                     </button>
                   ) : null}
-                  {showPayNow ? (
+                  {showPayNow && isVnpayPayNow ? (
+                    <RetryVnpayPaymentButton orderId={order.orderId} label="Thanh toán ngay" />
+                  ) : null}
+                  {showPayNow && !isVnpayPayNow ? (
                     <Link
                       to={`${APP_ROUTES.commerceCheckoutPaymentResult}?paymentId=${order.payment.paymentId}`}
                       className="rounded-lg bg-primary px-4 py-2 text-label-md font-medium text-on-primary hover:bg-[#0050cb]"
@@ -236,6 +243,12 @@ export function CommerceOrderDetailPage() {
 
               {trackErrorMessage ? (
                 <p className="mt-2 text-body-sm text-error">{trackErrorMessage}</p>
+              ) : null}
+
+              {showPendingRefund ? (
+                <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-body-sm text-amber-950">
+                  Đơn hàng đang chờ hoàn tiền. Admin sẽ xác nhận sau khi hoàn tiền qua VNPay.
+                </div>
               ) : null}
 
               {showPaymentFailureBanner ? (

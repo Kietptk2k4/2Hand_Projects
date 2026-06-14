@@ -28,8 +28,17 @@ public record ViewOrderDetailResponse(
         PaymentSummaryResponse payment,
         List<OrderItemDetailResponse> items,
         List<ShipmentDetailResponse> shipments,
-        @JsonProperty("order_timeline") List<OrderStatusTimelineEntryResponse> orderTimeline
+        @JsonProperty("order_timeline") List<OrderStatusTimelineEntryResponse> orderTimeline,
+        @JsonProperty("active_refund_request") ActiveRefundRequestResponse activeRefundRequest
 ) {
+    public record ActiveRefundRequestResponse(
+            @JsonProperty("refund_request_id") UUID refundRequestId,
+            String status,
+            @JsonProperty("requested_by") String requestedBy,
+            BigDecimal amount,
+            @JsonProperty("requested_at") Instant requestedAt
+    ) {
+    }
     public record PaymentSummaryResponse(
             @JsonProperty("payment_id") UUID paymentId,
             PaymentStatus status,

@@ -9,6 +9,11 @@ public record CancelOrderResult(
         UUID orderId,
         OrderStatus status,
         Instant cancelledAt,
-        boolean alreadyCancelled
+        boolean alreadyCancelled,
+        boolean pendingRefund,
+        UUID refundRequestId
 ) {
+    public CancelOrderResult(UUID orderId, OrderStatus status, Instant cancelledAt, boolean alreadyCancelled) {
+        this(orderId, status, cancelledAt, alreadyCancelled, false, null);
+    }
 }

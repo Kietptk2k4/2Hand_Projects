@@ -166,11 +166,11 @@ export function processCheckout(userId, body) {
     idempotency_key: idempotencyKey,
   } = body;
 
-  if (!["COD", "PAYOS"].includes(paymentMethod)) {
+  if (!["COD", "PAYOS", "VNPAY"].includes(paymentMethod)) {
     return { error: "COMMERCE-400-PAYMENT-METHOD", status: 400 };
   }
 
-  if (CHECKOUT_COD_ONLY_ENABLED && paymentMethod === "PAYOS") {
+  if (CHECKOUT_COD_ONLY_ENABLED && paymentMethod !== "COD") {
     return { error: "COMMERCE-400-PAYMENT-METHOD", status: 400 };
   }
 
@@ -190,6 +190,7 @@ export function processCheckout(userId, body) {
   const paymentId = `p1000000-0000-4000-8000-${Date.now().toString().slice(-11)}`;
 
   const isCod = paymentMethod === "COD";
+  const isVnpay = paymentMethod === "VNPAY";
   const result = {
     order_id: orderId,
     payment_id: paymentId,
@@ -197,7 +198,10 @@ export function processCheckout(userId, body) {
     payment_status: "PENDING",
     order_status: isCod ? "PROCESSING" : "AWAITING_PAYMENT",
     final_amount: quoteResult.data.final_amount,
-    payos_checkout_url: isCod ? null : null,
+    payos_checkout_url: null,
+    redirect: isVnpay
+      ? `https://mock.vnpay.local/checkout?order_id=${orderId}&payment_id=${paymentId}`
+      : null,
   };
 
   if (idempotencyKey) {

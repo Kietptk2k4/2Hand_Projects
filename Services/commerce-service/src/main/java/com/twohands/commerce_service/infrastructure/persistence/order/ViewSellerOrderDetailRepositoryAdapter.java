@@ -6,6 +6,7 @@ import com.twohands.commerce_service.domain.order.OrderStatus;
 import com.twohands.commerce_service.domain.order.SellerOrderListEntry;
 import com.twohands.commerce_service.domain.order.SellerOrderListPaymentSummary;
 import com.twohands.commerce_service.domain.order.SellerOrderListShipmentSummary;
+import com.twohands.commerce_service.domain.order.PaymentRefundRequestRepository;
 import com.twohands.commerce_service.domain.order.ViewSellerOrderDetailRepository;
 import com.twohands.commerce_service.domain.order.ViewSellerOrderDetailResult;
 import com.twohands.commerce_service.domain.payment.PaymentMethod;
@@ -71,9 +72,14 @@ public class ViewSellerOrderDetailRepositoryAdapter implements ViewSellerOrderDe
             """;
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final PaymentRefundRequestRepository paymentRefundRequestRepository;
 
-    public ViewSellerOrderDetailRepositoryAdapter(NamedParameterJdbcTemplate jdbcTemplate) {
+    public ViewSellerOrderDetailRepositoryAdapter(
+            NamedParameterJdbcTemplate jdbcTemplate,
+            PaymentRefundRequestRepository paymentRefundRequestRepository
+    ) {
         this.jdbcTemplate = jdbcTemplate;
+        this.paymentRefundRequestRepository = paymentRefundRequestRepository;
     }
 
     @Override
@@ -113,7 +119,8 @@ public class ViewSellerOrderDetailRepositoryAdapter implements ViewSellerOrderDe
                 shippingTotal,
                 items,
                 shippingAddress,
-                new CommerceBuyerSummary(buyerId, null, null)
+                new CommerceBuyerSummary(buyerId, null, null),
+                paymentRefundRequestRepository.findSummaryByOrderId(orderId).orElse(null)
         ));
     }
 

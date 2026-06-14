@@ -115,9 +115,25 @@ public final class PushNotificationTemplatePolicy {
             case "ORDER_CREATED" -> new PushNotificationTemplate("Order confirmed", "Your order has been created.");
             case "PAYMENT_SUCCESS" -> new PushNotificationTemplate("Payment received", "Your payment was successful.");
             case "PAYMENT_FAILED" -> new PushNotificationTemplate("Payment failed", "Your payment could not be completed.");
+            case "PAYMENT_REFUNDED" -> new PushNotificationTemplate(
+                    "Refund processed",
+                    "Your refund has been processed successfully."
+            );
+            case "ORDER_CANCELLED" -> new PushNotificationTemplate(
+                    "Order cancelled",
+                    "Your order has been cancelled."
+            );
             case "SHIPMENT_READY_TO_SHIP" -> new PushNotificationTemplate(
                     "Shipment ready",
                     "Your package is ready to ship."
+            );
+            case "SHIPMENT_CANCELLED" -> new PushNotificationTemplate(
+                    "Shipment cancelled",
+                    "The seller cancelled your shipment."
+            );
+            case "ORDER_CANCEL_PENDING_REFUND" -> new PushNotificationTemplate(
+                    "Refund pending",
+                    "Your cancellation request was received. We are processing your refund."
             );
             case "SHIPMENT_SHIPPED" -> new PushNotificationTemplate("Order shipped", "Your order is on the way.");
             case "SHIPMENT_DELIVERED" -> new PushNotificationTemplate("Order delivered", "Your order has been delivered.");

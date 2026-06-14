@@ -105,6 +105,7 @@ export function usePaymentStatus(
     paidAt: payment?.paidAt ?? null,
     expiredAt: payment?.expiredAt ?? null,
     payosCheckoutUrl: payment?.payosCheckoutUrl ?? null,
+    paymentMethod: payment?.paymentMethod ?? null,
     orderId: payment?.orderId ?? null,
     isLoading,
     error,

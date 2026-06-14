@@ -26,6 +26,20 @@ class CheckoutPaymentMethodPolicyTest {
     }
 
     @Test
+    void shouldAllowVnpayWhenCodOnlyDisabled() {
+        assertThatCode(() -> CheckoutPaymentMethodPolicy.validateForCheckout(PaymentMethod.VNPAY, false))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void shouldRejectVnpayWhenCodOnlyEnabled() {
+        assertThatThrownBy(() -> CheckoutPaymentMethodPolicy.validateForCheckout(PaymentMethod.VNPAY, true))
+                .isInstanceOf(AppException.class)
+                .extracting(ex -> ((AppException) ex).getErrorCode())
+                .isEqualTo(ErrorCode.INVALID_PAYMENT_METHOD);
+    }
+
+    @Test
     void shouldAllowPayosWhenCodOnlyDisabled() {
         assertThatCode(() -> CheckoutPaymentMethodPolicy.validateForCheckout(PaymentMethod.PAYOS, false))
                 .doesNotThrowAnyException();

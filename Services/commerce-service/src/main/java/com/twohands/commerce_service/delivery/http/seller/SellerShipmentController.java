@@ -1,6 +1,6 @@
 package com.twohands.commerce_service.delivery.http.seller;
 
-import com.twohands.commerce_service.application.shipment.cancelghnshipment.CancelGhnShipmentUseCase;
+import com.twohands.commerce_service.application.shipment.cancelsellershipment.CancelSellerShipmentUseCase;
 import com.twohands.commerce_service.application.shipment.createshipment.CreateShipmentCommand;
 import com.twohands.commerce_service.application.shipment.createshipment.CreateShipmentUseCase;
 import com.twohands.commerce_service.application.shipment.updatesellershipment.UpdateSellerShipmentCommand;
@@ -39,7 +39,7 @@ public class SellerShipmentController {
     private final UpdateSellerShipmentUseCase updateSellerShipmentUseCase;
     private final ViewSellerShipmentUseCase viewSellerShipmentUseCase;
     private final ViewSellerShipmentsUseCase viewSellerShipmentsUseCase;
-    private final CancelGhnShipmentUseCase cancelGhnShipmentUseCase;
+    private final CancelSellerShipmentUseCase cancelSellerShipmentUseCase;
     private final ViewGhnPrintLabelUseCase viewGhnPrintLabelUseCase;
 
     public SellerShipmentController(
@@ -47,14 +47,14 @@ public class SellerShipmentController {
             UpdateSellerShipmentUseCase updateSellerShipmentUseCase,
             ViewSellerShipmentUseCase viewSellerShipmentUseCase,
             ViewSellerShipmentsUseCase viewSellerShipmentsUseCase,
-            CancelGhnShipmentUseCase cancelGhnShipmentUseCase,
+            CancelSellerShipmentUseCase cancelSellerShipmentUseCase,
             ViewGhnPrintLabelUseCase viewGhnPrintLabelUseCase
     ) {
         this.createShipmentUseCase = createShipmentUseCase;
         this.updateSellerShipmentUseCase = updateSellerShipmentUseCase;
         this.viewSellerShipmentUseCase = viewSellerShipmentUseCase;
         this.viewSellerShipmentsUseCase = viewSellerShipmentsUseCase;
-        this.cancelGhnShipmentUseCase = cancelGhnShipmentUseCase;
+        this.cancelSellerShipmentUseCase = cancelSellerShipmentUseCase;
         this.viewGhnPrintLabelUseCase = viewGhnPrintLabelUseCase;
     }
 
@@ -115,20 +115,28 @@ public class SellerShipmentController {
         ));
     }
 
+    @PostMapping("/{shipmentId}/cancel")
+    public ResponseEntity<ApiResponse<SellerShipmentDetailResponse>> cancelShipment(
+            @PathVariable UUID shipmentId,
+            Authentication authentication
+    ) {
+        UUID sellerId = resolveUserId(authentication);
+        SellerShipmentDetail detail = cancelSellerShipmentUseCase.execute(
+                new CancelSellerShipmentUseCase.CancelSellerShipmentCommand(sellerId, shipmentId)
+        );
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                cancelSellerShipmentUseCase.successMessage(),
+                SellerShipmentMapper.toDetailResponse(detail)
+        ));
+    }
+
     @PostMapping("/{shipmentId}/ghn/cancel")
     public ResponseEntity<ApiResponse<SellerShipmentDetailResponse>> cancelGhnShipment(
             @PathVariable UUID shipmentId,
             Authentication authentication
     ) {
-        UUID sellerId = resolveUserId(authentication);
-        SellerShipmentDetail detail = cancelGhnShipmentUseCase.execute(
-                new CancelGhnShipmentUseCase.CancelGhnShipmentCommand(sellerId, shipmentId)
-        );
-        return ResponseEntity.ok(ApiResponse.success(
-                HttpStatus.OK.value(),
-                cancelGhnShipmentUseCase.successMessage(),
-                SellerShipmentMapper.toDetailResponse(detail)
-        ));
+        return cancelShipment(shipmentId, authentication);
     }
 
     @GetMapping("/{shipmentId}/ghn/print-label")

@@ -142,7 +142,8 @@ class ViewSellerOrderDetailUseCaseTest {
                 BigDecimal.valueOf(30000),
                 List.of(item),
                 null,
-                new CommerceBuyerSummary(buyerId, null, null)
+                new CommerceBuyerSummary(buyerId, null, null),
+                null
         );
     }
 }

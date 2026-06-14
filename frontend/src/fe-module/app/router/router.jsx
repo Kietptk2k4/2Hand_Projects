@@ -35,6 +35,7 @@ import { CommerceUserAddressesPage } from "../../features/commerce/pages/Commerc
 import { CommerceCheckoutPage } from "../../features/commerce/pages/CommerceCheckoutPage";
 import { CommerceCheckoutSuccessPage } from "../../features/commerce/pages/CommerceCheckoutSuccessPage";
 import { CommerceCheckoutPaymentResultPage } from "../../features/commerce/pages/CommerceCheckoutPaymentResultPage";
+import { CommerceVnpayReturnPage } from "../../features/commerce/pages/CommerceVnpayReturnPage";
 import { CommerceOrderListPage } from "../../features/commerce/pages/CommerceOrderListPage";
 import { CommerceOrderDetailPage } from "../../features/commerce/pages/CommerceOrderDetailPage";
 import { CommerceShipmentTrackingPage } from "../../features/commerce/pages/CommerceShipmentTrackingPage";
@@ -89,6 +90,10 @@ export const router = createBrowserRouter([
       {
         path: APP_ROUTES.commerceProductReviews.slice(1),
         element: <CommerceProductReviewsPage />,
+      },
+      {
+        path: APP_ROUTES.commerceCheckoutVnpayReturn.slice(1),
+        element: <CommerceVnpayReturnPage />,
       },
       {
         element: <AuthGuard />,

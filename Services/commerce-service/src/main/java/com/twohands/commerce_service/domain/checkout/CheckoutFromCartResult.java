@@ -15,6 +15,7 @@ public record CheckoutFromCartResult(
         OrderStatus orderStatus,
         BigDecimal finalAmount,
         String payosCheckoutUrl,
+        String redirect,
         boolean idempotentReplay
 ) {
 }

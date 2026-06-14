@@ -23,6 +23,15 @@ public record ViewSellerOrderDetailResponse(
         @JsonProperty("shipping_address") ShippingAddressSnapshotResponse shippingAddress,
         @JsonProperty("buyer_id") UUID buyerId,
         @JsonProperty("buyer_display_name") String buyerDisplayName,
-        @JsonProperty("buyer_avatar_url") String buyerAvatarUrl
+        @JsonProperty("buyer_avatar_url") String buyerAvatarUrl,
+        @JsonProperty("active_refund_request") ActiveRefundRequestResponse activeRefundRequest
 ) {
+    public record ActiveRefundRequestResponse(
+            @JsonProperty("refund_request_id") UUID refundRequestId,
+            String status,
+            @JsonProperty("requested_by") String requestedBy,
+            BigDecimal amount,
+            @JsonProperty("requested_at") Instant requestedAt
+    ) {
+    }
 }

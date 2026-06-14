@@ -22,6 +22,7 @@ public record CheckoutFromCartResponse(
         @JsonProperty("final_amount")
         BigDecimal finalAmount,
         @JsonProperty("payos_checkout_url")
-        String payosCheckoutUrl
+        String payosCheckoutUrl,
+        String redirect
 ) {
 }

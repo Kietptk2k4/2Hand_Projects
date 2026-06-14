@@ -69,6 +69,7 @@ export function PaymentStatusPanel({
   showRetry = false,
   onRetryPayment,
   isRetrying,
+  paymentMethod,
 }) {
   if (isLoading && !status) {
     return (
@@ -141,8 +142,9 @@ export function PaymentStatusPanel({
         </span>
         <h1 className="text-headline-md font-bold text-on-surface">Chưa nhận được xác nhận thanh toán</h1>
         <p className="mt-2 text-sm text-on-surface-variant">
-          Bạn đã quay lại từ PayOS. Hệ thống đang chờ xác nhận từ cổng thanh toán — vui lòng đợi
-          thêm vài giây hoặc thử thanh toán lại nếu đã quá lâu.
+          Bạn đã quay lại từ {paymentMethod === "VNPAY" ? "VNPay" : "PayOS"}. Hệ thống đang chờ xác
+          nhận từ cổng thanh toán — vui lòng đợi thêm vài giây hoặc thử thanh toán lại nếu đã quá
+          lâu.
         </p>
         {orderId ? (
           <p className="mt-2 text-sm text-on-surface-variant">

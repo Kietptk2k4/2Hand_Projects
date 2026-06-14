@@ -14,6 +14,9 @@ import com.twohands.commerce_service.application.order.vieworderdetail.ViewOrder
 import com.twohands.commerce_service.application.order.vieworderdetail.ViewOrderDetailUseCase;
 import com.twohands.commerce_service.application.order.vieworderlist.ViewOrderListCommand;
 import com.twohands.commerce_service.application.order.vieworderlist.ViewOrderListUseCase;
+import com.twohands.commerce_service.application.payment.retryvnpaypayment.RetryVnpayPaymentCommand;
+import com.twohands.commerce_service.application.payment.retryvnpaypayment.RetryVnpayPaymentUseCase;
+import com.twohands.commerce_service.domain.payment.CreateVnpayCheckoutUrlResult;
 import com.twohands.commerce_service.domain.order.ConfirmOrderReceivedResult;
 import com.twohands.commerce_service.domain.order.OrderItemTrackingLine;
 import com.twohands.commerce_service.domain.order.OrderStatusHistoryEntry;
@@ -46,6 +49,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.UUID;
 
 @RestController
@@ -60,6 +65,7 @@ public class OrderController {
     private final TrackOrderStatusUseCase trackOrderStatusUseCase;
     private final ViewOrderDetailUseCase viewOrderDetailUseCase;
     private final ViewOrderListUseCase viewOrderListUseCase;
+    private final RetryVnpayPaymentUseCase retryVnpayPaymentUseCase;
 
     public OrderController(
             CancelOrderUseCase cancelOrderUseCase,
@@ -67,7 +73,8 @@ public class OrderController {
             ConfirmOrderReceivedUseCase confirmOrderReceivedUseCase,
             TrackOrderStatusUseCase trackOrderStatusUseCase,
             ViewOrderDetailUseCase viewOrderDetailUseCase,
-            ViewOrderListUseCase viewOrderListUseCase
+            ViewOrderListUseCase viewOrderListUseCase,
+            RetryVnpayPaymentUseCase retryVnpayPaymentUseCase
     ) {
         this.cancelOrderUseCase = cancelOrderUseCase;
         this.completeOrderUseCase = completeOrderUseCase;
@@ -75,6 +82,7 @@ public class OrderController {
         this.trackOrderStatusUseCase = trackOrderStatusUseCase;
         this.viewOrderDetailUseCase = viewOrderDetailUseCase;
         this.viewOrderListUseCase = viewOrderListUseCase;
+        this.retryVnpayPaymentUseCase = retryVnpayPaymentUseCase;
     }
 
     @GetMapping
@@ -177,6 +185,29 @@ public class OrderController {
         ));
     }
 
+    @PostMapping("/{orderId}/payments/vnpay/retry")
+    public ResponseEntity<ApiResponse<RetryVnpayPaymentResponse>> retryVnpayPayment(
+            @PathVariable UUID orderId,
+            Authentication authentication,
+            HttpServletRequest request
+    ) {
+        UUID buyerId = resolveUserId(authentication);
+        CreateVnpayCheckoutUrlResult result = retryVnpayPaymentUseCase.execute(
+                new RetryVnpayPaymentCommand(orderId, buyerId, resolveClientIp(request))
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                "Tao lai link thanh toan VNPay thanh cong.",
+                new RetryVnpayPaymentResponse(
+                        result.orderId(),
+                        result.paymentId(),
+                        result.txnRef(),
+                        result.checkoutUrl()
+                )
+        ));
+    }
+
     @PostMapping("/{orderId}/cancel")
     public ResponseEntity<ApiResponse<CancelOrderResponse>> cancelOrder(
             @PathVariable UUID orderId,
@@ -192,9 +223,23 @@ public class OrderController {
 
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK.value(),
-                cancelOrderUseCase.successMessage(result.alreadyCancelled()),
-                new CancelOrderResponse(result.orderId(), result.status(), result.cancelledAt())
+                cancelOrderUseCase.successMessage(result),
+                new CancelOrderResponse(
+                        result.orderId(),
+                        result.status(),
+                        result.cancelledAt(),
+                        result.pendingRefund(),
+                        result.refundRequestId()
+                )
         ));
+    }
+
+    private String resolveClientIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded;
+        }
+        return request.getRemoteAddr();
     }
 
     private UUID resolveUserId(Authentication authentication) {

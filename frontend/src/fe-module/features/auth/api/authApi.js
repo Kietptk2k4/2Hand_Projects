@@ -284,6 +284,35 @@ export async function getRolePermissions(roleId) {
   }
 }
 
+export async function getPermissionCatalog() {
+  try {
+    const response = await apiClient.get("/api/v1/admin/permissions");
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function assignPermissionToRole(roleId, payload) {
+  try {
+    const response = await apiClient.post(`/api/v1/admin/roles/${roleId}/permissions`, payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function revokePermissionFromRole(roleId, permissionCode) {
+  try {
+    const response = await apiClient.delete(
+      `/api/v1/admin/roles/${roleId}/permissions/${encodeURIComponent(permissionCode)}`,
+    );
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export async function getUserPermissions(userId) {
   try {
     const response = await apiClient.get(`/api/v1/admin/users/${userId}/permissions`);

@@ -139,6 +139,7 @@ public class CheckoutFromCartRepositoryAdapter implements CheckoutFromCartReposi
                         OrderStatus.valueOf(rs.getString("order_status")),
                         rs.getBigDecimal("final_amount"),
                         rs.getString("payos_checkout_url"),
+                        null,
                         true
                 )
         );

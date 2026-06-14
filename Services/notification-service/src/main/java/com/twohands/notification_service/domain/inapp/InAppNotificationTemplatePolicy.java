@@ -132,6 +132,14 @@ public final class InAppNotificationTemplatePolicy {
                     "Payment failed",
                     "Your payment could not be completed."
             );
+            case "PAYMENT_REFUNDED" -> new InAppNotificationTemplate(
+                    "Refund processed",
+                    "Your refund has been processed successfully."
+            );
+            case "ORDER_CANCELLED" -> new InAppNotificationTemplate(
+                    "Order cancelled",
+                    "Your order has been cancelled."
+            );
             case "SHIPMENT_CREATED" -> new InAppNotificationTemplate(
                     "Shipment created",
                     "A shipment has been created for your order."
@@ -139,6 +147,14 @@ public final class InAppNotificationTemplatePolicy {
             case "SHIPMENT_READY_TO_SHIP" -> new InAppNotificationTemplate(
                     "Shipment ready",
                     "Your package is ready to ship."
+            );
+            case "SHIPMENT_CANCELLED" -> new InAppNotificationTemplate(
+                    "Shipment cancelled",
+                    "The seller cancelled your shipment. A new shipment may be created for your order."
+            );
+            case "ORDER_CANCEL_PENDING_REFUND" -> new InAppNotificationTemplate(
+                    "Refund pending",
+                    "Your cancellation request was received. We are processing your refund."
             );
             case "SHIPMENT_SHIPPED" -> new InAppNotificationTemplate(
                     "Order shipped",

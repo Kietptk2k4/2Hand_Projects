@@ -36,6 +36,7 @@ public enum ErrorCode {
     PAYMENT_ALREADY_EXISTS("COMMERCE-409-PAYMENT-EXISTS", HttpStatus.CONFLICT, "Payment already exists for this order"),
     ORDER_NOT_AWAITING_PAYMENT("COMMERCE-409-ORDER-AWAITING-PAYMENT", HttpStatus.CONFLICT, "Order is not awaiting payment"),
     PAYOS_PROVIDER_UNAVAILABLE("COMMERCE-503-PAYOS", HttpStatus.SERVICE_UNAVAILABLE, "PayOS provider unavailable"),
+    VNPAY_PROVIDER_UNAVAILABLE("COMMERCE-503-VNPAY", HttpStatus.SERVICE_UNAVAILABLE, "VNPay provider unavailable"),
     SHOP_VACATION("COMMERCE-409-SHOP-VACATION", HttpStatus.CONFLICT, "Shop is on vacation"),
     INVALID_CART_ITEM("COMMERCE-409-CART-ITEM", HttpStatus.CONFLICT, "Cart item is not available for checkout"),
     NOT_PURCHASABLE("COMMERCE-409-NOT-PURCHASABLE", HttpStatus.CONFLICT, "Product is not purchasable"),
@@ -77,6 +78,9 @@ public enum ErrorCode {
     PAYOUT_REQUEST_NOT_FOUND("COMMERCE-404-PAYOUT-REQUEST", HttpStatus.NOT_FOUND, "Payout request not found"),
     INSUFFICIENT_PAYOUT_BALANCE("COMMERCE-409-PAYOUT-BALANCE", HttpStatus.CONFLICT, "Insufficient available balance for payout"),
     PAYOUT_AMOUNT_BELOW_MINIMUM("COMMERCE-400-PAYOUT-MIN", HttpStatus.BAD_REQUEST, "Payout amount is below minimum"),
+    REFUND_ALREADY_REQUESTED("COMMERCE-409-REFUND-REQUESTED", HttpStatus.CONFLICT, "Refund request already exists for this order"),
+    REFUND_REQUEST_NOT_FOUND("COMMERCE-404-REFUND-REQUEST", HttpStatus.NOT_FOUND, "Refund request not found"),
+    INVALID_REFUND_REQUEST_STATE("COMMERCE-409-REFUND-STATE", HttpStatus.CONFLICT, "Refund request status does not allow this action"),
     INVALID_PAYOUT_REQUEST_STATE("COMMERCE-409-PAYOUT-STATE", HttpStatus.CONFLICT, "Payout request status does not allow this action");
 
     private final String code;

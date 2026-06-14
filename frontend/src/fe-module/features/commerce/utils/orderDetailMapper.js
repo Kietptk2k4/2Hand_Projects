@@ -85,6 +85,8 @@ export function mapCancelOrderResponse(data) {
     status: data.status,
     cancelledAt: pick(data, "cancelledAt", "cancelled_at"),
     alreadyCancelled: Boolean(data.already_cancelled ?? data.alreadyCancelled),
+    pendingRefund: Boolean(data.pending_refund ?? data.pendingRefund),
+    refundRequestId: pick(data, "refundRequestId", "refund_request_id"),
   };
 }
 
@@ -120,5 +122,17 @@ export function mapOrderDetailResponse(data) {
     items: mapItems(data.items),
     shipments: mapShipments(data.shipments),
     orderTimeline: mapTimeline(data.order_timeline),
+    activeRefundRequest: mapActiveRefundRequest(data.active_refund_request),
+  };
+}
+
+function mapActiveRefundRequest(refund) {
+  if (!refund) return null;
+  return {
+    refundRequestId: refund.refund_request_id ?? refund.refundRequestId,
+    status: refund.status,
+    requestedBy: refund.requested_by ?? refund.requestedBy,
+    amount: refund.amount,
+    requestedAt: refund.requested_at ?? refund.requestedAt,
   };
 }

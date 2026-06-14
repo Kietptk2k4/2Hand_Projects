@@ -9,6 +9,8 @@ import {
 } from "../constants/orderListConstants";
 import { formatOrderDate, formatShortOrderId } from "../utils/formatOrderDate";
 import { APP_ROUTES } from "../../../shared/constants/routes";
+import { ONLINE_PAYMENT_METHODS } from "../constants/checkoutConstants";
+import { RetryVnpayPaymentButton } from "./RetryVnpayPaymentButton";
 
 function ShipmentHint({ shipmentSummary }) {
   if (!shipmentSummary?.shipmentCount) return null;
@@ -38,8 +40,9 @@ export function OrderListCard({ order, onOrderClick, onPayNow }) {
   const extraCount = order.itemCount > 1 ? order.itemCount - 1 : 0;
   const showPayNow =
     order.orderStatus === "AWAITING_PAYMENT" &&
-    order.paymentMethod === "PAYOS" &&
+    ONLINE_PAYMENT_METHODS.has(order.paymentMethod) &&
     order.payment?.paymentId;
+  const isVnpay = order.paymentMethod === "VNPAY";
 
   const handleCardClick = () => {
     onOrderClick?.(order.orderId);
@@ -124,7 +127,14 @@ export function OrderListCard({ order, onOrderClick, onPayNow }) {
       </button>
 
       <div className="flex flex-wrap items-center justify-end gap-2 border-t border-outline-variant/60 px-4 py-3">
-        {showPayNow ? (
+        {showPayNow && isVnpay ? (
+          <RetryVnpayPaymentButton
+            orderId={order.orderId}
+            label="Thanh toán ngay"
+            onClick={handlePayClick}
+          />
+        ) : null}
+        {showPayNow && !isVnpay ? (
           <Link
             to={`${APP_ROUTES.commerceCheckoutPaymentResult}?paymentId=${order.payment.paymentId}`}
             onClick={handlePayClick}

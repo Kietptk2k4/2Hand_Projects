@@ -1,5 +1,6 @@
 import { delay, http, HttpResponse } from "msw";
 import {
+  cancelSellerShipmentForSeller,
   createShipmentForSeller,
   getSellerShipmentForUser,
   listSellerShipmentsForUser,
@@ -109,6 +110,20 @@ export const commerceSellerShipmentHandlers = [
 
     return HttpResponse.json(
       apiSuccess(200, "Cap nhat shipment thanh cong.", result.data),
+      { status: 200 },
+    );
+  }),
+
+  http.post("*/commerce/api/v1/seller/shipments/:shipmentId/cancel", async ({ params, request }) => {
+    await delay(450);
+    const auth = requireAuth(request);
+    if (auth.error) return auth.error;
+
+    const result = cancelSellerShipmentForSeller(auth.user.id, params.shipmentId);
+    if (result.error) return mapError(result);
+
+    return HttpResponse.json(
+      apiSuccess(200, "Huy van don thanh cong.", result.data),
       { status: 200 },
     );
   }),

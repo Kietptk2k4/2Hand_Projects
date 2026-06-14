@@ -21,6 +21,8 @@ export function useOrderSupportPermissions() {
         ORDER_SUPPORT_PERMISSIONS.FORCE_WRITE_SHIPMENT,
       ),
       canReadWebhook: hasSupportPermission(permissions, ORDER_SUPPORT_PERMISSIONS.READ_WEBHOOK),
+      canReadRefund: hasSupportPermission(permissions, ORDER_SUPPORT_PERMISSIONS.READ_REFUND),
+      canApproveRefund: hasSupportPermission(permissions, ORDER_SUPPORT_PERMISSIONS.APPROVE_REFUND),
     }),
     [permissions],
   );

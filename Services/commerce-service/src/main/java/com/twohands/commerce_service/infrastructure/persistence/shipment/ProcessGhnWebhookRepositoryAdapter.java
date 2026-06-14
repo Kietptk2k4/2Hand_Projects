@@ -193,6 +193,21 @@ public class ProcessGhnWebhookRepositoryAdapter implements ProcessGhnWebhookRepo
                 .addValue("now", Timestamp.from(occurredAt)));
     }
 
+    @Override
+    public int releaseOrderItemsFromCancelledShipment(UUID shipmentId, Instant occurredAt) {
+        String sql = """
+                UPDATE order_items
+                SET shipment_id = NULL,
+                    status = 'PROCESSING',
+                    updated_at = :now
+                WHERE shipment_id = :shipmentId
+                  AND status::text NOT IN ('COMPLETED', 'CANCELLED')
+                """;
+        return jdbcTemplate.update(sql, new MapSqlParameterSource()
+                .addValue("shipmentId", shipmentId)
+                .addValue("now", Timestamp.from(occurredAt)));
+    }
+
     private SellerShipmentRecord mapShipment(ResultSet rs, int rowNum) throws SQLException {
         Timestamp shippedAt = rs.getTimestamp("shipped_at");
         Timestamp deliveredAt = rs.getTimestamp("delivered_at");

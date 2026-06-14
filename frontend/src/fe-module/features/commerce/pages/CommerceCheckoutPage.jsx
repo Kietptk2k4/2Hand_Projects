@@ -11,10 +11,12 @@ import { CommerceShell } from "../components/CommerceShell";
 import { QUOTE_DISCLAIMER } from "../constants/checkoutConstants";
 import { useCheckout } from "../hooks/useCheckout";
 import { APP_ROUTES } from "../../../shared/constants/routes";
+import { useCartBadge } from "../context/CartBadgeContext";
 
 export function CommerceCheckoutPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { refetch: refetchCartBadge } = useCartBadge();
   const [toastMessage, setToastMessage] = useState("");
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
@@ -73,6 +75,13 @@ export function CommerceCheckoutPage() {
     const result = await submitOrder();
     if (!result) return;
 
+    if (result.redirect) {
+      refetchCartBadge();
+      window.location.assign(result.redirect);
+      return;
+    }
+
+    refetchCartBadge();
     navigate(APP_ROUTES.commerceCheckoutSuccess, {
       replace: true,
       state: {
@@ -84,7 +93,7 @@ export function CommerceCheckoutPage() {
         paymentStatus: result.paymentStatus,
       },
     });
-  }, [navigate, submitOrder]);
+  }, [navigate, refetchCartBadge, submitOrder]);
 
   if (!cartItemIds.length) {
     return null;

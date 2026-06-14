@@ -1,13 +1,21 @@
 package com.twohands.auth_service.delivery.http.admin;
 
+import com.twohands.auth_service.application.rbac.assignpermissiontorole.AssignPermissionToRoleCommand;
+import com.twohands.auth_service.application.rbac.assignpermissiontorole.AssignPermissionToRoleResult;
+import com.twohands.auth_service.application.rbac.assignpermissiontorole.AssignPermissionToRoleUseCase;
 import com.twohands.auth_service.application.rbac.assignrolestousers.AssignRolesToUsersCommand;
 import com.twohands.auth_service.application.rbac.assignrolestousers.AssignRolesToUsersResult;
 import com.twohands.auth_service.application.rbac.assignrolestousers.AssignRolesToUsersUseCase;
 import com.twohands.auth_service.application.rbac.checkuserpermission.CheckUserPermissionResult;
 import com.twohands.auth_service.application.rbac.checkuserpermission.CheckUserPermissionUseCase;
+import com.twohands.auth_service.application.rbac.revokepermissionfromrole.RevokePermissionFromRoleCommand;
+import com.twohands.auth_service.application.rbac.revokepermissionfromrole.RevokePermissionFromRoleResult;
+import com.twohands.auth_service.application.rbac.revokepermissionfromrole.RevokePermissionFromRoleUseCase;
 import com.twohands.auth_service.application.rbac.revokerolefromuser.RevokeRoleFromUserCommand;
 import com.twohands.auth_service.application.rbac.revokerolefromuser.RevokeRoleFromUserResult;
 import com.twohands.auth_service.application.rbac.revokerolefromuser.RevokeRoleFromUserUseCase;
+import com.twohands.auth_service.application.rbac.viewpermissioncatalog.ViewPermissionCatalogResult;
+import com.twohands.auth_service.application.rbac.viewpermissioncatalog.ViewPermissionCatalogUseCase;
 import com.twohands.auth_service.application.rbac.viewpermissionsofrole.ViewPermissionsOfRoleResult;
 import com.twohands.auth_service.application.rbac.viewpermissionsofrole.ViewPermissionsOfRoleUseCase;
 import com.twohands.auth_service.application.rbac.viewrolelist.ViewRoleListResult;
@@ -16,10 +24,14 @@ import com.twohands.auth_service.application.rbac.viewuserlistforrbac.ViewUserLi
 import com.twohands.auth_service.application.rbac.viewuserlistforrbac.ViewUserListForRbacResult;
 import com.twohands.auth_service.application.rbac.viewuserlistforrbac.ViewUserListForRbacUseCase;
 import com.twohands.auth_service.common.dto.ApiResponse;
+import com.twohands.auth_service.delivery.http.admin.request.AssignPermissionToRoleRequest;
 import com.twohands.auth_service.delivery.http.admin.request.AssignRolesToUsersRequest;
+import com.twohands.auth_service.delivery.http.admin.response.AssignPermissionToRoleResponse;
 import com.twohands.auth_service.delivery.http.admin.response.AssignRolesToUsersResponse;
 import com.twohands.auth_service.delivery.http.admin.response.CheckUserPermissionResponse;
+import com.twohands.auth_service.delivery.http.admin.response.RevokePermissionFromRoleResponse;
 import com.twohands.auth_service.delivery.http.admin.response.RevokeRoleFromUserResponse;
+import com.twohands.auth_service.delivery.http.admin.response.ViewPermissionCatalogResponse;
 import com.twohands.auth_service.delivery.http.admin.response.ViewPermissionsOfRoleResponse;
 import com.twohands.auth_service.delivery.http.admin.response.ViewRoleListResponse;
 import com.twohands.auth_service.delivery.http.admin.response.ViewUserListForRbacResponse;
@@ -45,24 +57,33 @@ import java.util.UUID;
 public class AdminRoleController {
 
     private final AssignRolesToUsersUseCase assignRolesToUsersUseCase;
+    private final AssignPermissionToRoleUseCase assignPermissionToRoleUseCase;
     private final RevokeRoleFromUserUseCase revokeRoleFromUserUseCase;
+    private final RevokePermissionFromRoleUseCase revokePermissionFromRoleUseCase;
     private final ViewRoleListUseCase viewRoleListUseCase;
     private final ViewPermissionsOfRoleUseCase viewPermissionsOfRoleUseCase;
+    private final ViewPermissionCatalogUseCase viewPermissionCatalogUseCase;
     private final CheckUserPermissionUseCase checkUserPermissionUseCase;
     private final ViewUserListForRbacUseCase viewUserListForRbacUseCase;
 
     public AdminRoleController(
             AssignRolesToUsersUseCase assignRolesToUsersUseCase,
+            AssignPermissionToRoleUseCase assignPermissionToRoleUseCase,
             RevokeRoleFromUserUseCase revokeRoleFromUserUseCase,
+            RevokePermissionFromRoleUseCase revokePermissionFromRoleUseCase,
             ViewRoleListUseCase viewRoleListUseCase,
             ViewPermissionsOfRoleUseCase viewPermissionsOfRoleUseCase,
+            ViewPermissionCatalogUseCase viewPermissionCatalogUseCase,
             CheckUserPermissionUseCase checkUserPermissionUseCase,
             ViewUserListForRbacUseCase viewUserListForRbacUseCase
     ) {
         this.assignRolesToUsersUseCase = assignRolesToUsersUseCase;
+        this.assignPermissionToRoleUseCase = assignPermissionToRoleUseCase;
         this.revokeRoleFromUserUseCase = revokeRoleFromUserUseCase;
+        this.revokePermissionFromRoleUseCase = revokePermissionFromRoleUseCase;
         this.viewRoleListUseCase = viewRoleListUseCase;
         this.viewPermissionsOfRoleUseCase = viewPermissionsOfRoleUseCase;
+        this.viewPermissionCatalogUseCase = viewPermissionCatalogUseCase;
         this.checkUserPermissionUseCase = checkUserPermissionUseCase;
         this.viewUserListForRbacUseCase = viewUserListForRbacUseCase;
     }
@@ -151,6 +172,68 @@ public class AdminRoleController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(HttpStatus.OK.value(), viewPermissionsOfRoleUseCase.successMessage(), response));
+    }
+
+    @GetMapping("/permissions")
+    public ResponseEntity<ApiResponse<ViewPermissionCatalogResponse>> viewPermissionCatalog(Authentication authentication) {
+        UUID actorUserId = extractUserId(authentication);
+        ViewPermissionCatalogResult result = viewPermissionCatalogUseCase.execute(actorUserId);
+
+        ViewPermissionCatalogResponse response = new ViewPermissionCatalogResponse(
+                result.permissions().stream()
+                        .map(permission -> new ViewPermissionCatalogResponse.PermissionData(
+                                permission.code(),
+                                permission.description()
+                        ))
+                        .toList()
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(HttpStatus.OK.value(), viewPermissionCatalogUseCase.successMessage(), response));
+    }
+
+    @PostMapping("/roles/{roleId}/permissions")
+    public ResponseEntity<ApiResponse<AssignPermissionToRoleResponse>> assignPermissionToRole(
+            @PathVariable String roleId,
+            @Valid @RequestBody AssignPermissionToRoleRequest request,
+            Authentication authentication
+    ) {
+        UUID actorUserId = extractUserId(authentication);
+        UUID parsedRoleId = parseUuid(roleId, "roleId");
+
+        AssignPermissionToRoleResult result = assignPermissionToRoleUseCase.execute(
+                new AssignPermissionToRoleCommand(actorUserId, parsedRoleId, request.permissionCode())
+        );
+
+        AssignPermissionToRoleResponse response = new AssignPermissionToRoleResponse(
+                result.roleId().toString(),
+                result.permissionCode()
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(HttpStatus.OK.value(), assignPermissionToRoleUseCase.successMessage(), response));
+    }
+
+    @DeleteMapping("/roles/{roleId}/permissions/{permissionCode}")
+    public ResponseEntity<ApiResponse<RevokePermissionFromRoleResponse>> revokePermissionFromRole(
+            @PathVariable String roleId,
+            @PathVariable String permissionCode,
+            Authentication authentication
+    ) {
+        UUID actorUserId = extractUserId(authentication);
+        UUID parsedRoleId = parseUuid(roleId, "roleId");
+
+        RevokePermissionFromRoleResult result = revokePermissionFromRoleUseCase.execute(
+                new RevokePermissionFromRoleCommand(actorUserId, parsedRoleId, permissionCode)
+        );
+
+        RevokePermissionFromRoleResponse response = new RevokePermissionFromRoleResponse(
+                result.roleId().toString(),
+                result.permissionCode()
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(HttpStatus.OK.value(), revokePermissionFromRoleUseCase.successMessage(), response));
     }
 
     @GetMapping("/users/{userId}/permissions")

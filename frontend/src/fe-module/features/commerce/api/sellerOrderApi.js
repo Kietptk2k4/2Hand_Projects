@@ -33,3 +33,15 @@ export async function fetchSellerOrderList({ page, limit, status, shipmentStatus
     throw mapAxiosError(error);
   }
 }
+
+export async function cancelSellerOrder(orderId, reason) {
+  try {
+    const response = await commerceApiClient.post(
+      `/commerce/api/v1/seller/orders/${orderId}/cancel`,
+      reason ? { reason } : {},
+    );
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}

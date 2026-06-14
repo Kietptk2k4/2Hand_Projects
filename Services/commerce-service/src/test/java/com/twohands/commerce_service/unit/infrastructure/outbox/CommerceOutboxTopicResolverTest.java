@@ -3,7 +3,9 @@ package com.twohands.commerce_service.unit.infrastructure.outbox;
 import com.twohands.commerce_service.application.finance.payout.common.PayoutRequestApprovedOutboxService;
 import com.twohands.commerce_service.application.order.common.InventoryReleasedOutboxService;
 import com.twohands.commerce_service.application.order.common.InventoryReservedOutboxService;
+import com.twohands.commerce_service.application.order.common.OrderCancelPendingRefundOutboxService;
 import com.twohands.commerce_service.application.order.common.OrderCancelledOutboxService;
+import com.twohands.commerce_service.application.payment.common.PaymentRefundedOutboxService;
 import com.twohands.commerce_service.application.order.common.OrderCompletedOutboxService;
 import com.twohands.commerce_service.application.order.common.OrderCreatedOutboxService;
 import com.twohands.commerce_service.application.order.common.PaymentPaidOutboxService;
@@ -53,6 +55,8 @@ class CommerceOutboxTopicResolverTest {
                 .isEqualTo("commerce.seller_order_item.processing");
         assertThat(resolver.resolve(OrderCancelledOutboxService.EVENT_TYPE))
                 .isEqualTo("commerce.order.cancelled");
+        assertThat(resolver.resolve(OrderCancelPendingRefundOutboxService.EVENT_TYPE))
+                .isEqualTo("commerce.order.cancel_pending_refund");
         assertThat(resolver.resolve(OrderCompletedOutboxService.EVENT_TYPE))
                 .isEqualTo("commerce.order.completed");
         assertThat(resolver.resolve(PaymentCreatedOutboxService.EVENT_TYPE))
@@ -119,5 +123,7 @@ class CommerceOutboxTopicResolverTest {
                 .isEqualTo("commerce.shop.restored");
         assertThat(resolver.resolve(PayoutRequestApprovedOutboxService.EVENT_TYPE))
                 .isEqualTo("commerce.payout.request_approved");
+        assertThat(resolver.resolve(PaymentRefundedOutboxService.EVENT_TYPE))
+                .isEqualTo("commerce.payment.refunded");
     }
 }

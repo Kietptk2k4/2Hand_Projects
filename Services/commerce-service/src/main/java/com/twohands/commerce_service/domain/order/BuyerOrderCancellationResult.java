@@ -6,6 +6,10 @@ import java.util.UUID;
 public record BuyerOrderCancellationResult(
         BuyerOrderCancelOutcome outcome,
         UUID orderId,
-        Instant cancelledAt
+        Instant cancelledAt,
+        UUID refundRequestId
 ) {
+    public BuyerOrderCancellationResult(BuyerOrderCancelOutcome outcome, UUID orderId, Instant cancelledAt) {
+        this(outcome, orderId, cancelledAt, null);
+    }
 }
