@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -72,6 +73,29 @@ class OrderCancelPendingRefundNotificationEventHandlerTest {
         assertTrue(handler.supports("ORDER_CANCEL_PENDING_REFUND"));
         assertTrue(handler.supports("COMMERCE_ORDER_CANCEL_PENDING_REFUND"));
         assertFalse(handler.supports("SHIPMENT_CANCELLED"));
+    }
+
+    @Test
+    void handle_notifiesBuyerWhenBuyerRequestedPendingRefund() {
+        UUID sellerId = UUID.randomUUID();
+        when(payloadParser.parse(any())).thenReturn(new OrderCancelPendingRefundNotificationContext(
+                BUYER_ID,
+                ORDER_ID,
+                "refund-1",
+                List.of(sellerId),
+                "Changed mind",
+                "BUYER",
+                BUYER_ID
+        ));
+        when(applyNotificationDeliveryRulesUseCase.execute(any(ApplyNotificationDeliveryRulesCommand.class)))
+                .thenReturn(new NotificationDeliveryDecision(true, true, false));
+        when(sendPushNotificationUseCase.execute(any(SendPushNotificationCommand.class)))
+                .thenReturn(SendPushNotificationResult.sent(1, 0));
+
+        var result = handler.handle(sampleEvent());
+
+        assertEquals(HandlerOutcome.SUCCESS, result.outcome());
+        verify(createInAppNotificationUseCase, times(2)).execute(any(CreateInAppNotificationCommand.class));
     }
 
     @Test

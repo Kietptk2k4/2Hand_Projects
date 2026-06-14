@@ -17,6 +17,8 @@ public interface CommerceRefundSupportGateway {
 			String bearerToken
 	);
 
+	AdminRefundApprovalItem getRefundApproval(UUID refundRequestId, String bearerToken);
+
 	AdminRefundApprovalItem confirmRefundApproval(UUID refundRequestId, String adminNote, String bearerToken);
 
 	AdminRefundApprovalItem rejectRefundApproval(UUID refundRequestId, String adminNote, String bearerToken);

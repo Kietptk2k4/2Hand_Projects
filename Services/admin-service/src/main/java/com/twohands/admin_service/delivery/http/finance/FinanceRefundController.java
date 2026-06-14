@@ -4,6 +4,8 @@ import com.twohands.admin_service.application.refund.confirmrefundapproval.Confi
 import com.twohands.admin_service.application.refund.confirmrefundapproval.ConfirmAdminRefundApprovalUseCase;
 import com.twohands.admin_service.application.refund.listrefundapprovals.ListAdminRefundApprovalsQuery;
 import com.twohands.admin_service.application.refund.listrefundapprovals.ListAdminRefundApprovalsUseCase;
+import com.twohands.admin_service.application.refund.viewrefundapproval.ViewAdminRefundApprovalQuery;
+import com.twohands.admin_service.application.refund.viewrefundapproval.ViewAdminRefundApprovalUseCase;
 import com.twohands.admin_service.application.refund.rejectrefundapproval.RejectAdminRefundApprovalCommand;
 import com.twohands.admin_service.application.refund.rejectrefundapproval.RejectAdminRefundApprovalUseCase;
 import com.twohands.admin_service.common.dto.ApiResponse;
@@ -31,15 +33,18 @@ import java.util.UUID;
 public class FinanceRefundController {
 
 	private final ListAdminRefundApprovalsUseCase listAdminRefundApprovalsUseCase;
+	private final ViewAdminRefundApprovalUseCase viewAdminRefundApprovalUseCase;
 	private final ConfirmAdminRefundApprovalUseCase confirmAdminRefundApprovalUseCase;
 	private final RejectAdminRefundApprovalUseCase rejectAdminRefundApprovalUseCase;
 
 	public FinanceRefundController(
 			ListAdminRefundApprovalsUseCase listAdminRefundApprovalsUseCase,
+			ViewAdminRefundApprovalUseCase viewAdminRefundApprovalUseCase,
 			ConfirmAdminRefundApprovalUseCase confirmAdminRefundApprovalUseCase,
 			RejectAdminRefundApprovalUseCase rejectAdminRefundApprovalUseCase
 	) {
 		this.listAdminRefundApprovalsUseCase = listAdminRefundApprovalsUseCase;
+		this.viewAdminRefundApprovalUseCase = viewAdminRefundApprovalUseCase;
 		this.confirmAdminRefundApprovalUseCase = confirmAdminRefundApprovalUseCase;
 		this.rejectAdminRefundApprovalUseCase = rejectAdminRefundApprovalUseCase;
 	}
@@ -65,6 +70,23 @@ public class FinanceRefundController {
 				HttpStatus.OK.value(),
 				listAdminRefundApprovalsUseCase.successMessage(),
 				AdminFinanceRefundResponse.ListPayload.from(result)
+		));
+	}
+
+	@GetMapping("/{refundRequestId}")
+	@RequireAdminPermission(AdminPermission.REFUND_SUPPORT_READ)
+	public ResponseEntity<ApiResponse<AdminFinanceRefundResponse.Item>> getRefundApproval(
+			@PathVariable UUID refundRequestId,
+			HttpServletRequest httpServletRequest
+	) {
+		AdminRefundApprovalItem result = viewAdminRefundApprovalUseCase.execute(
+				new ViewAdminRefundApprovalQuery(refundRequestId, resolveBearerToken(httpServletRequest))
+		);
+
+		return ResponseEntity.ok(ApiResponse.success(
+				HttpStatus.OK.value(),
+				viewAdminRefundApprovalUseCase.successMessage(),
+				AdminFinanceRefundResponse.Item.from(result)
 		));
 	}
 

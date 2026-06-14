@@ -5,6 +5,8 @@ import com.twohands.commerce_service.application.refund.confirmrefundapproval.Co
 import com.twohands.commerce_service.application.refund.confirmrefundapproval.ConfirmRefundApprovalUseCase;
 import com.twohands.commerce_service.application.refund.listadminrefundapprovals.ListAdminRefundApprovalsCommand;
 import com.twohands.commerce_service.application.refund.listadminrefundapprovals.ListAdminRefundApprovalsUseCase;
+import com.twohands.commerce_service.application.refund.viewadminrefundapproval.ViewAdminRefundApprovalCommand;
+import com.twohands.commerce_service.application.refund.viewadminrefundapproval.ViewAdminRefundApprovalUseCase;
 import com.twohands.commerce_service.application.refund.rejectrefundapproval.RejectRefundApprovalCommand;
 import com.twohands.commerce_service.application.refund.rejectrefundapproval.RejectRefundApprovalUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
@@ -31,17 +33,20 @@ import java.util.UUID;
 public class AdminRefundApprovalController {
 
     private final ListAdminRefundApprovalsUseCase listAdminRefundApprovalsUseCase;
+    private final ViewAdminRefundApprovalUseCase viewAdminRefundApprovalUseCase;
     private final ConfirmRefundApprovalUseCase confirmRefundApprovalUseCase;
     private final RejectRefundApprovalUseCase rejectRefundApprovalUseCase;
     private final CommerceAdminAuthorization commerceAdminAuthorization;
 
     public AdminRefundApprovalController(
             ListAdminRefundApprovalsUseCase listAdminRefundApprovalsUseCase,
+            ViewAdminRefundApprovalUseCase viewAdminRefundApprovalUseCase,
             ConfirmRefundApprovalUseCase confirmRefundApprovalUseCase,
             RejectRefundApprovalUseCase rejectRefundApprovalUseCase,
             CommerceAdminAuthorization commerceAdminAuthorization
     ) {
         this.listAdminRefundApprovalsUseCase = listAdminRefundApprovalsUseCase;
+        this.viewAdminRefundApprovalUseCase = viewAdminRefundApprovalUseCase;
         this.confirmRefundApprovalUseCase = confirmRefundApprovalUseCase;
         this.rejectRefundApprovalUseCase = rejectRefundApprovalUseCase;
         this.commerceAdminAuthorization = commerceAdminAuthorization;
@@ -72,6 +77,28 @@ public class AdminRefundApprovalController {
                 HttpStatus.OK.value(),
                 listAdminRefundApprovalsUseCase.successMessage(),
                 ViewAdminRefundApprovalsResponse.from(result)
+        ));
+    }
+
+    @GetMapping("/{refundRequestId}")
+    public ResponseEntity<ApiResponse<AdminRefundApprovalResponse>> getRefundApproval(
+            @PathVariable UUID refundRequestId,
+            Authentication authentication
+    ) {
+        AuthenticatedUser admin = resolveAuthenticatedUser(authentication);
+        commerceAdminAuthorization.requirePermission(
+                admin,
+                CommerceAdminAuthorization.PERMISSION_REFUND_SUPPORT_READ
+        );
+
+        AdminRefundApprovalItem result = viewAdminRefundApprovalUseCase.execute(
+                new ViewAdminRefundApprovalCommand(refundRequestId)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewAdminRefundApprovalUseCase.successMessage(),
+                AdminRefundApprovalResponse.from(result)
         ));
     }
 

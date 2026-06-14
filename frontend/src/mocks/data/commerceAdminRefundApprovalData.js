@@ -23,6 +23,14 @@ function findRefund(id) {
   return refundApprovals.find((item) => item.id === id);
 }
 
+export function getAdminRefundApproval(id) {
+  const item = findRefund(id);
+  if (!item) {
+    return { error: "COMMERCE-404-REFUND-REQUEST", message: "Refund request not found", status: 404 };
+  }
+  return { data: { ...item } };
+}
+
 function filterByStatus(status) {
   if (!status) return [...refundApprovals];
   return refundApprovals.filter((item) => item.status === status);

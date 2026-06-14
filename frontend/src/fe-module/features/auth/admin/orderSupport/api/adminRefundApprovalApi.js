@@ -12,6 +12,15 @@ export async function fetchAdminRefundApprovals({ status, page = 1, limit = 20 }
   }
 }
 
+export async function fetchAdminRefundApprovalDetail(refundRequestId) {
+  try {
+    const response = await adminApiClient.get(`/admin/api/v1/refund-approvals/${refundRequestId}`);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export async function confirmAdminRefundApproval(refundRequestId, adminNote = "") {
   try {
     const response = await adminApiClient.post(

@@ -57,6 +57,13 @@ public final class PushNotificationTemplatePolicy {
                     "Người mua đã hủy đơn hàng."
             ));
         }
+        if ("ORDER_CANCELLED".equals(eventType)
+                && InAppNotificationTemplatePolicy.ADMIN_CONFIRMED_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new PushNotificationTemplate(
+                    "Đơn hàng đã hủy",
+                    "Đơn hàng đã được hủy sau khi admin xác nhận hoàn tiền."
+            ));
+        }
         if ("ORDER_CANCEL_PENDING_REFUND".equals(eventType) && SELLER_TEMPLATE_VARIANT.equals(templateVariant)) {
             return Optional.of(new PushNotificationTemplate(
                     "Yêu cầu hủy đơn",

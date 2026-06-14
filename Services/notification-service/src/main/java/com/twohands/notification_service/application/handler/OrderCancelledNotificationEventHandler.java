@@ -107,9 +107,14 @@ public class OrderCancelledNotificationEventHandler implements NotificationEvent
             OrderCancelledNotificationContext context,
             OrderCancelNotificationRecipientResolver.Recipient recipient
     ) {
-        String templateVariant = recipient.sellerAudience()
-                ? InAppNotificationTemplatePolicy.SELLER_TEMPLATE_VARIANT
-                : null;
+        String templateVariant = null;
+        if (recipient.sellerAudience()) {
+            if ("ADMIN".equalsIgnoreCase(context.cancelledBy())) {
+                templateVariant = InAppNotificationTemplatePolicy.ADMIN_CONFIRMED_TEMPLATE_VARIANT;
+            } else {
+                templateVariant = InAppNotificationTemplatePolicy.SELLER_TEMPLATE_VARIANT;
+            }
+        }
         String recipientAudience = recipient.sellerAudience()
                 ? CommerceNotificationPayloadSupport.RECIPIENT_AUDIENCE_SELLER
                 : CommerceNotificationPayloadSupport.RECIPIENT_AUDIENCE_BUYER;

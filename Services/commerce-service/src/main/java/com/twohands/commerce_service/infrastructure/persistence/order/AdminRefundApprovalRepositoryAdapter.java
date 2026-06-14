@@ -188,6 +188,7 @@ public class AdminRefundApprovalRepositoryAdapter implements AdminRefundApproval
                 resolveCancellationReason(refund.reason()),
                 "ADMIN",
                 null,
+                refund.requestedBy(),
                 now
         ));
         if (!releasableItems.isEmpty()) {
@@ -232,7 +233,8 @@ public class AdminRefundApprovalRepositoryAdapter implements AdminRefundApproval
 
     private RefundRow lockRefundRequest(UUID refundRequestId) {
         String sql = """
-                SELECT id, payment_id, order_id, status::text AS status, amount, reason
+                SELECT id, payment_id, order_id, status::text AS status, amount, reason,
+                       requested_by::text AS requested_by
                 FROM payment_refund_requests
                 WHERE id = :refundRequestId
                 FOR UPDATE
@@ -246,7 +248,8 @@ public class AdminRefundApprovalRepositoryAdapter implements AdminRefundApproval
                         UUID.fromString(rs.getString("order_id")),
                         rs.getString("status"),
                         rs.getBigDecimal("amount"),
-                        rs.getString("reason")
+                        rs.getString("reason"),
+                        rs.getString("requested_by")
                 )
         );
         return rows.isEmpty() ? null : rows.getFirst();
@@ -516,7 +519,8 @@ public class AdminRefundApprovalRepositoryAdapter implements AdminRefundApproval
             UUID orderId,
             String status,
             BigDecimal amount,
-            String reason
+            String reason,
+            String requestedBy
     ) {
     }
 

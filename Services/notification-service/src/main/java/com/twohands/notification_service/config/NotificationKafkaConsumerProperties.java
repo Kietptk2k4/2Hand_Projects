@@ -28,6 +28,7 @@ public class NotificationKafkaConsumerProperties {
             "commerce.order.cancel_pending_refund",
             "commerce.payment.paid",
             "commerce.payment.failed",
+            "commerce.payment.refunded",
             "commerce.shipment.created",
             "commerce.shipment.ready_to_ship",
             "commerce.shipment.shipped",

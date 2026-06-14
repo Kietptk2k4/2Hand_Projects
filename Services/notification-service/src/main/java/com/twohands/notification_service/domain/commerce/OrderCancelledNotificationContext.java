@@ -9,6 +9,7 @@ public record OrderCancelledNotificationContext(
         List<UUID> sellerIds,
         String reason,
         String cancelledBy,
-        UUID cancelledByUserId
+        UUID cancelledByUserId,
+        String refundRequestedBy
 ) {
 }

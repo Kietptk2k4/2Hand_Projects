@@ -38,6 +38,11 @@ public class DisabledCommerceRefundSupportGateway implements CommerceRefundSuppo
 	}
 
 	@Override
+	public AdminRefundApprovalItem getRefundApproval(UUID refundRequestId, String bearerToken) {
+		throw disabled();
+	}
+
+	@Override
 	public AdminRefundApprovalItem confirmRefundApproval(UUID refundRequestId, String adminNote, String bearerToken) {
 		throw disabled();
 	}

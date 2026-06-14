@@ -28,12 +28,13 @@ final class OrderCancelNotificationRecipientResolver {
             return List.copyOf(recipients);
         }
 
-        if (buyerId != null && !buyerId.equals(actorUserId)) {
-            recipients.add(new Recipient(buyerId, false));
-        }
-
         if ("ADMIN".equals(by)) {
             addSellersExceptActor(recipients, sellerIds, actorUserId);
+            return List.copyOf(recipients);
+        }
+
+        if (buyerId != null && !buyerId.equals(actorUserId)) {
+            recipients.add(new Recipient(buyerId, false));
         }
 
         return List.copyOf(recipients);
@@ -56,6 +57,9 @@ final class OrderCancelNotificationRecipientResolver {
         }
 
         if ("BUYER".equals(by)) {
+            if (buyerId != null) {
+                recipients.add(new Recipient(buyerId, false));
+            }
             addSellersExceptActor(recipients, sellerIds, actorUserId);
         }
 

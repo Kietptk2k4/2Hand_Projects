@@ -11,6 +11,7 @@ public final class InAppNotificationTemplatePolicy {
 
     public static final String SELLER_TEMPLATE_VARIANT = "seller";
     public static final String BUYER_COUNTERPARTY_TEMPLATE_VARIANT = "buyer_counterparty";
+    public static final String ADMIN_CONFIRMED_TEMPLATE_VARIANT = "admin_confirmed";
     public static final String HIDE_TEMPLATE_VARIANT = "hide";
     public static final String REMOVE_TEMPLATE_VARIANT = "remove";
 
@@ -63,6 +64,12 @@ public final class InAppNotificationTemplatePolicy {
             return Optional.of(new InAppNotificationTemplate(
                     "Đơn hàng đã hủy",
                     "Người mua đã hủy đơn hàng."
+            ));
+        }
+        if ("ORDER_CANCELLED".equals(eventType) && ADMIN_CONFIRMED_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new InAppNotificationTemplate(
+                    "Đơn hàng đã hủy",
+                    "Đơn hàng đã được hủy sau khi admin xác nhận hoàn tiền."
             ));
         }
         if ("ORDER_CANCEL_PENDING_REFUND".equals(eventType) && SELLER_TEMPLATE_VARIANT.equals(templateVariant)) {

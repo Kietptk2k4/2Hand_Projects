@@ -1,6 +1,7 @@
 import { delay, http, HttpResponse } from "msw";
 import {
   confirmAdminRefundApproval,
+  getAdminRefundApproval,
   listAdminRefundApprovals,
   rejectAdminRefundApproval,
 } from "../data/commerceAdminRefundApprovalData";
@@ -37,6 +38,15 @@ export const commerceAdminRefundApprovalHandlers = [
     return HttpResponse.json(apiSuccess(200, "Refund approval queue retrieved successfully", result.data));
   }),
 
+  http.get("*/admin/api/v1/refund-approvals/:id", async ({ request, params }) => {
+    await delay(250);
+    const auth = requireAuth(request);
+    if (auth.error) return auth.error;
+    const result = getAdminRefundApproval(params.id);
+    if (result.error) return mapError(result);
+    return HttpResponse.json(apiSuccess(200, "Refund approval detail retrieved successfully", result.data));
+  }),
+
   http.post("*/admin/api/v1/refund-approvals/:id/confirm", async ({ request, params }) => {
     await delay(250);
     const auth = requireAuth(request);
@@ -67,6 +77,15 @@ export const commerceAdminRefundApprovalHandlers = [
       limit: url.searchParams.get("limit") || "20",
     });
     return HttpResponse.json(apiSuccess(200, "Lay danh sach duyet hoan tien thanh cong.", result.data));
+  }),
+
+  http.get("*/commerce/api/v1/admin/refund-approvals/:id", async ({ request, params }) => {
+    await delay(250);
+    const auth = requireAuth(request);
+    if (auth.error) return auth.error;
+    const result = getAdminRefundApproval(params.id);
+    if (result.error) return mapError(result);
+    return HttpResponse.json(apiSuccess(200, "Lay chi tiet duyet hoan tien thanh cong.", result.data));
   }),
 
   http.post("*/commerce/api/v1/admin/refund-approvals/:id/confirm", async ({ request, params }) => {

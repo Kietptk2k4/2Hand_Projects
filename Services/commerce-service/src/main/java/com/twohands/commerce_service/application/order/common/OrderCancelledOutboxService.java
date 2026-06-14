@@ -48,6 +48,19 @@ public class OrderCancelledOutboxService {
             UUID cancelledByUserId,
             Instant cancelledAt
     ) {
+        return build(orderId, buyerId, sellerIds, reason, cancelledBy, cancelledByUserId, null, cancelledAt);
+    }
+
+    public OutboxEvent build(
+            UUID orderId,
+            UUID buyerId,
+            List<UUID> sellerIds,
+            String reason,
+            String cancelledBy,
+            UUID cancelledByUserId,
+            String refundRequestedBy,
+            Instant cancelledAt
+    ) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("order_id", orderId.toString());
         if (buyerId != null) {
@@ -62,6 +75,9 @@ public class OrderCancelledOutboxService {
         payload.put("cancelled_by", cancelledBy);
         if (cancelledByUserId != null) {
             payload.put("cancelled_by_user_id", cancelledByUserId.toString());
+        }
+        if (refundRequestedBy != null && !refundRequestedBy.isBlank()) {
+            payload.put("refund_requested_by", refundRequestedBy.trim().toUpperCase());
         }
 
         return buildEvent(orderId, payload, cancelledAt);

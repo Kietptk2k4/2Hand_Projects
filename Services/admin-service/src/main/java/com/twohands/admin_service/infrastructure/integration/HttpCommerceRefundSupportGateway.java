@@ -76,6 +76,25 @@ public class HttpCommerceRefundSupportGateway implements CommerceRefundSupportGa
 	}
 
 	@Override
+	public AdminRefundApprovalItem getRefundApproval(UUID refundRequestId, String bearerToken) {
+		try {
+			JsonNode root = restClient.get()
+					.uri("/commerce/api/v1/admin/refund-approvals/{id}", refundRequestId)
+					.header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken)
+					.accept(MediaType.APPLICATION_JSON)
+					.retrieve()
+					.body(JsonNode.class);
+			CommerceIntegrationJsonSupport.requireSuccess(root);
+			return CommerceRefundSupportMapper.toItem(root.path("data"));
+		} catch (RestClientResponseException ex) {
+			throw mapFailure(ex);
+		} catch (RestClientException ex) {
+			log.warn("Commerce refund detail failed: {}", ex.getMessage());
+			throw new AppException(ErrorCode.SERVICE_UNAVAILABLE, "Commerce Service is unavailable");
+		}
+	}
+
+	@Override
 	public AdminRefundApprovalItem confirmRefundApproval(UUID refundRequestId, String adminNote, String bearerToken) {
 		return postAction(refundRequestId, "/confirm", Map.of("admin_note", adminNote == null ? "" : adminNote), bearerToken);
 	}

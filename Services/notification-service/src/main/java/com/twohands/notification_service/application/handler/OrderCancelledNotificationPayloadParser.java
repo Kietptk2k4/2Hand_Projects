@@ -43,7 +43,8 @@ public class OrderCancelledNotificationPayloadParser {
                 CommerceNotificationPayloadSupport.parseSellerIds(payload, textField(payload, "seller_id")),
                 textField(payload, "reason"),
                 textField(payload, "cancelled_by"),
-                parseUuid(textField(payload, "cancelled_by_user_id"))
+                parseUuid(textField(payload, "cancelled_by_user_id")),
+                textField(payload, "refund_requested_by")
         );
     }
 
