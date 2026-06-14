@@ -12,6 +12,7 @@ import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
 import com.twohands.commerce_service.security.AuthenticatedUser;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +42,8 @@ public class CheckoutController {
     @PostMapping
     public ResponseEntity<ApiResponse<CheckoutFromCartResponse>> checkoutFromCart(
             @RequestBody @Valid CheckoutFromCartRequest request,
-            Authentication authentication
+            Authentication authentication,
+            HttpServletRequest httpRequest
     ) {
         UUID userId = resolveUserId(authentication);
         CheckoutFromCartResult result = checkoutFromCartUseCase.execute(
@@ -51,7 +53,8 @@ public class CheckoutController {
                         request.addressId(),
                         request.paymentMethod(),
                         request.shipmentType(),
-                        request.idempotencyKey()
+                        request.idempotencyKey(),
+                        resolveClientIp(httpRequest)
                 )
         );
 
@@ -89,6 +92,14 @@ public class CheckoutController {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         return principal.userId();
+    }
+
+    private String resolveClientIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded;
+        }
+        return request.getRemoteAddr();
     }
 
     private CalculateOrderTotalResponse toResponse(CalculateOrderTotalResult result) {

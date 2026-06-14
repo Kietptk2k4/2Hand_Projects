@@ -3,6 +3,7 @@ import { DEFAULT_CONTENT_MODERATION_TAB } from "./contentModeration/contentModer
 import { DEFAULT_ORDER_SUPPORT_TAB } from "./orderSupport/orderSupportTabs.js";
 import { DEFAULT_SYSTEM_OPERATIONS_TAB } from "./systemOperations/systemOperationsTabs.js";
 import { DEFAULT_COMMERCE_FINANCE_TAB } from "./commerceFinance/commerceFinanceTabs.js";
+import { DEFAULT_CATALOG_MANAGEMENT_TAB } from "./catalogManagement/catalogManagementTabs.js";
 
 const VALID_SECTIONS = [
   "rolePermission",
@@ -12,6 +13,7 @@ const VALID_SECTIONS = [
   "orderSupport",
   "systemOperations",
   "commerceFinance",
+  "catalogManagement",
 ];
 
 const LEGACY_SECTION_MAP = {
@@ -27,6 +29,7 @@ const DEFAULT_TAB_BY_SECTION = {
   orderSupport: DEFAULT_ORDER_SUPPORT_TAB,
   systemOperations: DEFAULT_SYSTEM_OPERATIONS_TAB,
   commerceFinance: DEFAULT_COMMERCE_FINANCE_TAB,
+  catalogManagement: DEFAULT_CATALOG_MANAGEMENT_TAB,
 };
 
 const SUPPORT_PARAM_KEYS = [

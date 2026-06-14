@@ -48,7 +48,7 @@ public class VnpayParamSigner {
             }
             builder.append(entry.getKey())
                     .append('=')
-                    .append(encodeURIComponent(entry.getValue()));
+                    .append(urlEncode(entry.getValue()));
         }
         return builder.toString();
     }
@@ -62,9 +62,9 @@ public class VnpayParamSigner {
             if (!builder.isEmpty()) {
                 builder.append('&');
             }
-            builder.append(encodeURIComponent(entry.getKey()))
+            builder.append(urlEncode(entry.getKey()))
                     .append('=')
-                    .append(encodeURIComponent(entry.getValue()));
+                    .append(urlEncode(entry.getValue()));
         }
         return builder.toString();
     }
@@ -80,13 +80,7 @@ public class VnpayParamSigner {
         }
     }
 
-    private String encodeURIComponent(String value) {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8)
-                .replace("+", "%20")
-                .replace("%21", "!")
-                .replace("%27", "'")
-                .replace("%28", "(")
-                .replace("%29", ")")
-                .replace("%7E", "~");
+    private String urlEncode(String value) {
+        return URLEncoder.encode(value, StandardCharsets.US_ASCII);
     }
 }

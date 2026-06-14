@@ -22,6 +22,8 @@ public class CommerceAdminAuthorization {
     public static final String PERMISSION_REFUND_SUPPORT_READ = "REFUND_SUPPORT_READ";
     public static final String PERMISSION_REFUND_SUPPORT_APPROVE = "REFUND_SUPPORT_APPROVE";
     public static final String PERMISSION_FINANCE_SUPPORT_READ = "FINANCE_SUPPORT_READ";
+    public static final String PERMISSION_CATALOG_READ = "CATALOG_READ";
+    public static final String PERMISSION_CATALOG_WRITE = "CATALOG_WRITE";
     private static final String ADMIN_ROLE = "ADMIN";
 
     public void requirePermission(AuthenticatedUser user, String permission) {

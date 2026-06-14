@@ -24,13 +24,15 @@ public record ViewSellerOrderDetailResponse(
         @JsonProperty("buyer_id") UUID buyerId,
         @JsonProperty("buyer_display_name") String buyerDisplayName,
         @JsonProperty("buyer_avatar_url") String buyerAvatarUrl,
-        @JsonProperty("active_refund_request") ActiveRefundRequestResponse activeRefundRequest
+        @JsonProperty("active_refund_request") ActiveRefundRequestResponse activeRefundRequest,
+        @JsonProperty("cancellation_note") String cancellationNote
 ) {
     public record ActiveRefundRequestResponse(
             @JsonProperty("refund_request_id") UUID refundRequestId,
             String status,
             @JsonProperty("requested_by") String requestedBy,
             BigDecimal amount,
+            String reason,
             @JsonProperty("requested_at") Instant requestedAt
     ) {
     }

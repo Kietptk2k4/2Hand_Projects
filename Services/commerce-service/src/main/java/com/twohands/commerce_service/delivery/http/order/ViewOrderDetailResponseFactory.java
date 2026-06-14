@@ -28,7 +28,8 @@ public final class ViewOrderDetailResponseFactory {
 				result.items().stream().map(ViewOrderDetailResponseFactory::toOrderItemDetailResponse).toList(),
 				result.shipments().stream().map(ViewOrderDetailResponseFactory::toShipmentDetailResponse).toList(),
 				result.orderTimeline().stream().map(ViewOrderDetailResponseFactory::toOrderDetailTimelineEntry).toList(),
-				toActiveRefundRequestResponse(result.activeRefundRequest())
+				toActiveRefundRequestResponse(result.activeRefundRequest()),
+				result.cancellationNote()
 		);
 	}
 
@@ -43,6 +44,7 @@ public final class ViewOrderDetailResponseFactory {
 				refundRequest.status().name(),
 				refundRequest.requestedBy().name(),
 				refundRequest.amount(),
+				refundRequest.reason(),
 				refundRequest.requestedAt()
 		);
 	}

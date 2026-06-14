@@ -16,15 +16,15 @@ class PushNotificationPayloadPolicyTest {
         UUID eventId = UUID.randomUUID();
 
         var payload = PushNotificationPayloadPolicy.build(
-                new PushNotificationTemplate("New like", "Someone liked your post."),
+                new PushNotificationTemplate("Thích bài viết", "Có người đã thích bài viết của bạn."),
                 "POST_LIKED",
                 "POST",
                 "post-123",
                 eventId
         );
 
-        assertEquals("New like", payload.title());
-        assertEquals("Someone liked your post.", payload.body());
+        assertEquals("Thích bài viết", payload.title());
+        assertEquals("Có người đã thích bài viết của bạn.", payload.body());
         assertEquals("POST_LIKED", payload.data().get("eventType"));
         assertEquals("POST", payload.data().get("referenceType"));
         assertEquals("post-123", payload.data().get("referenceId"));

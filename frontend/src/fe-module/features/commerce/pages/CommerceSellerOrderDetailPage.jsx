@@ -193,7 +193,30 @@ export function CommerceSellerOrderDetailPage() {
 
             {pendingRefund ? (
               <div className="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-body-sm text-amber-950">
-                Đơn hàng đang chờ hoàn tiền — admin sẽ xác nhận sau khi hoàn tiền VNPay.
+                <p>Đơn hàng đang chờ hoàn tiền — admin sẽ xác nhận sau khi hoàn tiền VNPay.</p>
+                {detail.activeRefundRequest?.reason ? (
+                  <p className="mt-2">
+                    <span className="font-medium">Lý do hủy:</span>{" "}
+                    {detail.activeRefundRequest.reason}
+                  </p>
+                ) : null}
+                {detail.activeRefundRequest?.requestedBy ? (
+                  <p className="mt-1 text-label-sm text-amber-900/80">
+                    Yêu cầu bởi:{" "}
+                    {detail.activeRefundRequest.requestedBy === "BUYER"
+                      ? "Người mua"
+                      : detail.activeRefundRequest.requestedBy === "SELLER"
+                        ? "Shop"
+                        : detail.activeRefundRequest.requestedBy}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
+            {!pendingRefund && detail.cancellationNote ? (
+              <div className="mb-6 rounded-lg border border-outline-variant bg-surface-container-low px-4 py-3 text-body-sm text-on-surface">
+                <p className="font-medium text-on-surface">Lý do hủy đơn</p>
+                <p className="mt-1 text-on-surface-variant">{detail.cancellationNote}</p>
               </div>
             ) : null}
 
@@ -303,6 +326,12 @@ export function CommerceSellerOrderDetailPage() {
                           <div className="mt-2">
                             <SellerOrderItemStatusBadge status={item.itemStatus} />
                           </div>
+                          {item.itemStatus === "CANCELLED" && detail.cancellationNote ? (
+                            <p className="mt-2 text-body-sm text-on-surface-variant">
+                              <span className="font-medium text-on-surface">Lý do hủy:</span>{" "}
+                              {detail.cancellationNote}
+                            </p>
+                          ) : null}
                         </div>
                       </div>
 

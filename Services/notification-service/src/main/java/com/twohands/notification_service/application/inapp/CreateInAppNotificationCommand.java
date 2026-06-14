@@ -11,7 +11,8 @@ public record CreateInAppNotificationCommand(
         String referenceId,
         String metadata,
         String templateVariant,
-        String actorDisplayName
+        String actorDisplayName,
+        String reason
 ) {
     public CreateInAppNotificationCommand(
             UUID notificationEventId,
@@ -22,7 +23,7 @@ public record CreateInAppNotificationCommand(
             String referenceId,
             String metadata
     ) {
-        this(notificationEventId, userId, actorId, eventType, referenceType, referenceId, metadata, null, null);
+        this(notificationEventId, userId, actorId, eventType, referenceType, referenceId, metadata, null, null, null);
     }
 
     public CreateInAppNotificationCommand(
@@ -35,6 +36,20 @@ public record CreateInAppNotificationCommand(
             String metadata,
             String templateVariant
     ) {
-        this(notificationEventId, userId, actorId, eventType, referenceType, referenceId, metadata, templateVariant, null);
+        this(notificationEventId, userId, actorId, eventType, referenceType, referenceId, metadata, templateVariant, null, null);
+    }
+
+    public CreateInAppNotificationCommand(
+            UUID notificationEventId,
+            UUID userId,
+            UUID actorId,
+            String eventType,
+            String referenceType,
+            String referenceId,
+            String metadata,
+            String templateVariant,
+            String reason
+    ) {
+        this(notificationEventId, userId, actorId, eventType, referenceType, referenceId, metadata, templateVariant, null, reason);
     }
 }

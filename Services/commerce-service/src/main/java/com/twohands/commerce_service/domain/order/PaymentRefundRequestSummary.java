@@ -14,6 +14,7 @@ public record PaymentRefundRequestSummary(
         PaymentRefundRequestStatus status,
         PaymentRefundRequestedBy requestedBy,
         BigDecimal amount,
+        String reason,
         Instant requestedAt
 ) {
 }

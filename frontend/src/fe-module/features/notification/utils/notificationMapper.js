@@ -13,6 +13,13 @@ export function parseNotificationMetadata(rawMetadata) {
 
 export function mapNotificationItem(item) {
   const metadata = parseNotificationMetadata(item?.metadata);
+  const reason = metadata?.reason?.trim?.() || "";
+  const baseContent = item?.content || "";
+  const shouldAppendReason =
+    reason &&
+    (item?.type === "ORDER_CANCELLED" || item?.type === "ORDER_CANCEL_PENDING_REFUND") &&
+    !baseContent.includes(reason);
+  const content = shouldAppendReason ? `${baseContent} Lý do: ${reason}` : baseContent;
 
   return {
     id: item?.id,
@@ -20,7 +27,7 @@ export function mapNotificationItem(item) {
     type: item?.type,
     typeLabel: NOTIFICATION_EVENT_LABELS[item?.type] || item?.type || "Thông báo",
     title: item?.title || "",
-    content: item?.content || "",
+    content,
     referenceType: item?.referenceType,
     referenceId: item?.referenceId,
     metadata,

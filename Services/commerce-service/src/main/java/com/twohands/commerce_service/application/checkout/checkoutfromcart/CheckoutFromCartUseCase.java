@@ -107,7 +107,12 @@ public class CheckoutFromCartUseCase {
                 orderResult.status(),
                 orderResult.finalAmount(),
                 resolvePayosCheckoutUrl(orderResult.paymentMethod()),
-                resolveVnpayRedirect(orderResult.paymentMethod(), orderResult.paymentId(), prepared.buyerId()),
+                resolveVnpayRedirect(
+                        orderResult.paymentMethod(),
+                        orderResult.paymentId(),
+                        prepared.buyerId(),
+                        command.clientIp()
+                ),
                 false
         );
     }
@@ -126,12 +131,17 @@ public class CheckoutFromCartUseCase {
         return null;
     }
 
-    private String resolveVnpayRedirect(PaymentMethod paymentMethod, UUID paymentId, UUID buyerId) {
+    private String resolveVnpayRedirect(
+            PaymentMethod paymentMethod,
+            UUID paymentId,
+            UUID buyerId,
+            String clientIp
+    ) {
         if (paymentMethod != PaymentMethod.VNPAY) {
             return null;
         }
         CreateVnpayCheckoutUrlResult result = createVnpayCheckoutUrlUseCase.execute(
-                new CreateVnpayCheckoutUrlCommand(paymentId, buyerId, "127.0.0.1")
+                new CreateVnpayCheckoutUrlCommand(paymentId, buyerId, clientIp)
         );
         return result.checkoutUrl();
     }

@@ -7,6 +7,7 @@ import com.twohands.commerce_service.application.order.common.OrderCancelledOutb
 import com.twohands.commerce_service.application.payment.common.PaymentCancelledOutboxService;
 import com.twohands.commerce_service.application.payment.common.PaymentFailedOutboxService;
 import com.twohands.commerce_service.application.order.common.PaymentExpiredOutboxService;
+import com.twohands.commerce_service.domain.inventory.ReserveInventoryRepository;
 import com.twohands.commerce_service.domain.order.OrderItemQuantity;
 import com.twohands.commerce_service.domain.outbox.OutboxEventRepository;
 import com.twohands.commerce_service.domain.payment.HandlePaymentFailureRepository;
@@ -45,6 +46,7 @@ public class HandlePaymentFailureRepositoryAdapter implements HandlePaymentFailu
     private final PaymentExpiredOutboxService paymentExpiredOutboxService;
     private final OrderCancelledOutboxService orderCancelledOutboxService;
     private final InventoryReleasedOutboxService inventoryReleasedOutboxService;
+    private final ReserveInventoryRepository reserveInventoryRepository;
     private final ObjectMapper objectMapper;
 
     public HandlePaymentFailureRepositoryAdapter(
@@ -55,6 +57,7 @@ public class HandlePaymentFailureRepositoryAdapter implements HandlePaymentFailu
             PaymentExpiredOutboxService paymentExpiredOutboxService,
             OrderCancelledOutboxService orderCancelledOutboxService,
             InventoryReleasedOutboxService inventoryReleasedOutboxService,
+            ReserveInventoryRepository reserveInventoryRepository,
             ObjectMapper objectMapper
     ) {
         this.jdbcTemplate = jdbcTemplate;
@@ -64,6 +67,7 @@ public class HandlePaymentFailureRepositoryAdapter implements HandlePaymentFailu
         this.paymentExpiredOutboxService = paymentExpiredOutboxService;
         this.orderCancelledOutboxService = orderCancelledOutboxService;
         this.inventoryReleasedOutboxService = inventoryReleasedOutboxService;
+        this.reserveInventoryRepository = reserveInventoryRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -127,6 +131,7 @@ public class HandlePaymentFailureRepositoryAdapter implements HandlePaymentFailu
 
         List<OrderItemQuantity> pendingItems = findPendingOrderItems(payment.orderId());
         releaseInventoryOrThrow(pendingItems, payment.orderId(), occurredAt);
+        syncProductStatusesAfterRelease(pendingItems, occurredAt);
 
         int paymentUpdated = markPaymentTerminal(payment.paymentId(), terminalStatus, historyPayloadJson, occurredAt);
         if (paymentUpdated == 0) {
@@ -232,6 +237,17 @@ public class HandlePaymentFailureRepositoryAdapter implements HandlePaymentFailu
                 );
             }
         }
+    }
+
+    private void syncProductStatusesAfterRelease(List<OrderItemQuantity> items, Instant now) {
+        if (items.isEmpty()) {
+            return;
+        }
+        List<UUID> productIds = items.stream()
+                .map(OrderItemQuantity::productId)
+                .distinct()
+                .toList();
+        reserveInventoryRepository.syncInStockProductStatuses(productIds, now);
     }
 
     private int markPaymentTerminal(
@@ -354,7 +370,15 @@ public class HandlePaymentFailureRepositoryAdapter implements HandlePaymentFailu
             default -> throw new AppException(ErrorCode.INTERNAL_ERROR, "Unsupported terminal payment status");
         }
 
-        outboxEventRepository.save(orderCancelledOutboxService.build(payment.orderId(), reason, occurredAt));
+        outboxEventRepository.save(orderCancelledOutboxService.build(
+                payment.orderId(),
+                payment.buyerId(),
+                findDistinctSellerIds(payment.orderId()),
+                reason,
+                "SYSTEM",
+                null,
+                occurredAt
+        ));
         if (!pendingItems.isEmpty()) {
             outboxEventRepository.save(inventoryReleasedOutboxService.build(payment.orderId(), pendingItems, occurredAt));
         }
@@ -372,6 +396,20 @@ public class HandlePaymentFailureRepositoryAdapter implements HandlePaymentFailu
 
     private boolean isCancellableOrderStatus(String status) {
         return "CREATED".equals(status) || "AWAITING_PAYMENT".equals(status);
+    }
+
+    private List<UUID> findDistinctSellerIds(UUID orderId) {
+        String sql = """
+                SELECT DISTINCT seller_id
+                FROM order_items
+                WHERE order_id = :orderId
+                ORDER BY seller_id
+                """;
+        return jdbcTemplate.query(
+                sql,
+                new MapSqlParameterSource("orderId", orderId),
+                (rs, rowNum) -> UUID.fromString(rs.getString("seller_id"))
+        );
     }
 
     private LockedPaymentContext mapLockedPayment(ResultSet rs, int rowNum) throws SQLException {

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.twohands.commerce_service.application.order.common.InventoryReleasedOutboxService;
 import com.twohands.commerce_service.application.order.common.OrderCancelPendingRefundOutboxService;
 import com.twohands.commerce_service.application.order.common.OrderCancelledOutboxService;
+import com.twohands.commerce_service.domain.inventory.ReserveInventoryRepository;
 import com.twohands.commerce_service.domain.order.BuyerOrderCancelOutcome;
 import com.twohands.commerce_service.domain.order.BuyerOrderCancellationPolicy;
 import com.twohands.commerce_service.domain.order.BuyerOrderCancellationResult;
@@ -51,6 +52,7 @@ public class OrderCancellationRepositoryAdapter implements OrderCancellationRepo
     private final OrderCancelPendingRefundOutboxService orderCancelPendingRefundOutboxService;
     private final InventoryReleasedOutboxService inventoryReleasedOutboxService;
     private final PaymentRefundRequestRepository paymentRefundRequestRepository;
+    private final ReserveInventoryRepository reserveInventoryRepository;
     private final ObjectMapper objectMapper;
 
     public OrderCancellationRepositoryAdapter(
@@ -60,6 +62,7 @@ public class OrderCancellationRepositoryAdapter implements OrderCancellationRepo
             OrderCancelPendingRefundOutboxService orderCancelPendingRefundOutboxService,
             InventoryReleasedOutboxService inventoryReleasedOutboxService,
             PaymentRefundRequestRepository paymentRefundRequestRepository,
+            ReserveInventoryRepository reserveInventoryRepository,
             ObjectMapper objectMapper
     ) {
         this.jdbcTemplate = jdbcTemplate;
@@ -68,6 +71,7 @@ public class OrderCancellationRepositoryAdapter implements OrderCancellationRepo
         this.orderCancelPendingRefundOutboxService = orderCancelPendingRefundOutboxService;
         this.inventoryReleasedOutboxService = inventoryReleasedOutboxService;
         this.paymentRefundRequestRepository = paymentRefundRequestRepository;
+        this.reserveInventoryRepository = reserveInventoryRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -141,7 +145,7 @@ public class OrderCancellationRepositoryAdapter implements OrderCancellationRepo
             return queueRefundRequest(order, actorId, requestedBy, reason, now, defaultReason);
         }
 
-        return cancelImmediately(order, reason, now, changedBy, defaultReason);
+        return cancelImmediately(order, actorId, reason, now, changedBy, defaultReason);
     }
 
     private BuyerOrderCancellationResult queueRefundRequest(
@@ -173,6 +177,7 @@ public class OrderCancellationRepositoryAdapter implements OrderCancellationRepo
                 order.id(),
                 payment.id,
                 order.buyerId(),
+                findDistinctSellerIds(order.id()),
                 requestedBy,
                 actorId,
                 order.finalAmount(),
@@ -190,6 +195,7 @@ public class OrderCancellationRepositoryAdapter implements OrderCancellationRepo
 
     private BuyerOrderCancellationResult cancelImmediately(
             OrderRow order,
+            UUID actorUserId,
             String reason,
             Instant now,
             String changedBy,
@@ -204,6 +210,7 @@ public class OrderCancellationRepositoryAdapter implements OrderCancellationRepo
         String cancelReason = resolveReason(reason, defaultReason);
         List<OrderItemQuantity> releasableItems = findReleasableOrderItems(orderId);
         releaseInventoryOrThrow(releasableItems, orderId, now);
+        syncProductStatusesAfterRelease(releasableItems, now);
 
         int paymentUpdated = cancelPayment(payment.id, now);
         if (paymentUpdated == 0) {
@@ -220,13 +227,35 @@ public class OrderCancellationRepositoryAdapter implements OrderCancellationRepo
         insertPaymentStatusHistory(payment.id, payment.status, cancelReason, now, changedBy);
 
         outboxEventRepository.save(
-                orderCancelledOutboxService.build(orderId, order.buyerId(), cancelReason, changedBy, now)
+                orderCancelledOutboxService.build(
+                        orderId,
+                        order.buyerId(),
+                        findDistinctSellerIds(orderId),
+                        cancelReason,
+                        changedBy,
+                        actorUserId,
+                        now
+                )
         );
         if (!releasableItems.isEmpty()) {
             outboxEventRepository.save(inventoryReleasedOutboxService.build(orderId, releasableItems, now));
         }
 
         return new BuyerOrderCancellationResult(BuyerOrderCancelOutcome.CANCELLED, orderId, now);
+    }
+
+    private List<UUID> findDistinctSellerIds(UUID orderId) {
+        String sql = """
+                SELECT DISTINCT seller_id
+                FROM order_items
+                WHERE order_id = :orderId
+                ORDER BY seller_id
+                """;
+        return jdbcTemplate.query(
+                sql,
+                new MapSqlParameterSource("orderId", orderId),
+                (rs, rowNum) -> UUID.fromString(rs.getString("seller_id"))
+        );
     }
 
     private boolean sellerOwnsEntireOrder(UUID orderId, UUID sellerId) {
@@ -391,6 +420,17 @@ public class OrderCancellationRepositoryAdapter implements OrderCancellationRepo
                 );
             }
         }
+    }
+
+    private void syncProductStatusesAfterRelease(List<OrderItemQuantity> items, Instant now) {
+        if (items.isEmpty()) {
+            return;
+        }
+        List<UUID> productIds = items.stream()
+                .map(OrderItemQuantity::productId)
+                .distinct()
+                .toList();
+        reserveInventoryRepository.syncInStockProductStatuses(productIds, now);
     }
 
     private void insertOrderStatusHistory(

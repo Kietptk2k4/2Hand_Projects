@@ -12,6 +12,9 @@ export const SHIPMENT_TYPES = [
   { value: "SAME_DAY", label: "Trong ngày" },
 ];
 
+/** Khớp checkout — buyer luôn quote STANDARD; seller không đổi khi tạo vận đơn */
+export const CREATE_SHIPMENT_TYPE = "STANDARD";
+
 export const STATUS_TABS = [
   { id: "all", label: "Tất cả", status: null },
   { id: "pending", label: "PENDING", status: "PENDING" },

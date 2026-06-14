@@ -1,4 +1,15 @@
-export function FeedToast({ message, onDismiss }) {
+import { useEffect } from "react";
+
+export function FeedToast({ message, onDismiss, autoDismissMs }) {
+  useEffect(() => {
+    if (!message || !autoDismissMs) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(onDismiss, autoDismissMs);
+    return () => window.clearTimeout(timeoutId);
+  }, [autoDismissMs, message, onDismiss]);
+
   if (!message) return null;
 
   return (

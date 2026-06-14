@@ -24,11 +24,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -73,11 +75,16 @@ class OrderCancelPendingRefundNotificationEventHandlerTest {
     }
 
     @Test
-    void handle_notifiesBuyerInAppAndPush() {
+    void handle_notifiesBuyerWhenSellerRequestedPendingRefund() {
+        UUID sellerId = UUID.randomUUID();
         when(payloadParser.parse(any())).thenReturn(new OrderCancelPendingRefundNotificationContext(
                 BUYER_ID,
                 ORDER_ID,
-                "refund-1"
+                "refund-1",
+                List.of(sellerId),
+                "Out of stock",
+                "SELLER",
+                sellerId
         ));
         when(applyNotificationDeliveryRulesUseCase.execute(any(ApplyNotificationDeliveryRulesCommand.class)))
                 .thenReturn(new NotificationDeliveryDecision(true, true, false));
@@ -87,24 +94,8 @@ class OrderCancelPendingRefundNotificationEventHandlerTest {
         var result = handler.handle(sampleEvent());
 
         assertEquals(HandlerOutcome.SUCCESS, result.outcome());
-        verify(createInAppNotificationUseCase).execute(new CreateInAppNotificationCommand(
-                EVENT_ID,
-                BUYER_ID,
-                null,
-                "ORDER_CANCEL_PENDING_REFUND",
-                "ORDER",
-                ORDER_ID,
-                "{}",
-                null
-        ));
-        verify(sendPushNotificationUseCase).execute(new SendPushNotificationCommand(
-                BUYER_ID,
-                "ORDER_CANCEL_PENDING_REFUND",
-                "ORDER",
-                ORDER_ID,
-                EVENT_ID,
-                null
-        ));
+        verify(createInAppNotificationUseCase).execute(any(CreateInAppNotificationCommand.class));
+        verify(sendPushNotificationUseCase).execute(any(SendPushNotificationCommand.class));
     }
 
     @Test

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { CARRIERS, SHIPMENT_TYPES } from "../constants/sellerShipmentConstants";
+import { CARRIERS } from "../constants/sellerShipmentConstants";
+import { DEFAULT_SHIPMENT_LABEL } from "../constants/checkoutConstants";
 import { formatShortOrderId } from "../utils/formatOrderDate";
 import { useCreateShipment } from "../hooks/useCreateShipment";
 
@@ -21,8 +22,6 @@ export function CreateShipmentModal({
     toggleItem,
     carrier,
     setCarrier,
-    shipmentType,
-    setShipmentType,
     estimatedWeightGram,
     useWeightOverride,
     setUseWeightOverride,
@@ -158,20 +157,13 @@ export function CreateShipmentModal({
                 </select>
               </label>
 
-              <label className="block">
-                <span className="text-label-sm font-medium text-on-surface">Loại vận chuyển</span>
-                <select
-                  value={shipmentType}
-                  onChange={(e) => setShipmentType(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-body-sm"
-                >
-                  {SHIPMENT_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <div className="rounded-lg border border-outline-variant/60 bg-surface-container-low px-3 py-3">
+                <p className="text-label-sm font-medium text-on-surface">Loại vận chuyển</p>
+                <p className="mt-1 text-body-sm text-on-surface">{DEFAULT_SHIPMENT_LABEL}</p>
+                <p className="mt-1 text-label-sm text-on-surface-variant">
+                  Theo đơn checkout — hệ thống dùng gói GHN Chuẩn tương ứng.
+                </p>
+              </div>
 
               <div className="rounded-lg border border-outline-variant/60 bg-surface-container-low px-3 py-3">
                 <p className="text-label-sm font-medium text-on-surface">Khối lượng ước tính</p>

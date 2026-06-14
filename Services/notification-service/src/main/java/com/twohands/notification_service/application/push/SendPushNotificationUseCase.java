@@ -7,6 +7,7 @@ import com.twohands.notification_service.application.devicetoken.DeactivateInval
 import com.twohands.notification_service.application.devicetoken.DeactivateInvalidDeviceTokenUseCase;
 import com.twohands.notification_service.application.worker.NotificationFailurePolicy;
 import com.twohands.notification_service.config.NotificationFcmProperties;
+import com.twohands.notification_service.domain.commerce.OrderCancelNotificationContentPolicy;
 import com.twohands.notification_service.domain.delivery.NotificationDeliveryDecision;
 import com.twohands.notification_service.domain.devicetoken.DeactivateInvalidDeviceTokenOutcome;
 import com.twohands.notification_service.domain.devicetoken.RegisterDeviceTokenPolicy;
@@ -99,7 +100,12 @@ public class SendPushNotificationUseCase {
         }
 
         PushNotificationPayload payload = PushNotificationPayloadPolicy.build(
-                template,
+                new PushNotificationTemplate(
+                        template.title(),
+                        OrderCancelNotificationContentPolicy.supportsReasonInContent(command.eventType())
+                                ? OrderCancelNotificationContentPolicy.appendReason(template.body(), command.reason())
+                                : template.body()
+                ),
                 command.eventType(),
                 command.referenceType(),
                 command.referenceId(),

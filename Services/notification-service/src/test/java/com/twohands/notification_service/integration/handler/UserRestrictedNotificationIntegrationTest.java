@@ -64,7 +64,7 @@ class UserRestrictedNotificationIntegrationTest {
         assertEquals(1, countNotifications(eventId, userId));
         assertEquals("USER_ENFORCEMENT", queryReferenceType(eventId, userId));
         assertEquals(enforcementId.toString(), queryReferenceId(eventId, userId));
-        assertEquals("Account restricted", queryTitle(eventId, userId));
+        assertEquals("Tài khoản bị hạn chế", queryTitle(eventId, userId));
         assertTrue(queryMetadata(eventId, userId).contains("restricted_capabilities_summary"));
         assertFalse(queryMetadata(eventId, userId).contains("\"restricted_capabilities\":"));
         assertFalse(queryMetadata(eventId, userId).contains("enforced_by"));

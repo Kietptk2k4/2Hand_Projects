@@ -29,13 +29,15 @@ public record ViewOrderDetailResponse(
         List<OrderItemDetailResponse> items,
         List<ShipmentDetailResponse> shipments,
         @JsonProperty("order_timeline") List<OrderStatusTimelineEntryResponse> orderTimeline,
-        @JsonProperty("active_refund_request") ActiveRefundRequestResponse activeRefundRequest
+        @JsonProperty("active_refund_request") ActiveRefundRequestResponse activeRefundRequest,
+        @JsonProperty("cancellation_note") String cancellationNote
 ) {
     public record ActiveRefundRequestResponse(
             @JsonProperty("refund_request_id") UUID refundRequestId,
             String status,
             @JsonProperty("requested_by") String requestedBy,
             BigDecimal amount,
+            String reason,
             @JsonProperty("requested_at") Instant requestedAt
     ) {
     }

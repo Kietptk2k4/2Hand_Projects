@@ -45,7 +45,8 @@ import { commerceSellerShipmentHandlers } from "./commerceSellerShipmentHandlers
 import { commerceSellerShopReviewsHandlers } from "./commerceSellerShopReviewsHandlers";
 import { commerceAdminShopModerationHandlers } from "./commerceAdminShopModerationHandlers";
 import { commerceAdminReviewModerationHandlers } from "./commerceAdminReviewModerationHandlers";
-import { commerceAdminProductRemovalHandlers } from "./commerceAdminProductRemovalHandlers";
+import { adminCatalogHandlers } from "./adminCatalogHandlers";
+import { commerceBrandsHandlers } from "./commerceBrandsHandlers";
 import { notificationHandlers } from "./notificationHandlers";
 
 export const handlers = [
@@ -97,6 +98,8 @@ export const handlers = [
   ...commerceAdminShopModerationHandlers,
   ...commerceAdminReviewModerationHandlers,
   ...commerceAdminProductRemovalHandlers,
+  ...adminCatalogHandlers,
+  ...commerceBrandsHandlers,
   ...notificationHandlers,
 ];
 

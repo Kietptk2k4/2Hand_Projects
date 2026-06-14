@@ -8,7 +8,11 @@ export function CheckoutPaymentMethod({ paymentMethod, disabled = false, onSelec
         <p className="mb-4 text-body-sm text-on-surface-variant">
           Hiện chỉ hỗ trợ thanh toán khi nhận hàng (COD). Bạn thanh toán trực tiếp cho shipper khi nhận hàng.
         </p>
-      ) : null}
+      ) : (
+        <p className="mb-4 text-body-sm text-on-surface-variant">
+          Chọn VNPay để thanh toán online ngay sau khi đặt hàng, hoặc COD để thanh toán khi nhận hàng.
+        </p>
+      )}
       <div className="flex flex-col gap-3">
         {PAYMENT_METHODS.map((option) => {
           const selected = paymentMethod === option.value;

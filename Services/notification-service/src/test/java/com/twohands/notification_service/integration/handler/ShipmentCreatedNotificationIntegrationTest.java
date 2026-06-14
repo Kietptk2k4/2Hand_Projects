@@ -55,7 +55,7 @@ class ShipmentCreatedNotificationIntegrationTest {
         assertEquals(1, countNotifications(eventId, sellerId));
         assertEquals("SHIPMENT", queryReferenceType(eventId, buyerId));
         assertEquals("ship-100", queryReferenceId(eventId, buyerId));
-        assertEquals("Shipment created", queryTitle(eventId, sellerId));
+        assertEquals("Tạo vận đơn", queryTitle(eventId, sellerId));
     }
 
     @Test

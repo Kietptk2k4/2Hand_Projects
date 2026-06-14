@@ -19,6 +19,8 @@ public final class AdminActionTargetType {
 	public static final String PLATFORM_FINANCE = "PLATFORM_FINANCE";
 	public static final String SECURITY = "SECURITY";
 	public static final String ADMIN_SESSION = "ADMIN_SESSION";
+	public static final String CATEGORY = "CATEGORY";
+	public static final String BRAND = "BRAND";
 
 	private AdminActionTargetType() {
 	}

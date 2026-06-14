@@ -54,7 +54,7 @@ class ShipmentDeliveredNotificationIntegrationTest {
         assertEquals(1, countNotifications(eventId, buyerId));
         assertEquals("SHIPMENT", queryReferenceType(eventId, buyerId));
         assertEquals("ship-100", queryReferenceId(eventId, buyerId));
-        assertEquals("Order delivered", queryTitle(eventId, buyerId));
+        assertEquals("Giao hàng thành công", queryTitle(eventId, buyerId));
         assertTrue(queryMetadata(eventId, buyerId).contains("delivered_at"));
         assertTrue(queryMetadata(eventId, buyerId).contains("prompt_confirm_receipt"));
     }

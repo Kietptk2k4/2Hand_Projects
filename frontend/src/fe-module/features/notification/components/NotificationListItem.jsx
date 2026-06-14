@@ -1,35 +1,10 @@
 import { useState } from "react";
+import { NOTIFICATION_EVENT_ICONS } from "../constants/notificationConstants";
 import { formatRelativeTime } from "../utils/notificationDateTime";
 import { hasNotificationDeepLink } from "../utils/notificationDeepLink";
 
 function NotificationTypeIcon({ type }) {
-  const iconMap = {
-    POST_LIKED: "favorite",
-    USER_FOLLOWED: "person_add",
-    COMMENT_CREATED: "chat_bubble",
-    COMMENT_REPLIED: "reply",
-    COMMENT_LIKED: "thumb_up",
-    ORDER_CREATED: "shopping_bag",
-    PAYMENT_SUCCESS: "payments",
-    PAYMENT_FAILED: "error",
-    SHIPMENT_CREATED: "local_shipping",
-    SHIPMENT_READY_TO_SHIP: "inventory_2",
-    SHIPMENT_CANCELLED: "cancel",
-    SHIPMENT_SHIPPED: "local_shipping",
-    SHIPMENT_DELIVERED: "inventory_2",
-    ORDER_COMPLETED: "check_circle",
-    REVIEW_REMINDER: "rate_review",
-    REVIEW_REPLIED: "forum",
-    USER_SUSPENDED: "gavel",
-    USER_RESTRICTED: "shield",
-    PRODUCT_REMOVED: "inventory",
-    REVIEW_HIDDEN: "visibility_off",
-    SHOP_SUSPENDED: "store",
-    SHOP_CLOSED: "storefront",
-    SYSTEM_ANNOUNCEMENT_SENT: "campaign",
-  };
-
-  const icon = iconMap[type] || "notifications";
+  const icon = NOTIFICATION_EVENT_ICONS[type] || "notifications";
 
   return (
     <span

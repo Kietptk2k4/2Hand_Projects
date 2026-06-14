@@ -24,6 +24,8 @@ public class NotificationKafkaConsumerProperties {
             "social.user.followed",
             "social.user.avatar_updated",
             "commerce.order.created",
+            "commerce.order.cancelled",
+            "commerce.order.cancel_pending_refund",
             "commerce.payment.paid",
             "commerce.payment.failed",
             "commerce.shipment.created",

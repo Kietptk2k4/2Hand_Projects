@@ -588,6 +588,7 @@ export function getSellerOrderDetailForUser(userId, orderId) {
       items: records.map(toListRow),
       shipping_address,
       active_refund_request: getActiveRefundRequestForOrder(orderId),
+      cancellation_note: first._cancel_note || null,
       ...MOCK_SELLER_ORDER_BUYER_PROFILE,
     },
   };
@@ -660,11 +661,13 @@ export function cancelSellerOrderForUser(userId, orderId, reason) {
   }
 
   const cancelledAt = new Date().toISOString();
+  const auditNote = String(reason ?? "").trim() || "SELLER_CANCELLED";
   for (const row of records) {
     row.item_status = "CANCELLED";
     row.order_status = "CANCELLED";
     row.order_payment_status = "CANCELLED";
     row.item_updated_at = cancelledAt;
+    row._cancel_note = auditNote;
   }
 
   return {

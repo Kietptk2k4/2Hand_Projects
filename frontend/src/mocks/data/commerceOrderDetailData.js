@@ -394,6 +394,7 @@ export function queueRefundRequestForOrder(orderId, summary, requestedBy, reason
     status: "REQUESTED",
     requested_by: requestedBy,
     amount: summary.final_amount,
+    reason,
     requested_at: requestedAt,
   };
   refundRequestsByOrderId.set(orderId, active);

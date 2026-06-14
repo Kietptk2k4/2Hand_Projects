@@ -12,6 +12,7 @@ public record CheckoutFromCartCommand(
         UUID addressId,
         PaymentMethod paymentMethod,
         ShipmentType shipmentType,
-        String idempotencyKey
+        String idempotencyKey,
+        String clientIp
 ) {
 }

@@ -53,7 +53,7 @@ class OrderCreatedNotificationIntegrationTest {
         assertEquals(1, countNotifications(eventId, sellerId));
         assertEquals("ORDER", queryReferenceType(eventId, buyerId));
         assertEquals("order-100", queryReferenceId(eventId, buyerId));
-        assertEquals("New order", queryTitle(eventId, sellerId));
+        assertEquals("Đơn hàng mới", queryTitle(eventId, sellerId));
     }
 
     @Test

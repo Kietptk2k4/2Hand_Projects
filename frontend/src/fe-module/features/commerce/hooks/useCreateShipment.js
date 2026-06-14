@@ -2,7 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchSellerOrderList } from "../api/sellerOrderApi";
 import { createSellerShipment } from "../api/sellerShipmentApi";
 import { mapSellerOrderApiError } from "../constants/sellerOrderConstants";
-import { mapSellerShipmentApiError } from "../constants/sellerShipmentConstants";
+import {
+  CREATE_SHIPMENT_TYPE,
+  mapSellerShipmentApiError,
+} from "../constants/sellerShipmentConstants";
 import { mapSellerOrderListResponse } from "../utils/sellerOrderMapper";
 import {
   mapCreateShipmentPayload,
@@ -51,7 +54,6 @@ export function useCreateShipment({ open, prefillOrderId, prefillOrderItemIds })
   const [orderId, setOrderId] = useState("");
   const [selectedItemIds, setSelectedItemIds] = useState(() => new Set());
   const [carrier, setCarrier] = useState("GHN");
-  const [shipmentType, setShipmentType] = useState("STANDARD");
   const [useWeightOverride, setUseWeightOverride] = useState(false);
   const [weightOverrideGram, setWeightOverrideGram] = useState("");
   const [trackingNumber, setTrackingNumber] = useState("");
@@ -139,7 +141,6 @@ export function useCreateShipment({ open, prefillOrderId, prefillOrderItemIds })
     setOrderId("");
     setSelectedItemIds(new Set());
     setCarrier("GHN");
-    setShipmentType("STANDARD");
     setUseWeightOverride(false);
     setWeightOverrideGram("");
     setTrackingNumber("");
@@ -170,7 +171,7 @@ export function useCreateShipment({ open, prefillOrderId, prefillOrderItemIds })
           orderId,
           orderItemIds,
           carrier,
-          shipmentType,
+          shipmentType: CREATE_SHIPMENT_TYPE,
           weightGram: useWeightOverride ? weightOverrideGram : "",
           trackingNumber: showTrackingField ? trackingNumber : "",
         }),
@@ -190,7 +191,6 @@ export function useCreateShipment({ open, prefillOrderId, prefillOrderItemIds })
     carrier,
     orderId,
     selectedItemIds,
-    shipmentType,
     showTrackingField,
     showSessionExpired,
     trackingNumber,
@@ -209,8 +209,6 @@ export function useCreateShipment({ open, prefillOrderId, prefillOrderItemIds })
     toggleItem,
     carrier,
     setCarrier,
-    shipmentType,
-    setShipmentType,
     estimatedWeightGram,
     useWeightOverride,
     setUseWeightOverride,

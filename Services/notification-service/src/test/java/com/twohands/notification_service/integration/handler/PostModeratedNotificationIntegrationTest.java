@@ -62,7 +62,7 @@ class PostModeratedNotificationIntegrationTest {
         assertEquals(1, countNotifications(eventId, authorId));
         assertEquals("POST", queryReferenceType(eventId, authorId));
         assertEquals(POST_ID, queryReferenceId(eventId, authorId));
-        assertEquals("Post hidden", queryTitle(eventId, authorId));
+        assertEquals("Bài viết bị ẩn", queryTitle(eventId, authorId));
         assertTrue(queryMetadata(eventId, authorId).contains("moderation_reason"));
         assertFalse(queryMetadata(eventId, authorId).contains("moderated_by"));
     }
@@ -75,7 +75,7 @@ class PostModeratedNotificationIntegrationTest {
         var result = processNotificationEventUseCase.execute(new ProcessNotificationEventCommand(eventId));
 
         assertEquals(ProcessNotificationEventOutcome.COMPLETED, result.outcome());
-        assertEquals("Post removed", queryTitle(eventId, authorId));
+        assertEquals("Bài viết bị gỡ", queryTitle(eventId, authorId));
     }
 
     @Test

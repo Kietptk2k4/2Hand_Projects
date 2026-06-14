@@ -4,6 +4,7 @@ import { CONTENT_MODERATION_TABS } from "../contentModeration/contentModerationT
 import { ORDER_SUPPORT_TABS } from "../orderSupport/orderSupportTabs.js";
 import { SYSTEM_OPERATIONS_TABS } from "../systemOperations/systemOperationsTabs.js";
 import { COMMERCE_FINANCE_TABS } from "../commerceFinance/commerceFinanceTabs.js";
+import { CATALOG_MANAGEMENT_TABS } from "../catalogManagement/catalogManagementTabs.js";
 import { USER_INVESTIGATION_TABS } from "../userInvestigation/userInvestigationTabs.js";
 import { ROLE_PERMISSION_TABS } from "../rolePermission/rolePermissionTabs.js";
 
@@ -15,6 +16,7 @@ const SECTION_CHILDREN = {
   orderSupport: ORDER_SUPPORT_TABS,
   systemOperations: SYSTEM_OPERATIONS_TABS,
   commerceFinance: COMMERCE_FINANCE_TABS,
+  catalogManagement: CATALOG_MANAGEMENT_TABS,
 };
 
 function ParentNavIcon({ sectionId, active }) {
@@ -75,6 +77,18 @@ function ParentNavIcon({ sectionId, active }) {
       <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
         <path
           d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+
+  if (sectionId === "catalogManagement") {
+    return (
+      <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M4 6h16M4 10h16M4 14h10M4 18h8"
           strokeLinecap="round"
           strokeLinejoin="round"
         />

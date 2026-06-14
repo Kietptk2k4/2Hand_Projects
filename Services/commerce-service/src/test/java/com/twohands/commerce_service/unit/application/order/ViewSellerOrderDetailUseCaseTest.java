@@ -143,6 +143,7 @@ class ViewSellerOrderDetailUseCaseTest {
                 List.of(item),
                 null,
                 new CommerceBuyerSummary(buyerId, null, null),
+                null,
                 null
         );
     }

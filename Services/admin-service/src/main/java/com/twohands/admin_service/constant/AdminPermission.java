@@ -47,6 +47,8 @@ public final class AdminPermission {
 	public static final String REFUND_SUPPORT_READ = "REFUND_SUPPORT_READ";
 	public static final String REFUND_SUPPORT_APPROVE = "REFUND_SUPPORT_APPROVE";
 	public static final String FINANCE_SUPPORT_READ = "FINANCE_SUPPORT_READ";
+	public static final String CATALOG_READ = "CATALOG_READ";
+	public static final String CATALOG_WRITE = "CATALOG_WRITE";
 
 	private static final Set<String> KNOWN_CODES = Set.of(
 			USER_SUSPEND,
@@ -87,7 +89,9 @@ public final class AdminPermission {
 			PAYOUT_SUPPORT_APPROVE,
 			REFUND_SUPPORT_READ,
 			REFUND_SUPPORT_APPROVE,
-			FINANCE_SUPPORT_READ
+			FINANCE_SUPPORT_READ,
+			CATALOG_READ,
+			CATALOG_WRITE
 	);
 
 	private AdminPermission() {

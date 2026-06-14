@@ -70,8 +70,8 @@ class CreateInAppNotificationUseCaseTest {
         ArgumentCaptor<CreateIdempotentUserNotificationCommand> captor =
                 ArgumentCaptor.forClass(CreateIdempotentUserNotificationCommand.class);
         verify(createIdempotentUserNotificationUseCase).execute(captor.capture());
-        assertEquals("New like", captor.getValue().title());
-        assertEquals("Someone liked your post.", captor.getValue().content());
+        assertEquals("Thích bài viết", captor.getValue().title());
+        assertEquals("Có người đã thích bài viết của bạn.", captor.getValue().content());
         assertEquals(NotificationDeliveryStatus.SENT, captor.getValue().deliveryStatus());
         assertEquals("{\"postId\":\"post-1\"}", captor.getValue().metadata());
     }
@@ -98,6 +98,36 @@ class CreateInAppNotificationUseCaseTest {
 
         assertTrue(result.duplicate());
         assertEquals(existingId, result.userNotificationId());
+    }
+
+    @Test
+    void execute_appendsCancelReasonToTemplateContent() {
+        UUID eventId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        when(metadataSanitizer.sanitize("{}")).thenReturn("{}");
+        when(createIdempotentUserNotificationUseCase.execute(any(CreateIdempotentUserNotificationCommand.class)))
+                .thenReturn(new CreateIdempotentUserNotificationResult(UUID.randomUUID(), false));
+
+        useCase.execute(new CreateInAppNotificationCommand(
+                eventId,
+                userId,
+                UUID.randomUUID(),
+                "ORDER_CANCELLED",
+                "ORDER",
+                "order-1",
+                "{}",
+                null,
+                "Hết hàng"
+        ));
+
+        ArgumentCaptor<CreateIdempotentUserNotificationCommand> captor =
+                ArgumentCaptor.forClass(CreateIdempotentUserNotificationCommand.class);
+        verify(createIdempotentUserNotificationUseCase).execute(captor.capture());
+        assertEquals(
+                "Người bán đã hủy đơn hàng của bạn. Lý do: Hết hàng",
+                captor.getValue().content()
+        );
     }
 
     @Test

@@ -65,6 +65,8 @@ import { AdminFinanceCodPipelineTab } from "../admin/commerceFinance/components/
 import { AdminFinanceTopSellersTab } from "../admin/commerceFinance/components/tabs/AdminFinanceTopSellersTab.jsx";
 import { AdminFinanceSellerDetailTab } from "../admin/commerceFinance/components/tabs/AdminFinanceSellerDetailTab.jsx";
 import { AdminFinancePayoutQueueTab } from "../admin/commerceFinance/components/tabs/AdminFinancePayoutQueueTab.jsx";
+import { CategoryManagementTab } from "../admin/catalogManagement/components/tabs/CategoryManagementTab.jsx";
+import { BrandManagementTab } from "../admin/catalogManagement/components/tabs/BrandManagementTab.jsx";
 import { SystemConfigsTab } from "../admin/systemOperations/components/tabs/SystemConfigsTab.jsx";
 import { SystemAnnouncementsTab } from "../admin/systemOperations/components/tabs/SystemAnnouncementsTab.jsx";
 import { AuthAlert } from "../../../shared/ui/auth/authUi.jsx";
@@ -116,6 +118,11 @@ const COMMERCE_FINANCE_TAB_COMPONENTS = {
   "top-sellers": AdminFinanceTopSellersTab,
   "seller-detail": AdminFinanceSellerDetailTab,
   "payout-queue": AdminFinancePayoutQueueTab,
+};
+
+const CATALOG_MANAGEMENT_TAB_COMPONENTS = {
+  categories: CategoryManagementTab,
+  brands: BrandManagementTab,
 };
 
 export function AdminPage() {
@@ -872,6 +879,8 @@ export function AdminPage() {
     ORDER_SUPPORT_TAB_COMPONENTS[activeChildTab] || OrderSupportDetailTab;
   const CommerceFinanceTabComponent =
     COMMERCE_FINANCE_TAB_COMPONENTS[activeChildTab] || AdminFinanceOverviewTab;
+  const CatalogManagementTabComponent =
+    CATALOG_MANAGEMENT_TAB_COMPONENTS[activeChildTab] || CategoryManagementTab;
 
   const roleTabProps = {
     onNotify,
@@ -975,6 +984,9 @@ export function AdminPage() {
       }
       return <CommerceFinanceTabComponent />;
     }
+    if (adminTopTab === "catalogManagement") {
+      return <CatalogManagementTabComponent onNotify={onNotify} />;
+    }
     return null;
   }, [
     AdminAuditTabComponent,
@@ -982,6 +994,7 @@ export function AdminPage() {
     InvestigationTabComponent,
     OrderSupportTabComponent,
     CommerceFinanceTabComponent,
+    CatalogManagementTabComponent,
     SystemOperationsTabComponent,
     RoleTabComponent,
     adminTopTab,

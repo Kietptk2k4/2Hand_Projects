@@ -34,4 +34,9 @@ export const ADMIN_TOP_TABS = [
     labelVn: "Tài chính thương mại",
     labelEn: "Commerce Finance",
   },
+  {
+    id: "catalogManagement",
+    labelVn: "Quản lý catalog",
+    labelEn: "Catalog Management",
+  },
 ];

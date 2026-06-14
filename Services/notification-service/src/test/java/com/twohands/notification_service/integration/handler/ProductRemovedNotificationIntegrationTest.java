@@ -61,7 +61,7 @@ class ProductRemovedNotificationIntegrationTest {
         assertEquals(1, countNotifications(eventId, sellerId));
         assertEquals("PRODUCT", queryReferenceType(eventId, sellerId));
         assertEquals(productId.toString(), queryReferenceId(eventId, sellerId));
-        assertEquals("Product removed", queryTitle(eventId, sellerId));
+        assertEquals("Sản phẩm bị gỡ", queryTitle(eventId, sellerId));
         assertTrue(queryMetadata(eventId, sellerId).contains("removal_reason"));
         assertFalse(queryMetadata(eventId, sellerId).contains("removed_by"));
         assertFalse(queryMetadata(eventId, sellerId).contains("internal"));

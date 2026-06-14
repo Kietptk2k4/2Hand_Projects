@@ -9,7 +9,9 @@ import com.twohands.commerce_service.exception.ErrorCode;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -34,16 +36,52 @@ public class OrderCancelledOutboxService {
     }
 
     public OutboxEvent build(UUID orderId, UUID buyerId, String reason, String cancelledBy, Instant cancelledAt) {
+        return build(orderId, buyerId, List.of(), reason, cancelledBy, null, cancelledAt);
+    }
+
+    public OutboxEvent build(
+            UUID orderId,
+            UUID buyerId,
+            List<UUID> sellerIds,
+            String reason,
+            String cancelledBy,
+            UUID cancelledByUserId,
+            Instant cancelledAt
+    ) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("order_id", orderId.toString());
         if (buyerId != null) {
             payload.put("buyer_id", buyerId.toString());
         }
+        List<String> distinctSellerIds = distinctSellerIdStrings(sellerIds);
+        if (!distinctSellerIds.isEmpty()) {
+            payload.put("seller_ids", distinctSellerIds);
+        }
         payload.put("reason", reason);
         payload.put("cancelled_at", cancelledAt.toString());
         payload.put("cancelled_by", cancelledBy);
+        if (cancelledByUserId != null) {
+            payload.put("cancelled_by_user_id", cancelledByUserId.toString());
+        }
 
         return buildEvent(orderId, payload, cancelledAt);
+    }
+
+    private List<String> distinctSellerIdStrings(List<UUID> sellerIds) {
+        if (sellerIds == null || sellerIds.isEmpty()) {
+            return List.of();
+        }
+        List<String> values = new ArrayList<>();
+        for (UUID sellerId : sellerIds) {
+            if (sellerId == null) {
+                continue;
+            }
+            String value = sellerId.toString();
+            if (!values.contains(value)) {
+                values.add(value);
+            }
+        }
+        return values;
     }
 
     private OutboxEvent buildEvent(UUID orderId, Map<String, Object> payload, Instant cancelledAt) {

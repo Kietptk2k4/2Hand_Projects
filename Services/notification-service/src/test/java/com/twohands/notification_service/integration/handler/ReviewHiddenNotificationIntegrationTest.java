@@ -61,7 +61,7 @@ class ReviewHiddenNotificationIntegrationTest {
         assertEquals(1, countNotifications(eventId, authorId));
         assertEquals("REVIEW", queryReferenceType(eventId, authorId));
         assertEquals(reviewId.toString(), queryReferenceId(eventId, authorId));
-        assertEquals("Review hidden", queryTitle(eventId, authorId));
+        assertEquals("Đánh giá bị ẩn", queryTitle(eventId, authorId));
         assertTrue(queryMetadata(eventId, authorId).contains("hidden_reason"));
         assertFalse(queryMetadata(eventId, authorId).contains("hidden_by"));
     }
@@ -78,7 +78,7 @@ class ReviewHiddenNotificationIntegrationTest {
         assertEquals(ProcessNotificationEventOutcome.COMPLETED, result.outcome());
         assertEquals(1, countNotifications(eventId, authorId));
         assertEquals(1, countNotifications(eventId, sellerId));
-        assertEquals("Review hidden on your product", queryTitle(eventId, sellerId));
+        assertEquals("Đánh giá trên sản phẩm bị ẩn", queryTitle(eventId, sellerId));
     }
 
     @Test

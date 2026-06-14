@@ -17,7 +17,7 @@ function parseAttributes(attributesSnapshot) {
   }
 }
 
-export function OrderDetailItemsSection({ orderId, items }) {
+export function OrderDetailItemsSection({ orderId, items, cancellationNote }) {
   const navigate = useNavigate();
 
   if (!items?.length) return null;
@@ -132,6 +132,11 @@ export function OrderDetailItemsSection({ orderId, items }) {
                   >
                     Viết đánh giá
                   </button>
+                ) : null}
+                {item.status === "CANCELLED" && cancellationNote ? (
+                  <p className="mt-2 text-body-sm text-on-surface-variant">
+                    <span className="font-medium text-on-surface">Lý do hủy:</span> {cancellationNote}
+                  </p>
                 ) : null}
               </div>
 

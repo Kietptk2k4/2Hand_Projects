@@ -54,7 +54,7 @@ class OrderCompletedNotificationIntegrationTest {
         assertEquals(1, countNotifications(eventId, buyerId));
         assertEquals("ORDER", queryReferenceType(eventId, buyerId));
         assertEquals("order-100", queryReferenceId(eventId, buyerId));
-        assertEquals("Order completed", queryTitle(eventId, buyerId));
+        assertEquals("Hoàn tất đơn hàng", queryTitle(eventId, buyerId));
         assertTrue(queryMetadata(eventId, buyerId).contains("show_review_prompt"));
     }
 

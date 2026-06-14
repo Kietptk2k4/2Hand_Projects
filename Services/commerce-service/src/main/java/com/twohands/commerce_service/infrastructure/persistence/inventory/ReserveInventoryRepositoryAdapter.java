@@ -73,6 +73,45 @@ public class ReserveInventoryRepositoryAdapter implements ReserveInventoryReposi
                 .addValue("now", Timestamp.from(updatedAt)));
     }
 
+    @Override
+    public void syncInStockProductStatuses(List<UUID> productIds, Instant updatedAt) {
+        if (productIds == null || productIds.isEmpty()) {
+            return;
+        }
+        String sql = """
+                UPDATE products p
+                SET status = CAST('ACTIVE' AS product_status),
+                    updated_at = :now
+                FROM product_inventories pi
+                WHERE p.id = pi.product_id
+                  AND p.id IN (:productIds)
+                  AND p.status = CAST('OUT_OF_STOCK' AS product_status)
+                  AND pi.stock_quantity > 0
+                  AND EXISTS (
+                      SELECT 1
+                      FROM seller_shops s
+                      WHERE s.id = p.shop_id
+                        AND s.status = CAST('ACTIVE' AS shop_status)
+                  )
+                  AND EXISTS (
+                      SELECT 1
+                      FROM product_categories pc
+                      WHERE pc.id = p.category_id
+                        AND pc.is_active = TRUE
+                  )
+                  AND EXISTS (
+                      SELECT 1
+                      FROM product_prices pp
+                      WHERE pp.product_id = p.id
+                        AND pp.start_at <= :now
+                        AND (pp.end_at IS NULL OR pp.end_at > :now)
+                  )
+                """;
+        jdbcTemplate.update(sql, new MapSqlParameterSource()
+                .addValue("productIds", productIds)
+                .addValue("now", Timestamp.from(updatedAt)));
+    }
+
     private void lockInventories(List<UUID> productIds) {
         if (productIds.isEmpty()) {
             return;

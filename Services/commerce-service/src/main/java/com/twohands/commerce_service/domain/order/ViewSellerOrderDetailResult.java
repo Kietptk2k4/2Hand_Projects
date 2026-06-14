@@ -1,6 +1,7 @@
 package com.twohands.commerce_service.domain.order;
 
-import com.twohands.commerce_service.domain.payment.PaymentMethod;import com.twohands.commerce_service.domain.payment.PaymentStatus;
+import com.twohands.commerce_service.domain.payment.PaymentMethod;
+import com.twohands.commerce_service.domain.payment.PaymentStatus;
 import com.twohands.commerce_service.domain.shipment.ShipmentAddressSnapshot;
 
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ public record ViewSellerOrderDetailResult(
         List<SellerOrderListEntry> items,
         ShipmentAddressSnapshot shippingAddress,
         CommerceBuyerSummary buyer,
-        PaymentRefundRequestSummary activeRefundRequest
+        PaymentRefundRequestSummary activeRefundRequest,
+        String cancellationNote
 ) {
 }

@@ -5,7 +5,7 @@ import com.twohands.notification_service.domain.push.PushNotificationTemplate;
 
 public final class SocialNotificationTemplatePolicy {
 
-    private static final String FALLBACK_ACTOR_LABEL = "Someone you follow";
+    private static final String FALLBACK_ACTOR_LABEL = "Người bạn đang theo dõi";
 
     private SocialNotificationTemplatePolicy() {
     }
@@ -20,32 +20,32 @@ public final class SocialNotificationTemplatePolicy {
     public static InAppNotificationTemplate postCreatedInApp(String actorDisplayName) {
         String actor = resolveActorLabel(actorDisplayName);
         return new InAppNotificationTemplate(
-                "New post",
-                actor + " shared a new post."
+                "Bài viết mới",
+                actor + " đã đăng bài viết mới."
         );
     }
 
     public static InAppNotificationTemplate avatarUpdatedInApp(String actorDisplayName) {
         String actor = resolveActorLabel(actorDisplayName);
         return new InAppNotificationTemplate(
-                "Avatar updated",
-                actor + " updated their profile photo."
+                "Cập nhật ảnh đại diện",
+                actor + " đã cập nhật ảnh đại diện."
         );
     }
 
     public static PushNotificationTemplate postCreatedPush(String actorDisplayName) {
         String actor = resolveActorLabel(actorDisplayName);
         return new PushNotificationTemplate(
-                "New post",
-                actor + " shared a new post."
+                "Bài viết mới",
+                actor + " đã đăng bài viết mới."
         );
     }
 
     public static PushNotificationTemplate avatarUpdatedPush(String actorDisplayName) {
         String actor = resolveActorLabel(actorDisplayName);
         return new PushNotificationTemplate(
-                "Avatar updated",
-                actor + " updated their profile photo."
+                "Cập nhật ảnh đại diện",
+                actor + " đã cập nhật ảnh đại diện."
         );
     }
 }

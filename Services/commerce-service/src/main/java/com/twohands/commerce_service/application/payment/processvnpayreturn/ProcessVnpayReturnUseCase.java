@@ -112,7 +112,7 @@ public class ProcessVnpayReturnUseCase {
     private URI buildFrontendRedirect(String status, UUID orderId) {
         String base = trimTrailingSlash(vnpayProperties.getFrontendReturnBaseUrl());
         StringBuilder url = new StringBuilder(base)
-                .append("/checkout/vnpay-return?status=")
+                .append("/commerce/checkout/vnpay-return?status=")
                 .append(encode(status));
         if (orderId != null) {
             url.append("&orderId=").append(encode(orderId.toString()));
@@ -124,7 +124,7 @@ public class ProcessVnpayReturnUseCase {
 
     private URI buildOrdersErrorRedirect() {
         String base = trimTrailingSlash(vnpayProperties.getFrontendReturnBaseUrl());
-        return URI.create(base + "/orders?error=unknown");
+        return URI.create(base + "/commerce/orders?error=unknown");
     }
 
     private String serializeReturnPayload(Map<String, String> queryParams, boolean signatureValid, String responseCode) {

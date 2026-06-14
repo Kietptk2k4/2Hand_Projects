@@ -11,7 +11,9 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -38,11 +40,41 @@ public class OrderCancelPendingRefundOutboxService {
             String reason,
             Instant requestedAt
     ) {
+        return build(
+                refundRequestId,
+                orderId,
+                paymentId,
+                buyerId,
+                List.of(),
+                requestedBy,
+                requestedByUserId,
+                amount,
+                reason,
+                requestedAt
+        );
+    }
+
+    public OutboxEvent build(
+            UUID refundRequestId,
+            UUID orderId,
+            UUID paymentId,
+            UUID buyerId,
+            List<UUID> sellerIds,
+            PaymentRefundRequestedBy requestedBy,
+            UUID requestedByUserId,
+            BigDecimal amount,
+            String reason,
+            Instant requestedAt
+    ) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("refund_request_id", refundRequestId.toString());
         payload.put("order_id", orderId.toString());
         payload.put("payment_id", paymentId.toString());
         payload.put("buyer_id", buyerId.toString());
+        List<String> distinctSellerIds = distinctSellerIdStrings(sellerIds);
+        if (!distinctSellerIds.isEmpty()) {
+            payload.put("seller_ids", distinctSellerIds);
+        }
         payload.put("requested_by", requestedBy.name());
         payload.put("requested_by_user_id", requestedByUserId.toString());
         payload.put("amount", amount);
@@ -62,6 +94,23 @@ public class OrderCancelPendingRefundOutboxService {
                 null,
                 null
         );
+    }
+
+    private List<String> distinctSellerIdStrings(List<UUID> sellerIds) {
+        if (sellerIds == null || sellerIds.isEmpty()) {
+            return List.of();
+        }
+        List<String> values = new ArrayList<>();
+        for (UUID sellerId : sellerIds) {
+            if (sellerId == null) {
+                continue;
+            }
+            String value = sellerId.toString();
+            if (!values.contains(value)) {
+                values.add(value);
+            }
+        }
+        return values;
     }
 
     private String serialize(Map<String, Object> payload) {

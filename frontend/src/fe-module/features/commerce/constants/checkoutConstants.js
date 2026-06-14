@@ -9,16 +9,24 @@ function parseEnvBoolean(value, defaultValue) {
 /** Phase 1 COD-only checkout — khớp COMMERCE_CHECKOUT_COD_ONLY_ENABLED trên commerce-service */
 export const CHECKOUT_COD_ONLY_ENABLED = parseEnvBoolean(
   import.meta.env.VITE_COMMERCE_CHECKOUT_COD_ONLY_ENABLED,
-  true
+  false
 );
 
-export const DEFAULT_PAYMENT_METHOD = CHECKOUT_COD_ONLY_ENABLED ? "COD" : "PAYOS";
+/** PayOS ẩn mặc định; bật khi đã cấu hình COMMERCE_PAYOS_ENABLED */
+export const CHECKOUT_PAYOS_ENABLED = parseEnvBoolean(
+  import.meta.env.VITE_COMMERCE_CHECKOUT_PAYOS_ENABLED,
+  false
+);
+
+export const DEFAULT_PAYMENT_METHOD = CHECKOUT_COD_ONLY_ENABLED ? "COD" : "VNPAY";
 
 export const PAYMENT_METHODS = CHECKOUT_COD_ONLY_ENABLED
   ? [{ value: "COD", label: "Thanh toán khi nhận hàng (COD)" }]
   : [
-      { value: "PAYOS", label: "Thanh toán PayOS" },
-      { value: "VNPAY", label: "Thanh toán VNPay" },
+      { value: "VNPAY", label: "Thanh toán VNPay (chuyển khoản)" },
+      ...(CHECKOUT_PAYOS_ENABLED
+        ? [{ value: "PAYOS", label: "Thanh toán PayOS" }]
+        : []),
       { value: "COD", label: "Thanh toán khi nhận hàng (COD)" },
     ];
 

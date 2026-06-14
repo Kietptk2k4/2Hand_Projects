@@ -41,6 +41,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/commerce/api/v1/payments/vnpay/return").permitAll()
                         .requestMatchers("/commerce/api/v1/shipments/webhooks/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/commerce/api/v1/categories").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/commerce/api/v1/brands").permitAll()
                         .requestMatchers(HttpMethod.GET, "/commerce/api/v1/categories/*/products").permitAll()
                         .requestMatchers(HttpMethod.GET, "/commerce/api/v1/products").permitAll()
                         .requestMatchers(HttpMethod.GET, "/commerce/api/v1/products/search").permitAll()

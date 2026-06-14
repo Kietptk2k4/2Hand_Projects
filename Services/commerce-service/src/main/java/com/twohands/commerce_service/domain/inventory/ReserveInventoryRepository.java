@@ -9,4 +9,6 @@ public interface ReserveInventoryRepository {
     void reserveAll(List<InventoryReservationLine> lines, Instant updatedAt);
 
     void syncOutOfStockProductStatuses(List<UUID> productIds, Instant updatedAt);
+
+    void syncInStockProductStatuses(List<UUID> productIds, Instant updatedAt);
 }

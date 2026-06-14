@@ -1,4 +1,5 @@
 import { mapReviewBuyerFields } from "./reviewParticipantMapper";
+import { mapActiveRefundRequest } from "./refundRequestMapper";
 
 function pick(obj, camel, snake) {
   return obj?.[camel] ?? obj?.[snake];
@@ -101,18 +102,8 @@ export function mapSellerOrderDetail(data) {
     items: (data.items || []).map(mapSellerOrderListItem).filter(Boolean),
     shippingAddress: mapShippingAddress(data.shipping_address ?? data.shippingAddress),
     activeRefundRequest: mapActiveRefundRequest(data.active_refund_request),
+    cancellationNote: pick(data, "cancellationNote", "cancellation_note"),
     ...mapReviewBuyerFields(data),
-  };
-}
-
-function mapActiveRefundRequest(refund) {
-  if (!refund) return null;
-  return {
-    refundRequestId: refund.refund_request_id ?? refund.refundRequestId,
-    status: refund.status,
-    requestedBy: refund.requested_by ?? refund.requestedBy,
-    amount: refund.amount,
-    requestedAt: refund.requested_at ?? refund.requestedAt,
   };
 }
 

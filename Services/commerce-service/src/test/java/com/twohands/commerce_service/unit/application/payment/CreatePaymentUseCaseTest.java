@@ -70,6 +70,28 @@ class CreatePaymentUseCaseTest {
     }
 
     @Test
+    void shouldCreatePendingVnpayPaymentWithOutbox() {
+        Instant now = Instant.now();
+        when(createPaymentRepository.existsByOrderId(orderId)).thenReturn(false);
+        when(createPaymentRepository.createPayment(any())).thenReturn(new CreatePaymentResult(
+                paymentId,
+                orderId,
+                PaymentStatus.PENDING,
+                PaymentMethod.VNPAY,
+                BigDecimal.valueOf(1_000_000),
+                "VND"
+        ));
+        when(paymentCreatedOutboxService.build(any(), any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(sampleOutbox(now));
+
+        CreatePaymentResult result = useCase.execute(vnpayCommand(BigDecimal.valueOf(1_000_000), now));
+
+        assertThat(result.status()).isEqualTo(PaymentStatus.PENDING);
+        assertThat(result.paymentMethod()).isEqualTo(PaymentMethod.VNPAY);
+        verify(outboxEventRepository).save(any(OutboxEvent.class));
+    }
+
+    @Test
     void shouldRejectWhenPaymentAlreadyExistsForOrder() {
         when(createPaymentRepository.existsByOrderId(orderId)).thenReturn(true);
 
@@ -153,6 +175,22 @@ class CreatePaymentUseCaseTest {
                 .isInstanceOf(AppException.class)
                 .extracting(ex -> ((AppException) ex).getErrorCode())
                 .isEqualTo(ErrorCode.INVALID_PAYMENT_METHOD);
+    }
+
+    private CreatePaymentCommand vnpayCommand(BigDecimal amount, Instant occurredAt) {
+        return new CreatePaymentCommand(
+                paymentId,
+                orderId,
+                buyerId,
+                buyerId,
+                amount,
+                amount,
+                PaymentMethod.VNPAY,
+                PaymentMethod.VNPAY,
+                "VND",
+                "idem-vnpay",
+                occurredAt
+        );
     }
 
     private CreatePaymentCommand payosCommand(BigDecimal amount, Instant occurredAt) {

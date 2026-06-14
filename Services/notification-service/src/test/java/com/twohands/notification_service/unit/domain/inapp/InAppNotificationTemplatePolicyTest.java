@@ -12,8 +12,8 @@ class InAppNotificationTemplatePolicyTest {
     void resolve_returnsTemplateForSocialEvents() {
         var template = InAppNotificationTemplatePolicy.resolve("POST_LIKED").orElseThrow();
 
-        assertEquals("New like", template.title());
-        assertEquals("Someone liked your post.", template.content());
+        assertEquals("Thích bài viết", template.title());
+        assertEquals("Có người đã thích bài viết của bạn.", template.content());
     }
 
     @Test

@@ -84,7 +84,8 @@ public class PaymentRefundRequestRepositoryAdapter implements PaymentRefundReque
     @Override
     public Optional<PaymentRefundRequestSummary> findSummaryByOrderId(UUID orderId) {
         String sql = """
-                SELECT id, status::text AS status, requested_by::text AS requested_by, amount, created_at
+                SELECT id, status::text AS status, requested_by::text AS requested_by,
+                       amount, reason, created_at
                 FROM payment_refund_requests
                 WHERE order_id = :orderId AND status = 'REQUESTED'
                 ORDER BY created_at DESC
@@ -98,6 +99,7 @@ public class PaymentRefundRequestRepositoryAdapter implements PaymentRefundReque
                         PaymentRefundRequestStatus.valueOf(rs.getString("status")),
                         PaymentRefundRequestedBy.valueOf(rs.getString("requested_by")),
                         rs.getBigDecimal("amount"),
+                        rs.getString("reason"),
                         rs.getTimestamp("created_at").toInstant()
                 )
         );

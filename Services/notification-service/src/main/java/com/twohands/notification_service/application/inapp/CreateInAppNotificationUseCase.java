@@ -3,6 +3,7 @@ package com.twohands.notification_service.application.inapp;
 import com.twohands.notification_service.application.idempotency.CreateIdempotentUserNotificationCommand;
 import com.twohands.notification_service.application.idempotency.CreateIdempotentUserNotificationResult;
 import com.twohands.notification_service.application.idempotency.CreateIdempotentUserNotificationUseCase;
+import com.twohands.notification_service.domain.commerce.OrderCancelNotificationContentPolicy;
 import com.twohands.notification_service.domain.idempotency.UserNotificationIdempotencyKey;
 import com.twohands.notification_service.domain.inapp.InAppNotificationTemplate;
 import com.twohands.notification_service.domain.inapp.InAppNotificationTemplatePolicy;
@@ -45,6 +46,11 @@ public class CreateInAppNotificationUseCase {
         String referenceId = UserNotificationIdempotencyKey.normalizeReference(command.referenceId());
         String sanitizedMetadata = metadataSanitizer.sanitize(command.metadata());
 
+        String content = template.content();
+        if (OrderCancelNotificationContentPolicy.supportsReasonInContent(command.eventType())) {
+            content = OrderCancelNotificationContentPolicy.appendReason(content, command.reason());
+        }
+
         CreateIdempotentUserNotificationResult result = createIdempotentUserNotificationUseCase.execute(
                 new CreateIdempotentUserNotificationCommand(
                         command.notificationEventId(),
@@ -52,7 +58,7 @@ public class CreateInAppNotificationUseCase {
                         command.actorId(),
                         command.eventType(),
                         template.title(),
-                        template.content(),
+                        content,
                         referenceType,
                         referenceId,
                         sanitizedMetadata,

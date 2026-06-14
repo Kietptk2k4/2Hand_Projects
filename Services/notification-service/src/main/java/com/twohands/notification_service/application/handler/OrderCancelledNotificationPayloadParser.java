@@ -37,7 +37,14 @@ public class OrderCancelledNotificationPayloadParser {
             throw new IllegalArgumentException("order_id is required for ORDER_CANCELLED notification event.");
         }
 
-        return new OrderCancelledNotificationContext(buyerId, orderId.trim());
+        return new OrderCancelledNotificationContext(
+                buyerId,
+                orderId.trim(),
+                CommerceNotificationPayloadSupport.parseSellerIds(payload, textField(payload, "seller_id")),
+                textField(payload, "reason"),
+                textField(payload, "cancelled_by"),
+                parseUuid(textField(payload, "cancelled_by_user_id"))
+        );
     }
 
     private JsonNode parsePayload(String rawPayload) {

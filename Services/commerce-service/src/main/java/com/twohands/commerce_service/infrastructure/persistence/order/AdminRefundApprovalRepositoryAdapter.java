@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.twohands.commerce_service.application.order.common.InventoryReleasedOutboxService;
 import com.twohands.commerce_service.application.order.common.OrderCancelledOutboxService;
 import com.twohands.commerce_service.application.payment.common.PaymentRefundedOutboxService;
+import com.twohands.commerce_service.domain.inventory.ReserveInventoryRepository;
 import com.twohands.commerce_service.common.pagination.PageQuery;
 import com.twohands.commerce_service.domain.order.AdminRefundApprovalItem;
 import com.twohands.commerce_service.domain.order.AdminRefundApprovalRepository;
@@ -47,6 +48,7 @@ public class AdminRefundApprovalRepositoryAdapter implements AdminRefundApproval
     private final PaymentRefundedOutboxService paymentRefundedOutboxService;
     private final OrderCancelledOutboxService orderCancelledOutboxService;
     private final InventoryReleasedOutboxService inventoryReleasedOutboxService;
+    private final ReserveInventoryRepository reserveInventoryRepository;
     private final ObjectMapper objectMapper;
 
     public AdminRefundApprovalRepositoryAdapter(
@@ -55,6 +57,7 @@ public class AdminRefundApprovalRepositoryAdapter implements AdminRefundApproval
             PaymentRefundedOutboxService paymentRefundedOutboxService,
             OrderCancelledOutboxService orderCancelledOutboxService,
             InventoryReleasedOutboxService inventoryReleasedOutboxService,
+            ReserveInventoryRepository reserveInventoryRepository,
             ObjectMapper objectMapper
     ) {
         this.jdbcTemplate = jdbcTemplate;
@@ -62,6 +65,7 @@ public class AdminRefundApprovalRepositoryAdapter implements AdminRefundApproval
         this.paymentRefundedOutboxService = paymentRefundedOutboxService;
         this.orderCancelledOutboxService = orderCancelledOutboxService;
         this.inventoryReleasedOutboxService = inventoryReleasedOutboxService;
+        this.reserveInventoryRepository = reserveInventoryRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -147,6 +151,7 @@ public class AdminRefundApprovalRepositoryAdapter implements AdminRefundApproval
         String resolvedAdminNote = resolveNote(adminNote);
         List<OrderItemQuantity> releasableItems = findReleasableOrderItems(order.id);
         releaseInventoryOrThrow(releasableItems, order.id, now);
+        syncProductStatusesAfterRelease(releasableItems, now);
 
         int refundUpdated = confirmRefundRequest(refundRequestId, resolvedAdminNote, now);
         if (refundUpdated == 0) {
@@ -178,13 +183,15 @@ public class AdminRefundApprovalRepositoryAdapter implements AdminRefundApproval
         ));
         outboxEventRepository.save(orderCancelledOutboxService.build(
                 order.id(),
-                order.buyerId,
-                DEFAULT_CONFIRM_REASON,
+                order.buyerId(),
+                findDistinctSellerIds(order.id()),
+                resolveCancellationReason(refund.reason()),
                 "ADMIN",
+                null,
                 now
         ));
         if (!releasableItems.isEmpty()) {
-            outboxEventRepository.save(inventoryReleasedOutboxService.build(order.id, releasableItems, now));
+            outboxEventRepository.save(inventoryReleasedOutboxService.build(order.id(), releasableItems, now));
         }
 
         return findById(refundRequestId).orElseThrow(() -> new AppException(ErrorCode.REFUND_REQUEST_NOT_FOUND));
@@ -384,6 +391,17 @@ public class AdminRefundApprovalRepositoryAdapter implements AdminRefundApproval
         }
     }
 
+    private void syncProductStatusesAfterRelease(List<OrderItemQuantity> items, Instant now) {
+        if (items.isEmpty()) {
+            return;
+        }
+        List<UUID> productIds = items.stream()
+                .map(OrderItemQuantity::productId)
+                .distinct()
+                .toList();
+        reserveInventoryRepository.syncInStockProductStatuses(productIds, now);
+    }
+
     private void insertOrderStatusHistory(
             UUID orderId,
             String oldStatus,
@@ -448,6 +466,27 @@ public class AdminRefundApprovalRepositoryAdapter implements AdminRefundApproval
             return "";
         }
         return adminNote.trim();
+    }
+
+    private String resolveCancellationReason(String reason) {
+        if (reason == null || reason.isBlank()) {
+            return DEFAULT_CONFIRM_REASON;
+        }
+        return reason.trim();
+    }
+
+    private List<UUID> findDistinctSellerIds(UUID orderId) {
+        String sql = """
+                SELECT DISTINCT seller_id
+                FROM order_items
+                WHERE order_id = :orderId
+                ORDER BY seller_id
+                """;
+        return jdbcTemplate.query(
+                sql,
+                new MapSqlParameterSource("orderId", orderId),
+                (rs, rowNum) -> UUID.fromString(rs.getString("seller_id"))
+        );
     }
 
     private AdminRefundApprovalItem mapItem(ResultSet rs) throws SQLException {

@@ -23,6 +23,7 @@ public record ViewOrderDetailResult(
         List<ViewOrderDetailItem> items,
         List<ViewOrderDetailShipment> shipments,
         List<OrderStatusHistoryEntry> orderTimeline,
-        PaymentRefundRequestSummary activeRefundRequest
+        PaymentRefundRequestSummary activeRefundRequest,
+        String cancellationNote
 ) {
 }

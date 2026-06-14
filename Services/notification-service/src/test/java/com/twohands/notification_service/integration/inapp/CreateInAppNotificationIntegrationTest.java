@@ -61,7 +61,7 @@ class CreateInAppNotificationIntegrationTest {
                 """
                         SELECT COUNT(*) FROM user_notifications
                         WHERE id = ? AND user_id = ? AND notification_event_id = ?
-                        AND type = 'POST_LIKED' AND title = 'New like'
+                        AND type = 'POST_LIKED' AND title = 'Thích bài viết'
                         AND is_read = FALSE AND is_deleted = FALSE
                         AND delivery_status = 'SENT'
                         """,

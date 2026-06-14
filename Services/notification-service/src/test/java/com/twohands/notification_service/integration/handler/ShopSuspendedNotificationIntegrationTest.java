@@ -64,7 +64,7 @@ class ShopSuspendedNotificationIntegrationTest {
         assertEquals(1, countNotifications(eventId, shopOwnerId));
         assertEquals("SHOP", queryReferenceType(eventId, shopOwnerId));
         assertEquals(shopId.toString(), queryReferenceId(eventId, shopOwnerId));
-        assertEquals("Shop suspended", queryTitle(eventId, shopOwnerId));
+        assertEquals("Cửa hàng bị đình chỉ", queryTitle(eventId, shopOwnerId));
         assertTrue(queryMetadata(eventId, shopOwnerId).contains("suspension_reason"));
         assertFalse(queryMetadata(eventId, shopOwnerId).contains("suspended_by"));
     }

@@ -133,7 +133,8 @@ public class SellerOrderController {
                 buyer.buyerId(),
                 buyer.displayName(),
                 buyer.avatarUrl(),
-                toActiveRefundRequestResponse(result.activeRefundRequest())
+                toActiveRefundRequestResponse(result.activeRefundRequest()),
+                result.cancellationNote()
         );
     }
 
@@ -148,6 +149,7 @@ public class SellerOrderController {
                 refundRequest.status().name(),
                 refundRequest.requestedBy().name(),
                 refundRequest.amount(),
+                refundRequest.reason(),
                 refundRequest.requestedAt()
         );
     }

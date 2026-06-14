@@ -88,7 +88,7 @@ class ShipmentCreatedNotificationEventHandlerTest {
                 "SHIPMENT_CREATED",
                 "SHIPMENT",
                 "ship-1",
-                "{}",
+                "{\"recipient_audience\":\"buyer\"}",
                 null
         ));
         verify(createInAppNotificationUseCase).execute(new CreateInAppNotificationCommand(
@@ -98,7 +98,7 @@ class ShipmentCreatedNotificationEventHandlerTest {
                 "SHIPMENT_CREATED",
                 "SHIPMENT",
                 "ship-1",
-                "{}",
+                "{\"recipient_audience\":\"seller\"}",
                 InAppNotificationTemplatePolicy.SELLER_TEMPLATE_VARIANT
         ));
     }

@@ -51,7 +51,7 @@ class PaymentSuccessNotificationIntegrationTest {
         assertEquals(1, countNotifications(eventId, buyerId));
         assertEquals("PAYMENT", queryReferenceType(eventId, buyerId));
         assertEquals("pay-100", queryReferenceId(eventId, buyerId));
-        assertEquals("Payment received", queryTitle(eventId, buyerId));
+        assertEquals("Thanh toán thành công", queryTitle(eventId, buyerId));
     }
 
     @Test

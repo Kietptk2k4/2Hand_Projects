@@ -81,7 +81,10 @@ public enum ErrorCode {
     REFUND_ALREADY_REQUESTED("COMMERCE-409-REFUND-REQUESTED", HttpStatus.CONFLICT, "Refund request already exists for this order"),
     REFUND_REQUEST_NOT_FOUND("COMMERCE-404-REFUND-REQUEST", HttpStatus.NOT_FOUND, "Refund request not found"),
     INVALID_REFUND_REQUEST_STATE("COMMERCE-409-REFUND-STATE", HttpStatus.CONFLICT, "Refund request status does not allow this action"),
-    INVALID_PAYOUT_REQUEST_STATE("COMMERCE-409-PAYOUT-STATE", HttpStatus.CONFLICT, "Payout request status does not allow this action");
+    INVALID_PAYOUT_REQUEST_STATE("COMMERCE-409-PAYOUT-STATE", HttpStatus.CONFLICT, "Payout request status does not allow this action"),
+    CATALOG_SLUG_CONFLICT("COMMERCE-409-CATALOG-SLUG", HttpStatus.CONFLICT, "Catalog slug already exists"),
+    CATALOG_IN_USE("COMMERCE-409-CATALOG-IN-USE", HttpStatus.CONFLICT, "Catalog item cannot be deactivated while in use"),
+    CATALOG_PROTECTED("COMMERCE-409-CATALOG-PROTECTED", HttpStatus.CONFLICT, "This catalog item is protected and cannot be modified");
 
     private final String code;
     private final HttpStatus status;

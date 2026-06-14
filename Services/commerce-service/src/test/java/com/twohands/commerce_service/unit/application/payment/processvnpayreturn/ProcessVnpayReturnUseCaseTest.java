@@ -74,7 +74,9 @@ class ProcessVnpayReturnUseCaseTest {
     ProcessVnpayReturnResult result = useCase.execute(params);
 
     assertThat(result.success()).isTrue();
-    assertThat(result.redirectUri().toString()).contains("status=success");
+    assertThat(result.redirectUri().toString())
+        .contains("/commerce/checkout/vnpay-return")
+        .contains("status=success");
     verify(processVnpayPaymentSuccessRepository).markPaidByVnpayTxnRef(any(), any(), any(), any(), any());
     verify(handlePaymentFailureUseCase, never()).execute(any());
   }
@@ -87,7 +89,9 @@ class ProcessVnpayReturnUseCaseTest {
     ProcessVnpayReturnResult result = useCase.execute(params);
 
     assertThat(result.success()).isFalse();
-    assertThat(result.redirectUri().toString()).contains("status=failed");
+    assertThat(result.redirectUri().toString())
+        .contains("/commerce/checkout/vnpay-return")
+        .contains("status=failed");
     verify(handlePaymentFailureUseCase).execute(any());
   }
 

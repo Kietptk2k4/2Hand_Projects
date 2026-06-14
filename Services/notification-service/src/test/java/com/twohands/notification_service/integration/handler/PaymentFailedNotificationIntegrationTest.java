@@ -55,7 +55,7 @@ class PaymentFailedNotificationIntegrationTest {
         assertEquals(1, countNotifications(eventId, buyerId));
         assertEquals("PAYMENT", queryReferenceType(eventId, buyerId));
         assertEquals("pay-100", queryReferenceId(eventId, buyerId));
-        assertEquals("Payment failed", queryTitle(eventId, buyerId));
+        assertEquals("Thanh toán thất bại", queryTitle(eventId, buyerId));
         assertTrue(queryMetadata(eventId, buyerId).contains("user_failure_reason"));
         assertFalse(queryMetadata(eventId, buyerId).contains("provider_secret"));
     }

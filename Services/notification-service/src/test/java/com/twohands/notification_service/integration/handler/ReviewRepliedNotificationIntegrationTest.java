@@ -52,7 +52,7 @@ class ReviewRepliedNotificationIntegrationTest {
         assertEquals(1, countNotifications(eventId, buyerId));
         assertEquals("REVIEW", queryReferenceType(eventId, buyerId));
         assertEquals(reviewId.toString(), queryReferenceId(eventId, buyerId));
-        assertEquals("Seller replied to your review", queryTitle(eventId, buyerId));
+        assertEquals("Shop phản hồi đánh giá", queryTitle(eventId, buyerId));
     }
 
     @Test

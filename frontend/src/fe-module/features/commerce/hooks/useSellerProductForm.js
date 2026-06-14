@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCommerceCategories } from "./useCommerceCategories";
 import { SELLER_ACTIVE_BRANDS } from "../constants/sellerProductBrands";
+import { fetchActiveBrands } from "../api/brandsApi";
 import {
   createProduct,
   fetchSellerProductDetail,
@@ -77,6 +78,32 @@ export function useSellerProductForm({ mode, productId: routeProductId, initialS
     leafOnly: true,
     includeProductCounts: false,
   });
+  const [brands, setBrands] = useState(SELLER_ACTIVE_BRANDS);
+  const [isLoadingBrands, setIsLoadingBrands] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setIsLoadingBrands(true);
+      try {
+        const items = await fetchActiveBrands();
+        if (!cancelled && items.length > 0) {
+          setBrands(items);
+        }
+      } catch {
+        if (!cancelled) {
+          setBrands(SELLER_ACTIVE_BRANDS);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingBrands(false);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const isEdit = mode === "edit";
 
   const initialStepRef = useRef(initialStep);
@@ -214,7 +241,7 @@ export function useSellerProductForm({ mode, productId: routeProductId, initialS
     const errors = {};
     if (!form.categoryId) errors.categoryId = "Vui lòng chọn danh mục.";
     if (!form.brandId) errors.brandId = "Vui lòng chọn thương hiệu.";
-    else if (!SELLER_ACTIVE_BRANDS.some((brand) => brand.id === form.brandId)) {
+    else if (!brands.some((brand) => brand.id === form.brandId)) {
       errors.brandId = "Thương hiệu không hợp lệ.";
     }
     if (!form.title.trim()) errors.title = "Vui lòng nhập tên sản phẩm.";
@@ -513,7 +540,8 @@ export function useSellerProductForm({ mode, productId: routeProductId, initialS
     maxUnlockedStep,
     categories,
     isLoadingCategories,
-    brands: SELLER_ACTIVE_BRANDS,
+    brands,
+    isLoadingBrands,
     reviewChecklist,
     canPublish,
     updateField,

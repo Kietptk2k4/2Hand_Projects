@@ -247,7 +247,19 @@ export function CommerceOrderDetailPage() {
 
               {showPendingRefund ? (
                 <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-body-sm text-amber-950">
-                  Đơn hàng đang chờ hoàn tiền. Admin sẽ xác nhận sau khi hoàn tiền qua VNPay.
+                  <p>Đơn hàng đang chờ hoàn tiền. Admin sẽ xác nhận sau khi hoàn tiền qua VNPay.</p>
+                  {order.activeRefundRequest?.reason ? (
+                    <p className="mt-2">
+                      <span className="font-medium">Lý do hủy:</span> {order.activeRefundRequest.reason}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {!showPendingRefund && order.cancellationNote ? (
+                <div className="mt-4 rounded-lg border border-outline-variant bg-surface-container-low px-4 py-3 text-body-sm text-on-surface">
+                  <p className="font-medium text-on-surface">Lý do hủy đơn</p>
+                  <p className="mt-1 text-on-surface-variant">{order.cancellationNote}</p>
                 </div>
               ) : null}
 
@@ -261,7 +273,11 @@ export function CommerceOrderDetailPage() {
 
             <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
               <div className="flex flex-col gap-6 lg:col-span-8">
-                <OrderDetailItemsSection orderId={order.orderId} items={order.items} />
+                <OrderDetailItemsSection
+                  orderId={order.orderId}
+                  items={order.items}
+                  cancellationNote={order.cancellationNote}
+                />
                 <OrderDetailShipmentsSection orderId={order.orderId} shipments={order.shipments} />
               </div>
 

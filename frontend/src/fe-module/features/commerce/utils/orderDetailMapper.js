@@ -1,3 +1,5 @@
+import { mapActiveRefundRequest } from "./refundRequestMapper";
+
 function mapTimeline(events) {
   return (events || []).map((event, index) => ({
     oldStatus: event.old_status,
@@ -123,16 +125,6 @@ export function mapOrderDetailResponse(data) {
     shipments: mapShipments(data.shipments),
     orderTimeline: mapTimeline(data.order_timeline),
     activeRefundRequest: mapActiveRefundRequest(data.active_refund_request),
-  };
-}
-
-function mapActiveRefundRequest(refund) {
-  if (!refund) return null;
-  return {
-    refundRequestId: refund.refund_request_id ?? refund.refundRequestId,
-    status: refund.status,
-    requestedBy: refund.requested_by ?? refund.requestedBy,
-    amount: refund.amount,
-    requestedAt: refund.requested_at ?? refund.requestedAt,
+    cancellationNote: pick(data, "cancellationNote", "cancellation_note"),
   };
 }

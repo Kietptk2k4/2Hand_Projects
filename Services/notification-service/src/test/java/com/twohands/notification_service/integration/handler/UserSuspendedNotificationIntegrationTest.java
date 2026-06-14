@@ -64,7 +64,7 @@ class UserSuspendedNotificationIntegrationTest {
         assertEquals(1, countNotifications(eventId, userId));
         assertEquals("USER_ENFORCEMENT", queryReferenceType(eventId, userId));
         assertEquals(enforcementId.toString(), queryReferenceId(eventId, userId));
-        assertEquals("Account banned", queryTitle(eventId, userId));
+        assertEquals("Tài khoản bị cấm", queryTitle(eventId, userId));
         assertTrue(queryMetadata(eventId, userId).contains("enforcement_reason"));
         assertFalse(queryMetadata(eventId, userId).contains("enforced_by"));
     }
@@ -81,7 +81,7 @@ class UserSuspendedNotificationIntegrationTest {
         assertEquals(1, countNotifications(eventId, userId));
         assertEquals("USER_ENFORCEMENT", queryReferenceType(eventId, userId));
         assertEquals(enforcementId.toString(), queryReferenceId(eventId, userId));
-        assertEquals("Account suspended", queryTitle(eventId, userId));
+        assertEquals("Tài khoản bị đình chỉ", queryTitle(eventId, userId));
         assertTrue(queryMetadata(eventId, userId).contains("enforcement_reason"));
         assertFalse(queryMetadata(eventId, userId).contains("enforced_by"));
         assertFalse(queryMetadata(eventId, userId).contains("internal"));

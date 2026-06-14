@@ -37,8 +37,15 @@ public class OrderCancelPendingRefundNotificationPayloadParser {
             throw new IllegalArgumentException("order_id is required for ORDER_CANCEL_PENDING_REFUND notification event.");
         }
 
-        String refundRequestId = textField(payload, "refund_request_id");
-        return new OrderCancelPendingRefundNotificationContext(buyerId, orderId.trim(), refundRequestId);
+        return new OrderCancelPendingRefundNotificationContext(
+                buyerId,
+                orderId.trim(),
+                textField(payload, "refund_request_id"),
+                CommerceNotificationPayloadSupport.parseSellerIds(payload, textField(payload, "seller_id")),
+                textField(payload, "reason"),
+                textField(payload, "requested_by"),
+                parseUuid(textField(payload, "requested_by_user_id"))
+        );
     }
 
     private JsonNode parsePayload(String rawPayload) {

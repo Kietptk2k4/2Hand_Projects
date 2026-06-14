@@ -6,13 +6,13 @@ export function SellerProductRowActions({ product, disabled, onAction, onEdit })
 
   if (status === "DRAFT") {
     actions.push({ key: "publish", label: "Đăng bán" });
-    actions.push({ key: "archive", label: "Lưu trữ" });
+    // actions.push({ key: "archive", label: "Lưu trữ" });
   } else if (status === "ACTIVE" || status === "OUT_OF_STOCK") {
     actions.push({ key: "pause", label: "Tạm dừng" });
-    actions.push({ key: "archive", label: "Lưu trữ" });
+    // actions.push({ key: "archive", label: "Lưu trữ" });
   } else if (status === "PAUSED") {
     actions.push({ key: "publish", label: "Mở bán lại" });
-    actions.push({ key: "archive", label: "Lưu trữ" });
+    // actions.push({ key: "archive", label: "Lưu trữ" });
   }
 
   if (actions.length === 0) {

@@ -11,6 +11,8 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -24,13 +26,16 @@ public class NotificationEventRepositoryAdapter implements NotificationEventRepo
 
     private final NotificationEventJpaRepository jpaRepository;
     private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final boolean postgresEnumStatusColumn;
 
     public NotificationEventRepositoryAdapter(
             NotificationEventJpaRepository jpaRepository,
-            NamedParameterJdbcTemplate jdbcTemplate
+            NamedParameterJdbcTemplate jdbcTemplate,
+            DataSource dataSource
     ) {
         this.jpaRepository = jpaRepository;
         this.jdbcTemplate = jdbcTemplate;
+        this.postgresEnumStatusColumn = usesPostgresEnumStatusColumn(dataSource);
     }
 
     @Override
@@ -94,7 +99,7 @@ public class NotificationEventRepositoryAdapter implements NotificationEventRepo
                        actor_id, recipient_user_id, payload, status, retry_count, max_retry_count, last_error,
                        locked_at, locked_by, created_at, processed_at
                 FROM notification_events
-                WHERE status = CAST(:status AS notification_event_status)
+                WHERE CAST(status AS VARCHAR) = :status
                   AND retry_count < max_retry_count
                 ORDER BY created_at ASC
                 LIMIT :batchSize
@@ -131,7 +136,7 @@ public class NotificationEventRepositoryAdapter implements NotificationEventRepo
                        actor_id, recipient_user_id, payload, status, retry_count, max_retry_count, last_error,
                        locked_at, locked_by, created_at, processed_at
                 FROM notification_events
-                WHERE status = CAST(:status AS notification_event_status)
+                WHERE CAST(status AS VARCHAR) = :status
                 ORDER BY created_at ASC
                 LIMIT :batchSize
                 FOR UPDATE SKIP LOCKED
@@ -151,13 +156,16 @@ public class NotificationEventRepositoryAdapter implements NotificationEventRepo
 
     private List<NotificationEvent> markClaimedAsProcessing(List<NotificationEvent> candidates, String lockedBy) {
         Instant lockedAt = Instant.now();
+        String statusAssignment = postgresEnumStatusColumn
+                ? "status = CAST(:processingStatus AS notification_event_status)"
+                : "status = :processingStatus";
         String markProcessingSql = """
                 UPDATE notification_events
-                SET status = CAST(:processingStatus AS notification_event_status),
+                SET %s,
                     locked_at = :lockedAt,
                     locked_by = :lockedBy
                 WHERE id IN (:ids)
-                """;
+                """.formatted(statusAssignment);
         jdbcTemplate.update(markProcessingSql, new MapSqlParameterSource()
                 .addValue("processingStatus", NotificationEventStatus.PROCESSING.name())
                 .addValue("lockedAt", Timestamp.from(lockedAt))
@@ -224,5 +232,13 @@ public class NotificationEventRepositoryAdapter implements NotificationEventRepo
     private Instant readInstantRequired(ResultSet rs, String column) throws SQLException {
         Timestamp timestamp = rs.getTimestamp(column);
         return timestamp.toInstant();
+    }
+
+    private static boolean usesPostgresEnumStatusColumn(DataSource dataSource) {
+        try (Connection connection = dataSource.getConnection()) {
+            return "PostgreSQL".equalsIgnoreCase(connection.getMetaData().getDatabaseProductName());
+        } catch (SQLException ex) {
+            return true;
+        }
     }
 }

@@ -84,8 +84,26 @@ public class ViewOrderDetailRepositoryAdapter implements ViewOrderDetailReposito
                 items,
                 shipments,
                 orderTimeline,
-                paymentRefundRequestRepository.findSummaryByOrderId(orderId).orElse(null)
+                paymentRefundRequestRepository.findSummaryByOrderId(orderId).orElse(null),
+                loadCancellationNote(orderId)
         ));
+    }
+
+    private String loadCancellationNote(UUID orderId) {
+        String sql = """
+                SELECT note
+                FROM order_status_history
+                WHERE order_id = :orderId
+                  AND new_status = 'CANCELLED'
+                ORDER BY created_at DESC
+                LIMIT 1
+                """;
+        List<String> rows = jdbcTemplate.query(
+                sql,
+                new MapSqlParameterSource("orderId", orderId),
+                (rs, rowNum) -> rs.getString("note")
+        );
+        return rows.isEmpty() ? null : rows.getFirst();
     }
 
     private OrderHeaderRow loadOrderForBuyer(UUID orderId, UUID buyerId) {

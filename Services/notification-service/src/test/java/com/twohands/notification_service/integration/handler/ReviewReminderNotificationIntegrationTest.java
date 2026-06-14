@@ -60,7 +60,7 @@ class ReviewReminderNotificationIntegrationTest {
         assertEquals(1, countNotifications(eventId, buyerId));
         assertEquals("PRODUCT", queryReferenceType(eventId, buyerId));
         assertEquals("prod-200", queryReferenceId(eventId, buyerId));
-        assertEquals("Review your purchase", queryTitle(eventId, buyerId));
+        assertEquals("Nhắc đánh giá", queryTitle(eventId, buyerId));
     }
 
     @Test

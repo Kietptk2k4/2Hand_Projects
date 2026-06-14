@@ -61,7 +61,7 @@ logging:
     
 commerce:
   checkout:
-    cod-only-enabled: ${COMMERCE_CHECKOUT_COD_ONLY_ENABLED:true}
+    cod-only-enabled: ${COMMERCE_CHECKOUT_COD_ONLY_ENABLED:false}
   finance:
     platform-commission-rate: ${COMMERCE_PLATFORM_COMMISSION_RATE:0.10}
     min-payout-amount: ${COMMERCE_MIN_PAYOUT_AMOUNT:100000}

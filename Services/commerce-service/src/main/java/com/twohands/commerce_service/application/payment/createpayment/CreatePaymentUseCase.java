@@ -90,7 +90,9 @@ public class CreatePaymentUseCase {
                     "must equal orders.final_amount"
             );
         }
-        if (command.paymentMethod() != PaymentMethod.COD && command.paymentMethod() != PaymentMethod.PAYOS) {
+        if (command.paymentMethod() != PaymentMethod.COD
+                && command.paymentMethod() != PaymentMethod.PAYOS
+                && command.paymentMethod() != PaymentMethod.VNPAY) {
             throw new AppException(ErrorCode.INVALID_PAYMENT_METHOD);
         }
         if (command.orderPaymentMethod() != null && command.paymentMethod() != command.orderPaymentMethod()) {
