@@ -83,6 +83,12 @@ public final class PushNotificationTemplatePolicy {
                     "Yêu cầu rút tiền của bạn đã được duyệt."
             ));
         }
+        if ("PAYOUT_REQUEST_REJECTED".equals(eventType) && SELLER_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new PushNotificationTemplate(
+                    "Rút tiền bị từ chối",
+                    "Yêu cầu rút tiền của bạn đã bị từ chối."
+            ));
+        }
         if ("POST_MODERATED".equals(eventType)
                 && InAppNotificationTemplatePolicy.HIDE_TEMPLATE_VARIANT.equals(templateVariant)) {
             return Optional.of(new PushNotificationTemplate(

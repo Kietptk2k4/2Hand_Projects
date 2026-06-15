@@ -91,6 +91,12 @@ public final class InAppNotificationTemplatePolicy {
                     "Yêu cầu rút tiền của bạn đã được duyệt."
             ));
         }
+        if ("PAYOUT_REQUEST_REJECTED".equals(eventType) && SELLER_TEMPLATE_VARIANT.equals(templateVariant)) {
+            return Optional.of(new InAppNotificationTemplate(
+                    "Rút tiền bị từ chối",
+                    "Yêu cầu rút tiền của bạn đã bị từ chối."
+            ));
+        }
         if ("REVIEW_HIDDEN".equals(eventType) && SELLER_TEMPLATE_VARIANT.equals(templateVariant)) {
             return Optional.of(new InAppNotificationTemplate(
                     "Đánh giá trên sản phẩm bị ẩn",

@@ -8,7 +8,9 @@ public final class OrderCancelNotificationContentPolicy {
     }
 
     public static boolean supportsReasonInContent(String eventType) {
-        return "ORDER_CANCELLED".equals(eventType) || "ORDER_CANCEL_PENDING_REFUND".equals(eventType);
+        return "ORDER_CANCELLED".equals(eventType)
+                || "ORDER_CANCEL_PENDING_REFUND".equals(eventType)
+                || "PAYOUT_REQUEST_REJECTED".equals(eventType);
     }
 
     public static String appendReason(String baseContent, String reason) {

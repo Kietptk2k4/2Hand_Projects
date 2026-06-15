@@ -35,6 +35,7 @@ public class DomainEventTopicResolver {
             Map.entry("commerce.shipment.delivered", "COMMERCE_SHIPMENT_DELIVERED"),
             Map.entry("commerce.order.completed", "COMMERCE_ORDER_COMPLETED"),
             Map.entry("commerce.payout.request_approved", "COMMERCE_PAYOUT_REQUEST_APPROVED"),
+            Map.entry("commerce.payout.request_rejected", "COMMERCE_PAYOUT_REQUEST_REJECTED"),
             Map.entry("commerce.review.reminder", "COMMERCE_REVIEW_REMINDER"),
             Map.entry("commerce.review.replied", "COMMERCE_REVIEW_REPLIED"),
             Map.entry("admin.user.suspended", "USER_SUSPENDED"),

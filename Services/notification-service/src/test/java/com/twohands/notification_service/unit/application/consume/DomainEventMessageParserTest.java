@@ -357,6 +357,30 @@ class DomainEventMessageParserTest {
     }
 
     @Test
+    void parse_resolvesPayoutRejectedAliasFromTopicFallback() {
+        UUID eventId = UUID.randomUUID();
+        UUID sellerId = UUID.randomUUID();
+
+        String json = """
+                {
+                  "event_id": "%s",
+                  "payload": {
+                    "payout_request_id": "payout-1",
+                    "seller_id": "%s",
+                    "amount": 150000,
+                    "admin_note": "Tai khoan khong hop le"
+                  }
+                }
+                """.formatted(eventId, sellerId);
+
+        var command = parser.parse(json, "commerce.payout.request_rejected");
+
+        assertEquals("PAYOUT_REQUEST_REJECTED", command.eventType());
+        assertEquals(sellerId, command.recipientUserId());
+        assertEquals(NotificationSourceService.COMMERCE, command.sourceService());
+    }
+
+    @Test
     void parse_resolvesCommerceAliasFromTopicFallback() {
         UUID eventId = UUID.randomUUID();
 

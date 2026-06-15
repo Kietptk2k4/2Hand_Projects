@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { formatVndPrice } from "../../../../../social/utils/formatPrice";
 import { useAuthSession } from "../../../../hooks/useAuthSession.jsx";
 import { AccountCard, AccountSkeleton, TabPanelHeader } from "../../../../../../shared/ui/auth/authUi.jsx";
 import { ErrorState } from "../../../../../../shared/ui/PageState.jsx";
@@ -9,38 +8,14 @@ import {
   markAdminPayoutRequestPaid,
   rejectAdminPayoutRequest,
 } from "../../api/adminFinancePayoutApi.js";
+import {
+  applyPayoutQueueAfterAction,
+  mapPayoutQueueResponse,
+  PAYOUT_STATUS_LABELS,
+} from "../../utils/adminFinancePayoutMapper.js";
+import { formatVndPrice } from "../../../../../social/utils/formatPrice";
 
 const STATUS_OPTIONS = ["", "REQUESTED", "APPROVED", "PAID", "REJECTED", "CANCELLED"];
-
-const STATUS_LABELS = {
-  REQUESTED: "Chờ duyệt",
-  APPROVED: "Đã duyệt",
-  PAID: "Đã chuyển",
-  REJECTED: "Từ chối",
-  CANCELLED: "Đã hủy",
-};
-
-function mapQueueResponse(raw) {
-  const pagination = raw?.pagination ?? {};
-  return {
-    items: (raw?.items ?? []).map((item) => ({
-      id: item.id,
-      sellerId: item.seller_id ?? item.sellerId,
-      amount: Number(item.amount) || 0,
-      status: item.status,
-      bankName: item.bank_name ?? item.bankName,
-      bankAccountName: item.bank_account_name ?? item.bankAccountName,
-      bankAccountNumber: item.bank_account_number ?? item.bankAccountNumber,
-      requestedAt: item.requested_at ?? item.requestedAt,
-      adminNote: item.admin_note ?? item.adminNote,
-      bankTransferRef: item.bank_transfer_ref ?? item.bankTransferRef,
-    })),
-    pagination: {
-      page: Number(pagination.page) || 1,
-      totalItems: Number(pagination.total_items ?? pagination.totalItems) || 0,
-    },
-  };
-}
 
 export function AdminFinancePayoutQueueTab({ onNotify }) {
   const { showSessionExpired } = useAuthSession();
@@ -55,11 +30,12 @@ export function AdminFinancePayoutQueueTab({ onNotify }) {
     setErrorMessage("");
     try {
       const raw = await fetchAdminPayoutQueue({ status: statusFilter || undefined, page: 1, limit: 20 });
-      setQueue(mapQueueResponse(raw));
+      setQueue(mapPayoutQueueResponse(raw));
       setLoadStatus("ready");
     } catch (error) {
       if (String(error?.code ?? "").includes("401")) {
         showSessionExpired(error?.message);
+        setLoadStatus("error");
         return;
       }
       setErrorMessage(error?.message || "Không tải được hàng đợi rút tiền.");
@@ -75,29 +51,43 @@ export function AdminFinancePayoutQueueTab({ onNotify }) {
     async (payoutRequestId, action) => {
       setActionId(payoutRequestId);
       try {
+        let updatedItem = null;
+
         if (action === "approve") {
-          await approveAdminPayoutRequest(payoutRequestId);
-          onNotify?.({ type: "success", message: "Đã duyệt yêu cầu rút tiền." });
+          updatedItem = await approveAdminPayoutRequest(payoutRequestId);
+          onNotify?.({ variant: "success", message: "Đã duyệt yêu cầu rút tiền." });
         }
+
         if (action === "reject") {
-          const note = window.prompt("Lý do từ chối (tuỳ chọn)") || "";
-          await rejectAdminPayoutRequest(payoutRequestId, note);
-          onNotify?.({ type: "success", message: "Đã từ chối yêu cầu rút tiền." });
+          const note = window.prompt("Lý do từ chối (bắt buộc)");
+          if (note === null) return;
+          const trimmedNote = note.trim();
+          if (!trimmedNote) {
+            onNotify?.({ variant: "error", message: "Vui lòng nhập lý do từ chối." });
+            return;
+          }
+          updatedItem = await rejectAdminPayoutRequest(payoutRequestId, trimmedNote);
+          onNotify?.({ variant: "success", message: "Đã từ chối yêu cầu rút tiền." });
         }
+
         if (action === "mark-paid") {
           const ref = window.prompt("Mã tham chiếu chuyển khoản");
           if (!ref?.trim()) return;
-          await markAdminPayoutRequestPaid(payoutRequestId, ref.trim());
-          onNotify?.({ type: "success", message: "Đã ghi nhận chuyển khoản." });
+          updatedItem = await markAdminPayoutRequestPaid(payoutRequestId, ref.trim());
+          onNotify?.({ variant: "success", message: "Đã ghi nhận chuyển khoản." });
+        }
+
+        if (updatedItem) {
+          setQueue((prev) => applyPayoutQueueAfterAction(prev, updatedItem, statusFilter));
         }
         await load();
       } catch (error) {
-        onNotify?.({ type: "error", message: error?.message || "Thao tác thất bại." });
+        onNotify?.({ variant: "error", message: error?.message || "Thao tác thất bại." });
       } finally {
         setActionId("");
       }
     },
-    [load, onNotify],
+    [load, onNotify, statusFilter],
   );
 
   return (
@@ -117,7 +107,7 @@ export function AdminFinancePayoutQueueTab({ onNotify }) {
           >
             {STATUS_OPTIONS.map((value) => (
               <option key={value || "all"} value={value}>
-                {value ? STATUS_LABELS[value] || value : "Tất cả"}
+                {value ? PAYOUT_STATUS_LABELS[value] || value : "Tất cả"}
               </option>
             ))}
           </select>
@@ -163,7 +153,7 @@ export function AdminFinancePayoutQueueTab({ onNotify }) {
                         {item.bankAccountName} · {item.bankAccountNumber}
                       </div>
                     </td>
-                    <td className="px-3 py-2">{STATUS_LABELS[item.status] || item.status}</td>
+                    <td className="px-3 py-2">{PAYOUT_STATUS_LABELS[item.status] || item.status}</td>
                     <td className="px-3 py-2">
                       <div className="flex flex-wrap gap-2">
                         {item.status === "REQUESTED" ? (

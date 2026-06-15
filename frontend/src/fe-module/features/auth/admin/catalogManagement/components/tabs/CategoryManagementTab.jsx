@@ -12,6 +12,7 @@ import {
 import { CatalogForbiddenState } from "../CatalogForbiddenState.jsx";
 import { CatalogFormModal } from "../modals/CatalogFormModal.jsx";
 import { useCatalogPermissions } from "../../hooks/useCatalogPermissions.js";
+import { isCatalogForbiddenError } from "../../constants/catalogPermissions.js";
 
 function mapCategory(item) {
   return {
@@ -49,6 +50,11 @@ export function CategoryManagementTab({ onNotify }) {
     } catch (error) {
       if (String(error?.code ?? "").includes("401")) {
         showSessionExpired(error?.message);
+        return;
+      }
+      if (isCatalogForbiddenError(error)) {
+        setErrorMessage(error?.message || "Tài khoản thiếu quyền CATALOG_READ.");
+        setLoadStatus("forbidden");
         return;
       }
       setErrorMessage(error?.message || "Không tải được danh mục.");
@@ -93,6 +99,18 @@ export function CategoryManagementTab({ onNotify }) {
     }
     await load();
   };
+
+  if (!canRead) {
+    return (
+      <div className="space-y-4">
+        <TabPanelHeader
+          title="Quản lý danh mục"
+          description="Thêm, sửa và vô hiệu hóa danh mục sản phẩm thời trang."
+        />
+        <CatalogForbiddenState />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -144,6 +162,7 @@ export function CategoryManagementTab({ onNotify }) {
       </AccountCard>
 
       {loadStatus === "loading" ? <AccountSkeleton lines={6} /> : null}
+      {loadStatus === "forbidden" ? <CatalogForbiddenState message={errorMessage} /> : null}
       {loadStatus === "error" ? <ErrorState message={errorMessage} onRetry={load} /> : null}
 
       {loadStatus === "ready" ? (
@@ -163,7 +182,7 @@ export function CategoryManagementTab({ onNotify }) {
               {items.length === 0 ? (
                 <tr>
                   <td colSpan={canWrite ? 6 : 5} className="px-4 py-8 text-center text-on-surface-variant">
-                    Khong co danh muc phu hop.
+                    Không có danh mục phù hợp.
                   </td>
                 </tr>
               ) : (

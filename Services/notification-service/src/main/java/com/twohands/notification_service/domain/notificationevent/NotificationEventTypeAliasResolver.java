@@ -23,6 +23,7 @@ public class NotificationEventTypeAliasResolver {
             Map.entry("COMMERCE_REVIEW_REMINDER", "REVIEW_REMINDER"),
             Map.entry("COMMERCE_REVIEW_REPLIED", "REVIEW_REPLIED"),
             Map.entry("COMMERCE_PAYOUT_REQUEST_APPROVED", "PAYOUT_REQUEST_APPROVED"),
+            Map.entry("COMMERCE_PAYOUT_REQUEST_REJECTED", "PAYOUT_REQUEST_REJECTED"),
             Map.entry("SYSTEM_ANNOUNCEMENT_PUBLISHED", "SYSTEM_ANNOUNCEMENT_SENT")
             // SYSTEM_ANNOUNCEMENT_CANCELLED has a dedicated handler (no alias)
     );

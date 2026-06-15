@@ -6,3 +6,8 @@ export const CATALOG_PERMISSIONS = {
 export function hasCatalogPermission(permissions, code) {
   return Array.isArray(permissions) && permissions.includes(code);
 }
+
+export function isCatalogForbiddenError(error) {
+  const code = String(error?.code ?? "");
+  return code === "403" || code.includes("FORBIDDEN");
+}

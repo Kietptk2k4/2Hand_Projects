@@ -44,6 +44,11 @@ public class CommerceOutboxMessageBuilder {
         String buyerId = text(map.get("buyer_id"));
         if (buyerId != null) {
             envelope.put("recipient_user_ids", List.of(buyerId));
+            return;
+        }
+        String sellerId = text(map.get("seller_id"));
+        if (sellerId != null) {
+            envelope.put("recipient_user_ids", List.of(sellerId));
         }
     }
 

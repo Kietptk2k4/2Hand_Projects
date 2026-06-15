@@ -75,6 +75,8 @@ public class NotificationDeliveryChannelPolicy {
             "COMMERCE_ORDER_COMPLETED",
             "PAYOUT_REQUEST_APPROVED",
             "COMMERCE_PAYOUT_REQUEST_APPROVED",
+            "PAYOUT_REQUEST_REJECTED",
+            "COMMERCE_PAYOUT_REQUEST_REJECTED",
             "REVIEW_REMINDER",
             "COMMERCE_REVIEW_REMINDER",
             "REVIEW_REPLIED",

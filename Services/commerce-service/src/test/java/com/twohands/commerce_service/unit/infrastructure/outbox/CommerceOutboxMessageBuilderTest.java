@@ -76,6 +76,32 @@ class CommerceOutboxMessageBuilderTest {
     }
 
     @Test
+    void shouldSetRecipientUserIdsFromSellerIdInPayload() {
+        UUID sellerId = UUID.randomUUID();
+        UUID aggregateId = UUID.randomUUID();
+        OutboxEvent event = new OutboxEvent(
+                UUID.randomUUID(),
+                "COMMERCE_PAYOUT_REQUEST_REJECTED",
+                "payout-request:rejected",
+                aggregateId,
+                "commerce",
+                "{\"payout_request_id\":\"" + aggregateId + "\",\"seller_id\":\"" + sellerId
+                        + "\",\"admin_note\":\"Ly do tu choi\"}",
+                OutboxStatus.PENDING,
+                0,
+                Instant.now(),
+                null,
+                null
+        );
+
+        Map<String, Object> envelope = builder.buildEnvelope(event);
+
+        @SuppressWarnings("unchecked")
+        java.util.List<String> recipients = (java.util.List<String>) envelope.get("recipient_user_ids");
+        assertThat(recipients).containsExactly(sellerId.toString());
+    }
+
+    @Test
     void shouldSerializeEnvelopeToJson() {
         UUID eventId = UUID.randomUUID();
         UUID aggregateId = UUID.randomUUID();

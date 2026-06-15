@@ -50,7 +50,8 @@ public class CommerceOutboxTopicResolver {
             Map.entry("COMMERCE_SHOP_SUSPENDED", "commerce.shop.suspended"),
             Map.entry("COMMERCE_SHOP_CLOSED", "commerce.shop.closed"),
             Map.entry("COMMERCE_SHOP_RESTORED", "commerce.shop.restored"),
-            Map.entry("COMMERCE_PAYOUT_REQUEST_APPROVED", "commerce.payout.request_approved")
+            Map.entry("COMMERCE_PAYOUT_REQUEST_APPROVED", "commerce.payout.request_approved"),
+            Map.entry("COMMERCE_PAYOUT_REQUEST_REJECTED", "commerce.payout.request_rejected")
     );
 
     public String resolve(String eventType) {

@@ -12,6 +12,7 @@ import {
 import { CatalogForbiddenState } from "../CatalogForbiddenState.jsx";
 import { CatalogFormModal } from "../modals/CatalogFormModal.jsx";
 import { useCatalogPermissions } from "../../hooks/useCatalogPermissions.js";
+import { isCatalogForbiddenError } from "../../constants/catalogPermissions.js";
 
 function mapBrand(item) {
   return {
@@ -51,6 +52,11 @@ export function BrandManagementTab({ onNotify }) {
         showSessionExpired(error?.message);
         return;
       }
+      if (isCatalogForbiddenError(error)) {
+        setErrorMessage(error?.message || "Tài khoản thiếu quyền CATALOG_READ.");
+        setLoadStatus("forbidden");
+        return;
+      }
       setErrorMessage(error?.message || "Không tải được thương hiệu.");
       setLoadStatus("error");
     }
@@ -88,6 +94,18 @@ export function BrandManagementTab({ onNotify }) {
     }
     await load();
   };
+
+  if (!canRead) {
+    return (
+      <div className="space-y-4">
+        <TabPanelHeader
+          title="Quản lý thương hiệu"
+          description="Thêm, sửa và vô hiệu hóa thương hiệu trong catalog."
+        />
+        <CatalogForbiddenState />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -135,6 +153,7 @@ export function BrandManagementTab({ onNotify }) {
       </AccountCard>
 
       {loadStatus === "loading" ? <AccountSkeleton lines={6} /> : null}
+      {loadStatus === "forbidden" ? <CatalogForbiddenState message={errorMessage} /> : null}
       {loadStatus === "error" ? <ErrorState message={errorMessage} onRetry={load} /> : null}
 
       {loadStatus === "ready" ? (
@@ -153,7 +172,7 @@ export function BrandManagementTab({ onNotify }) {
               {items.length === 0 ? (
                 <tr>
                   <td colSpan={canWrite ? 5 : 4} className="px-4 py-8 text-center text-on-surface-variant">
-                    Khong co thuong hieu phu hop.
+                    Không có thương hiệu phù hợp.
                   </td>
                 </tr>
               ) : (

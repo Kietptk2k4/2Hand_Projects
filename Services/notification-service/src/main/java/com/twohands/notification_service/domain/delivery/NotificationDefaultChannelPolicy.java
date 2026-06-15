@@ -30,6 +30,7 @@ public final class NotificationDefaultChannelPolicy {
             Map.entry("SHIPMENT_DELIVERED", new DefaultChannelFlags(true, true, false)),
             Map.entry("ORDER_COMPLETED", new DefaultChannelFlags(true, true, false)),
             Map.entry("PAYOUT_REQUEST_APPROVED", new DefaultChannelFlags(true, true, false)),
+            Map.entry("PAYOUT_REQUEST_REJECTED", new DefaultChannelFlags(true, true, false)),
             Map.entry("REVIEW_REMINDER", new DefaultChannelFlags(true, true, false)),
             Map.entry("REVIEW_REPLIED", new DefaultChannelFlags(true, true, false)),
             Map.entry("USER_SUSPENDED", new DefaultChannelFlags(true, true, true)),

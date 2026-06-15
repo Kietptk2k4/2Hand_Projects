@@ -13,6 +13,7 @@ class OrderCancelNotificationContentPolicyTest {
     void supportsReasonInContent_forCancelEventTypes() {
         assertTrue(OrderCancelNotificationContentPolicy.supportsReasonInContent("ORDER_CANCELLED"));
         assertTrue(OrderCancelNotificationContentPolicy.supportsReasonInContent("ORDER_CANCEL_PENDING_REFUND"));
+        assertTrue(OrderCancelNotificationContentPolicy.supportsReasonInContent("PAYOUT_REQUEST_REJECTED"));
         assertFalse(OrderCancelNotificationContentPolicy.supportsReasonInContent("ORDER_CREATED"));
     }
 
