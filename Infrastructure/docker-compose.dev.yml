@@ -1,0 +1,191 @@
+# 2Hands application services - Gradle bootRun with source bind-mount (daily dev / hot reload).
+#
+# Prerequisites: cd Infrastructure && ./scripts/setup-docker-env.ps1
+#
+# Usage:
+#   cd Infrastructure
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile dev up
+#
+# JDWP: auth 5001 | social 5002 | commerce 5003 | admin 5004 | notification 5005
+# Frontend (Vite HMR): http://localhost:5173
+
+x-dev-service: &dev-service
+  image: eclipse-temurin:21-jdk-jammy
+  working_dir: /app
+  restart: unless-stopped
+  networks:
+    - default
+  command:
+    - bash
+    - -lc
+    - chmod +x ./gradlew && ./gradlew bootRun --no-daemon
+
+services:
+  auth-service:
+    <<: *dev-service
+    profiles: [dev]
+    container_name: auth-service
+    volumes:
+      - ../Services/auth-service:/app
+      - auth-service-gradle-cache:/root/.gradle
+    ports:
+      - "3001:3001"
+      - "5001:5001"
+    env_file:
+      - ../Services/auth-service/.env.docker
+      - path: ../Services/auth-service/.env.docker.local
+        required: false
+    environment:
+      JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5001
+    depends_on:
+      postgres-auth:
+        condition: service_started
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
+      minio:
+        condition: service_started
+
+  social-service:
+    <<: *dev-service
+    profiles: [dev]
+    container_name: social-service
+    volumes:
+      - ../Services/social-service:/app
+      - social-service-gradle-cache:/root/.gradle
+    ports:
+      - "3002:3002"
+      - "5002:5002"
+    env_file:
+      - ../Services/social-service/.env.docker
+      - path: ../Services/social-service/.env.docker.local
+        required: false
+    environment:
+      JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5002
+    depends_on:
+      postgres-social:
+        condition: service_started
+      mongodb:
+        condition: service_started
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
+      minio:
+        condition: service_started
+      commerce-service:
+        condition: service_started
+
+  commerce-service:
+    <<: *dev-service
+    profiles: [dev]
+    container_name: commerce-service
+    volumes:
+      - ../Services/commerce-service:/app
+      - commerce-service-gradle-cache:/root/.gradle
+    ports:
+      - "3003:3003"
+      - "5003:5003"
+    env_file:
+      - ../Services/commerce-service/.env.docker
+      - path: ../Services/commerce-service/.env.docker.local
+        required: false
+    environment:
+      JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5003
+    depends_on:
+      postgres-commerce:
+        condition: service_started
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
+      minio:
+        condition: service_started
+      auth-service:
+        condition: service_started
+
+  admin-service:
+    <<: *dev-service
+    profiles: [dev]
+    container_name: admin-service
+    volumes:
+      - ../Services/admin-service:/app
+      - admin-service-gradle-cache:/root/.gradle
+    ports:
+      - "3004:3004"
+      - "5004:5004"
+    env_file:
+      - ../Services/admin-service/.env.docker
+      - path: ../Services/admin-service/.env.docker.local
+        required: false
+    environment:
+      JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5004
+    depends_on:
+      postgres-admin:
+        condition: service_started
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
+      auth-service:
+        condition: service_started
+      commerce-service:
+        condition: service_started
+
+  notification-service:
+    <<: *dev-service
+    profiles: [dev]
+    container_name: notification-service
+    volumes:
+      - ../Services/notification-service:/app
+      - notification-service-gradle-cache:/root/.gradle
+    ports:
+      - "3005:3005"
+      - "5005:5005"
+    env_file:
+      - ../Services/notification-service/.env.docker
+      - path: ../Services/notification-service/.env.docker.local
+        required: false
+    environment:
+      JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+    depends_on:
+      postgres-notification:
+        condition: service_started
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
+      mailhog:
+        condition: service_started
+
+  frontend:
+    profiles: [dev]
+    container_name: frontend
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      target: dev
+    restart: unless-stopped
+    networks:
+      - default
+    volumes:
+      - ../frontend:/app
+      - frontend-node-modules:/app/node_modules
+    ports:
+      - "5173:5173"
+    env_file:
+      - ../frontend/.env.docker
+      - path: ../frontend/.env.docker.local
+        required: false
+    depends_on:
+      auth-service:
+        condition: service_started
+
+volumes:
+  auth-service-gradle-cache:
+  social-service-gradle-cache:
+  commerce-service-gradle-cache:
+  admin-service-gradle-cache:
+  notification-service-gradle-cache:
+  frontend-node-modules:

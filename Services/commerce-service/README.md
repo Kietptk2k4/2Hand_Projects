@@ -151,6 +151,8 @@ Biến quan trọng: `DB_URL`, `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` (**cù
 - **Health:** `GET http://localhost:3003/actuator/health`
 - **Jackson TZ:** `Asia/Ho_Chi_Minh`
 
+**Docker:** `Infrastructure/scripts/setup-docker-env.ps1` + `docker compose -f docker-compose.yml -f docker-compose.apps.yml --profile apps up -d --build commerce-service`. PayOS/GHN thật: `.env.docker.local`.
+
 ### 4. Dev thuần CRUD (không payOS/GHN thật)
 
 ```env

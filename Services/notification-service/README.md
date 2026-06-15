@@ -36,9 +36,9 @@ flowchart LR
 
 ## API (đã triển khai)
 
-Base URL local: **`http://localhost:3004`**
+Base URL local: **`http://localhost:3005`**
 
-> **Xung đột port:** Trùng mặc định với `admin-service`. Dev full stack: `SERVER_PORT=3005` trong `.env` hoặc chỉ chạy một trong hai.
+> Port mặc định **3005** (`SERVER_PORT` trong `.env.example` / `.env.docker.example`). `admin-service` dùng **3004**.
 
 ### Health
 
@@ -72,7 +72,7 @@ Bật/tắt: `NOTIFICATION_INTERNAL_INGEST_ENABLED` (mặc định `true`).
 **Ví dụ:**
 
 ```bash
-curl -X POST http://localhost:3004/api/v1/notification/internal/events \
+curl -X POST http://localhost:3005/api/v1/notification/internal/events \
   -H "Content-Type: application/json" \
   -H "X-Internal-Api-Key: dev-internal-key" \
   -d '{
@@ -145,24 +145,18 @@ cd Services/notification-service
 cp .env.example .env
 ```
 
+`.env.example` đã đặt `SERVER_PORT=3005`. Bật Kafka + email (MailHog) cho E2E:
+
 ```env
-# Tránh xung đột admin-service
-SERVER_PORT=3005
-
-DB_URL=jdbc:postgresql://localhost:5435/notification_db
-JWT_ACCESS_SECRET=<cùng auth-service>
-JWT_REFRESH_SECRET=<cùng auth-service>
-
-NOTIFICATION_INTERNAL_INGEST_ENABLED=true
-NOTIFICATION_INTERNAL_API_KEY=dev-internal-key
-
-NOTIFICATION_PROCESS_EVENTS_ENABLED=false
-NOTIFICATION_RETRY_EVENTS_ENABLED=false
-NOTIFICATION_RETRY_DELIVERY_ENABLED=false
-NOTIFICATION_CLEANUP_INVALID_DEVICE_TOKENS_ENABLED=false
-NOTIFICATION_FCM_ENABLED=false
-NOTIFICATION_EMAIL_ENABLED=false
+NOTIFICATION_KAFKA_CONSUMER_ENABLED=true
+NOTIFICATION_PROCESS_EVENTS_ENABLED=true
+NOTIFICATION_EMAIL_ENABLED=true
+NOTIFICATION_EMAIL_PROVIDER=smtp
+SPRING_MAIL_HOST=localhost
+SPRING_MAIL_PORT=1025
 ```
+
+**Docker:** `SPRING_MAIL_HOST=mailhog`, `NOTIFICATION_KAFKA_BOOTSTRAP_SERVERS=kafka:19092` — xem `.env.docker.example`.
 
 ### 3. Chạy
 
@@ -170,7 +164,7 @@ NOTIFICATION_EMAIL_ENABLED=false
 ./gradlew bootRun
 ```
 
-- **Health:** `GET http://localhost:3005/api/v1/notification/health` (nếu dùng `SERVER_PORT=3005`)
+- **Health:** `GET http://localhost:3005/api/v1/notification/health`
 
 ---
 

@@ -30,7 +30,8 @@ Dựa trên cấu trúc `auth-service` (package `com.twohands.auth_service`, Fly
 2. Đổi `settings.gradle` `rootProject.name`
 3. Rename package `auth_service` → `<tên>_service`
 4. Tạo migration DB riêng + port trong `application.yml`
-5. Thêm README, `.env.example`, docs FR theo `.cursor/rules/`
+5. Thêm README, `.env.example`, `.env.docker.example`, docs FR theo `.cursor/rules/`
+6. Thêm `Dockerfile` + đăng ký trong `Infrastructure/docker-compose.apps.yml` nếu service chạy trong Docker stack
 6. Đăng ký port trong [monorepo README](../../README.md)
 
 ---

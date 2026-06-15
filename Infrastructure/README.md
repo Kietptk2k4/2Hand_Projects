@@ -50,6 +50,51 @@ docker compose down
 
 Chi tiết Kafka: [`docs/kafka/kafka_section_0.md`](../docs/kafka/kafka_section_0.md) · Email SMTP dev: [`docs/kafka/kafka_section_2.md`](../docs/kafka/kafka_section_2.md) (2B)
 
+## Application services + frontend (Docker)
+
+Chạy **5 backend + frontend** trong Docker (không cần JDK/Gradle/Node trên host).
+
+### Chuẩn bị env (một lần / máy mới)
+
+Template **commit được**: `Services/*/.env.docker.example`, `frontend/.env.docker.example`.
+
+```powershell
+cd Infrastructure
+./scripts/setup-docker-env.ps1
+```
+
+Tạo file gitignored `.env.docker`. Secret thật (OAuth, PayOS, VNPay, GHN): `Services/<service>/.env.docker.local`.
+
+### Profile `apps` — JAR + nginx (onboarding)
+
+```bash
+cd Infrastructure
+docker compose up -d
+docker compose -f docker-compose.yml -f docker-compose.apps.yml --profile apps up -d --build
+```
+
+| URL | Mô tả |
+|-----|--------|
+| http://localhost:5173 | Frontend (nginx) |
+| http://localhost:3001–3005 | auth, social, commerce, admin, notification |
+| http://localhost:8025 | MailHog |
+| http://localhost:8080 | Kafka UI |
+
+### Profile `dev` — bootRun + Vite HMR
+
+```bash
+cd Infrastructure
+docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile dev up
+```
+
+- Backend: bind-mount source + `./gradlew bootRun`, JDWP cổng 5001–5005
+- Frontend: Vite dev server cổng 5173
+- **Không** chạy đồng thời `apps` và `dev` (trùng tên container)
+
+### Luồng bootRun trên host (không Docker app)
+
+Vẫn dùng `Services/*/.env` với host `localhost` — xem README từng service và mục “Chạy local nhanh” ở [README.md](../README.md).
+
 ## MinIO (local dev)
 
 Khi `docker compose up -d`, service `minio-init` tự:

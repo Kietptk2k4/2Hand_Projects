@@ -9,7 +9,15 @@ dev-dumps/
 # Service secrets — never commit
 Services/*/.env
 Services/**/.env
-# !Services/**/.env.example
+!Services/**/.env.example
+!Services/**/.env.docker.example
+
+# Frontend local env
+frontend/.env
+frontend/.env.docker
+frontend/.env.docker.local
+!frontend/.env.example
+!frontend/.env.docker.example
 
 # Infrastructure secrets (ngrok authtoken)
 Infrastructure/.env

@@ -1,0 +1,173 @@
+# 2Hands application services - pre-built JAR images + frontend (onboarding / CI-like local).
+#
+# Prerequisites (once per machine):
+#   cd Infrastructure
+#   ./scripts/setup-docker-env.ps1
+#   sh scripts/setup-docker-env.sh
+#
+# Usage:
+#   cd Infrastructure
+#   docker compose up -d
+#   docker compose -f docker-compose.yml -f docker-compose.apps.yml --profile apps up -d --build
+#
+# Frontend http://localhost:5173
+# auth 3001 | social 3002 | commerce 3003 | admin 3004 | notification 3005
+
+x-app-service: &app-service
+  restart: unless-stopped
+  networks:
+    - default
+
+services:
+  auth-service:
+    <<: *app-service
+    profiles: [apps]
+    container_name: auth-service
+    build:
+      context: ../Services/auth-service
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    env_file:
+      - ../Services/auth-service/.env.docker
+      - path: ../Services/auth-service/.env.docker.local
+        required: false
+    depends_on:
+      postgres-auth:
+        condition: service_started
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
+      minio:
+        condition: service_started
+
+  social-service:
+    <<: *app-service
+    profiles: [apps]
+    container_name: social-service
+    build:
+      context: ../Services/social-service
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    env_file:
+      - ../Services/social-service/.env.docker
+      - path: ../Services/social-service/.env.docker.local
+        required: false
+    depends_on:
+      postgres-social:
+        condition: service_started
+      mongodb:
+        condition: service_started
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
+      minio:
+        condition: service_started
+      commerce-service:
+        condition: service_started
+
+  commerce-service:
+    <<: *app-service
+    profiles: [apps]
+    container_name: commerce-service
+    build:
+      context: ../Services/commerce-service
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3003"
+    env_file:
+      - ../Services/commerce-service/.env.docker
+      - path: ../Services/commerce-service/.env.docker.local
+        required: false
+    depends_on:
+      postgres-commerce:
+        condition: service_started
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
+      minio:
+        condition: service_started
+      auth-service:
+        condition: service_started
+
+  admin-service:
+    <<: *app-service
+    profiles: [apps]
+    container_name: admin-service
+    build:
+      context: ../Services/admin-service
+      dockerfile: Dockerfile
+    ports:
+      - "3004:3004"
+    env_file:
+      - ../Services/admin-service/.env.docker
+      - path: ../Services/admin-service/.env.docker.local
+        required: false
+    depends_on:
+      postgres-admin:
+        condition: service_started
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
+      auth-service:
+        condition: service_started
+      commerce-service:
+        condition: service_started
+
+  notification-service:
+    <<: *app-service
+    profiles: [apps]
+    container_name: notification-service
+    build:
+      context: ../Services/notification-service
+      dockerfile: Dockerfile
+    ports:
+      - "3005:3005"
+    env_file:
+      - ../Services/notification-service/.env.docker
+      - path: ../Services/notification-service/.env.docker.local
+        required: false
+    depends_on:
+      postgres-notification:
+        condition: service_started
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
+      mailhog:
+        condition: service_started
+
+  frontend:
+    <<: *app-service
+    profiles: [apps]
+    container_name: frontend
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      target: production
+      args:
+        VITE_AUTH_SERVICE_BASE_URL: http://localhost:3001
+        VITE_SOCIAL_SERVICE_BASE_URL: http://localhost:3002
+        VITE_COMMERCE_SERVICE_BASE_URL: http://localhost:3003
+        VITE_ADMIN_SERVICE_BASE_URL: http://localhost:3004
+        VITE_NOTIFICATION_SERVICE_BASE_URL: http://localhost:3005
+        VITE_USE_MOCK: "false"
+        VITE_COMMERCE_CHECKOUT_COD_ONLY_ENABLED: "false"
+    ports:
+      - "5173:80"
+    depends_on:
+      auth-service:
+        condition: service_started
+      social-service:
+        condition: service_started
+      commerce-service:
+        condition: service_started
+      admin-service:
+        condition: service_started
+      notification-service:
+        condition: service_started

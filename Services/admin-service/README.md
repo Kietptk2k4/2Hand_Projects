@@ -162,7 +162,7 @@ curl -s http://localhost:3004/admin/api/v1/health \
   -H "Authorization: Bearer <admin_access_token>"
 ```
 
-> **Lưu ý port:** `notification-service` cũng mặc định **3004**. Khi chạy cả hai, đặt `SERVER_PORT=3005` cho notification hoặc tắt một service.
+**Docker:** profile `apps` / `dev` trong `Infrastructure/docker-compose.*.yml` — port **3004** cố định trong `.env.docker.example`.
 
 ---
 
@@ -209,7 +209,5 @@ src/main/java/com/twohands/admin_service/
 | auth-service | 3001 | 5432 |
 | social-service | 3002 | 5433 |
 | commerce-service | 3003 | 5434 |
-| notification-service | 3004† | 5435 |
+| notification-service | 3005 | 5435 |
 | **admin-service** | **3004** | **5436** |
-
-† Xung đột port với admin — chỉnh khi dev full stack.

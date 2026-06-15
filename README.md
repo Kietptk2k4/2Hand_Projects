@@ -26,7 +26,7 @@ flowchart TB
     Social[social-service :3002]
     Commerce[commerce-service :3003]
     Admin[admin-service :3004]
-    Notif[notification-service :3004*]
+    Notif[notification-service :3005]
   end
 
   subgraph infra [Infrastructure — Docker Compose]
@@ -46,7 +46,7 @@ flowchart TB
   Web --> GW
   Mobile --> GW
   GW -.-> Auth & Social & Commerce & Admin & Notif
-  Web -. dev direct .-> Auth & Social & Commerce
+  Web -. dev direct .-> Auth & Social & Commerce & Admin & Notif
 
   Auth --> PG
   Social --> PG & Mongo & Redis
@@ -62,7 +62,7 @@ flowchart TB
   Social --> MinIO
 ```
 
-\* `admin-service` và `notification-service` cùng mặc định port **3004** — khi chạy song song local, đặt `SERVER_PORT=3005` (hoặc tương đương) cho một trong hai service.
+\* Cổng mặc định: `notification-service` **3005**, `admin-service` **3004** (đã tách trong `.env.example` / `.env.docker.example`).
 
 ---
 
@@ -77,9 +77,10 @@ flowchart TB
 │   ├── admin-service/
 │   ├── notification-service/
 │   └── skeleton-service/  # Template tham chiếu (auth scaffold)
-├── Infrastructure/        # docker-compose.yml — Postgres, Mongo, Redis, MinIO, Kafka
+├── Infrastructure/        # docker-compose.yml — Postgres, Mongo, Redis, MinIO, Kafka, MailHog
+│                          # + docker-compose.apps.yml / dev.yml — 5 backend + frontend
 ├── docs/                  # Spec, FR, API behavior, schema, use cases
-├── frontend/              # React 19 + Vite + Tailwind (MSW)
+├── frontend/              # React 19 + Vite + Tailwind (MSW) + Dockerfile
 ├── .cursor/rules/         # Chuẩn implement theo domain (admin, commerce, social)
 ├── Api_gateway/           # (placeholder — chưa có mã)
 ├── Packages/              # (placeholder — shared libs tương lai)
@@ -98,7 +99,7 @@ Mỗi service là **Gradle project riêng** (`settings.gradle` + `build.gradle`)
 | **social-service** | 3002 | `localhost:5433` / `social_db` | MongoDB, Redis, MinIO (optional) | `/api/v1/social/*` | [Services/social-service/README.md](Services/social-service/README.md) |
 | **commerce-service** | 3003 | `localhost:5434` / `commerce_db` | Redis, MinIO, payOS, GHN | `/commerce/api/v1/*` | [Services/commerce-service/README.md](Services/commerce-service/README.md) |
 | **admin-service** | 3004 | `localhost:5436` / `admin_db` | Redis | `/admin/api/v1/*` | [Services/admin-service/README.md](Services/admin-service/README.md) |
-| **notification-service** | 3004† | `localhost:5435` / `notification_db` | Kafka consumer (tùy env) | `/api/v1/notification/*` | [Services/notification-service/README.md](Services/notification-service/README.md) |
+| **notification-service** | **3005** | `localhost:5435` / `notification_db` | Kafka consumer, MailHog SMTP | `/api/v1/notification/*` | [Services/notification-service/README.md](Services/notification-service/README.md) |
 
 **Trạng thái triển khai (tóm tắt):**
 
@@ -108,7 +109,7 @@ Mỗi service là **Gradle project riêng** (`settings.gradle` + `build.gradle`)
 | Social | Core MVP | Feed, post/comment, like/save, follow, search, moderation consumer, outbox social events |
 | Commerce | Core MVP | Catalog, cart, checkout, orders, payOS, GHN webhooks, seller/admin APIs |
 | Admin | Core MVP | Moderation (user/post/product/review), enforcement, audit, system config |
-| Notification | Scaffold + ingest | In-app pipeline; Kafka/outbox consumer tùy bật env; internal ingest API cho dev |
+| Notification | Core MVP | In-app + email (MailHog); Kafka consumer/outbox pipeline; nhiều handler commerce/social/admin |
 
 Qua **API Gateway production** (khi có): `https://api.2hands.vn/{service-name}/api/v1/...` — xem [`docs/engineering_rules/api-standard.md`](docs/engineering_rules/api-standard.md).
 
@@ -116,11 +117,20 @@ Qua **API Gateway production** (khi có): `https://api.2hands.vn/{service-name}/
 
 ## Chạy local nhanh
 
+Có **ba cách** phổ biến:
+
+| Cách | Khi nào dùng | Env file |
+|------|----------------|----------|
+| **A — bootRun trên host** | Dev hàng ngày, debug IDE | `Services/*/.env` (`localhost`) |
+| **B — Docker `profile apps`** | Onboarding, CI-like, không cần JDK/Node local | `.env.docker` (từ `.env.docker.example`) |
+| **C — Docker `profile dev`** | Hot reload backend trong container + JDWP | `.env.docker` |
+
 ### Yêu cầu
 
-- **JDK 21**
-- **Docker** (Postgres, Mongo, Redis, MinIO, Kafka)
-- **Gradle** (wrapper trong từng `Services/*`)
+- **JDK 21** (cách A; cách B/C chỉ cần cho sửa Java ngoài Docker)
+- **Docker** (Postgres, Mongo, Redis, MinIO, Kafka, MailHog + tuỳ chọn 5 backend + frontend)
+- **Node.js 22+** (cách A cho frontend; cách B/C build FE trong Docker)
+- **Gradle** (wrapper trong từng `Services/*` — cách A)
 
 ### 1. Hạ tầng
 
@@ -158,10 +168,11 @@ Lặp tương tự cho `social-service`, `commerce-service`, `admin-service`. Fi
 
 **JWT:** Mọi API protected dùng chung secret với `auth-service` (`JWT_ACCESS_SECRET`).
 
-### 3. Frontend
+### 3. Frontend (cách A — trên host)
 
 ```bash
 cd frontend
+cp .env.example .env
 npm install
 npm run dev
 ```
@@ -169,7 +180,25 @@ npm run dev
 - Dev server: **http://localhost:5173**
 - Stack: React 19, Vite 5, Tailwind 4, React Router 7, MSW (mock API)
 
-### 4. Chia sẻ data dev giữa máy (dump / restore)
+### 4. Full stack Docker (cách B — khuyến nghị onboarding)
+
+```bash
+cd Infrastructure
+./scripts/setup-docker-env.ps1          # Windows
+# sh scripts/setup-docker-env.sh        # macOS / Linux
+
+docker compose up -d
+docker compose -f docker-compose.yml -f docker-compose.apps.yml --profile apps up -d --build
+```
+
+- **Frontend:** http://localhost:5173 (nginx trong container)
+- **Backend:** cổng 3001–3005 như bảng microservices
+- **MailHog:** http://localhost:8025 · **Kafka UI:** http://localhost:8080
+- Secret thật (OAuth, PayOS…): thêm `Services/<service>/.env.docker.local` (gitignored, ghi đè `.env.docker`)
+
+Chi tiết: [Infrastructure/README.md](Infrastructure/README.md)
+
+### 5. Chia sẻ data dev giữa máy (dump / restore)
 
 Mỗi dev mặc định có **stack Docker riêng** — data test (user, post, avatar MinIO…) **không tự sync** qua git. Để đồng nghiệp dùng chung bộ data local, export dump rồi gửi file (Drive/OneDrive/Slack). **Không commit** thư mục `dev-dumps/` (đã có trong `.gitignore`).
 
@@ -326,10 +355,10 @@ Ma trận event: [`docs/architecture/event-driven-architecture.md`](docs/archite
 
 ## Roadmap / giới hạn hiện tại
 
-- **Api_gateway:** thư mục trống — client dev gọi thẳng port service.
-- **Kafka:** broker + UI (hạng mục 0); outbox publisher Java sẵn sàng, tắt mặc định (hạng mục 1). Consumer notification/social → hạng mục 2.
-- **notification-service vs admin-service:** trùng port 3004 — chỉnh port khi dev full stack.
-- **Packages / Scripts:** chưa dùng.
+- **Api_gateway:** thư mục trống — client dev gọi thẳng port service (hoặc qua FE proxy tương lai).
+- **Kafka:** broker + UI + outbox publisher/consumer — bật qua env (xem `docs/kafka/`).
+- **Docker:** `docker-compose.apps.yml` (JAR + nginx FE) và `docker-compose.dev.yml` (bootRun + Vite HMR).
+- **Packages / Scripts:** automation tùy chọn; `Infrastructure/scripts/setup-docker-env.*` dùng cho onboarding Docker.
 
 ---
 
@@ -337,4 +366,5 @@ Ma trận event: [`docs/architecture/event-driven-architecture.md`](docs/archite
 
 - [auth-service](Services/auth-service/README.md) · [social-service](Services/social-service/README.md) · [commerce-service](Services/commerce-service/README.md)
 - [admin-service](Services/admin-service/README.md) · [notification-service](Services/notification-service/README.md) · [skeleton-service](Services/skeleton-service/README.md) (template)
+- [frontend](frontend/README.md)
 - Docker infra: [Infrastructure/docker-compose.yml](Infrastructure/docker-compose.yml) · [Infrastructure/README.md](Infrastructure/README.md)

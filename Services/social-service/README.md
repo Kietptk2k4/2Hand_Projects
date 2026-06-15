@@ -137,16 +137,16 @@ docker compose up -d postgres-social mongodb redis
 Tùy chọn thêm MinIO (upload media) và Kafka (consumer/outbox):
 
 ```bash
-docker compose up -d minio
-# Kafka: cần broker riêng — chưa có trong docker-compose mặc định
+docker compose up -d minio kafka kafka-ui mailhog
 ```
 
-| Dependency | Host mặc định |
+| Dependency | Host mặc định (bootRun) | Trong Docker (`profile apps`/`dev`) |
 |------------|----------------|
-| PostgreSQL `social_db` | `localhost:5433` (user/pass: `postgres` / `123456`) |
-| MongoDB `social_db` | `mongodb://localhost:27017/social_db` |
-| Redis | `localhost:6379` |
-| MinIO | `http://localhost:9000` (console `:9001`) |
+| PostgreSQL `social_db` | `localhost:5433` | `postgres-social:5432` |
+| MongoDB `social_db` | `mongodb://localhost:27017/social_db` | `mongodb://mongodb:27017/social_db` |
+| Redis | `localhost:6379` | `redis:6379` |
+| MinIO | `http://localhost:9000` | API `http://minio:9000`, public URL browser `http://localhost:9000` |
+| Kafka | `localhost:9092` | `kafka:19092` |
 
 Flyway chạy migration PostgreSQL khi khởi động. Index MongoDB tham chiếu `src/main/resources/db/migration/V1__init_social_mongo.js` (chạy thủ công / init nếu cần).
 
@@ -180,6 +180,8 @@ cd Services/social-service
 - **Port:** `3002`
 - **Health (public):** `GET http://localhost:3002/actuator/health`
 - **Timezone JVM:** UTC (`bootRun` set `user.timezone=UTC`); JSON Jackson: `Asia/Ho_Chi_Minh`
+
+**Docker:** `cd Infrastructure && ./scripts/setup-docker-env.ps1` rồi `docker compose -f docker-compose.yml -f docker-compose.apps.yml --profile apps up -d --build social-service`. Env: `.env.docker.example` → `.env.docker`.
 
 ### 4. Smoke test nhanh
 
@@ -242,7 +244,7 @@ Quy ước chi tiết: `.cursor/rules/social/`, `docs/engineering_rules/backend-
 | auth-service | 3001 | 5432 |
 | **social-service** | **3002** | **5433** |
 | commerce-service | 3003 | 5434 |
-| notification-service | — | 5435 |
+| notification-service | 3005 | 5435 |
 | admin-service | 3004 | 5436 |
 
 ---
@@ -251,5 +253,5 @@ Quy ước chi tiết: `.cursor/rules/social/`, `docs/engineering_rules/backend-
 
 - **Moderation:** Bài `HIDDEN` không hiện với viewer thường (trả `404`); tác giả vẫn xem được chi tiết. Feed/search/profile lọc `moderation_status` khác `HIDDEN`.
 - **Upload media:** Cần `SOCIAL_MINIO_ENABLED=true` và bucket `2hands-social-post` (hoặc override `MINIO_SOCIAL_POST_BUCKET`).
-- **Kafka local:** Consumer và outbox publisher **tắt mặc định** — bật khi đã có broker và topic.
-- **Chưa có trong MVP:** Outbox `POST_HIDDEN` / `POST_DELETED` sau moderation; Kafka chưa đóng gói trong `Infrastructure/docker-compose.yml`.
+- **Kafka local:** Consumer và outbox publisher bật trong `.env.docker.example`; bootRun trên host tắt mặc định trong README env mẫu — bật khi test E2E.
+- **Chưa có trong MVP:** Outbox `POST_HIDDEN` / `POST_DELETED` sau moderation.

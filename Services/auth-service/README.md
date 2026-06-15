@@ -161,6 +161,16 @@ cd Services/auth-service
 - **Flyway:** migration tại `src/main/resources/db/migration/`
 - **Admin RBAC:** `V2__seed_admin_permissions.sql` gán permission portal (vd. `USER_INVESTIGATION_READ`) cho role `ADMIN` / `MODERATOR`. Sau khi migrate, **đăng xuất và đăng nhập lại admin** để JWT nhận claim `permissions` mới.
 
+### Docker (compose)
+
+```bash
+cd Infrastructure
+./scripts/setup-docker-env.ps1
+docker compose -f docker-compose.yml -f docker-compose.apps.yml --profile apps up -d --build auth-service
+```
+
+Env: `.env.docker` (từ `.env.docker.example`). OAuth thật: `.env.docker.local`.
+
 ### 4. Smoke test
 
 ```bash
