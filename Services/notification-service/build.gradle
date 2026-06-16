@@ -51,4 +51,8 @@ tasks.named('test') {
 
 bootRun {
 	systemProperty 'user.timezone', 'UTC'
+	def debugPort = System.getenv('DEBUG_PORT')
+	if (debugPort) {
+		jvmArgs("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:${debugPort}")
+	}
 }

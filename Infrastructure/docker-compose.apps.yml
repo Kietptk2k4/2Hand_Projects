@@ -17,6 +17,9 @@ x-app-service: &app-service
   restart: unless-stopped
   networks:
     - default
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+    - "localhost:host-gateway"
 
 services:
   auth-service:

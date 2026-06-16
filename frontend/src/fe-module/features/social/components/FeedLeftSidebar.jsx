@@ -26,7 +26,7 @@ const QUICK_LINKS = [
   // { icon: "event", label: "Sự kiện", color: "text-[#565a5b]" },
 ];
 
-export function FeedLeftSidebar({ onComingSoon }) {
+export function FeedLeftSidebar({ onComingSoon, stats: statsOverride }) {
   const navigate = useNavigate();
   const currentUserId = useCurrentUserId();
   const { profile, isLoading } = useAccountProfile();
@@ -34,8 +34,9 @@ export function FeedLeftSidebar({ onComingSoon }) {
   const title = profile?.profile?.bio || "Thành viên 2Hands";
   const avatarUrl = profile?.profile?.avatar_url || DEFAULT_AVATAR_URL;
   const resolvedUserId = currentUserId || profile?.user?.id;
+  const internalStats = useFeedSidebarStats(statsOverride ? null : resolvedUserId);
   const { postCount, followerCount, savedCount, isLoading: isStatsLoading } =
-    useFeedSidebarStats(resolvedUserId);
+    statsOverride ?? internalStats;
   const selfProfilePath = resolvedUserId
     ? buildSocialProfilePath(resolvedUserId)
     : APP_ROUTES.socialFeed;

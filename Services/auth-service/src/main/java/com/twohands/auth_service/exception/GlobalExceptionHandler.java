@@ -38,6 +38,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AppException.class)
     public ResponseEntity<ApiResponse<Void>> handleAppException(AppException ex) {
         ErrorCode errorCode = ex.getErrorCode();
+        if (ex.getCause() != null) {
+            log.warn("AppException [{}]: {} — cause: {}", errorCode.code(), ex.getMessage(), ex.getCause().toString(), ex.getCause());
+        } else if (ErrorCode.OBJECT_STORAGE_UNAVAILABLE.equals(errorCode)) {
+            log.warn("AppException [{}]: {} — no MinIO adapter bean or object storage disabled", errorCode.code(), ex.getMessage());
+        }
         List<ApiResponse.ApiError> errors = null;
         if (ex.getField() != null && ex.getReason() != null) {
             errors = List.of(new ApiResponse.ApiError(ex.getField(), ex.getReason()));

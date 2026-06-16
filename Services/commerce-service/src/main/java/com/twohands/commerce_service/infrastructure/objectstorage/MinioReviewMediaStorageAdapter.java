@@ -1,6 +1,7 @@
 package com.twohands.commerce_service.infrastructure.objectstorage;
 
 import com.twohands.commerce_service.common.media.ReviewMediaFileValidator;
+import com.twohands.commerce_service.config.CommerceMinioConfig;
 import com.twohands.commerce_service.config.CommerceObjectStorageProperties;
 import com.twohands.commerce_service.domain.storage.ReviewMediaStorageGateway;
 import com.twohands.commerce_service.domain.storage.ReviewMediaUploadPayload;
@@ -12,6 +13,7 @@ import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.util.UUID;
 
 @Component
-@ConditionalOnBean(MinioClient.class)
+@ConditionalOnBean(name = CommerceMinioConfig.INTERNAL_MINIO_CLIENT)
 public class MinioReviewMediaStorageAdapter implements ReviewMediaStorageGateway {
 
     private static final Logger log = LoggerFactory.getLogger(MinioReviewMediaStorageAdapter.class);
@@ -29,7 +31,7 @@ public class MinioReviewMediaStorageAdapter implements ReviewMediaStorageGateway
     private final ReviewMediaFileValidator reviewMediaFileValidator;
 
     public MinioReviewMediaStorageAdapter(
-            MinioClient minioClient,
+            @Qualifier(CommerceMinioConfig.INTERNAL_MINIO_CLIENT) MinioClient minioClient,
             CommerceObjectStorageProperties properties,
             ReviewMediaFileValidator reviewMediaFileValidator
     ) {

@@ -10,6 +10,7 @@ public class SocialObjectStorageProperties {
 
     private boolean enabled;
     private String endpoint = "http://localhost:9000";
+    private String presignedEndpoint = "";
     private String publicUrl = "https://cdn.2hands.vn";
     private String accessKey = "admin";
     private String secretKey = "password123";
@@ -39,6 +40,18 @@ public class SocialObjectStorageProperties {
 
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
+    }
+
+    public String getPresignedEndpoint() {
+        return presignedEndpoint;
+    }
+
+    public void setPresignedEndpoint(String presignedEndpoint) {
+        this.presignedEndpoint = presignedEndpoint;
+    }
+
+    public String resolvePresignedEndpoint() {
+        return MinioPresignEndpointResolver.resolve(endpoint, presignedEndpoint, publicUrl);
     }
 
     public String getPublicUrl() {

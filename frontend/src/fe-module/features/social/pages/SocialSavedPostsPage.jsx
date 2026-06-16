@@ -1,5 +1,8 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
+import { useFeedSidebarStats } from "../hooks/useFeedSidebarStats";
+import { useToggleSaveWithSidebar } from "../hooks/useToggleSaveWithSidebar";
 import { FeedLeftSidebar } from "../components/FeedLeftSidebar";
 import { FeedRightSidebar } from "../components/FeedRightSidebar";
 import { FeedToast } from "../components/FeedToast";
@@ -22,6 +25,8 @@ const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
 
 export function SocialSavedPostsPage() {
   const navigate = useNavigate();
+  const { user } = useAuthSession();
+  const sidebarStats = useFeedSidebarStats(user?.id);
   const [toastMessage, setToastMessage] = useState("");
   const [detailRefreshKey, setDetailRefreshKey] = useState(0);
   const [unsavingId, setUnsavingId] = useState(null);
@@ -93,17 +98,17 @@ export function SocialSavedPostsPage() {
     [handleDeletePost, removeItem]
   );
 
-  const onToggleSavePost = useCallback(
-    (targetPostId) =>
-      handleToggleSavePost(targetPostId, {
-        onSavedChange: (_id, saved) => {
-          if (!saved) {
-            removeItem(targetPostId);
-          }
-        },
-      }),
-    [handleToggleSavePost, removeItem]
-  );
+  const onToggleSavePost = useToggleSaveWithSidebar({
+    items,
+    adjustSavedCount: sidebarStats.adjustSavedCount,
+    handleToggleSavePost,
+    getWasSaved: () => true,
+    onSavedChange: (_id, saved) => {
+      if (!saved) {
+        removeItem(_id);
+      }
+    },
+  });
 
   const onToggleLikePost = useCallback(
     (targetPostId) => handleToggleLikePost(targetPostId),
@@ -115,26 +120,29 @@ export function SocialSavedPostsPage() {
       if (!targetPostId || unsavingId) return;
 
       removeItem(targetPostId);
+      sidebarStats.adjustSavedCount(-1);
       setUnsavingId(targetPostId);
 
       try {
         const result = await handleToggleSavePost(targetPostId);
         if (result?.saved) {
+          sidebarStats.adjustSavedCount(1);
           refetch();
         }
       } catch {
+        sidebarStats.adjustSavedCount(1);
         refetch();
       } finally {
         setUnsavingId(null);
       }
     },
-    [handleToggleSavePost, refetch, removeItem, unsavingId]
+    [handleToggleSavePost, refetch, removeItem, sidebarStats, unsavingId]
   );
 
   return (
     <>
       <div className="mx-auto grid w-full max-w-[1280px] grid-cols-1 gap-6 px-4 py-8 md:px-8 lg:grid-cols-12">
-        <FeedLeftSidebar onComingSoon={showComingSoon} />
+        <FeedLeftSidebar stats={sidebarStats} onComingSoon={showComingSoon} />
 
         <section className="flex flex-col gap-6 lg:col-span-6">
           <SavedPostsHeader />

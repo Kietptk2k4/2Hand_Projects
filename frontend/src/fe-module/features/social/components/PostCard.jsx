@@ -146,7 +146,7 @@ export function PostCard({
             <span className="text-sm font-medium">{formatCount(post.replyCount)}</span>
           </button>
         </div>
-        <button
+        {/* <button
           type="button"
           className="flex items-center gap-2 text-on-surface-variant transition-colors hover:text-primary"
           onClick={stopAnd(onComingSoon)}
@@ -156,7 +156,7 @@ export function PostCard({
             share
           </span>
           <span className="text-sm font-medium">Chia sẻ</span>
-        </button>
+        </button> */}
       </div>
 
       {post.caption || (post.hashtags && post.hashtags.length > 0) ? (

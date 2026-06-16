@@ -9,10 +9,22 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(prefix = "commerce.object-storage", name = "enabled", havingValue = "true")
 public class CommerceMinioConfig {
 
-    @Bean
-    public MinioClient commerceMinioClient(CommerceObjectStorageProperties properties) {
+    public static final String INTERNAL_MINIO_CLIENT = "commerceInternalMinioClient";
+    public static final String PRESIGN_MINIO_CLIENT = "commercePresignMinioClient";
+
+    @Bean(name = INTERNAL_MINIO_CLIENT)
+    public MinioClient commerceInternalMinioClient(CommerceObjectStorageProperties properties) {
+        return buildClient(properties.getEndpoint(), properties);
+    }
+
+    @Bean(name = PRESIGN_MINIO_CLIENT)
+    public MinioClient commercePresignMinioClient(CommerceObjectStorageProperties properties) {
+        return buildClient(properties.resolvePresignedEndpoint(), properties);
+    }
+
+    private static MinioClient buildClient(String endpoint, CommerceObjectStorageProperties properties) {
         return MinioClient.builder()
-                .endpoint(properties.getEndpoint())
+                .endpoint(endpoint)
                 .credentials(properties.getAccessKey(), properties.getSecretKey())
                 .build();
     }

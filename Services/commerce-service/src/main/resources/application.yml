@@ -68,6 +68,7 @@ commerce:
   object-storage:
     enabled: ${COMMERCE_MINIO_ENABLED:false}
     endpoint: ${COMMERCE_MINIO_ENDPOINT:http://localhost:9000}
+    presigned-endpoint: ${COMMERCE_MINIO_PRESIGNED_ENDPOINT:}
     public-url: ${COMMERCE_MINIO_PUBLIC_URL:http://localhost:9000}
     access-key: ${COMMERCE_MINIO_ACCESS_KEY:admin}
     secret-key: ${COMMERCE_MINIO_SECRET_KEY:password123}

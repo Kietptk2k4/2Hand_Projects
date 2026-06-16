@@ -21,3 +21,4 @@ frontend/.env.docker.local
 
 # Infrastructure secrets (ngrok authtoken)
 Infrastructure/.env
+Infrastructure/auth-app.jar 

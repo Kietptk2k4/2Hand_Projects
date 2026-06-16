@@ -47,5 +47,10 @@ export function useFeedSidebarStats(userId) {
     load();
   }, [load]);
 
-  return { postCount, followerCount, savedCount, isLoading };
+  const adjustSavedCount = useCallback((delta) => {
+    if (!Number.isFinite(delta) || delta === 0) return;
+    setSavedCount((prev) => (prev === null ? prev : Math.max(0, prev + delta)));
+  }, []);
+
+  return { postCount, followerCount, savedCount, isLoading, adjustSavedCount, reload: load };
 }

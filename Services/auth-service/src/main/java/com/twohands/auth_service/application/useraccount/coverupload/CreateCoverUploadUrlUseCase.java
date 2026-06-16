@@ -9,6 +9,8 @@ import com.twohands.auth_service.config.AuthObjectStorageProperties;
 import com.twohands.auth_service.domain.user.UserRepository;
 import com.twohands.auth_service.exception.AppException;
 import com.twohands.auth_service.exception.ErrorCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,8 @@ import java.util.UUID;
 
 @Service
 public class CreateCoverUploadUrlUseCase {
+
+    private static final Logger log = LoggerFactory.getLogger(CreateCoverUploadUrlUseCase.class);
 
     private static final String SUCCESS_MESSAGE = "Tao link upload anh bia thanh cong.";
 
@@ -56,16 +60,20 @@ public class CreateCoverUploadUrlUseCase {
         rateLimitService.validateUploadUrlRequest(userId);
 
         if (!objectStorageProperties.isEnabled()) {
+            log.warn("Cover upload URL rejected: object storage disabled");
             throw new AppException(
                     ErrorCode.OBJECT_STORAGE_UNAVAILABLE,
                     ErrorCode.OBJECT_STORAGE_UNAVAILABLE.defaultMessage()
             );
         }
 
-        AvatarUploadStoragePort storagePort = avatarUploadStoragePort.orElseThrow(() -> new AppException(
+        AvatarUploadStoragePort storagePort = avatarUploadStoragePort.orElseThrow(() -> {
+            log.warn("Cover upload URL rejected: MinioAvatarUploadStorageAdapter bean missing");
+            return new AppException(
                 ErrorCode.OBJECT_STORAGE_UNAVAILABLE,
                 ErrorCode.OBJECT_STORAGE_UNAVAILABLE.defaultMessage()
-        ));
+            );
+        });
 
         Instant expiresAt = Instant.now().plusSeconds(objectStorageProperties.getPresignedUrlTtlSeconds());
         AvatarUploadIntent intent = storagePort.createCoverUploadIntent(userId, contentType, expiresAt);

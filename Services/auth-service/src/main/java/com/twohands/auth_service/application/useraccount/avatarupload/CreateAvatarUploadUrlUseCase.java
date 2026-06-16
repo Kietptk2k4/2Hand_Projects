@@ -5,6 +5,8 @@ import com.twohands.auth_service.config.AuthObjectStorageProperties;
 import com.twohands.auth_service.domain.user.UserRepository;
 import com.twohands.auth_service.exception.AppException;
 import com.twohands.auth_service.exception.ErrorCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,8 @@ import java.util.UUID;
 
 @Service
 public class CreateAvatarUploadUrlUseCase {
+
+    private static final Logger log = LoggerFactory.getLogger(CreateAvatarUploadUrlUseCase.class);
 
     private static final String SUCCESS_MESSAGE = "Tao link upload avatar thanh cong.";
 
@@ -52,16 +56,25 @@ public class CreateAvatarUploadUrlUseCase {
         rateLimitService.validateUploadUrlRequest(userId);
 
         if (!objectStorageProperties.isEnabled()) {
+            log.warn(
+                    "Avatar upload URL rejected: object storage disabled (auth.object-storage.enabled=false, AUTH_MINIO_ENABLED?)"
+            );
             throw new AppException(
                     ErrorCode.OBJECT_STORAGE_UNAVAILABLE,
                     ErrorCode.OBJECT_STORAGE_UNAVAILABLE.defaultMessage()
             );
         }
 
-        AvatarUploadStoragePort storagePort = avatarUploadStoragePort.orElseThrow(() -> new AppException(
+        AvatarUploadStoragePort storagePort = avatarUploadStoragePort.orElseThrow(() -> {
+            log.warn(
+                    "Avatar upload URL rejected: MinioAvatarUploadStorageAdapter bean missing "
+                            + "(check AUTH_MINIO_ENABLED=true and authPresignMinioClient startup logs)"
+            );
+            return new AppException(
                 ErrorCode.OBJECT_STORAGE_UNAVAILABLE,
                 ErrorCode.OBJECT_STORAGE_UNAVAILABLE.defaultMessage()
-        ));
+            );
+        });
 
         Instant expiresAt = Instant.now().plusSeconds(objectStorageProperties.getPresignedUrlTtlSeconds());
         AvatarUploadIntent intent = storagePort.createUploadIntent(userId, contentType, expiresAt);

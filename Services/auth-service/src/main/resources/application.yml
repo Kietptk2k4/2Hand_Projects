@@ -149,6 +149,7 @@ auth:
   object-storage:
     enabled: ${AUTH_MINIO_ENABLED:false}
     endpoint: ${AUTH_MINIO_ENDPOINT:http://localhost:9000}
+    presigned-endpoint: ${AUTH_MINIO_PRESIGNED_ENDPOINT:}
     public-url: ${AUTH_MINIO_PUBLIC_URL:https://cdn.2hands.vn}
     access-key: ${AUTH_MINIO_ACCESS_KEY:admin}
     secret-key: ${AUTH_MINIO_SECRET_KEY:password123}
@@ -224,6 +225,11 @@ logging:
   level:
     root: INFO
     com.twohands.auth_service: DEBUG
+    com.twohands.auth_service.infrastructure.objectstorage: ${AUTH_OBJECT_STORAGE_LOG_LEVEL:DEBUG}
+    com.twohands.auth_service.config.AuthMinioConfig: ${AUTH_OBJECT_STORAGE_LOG_LEVEL:DEBUG}
+    com.twohands.auth_service.application.useraccount.avatarupload: ${AUTH_OBJECT_STORAGE_LOG_LEVEL:DEBUG}
+    com.twohands.auth_service.application.useraccount.coverupload: ${AUTH_OBJECT_STORAGE_LOG_LEVEL:DEBUG}
+    io.minio: ${AUTH_OBJECT_STORAGE_LOG_LEVEL:DEBUG}
     org.springframework.security: DEBUG
     org.springframework.security.oauth2: DEBUG
     org.springframework.web: DEBUG

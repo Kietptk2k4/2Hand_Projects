@@ -1,6 +1,8 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
+import { useFeedSidebarStats } from "../hooks/useFeedSidebarStats";
+import { useToggleSaveWithSidebar } from "../hooks/useToggleSaveWithSidebar";
 import { FEED_TABS } from "../constants/feedTabs";
 import { useCreatePostModal } from "../hooks/useCreatePostModal";
 import { useEditPostModal } from "../hooks/useEditPostModal";
@@ -41,6 +43,8 @@ export function SocialFeedPage() {
     openCreatePost,
     closeCreatePost,
   } = useCreatePostModal();
+  const sidebarStats = useFeedSidebarStats(user?.id);
+
   const {
     items,
     isInitialLoading,
@@ -75,10 +79,12 @@ export function SocialFeedPage() {
     [handleDeletePost, removeItem]
   );
 
-  const onToggleSavePost = useCallback(
-    (targetPostId) => handleToggleSavePost(targetPostId, { onSavedChange: patchSaved }),
-    [handleToggleSavePost, patchSaved]
-  );
+  const onToggleSavePost = useToggleSaveWithSidebar({
+    items,
+    patchSaved,
+    adjustSavedCount: sidebarStats.adjustSavedCount,
+    handleToggleSavePost,
+  });
 
   const onToggleLikePost = useCallback(
     (targetPostId) => handleToggleLikePost(targetPostId, { onLikedChange: patchLiked }),
@@ -149,7 +155,10 @@ export function SocialFeedPage() {
   return (
     <>
       <div className="mx-auto grid w-full max-w-[1280px] grid-cols-1 gap-6 px-4 py-8 md:px-8 lg:grid-cols-12">
-        <FeedLeftSidebar onComingSoon={() => setToastMessage(COMING_SOON_MESSAGE)} />
+        <FeedLeftSidebar
+          stats={sidebarStats}
+          onComingSoon={() => setToastMessage(COMING_SOON_MESSAGE)}
+        />
 
         <section className="flex flex-col gap-6 lg:col-span-6">
           <FeedTabs activeTab={activeTab} onChange={setActiveTab} />

@@ -6,7 +6,7 @@
 #   cd Infrastructure
 #   docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile dev up
 #
-# JDWP: auth 5001 | social 5002 | commerce 5003 | admin 5004 | notification 5005
+# JDWP (bootRun only, via DEBUG_PORT — not JAVA_TOOL_OPTIONS): auth 5001 | social 5002 | commerce 5003 | admin 5004 | notification 5005
 # Frontend (Vite HMR): http://localhost:5173
 
 x-dev-service: &dev-service
@@ -15,6 +15,9 @@ x-dev-service: &dev-service
   restart: unless-stopped
   networks:
     - default
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+    - "localhost:host-gateway"
   command:
     - bash
     - -lc
@@ -36,7 +39,7 @@ services:
       - path: ../Services/auth-service/.env.docker.local
         required: false
     environment:
-      JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5001
+      DEBUG_PORT: "5001"
     depends_on:
       postgres-auth:
         condition: service_started
@@ -62,7 +65,7 @@ services:
       - path: ../Services/social-service/.env.docker.local
         required: false
     environment:
-      JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5002
+      DEBUG_PORT: "5002"
     depends_on:
       postgres-social:
         condition: service_started
@@ -92,7 +95,7 @@ services:
       - path: ../Services/commerce-service/.env.docker.local
         required: false
     environment:
-      JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5003
+      DEBUG_PORT: "5003"
     depends_on:
       postgres-commerce:
         condition: service_started
@@ -120,7 +123,7 @@ services:
       - path: ../Services/admin-service/.env.docker.local
         required: false
     environment:
-      JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5004
+      DEBUG_PORT: "5004"
     depends_on:
       postgres-admin:
         condition: service_started
@@ -148,7 +151,7 @@ services:
       - path: ../Services/notification-service/.env.docker.local
         required: false
     environment:
-      JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      DEBUG_PORT: "5005"
     depends_on:
       postgres-notification:
         condition: service_started

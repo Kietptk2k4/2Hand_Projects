@@ -2,6 +2,7 @@ package com.twohands.commerce_service.infrastructure.objectstorage;
 
 import com.twohands.commerce_service.application.shop.uploadshopmedia.ShopMediaUploadIntent;
 import com.twohands.commerce_service.application.shop.uploadshopmedia.ShopMediaUploadStoragePort;
+import com.twohands.commerce_service.config.CommerceMinioConfig;
 import com.twohands.commerce_service.config.CommerceObjectStorageProperties;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
@@ -10,6 +11,7 @@ import io.minio.MinioClient;
 import io.minio.http.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +20,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Component
-@ConditionalOnBean(MinioClient.class)
+@ConditionalOnBean(name = CommerceMinioConfig.PRESIGN_MINIO_CLIENT)
 public class MinioShopMediaUploadStorageAdapter implements ShopMediaUploadStoragePort {
 
     private static final Logger log = LoggerFactory.getLogger(MinioShopMediaUploadStorageAdapter.class);
@@ -27,7 +29,7 @@ public class MinioShopMediaUploadStorageAdapter implements ShopMediaUploadStorag
     private final CommerceObjectStorageProperties properties;
 
     public MinioShopMediaUploadStorageAdapter(
-            MinioClient minioClient,
+            @Qualifier(CommerceMinioConfig.PRESIGN_MINIO_CLIENT) MinioClient minioClient,
             CommerceObjectStorageProperties properties
     ) {
         this.minioClient = minioClient;

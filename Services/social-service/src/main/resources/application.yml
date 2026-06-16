@@ -66,6 +66,7 @@ social:
   object-storage:
     enabled: ${SOCIAL_MINIO_ENABLED:false}
     endpoint: ${SOCIAL_MINIO_ENDPOINT:http://localhost:9000}
+    presigned-endpoint: ${SOCIAL_MINIO_PRESIGNED_ENDPOINT:}
     public-url: ${SOCIAL_MINIO_PUBLIC_URL:https://cdn.2hands.vn}
     access-key: ${SOCIAL_MINIO_ACCESS_KEY:admin}
     secret-key: ${SOCIAL_MINIO_SECRET_KEY:password123}
