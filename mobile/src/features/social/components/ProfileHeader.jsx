@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -9,10 +10,14 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { COVER_IMAGE_URL } from "../constants/profileConstants";
+import { ROUTES } from "../../../shared/constants/routes";
+import { resolveDevMediaUrl } from "../../../shared/utils/resolveDevMediaUrl";
 import { useThemeColors } from "../../../shared/theme/useThemeColors";
 import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
 import { FollowButton } from "./FollowButton";
+import { ProfileImageLightbox } from "./ProfileImageLightbox";
 import { ProfileStats } from "./ProfileStats";
 
 const DEFAULT_AVATAR = "https://i.pravatar.cc/200?img=11";
@@ -21,6 +26,10 @@ function createStyles(colors) {
   return {
     root: {
       backgroundColor: colors.surfaceContainerLowest,
+    },
+    coverPressable: {
+      height: 140,
+      width: "100%",
     },
     cover: {
       height: 140,
@@ -73,11 +82,20 @@ function createStyles(colors) {
     detailsLoader: {
       marginTop: 12,
     },
-    detailsError: {
+    detailsErrorWrap: {
       marginTop: 8,
+      alignItems: "center",
+      gap: 6,
+    },
+    detailsError: {
       fontSize: 13,
       color: colors.onErrorContainer,
       textAlign: "center",
+    },
+    retryLink: {
+      fontSize: 13,
+      fontWeight: "600",
+      color: colors.primary,
     },
     bio: {
       marginTop: 8,
@@ -107,6 +125,7 @@ function createStyles(colors) {
     actions: {
       marginTop: 16,
       alignItems: "center",
+      gap: 10,
     },
     editButton: {
       minHeight: 44,
@@ -126,42 +145,89 @@ function createStyles(colors) {
       fontWeight: "600",
       color: colors.onPrimary,
     },
+    shopButton: {
+      minHeight: 44,
+      minWidth: 168,
+      borderRadius: 8,
+      borderWidth: 2,
+      borderColor: colors.outlineVariant,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      backgroundColor: colors.surfaceContainerLowest,
+    },
+    shopButtonPressed: {
+      borderColor: colors.primary,
+    },
+    shopButtonText: {
+      fontSize: 14,
+      fontWeight: "500",
+      color: colors.onSurface,
+    },
   };
 }
 
 export function ProfileHeader({
   profile,
   details,
+  coverImageUrl,
+  commerceShop,
   isDetailsLoading = false,
   detailsError = "",
-  postCount = null,
+  onDetailsRetry,
   onFollowPress,
   isFollowLoading = false,
+  followDisabled = false,
+  followDisabledTitle,
   onFollowersPress,
   onFollowingPress,
   onEditProfilePress,
 }) {
   const colors = useThemeColors();
   const styles = useThemedStyles(createStyles);
+  const [imagePreview, setImagePreview] = useState(null);
 
   if (!profile) return null;
 
   const isSelf = profile.followStatus === "SELF";
+  const isPrivateAccount = Boolean(profile.isPrivate);
+  const showFollowButton = !isSelf && !isPrivateAccount;
   const showDetails = !details?.showPrivateNotice && !isDetailsLoading && !detailsError;
+
+  const resolvedCoverUrl =
+    String(coverImageUrl || profile.coverUrl || profile.cover_url || "").trim() ||
+    COVER_IMAGE_URL;
+  const avatarUrl = resolveDevMediaUrl(profile.avatarUrl || DEFAULT_AVATAR);
+
+  const openShop = () => {
+    if (!commerceShop?.shopId) return;
+    router.push(ROUTES.commerceShopProducts(commerceShop.shopId));
+  };
 
   return (
     <View style={styles.root}>
-      <ImageBackground source={{ uri: COVER_IMAGE_URL }} style={styles.cover} resizeMode="cover">
-        <View style={styles.coverOverlay} />
-      </ImageBackground>
+      <Pressable
+        onPress={() => setImagePreview("cover")}
+        accessibilityRole="button"
+        accessibilityLabel="Xem ảnh bìa"
+      >
+        <ImageBackground source={{ uri: resolvedCoverUrl }} style={styles.cover} resizeMode="cover">
+          <View style={styles.coverOverlay} />
+        </ImageBackground>
+      </Pressable>
 
       <View style={styles.body}>
-        <View style={styles.avatarWrap}>
-          <Image
-            source={{ uri: profile.avatarUrl || DEFAULT_AVATAR }}
-            style={styles.avatar}
-          />
-        </View>
+        <Pressable
+          style={styles.avatarWrap}
+          onPress={() => setImagePreview("avatar")}
+          accessibilityRole="button"
+          accessibilityLabel="Xem ảnh đại diện"
+        >
+          <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+        </Pressable>
 
         <View style={styles.nameRow}>
           <Text style={styles.displayName}>{profile.displayName}</Text>
@@ -185,7 +251,14 @@ export function ProfileHeader({
         ) : null}
 
         {detailsError ? (
-          <Text style={styles.detailsError}>{detailsError}</Text>
+          <View style={styles.detailsErrorWrap}>
+            <Text style={styles.detailsError}>{detailsError}</Text>
+            {onDetailsRetry ? (
+              <Pressable onPress={onDetailsRetry} accessibilityRole="button">
+                <Text style={styles.retryLink}>Thử lại</Text>
+              </Pressable>
+            ) : null}
+          </View>
         ) : null}
 
         {showDetails && details?.bio ? (
@@ -218,7 +291,6 @@ export function ProfileHeader({
         ) : null}
 
         <ProfileStats
-          postCount={postCount}
           followerCount={profile.followerCount}
           followingCount={profile.followingCount}
           onFollowersPress={onFollowersPress}
@@ -226,6 +298,24 @@ export function ProfileHeader({
         />
 
         <View style={styles.actions}>
+          {commerceShop?.hasShop && commerceShop.shopId ? (
+            <Pressable
+              style={({ pressed }) => [styles.shopButton, pressed && styles.shopButtonPressed]}
+              onPress={openShop}
+              accessibilityRole="button"
+              accessibilityLabel={
+                commerceShop.shopName
+                  ? `Shop: ${commerceShop.shopName}`
+                  : "Xem shop"
+              }
+            >
+              <Ionicons name="storefront-outline" size={18} color={colors.onSurface} />
+              <Text style={styles.shopButtonText} numberOfLines={1}>
+                {commerceShop.shopName ? `Shop: ${commerceShop.shopName}` : "Xem shop"}
+              </Text>
+            </Pressable>
+          ) : null}
+
           {isSelf ? (
             <Pressable
               style={({ pressed }) => [styles.editButton, pressed && styles.editButtonPressed]}
@@ -235,15 +325,33 @@ export function ProfileHeader({
             >
               <Text style={styles.editButtonText}>Chỉnh sửa hồ sơ</Text>
             </Pressable>
-          ) : (
+          ) : showFollowButton ? (
             <FollowButton
               followStatus={profile.followStatus}
               onPress={onFollowPress}
               isLoading={isFollowLoading}
+              disabled={followDisabled}
+              disabledTitle={followDisabledTitle}
             />
-          )}
+          ) : null}
         </View>
       </View>
+
+      {imagePreview === "avatar" ? (
+        <ProfileImageLightbox
+          imageUrl={avatarUrl}
+          label="Ảnh đại diện"
+          onClose={() => setImagePreview(null)}
+        />
+      ) : null}
+
+      {imagePreview === "cover" ? (
+        <ProfileImageLightbox
+          imageUrl={resolvedCoverUrl}
+          label="Ảnh bìa"
+          onClose={() => setImagePreview(null)}
+        />
+      ) : null}
     </View>
   );
 }

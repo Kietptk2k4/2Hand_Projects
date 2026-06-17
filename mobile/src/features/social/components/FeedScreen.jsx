@@ -11,13 +11,18 @@ import { FEED_TABS } from "../constants/feedTabs";
 import { useCurrentUserId } from "../hooks/useCurrentUserId";
 import { useDeletePost } from "../hooks/useDeletePost";
 import { useFeed } from "../hooks/useFeed";
+import { useFeedSidebarStats } from "../hooks/useFeedSidebarStats";
 import { useLikePost } from "../hooks/useLikePost";
 import { useSavePost } from "../hooks/useSavePost";
+import { useToggleSaveWithSidebar } from "../hooks/useToggleSaveWithSidebar";
 import { FeedComposer } from "./FeedComposer";
+import { FeedDiscoverySection } from "./FeedDiscoverySection";
 import { FeedHeaderActions } from "./FeedHeaderActions";
 import { FeedPostSkeleton } from "./FeedPostSkeleton";
+import { FeedProfileSummary } from "./FeedProfileSummary";
 import { FeedTabs } from "./FeedTabs";
 import { PostCard } from "./PostCard";
+import { SocialWriteBlockedBanner } from "./SocialWriteBlockedBanner";
 import { ROUTES } from "../../../shared/constants/routes";
 import { useThemeColors } from "../../../shared/theme/useThemeColors";
 import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
@@ -97,6 +102,8 @@ export function FeedScreen() {
   const styles = useThemedStyles(createStyles);
   const [activeTab, setActiveTab] = useState(FEED_TABS.GLOBAL);
   const currentUserId = useCurrentUserId();
+  const sidebarStats = useFeedSidebarStats(currentUserId);
+
   const {
     items,
     errorMessage,
@@ -111,6 +118,23 @@ export function FeedScreen() {
   const { toggleSave, isSavingPost } = useSavePost();
   const { confirmDelete, isDeletingPost } = useDeletePost();
 
+  const handleToggleSavePost = useCallback(
+    (targetPostId, { onSavedChange } = {}) => {
+      toggleSave(targetPostId, {
+        onSuccess: (data) => {
+          onSavedChange?.(targetPostId, Boolean(data?.saved));
+        },
+      });
+    },
+    [toggleSave]
+  );
+
+  const onToggleSave = useToggleSaveWithSidebar({
+    items,
+    adjustSavedCount: sidebarStats.adjustSavedCount,
+    handleToggleSavePost,
+  });
+
   const onOpenPost = useCallback((postId, options = {}) => {
     router.push(ROUTES.postDetail(postId, options));
   }, []);
@@ -123,6 +147,16 @@ export function FeedScreen() {
   const onHashtagClick = useCallback((tag) => {
     if (!tag) return;
     router.push(ROUTES.hashtag(tag));
+  }, []);
+
+  const onOpenLikesList = useCallback(({ type, targetId, likeCount }) => {
+    if (!targetId) return;
+    router.push(
+      ROUTES.postLikes(targetId, {
+        targetType: type || "post",
+        likeCount: likeCount ?? 0,
+      })
+    );
   }, []);
 
   const onOpenCreatePost = useCallback(() => {
@@ -141,11 +175,16 @@ export function FeedScreen() {
   const renderHeader = () => (
     <View style={styles.headerBlock}>
       <FeedHeaderActions />
+      <SocialWriteBlockedBanner />
+      {currentUserId ? (
+        <FeedProfileSummary userId={currentUserId} stats={sidebarStats} />
+      ) : null}
       <FeedComposer
         onOpenCreatePost={onOpenCreatePost}
         onOpenCreatePostWithPicker={onOpenCreatePostWithPicker}
       />
       <FeedTabs activeTab={activeTab} onChange={setActiveTab} />
+      <FeedDiscoverySection onViewProfile={onViewProfile} />
     </View>
   );
 
@@ -190,9 +229,10 @@ export function FeedScreen() {
           onViewProfile={onViewProfile}
           onHashtagClick={onHashtagClick}
           onToggleLike={toggleLike}
-          onToggleSave={toggleSave}
+          onToggleSave={onToggleSave}
           onEditPost={onEditPost}
           onDeletePost={(postId) => confirmDelete(postId)}
+          onOpenLikesList={onOpenLikesList}
           isLikingPost={isLikingPost(item.postId)}
           isSavingPost={isSavingPost(item.postId)}
           isDeletingPost={isDeletingPost(item.postId)}

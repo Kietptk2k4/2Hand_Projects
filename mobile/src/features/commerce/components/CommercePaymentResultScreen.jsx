@@ -3,11 +3,11 @@ import { ScrollView, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { ROUTES } from "../../../shared/constants/routes";
 import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
-import { createPayOsCheckoutUrl } from "../api/paymentApi";
+import { createPayOsCheckoutUrl, retryVnpayPayment } from "../api/paymentApi";
 import { canRetryPayment } from "../constants/paymentStatusLabels";
 import { usePaymentStatus } from "../hooks/usePaymentStatus";
 import { openPayOsBrowser } from "../utils/openPayOsBrowser";
-import { mapPayOsCheckoutUrlResponse } from "../utils/paymentMapper";
+import { mapPayOsCheckoutUrlResponse, mapVnpayRetryResponse } from "../utils/paymentMapper";
 import { PaymentStatusPanel } from "./PaymentStatusPanel";
 
 const UUID_REGEX =
@@ -53,6 +53,7 @@ export function CommercePaymentResultScreen() {
     orderStatus,
     orderPaymentStatus,
     payosCheckoutUrl,
+    paymentMethod,
     isLoading,
     error,
     refresh,
@@ -73,6 +74,21 @@ export function CommercePaymentResultScreen() {
 
     setIsRetrying(true);
     try {
+      if (paymentMethod === "VNPAY") {
+        if (!orderId) {
+          await refresh();
+          return;
+        }
+        const raw = await retryVnpayPayment(orderId);
+        const redirect = mapVnpayRetryResponse(raw)?.redirect;
+        if (redirect) {
+          await openPayOsBrowser(redirect);
+          return;
+        }
+        await refresh();
+        return;
+      }
+
       let url = payosCheckoutUrl;
       if (!url) {
         const raw = await createPayOsCheckoutUrl(paymentId);
@@ -88,7 +104,7 @@ export function CommercePaymentResultScreen() {
     } finally {
       setIsRetrying(false);
     }
-  }, [paymentId, payosCheckoutUrl, refresh]);
+  }, [orderId, paymentId, paymentMethod, payosCheckoutUrl, refresh]);
 
   if (!isValidPaymentId) {
     return null;
@@ -110,6 +126,7 @@ export function CommercePaymentResultScreen() {
           showRetry={showRetry}
           onRetryPayment={showRetry ? handleRetryPayment : undefined}
           isRetrying={isRetrying}
+          paymentMethod={paymentMethod}
         />
       </View>
     </ScrollView>

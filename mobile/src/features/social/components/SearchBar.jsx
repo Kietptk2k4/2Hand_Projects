@@ -8,6 +8,7 @@ export function SearchBar({
   onClear,
   placeholder = "Tìm kiếm...",
   autoFocus = false,
+  onSubmitEditing,
 }) {
   return (
     <View style={styles.wrap}>
@@ -22,6 +23,7 @@ export function SearchBar({
         autoCapitalize="none"
         autoCorrect={false}
         returnKeyType="search"
+        onSubmitEditing={onSubmitEditing}
       />
       {value ? (
         <Pressable onPress={onClear} style={styles.clearBtn} accessibilityLabel="Xóa tìm kiếm">

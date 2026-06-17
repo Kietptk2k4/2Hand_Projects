@@ -4,6 +4,7 @@ import { fetchSuggestedUsers } from "../api/discoveryApi";
 import { discoveryKeys } from "../api/discoveryKeys";
 import { profileKeys } from "../api/profileKeys";
 import { SUGGESTED_USERS_PAGE_SIZE } from "../constants/discoveryConstants";
+import { useSocialWriteBlock } from "../context/SocialWriteBlockContext";
 import { useSocialToast } from "../../../shared/components/SocialToastProvider";
 import { handleSocialQueryError } from "../utils/handleSocialQueryError";
 import { mapSocialWriteError } from "../utils/socialWriteErrors";
@@ -34,6 +35,7 @@ function patchSuggestedUserFollowStatus(queryClient, userId, followStatus) {
 export function useSuggestedUsers() {
   const queryClient = useQueryClient();
   const { showToast } = useSocialToast();
+  const { isWriteBlocked, suspendMessage } = useSocialWriteBlock();
 
   const listQuery = useInfiniteQuery({
     queryKey: discoveryKeys.suggestedUsers,
@@ -77,6 +79,9 @@ export function useSuggestedUsers() {
         await handleSocialQueryError({ code: 401, message: mapped.message });
         return;
       }
+      if (mapped.type === "suspended") {
+        return;
+      }
       showToast(mapped.message || "Không cập nhật được trạng thái theo dõi.", "error");
     },
     onSuccess: (data, { userId, action }) => {
@@ -107,7 +112,7 @@ export function useSuggestedUsers() {
   const meta = listQuery.data?.pages.at(-1)?.meta ?? null;
 
   const toggleFollow = (user) => {
-    if (!user?.userId || followMutation.isPending) return;
+    if (!user?.userId || followMutation.isPending || isWriteBlocked) return;
     if (user.followStatus === "SELF") return;
 
     const action =
@@ -142,5 +147,7 @@ export function useSuggestedUsers() {
       followMutation.isPending && followMutation.variables?.userId === userId,
     followButtonLabel,
     suggestionSubtitle,
+    followDisabled: isWriteBlocked,
+    followDisabledTitle: suspendMessage,
   };
 }

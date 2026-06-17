@@ -19,6 +19,8 @@ export default function AccountLayout() {
       <Stack.Screen name="avatar" options={{ title: "Ảnh đại diện" }} />
       <Stack.Screen name="privacy" options={{ title: "Quyền riêng tư" }} />
       <Stack.Screen name="settings" options={{ title: "Cài đặt" }} />
+      <Stack.Screen name="password" options={{ title: "Đổi mật khẩu" }} />
+      <Stack.Screen name="security" options={{ title: "Bảo mật tài khoản" }} />
       <Stack.Screen name="delete" options={{ title: "Xóa tài khoản" }} />
     </Stack>
   );

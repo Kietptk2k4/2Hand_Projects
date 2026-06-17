@@ -19,6 +19,7 @@ import {
   mapOrderActionApiError,
 } from "../constants/orderActionConstants";
 import { ORDER_STATUS_LABELS } from "../constants/orderListConstants";
+import { ONLINE_PAYMENT_METHODS } from "../constants/checkoutConstants";
 import { isOrderCancelledDueToPayment } from "../constants/paymentStatusLabels";
 import { useCancelOrder } from "../hooks/useCancelOrder";
 import { useConfirmOrderReceived } from "../hooks/useConfirmOrderReceived";
@@ -32,6 +33,7 @@ import { OrderDetailShipmentsSection } from "./OrderDetailShipmentsSection";
 import { OrderDetailShippingAddress } from "./OrderDetailShippingAddress";
 import { OrderDetailSkeleton } from "./OrderDetailSkeleton";
 import { OrderDetailTimeline } from "./OrderDetailTimeline";
+import { RetryVnpayPaymentButton } from "./RetryVnpayPaymentButton";
 
 function getOrderStatusBadgeStyle(colors, status) {
   switch (status) {
@@ -171,9 +173,10 @@ export function CommerceOrderDetailScreen() {
 
   const showPayNow =
     order?.orderStatus === "AWAITING_PAYMENT" &&
-    order?.paymentMethod === "PAYOS" &&
+    ONLINE_PAYMENT_METHODS.has(order?.paymentMethod) &&
     order?.payment?.paymentId &&
     !isOrderCancelledDueToPayment(order.orderStatus, order.orderPaymentStatus);
+  const isVnpayPayNow = showPayNow && order?.paymentMethod === "VNPAY";
 
   const showPaymentFailureBanner = isOrderCancelledDueToPayment(
     order?.orderStatus,
@@ -326,7 +329,11 @@ export function CommerceOrderDetailScreen() {
             </Pressable>
           ) : null}
 
-          {showPayNow ? (
+          {showPayNow && isVnpayPayNow ? (
+            <RetryVnpayPaymentButton orderId={order.orderId} label="Thanh toán ngay" />
+          ) : null}
+
+          {showPayNow && !isVnpayPayNow ? (
             <Pressable style={[styles.actionBtn, styles.payBtn]} onPress={handlePayNow}>
               <Text style={[styles.actionBtnText, styles.payBtnText]}>Thanh toán ngay</Text>
             </Pressable>

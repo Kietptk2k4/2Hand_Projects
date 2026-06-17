@@ -1,7 +1,8 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { searchPosts } from "../api/searchPostsApi";
 import { discoveryKeys } from "../api/discoveryKeys";
-import { SEARCH_POSTS_PAGE_SIZE } from "../constants/discoveryConstants";
+import { SEARCH_POSTS_PAGE_SIZE } from "../constants/searchPostsConstants";
+import { addSearchHistory } from "../utils/searchHistoryStorage";
 import { handleSocialQueryError } from "../utils/handleSocialQueryError";
 
 export function useSearchPosts(debouncedQuery) {
@@ -11,7 +12,11 @@ export function useSearchPosts(debouncedQuery) {
     queryKey: discoveryKeys.searchPosts(q),
     queryFn: async ({ pageParam = 0 }) => {
       try {
-        return await searchPosts({ q, page: pageParam, size: SEARCH_POSTS_PAGE_SIZE });
+        const data = await searchPosts({ q, page: pageParam, size: SEARCH_POSTS_PAGE_SIZE });
+        if (pageParam === 0 && q) {
+          await addSearchHistory(data?.keyword || q);
+        }
+        return data;
       } catch (error) {
         const handled = await handleSocialQueryError(error);
         if (handled) throw error;

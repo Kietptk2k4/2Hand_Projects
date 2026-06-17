@@ -2,4 +2,5 @@ export const SAVED_POSTS_PAGE_SIZE = 20;
 export const SEARCH_POSTS_PAGE_SIZE = 20;
 export const HASHTAG_POSTS_PAGE_SIZE = 20;
 export const SUGGESTED_USERS_PAGE_SIZE = 20;
+export const FEED_DISCOVERY_SUGGESTIONS_LIMIT = 3;
 export const SEARCH_DEBOUNCE_MS = 400;

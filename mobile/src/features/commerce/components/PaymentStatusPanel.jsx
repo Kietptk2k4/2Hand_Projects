@@ -97,6 +97,7 @@ export function PaymentStatusPanel({
   showRetry = false,
   onRetryPayment,
   isRetrying,
+  paymentMethod,
 }) {
   const colors = useThemeColors();
   const styles = useThemedStyles(createStyles);
@@ -151,7 +152,7 @@ export function PaymentStatusPanel({
         <Ionicons name="time-outline" size={56} color="#d97706" />
         <Text style={styles.title}>Chưa nhận được xác nhận thanh toán</Text>
         <Text style={styles.subtitle}>
-          Bạn đã quay lại từ PayOS. Hệ thống đang chờ xác nhận từ cổng thanh toán — vui lòng đợi
+          Bạn đã quay lại từ {paymentMethod === "VNPAY" ? "VNPay" : "PayOS"}. Hệ thống đang chờ xác nhận từ cổng thanh toán — vui lòng đợi
           thêm vài giây hoặc thử thanh toán lại nếu đã quá lâu.
         </Text>
         {orderId ? <Text style={styles.meta}>Mã đơn: {orderId}</Text> : null}

@@ -10,24 +10,25 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { DEFAULT_PROFILE_STATUS_FILTER } from "../constants/profileConstants";
+import { usePublicShopByUser } from "../../commerce/hooks/usePublicShopByUser";
+import { DEFAULT_PROFILE_STATUS_FILTER, COVER_IMAGE_URL } from "../constants/profileConstants";
 import { useCurrentUserId } from "../hooks/useCurrentUserId";
 import { useDeletePost } from "../hooks/useDeletePost";
 import { useFollowUser } from "../hooks/useFollowUser";
-import { useLikePost } from "../hooks/useLikePost";
 import { useProfile } from "../hooks/useProfile";
 import { useProfilePosts } from "../hooks/useProfilePosts";
 import { usePublicProfileDetails } from "../hooks/usePublicProfileDetails";
 import { useSavePost } from "../hooks/useSavePost";
 import { ProfileHeader } from "./ProfileHeader";
 import { ProfilePostsFilter } from "./ProfilePostsFilter";
-import { PostCard } from "./PostCard";
+import { ProfilePostTile } from "./ProfilePostTile";
 import { AccountSettingsHeaderButton } from "../../auth/account/components/AccountSettingsHeaderButton";
 import { useAccountProfile } from "../../auth/account/hooks/useAccountProfile";
 import { ROUTES } from "../../../shared/constants/routes";
 import { useThemeColors } from "../../../shared/theme/useThemeColors";
 import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
 import { resolveSelfProfileDetails } from "../utils/resolveProfileDetails";
+import { resolvePostIsOwner } from "../utils/resolvePostAuthorId";
 
 function createProfileScreenStyles(colors) {
   return {
@@ -112,6 +113,38 @@ function createProfileScreenStyles(colors) {
     },
     footer: {
       paddingVertical: 16,
+      alignItems: "center",
+      gap: 8,
+    },
+    loadMoreButton: {
+      borderWidth: 1,
+      borderColor: colors.primary,
+      borderRadius: 8,
+      paddingHorizontal: 24,
+      paddingVertical: 10,
+      minHeight: 44,
+      justifyContent: "center",
+    },
+    loadMoreText: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.primary,
+    },
+    gridRow: {
+      paddingHorizontal: 10,
+    },
+    skeletonGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      paddingHorizontal: 10,
+      gap: 0,
+    },
+    skeletonTile: {
+      width: "47%",
+      aspectRatio: 1,
+      margin: 6,
+      borderRadius: 12,
+      backgroundColor: colors.surfaceContainerHigh,
     },
   };
 }
@@ -183,6 +216,10 @@ export function ProfileScreen({ userId }) {
     enabled: Boolean(userId) && Boolean(profile) && !isSelf,
   });
 
+  const { shop: commerceShop } = usePublicShopByUser(userId, {
+    enabled: Boolean(userId),
+  });
+
   const selfDetails = useMemo(() => {
     if (!isSelf) return null;
     return resolveSelfProfileDetails(accountProfileState.profile);
@@ -200,6 +237,16 @@ export function ProfileScreen({ userId }) {
       ? publicDetailsState.errorMessage
       : "";
 
+  const accountCoverUrl =
+    accountProfileState.profile?.profile?.cover_url ??
+    accountProfileState.profile?.profile?.coverUrl ??
+    "";
+  const coverImageUrl =
+    profile?.coverUrl ||
+    profile?.cover_url ||
+    (isSelf ? accountCoverUrl : "") ||
+    COVER_IMAGE_URL;
+
   const canViewPosts = Boolean(profile?.canViewFullProfile);
   const effectiveStatusFilter = isSelf ? statusFilter : "published";
 
@@ -208,8 +255,12 @@ export function ProfileScreen({ userId }) {
     statusFilter: effectiveStatusFilter,
   });
 
-  const { toggleFollow, isFollowLoading } = useFollowUser(userId);
-  const { toggleLike, isLikingPost } = useLikePost();
+  const {
+    toggleFollow,
+    isFollowLoading,
+    followDisabled,
+    followDisabledTitle,
+  } = useFollowUser(userId);
   const { toggleSave, isSavingPost } = useSavePost();
   const { confirmDelete, isDeletingPost } = useDeletePost({
     onDeleted: () => postsState.refetch(),
@@ -219,20 +270,19 @@ export function ProfileScreen({ userId }) {
     router.push(ROUTES.postDetail(postId, options));
   }, []);
 
-  const onViewProfile = useCallback((targetUserId) => {
-    if (!targetUserId) return;
-    router.push(ROUTES.userProfile(targetUserId));
-  }, []);
-
   const onEditPost = useCallback((postId) => {
     if (!postId) return;
     router.push(ROUTES.postEdit(postId));
   }, []);
 
-  const onHashtagClick = useCallback((tag) => {
-    if (!tag) return;
-    router.push(ROUTES.hashtag(tag));
-  }, []);
+  const onToggleSave = useCallback(
+    (postId) => {
+      toggleSave(postId, {
+        onSuccess: () => postsState.refetch(),
+      });
+    },
+    [postsState, toggleSave]
+  );
 
   const onFollowersPress = useCallback(() => {
     router.push(ROUTES.profileFollowers(userId));
@@ -243,8 +293,16 @@ export function ProfileScreen({ userId }) {
   }, [userId]);
 
   const onEditProfilePress = useCallback(() => {
-    router.push(ROUTES.accountEdit);
+    router.push(ROUTES.account);
   }, []);
+
+  const onDetailsRetry = useCallback(() => {
+    if (isSelf) {
+      accountProfileState.retry();
+      return;
+    }
+    publicDetailsState.retry();
+  }, [accountProfileState, isSelf, publicDetailsState]);
 
   useLayoutEffect(() => {
     if (!isSelf) {
@@ -284,11 +342,15 @@ export function ProfileScreen({ userId }) {
         <ProfileHeader
           profile={profile}
           details={details}
+          coverImageUrl={coverImageUrl}
+          commerceShop={commerceShop}
           isDetailsLoading={isDetailsLoading}
           detailsError={detailsError}
-          postCount={postsState.meta?.totalElements ?? null}
+          onDetailsRetry={detailsError ? onDetailsRetry : undefined}
           onFollowPress={() => toggleFollow(profile)}
           isFollowLoading={isFollowLoading}
+          followDisabled={followDisabled}
+          followDisabledTitle={followDisabledTitle}
           onFollowersPress={onFollowersPress}
           onFollowingPress={onFollowingPress}
           onEditProfilePress={onEditProfilePress}
@@ -305,13 +367,15 @@ export function ProfileScreen({ userId }) {
           ) : null}
         </View>
 
-        {postsState.isInitialLoading ? (
-          <View style={styles.postsLoading}>
-            <ActivityIndicator color={colors.primary} />
+        {!canViewPosts ? <ProfilePostsEmpty isPrivateLocked /> : null}
+
+        {canViewPosts && postsState.isInitialLoading ? (
+          <View style={styles.skeletonGrid}>
+            {Array.from({ length: 4 }).map((_, index) => (
+              <View key={index} style={styles.skeletonTile} />
+            ))}
           </View>
         ) : null}
-
-        {!canViewPosts ? <ProfilePostsEmpty isPrivateLocked /> : null}
 
         {canViewPosts && postsState.errorMessage ? (
           <ProfilePostsError
@@ -332,18 +396,48 @@ export function ProfileScreen({ userId }) {
   }, [
     profile,
     details,
+    coverImageUrl,
+    commerceShop,
     isDetailsLoading,
     detailsError,
+    onDetailsRetry,
     isSelf,
+    canViewPosts,
     postsState,
     statusFilter,
-    canViewPosts,
     toggleFollow,
     isFollowLoading,
+    followDisabled,
+    followDisabledTitle,
     onFollowersPress,
     onFollowingPress,
     onEditProfilePress,
+    styles,
   ]);
+
+  const listFooter = useMemo(() => {
+    if (!canViewPosts || postsState.errorMessage) return null;
+
+    if (postsState.isLoadingMore) {
+      return (
+        <View style={styles.footer}>
+          <ActivityIndicator color={colors.primary} />
+        </View>
+      );
+    }
+
+    if (postsState.hasNext && postsState.items.length > 0) {
+      return (
+        <View style={styles.footer}>
+          <Pressable style={styles.loadMoreButton} onPress={postsState.loadMore}>
+            <Text style={styles.loadMoreText}>Tải thêm</Text>
+          </Pressable>
+        </View>
+      );
+    }
+
+    return null;
+  }, [canViewPosts, colors.primary, postsState, styles]);
 
   if (isProfileLoading && !profile) {
     return (
@@ -373,40 +467,39 @@ export function ProfileScreen({ userId }) {
 
   return (
     <FlatList
-      data={canViewPosts && !postsState.errorMessage ? postsState.items : []}
+      data={
+        canViewPosts && !postsState.errorMessage && !postsState.isInitialLoading
+          ? postsState.items
+          : []
+      }
       keyExtractor={(item) => item.postId}
+      numColumns={2}
+      columnWrapperStyle={styles.gridRow}
       renderItem={({ item }) => (
-        <PostCard
+        <ProfilePostTile
           post={item}
-          currentUserId={currentUserId}
+          isOwner={resolvePostIsOwner(item, currentUserId)}
+          savedByMe={item.savedByMe}
           onOpenPost={onOpenPost}
-          onViewProfile={onViewProfile}
-          onEditPost={onEditPost}
-          onHashtagClick={onHashtagClick}
-          onToggleLike={toggleLike}
-          onToggleSave={toggleSave}
+          onEdit={onEditPost}
           onDeletePost={(postId) => confirmDelete(postId)}
-          isLikingPost={isLikingPost(item.postId)}
+          onToggleSave={onToggleSave}
           isSavingPost={isSavingPost(item.postId)}
           isDeletingPost={isDeletingPost(item.postId)}
         />
       )}
       ListHeaderComponent={listHeader}
+      ListFooterComponent={listFooter}
       contentContainerStyle={styles.listContent}
       refreshControl={
         <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
       }
       onEndReached={() => {
-        if (canViewPosts && postsState.hasNext) postsState.loadMore();
+        if (canViewPosts && postsState.hasNext && !postsState.isLoadingMore) {
+          postsState.loadMore();
+        }
       }}
       onEndReachedThreshold={0.4}
-      ListFooterComponent={
-        postsState.isLoadingMore ? (
-          <View style={styles.footer}>
-            <ActivityIndicator color={colors.primary} />
-          </View>
-        ) : null
-      }
     />
   );
 }

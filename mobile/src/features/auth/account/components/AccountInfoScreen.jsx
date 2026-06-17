@@ -150,12 +150,6 @@ export function AccountInfoScreen() {
           lineHeight: 20,
           color: colors.onSurfaceVariant,
         },
-        comingSoon: {
-          marginTop: 12,
-          fontSize: 14,
-          fontWeight: "500",
-          color: colors.outline,
-        },
       }),
     [colors]
   );
@@ -288,6 +282,11 @@ export function AccountInfoScreen() {
             linkStyle={styles.link}
             onPress={() => router.push(ROUTES.accountSettings)}
           />
+          <LinkAction
+            label="Đổi mật khẩu"
+            linkStyle={styles.link}
+            onPress={() => router.push(ROUTES.accountPassword)}
+          />
         </View>
       </AccountCard>
 
@@ -295,7 +294,11 @@ export function AccountInfoScreen() {
         <Text style={styles.securityHint}>
           Xem phiên đăng nhập đang hoạt động và lịch sử đăng nhập của tài khoản.
         </Text>
-        <Text style={styles.comingSoon}>Tính năng đang được phát triển.</Text>
+        <LinkAction
+          label="Bảo mật tài khoản"
+          linkStyle={[styles.link, { marginTop: 12 }]}
+          onPress={() => router.push(ROUTES.accountSecurity)}
+        />
       </AccountCard>
     </ScrollView>
   );

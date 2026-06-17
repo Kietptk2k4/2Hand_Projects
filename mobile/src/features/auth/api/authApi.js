@@ -1,9 +1,109 @@
+import axios from "axios";
 import { authApiClient } from "../../../services/http/authApiClient";
+import { resolveServiceBaseUrl } from "../../../services/http/resolveServiceBaseUrl";
 import { mapAxiosError, unwrapResponse } from "../../../services/http/apiResponse";
+
+const AUTH_BASE_URL = resolveServiceBaseUrl(process.env.EXPO_PUBLIC_AUTH_SERVICE_BASE_URL);
 
 export async function loginWithEmail(payload) {
   try {
     const response = await authApiClient.post("/api/v1/auth/login", payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function registerWithEmail(payload) {
+  try {
+    const response = await authApiClient.post("/api/v1/auth/register", payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function changePassword(payload) {
+  try {
+    const response = await authApiClient.post("/api/v1/auth/change-password", payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function forgotPassword(payload) {
+  try {
+    const response = await authApiClient.post("/api/v1/auth/forgot-password", payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function verifyEmail(payload) {
+  try {
+    const response = await authApiClient.post("/api/v1/auth/verify-email", payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function resendEmailVerification(payload) {
+  try {
+    const response = await authApiClient.post("/api/v1/auth/resend-email-verification", payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function fetchOAuthSession() {
+  try {
+    const response = await axios.get(`${AUTH_BASE_URL}/api/v1/auth/oauth/session`, {
+      withCredentials: true,
+    });
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export function getOAuthRedirectUrl(provider) {
+  const providers = {
+    google: "/oauth2/authorization/google",
+    facebook: "/oauth2/authorization/facebook",
+  };
+
+  const endpoint = providers[provider];
+  if (!endpoint) return "";
+  return `${AUTH_BASE_URL}${endpoint}`;
+}
+
+export async function getLoginSessions() {
+  try {
+    const response = await authApiClient.get("/api/v1/users/me/sessions");
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function logoutAllSessions() {
+  try {
+    const response = await authApiClient.post("/api/v1/users/me/sessions/logout-all");
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function getLoginHistory({ limit = 20, offset = 0 } = {}) {
+  try {
+    const response = await authApiClient.get("/api/v1/users/me/login-history", {
+      params: { limit, offset },
+    });
     return unwrapResponse(response);
   } catch (error) {
     throw mapAxiosError(error);

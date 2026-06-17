@@ -1,5 +1,12 @@
 export const ROUTES = {
   login: "/(auth)/login",
+  register: "/(auth)/register",
+  forgotPassword: "/(auth)/forgot-password",
+  verifyEmail: "/(auth)/verify-email",
+  sessionExpired: "/(auth)/session-expired",
+  changePassword: "/(auth)/change-password",
+  oauthSuccess: "/oauth/success",
+  oauthFailure: "/oauth/failure",
   feed: "/(tabs)/feed",
   profile: "/(tabs)/profile",
   shop: "/(tabs)/shop",
@@ -18,11 +25,26 @@ export const ROUTES = {
     pathname: "/post/[postId]/edit",
     params: { postId },
   }),
+  postLikes: (targetId, { likeCount = 0, targetType = "post" } = {}) => ({
+    pathname: "/post/[postId]/likes",
+    params: {
+      postId: targetId,
+      likeCount: String(likeCount),
+      targetType,
+    },
+  }),
   userProfile: (userId) => `/profile/${userId}`,
   profileFollowers: (userId) => `/profile/${userId}/followers`,
   profileFollowing: (userId) => `/profile/${userId}/following`,
   saved: "/saved",
-  search: "/search",
+  search: (q) => {
+    const trimmed = String(q ?? "").trim();
+    if (!trimmed) return "/search";
+    return {
+      pathname: "/search",
+      params: { q: trimmed },
+    };
+  },
   suggestions: "/suggestions",
   hashtag: (tag) => `/hashtag/${encodeURIComponent(String(tag).replace(/^#+/, ""))}`,
   account: "/account",
@@ -32,6 +54,8 @@ export const ROUTES = {
   accountPrivacy: "/account/privacy",
   accountSettings: "/account/settings",
   accountDelete: "/account/delete",
+  accountPassword: "/account/password",
+  accountSecurity: "/account/security",
   commerceHome: "/(tabs)/shop",
   commerceSearch: "/commerce/search",
   commerceCategoryProducts: (categoryId) => ({
@@ -70,6 +94,7 @@ export const ROUTES = {
     pathname: "/commerce/checkout/success",
     ...(orderId ? { params: { orderId: String(orderId) } } : {}),
   }),
+  commerceCheckoutVnpayReturn: "/commerce/checkout/vnpay-return",
   commerceOrders: "/commerce/orders",
   commerceOrderDetail: (orderId) => ({
     pathname: "/commerce/orders/[orderId]",

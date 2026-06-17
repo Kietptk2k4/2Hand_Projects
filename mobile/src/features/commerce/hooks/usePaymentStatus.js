@@ -87,6 +87,7 @@ export function usePaymentStatus(
   return {
     payment,
     status: payment?.status ?? null,
+    paymentMethod: payment?.paymentMethod ?? null,
     orderStatus: payment?.orderStatus ?? null,
     orderPaymentStatus: payment?.orderPaymentStatus ?? null,
     amount: payment?.amount ?? null,

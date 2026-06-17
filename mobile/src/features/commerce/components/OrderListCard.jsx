@@ -2,6 +2,7 @@ import { Image, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { ROUTES } from "../../../shared/constants/routes";
+import { ONLINE_PAYMENT_METHODS } from "../constants/checkoutConstants";
 import { resolveDevMediaUrl } from "../../../shared/utils/resolveDevMediaUrl";
 import { useThemeColors } from "../../../shared/theme/useThemeColors";
 import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
@@ -10,6 +11,7 @@ import {
   ORDER_STATUS_LABELS,
   PAYMENT_METHOD_LABELS,
 } from "../constants/orderListConstants";
+import { RetryVnpayPaymentButton } from "./RetryVnpayPaymentButton";
 import { formatOrderDate, formatShortOrderId } from "../utils/formatOrderDate";
 import { formatVndPrice } from "../utils/formatVndPrice";
 
@@ -135,8 +137,9 @@ export function OrderListCard({ order }) {
   const imageUri = resolveDevMediaUrl(order.previewImageUrl);
   const showPayNow =
     order.orderStatus === "AWAITING_PAYMENT" &&
-    order.paymentMethod === "PAYOS" &&
+    ONLINE_PAYMENT_METHODS.has(order.paymentMethod) &&
     order.payment?.paymentId;
+  const isVnpay = order.paymentMethod === "VNPAY";
 
   const goToDetail = () => {
     if (order.orderId) router.push(ROUTES.commerceOrderDetail(order.orderId));
@@ -193,7 +196,10 @@ export function OrderListCard({ order }) {
       </Pressable>
 
       <View style={styles.footer}>
-        {showPayNow ? (
+        {showPayNow && isVnpay ? (
+          <RetryVnpayPaymentButton orderId={order.orderId} label="Thanh toán ngay" />
+        ) : null}
+        {showPayNow && !isVnpay ? (
           <Pressable style={styles.primaryBtn} onPress={goToPay}>
             <Text style={styles.primaryBtnText}>Thanh toán ngay</Text>
           </Pressable>

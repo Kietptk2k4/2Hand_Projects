@@ -3,7 +3,7 @@ import { mapAxiosError } from "../api/socialApiResponse";
 export const SOCIAL_WRITE_SUSPENDED_CODE = "SOCIAL-403-SUSPENDED";
 
 export const DEFAULT_SUSPEND_MESSAGE =
-  "Tai khoan bi dinh chi, khong the thuc hien hanh dong nay.";
+  "Tài khoản bị đình chỉ, không thể thực hiện hành động này.";
 
 export function isSuspendedWriteError(error) {
   const code = error?.code ?? error?.response?.data?.code;

@@ -9,6 +9,7 @@ import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
 import { cartKeys } from "../api/cartKeys";
 import { PAYOS_AUTO_REDIRECT_MS } from "../constants/paymentConstants";
 import { usePayOsCheckout } from "../hooks/usePayOsCheckout";
+import { useVnpayCheckout } from "../hooks/useVnpayCheckout";
 import { formatVndPrice } from "../utils/formatVndPrice";
 import { openPayOsBrowser } from "../utils/openPayOsBrowser";
 
@@ -153,6 +154,73 @@ function PayOsSuccessContent({ orderId, paymentId, finalAmount, orderStatus, pay
   );
 }
 
+function VnpaySuccessContent({ orderId, paymentId, finalAmount, orderStatus, paymentStatus, styles, colors }) {
+  const { checkoutUrl, isLoading, error, retry } = useVnpayCheckout(paymentId);
+
+  const goToVnpay = useCallback(async () => {
+    if (checkoutUrl) {
+      await openPayOsBrowser(checkoutUrl);
+    }
+  }, [checkoutUrl]);
+
+  useEffect(() => {
+    if (!checkoutUrl || isLoading || error) return;
+
+    const timer = setTimeout(() => {
+      openPayOsBrowser(checkoutUrl);
+    }, PAYOS_AUTO_REDIRECT_MS);
+
+    return () => clearTimeout(timer);
+  }, [checkoutUrl, isLoading, error]);
+
+  return (
+    <>
+      <Ionicons name="card-outline" size={56} color="#d97706" />
+      <Text style={styles.title}>Đặt hàng thành công</Text>
+      <Text style={styles.subtitle}>Mã đơn hàng: {orderId}</Text>
+      {finalAmount != null && !Number.isNaN(finalAmount) ? (
+        <Text style={styles.amount}>{formatVndPrice(finalAmount)}</Text>
+      ) : null}
+      <View style={styles.infoBox}>
+        <Text style={[styles.infoText, { fontWeight: "600" }]}>Chờ thanh toán qua VNPay</Text>
+        <Text style={styles.infoText}>Vui lòng hoàn tất thanh toán để đơn hàng được xử lý.</Text>
+        <Text style={styles.meta}>
+          Trạng thái đơn: {orderStatus || "—"} · Thanh toán: {paymentStatus || "—"}
+        </Text>
+      </View>
+
+      {isLoading ? (
+        <View style={{ marginTop: 16, alignItems: "center", gap: 8 }}>
+          <ActivityIndicator color={colors.primary} />
+          <Text style={styles.subtitle}>Đang tạo liên kết thanh toán...</Text>
+        </View>
+      ) : null}
+
+      {error ? (
+        <View style={{ marginTop: 16, width: "100%", gap: 10 }}>
+          <Text style={styles.errorText}>{error}</Text>
+          <Pressable style={styles.primaryButton} onPress={retry}>
+            <Text style={styles.primaryButtonText}>Thử lại</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      {!isLoading && !error && checkoutUrl ? (
+        <View style={{ marginTop: 16, width: "100%", gap: 10 }}>
+          <Text style={styles.subtitle}>Bạn sẽ được chuyển tới VNPay trong giây lát...</Text>
+          <Pressable style={styles.primaryButton} onPress={goToVnpay}>
+            <Text style={styles.primaryButtonText}>Thanh toán ngay qua VNPay</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      <Pressable onPress={() => router.replace(ROUTES.commerceHome)}>
+        <Text style={styles.link}>Thanh toán sau</Text>
+      </Pressable>
+    </>
+  );
+}
+
 export function CommerceCheckoutSuccessScreen() {
   const params = useLocalSearchParams();
   const styles = useThemedStyles(createStyles);
@@ -169,6 +237,7 @@ export function CommerceCheckoutSuccessScreen() {
 
   const isCod = paymentMethod === "COD";
   const isPayos = paymentMethod === "PAYOS";
+  const isVnpay = paymentMethod === "VNPAY";
 
   useEffect(() => {
     if (orderId) {
@@ -181,16 +250,16 @@ export function CommerceCheckoutSuccessScreen() {
       router.replace(ROUTES.commerceHome);
       return;
     }
-    if (isPayos && !paymentId) {
+    if ((isPayos || isVnpay) && !paymentId) {
       router.replace(ROUTES.commerceCart);
     }
-  }, [isPayos, orderId, paymentId]);
+  }, [isPayos, isVnpay, orderId, paymentId]);
 
   if (!orderId) {
     return null;
   }
 
-  if (isPayos && !paymentId) {
+  if ((isPayos || isVnpay) && !paymentId) {
     return null;
   }
 
@@ -217,7 +286,18 @@ export function CommerceCheckoutSuccessScreen() {
             colors={colors}
           />
         ) : null}
-        {!isCod && !isPayos ? (
+        {isVnpay ? (
+          <VnpaySuccessContent
+            orderId={orderId}
+            paymentId={paymentId}
+            finalAmount={finalAmount}
+            orderStatus={orderStatus}
+            paymentStatus={paymentStatus}
+            styles={styles}
+            colors={colors}
+          />
+        ) : null}
+        {!isCod && !isPayos && !isVnpay ? (
           <CodSuccessContent
             orderId={orderId}
             finalAmount={finalAmount}

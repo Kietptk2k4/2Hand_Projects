@@ -41,6 +41,9 @@ export function useSavePost() {
         await handleSocialQueryError({ code: 401, message: mapped.message });
         return;
       }
+      if (mapped.type === "suspended") {
+        return;
+      }
 
       showToast(mapped.message || "Không cập nhật trạng thái lưu.", "error");
     },

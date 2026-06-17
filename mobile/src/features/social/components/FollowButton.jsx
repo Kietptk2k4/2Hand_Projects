@@ -54,6 +54,7 @@ export function FollowButton({
   onPress,
   isLoading = false,
   disabled = false,
+  disabledTitle,
 }) {
   const colors = useThemeColors();
   const styles = useThemedStyles(createStyles);
@@ -61,18 +62,20 @@ export function FollowButton({
   if (!label) return null;
 
   const isPrimary = followStatus === "NONE";
+  const isDisabled = disabled || isLoading;
 
   return (
     <Pressable
       onPress={onPress}
-      disabled={disabled || isLoading}
+      disabled={isDisabled}
       style={[
         styles.button,
         isPrimary ? styles.primary : styles.secondary,
-        (disabled || isLoading) && styles.disabled,
+        isDisabled && styles.disabled,
       ]}
       accessibilityRole="button"
       accessibilityLabel={label}
+      accessibilityHint={isDisabled && disabledTitle ? disabledTitle : undefined}
     >
       {isLoading ? (
         <ActivityIndicator size="small" color={isPrimary ? colors.onPrimary : colors.primary} />

@@ -6,8 +6,10 @@ import { router } from "expo-router";
 import { configureAuthRefreshService } from "../src/services/http/authRefreshService";
 import { queryClient } from "../src/services/query/queryClient";
 import { AppearanceProvider } from "../src/features/auth/context/AppearanceContext";
+import { SocialWriteBlockProvider } from "../src/features/social/context/SocialWriteBlockContext";
 import { SocialToastProvider } from "../src/shared/components/SocialToastProvider";
 import { ROUTES } from "../src/shared/constants/routes";
+import { setSessionExpiredMessage } from "../src/features/auth/utils/authNavigationState";
 import { useThemeColors } from "../src/shared/theme/useThemeColors";
 
 function RootNavigator() {
@@ -22,9 +24,12 @@ function RootNavigator() {
       }}
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="(auth)/login" options={{ title: "Đăng nhập" }} />
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack.Screen name="oauth/success" options={{ title: "Dang nhap", headerShown: false }} />
+      <Stack.Screen name="oauth/failure" options={{ title: "Dang nhap that bai", headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="post/[postId]/index" options={{ title: "Bài viết" }} />
+      <Stack.Screen name="post/[postId]/likes" options={{ title: "Người thích" }} />
       <Stack.Screen name="post/create/index" options={{ headerShown: false }} />
       <Stack.Screen name="post/[postId]/edit/index" options={{ headerShown: false }} />
       <Stack.Screen name="profile/[userId]/index" options={{ title: "Hồ sơ" }} />
@@ -35,7 +40,7 @@ function RootNavigator() {
       <Stack.Screen name="tags/[hashtag]" options={{ headerShown: false }} />
       <Stack.Screen name="saved/index" options={{ title: "Đã lưu" }} />
       <Stack.Screen name="search/index" options={{ title: "Tìm kiếm" }} />
-      <Stack.Screen name="suggestions/index" options={{ title: "Gợi ý theo dõi" }} />
+      <Stack.Screen name="suggestions/index" options={{ title: "Những người bạn có thể biết" }} />
       <Stack.Screen name="account" options={{ headerShown: false }} />
       <Stack.Screen name="commerce" options={{ headerShown: false }} />
     </Stack>
@@ -45,8 +50,9 @@ function RootNavigator() {
 export default function RootLayout() {
   useEffect(() => {
     configureAuthRefreshService({
-      onSessionExpired: () => {
-        router.replace(ROUTES.login);
+      onSessionExpired: (message) => {
+        setSessionExpiredMessage(message);
+        router.replace(ROUTES.sessionExpired);
       },
     });
   }, []);
@@ -55,9 +61,11 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <AppearanceProvider>
         <SocialToastProvider>
-          <SafeAreaProvider>
-            <RootNavigator />
-          </SafeAreaProvider>
+          <SocialWriteBlockProvider>
+            <SafeAreaProvider>
+              <RootNavigator />
+            </SafeAreaProvider>
+          </SocialWriteBlockProvider>
         </SocialToastProvider>
       </AppearanceProvider>
     </QueryClientProvider>

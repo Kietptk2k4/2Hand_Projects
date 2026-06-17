@@ -26,7 +26,12 @@ function createStyles(colors) {
     },
     headerBody: { flex: 1, gap: 4 },
     headerTop: { flexDirection: "row", justifyContent: "space-between", gap: 8 },
-    buyer: { fontSize: 14, fontWeight: "600", color: colors.onSurface },
+    buyer: { fontSize: 14, fontWeight: "600", color: colors.onSurface, flex: 1 },
+    productName: {
+      fontSize: 12,
+      color: colors.onSurfaceVariant,
+      marginTop: 2,
+    },
     date: { fontSize: 12, color: colors.onSurfaceVariant },
     stars: { flexDirection: "row", gap: 2 },
     comment: { fontSize: 14, lineHeight: 20, color: colors.onSurface },
@@ -67,13 +72,15 @@ function StarRow({ rating }) {
   );
 }
 
-export function ProductReviewCard({ review }) {
+export function ProductReviewCard({ review, productName }) {
   const colors = useThemeColors();
   const styles = useThemedStyles(createStyles);
 
   if (!review) return null;
 
   const mediaItems = (review.media || []).filter((item) => item?.url);
+  const buyerLabel = review.buyerDisplayName || "Người mua";
+  const resolvedProductName = productName || review.productName;
 
   return (
     <View style={styles.card}>
@@ -83,9 +90,16 @@ export function ProductReviewCard({ review }) {
         </View>
         <View style={styles.headerBody}>
           <View style={styles.headerTop}>
-            <Text style={styles.buyer}>Người mua</Text>
+            <Text style={styles.buyer} numberOfLines={1}>
+              {buyerLabel}
+            </Text>
             <Text style={styles.date}>{formatReviewDate(review.createdAt)}</Text>
           </View>
+          {resolvedProductName ? (
+            <Text style={styles.productName} numberOfLines={1}>
+              Sản phẩm: {resolvedProductName}
+            </Text>
+          ) : null}
           <View style={styles.stars}>
             <StarRow rating={review.rating} />
           </View>

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { followUser, unfollowUser } from "../api/followApi";
 import { profileKeys } from "../api/profileKeys";
+import { useSocialWriteBlock } from "../context/SocialWriteBlockContext";
 import { useSocialToast } from "../../../shared/components/SocialToastProvider";
 import { handleSocialQueryError } from "../utils/handleSocialQueryError";
 import { mapSocialWriteError } from "../utils/socialWriteErrors";
@@ -24,6 +25,7 @@ function resolveFollowAction(profile) {
 export function useFollowUser(userId) {
   const queryClient = useQueryClient();
   const { showToast } = useSocialToast();
+  const { isWriteBlocked, suspendMessage } = useSocialWriteBlock();
 
   const mutation = useMutation({
     mutationFn: async ({ action }) => {
@@ -82,7 +84,7 @@ export function useFollowUser(userId) {
   });
 
   const toggleFollow = (profile) => {
-    if (!userId || !profile || mutation.isPending) return;
+    if (!userId || !profile || mutation.isPending || isWriteBlocked) return;
     const action = resolveFollowAction(profile);
     if (!action) return;
     mutation.mutate({ action });
@@ -91,5 +93,7 @@ export function useFollowUser(userId) {
   return {
     toggleFollow,
     isFollowLoading: mutation.isPending,
+    followDisabled: isWriteBlocked,
+    followDisabledTitle: suspendMessage,
   };
 }

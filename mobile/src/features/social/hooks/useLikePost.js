@@ -40,6 +40,9 @@ export function useLikePost() {
         await handleSocialQueryError({ code: 401, message: mapped.message });
         return;
       }
+      if (mapped.type === "suspended") {
+        return;
+      }
 
       showToast(mapped.message || "Không cập nhật được lượt thích.", "error");
     },

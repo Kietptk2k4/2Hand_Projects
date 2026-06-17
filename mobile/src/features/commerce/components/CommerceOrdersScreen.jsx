@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -6,8 +6,10 @@ import {
   Text,
   View,
 } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 import { useThemeColors } from "../../../shared/theme/useThemeColors";
 import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
+import { VALID_ORDER_STATUSES } from "../constants/orderListConstants";
 import { useOrderList } from "../hooks/useOrderList";
 import { OrderListCard } from "./OrderListCard";
 import { OrderListEmptyState } from "./OrderListEmptyState";
@@ -56,6 +58,8 @@ function createStyles(colors) {
 export function CommerceOrdersScreen() {
   const colors = useThemeColors();
   const styles = useThemedStyles(createStyles);
+  const { status: initialStatusParam } = useLocalSearchParams();
+  const initialStatusAppliedRef = useRef(false);
 
   const {
     orders,
@@ -70,6 +74,18 @@ export function CommerceOrdersScreen() {
     loadMore,
     retry,
   } = useOrderList();
+
+  useEffect(() => {
+    if (initialStatusAppliedRef.current) return;
+    const raw = Array.isArray(initialStatusParam)
+      ? initialStatusParam[0]
+      : initialStatusParam;
+    const status = String(raw || "").trim();
+    if (status && VALID_ORDER_STATUSES.includes(status)) {
+      changeStatusFilter(status);
+    }
+    initialStatusAppliedRef.current = true;
+  }, [changeStatusFilter, initialStatusParam]);
 
   const handleFilterChange = useCallback(
     (nextStatus) => {

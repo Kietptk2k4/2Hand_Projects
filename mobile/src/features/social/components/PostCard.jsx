@@ -100,6 +100,7 @@ export function PostCard({
   onToggleSave,
   onEditPost,
   onDeletePost,
+  onOpenLikesList,
   isLikingPost = false,
   isSavingPost = false,
   isDeletingPost = false,
@@ -165,6 +166,7 @@ export function PostCard({
         isLiking={isLikingPost}
         onToggleLike={onToggleLike}
         onOpenComments={() => openDetail({ focusComments: true })}
+        onOpenLikesList={onOpenLikesList}
       />
 
       {post.caption || (post.hashtags && post.hashtags.length > 0) ? (

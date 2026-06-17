@@ -5,15 +5,17 @@ import { feedKeys } from "../api/feedKeys";
 import { FEED_TABS, FEED_PAGE_SIZE } from "../constants/feedTabs";
 import { clearSessionTokens } from "../../../services/auth/tokenStorage";
 import { ROUTES } from "../../../shared/constants/routes";
+import { setSessionExpiredMessage } from "../../auth/utils/authNavigationState";
 
 const FETCH_BY_TAB = {
   [FEED_TABS.GLOBAL]: fetchGlobalFeed,
   [FEED_TABS.FOLLOWING]: fetchFollowingFeed,
 };
 
-async function handleSessionExpired() {
+async function handleSessionExpired(message) {
+  setSessionExpiredMessage(message);
   await clearSessionTokens();
-  router.replace(ROUTES.login);
+  router.replace(ROUTES.sessionExpired);
 }
 
 export function useFeed(activeTab) {
@@ -29,7 +31,7 @@ export function useFeed(activeTab) {
         return await fetchFn({ page: pageParam, size: FEED_PAGE_SIZE });
       } catch (error) {
         if (error?.code === 401) {
-          await handleSessionExpired();
+          await handleSessionExpired(error?.message);
         }
         throw error;
       }

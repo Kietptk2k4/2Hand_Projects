@@ -124,13 +124,13 @@ export function CommerceCheckoutScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title}>Thanh toÃ¡n an toÃ n</Text>
+        <Text style={styles.title}>Thanh toán an toàn</Text>
         <View style={styles.secureRow}>
           <Ionicons name="lock-closed" size={14} color={colors.primary} />
-          <Text style={styles.secureText}>ThÃ´ng tin Ä‘Æ°á»£c báº£o máº­t</Text>
+          <Text style={styles.secureText}>Thông tin được bảo mật</Text>
         </View>
         <Pressable onPress={() => router.push(ROUTES.commerceCart)}>
-          <Text style={styles.backLink}>Quay láº¡i giá» hÃ ng</Text>
+          <Text style={styles.backLink}>Quay lại giỏ hàng</Text>
         </Pressable>
       </View>
 
@@ -143,12 +143,12 @@ export function CommerceCheckoutScreen() {
       {!showSkeleton && isEmptyAddresses ? (
         <View style={styles.emptyCard}>
           <Ionicons name="location-outline" size={40} color={colors.outline} />
-          <Text style={styles.emptyText}>Báº¡n chÆ°a cÃ³ Ä‘á»‹a chá»‰ giao hÃ ng.</Text>
+          <Text style={styles.emptyText}>Bạn chưa có địa chỉ giao hàng.</Text>
           <Pressable style={styles.primaryButton} onPress={() => router.push(ROUTES.commerceAddressCreate)}>
-            <Text style={styles.primaryButtonText}>ThÃªm Ä‘á»‹a chá»‰</Text>
+            <Text style={styles.primaryButtonText}>Thêm địa chỉ</Text>
           </Pressable>
           <Pressable onPress={() => router.push(ROUTES.commerceCart)}>
-            <Text style={styles.backLink}>Quay láº¡i giá» hÃ ng</Text>
+            <Text style={styles.backLink}>Quay lại giỏ hàng</Text>
           </Pressable>
         </View>
       ) : null}

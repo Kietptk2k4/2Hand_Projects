@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { logoutWithRefreshToken } from "../api/authApi";
 import { getRefreshToken } from "../../../services/auth/tokenStorage";
 import { clearAuthSession } from "../utils/clearAuthSession";
+import { setLoginBannerMessage } from "../utils/authNavigationState";
 
 export const LOGOUT_FALLBACK_MESSAGE =
   "Đã đăng xuất trên thiết bị này. Nếu cần, vui lòng thử lại.";
@@ -19,6 +20,10 @@ async function logoutRequest() {
     if (error?.code === 500 || error?.code === "NETWORK" || !error?.code) {
       fallbackMessage = LOGOUT_FALLBACK_MESSAGE;
     }
+  }
+
+  if (fallbackMessage) {
+    setLoginBannerMessage(fallbackMessage);
   }
 
   await clearAuthSession();

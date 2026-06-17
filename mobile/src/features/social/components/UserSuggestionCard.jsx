@@ -10,8 +10,10 @@ export function UserSuggestionCard({
   onPressProfile,
   onToggleFollow,
   isFollowLoading = false,
+  followDisabled = false,
 }) {
   const isFollowing = user.followStatus === "ACCEPTED" || user.followStatus === "PENDING";
+  const isDisabled = isFollowLoading || followDisabled;
 
   return (
     <View style={styles.card}>
@@ -31,9 +33,13 @@ export function UserSuggestionCard({
       </Pressable>
 
       <Pressable
-        style={[styles.followBtn, isFollowing && styles.followBtnSecondary]}
+        style={[
+          styles.followBtn,
+          isFollowing && styles.followBtnSecondary,
+          isDisabled && styles.followBtnDisabled,
+        ]}
         onPress={() => onToggleFollow?.(user)}
-        disabled={isFollowLoading}
+        disabled={isDisabled}
       >
         {isFollowLoading ? (
           <ActivityIndicator size="small" color={isFollowing ? colors.primary : colors.onPrimary} />
@@ -99,6 +105,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceContainerLowest,
     borderWidth: 1,
     borderColor: colors.outlineVariant,
+  },
+  followBtnDisabled: {
+    opacity: 0.6,
   },
   followText: {
     fontSize: 12,

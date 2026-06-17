@@ -27,6 +27,7 @@ export default function CommerceLayout() {
       <Stack.Screen name="shops/[shopId]/reviews" options={{ title: "Đánh giá cửa hàng" }} />
       <Stack.Screen name="checkout/index" options={{ title: "Thanh toán" }} />
       <Stack.Screen name="checkout/payment-result" options={{ title: "Kết quả thanh toán" }} />
+      <Stack.Screen name="checkout/vnpay-return" options={{ title: "Kết quả VNPay" }} />
       <Stack.Screen name="checkout/success" options={{ title: "Đặt hàng thành công" }} />
       <Stack.Screen name="orders/index" options={{ title: "Đơn hàng" }} />
       <Stack.Screen name="orders/[orderId]/index" options={{ title: "Chi tiết đơn hàng" }} />

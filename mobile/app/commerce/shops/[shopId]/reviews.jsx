@@ -1,10 +1,5 @@
-import { CommercePlaceholderScreen } from "../../../../src/features/commerce/components/CommercePlaceholderScreen";
+import { CommerceShopReviewsScreen } from "../../../../src/features/commerce/components/CommerceShopReviewsScreen";
 
-export default function CommerceReviewsRoute() {
-  return (
-    <CommercePlaceholderScreen
-      title="Đánh giá cửa hàng"
-      message="Phase 4 sẽ triển khai đánh giá cửa hàng."
-    />
-  );
+export default function CommerceShopReviewsRoute() {
+  return <CommerceShopReviewsScreen />;
 }

@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
 import { ROUTES } from "../../../shared/constants/routes";
@@ -15,6 +15,7 @@ import {
   CommerceProductListError,
 } from "./CommerceProductListStates";
 import { CommerceSearchBar } from "./CommerceSearchBar";
+import { CommerceSearchDiscoveryPanel } from "./CommerceSearchDiscoveryPanel";
 import { ProductListSkeleton } from "./ProductListSkeleton";
 import { ProductListSortSelect } from "./ProductListSortSelect";
 
@@ -64,6 +65,7 @@ export function CommerceSearchScreen() {
   useThemeColors();
   const styles = useThemedStyles(createStyles);
   const { showToast } = useSocialToast();
+  const [historyRefreshKey, setHistoryRefreshKey] = useState("");
 
   const {
     q,
@@ -104,6 +106,15 @@ export function CommerceSearchScreen() {
     showToast("Nhập ít nhất 2 ký tự.", "error");
   }, [showToast]);
 
+  const handleSelectHistoryKeyword = useCallback((keyword) => {
+    router.replace({ pathname: ROUTES.commerceSearch, params: { q: keyword } });
+    setHistoryRefreshKey(keyword);
+  }, []);
+
+  const handleComingSoon = useCallback(() => {
+    showToast("Tính năng đang phát triển.");
+  }, [showToast]);
+
   const displayKeyword = keyword || q;
   const emptyQuery = !q;
   const emptyResults =
@@ -116,9 +127,11 @@ export function CommerceSearchScreen() {
       <CommerceSearchBar onInvalidKeyword={handleInvalidKeyword} />
 
       {emptyQuery ? (
-        <View style={styles.messageCard}>
-          <Text style={styles.messageText}>Nhập từ khóa để tìm sản phẩm</Text>
-        </View>
+        <CommerceSearchDiscoveryPanel
+          onSelectKeyword={handleSelectHistoryKeyword}
+          onComingSoon={handleComingSoon}
+          refreshKey={historyRefreshKey}
+        />
       ) : null}
 
       {isQueryTooShort ? (

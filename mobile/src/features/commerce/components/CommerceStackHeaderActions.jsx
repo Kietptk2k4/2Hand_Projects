@@ -55,6 +55,13 @@ export function CommerceStackHeaderActions() {
     <View style={styles.row}>
       <Pressable
         style={styles.btn}
+        onPress={() => router.push(ROUTES.commerceAddresses)}
+        accessibilityLabel="Địa chỉ giao hàng"
+      >
+        <Ionicons name="location-outline" size={22} color={iconColor} />
+      </Pressable>
+      <Pressable
+        style={styles.btn}
         onPress={() => router.push(ROUTES.commerceSearch)}
         accessibilityLabel="Tìm kiếm sản phẩm"
       >

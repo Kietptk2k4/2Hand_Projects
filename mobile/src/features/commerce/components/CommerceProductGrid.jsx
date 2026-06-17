@@ -37,6 +37,7 @@ export function CommerceProductGrid({
   onEndReachedThreshold = 0.4,
   ListHeaderComponent = null,
   scrollEnabled = true,
+  disabledActions = false,
 }) {
   const colors = useThemeColors();
   const styles = useThemedStyles(createStyles);
@@ -51,6 +52,7 @@ export function CommerceProductGrid({
         onBuyNow={onBuyNow}
         isAddingToCart={isAddingProduct?.(item.productId)}
         isBuyingNow={isBuyingProduct?.(item.productId)}
+        disabledActions={disabledActions}
       />
     </View>
   );

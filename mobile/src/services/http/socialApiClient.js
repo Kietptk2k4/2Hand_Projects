@@ -1,4 +1,5 @@
 import axios from "axios";
+import { notifySuspendedWrite } from "../../features/social/utils/socialWriteBlockBridge";
 import { isSuspendedWriteError } from "../../features/social/utils/socialWriteErrors";
 import { getStoredAccessToken, refreshAccessTokenOnce } from "./authRefreshService";
 import { resolveServiceBaseUrl } from "./resolveServiceBaseUrl";
@@ -28,6 +29,8 @@ socialApiClient.interceptors.response.use(
     const status = error?.response?.status;
 
     if (isSuspendedWriteError(error)) {
+      const message = error?.response?.data?.message;
+      notifySuspendedWrite(message);
       return Promise.reject(error);
     }
 

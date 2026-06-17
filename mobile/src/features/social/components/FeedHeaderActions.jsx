@@ -32,7 +32,7 @@ export function FeedHeaderActions() {
     <View style={styles.row}>
       <Pressable
         style={styles.btn}
-        onPress={() => router.push(ROUTES.search)}
+        onPress={() => router.push(ROUTES.search())}
         accessibilityLabel="Tìm kiếm"
       >
         <Ionicons name="search-outline" size={22} color={iconColor} />

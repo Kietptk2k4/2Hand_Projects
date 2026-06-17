@@ -7,6 +7,7 @@ import {
   PAGE_SIZE,
 } from "../constants/productSearchConstants";
 import { normalizeSearchKeyword } from "../utils/normalizeSearchKeyword";
+import { addCommerceSearchHistory } from "../utils/commerceSearchHistoryStorage";
 import { mapProductSearchResponse } from "../utils/productSearchMapper";
 
 const SEARCH_KEYWORD_ERROR = "COMMERCE-400-SEARCH-KEYWORD";
@@ -64,6 +65,10 @@ export function useProductSearch() {
         setKeyword(data.keyword || normalized);
         setPage(targetPage);
         setStatus("ready");
+
+        if (!append) {
+          addCommerceSearchHistory(data.keyword || normalized);
+        }
       } catch (error) {
         if (requestId !== requestIdRef.current) return;
 

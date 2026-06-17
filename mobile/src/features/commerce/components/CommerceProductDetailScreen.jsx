@@ -18,9 +18,12 @@ import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
 import { useCommerceAddToCart } from "../hooks/useCommerceAddToCart";
 import { useCommerceBuyNow } from "../hooks/useCommerceBuyNow";
 import { useProductDetail } from "../hooks/useProductDetail";
+import { useProductReviewsPreview } from "../hooks/useProductReviewsPreview";
 import { formatVndPrice } from "../utils/formatVndPrice";
 import { CommerceProductListError } from "./CommerceProductListStates";
+import { ProductDetailReviewsPreview } from "./ProductDetailReviewsPreview";
 import { ProductDetailSkeleton } from "./ProductDetailSkeleton";
+import { ProductMediaLightbox } from "./ProductMediaLightbox";
 
 const CONDITION_LABELS = {
   LIKE_NEW: "Như mới",
@@ -93,9 +96,25 @@ function createStyles(colors) {
       backgroundColor: colors.surfaceContainerHigh,
     },
     shopName: { fontSize: 15, fontWeight: "600", color: colors.primary, flex: 1 },
+    shopAction: {
+      marginTop: 12,
+      borderRadius: 10,
+      borderWidth: 2,
+      borderColor: colors.primary,
+      paddingVertical: 10,
+      alignItems: "center",
+    },
+    shopActionText: { fontSize: 14, fontWeight: "600", color: colors.primary },
+    shopLink: {
+      marginTop: 8,
+      alignItems: "center",
+      paddingVertical: 6,
+    },
+    shopLinkText: { fontSize: 14, fontWeight: "500", color: colors.primary },
     attributeRow: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
     attributeName: { fontSize: 14, color: colors.onSurfaceVariant },
     attributeValue: { fontSize: 14, color: colors.onSurface, fontWeight: "500" },
+    categoryLink: { fontSize: 14, color: colors.primary, fontWeight: "500" },
     description: { fontSize: 14, lineHeight: 22, color: colors.onSurface },
     actions: { flexDirection: "row", gap: 10 },
     buyButton: {
@@ -174,9 +193,21 @@ export function CommerceProductDetailScreen() {
   const productId = resolveParam(rawProductId);
   const navigation = useNavigation();
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const [lightboxIndex, setLightboxIndex] = useState(null);
   const galleryRef = useRef(null);
 
   const { product, isLoading, isNotFound, isError, errorMessage, retry } = useProductDetail(productId);
+
+  const {
+    shop: reviewShop,
+    reviews: previewReviews,
+    ratingSummary,
+    isLoading: isReviewsLoading,
+    isEmpty: isReviewsEmpty,
+    hasMoreReviews,
+    errorMessage: reviewsErrorMessage,
+    retry: retryReviews,
+  } = useProductReviewsPreview(productId);
 
   const { addToCart, isAddingProduct } = useCommerceAddToCart({
     onSuccess: (message) => showToast(message),
@@ -198,10 +229,28 @@ export function CommerceProductDetailScreen() {
     router.push(ROUTES.commerceShopProducts(shopId));
   }, []);
 
+  const openShopReviews = useCallback((shopId) => {
+    if (!shopId) return;
+    router.push(ROUTES.commerceShopReviews(shopId));
+  }, []);
+
   const openReviews = useCallback(() => {
     if (!productId) return;
     router.push(ROUTES.commerceProductReviews(productId));
   }, [productId]);
+
+  const openCategory = useCallback((categoryId) => {
+    if (!categoryId) return;
+    router.push(ROUTES.commerceCategoryProducts(categoryId));
+  }, []);
+
+  const openLightbox = useCallback((index) => {
+    setLightboxIndex(index);
+  }, []);
+
+  const closeLightbox = useCallback(() => {
+    setLightboxIndex(null);
+  }, []);
 
   const galleryItems = (product?.media || []).filter((item) => item.mediaType === "IMAGE");
   const isOnSale = isProductOnSale(product);
@@ -256,10 +305,12 @@ export function CommerceProductDetailScreen() {
             showsHorizontalScrollIndicator={false}
             keyExtractor={(item) => item.mediaId || item.mediaUrl}
             onMomentumScrollEnd={handleGalleryScroll}
-            renderItem={({ item }) => {
+            renderItem={({ item, index }) => {
               const uri = resolveDevMediaUrl(item.mediaUrl);
               return uri ? (
-                <Image source={{ uri }} style={styles.galleryImage} resizeMode="cover" />
+                <Pressable onPress={() => openLightbox(index)} accessibilityRole="button">
+                  <Image source={{ uri }} style={styles.galleryImage} resizeMode="cover" />
+                </Pressable>
               ) : (
                 <View style={[styles.gallery, styles.galleryPlaceholder]}>
                   <Text style={styles.placeholderText}>Không có ảnh</Text>
@@ -358,6 +409,18 @@ export function CommerceProductDetailScreen() {
               </Text>
               <Ionicons name="chevron-forward" size={18} color={colors.onSurfaceVariant} />
             </Pressable>
+            <Pressable
+              style={styles.shopAction}
+              onPress={() => openShop(product.shop.shopId)}
+            >
+              <Text style={styles.shopActionText}>Xem shop</Text>
+            </Pressable>
+            <Pressable
+              style={styles.shopLink}
+              onPress={() => openShopReviews(product.shop.shopId)}
+            >
+              <Text style={styles.shopLinkText}>Xem tất cả đánh giá của shop</Text>
+            </Pressable>
           </View>
         ) : null}
 
@@ -374,7 +437,13 @@ export function CommerceProductDetailScreen() {
           {product.category?.name ? (
             <View style={styles.attributeRow}>
               <Text style={styles.attributeName}>Danh mục</Text>
-              <Text style={styles.attributeValue}>{product.category.name}</Text>
+              {product.category?.categoryId ? (
+                <Pressable onPress={() => openCategory(product.category.categoryId)}>
+                  <Text style={styles.categoryLink}>{product.category.name}</Text>
+                </Pressable>
+              ) : (
+                <Text style={styles.attributeValue}>{product.category.name}</Text>
+              )}
             </View>
           ) : null}
           {(product.attributes || []).map((attr) => (
@@ -392,18 +461,26 @@ export function CommerceProductDetailScreen() {
           </View>
         ) : null}
 
-        <Pressable style={[styles.card, styles.reviewsTeaser]} onPress={openReviews}>
-          <View>
-            <Text style={styles.cardTitle}>Đánh giá</Text>
-            <Text style={styles.metaMuted}>
-              {product.ratingCount > 0
-                ? `${product.ratingAvg} · ${product.ratingCount} đánh giá`
-                : "Chưa có đánh giá"}
-            </Text>
-          </View>
-          <Text style={styles.reviewsLink}>Xem tất cả</Text>
-        </Pressable>
+        <ProductDetailReviewsPreview
+          ratingSummary={ratingSummary}
+          reviews={previewReviews}
+          shop={reviewShop}
+          isLoading={isReviewsLoading}
+          isEmpty={isReviewsEmpty}
+          hasMoreReviews={hasMoreReviews}
+          errorMessage={reviewsErrorMessage}
+          onViewAll={openReviews}
+          onRetry={retryReviews}
+        />
       </View>
+
+      {lightboxIndex != null ? (
+        <ProductMediaLightbox
+          items={galleryItems}
+          initialIndex={lightboxIndex}
+          onClose={closeLightbox}
+        />
+      ) : null}
     </ScrollView>
   );
 }

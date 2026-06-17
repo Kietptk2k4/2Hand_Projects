@@ -293,6 +293,16 @@ export function PostDetailScreen({ postId, focusComments = false }) {
 
   }, []);
 
+  const onOpenLikesList = useCallback(({ type, targetId, likeCount }) => {
+    if (!targetId) return;
+    router.push(
+      ROUTES.postLikes(targetId, {
+        targetType: type || "post",
+        likeCount: likeCount ?? 0,
+      })
+    );
+  }, []);
+
 
 
   const handleSubmitTopLevel = async () => {
@@ -506,6 +516,8 @@ export function PostDetailScreen({ postId, focusComments = false }) {
           onToggleLike={toggleLike}
 
           onOpenComments={() => commentInputRef.current?.focus()}
+
+          onOpenLikesList={onOpenLikesList}
 
         />
 
