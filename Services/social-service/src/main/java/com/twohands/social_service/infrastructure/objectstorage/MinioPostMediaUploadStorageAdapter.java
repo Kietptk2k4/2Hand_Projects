@@ -11,7 +11,6 @@ import io.minio.MinioClient;
 import io.minio.http.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
@@ -25,14 +24,14 @@ public class MinioPostMediaUploadStorageAdapter implements PostMediaUploadStorag
 
     private static final Logger log = LoggerFactory.getLogger(MinioPostMediaUploadStorageAdapter.class);
 
-    private final MinioClient minioClient;
+    private final MinioPresignClientFactory presignClientFactory;
     private final SocialObjectStorageProperties properties;
 
     public MinioPostMediaUploadStorageAdapter(
-            @Qualifier(SocialMinioConfig.PRESIGN_MINIO_CLIENT) MinioClient minioClient,
+            MinioPresignClientFactory presignClientFactory,
             SocialObjectStorageProperties properties
     ) {
-        this.minioClient = minioClient;
+        this.presignClientFactory = presignClientFactory;
         this.properties = properties;
     }
 
@@ -41,13 +40,18 @@ public class MinioPostMediaUploadStorageAdapter implements PostMediaUploadStorag
             UUID userId,
             String contentType,
             String mediaKind,
-            Instant expiresAt
+            Instant expiresAt,
+            String clientUploadOrigin
     ) {
         String extension = resolveExtension(contentType);
         String objectKey = "posts/" + userId + "/" + UUID.randomUUID() + "." + extension;
-        String mediaUrl = properties.buildPublicObjectUrl(objectKey);
+        String mediaUrl = properties.buildPublicObjectUrl(objectKey, clientUploadOrigin);
+        String presignEndpoint = clientUploadOrigin != null
+                ? clientUploadOrigin
+                : properties.resolvePresignedEndpoint();
 
         try {
+            MinioClient minioClient = presignClientFactory.createForEndpoint(presignEndpoint);
             String uploadUrl = minioClient.getPresignedObjectUrl(
                     GetPresignedObjectUrlArgs.builder()
                             .method(Method.PUT)
@@ -59,10 +63,11 @@ public class MinioPostMediaUploadStorageAdapter implements PostMediaUploadStorag
             );
 
             log.info(
-                    "Post media upload URL issued. userId={}, mediaKind={}, objectKey={}, expiresAt={}",
+                    "Post media upload URL issued. userId={}, mediaKind={}, objectKey={}, presignEndpoint={}, expiresAt={}",
                     userId,
                     mediaKind,
                     objectKey,
+                    presignEndpoint,
                     expiresAt
             );
 

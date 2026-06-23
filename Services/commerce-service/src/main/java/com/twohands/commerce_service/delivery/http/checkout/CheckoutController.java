@@ -7,6 +7,7 @@ import com.twohands.commerce_service.application.checkout.calculateordertotal.Qu
 import com.twohands.commerce_service.application.checkout.calculateordertotal.SellerShippingGroupResult;
 import com.twohands.commerce_service.application.checkout.checkoutfromcart.CheckoutFromCartCommand;
 import com.twohands.commerce_service.application.checkout.checkoutfromcart.CheckoutFromCartUseCase;
+import com.twohands.commerce_service.common.vnpay.VnpayReturnUrlResolver;
 import com.twohands.commerce_service.domain.checkout.CheckoutFromCartResult;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.exception.AppException;
@@ -30,13 +31,16 @@ public class CheckoutController {
 
     private final CalculateOrderTotalUseCase calculateOrderTotalUseCase;
     private final CheckoutFromCartUseCase checkoutFromCartUseCase;
+    private final VnpayReturnUrlResolver vnpayReturnUrlResolver;
 
     public CheckoutController(
             CalculateOrderTotalUseCase calculateOrderTotalUseCase,
-            CheckoutFromCartUseCase checkoutFromCartUseCase
+            CheckoutFromCartUseCase checkoutFromCartUseCase,
+            VnpayReturnUrlResolver vnpayReturnUrlResolver
     ) {
         this.calculateOrderTotalUseCase = calculateOrderTotalUseCase;
         this.checkoutFromCartUseCase = checkoutFromCartUseCase;
+        this.vnpayReturnUrlResolver = vnpayReturnUrlResolver;
     }
 
     @PostMapping
@@ -46,6 +50,11 @@ public class CheckoutController {
             HttpServletRequest httpRequest
     ) {
         UUID userId = resolveUserId(authentication);
+        String frontendReturnUrl = vnpayReturnUrlResolver.resolveFrontendReturnUrl(request.frontendReturnUrl());
+        String vnpayReturnUrl = vnpayReturnUrlResolver.resolveBackendReturnUrl(
+                httpRequest,
+                request.vnpayReturnUrl()
+        );
         CheckoutFromCartResult result = checkoutFromCartUseCase.execute(
                 new CheckoutFromCartCommand(
                         userId,
@@ -54,7 +63,9 @@ public class CheckoutController {
                         request.paymentMethod(),
                         request.shipmentType(),
                         request.idempotencyKey(),
-                        resolveClientIp(httpRequest)
+                        resolveClientIp(httpRequest),
+                        frontendReturnUrl,
+                        vnpayReturnUrl
                 )
         );
 

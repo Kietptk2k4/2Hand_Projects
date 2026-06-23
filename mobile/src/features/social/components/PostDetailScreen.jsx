@@ -1,25 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
-
   Image,
-
   KeyboardAvoidingView,
-
-  Modal,
-
   Platform,
-
   Pressable,
-
   ScrollView,
-
-  StyleSheet,
-
   Text,
-
   View,
-
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
@@ -46,8 +34,8 @@ import { formatRelativeTime } from "../utils/formatRelativeTime";
 
 import { authorAvatarUrl } from "../utils/authorDisplay";
 
-import { getPostMediaUrl, isPostVideoMedia } from "../utils/postMediaType";
 import { resolveDevMediaUrl } from "../../../shared/utils/resolveDevMediaUrl";
+import { VIDEO_PLAYBACK_SURFACES } from "../utils/videoPlaybackId";
 
 import { resolvePostIsOwner } from "../utils/resolvePostAuthorId";
 
@@ -62,6 +50,7 @@ import { PostDetailComments } from "./PostDetailComments";
 import { PostDetailSkeleton } from "./PostDetailSkeleton";
 
 import { PostMediaCarousel } from "./PostMediaCarousel";
+import { MediaGalleryLightbox } from "./MediaGalleryLightbox";
 
 import { PostOptionsMenu } from "./PostOptionsMenu";
 
@@ -69,7 +58,6 @@ import { ROUTES } from "../../../shared/constants/routes";
 
 import { useThemeColors } from "../../../shared/theme/useThemeColors";
 import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
-import { PostVideoPlayer } from "./PostVideoPlayer";
 import { PostProductTagsBlock } from "./PostProductTagsBlock";
 import { resolvePostProductTags } from "../utils/mapProductTagsFromApi";
 
@@ -152,29 +140,6 @@ function createPostDetailStyles(colors) {
       marginTop: 4,
       fontSize: 12,
       color: colors.error,
-    },
-    lightboxBackdrop: {
-      flex: 1,
-      backgroundColor: "rgba(0,0,0,0.92)",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    lightboxImage: {
-      width: "100%",
-      height: "80%",
-    },
-    lightboxVideo: {
-      width: "100%",
-      height: "80%",
-    },
-    lightboxClose: {
-      position: "absolute",
-      top: 48,
-      right: 16,
-      width: 44,
-      height: 44,
-      alignItems: "center",
-      justifyContent: "center",
     },
   };
 }
@@ -462,11 +427,10 @@ export function PostDetailScreen({ postId, focusComments = false }) {
         {post.media?.length > 0 ? (
 
           <PostMediaCarousel
-
             media={post.media}
-
+            postId={post.postId}
+            surface={VIDEO_PLAYBACK_SURFACES.DETAIL}
             onMediaPress={(index) => setGalleryIndex(index)}
-
           />
 
         ) : null}
@@ -578,44 +542,12 @@ export function PostDetailScreen({ postId, focusComments = false }) {
 
 
       {galleryIndex !== null && post.media?.length > 0 ? (
-
-        <Modal
-
-          visible
-
-          transparent
-
-          animationType="fade"
-
-          onRequestClose={() => setGalleryIndex(null)}
-
-        >
-
-          <Pressable style={styles.lightboxBackdrop} onPress={() => setGalleryIndex(null)}>
-            {isPostVideoMedia(post.media[galleryIndex]) ? (
-              <PostVideoPlayer
-                uri={getPostMediaUrl(post.media[galleryIndex])}
-                style={styles.lightboxVideo}
-                contentFit="contain"
-              />
-            ) : (
-              <Image
-                source={{ uri: getPostMediaUrl(post.media[galleryIndex]) }}
-                style={styles.lightboxImage}
-                resizeMode="contain"
-              />
-            )}
-
-            <Pressable style={styles.lightboxClose} onPress={() => setGalleryIndex(null)}>
-
-              <Ionicons name="close" size={28} color={colors.onPrimary} />
-
-            </Pressable>
-
-          </Pressable>
-
-        </Modal>
-
+        <MediaGalleryLightbox
+          media={post.media}
+          postId={post.postId}
+          initialIndex={galleryIndex}
+          onClose={() => setGalleryIndex(null)}
+        />
       ) : null}
 
     </KeyboardAvoidingView>

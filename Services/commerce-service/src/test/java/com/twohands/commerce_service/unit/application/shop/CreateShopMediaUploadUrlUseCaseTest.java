@@ -1,5 +1,6 @@
 package com.twohands.commerce_service.unit.application.shop;
 
+import com.twohands.commerce_service.common.media.CommerceClientUploadOriginValidator;
 import com.twohands.commerce_service.application.shop.uploadshopmedia.CreateShopMediaUploadUrlCommand;
 import com.twohands.commerce_service.application.shop.uploadshopmedia.CreateShopMediaUploadUrlUseCase;
 import com.twohands.commerce_service.application.shop.uploadshopmedia.CreateShopMediaUploadUrlValidationService;
@@ -44,6 +45,7 @@ class CreateShopMediaUploadUrlUseCaseTest {
 
         useCase = new CreateShopMediaUploadUrlUseCase(
                 new CreateShopMediaUploadUrlValidationService(properties),
+                new CommerceClientUploadOriginValidator(properties),
                 properties,
                 shopMediaUploadStoragePort
         );
@@ -57,7 +59,8 @@ class CreateShopMediaUploadUrlUseCaseTest {
                 eq(sellerId),
                 eq("image/jpeg"),
                 eq("SHOP_AVATAR"),
-                any(Instant.class)
+                any(Instant.class),
+                eq(null)
         )).thenReturn(new ShopMediaUploadIntent(
                 "https://minio/upload",
                 "shops/" + sellerId + "/avatar/test.jpg",
@@ -70,7 +73,8 @@ class CreateShopMediaUploadUrlUseCaseTest {
                 sellerId,
                 "image/jpeg",
                 1024L,
-                "SHOP_AVATAR"
+                "SHOP_AVATAR",
+                null
         ));
 
         assertThat(result.mediaUrl()).contains("/2hands-commerce-shop/");
@@ -79,7 +83,8 @@ class CreateShopMediaUploadUrlUseCaseTest {
                 eq(sellerId),
                 eq("image/jpeg"),
                 eq("SHOP_AVATAR"),
-                any(Instant.class)
+                any(Instant.class),
+                eq(null)
         );
     }
 
@@ -89,6 +94,7 @@ class CreateShopMediaUploadUrlUseCaseTest {
         properties.setEnabled(false);
         CreateShopMediaUploadUrlUseCase disabledUseCase = new CreateShopMediaUploadUrlUseCase(
                 new CreateShopMediaUploadUrlValidationService(properties),
+                new CommerceClientUploadOriginValidator(properties),
                 properties,
                 shopMediaUploadStoragePort
         );
@@ -97,7 +103,8 @@ class CreateShopMediaUploadUrlUseCaseTest {
                 sellerId,
                 "image/jpeg",
                 1024L,
-                "SHOP_AVATAR"
+                "SHOP_AVATAR",
+                null
         )))
                 .isInstanceOf(AppException.class)
                 .extracting(ex -> ((AppException) ex).getErrorCode())

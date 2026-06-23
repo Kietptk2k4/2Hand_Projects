@@ -1,4 +1,7 @@
+import { useEffect } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { logFeedMediaRaw, probeMediaUrlOnce } from "../../../shared/utils/debugMediaLog";
+import { resolveDevMediaUrl } from "../../../shared/utils/resolveDevMediaUrl";
 import { router } from "expo-router";
 import { fetchFollowingFeed, fetchGlobalFeed } from "../api/feedApi";
 import { feedKeys } from "../api/feedKeys";
@@ -45,6 +48,17 @@ export function useFeed(activeTab) {
 
   const items = query.data?.pages.flatMap((page) => page?.items || []) ?? [];
   const meta = query.data?.pages.at(-1)?.meta ?? null;
+
+  useEffect(() => {
+    if (!__DEV__ || items.length === 0) return;
+
+    const firstMedia = items[0]?.media?.[0];
+    const rawUrl = firstMedia?.url || firstMedia?.mediaUrl;
+    if (!rawUrl) return;
+
+    logFeedMediaRaw(rawUrl);
+    probeMediaUrlOnce(resolveDevMediaUrl(rawUrl));
+  }, [items]);
 
   return {
     items,

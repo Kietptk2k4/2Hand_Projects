@@ -16,11 +16,14 @@ import java.net.URI;
 @Component
 public class OAuth2LoginFailureHandler implements AuthenticationFailureHandler {
 
+    private final OAuthRedirectUriResolver redirectUriResolver;
     private final String failureRedirectUrl;
 
     public OAuth2LoginFailureHandler(
+            OAuthRedirectUriResolver redirectUriResolver,
             @Value("${auth.oauth2.redirect.failure-url:http://localhost:5173/oauth/failure}") String failureRedirectUrl
     ) {
+        this.redirectUriResolver = redirectUriResolver;
         this.failureRedirectUrl = failureRedirectUrl;
     }
 
@@ -30,7 +33,8 @@ public class OAuth2LoginFailureHandler implements AuthenticationFailureHandler {
             HttpServletResponse response,
             AuthenticationException exception
     ) throws IOException, ServletException {
-        URI redirect = UriComponentsBuilder.fromUriString(failureRedirectUrl)
+        String targetRedirectUrl = redirectUriResolver.resolve(request, failureRedirectUrl);
+        URI redirect = UriComponentsBuilder.fromUriString(targetRedirectUrl)
                 .queryParam("status", "error")
                 .queryParam("code", ErrorCode.OAUTH_PROVIDER_PROFILE_INVALID.code())
                 .build(true)

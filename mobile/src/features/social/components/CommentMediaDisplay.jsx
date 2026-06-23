@@ -1,9 +1,7 @@
-import { Image, Pressable, StyleSheet, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useThemeColors } from "../../../shared/theme/useThemeColors";
+import { Pressable, View } from "react-native";
 import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
-import { getPostMediaUrl, isPostVideoMedia } from "../utils/postMediaType";
-import { PostVideoPlayer } from "./PostVideoPlayer";
+import { getPostMediaUrl } from "../utils/postMediaType";
+import { PostMediaItem } from "./PostMediaItem";
 
 function createStyles(colors) {
   return {
@@ -26,17 +24,10 @@ function createStyles(colors) {
       width: "100%",
       height: "100%",
     },
-    videoOverlay: {
-      ...StyleSheet.absoluteFillObject,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: "rgba(0,0,0,0.25)",
-    },
   };
 }
 
 export function CommentMediaDisplay({ media = [], onMediaPress }) {
-  const colors = useThemeColors();
   const styles = useThemedStyles(createStyles);
 
   const items = (media || []).filter((item) => item?.url).map((item) => ({
@@ -51,21 +42,7 @@ export function CommentMediaDisplay({ media = [], onMediaPress }) {
       {items.map((item, index) => {
         const tile = (
           <View style={styles.tile}>
-            {isPostVideoMedia(item) ? (
-              <>
-                <PostVideoPlayer
-                  uri={item.url}
-                  style={StyleSheet.absoluteFill}
-                  contentFit="cover"
-                  nativeControls={false}
-                />
-                <View style={styles.videoOverlay} pointerEvents="none">
-                  <Ionicons name="play-circle" size={28} color={colors.onPrimary} />
-                </View>
-              </>
-            ) : (
-              <Image source={{ uri: item.url }} style={styles.image} resizeMode="cover" />
-            )}
+            <PostMediaItem item={item} variant="thumbnail" style={styles.image} playIconSize={28} />
           </View>
         );
 

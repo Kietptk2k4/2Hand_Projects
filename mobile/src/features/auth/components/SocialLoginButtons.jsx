@@ -1,8 +1,8 @@
-import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { getOAuthRedirectUrl } from "../api/authApi";
+import { getOAuthAppReturnUrl } from "../utils/oauthRedirectUrls";
 import { useThemeColors } from "../../../shared/theme/useThemeColors";
 
 const SOCIAL_BUTTONS = [
@@ -13,9 +13,7 @@ const SOCIAL_BUTTONS = [
 WebBrowser.maybeCompleteAuthSession();
 
 function resolveOAuthReturnUrl() {
-  return (
-    process.env.EXPO_PUBLIC_OAUTH_SUCCESS_REDIRECT || Linking.createURL("oauth/success")
-  );
+  return getOAuthAppReturnUrl("success");
 }
 
 export function SocialLoginButtons({ disabled = false, onRedirectStart, onRedirectEnd }) {

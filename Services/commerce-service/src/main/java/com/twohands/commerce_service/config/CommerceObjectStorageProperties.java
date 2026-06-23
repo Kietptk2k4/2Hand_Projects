@@ -22,6 +22,7 @@ public class CommerceObjectStorageProperties {
     private int productMediaMaxCount = 10;
     private int productMediaMaxVideoCount = 1;
     private int presignedUrlTtlSeconds = 900;
+    private boolean allowClientUploadOrigin = false;
     private List<String> allowedShopMediaContentTypes = List.of(
             "image/jpeg",
             "image/png",
@@ -173,5 +174,49 @@ public class CommerceObjectStorageProperties {
 
     public void setAllowedProductMediaContentTypes(List<String> allowedProductMediaContentTypes) {
         this.allowedProductMediaContentTypes = allowedProductMediaContentTypes;
+    }
+
+    public boolean isAllowClientUploadOrigin() {
+        return allowClientUploadOrigin;
+    }
+
+    public void setAllowClientUploadOrigin(boolean allowClientUploadOrigin) {
+        this.allowClientUploadOrigin = allowClientUploadOrigin;
+    }
+
+    public String buildPublicObjectUrl(String bucket, String objectKey) {
+        return buildPublicObjectUrl(bucket, objectKey, null);
+    }
+
+    public String buildPublicObjectUrl(String bucket, String objectKey, String originOverride) {
+        String base = trimTrailingSlash(publicUrl);
+        String url = base + "/" + bucket + "/" + objectKey;
+
+        if (originOverride == null || originOverride.isBlank()) {
+            return url;
+        }
+
+        java.net.URI built = java.net.URI.create(url);
+        java.net.URI override = java.net.URI.create(trimTrailingSlash(originOverride.trim()));
+        if (override.getHost() == null) {
+            return url;
+        }
+
+        int port = override.getPort() > 0
+                ? override.getPort()
+                : ("https".equalsIgnoreCase(override.getScheme()) ? 443 : 80);
+        String scheme = override.getScheme() != null ? override.getScheme() : "http";
+        return scheme + "://" + override.getHost() + ":" + port + built.getRawPath();
+    }
+
+    private static String trimTrailingSlash(String value) {
+        if (value == null || value.isBlank()) {
+            return "";
+        }
+        String trimmed = value;
+        while (trimmed.endsWith("/")) {
+            trimmed = trimmed.substring(0, trimmed.length() - 1);
+        }
+        return trimmed;
     }
 }

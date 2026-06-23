@@ -11,6 +11,7 @@ import { PostActionBar } from "./PostActionBar";
 import { PostOptionsMenu } from "./PostOptionsMenu";
 import { PostProductTagsBlock } from "./PostProductTagsBlock";
 import { resolvePostProductTags } from "../utils/mapProductTagsFromApi";
+import { VIDEO_PLAYBACK_SURFACES } from "../utils/videoPlaybackId";
 
 function createStyles(colors) {
   return {
@@ -155,7 +156,12 @@ export function PostCard({
         </View>
       </View>
 
-      <PostMediaCarousel media={post.media} onMediaPress={() => openDetail()} />
+      <PostMediaCarousel
+        media={post.media}
+        postId={post.postId}
+        surface={VIDEO_PLAYBACK_SURFACES.FEED}
+        onMediaPress={() => openDetail()}
+      />
 
       <PostActionBar
         postId={post.postId}

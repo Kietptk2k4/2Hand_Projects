@@ -1,9 +1,10 @@
 import axios from "axios";
 import { authApiClient } from "../../../services/http/authApiClient";
-import { resolveServiceBaseUrl } from "../../../services/http/resolveServiceBaseUrl";
+import { resolveDevServiceBaseUrl } from "../../../services/http/resolveDevServiceBaseUrl";
+import { getOAuthAuthorizationUrl } from "../utils/oauthRedirectUrls";
 import { mapAxiosError, unwrapResponse } from "../../../services/http/apiResponse";
 
-const AUTH_BASE_URL = resolveServiceBaseUrl(process.env.EXPO_PUBLIC_AUTH_SERVICE_BASE_URL);
+const AUTH_BASE_URL = resolveDevServiceBaseUrl("auth", process.env.EXPO_PUBLIC_AUTH_SERVICE_BASE_URL);
 
 export async function loginWithEmail(payload) {
   try {
@@ -70,15 +71,17 @@ export async function fetchOAuthSession() {
   }
 }
 
-export function getOAuthRedirectUrl(provider) {
-  const providers = {
-    google: "/oauth2/authorization/google",
-    facebook: "/oauth2/authorization/facebook",
-  };
+export async function exchangeOAuthCode(code) {
+  try {
+    const response = await axios.post(`${AUTH_BASE_URL}/api/v1/auth/oauth/exchange`, { code });
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
 
-  const endpoint = providers[provider];
-  if (!endpoint) return "";
-  return `${AUTH_BASE_URL}${endpoint}`;
+export function getOAuthRedirectUrl(provider) {
+  return getOAuthAuthorizationUrl(provider);
 }
 
 export async function getLoginSessions() {

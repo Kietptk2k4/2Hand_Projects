@@ -24,7 +24,8 @@ public class StubPostMediaUploadStorageAdapter implements PostMediaUploadStorage
             UUID userId,
             String contentType,
             String mediaKind,
-            Instant expiresAt
+            Instant expiresAt,
+            String clientUploadOrigin
     ) {
         String extension = switch (contentType) {
             case "image/jpeg" -> "jpg";
@@ -34,7 +35,7 @@ public class StubPostMediaUploadStorageAdapter implements PostMediaUploadStorage
             default -> "bin";
         };
         String objectKey = "posts/" + userId + "/" + UUID.randomUUID() + "." + extension;
-        String mediaUrl = properties.buildPublicObjectUrl(objectKey);
+        String mediaUrl = properties.buildPublicObjectUrl(objectKey, clientUploadOrigin);
         return new PostMediaUploadIntent(
                 "https://minio.local/presigned-stub/" + objectKey,
                 objectKey,

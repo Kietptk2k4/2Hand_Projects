@@ -1,5 +1,6 @@
 package com.twohands.commerce_service.application.shop.uploadshopmedia;
 
+import com.twohands.commerce_service.common.media.CommerceClientUploadOriginValidator;
 import com.twohands.commerce_service.config.CommerceObjectStorageProperties;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
@@ -15,15 +16,18 @@ public class CreateShopMediaUploadUrlUseCase {
     private static final String SUCCESS_MESSAGE = "Tao link upload anh shop thanh cong.";
 
     private final CreateShopMediaUploadUrlValidationService validationService;
+    private final CommerceClientUploadOriginValidator clientUploadOriginValidator;
     private final CommerceObjectStorageProperties objectStorageProperties;
     private final Optional<ShopMediaUploadStoragePort> shopMediaUploadStoragePort;
 
     public CreateShopMediaUploadUrlUseCase(
             CreateShopMediaUploadUrlValidationService validationService,
+            CommerceClientUploadOriginValidator clientUploadOriginValidator,
             CommerceObjectStorageProperties objectStorageProperties,
             @Autowired(required = false) ShopMediaUploadStoragePort shopMediaUploadStoragePort
     ) {
         this.validationService = validationService;
+        this.clientUploadOriginValidator = clientUploadOriginValidator;
         this.objectStorageProperties = objectStorageProperties;
         this.shopMediaUploadStoragePort = Optional.ofNullable(shopMediaUploadStoragePort);
     }
@@ -32,6 +36,7 @@ public class CreateShopMediaUploadUrlUseCase {
         String mediaKind = validationService.validateMediaKind(command.mediaKind());
         String contentType = validationService.validateContentType(command.contentType());
         validationService.validateFileSize(command.fileSizeBytes());
+        String clientUploadOrigin = clientUploadOriginValidator.validate(command.clientUploadOrigin());
 
         if (!objectStorageProperties.isEnabled()) {
             throw new AppException(
@@ -50,7 +55,8 @@ public class CreateShopMediaUploadUrlUseCase {
                 command.sellerId(),
                 contentType,
                 mediaKind,
-                expiresAt
+                expiresAt,
+                clientUploadOrigin
         );
 
         return new CreateShopMediaUploadUrlResult(

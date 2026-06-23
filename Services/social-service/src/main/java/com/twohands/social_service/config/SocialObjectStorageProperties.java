@@ -19,6 +19,7 @@ public class SocialObjectStorageProperties {
     private long imageMaxFileSizeBytes = 10_485_760L;
     private long videoMaxFileSizeBytes = 104_857_600L;
     private int presignedUrlTtlSeconds = 900;
+    private boolean allowClientUploadOrigin = false;
     private List<String> allowedImageContentTypes = List.of(
             "image/jpeg",
             "image/png",
@@ -144,13 +145,40 @@ public class SocialObjectStorageProperties {
         return List.copyOf(combined);
     }
 
+    public boolean isAllowClientUploadOrigin() {
+        return allowClientUploadOrigin;
+    }
+
+    public void setAllowClientUploadOrigin(boolean allowClientUploadOrigin) {
+        this.allowClientUploadOrigin = allowClientUploadOrigin;
+    }
+
     public String buildPublicObjectUrl(String objectKey) {
+        return buildPublicObjectUrl(objectKey, null);
+    }
+
+    public String buildPublicObjectUrl(String objectKey, String originOverride) {
         String base = trimTrailingSlash(publicUrl);
         String prefix = normalizePathPrefix(publicPathPrefix);
-        if (prefix.isEmpty()) {
-            return base + "/" + objectKey;
+        String url = prefix.isEmpty()
+                ? base + "/" + objectKey
+                : base + "/" + prefix + "/" + objectKey;
+
+        if (originOverride == null || originOverride.isBlank()) {
+            return url;
         }
-        return base + "/" + prefix + "/" + objectKey;
+
+        java.net.URI built = java.net.URI.create(url);
+        java.net.URI override = java.net.URI.create(trimTrailingSlash(originOverride.trim()));
+        if (override.getHost() == null) {
+            return url;
+        }
+
+        int port = override.getPort() > 0
+                ? override.getPort()
+                : ("https".equalsIgnoreCase(override.getScheme()) ? 443 : 80);
+        String scheme = override.getScheme() != null ? override.getScheme() : "http";
+        return scheme + "://" + override.getHost() + ":" + port + built.getRawPath();
     }
 
     public String buildAllowedMediaUrlPrefix(UUID userId) {

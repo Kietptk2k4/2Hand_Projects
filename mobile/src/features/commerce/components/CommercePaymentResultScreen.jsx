@@ -7,6 +7,7 @@ import { createPayOsCheckoutUrl, retryVnpayPayment } from "../api/paymentApi";
 import { canRetryPayment } from "../constants/paymentStatusLabels";
 import { usePaymentStatus } from "../hooks/usePaymentStatus";
 import { openPayOsBrowser } from "../utils/openPayOsBrowser";
+import { openVnpayBrowser } from "../utils/openVnpayBrowser";
 import { mapPayOsCheckoutUrlResponse, mapVnpayRetryResponse } from "../utils/paymentMapper";
 import { PaymentStatusPanel } from "./PaymentStatusPanel";
 
@@ -82,7 +83,7 @@ export function CommercePaymentResultScreen() {
         const raw = await retryVnpayPayment(orderId);
         const redirect = mapVnpayRetryResponse(raw)?.redirect;
         if (redirect) {
-          await openPayOsBrowser(redirect);
+          await openVnpayBrowser(redirect);
           return;
         }
         await refresh();

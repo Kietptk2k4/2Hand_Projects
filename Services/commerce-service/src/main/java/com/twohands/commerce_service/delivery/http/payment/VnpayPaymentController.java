@@ -4,6 +4,7 @@ import com.twohands.commerce_service.application.payment.createvnpaycheckouturl.
 import com.twohands.commerce_service.application.payment.createvnpaycheckouturl.CreateVnpayCheckoutUrlUseCase;
 import com.twohands.commerce_service.application.payment.processvnpayreturn.ProcessVnpayReturnResult;
 import com.twohands.commerce_service.application.payment.processvnpayreturn.ProcessVnpayReturnUseCase;
+import com.twohands.commerce_service.common.vnpay.VnpayReturnUrlResolver;
 import com.twohands.commerce_service.domain.payment.CreateVnpayCheckoutUrlResult;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
@@ -15,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,13 +31,16 @@ public class VnpayPaymentController {
 
     private final ProcessVnpayReturnUseCase processVnpayReturnUseCase;
     private final CreateVnpayCheckoutUrlUseCase createVnpayCheckoutUrlUseCase;
+    private final VnpayReturnUrlResolver vnpayReturnUrlResolver;
 
     public VnpayPaymentController(
             ProcessVnpayReturnUseCase processVnpayReturnUseCase,
-            CreateVnpayCheckoutUrlUseCase createVnpayCheckoutUrlUseCase
+            CreateVnpayCheckoutUrlUseCase createVnpayCheckoutUrlUseCase,
+            VnpayReturnUrlResolver vnpayReturnUrlResolver
     ) {
         this.processVnpayReturnUseCase = processVnpayReturnUseCase;
         this.createVnpayCheckoutUrlUseCase = createVnpayCheckoutUrlUseCase;
+        this.vnpayReturnUrlResolver = vnpayReturnUrlResolver;
     }
 
     @GetMapping("/vnpay/return")
@@ -49,12 +54,26 @@ public class VnpayPaymentController {
     @PostMapping("/{paymentId}/vnpay-checkout-url")
     public ResponseEntity<com.twohands.commerce_service.common.dto.ApiResponse<CreateVnpayCheckoutUrlResponse>> createVnpayCheckoutUrl(
             @PathVariable UUID paymentId,
+            @RequestBody(required = false) CreateVnpayCheckoutUrlRequest body,
             Authentication authentication,
             HttpServletRequest request
     ) {
         UUID buyerId = resolveUserId(authentication);
+        String frontendReturnUrl = vnpayReturnUrlResolver.resolveFrontendReturnUrl(
+                body == null ? null : body.frontendReturnUrl()
+        );
+        String vnpayReturnUrl = vnpayReturnUrlResolver.resolveBackendReturnUrl(
+                request,
+                body == null ? null : body.vnpayReturnUrl()
+        );
         CreateVnpayCheckoutUrlResult result = createVnpayCheckoutUrlUseCase.execute(
-                new CreateVnpayCheckoutUrlCommand(paymentId, buyerId, resolveClientIp(request))
+                new CreateVnpayCheckoutUrlCommand(
+                        paymentId,
+                        buyerId,
+                        resolveClientIp(request),
+                        frontendReturnUrl,
+                        vnpayReturnUrl
+                )
         );
 
         return ResponseEntity.ok(com.twohands.commerce_service.common.dto.ApiResponse.success(

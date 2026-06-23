@@ -1,6 +1,6 @@
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { getPostMediaUrl, isPostVideoMedia } from "../utils/postMediaType";
+import { PostMediaItem } from "./PostMediaItem";
 import { PostOptionsMenu } from "./PostOptionsMenu";
 import { useThemeColors } from "../../../shared/theme/useThemeColors";
 import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
@@ -70,12 +70,6 @@ function createStyles(colors) {
       color: colors.onSurfaceVariant,
       textAlign: "center",
     },
-    playOverlay: {
-      ...StyleSheet.absoluteFillObject,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: "rgba(0,0,0,0.25)",
-    },
   };
 }
 
@@ -93,8 +87,6 @@ export function ProfilePostTile({
   const colors = useThemeColors();
   const styles = useThemedStyles(createStyles);
   const primaryMedia = post.media?.[0];
-  const mediaUrl = primaryMedia ? getPostMediaUrl(primaryMedia) : "";
-  const isVideo = primaryMedia ? isPostVideoMedia(primaryMedia) : false;
   const isDraft = post.status === "DRAFT";
 
   const openPost = () => onOpenPost?.(post.postId);
@@ -106,15 +98,8 @@ export function ProfilePostTile({
       accessibilityRole="button"
       accessibilityLabel={post.caption ? `Xem bài: ${post.caption.slice(0, 40)}` : "Xem bài viết"}
     >
-      {mediaUrl ? (
-        <>
-          <Image source={{ uri: mediaUrl }} style={styles.media} resizeMode="cover" />
-          {isVideo ? (
-            <View style={styles.playOverlay} pointerEvents="none">
-              <Ionicons name="play-circle" size={40} color="#FFFFFF" />
-            </View>
-          ) : null}
-        </>
+      {primaryMedia ? (
+        <PostMediaItem item={primaryMedia} variant="grid" style={styles.media} playIconSize={40} />
       ) : (
         <View style={styles.emptyBody}>
           <Ionicons name="document-text-outline" size={28} color={colors.outline} />

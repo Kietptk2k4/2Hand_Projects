@@ -13,6 +13,8 @@ public record CheckoutFromCartCommand(
         PaymentMethod paymentMethod,
         ShipmentType shipmentType,
         String idempotencyKey,
-        String clientIp
+        String clientIp,
+        String frontendReturnUrl,
+        String vnpayReturnUrl
 ) {
 }

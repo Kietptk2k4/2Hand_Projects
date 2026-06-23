@@ -10,5 +10,9 @@ export default {
     android: {
       usesCleartextTraffic: true,
     },
+    extra: {
+      devHost: process.env.EXPO_PUBLIC_DEV_HOST,
+      authServiceBaseUrl: process.env.EXPO_PUBLIC_AUTH_SERVICE_BASE_URL,
+    },
   },
 };

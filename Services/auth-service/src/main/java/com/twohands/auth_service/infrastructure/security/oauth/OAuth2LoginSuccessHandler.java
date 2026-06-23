@@ -26,6 +26,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final OAuth2ProfileExtractor profileExtractor;
     private final OAuthLoginUseCase oAuthLoginUseCase;
+    private final OAuthRedirectUriResolver redirectUriResolver;
     private final String successRedirectUrl;
     private final String failureRedirectUrl;
     private final boolean secureCookie;
@@ -33,12 +34,14 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     public OAuth2LoginSuccessHandler(
             OAuth2ProfileExtractor profileExtractor,
             OAuthLoginUseCase oAuthLoginUseCase,
+            OAuthRedirectUriResolver redirectUriResolver,
             @Value("${auth.oauth2.redirect.success-url:http://localhost:5173/oauth/success}") String successRedirectUrl,
             @Value("${auth.oauth2.redirect.failure-url:http://localhost:5173/oauth/failure}") String failureRedirectUrl,
             @Value("${auth.oauth2.cookie.secure:true}") boolean secureCookie
     ) {
         this.profileExtractor = profileExtractor;
         this.oAuthLoginUseCase = oAuthLoginUseCase;
+        this.redirectUriResolver = redirectUriResolver;
         this.successRedirectUrl = successRedirectUrl;
         this.failureRedirectUrl = failureRedirectUrl;
         this.secureCookie = secureCookie;
@@ -63,21 +66,24 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             ));
 
             addAuthCookies(response, result);
-            URI redirect = UriComponentsBuilder.fromUriString(successRedirectUrl)
+            String targetRedirectUrl = redirectUriResolver.resolve(request, successRedirectUrl);
+            URI redirect = UriComponentsBuilder.fromUriString(targetRedirectUrl)
                     .queryParam("status", "success")
                     .queryParam("first_login", result.firstLogin())
                     .build(true)
                     .toUri();
             response.sendRedirect(redirect.toString());
         } catch (AppException ex) {
-            URI redirect = UriComponentsBuilder.fromUriString(failureRedirectUrl)
+            String targetRedirectUrl = redirectUriResolver.resolve(request, failureRedirectUrl);
+            URI redirect = UriComponentsBuilder.fromUriString(targetRedirectUrl)
                     .queryParam("status", "error")
                     .queryParam("code", ex.getErrorCode().code())
                     .build(true)
                     .toUri();
             response.sendRedirect(redirect.toString());
         } catch (Exception ex) {
-            URI redirect = UriComponentsBuilder.fromUriString(failureRedirectUrl)
+            String targetRedirectUrl = redirectUriResolver.resolve(request, failureRedirectUrl);
+            URI redirect = UriComponentsBuilder.fromUriString(targetRedirectUrl)
                     .queryParam("status", "error")
                     .queryParam("code", ErrorCode.INTERNAL_ERROR.code())
                     .build(true)

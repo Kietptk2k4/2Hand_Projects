@@ -17,6 +17,9 @@ public record UploadPostMediaRequest(
 
         @NotBlank(message = "media_kind is required")
         @JsonProperty("media_kind")
-        String mediaKind
+        String mediaKind,
+
+        @JsonProperty("client_upload_origin")
+        String clientUploadOrigin
 ) {
 }

@@ -48,17 +48,28 @@ public class CreateVnpayCheckoutUrlUseCase {
                 )
                 .orElseThrow(() -> new AppException(ErrorCode.PAYMENT_NOT_FOUND));
 
-        return createCheckoutUrl(payment, command.clientIp());
+        return createCheckoutUrl(payment, command.clientIp(), command.frontendReturnUrl(), command.vnpayReturnUrl());
     }
 
-    public CreateVnpayCheckoutUrlResult executeForOrder(UUID orderId, UUID buyerId, String clientIp) {
+    public CreateVnpayCheckoutUrlResult executeForOrder(
+            UUID orderId,
+            UUID buyerId,
+            String clientIp,
+            String frontendReturnUrl,
+            String vnpayReturnUrl
+    ) {
         PaymentVnpaySnapshot payment = createVnpayCheckoutUrlRepository.findPaymentByOrderForBuyer(orderId, buyerId)
                 .orElseThrow(() -> new AppException(ErrorCode.PAYMENT_NOT_FOUND));
 
-        return createCheckoutUrl(payment, clientIp);
+        return createCheckoutUrl(payment, clientIp, frontendReturnUrl, vnpayReturnUrl);
     }
 
-    private CreateVnpayCheckoutUrlResult createCheckoutUrl(PaymentVnpaySnapshot payment, String clientIp) {
+    private CreateVnpayCheckoutUrlResult createCheckoutUrl(
+            PaymentVnpaySnapshot payment,
+            String clientIp,
+            String frontendReturnUrl,
+            String vnpayReturnUrl
+    ) {
         validateVnpayCheckoutEligible(payment);
 
         Instant now = clock.instant();
@@ -71,7 +82,8 @@ public class CreateVnpayCheckoutUrlUseCase {
                         txnRef,
                         buildDescription(payment.orderId()),
                         clientIp,
-                        now
+                        now,
+                        vnpayReturnUrl
                 )
         );
 
@@ -79,7 +91,8 @@ public class CreateVnpayCheckoutUrlUseCase {
                 payment.paymentId(),
                 payment.orderId(),
                 providerResult,
-                now
+                now,
+                frontendReturnUrl
         );
     }
 

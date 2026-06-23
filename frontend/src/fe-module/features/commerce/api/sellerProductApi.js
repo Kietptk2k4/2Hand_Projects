@@ -1,4 +1,5 @@
 import { commerceApiClient } from "../../../services/http/commerceApiClient";
+import { withClientUploadOrigin } from "../../../shared/utils/getClientUploadOrigin";
 import { mapAxiosError, unwrapResponse } from "./commerceApiResponse";
 
 export async function fetchSellerProductList({ page, limit, status, q }) {
@@ -63,11 +64,11 @@ export async function requestProductMediaUploadUrl(productId, { contentType, fil
   try {
     const response = await commerceApiClient.post(
       `/commerce/api/v1/seller/products/${productId}/media/upload-url`,
-      {
+      withClientUploadOrigin({
         content_type: contentType,
         file_size_bytes: fileSizeBytes,
         media_kind: mediaKind,
-      },
+      }),
     );
     return mapProductMediaUploadUrlResponse(unwrapResponse(response));
   } catch (error) {

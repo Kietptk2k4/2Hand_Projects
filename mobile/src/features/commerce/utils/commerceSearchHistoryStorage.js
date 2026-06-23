@@ -1,6 +1,6 @@
 import * as SecureStore from "expo-secure-store";
 
-const STORAGE_KEY = "commerce:search-history";
+const STORAGE_KEY = "commerce.search-history";
 const MAX_ITEMS = 10;
 
 async function readRaw() {

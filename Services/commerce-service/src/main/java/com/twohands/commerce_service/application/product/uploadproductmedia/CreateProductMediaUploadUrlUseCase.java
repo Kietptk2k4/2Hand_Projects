@@ -1,5 +1,6 @@
 package com.twohands.commerce_service.application.product.uploadproductmedia;
 
+import com.twohands.commerce_service.common.media.CommerceClientUploadOriginValidator;
 import com.twohands.commerce_service.config.CommerceObjectStorageProperties;
 import com.twohands.commerce_service.domain.product.ProductStatus;
 import com.twohands.commerce_service.domain.product.UpdateProductMediaProductRef;
@@ -18,17 +19,20 @@ public class CreateProductMediaUploadUrlUseCase {
     private static final String SUCCESS_MESSAGE = "Tao link upload anh san pham thanh cong.";
 
     private final CreateProductMediaUploadUrlValidationService validationService;
+    private final CommerceClientUploadOriginValidator clientUploadOriginValidator;
     private final UpdateProductMediaRepository updateProductMediaRepository;
     private final CommerceObjectStorageProperties objectStorageProperties;
     private final Optional<ProductMediaUploadStoragePort> productMediaUploadStoragePort;
 
     public CreateProductMediaUploadUrlUseCase(
             CreateProductMediaUploadUrlValidationService validationService,
+            CommerceClientUploadOriginValidator clientUploadOriginValidator,
             UpdateProductMediaRepository updateProductMediaRepository,
             CommerceObjectStorageProperties objectStorageProperties,
             @Autowired(required = false) ProductMediaUploadStoragePort productMediaUploadStoragePort
     ) {
         this.validationService = validationService;
+        this.clientUploadOriginValidator = clientUploadOriginValidator;
         this.updateProductMediaRepository = updateProductMediaRepository;
         this.objectStorageProperties = objectStorageProperties;
         this.productMediaUploadStoragePort = Optional.ofNullable(productMediaUploadStoragePort);
@@ -38,6 +42,7 @@ public class CreateProductMediaUploadUrlUseCase {
         String mediaKind = validationService.validateMediaKind(command.mediaKind());
         String contentType = validationService.validateContentType(command.contentType(), mediaKind);
         validationService.validateFileSize(command.fileSizeBytes(), contentType);
+        String clientUploadOrigin = clientUploadOriginValidator.validate(command.clientUploadOrigin());
 
         UpdateProductMediaProductRef product = updateProductMediaRepository
                 .findProductByIdAndSellerId(command.productId(), command.sellerId())
@@ -65,7 +70,8 @@ public class CreateProductMediaUploadUrlUseCase {
                 command.productId(),
                 contentType,
                 mediaKind,
-                expiresAt
+                expiresAt,
+                clientUploadOrigin
         );
 
         return new CreateProductMediaUploadUrlResult(

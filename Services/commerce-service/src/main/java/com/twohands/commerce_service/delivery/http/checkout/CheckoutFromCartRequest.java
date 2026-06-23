@@ -20,6 +20,10 @@ public record CheckoutFromCartRequest(
         @JsonProperty("shipment_type")
         ShipmentType shipmentType,
         @JsonProperty("idempotency_key")
-        String idempotencyKey
+        String idempotencyKey,
+        @JsonProperty("frontend_return_url")
+        String frontendReturnUrl,
+        @JsonProperty("vnpay_return_url")
+        String vnpayReturnUrl
 ) {
 }

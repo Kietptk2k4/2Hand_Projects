@@ -7,7 +7,8 @@ COPY gradlew gradlew.bat settings.gradle build.gradle ./
 COPY gradle ./gradle
 COPY src ./src
 
-RUN chmod +x gradlew \
+RUN --mount=type=cache,target=/root/.gradle \
+    chmod +x gradlew \
     && ./gradlew bootJar -x test --no-daemon \
     && JAR="$(ls build/libs/*.jar | grep -v plain | head -n1)" \
     && cp "$JAR" /tmp/app.jar

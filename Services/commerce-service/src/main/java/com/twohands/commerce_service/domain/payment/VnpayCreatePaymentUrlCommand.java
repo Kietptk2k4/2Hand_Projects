@@ -11,6 +11,7 @@ public record VnpayCreatePaymentUrlCommand(
         String txnRef,
         String orderDescription,
         String clientIp,
-        Instant occurredAt
+        Instant occurredAt,
+        String vnpayReturnUrl
 ) {
 }

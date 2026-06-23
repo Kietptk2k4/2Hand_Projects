@@ -5,9 +5,9 @@ import {
   getRefreshToken,
   setSessionTokens,
 } from "../auth/tokenStorage";
-import { resolveServiceBaseUrl } from "./resolveServiceBaseUrl";
+import { resolveDevServiceBaseUrl } from "./resolveDevServiceBaseUrl";
 
-const AUTH_BASE_URL = resolveServiceBaseUrl(process.env.EXPO_PUBLIC_AUTH_SERVICE_BASE_URL);
+const AUTH_BASE_URL = resolveDevServiceBaseUrl("auth", process.env.EXPO_PUBLIC_AUTH_SERVICE_BASE_URL);
 const DEFAULT_SESSION_EXPIRED_MESSAGE = "Phien dang nhap da het han, vui long dang nhap lai.";
 
 let onSessionExpiredHandler = () => {};

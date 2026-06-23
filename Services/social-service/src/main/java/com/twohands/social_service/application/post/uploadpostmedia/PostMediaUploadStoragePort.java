@@ -9,6 +9,7 @@ public interface PostMediaUploadStoragePort {
             UUID userId,
             String contentType,
             String mediaKind,
-            Instant expiresAt
+            Instant expiresAt,
+            String clientUploadOrigin
     );
 }

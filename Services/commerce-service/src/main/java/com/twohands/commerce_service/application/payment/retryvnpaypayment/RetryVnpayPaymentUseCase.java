@@ -19,7 +19,9 @@ public class RetryVnpayPaymentUseCase {
         return createVnpayCheckoutUrlUseCase.executeForOrder(
                 command.orderId(),
                 command.buyerId(),
-                command.clientIp()
+                command.clientIp(),
+                command.frontendReturnUrl(),
+                command.vnpayReturnUrl()
         );
     }
 }

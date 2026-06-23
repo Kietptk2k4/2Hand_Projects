@@ -17,6 +17,9 @@ public record CreateShopMediaUploadUrlRequest(
 
         @JsonProperty("media_kind")
         @NotBlank(message = "Media kind is required")
-        String mediaKind
+        String mediaKind,
+
+        @JsonProperty("client_upload_origin")
+        String clientUploadOrigin
 ) {
 }

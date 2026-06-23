@@ -8,6 +8,7 @@ import com.twohands.commerce_service.config.CommerceIntegrationProperties;
 import com.twohands.commerce_service.domain.payment.ProcessPayosPaymentSuccessOutcome;
 import com.twohands.commerce_service.domain.payment.ProcessPayosPaymentSuccessResult;
 import com.twohands.commerce_service.domain.payment.ProcessVnpayPaymentSuccessRepository;
+import com.twohands.commerce_service.domain.payment.VnpayReturnContextRepository;
 import com.twohands.commerce_service.domain.payment.VnpayTxnRefParser;
 import com.twohands.commerce_service.infrastructure.vnpay.VnpayParamSigner;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +22,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -42,6 +44,9 @@ class ProcessVnpayReturnUseCaseTest {
   @Mock
   private HandlePaymentFailureUseCase handlePaymentFailureUseCase;
 
+  @Mock
+  private VnpayReturnContextRepository vnpayReturnContextRepository;
+
   private ProcessVnpayReturnUseCase useCase;
   private final UUID orderId = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
   private final Instant now = Instant.parse("2026-05-21T10:00:00Z");
@@ -57,6 +62,7 @@ class ProcessVnpayReturnUseCaseTest {
         properties,
         new VnpayParamSigner(),
         processVnpayPaymentSuccessRepository,
+        vnpayReturnContextRepository,
         handlePaymentFailureUseCase,
         new ObjectMapper(),
         Clock.fixed(now, ZoneOffset.UTC)
@@ -64,9 +70,30 @@ class ProcessVnpayReturnUseCaseTest {
   }
 
   @Test
+  void shouldRedirectToStoredFrontendReturnUrl() {
+    String txnRef = VnpayTxnRefParser.buildTxnRef(orderId, now);
+    Map<String, String> params = signedReturnParams(txnRef, "00");
+    String appReturn = "twohands://commerce/checkout/vnpay-return";
+
+    when(vnpayReturnContextRepository.findFrontendReturnUrlByTxnRef(txnRef)).thenReturn(Optional.of(appReturn));
+    when(processVnpayPaymentSuccessRepository.markPaidByVnpayTxnRef(any(), any(), any(), any(), any()))
+        .thenReturn(ProcessPayosPaymentSuccessResult.processed(UUID.randomUUID(), orderId, now));
+
+    ProcessVnpayReturnResult result = useCase.execute(params);
+
+    assertThat(result.success()).isTrue();
+    assertThat(result.redirectUri().toString())
+        .startsWith(appReturn)
+        .contains("status=success")
+        .contains("orderId=" + orderId);
+  }
+
+  @Test
   void shouldRedirectSuccessWhenSignatureValid() {
     String txnRef = VnpayTxnRefParser.buildTxnRef(orderId, now);
     Map<String, String> params = signedReturnParams(txnRef, "00");
+
+    when(vnpayReturnContextRepository.findFrontendReturnUrlByTxnRef(txnRef)).thenReturn(Optional.empty());
 
     when(processVnpayPaymentSuccessRepository.markPaidByVnpayTxnRef(any(), any(), any(), any(), any()))
         .thenReturn(ProcessPayosPaymentSuccessResult.processed(UUID.randomUUID(), orderId, now));
@@ -85,6 +112,8 @@ class ProcessVnpayReturnUseCaseTest {
   void shouldRedirectFailureWhenResponseCodeNotSuccess() {
     String txnRef = VnpayTxnRefParser.buildTxnRef(orderId, now);
     Map<String, String> params = signedReturnParams(txnRef, "24");
+
+    when(vnpayReturnContextRepository.findFrontendReturnUrlByTxnRef(txnRef)).thenReturn(Optional.empty());
 
     ProcessVnpayReturnResult result = useCase.execute(params);
 

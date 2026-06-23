@@ -2,7 +2,6 @@ import {
   ActivityIndicator,
   Image,
   Pressable,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -10,10 +9,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { usePostAuthorDisplay } from "../hooks/usePostAuthorDisplay";
 import { formatSavedAt } from "../utils/formatSavedAt";
 import { formatSocialCount } from "../utils/formatSocialCount";
-import { getPostMediaUrl, isPostVideoMedia } from "../utils/postMediaType";
 import { resolvePostAuthorId } from "../utils/resolvePostAuthorId";
 import { resolvePostProductTags } from "../utils/mapProductTagsFromApi";
 import { PostProductTagsBlock } from "./PostProductTagsBlock";
+import { PostMediaItem } from "./PostMediaItem";
 import { LikeCountButton } from "./LikeCountButton";
 import { useThemeColors } from "../../../shared/theme/useThemeColors";
 import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
@@ -60,12 +59,6 @@ function createStyles(colors) {
       backgroundColor: "rgba(255,255,255,0.92)",
       paddingHorizontal: 8,
       paddingVertical: 4,
-    },
-    playOverlay: {
-      ...StyleSheet.absoluteFillObject,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: "rgba(0,0,0,0.25)",
     },
     body: {
       flex: 1,
@@ -158,8 +151,6 @@ export function SavedPostCard({
   const authorId = resolvePostAuthorId(post);
   const author = usePostAuthorDisplay(authorId);
   const primaryMedia = post.media?.[0];
-  const mediaUrl = primaryMedia ? getPostMediaUrl(primaryMedia) : "";
-  const isVideo = primaryMedia ? isPostVideoMedia(primaryMedia) : false;
   const savedLabel = formatSavedAt(post.savedAt || post.saved_at);
   const titleText = post.caption?.trim() || "Bài viết không có nội dung";
   const productTags = resolvePostProductTags(post);
@@ -172,15 +163,8 @@ export function SavedPostCard({
         accessibilityRole="button"
         accessibilityLabel="Xem chi tiết bài viết"
       >
-        {mediaUrl ? (
-          <>
-            <Image source={{ uri: mediaUrl }} style={styles.media} resizeMode="cover" />
-            {isVideo ? (
-              <View style={styles.playOverlay} pointerEvents="none">
-                <Ionicons name="play-circle" size={36} color="#FFFFFF" />
-              </View>
-            ) : null}
-          </>
+        {primaryMedia ? (
+          <PostMediaItem item={primaryMedia} variant="grid" style={styles.media} playIconSize={36} />
         ) : (
           <View style={styles.mediaPlaceholder}>
             <Ionicons name="image-outline" size={28} color={colors.outline} />

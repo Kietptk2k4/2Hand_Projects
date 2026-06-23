@@ -14,6 +14,7 @@ public interface CreateVnpayCheckoutUrlRepository {
             UUID paymentId,
             UUID orderId,
             VnpayPaymentUrlResult providerResult,
-            Instant occurredAt
+            Instant occurredAt,
+            String frontendReturnUrl
     );
 }

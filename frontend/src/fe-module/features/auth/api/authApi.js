@@ -132,7 +132,18 @@ export function getOAuthRedirectUrl(provider) {
 
   const endpoint = providers[provider];
   if (!endpoint) return "";
-  return `${AUTH_BASE_URL}${endpoint}`;
+
+  const redirectUri =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/oauth/success`
+      : "";
+  const baseUrl = `${AUTH_BASE_URL}${endpoint}`;
+  if (!redirectUri) {
+    return baseUrl;
+  }
+
+  const params = new URLSearchParams({ redirect_uri: redirectUri });
+  return `${baseUrl}?${params.toString()}`;
 }
 
 export async function getMyProfile() {

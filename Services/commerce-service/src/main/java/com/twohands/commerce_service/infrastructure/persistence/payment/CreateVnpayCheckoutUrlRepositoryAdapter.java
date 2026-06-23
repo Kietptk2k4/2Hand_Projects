@@ -78,11 +78,13 @@ public class CreateVnpayCheckoutUrlRepositoryAdapter implements CreateVnpayCheck
             UUID paymentId,
             UUID orderId,
             VnpayPaymentUrlResult providerResult,
-            Instant occurredAt
+            Instant occurredAt,
+            String frontendReturnUrl
     ) {
         String sql = """
                 UPDATE payments
                 SET vnpay_txn_ref = :txnRef,
+                    vnpay_frontend_return_url = :frontendReturnUrl,
                     provider_response = CAST(:providerResponse AS jsonb),
                     updated_at = :now
                 WHERE id = :paymentId
@@ -90,6 +92,7 @@ public class CreateVnpayCheckoutUrlRepositoryAdapter implements CreateVnpayCheck
         jdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("paymentId", paymentId)
                 .addValue("txnRef", providerResult.txnRef())
+                .addValue("frontendReturnUrl", frontendReturnUrl)
                 .addValue("providerResponse", providerResult.providerResponseJson())
                 .addValue("now", Timestamp.from(occurredAt)));
 

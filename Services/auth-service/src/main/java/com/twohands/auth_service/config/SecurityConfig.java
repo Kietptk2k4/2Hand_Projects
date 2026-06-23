@@ -4,6 +4,7 @@ import com.twohands.auth_service.security.RestAuthenticationEntryPoint;
 import com.twohands.auth_service.security.jwt.JwtAuthenticationFilter;
 import com.twohands.auth_service.infrastructure.security.oauth.OAuth2LoginFailureHandler;
 import com.twohands.auth_service.infrastructure.security.oauth.OAuth2LoginSuccessHandler;
+import com.twohands.auth_service.infrastructure.security.oauth.OAuthRedirectUriCaptureFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -28,17 +30,20 @@ public class SecurityConfig {
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
+    private final OAuthRedirectUriCaptureFilter oAuthRedirectUriCaptureFilter;
 
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
             RestAuthenticationEntryPoint restAuthenticationEntryPoint,
             OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
-            OAuth2LoginFailureHandler oAuth2LoginFailureHandler
+            OAuth2LoginFailureHandler oAuth2LoginFailureHandler,
+            OAuthRedirectUriCaptureFilter oAuthRedirectUriCaptureFilter
     ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
         this.oAuth2LoginFailureHandler = oAuth2LoginFailureHandler;
+        this.oAuthRedirectUriCaptureFilter = oAuthRedirectUriCaptureFilter;
     }
 
     @Bean
@@ -85,6 +90,7 @@ public class SecurityConfig {
                         .successHandler(oAuth2LoginSuccessHandler)
                         .failureHandler(oAuth2LoginFailureHandler)
                 )
+                .addFilterBefore(oAuthRedirectUriCaptureFilter, OAuth2AuthorizationRequestRedirectFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

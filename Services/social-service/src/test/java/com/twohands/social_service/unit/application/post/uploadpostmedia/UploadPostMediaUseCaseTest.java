@@ -64,7 +64,7 @@ class UploadPostMediaUseCaseTest {
         UUID userId = UUID.randomUUID();
         when(userProjectionRepository.findByUserId(userId)).thenReturn(UserProjectionTestFixtures.activeOptional(userId));
         Instant expiresAt = Instant.parse("2026-05-21T10:15:00Z");
-        when(storagePort.createUploadIntent(eq(userId), eq("image/png"), eq("IMAGE"), any(Instant.class)))
+        when(storagePort.createUploadIntent(eq(userId), eq("image/png"), eq("IMAGE"), any(Instant.class), eq(null)))
                 .thenReturn(new PostMediaUploadIntent(
                         "https://minio.local/presigned",
                         "posts/" + userId + "/file.png",
@@ -74,7 +74,7 @@ class UploadPostMediaUseCaseTest {
                 ));
 
         UploadPostMediaResult result = useCase.execute(
-                new UploadPostMediaCommand(userId, "image/png", 1_048_576L, "IMAGE")
+                new UploadPostMediaCommand(userId, "image/png", 1_048_576L, "IMAGE", null)
         );
 
         assertThat(result.uploadUrl()).contains("presigned");
@@ -86,6 +86,45 @@ class UploadPostMediaUseCaseTest {
     }
 
     @Test
+    void shouldPassClientUploadOriginToStoragePort() {
+        properties.setAllowClientUploadOrigin(true);
+        UUID userId = UUID.randomUUID();
+        when(userProjectionRepository.findByUserId(userId)).thenReturn(UserProjectionTestFixtures.activeOptional(userId));
+        when(storagePort.createUploadIntent(
+                eq(userId),
+                eq("image/jpeg"),
+                eq("IMAGE"),
+                any(Instant.class),
+                eq("http://192.168.1.52:9000")
+        )).thenReturn(new PostMediaUploadIntent(
+                "http://192.168.1.52:9000/presigned",
+                "posts/" + userId + "/file.jpg",
+                "http://192.168.1.52:9000/2hands-social-post/posts/" + userId + "/file.jpg",
+                "IMAGE",
+                Instant.parse("2026-05-21T10:15:00Z")
+        ));
+
+        UploadPostMediaResult result = useCase.execute(
+                new UploadPostMediaCommand(
+                        userId,
+                        "image/jpeg",
+                        1024L,
+                        "IMAGE",
+                        "http://192.168.1.52:9000"
+                )
+        );
+
+        assertThat(result.uploadUrl()).contains("192.168.1.52");
+        verify(storagePort).createUploadIntent(
+                eq(userId),
+                eq("image/jpeg"),
+                eq("IMAGE"),
+                any(Instant.class),
+                eq("http://192.168.1.52:9000")
+        );
+    }
+
+    @Test
     void shouldRejectSuspendedUser() {
         UUID userId = UUID.randomUUID();
         when(userProjectionRepository.findByUserId(userId)).thenReturn(java.util.Optional.of(
@@ -94,7 +133,7 @@ class UploadPostMediaUseCaseTest {
         ));
 
         assertThatThrownBy(() -> useCase.execute(
-                new UploadPostMediaCommand(userId, "image/jpeg", 1024L, "IMAGE")
+                new UploadPostMediaCommand(userId, "image/jpeg", 1024L, "IMAGE", null)
         ))
                 .isInstanceOf(AppException.class)
                 .satisfies(ex -> assertThat(((AppException) ex).getErrorCode()).isEqualTo(ErrorCode.ACCOUNT_SUSPENDED));
@@ -106,7 +145,7 @@ class UploadPostMediaUseCaseTest {
         when(userProjectionRepository.findByUserId(userId)).thenReturn(UserProjectionTestFixtures.activeOptional(userId));
 
         assertThatThrownBy(() -> useCase.execute(
-                new UploadPostMediaCommand(userId, "application/pdf", 1024L, "IMAGE")
+                new UploadPostMediaCommand(userId, "application/pdf", 1024L, "IMAGE", null)
         ))
                 .isInstanceOf(AppException.class)
                 .satisfies(ex -> {
@@ -122,7 +161,7 @@ class UploadPostMediaUseCaseTest {
         when(userProjectionRepository.findByUserId(userId)).thenReturn(UserProjectionTestFixtures.activeOptional(userId));
 
         assertThatThrownBy(() -> useCase.execute(
-                new UploadPostMediaCommand(userId, "image/jpeg", 20_000_000L, "IMAGE")
+                new UploadPostMediaCommand(userId, "image/jpeg", 20_000_000L, "IMAGE", null)
         ))
                 .isInstanceOf(AppException.class)
                 .satisfies(ex -> assertThat(((AppException) ex).getField()).isEqualTo("file_size_bytes"));
@@ -135,7 +174,7 @@ class UploadPostMediaUseCaseTest {
         when(userProjectionRepository.findByUserId(userId)).thenReturn(UserProjectionTestFixtures.activeOptional(userId));
 
         assertThatThrownBy(() -> useCase.execute(
-                new UploadPostMediaCommand(userId, "image/jpeg", 1024L, "IMAGE")
+                new UploadPostMediaCommand(userId, "image/jpeg", 1024L, "IMAGE", null)
         ))
                 .isInstanceOf(AppException.class)
                 .satisfies(ex -> assertThat(((AppException) ex).getErrorCode())
@@ -151,7 +190,7 @@ class UploadPostMediaUseCaseTest {
                 .when(rateLimitService).validateUploadUrlRequest(userId);
 
         assertThatThrownBy(() -> useCase.execute(
-                new UploadPostMediaCommand(userId, "image/jpeg", 1024L, "IMAGE")
+                new UploadPostMediaCommand(userId, "image/jpeg", 1024L, "IMAGE", null)
         ))
                 .isInstanceOf(AppException.class)
                 .satisfies(ex -> assertThat(((AppException) ex).getErrorCode())

@@ -197,9 +197,10 @@ export function ProfileHeader({
   const showFollowButton = !isSelf && !isPrivateAccount;
   const showDetails = !details?.showPrivateNotice && !isDetailsLoading && !detailsError;
 
-  const resolvedCoverUrl =
-    String(coverImageUrl || profile.coverUrl || profile.cover_url || "").trim() ||
-    COVER_IMAGE_URL;
+  const rawCoverUrl = String(coverImageUrl || profile.coverUrl || profile.cover_url || "").trim();
+  const resolvedCoverUrl = rawCoverUrl
+    ? resolveDevMediaUrl(rawCoverUrl)
+    : COVER_IMAGE_URL;
   const avatarUrl = resolveDevMediaUrl(profile.avatarUrl || DEFAULT_AVATAR);
 
   const openShop = () => {

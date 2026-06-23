@@ -14,6 +14,7 @@ import {
   clearCheckoutIdempotencyKey,
   getOrCreateCheckoutIdempotencyKey,
 } from "../utils/checkoutIdempotency";
+import { buildVnpayCheckoutPayload } from "../utils/vnpayRedirectUrls";
 import { useAddresses } from "./useAddresses";
 import { useValidateCartItems } from "./useValidateCartItems";
 
@@ -165,6 +166,8 @@ export function useCheckout(cartItemIds) {
         paymentMethod: effectivePaymentMethod,
         shipmentType: DEFAULT_SHIPMENT_TYPE,
         idempotencyKey,
+        vnpayReturnUrls:
+          effectivePaymentMethod === "VNPAY" ? buildVnpayCheckoutPayload() : undefined,
       });
       const result = mapCheckoutResponse(raw);
       await clearCheckoutIdempotencyKey();

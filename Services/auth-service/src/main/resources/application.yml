@@ -104,6 +104,8 @@ auth:
     redirect:
       success-url: ${AUTH_OAUTH2_SUCCESS_REDIRECT_URL:http://localhost:5173/oauth/success}
       failure-url: ${AUTH_OAUTH2_FAILURE_REDIRECT_URL:http://localhost:5173/oauth/failure}
+      allowed-app-schemes: ${AUTH_OAUTH2_ALLOWED_APP_SCHEMES:twohands}
+    exchange-code-ttl-seconds: ${AUTH_OAUTH2_EXCHANGE_CODE_TTL_SECONDS:60}
     cookie:
       secure: ${AUTH_OAUTH2_COOKIE_SECURE:false}
 

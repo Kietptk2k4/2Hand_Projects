@@ -12,6 +12,7 @@ import { usePayOsCheckout } from "../hooks/usePayOsCheckout";
 import { useVnpayCheckout } from "../hooks/useVnpayCheckout";
 import { formatVndPrice } from "../utils/formatVndPrice";
 import { openPayOsBrowser } from "../utils/openPayOsBrowser";
+import { openVnpayBrowser } from "../utils/openVnpayBrowser";
 
 function createStyles(colors) {
   return {
@@ -159,7 +160,7 @@ function VnpaySuccessContent({ orderId, paymentId, finalAmount, orderStatus, pay
 
   const goToVnpay = useCallback(async () => {
     if (checkoutUrl) {
-      await openPayOsBrowser(checkoutUrl);
+      await openVnpayBrowser(checkoutUrl);
     }
   }, [checkoutUrl]);
 
@@ -167,7 +168,7 @@ function VnpaySuccessContent({ orderId, paymentId, finalAmount, orderStatus, pay
     if (!checkoutUrl || isLoading || error) return;
 
     const timer = setTimeout(() => {
-      openPayOsBrowser(checkoutUrl);
+      openVnpayBrowser(checkoutUrl);
     }, PAYOS_AUTO_REDIRECT_MS);
 
     return () => clearTimeout(timer);

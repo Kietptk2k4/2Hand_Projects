@@ -170,7 +170,8 @@ public class PostController {
                         userId,
                         request.contentType(),
                         request.fileSizeBytes(),
-                        request.mediaKind()
+                        request.mediaKind(),
+                        request.clientUploadOrigin()
                 )
         );
 

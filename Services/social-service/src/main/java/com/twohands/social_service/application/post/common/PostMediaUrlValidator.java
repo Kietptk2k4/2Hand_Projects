@@ -5,6 +5,7 @@ import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,14 +30,51 @@ public class PostMediaUrlValidator {
                 continue;
             }
             String normalizedUrl = properties.rewriteLegacyMediaUrl(url);
-            if (!normalizedUrl.startsWith(allowedPrefix) && !url.startsWith(allowedPrefix)) {
-                throw new AppException(
-                        ErrorCode.VALIDATION_ERROR,
-                        "Validation failed",
-                        "media[" + index + "].url",
-                        "URL media khong hop le hoac khong thuoc nguoi dung."
-                );
+            if (isAllowedMediaUrl(authorId, allowedPrefix, url, normalizedUrl)) {
+                continue;
             }
+            throw new AppException(
+                    ErrorCode.VALIDATION_ERROR,
+                    "Validation failed",
+                    "media[" + index + "].url",
+                    "URL media khong hop le hoac khong thuoc nguoi dung."
+            );
+        }
+    }
+
+    private boolean isAllowedMediaUrl(
+            UUID authorId,
+            String allowedPrefix,
+            String rawUrl,
+            String normalizedUrl
+    ) {
+        if (normalizedUrl.startsWith(allowedPrefix) || rawUrl.startsWith(allowedPrefix)) {
+            return true;
+        }
+        return matchesUserPostObjectPath(authorId, normalizedUrl)
+                || matchesUserPostObjectPath(authorId, rawUrl);
+    }
+
+    /**
+     * Accepts alternate dev hosts (e.g. LAN IP from client_upload_origin presign) when the object
+     * path still points at this author's post media.
+     */
+    private boolean matchesUserPostObjectPath(UUID authorId, String url) {
+        if (url == null || url.isBlank()) {
+            return false;
+        }
+        try {
+            String path = URI.create(url.trim()).getPath();
+            if (path == null || path.isBlank()) {
+                return false;
+            }
+            String pathPrefix = properties.getPublicPathPrefix();
+            String marker = pathPrefix == null || pathPrefix.isBlank()
+                    ? "/posts/" + authorId + "/"
+                    : "/" + pathPrefix.replaceAll("^/+|/+$", "") + "/posts/" + authorId + "/";
+            return path.contains(marker);
+        } catch (IllegalArgumentException ex) {
+            return false;
         }
     }
 

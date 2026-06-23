@@ -6,6 +6,7 @@ public record UploadPostMediaCommand(
         UUID userId,
         String contentType,
         long fileSizeBytes,
-        String mediaKind
+        String mediaKind,
+        String clientUploadOrigin
 ) {
 }

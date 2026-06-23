@@ -5,6 +5,8 @@ import java.util.UUID;
 public record CreateVnpayCheckoutUrlCommand(
         UUID paymentId,
         UUID buyerId,
-        String clientIp
+        String clientIp,
+        String frontendReturnUrl,
+        String vnpayReturnUrl
 ) {
 }

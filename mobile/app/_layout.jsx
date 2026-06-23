@@ -7,6 +7,7 @@ import { configureAuthRefreshService } from "../src/services/http/authRefreshSer
 import { queryClient } from "../src/services/query/queryClient";
 import { AppearanceProvider } from "../src/features/auth/context/AppearanceContext";
 import { SocialWriteBlockProvider } from "../src/features/social/context/SocialWriteBlockContext";
+import { VideoPlaybackProvider } from "../src/features/social/context/VideoPlaybackContext";
 import { SocialToastProvider } from "../src/shared/components/SocialToastProvider";
 import { ROUTES } from "../src/shared/constants/routes";
 import { setSessionExpiredMessage } from "../src/features/auth/utils/authNavigationState";
@@ -62,9 +63,11 @@ export default function RootLayout() {
       <AppearanceProvider>
         <SocialToastProvider>
           <SocialWriteBlockProvider>
-            <SafeAreaProvider>
-              <RootNavigator />
-            </SafeAreaProvider>
+            <VideoPlaybackProvider>
+              <SafeAreaProvider>
+                <RootNavigator />
+              </SafeAreaProvider>
+            </VideoPlaybackProvider>
           </SocialWriteBlockProvider>
         </SocialToastProvider>
       </AppearanceProvider>

@@ -59,15 +59,17 @@ class CreateVnpayCheckoutUrlUseCaseTest {
         "{}",
         true
     ));
-    when(repository.saveVnpayCheckoutFields(any(), any(), any(), any())).thenReturn(
+    when(repository.saveVnpayCheckoutFields(any(), any(), any(), any(), any())).thenReturn(
         new CreateVnpayCheckoutUrlResult(paymentId, orderId, "txn-ref", "https://sandbox.vnpayment.vn/pay")
     );
 
     CreateVnpayCheckoutUrlUseCase useCase = new CreateVnpayCheckoutUrlUseCase(repository, gateway, clock, checkoutProperties);
-    CreateVnpayCheckoutUrlResult result = useCase.execute(new CreateVnpayCheckoutUrlCommand(paymentId, buyerId, "127.0.0.1"));
+    CreateVnpayCheckoutUrlResult result = useCase.execute(
+        new CreateVnpayCheckoutUrlCommand(paymentId, buyerId, "127.0.0.1", null, "http://localhost:3003/commerce/api/v1/payments/vnpay/return")
+    );
 
     assertThat(result.checkoutUrl()).contains("vnpayment");
-    verify(repository).saveVnpayCheckoutFields(any(), any(), any(), any());
+    verify(repository).saveVnpayCheckoutFields(any(), any(), any(), any(), any());
   }
 
   @Test
@@ -77,7 +79,9 @@ class CreateVnpayCheckoutUrlUseCaseTest {
 
     CreateVnpayCheckoutUrlUseCase useCase = new CreateVnpayCheckoutUrlUseCase(repository, gateway, clock, checkoutProperties);
 
-    assertThatThrownBy(() -> useCase.execute(new CreateVnpayCheckoutUrlCommand(paymentId, buyerId, "127.0.0.1")))
+    assertThatThrownBy(() -> useCase.execute(
+        new CreateVnpayCheckoutUrlCommand(paymentId, buyerId, "127.0.0.1", null, null)
+    ))
         .isInstanceOf(AppException.class)
         .extracting(ex -> ((AppException) ex).getErrorCode())
         .isEqualTo(ErrorCode.INVALID_PAYMENT_METHOD);

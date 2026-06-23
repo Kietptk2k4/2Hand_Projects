@@ -35,4 +35,5 @@ export const ONLINE_PAYMENT_METHODS = new Set(["PAYOS", "VNPAY"]);
 export const QUOTE_DISCLAIMER =
   "Giá và phí vận chuyển mang tính tạm tính; có thể thay đổi khi đặt hàng.";
 
-export const CHECKOUT_IDEMPOTENCY_STORAGE_KEY = "commerce:checkout-idempotency-key";
+/** SecureStore keys: alphanumeric, ".", "-", "_" only (no ":"). */
+export const CHECKOUT_IDEMPOTENCY_STORAGE_KEY = "commerce.checkout-idempotency-key";

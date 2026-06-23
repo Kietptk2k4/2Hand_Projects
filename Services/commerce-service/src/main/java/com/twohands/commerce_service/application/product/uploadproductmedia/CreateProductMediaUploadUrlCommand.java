@@ -7,6 +7,7 @@ public record CreateProductMediaUploadUrlCommand(
         UUID productId,
         String contentType,
         long fileSizeBytes,
-        String mediaKind
+        String mediaKind,
+        String clientUploadOrigin
 ) {
 }

@@ -1,4 +1,5 @@
 import { commerceApiClient } from "../../../services/http/commerceApiClient";
+import { withClientUploadOrigin } from "../../../shared/utils/getClientUploadOrigin";
 import { mapAxiosError, unwrapResponse } from "./commerceApiResponse";
 
 function mapShopMediaUploadUrlResponse(data) {
@@ -15,11 +16,14 @@ function mapShopMediaUploadUrlResponse(data) {
 
 export async function requestShopMediaUploadUrl({ contentType, fileSizeBytes, mediaKind }) {
   try {
-    const response = await commerceApiClient.post("/commerce/api/v1/seller/shop/media/upload-url", {
-      content_type: contentType,
-      file_size_bytes: fileSizeBytes,
-      media_kind: mediaKind,
-    });
+    const response = await commerceApiClient.post(
+      "/commerce/api/v1/seller/shop/media/upload-url",
+      withClientUploadOrigin({
+        content_type: contentType,
+        file_size_bytes: fileSizeBytes,
+        media_kind: mediaKind,
+      }),
+    );
     return mapShopMediaUploadUrlResponse(unwrapResponse(response));
   } catch (error) {
     throw mapAxiosError(error);

@@ -80,7 +80,8 @@ public class SellerShopController {
                         sellerId,
                         request.contentType(),
                         request.fileSizeBytes(),
-                        request.mediaKind()
+                        request.mediaKind(),
+                        request.clientUploadOrigin()
                 )
         );
 

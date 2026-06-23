@@ -1,8 +1,8 @@
 import axios from "axios";
 import { getStoredAccessToken, refreshAccessTokenOnce } from "./authRefreshService";
-import { resolveServiceBaseUrl } from "./resolveServiceBaseUrl";
+import { resolveDevServiceBaseUrl } from "./resolveDevServiceBaseUrl";
 
-const AUTH_BASE_URL = resolveServiceBaseUrl(process.env.EXPO_PUBLIC_AUTH_SERVICE_BASE_URL);
+const AUTH_BASE_URL = resolveDevServiceBaseUrl("auth", process.env.EXPO_PUBLIC_AUTH_SERVICE_BASE_URL);
 
 export const authApiClient = axios.create({
   baseURL: AUTH_BASE_URL,

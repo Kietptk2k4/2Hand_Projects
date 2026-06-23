@@ -181,7 +181,8 @@ public class SellerProductController {
                         productId,
                         request.contentType(),
                         request.fileSizeBytes(),
-                        request.mediaKind()
+                        request.mediaKind(),
+                        request.clientUploadOrigin()
                 )
         );
 

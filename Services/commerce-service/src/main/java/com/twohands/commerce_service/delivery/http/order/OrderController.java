@@ -16,6 +16,8 @@ import com.twohands.commerce_service.application.order.vieworderlist.ViewOrderLi
 import com.twohands.commerce_service.application.order.vieworderlist.ViewOrderListUseCase;
 import com.twohands.commerce_service.application.payment.retryvnpaypayment.RetryVnpayPaymentCommand;
 import com.twohands.commerce_service.application.payment.retryvnpaypayment.RetryVnpayPaymentUseCase;
+import com.twohands.commerce_service.common.vnpay.VnpayReturnUrlResolver;
+import com.twohands.commerce_service.delivery.http.payment.CreateVnpayCheckoutUrlRequest;
 import com.twohands.commerce_service.domain.payment.CreateVnpayCheckoutUrlResult;
 import com.twohands.commerce_service.domain.order.ConfirmOrderReceivedResult;
 import com.twohands.commerce_service.domain.order.OrderItemTrackingLine;
@@ -66,6 +68,7 @@ public class OrderController {
     private final ViewOrderDetailUseCase viewOrderDetailUseCase;
     private final ViewOrderListUseCase viewOrderListUseCase;
     private final RetryVnpayPaymentUseCase retryVnpayPaymentUseCase;
+    private final VnpayReturnUrlResolver vnpayReturnUrlResolver;
 
     public OrderController(
             CancelOrderUseCase cancelOrderUseCase,
@@ -74,7 +77,8 @@ public class OrderController {
             TrackOrderStatusUseCase trackOrderStatusUseCase,
             ViewOrderDetailUseCase viewOrderDetailUseCase,
             ViewOrderListUseCase viewOrderListUseCase,
-            RetryVnpayPaymentUseCase retryVnpayPaymentUseCase
+            RetryVnpayPaymentUseCase retryVnpayPaymentUseCase,
+            VnpayReturnUrlResolver vnpayReturnUrlResolver
     ) {
         this.cancelOrderUseCase = cancelOrderUseCase;
         this.completeOrderUseCase = completeOrderUseCase;
@@ -83,6 +87,7 @@ public class OrderController {
         this.viewOrderDetailUseCase = viewOrderDetailUseCase;
         this.viewOrderListUseCase = viewOrderListUseCase;
         this.retryVnpayPaymentUseCase = retryVnpayPaymentUseCase;
+        this.vnpayReturnUrlResolver = vnpayReturnUrlResolver;
     }
 
     @GetMapping
@@ -188,12 +193,26 @@ public class OrderController {
     @PostMapping("/{orderId}/payments/vnpay/retry")
     public ResponseEntity<ApiResponse<RetryVnpayPaymentResponse>> retryVnpayPayment(
             @PathVariable UUID orderId,
+            @RequestBody(required = false) CreateVnpayCheckoutUrlRequest body,
             Authentication authentication,
             HttpServletRequest request
     ) {
         UUID buyerId = resolveUserId(authentication);
+        String frontendReturnUrl = vnpayReturnUrlResolver.resolveFrontendReturnUrl(
+                body == null ? null : body.frontendReturnUrl()
+        );
+        String vnpayReturnUrl = vnpayReturnUrlResolver.resolveBackendReturnUrl(
+                request,
+                body == null ? null : body.vnpayReturnUrl()
+        );
         CreateVnpayCheckoutUrlResult result = retryVnpayPaymentUseCase.execute(
-                new RetryVnpayPaymentCommand(orderId, buyerId, resolveClientIp(request))
+                new RetryVnpayPaymentCommand(
+                        orderId,
+                        buyerId,
+                        resolveClientIp(request),
+                        frontendReturnUrl,
+                        vnpayReturnUrl
+                )
         );
 
         return ResponseEntity.ok(ApiResponse.success(

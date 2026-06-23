@@ -42,6 +42,7 @@ public class UploadPostMediaUseCase {
         String mediaKind = validationService.validateMediaKind(command.mediaKind());
         String contentType = validationService.validateContentType(command.contentType(), mediaKind);
         validationService.validateFileSize(command.fileSizeBytes(), mediaKind);
+        String clientUploadOrigin = validationService.validateClientUploadOrigin(command.clientUploadOrigin());
         rateLimitService.validateUploadUrlRequest(command.userId());
 
         if (!objectStorageProperties.isEnabled()) {
@@ -61,7 +62,8 @@ public class UploadPostMediaUseCase {
                 command.userId(),
                 contentType,
                 mediaKind,
-                expiresAt
+                expiresAt,
+                clientUploadOrigin
         );
 
         return new UploadPostMediaResult(

@@ -81,6 +81,7 @@ commerce:
     product-media-max-count: ${COMMERCE_PRODUCT_MEDIA_MAX_COUNT:10}
     product-media-max-video-count: ${COMMERCE_PRODUCT_MEDIA_MAX_VIDEO_COUNT:1}
     presigned-url-ttl-seconds: ${COMMERCE_MINIO_PRESIGNED_URL_TTL_SECONDS:900}
+    allow-client-upload-origin: ${COMMERCE_ALLOW_CLIENT_UPLOAD_ORIGIN:false}
     allowed-shop-media-content-types:
       - image/jpeg
       - image/png
@@ -144,6 +145,7 @@ commerce:
       pay-url: ${COMMERCE_VNPAY_PAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
       return-url: ${COMMERCE_VNPAY_RETURN_URL:}
       frontend-return-base-url: ${COMMERCE_VNPAY_FRONTEND_RETURN_BASE_URL:http://localhost:5173}
+      allowed-app-schemes: ${COMMERCE_VNPAY_ALLOWED_APP_SCHEMES:twohands,exp}
       mock-fallback-enabled: ${COMMERCE_VNPAY_MOCK_FALLBACK_ENABLED:true}
     ghn:
       enabled: ${COMMERCE_GHN_ENABLED:false}

@@ -13,7 +13,6 @@ import io.minio.MinioClient;
 import io.minio.http.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
@@ -27,16 +26,16 @@ public class MinioProductMediaUploadStorageAdapter implements ProductMediaUpload
 
     private static final Logger log = LoggerFactory.getLogger(MinioProductMediaUploadStorageAdapter.class);
 
-    private final MinioClient minioClient;
+    private final MinioPresignClientFactory presignClientFactory;
     private final CommerceObjectStorageProperties properties;
     private final ProductMediaContentValidator productMediaContentValidator;
 
     public MinioProductMediaUploadStorageAdapter(
-            @Qualifier(CommerceMinioConfig.PRESIGN_MINIO_CLIENT) MinioClient minioClient,
+            MinioPresignClientFactory presignClientFactory,
             CommerceObjectStorageProperties properties,
             ProductMediaContentValidator productMediaContentValidator
     ) {
-        this.minioClient = minioClient;
+        this.presignClientFactory = presignClientFactory;
         this.properties = properties;
         this.productMediaContentValidator = productMediaContentValidator;
     }
@@ -47,14 +46,19 @@ public class MinioProductMediaUploadStorageAdapter implements ProductMediaUpload
             UUID productId,
             String contentType,
             String mediaKind,
-            Instant expiresAt
+            Instant expiresAt,
+            String clientUploadOrigin
     ) {
         String extension = productMediaContentValidator.resolveExtension(contentType);
         String objectKey = buildObjectKey(sellerId, productId, extension, mediaKind);
         String bucket = properties.getProductBucket();
-        String mediaUrl = buildPublicUrl(bucket, objectKey);
+        String mediaUrl = properties.buildPublicObjectUrl(bucket, objectKey, clientUploadOrigin);
+        String presignEndpoint = clientUploadOrigin != null
+                ? clientUploadOrigin
+                : properties.resolvePresignedEndpoint();
 
         try {
+            MinioClient minioClient = presignClientFactory.createForEndpoint(presignEndpoint);
             String uploadUrl = minioClient.getPresignedObjectUrl(
                     GetPresignedObjectUrlArgs.builder()
                             .method(Method.PUT)
@@ -66,11 +70,12 @@ public class MinioProductMediaUploadStorageAdapter implements ProductMediaUpload
             );
 
             log.info(
-                    "Product media upload URL issued. sellerId={}, productId={}, mediaKind={}, objectKey={}, expiresAt={}",
+                    "Product media upload URL issued. sellerId={}, productId={}, mediaKind={}, objectKey={}, presignEndpoint={}, expiresAt={}",
                     sellerId,
                     productId,
                     mediaKind,
                     objectKey,
+                    presignEndpoint,
                     expiresAt
             );
 
@@ -88,17 +93,5 @@ public class MinioProductMediaUploadStorageAdapter implements ProductMediaUpload
         String fileName = UUID.randomUUID() + "." + extension;
         String folder = ProductMediaKind.PRODUCT_VIDEO.equals(mediaKind) ? "videos" : "images";
         return "products/" + sellerId + "/" + productId + "/" + folder + "/" + fileName;
-    }
-
-    private String buildPublicUrl(String bucket, String objectKey) {
-        String base = trimTrailingSlash(properties.getPublicUrl());
-        return base + "/" + bucket + "/" + objectKey;
-    }
-
-    private String trimTrailingSlash(String value) {
-        if (value == null || value.isBlank()) {
-            return "";
-        }
-        return value.endsWith("/") ? value.substring(0, value.length() - 1) : value;
     }
 }

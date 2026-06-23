@@ -9,6 +9,7 @@ public interface ShopMediaUploadStoragePort {
             UUID sellerId,
             String contentType,
             String mediaKind,
-            Instant expiresAt
+            Instant expiresAt,
+            String clientUploadOrigin
     );
 }

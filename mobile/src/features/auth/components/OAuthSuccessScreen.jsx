@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import { fetchOAuthSession } from "../api/authApi";
+import { exchangeOAuthCode } from "../api/authApi";
 import { AuthLinkButton } from "./AuthButtons";
 import { GENERIC_ERROR_RETRY } from "../constants/authUiStrings";
 import { ROUTES } from "../../../shared/constants/routes";
@@ -29,7 +29,16 @@ export function OAuthSuccessScreen() {
 
     (async () => {
       try {
-        const sessionData = await fetchOAuthSession();
+        const exchangeCode = Array.isArray(params.code) ? params.code[0] : params.code;
+        if (!exchangeCode) {
+          router.replace({
+            pathname: ROUTES.oauthFailure,
+            params: { status: "error", code: "AUTH-401-OAUTH-SESSION-INVALID" },
+          });
+          return;
+        }
+
+        const sessionData = await exchangeOAuthCode(exchangeCode);
         if (cancelled) return;
 
         await setSessionTokens({
@@ -56,7 +65,7 @@ export function OAuthSuccessScreen() {
     return () => {
       cancelled = true;
     };
-  }, [params.status]);
+  }, [params.status, params.code]);
 
   if (errorMessage) {
     return (

@@ -10,6 +10,7 @@ public interface ProductMediaUploadStoragePort {
             UUID productId,
             String contentType,
             String mediaKind,
-            Instant expiresAt
+            Instant expiresAt,
+            String clientUploadOrigin
     );
 }

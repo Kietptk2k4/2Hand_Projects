@@ -6,6 +6,7 @@ import com.twohands.commerce_service.application.product.uploadproductmedia.Crea
 import com.twohands.commerce_service.application.product.uploadproductmedia.CreateProductMediaUploadUrlValidationService;
 import com.twohands.commerce_service.application.product.uploadproductmedia.ProductMediaUploadIntent;
 import com.twohands.commerce_service.application.product.uploadproductmedia.ProductMediaUploadStoragePort;
+import com.twohands.commerce_service.common.media.CommerceClientUploadOriginValidator;
 import com.twohands.commerce_service.common.media.ProductMediaContentValidator;
 import com.twohands.commerce_service.config.CommerceObjectStorageProperties;
 import com.twohands.commerce_service.domain.product.ProductStatus;
@@ -54,8 +55,11 @@ class CreateProductMediaUploadUrlUseCaseTest {
         properties.setPresignedUrlTtlSeconds(900);
 
         ProductMediaContentValidator contentValidator = new ProductMediaContentValidator(properties);
+        CommerceClientUploadOriginValidator clientUploadOriginValidator =
+                new CommerceClientUploadOriginValidator(properties);
         useCase = new CreateProductMediaUploadUrlUseCase(
                 new CreateProductMediaUploadUrlValidationService(properties, contentValidator),
+                clientUploadOriginValidator,
                 updateProductMediaRepository,
                 properties,
                 productMediaUploadStoragePort
@@ -74,7 +78,8 @@ class CreateProductMediaUploadUrlUseCaseTest {
                 eq(productId),
                 eq("image/jpeg"),
                 eq(CreateProductMediaUploadUrlValidationService.MEDIA_KIND_PRODUCT_IMAGE),
-                any()
+                any(),
+                eq(null)
         )).thenReturn(new ProductMediaUploadIntent(
                 "https://minio/upload",
                 "products/x/y/images/a.jpg",
@@ -88,7 +93,8 @@ class CreateProductMediaUploadUrlUseCaseTest {
                 productId,
                 "image/jpeg",
                 1024L,
-                CreateProductMediaUploadUrlValidationService.MEDIA_KIND_PRODUCT_IMAGE
+                CreateProductMediaUploadUrlValidationService.MEDIA_KIND_PRODUCT_IMAGE,
+                null
         ));
 
         assertThat(result.uploadUrl()).isEqualTo("https://minio/upload");
@@ -108,7 +114,8 @@ class CreateProductMediaUploadUrlUseCaseTest {
                 eq(productId),
                 eq("video/mp4"),
                 eq(CreateProductMediaUploadUrlValidationService.MEDIA_KIND_PRODUCT_VIDEO),
-                any()
+                any(),
+                eq(null)
         )).thenReturn(new ProductMediaUploadIntent(
                 "https://minio/upload",
                 "products/x/y/videos/a.mp4",
@@ -122,7 +129,8 @@ class CreateProductMediaUploadUrlUseCaseTest {
                 productId,
                 "video/mp4",
                 10_485_760L,
-                CreateProductMediaUploadUrlValidationService.MEDIA_KIND_PRODUCT_VIDEO
+                CreateProductMediaUploadUrlValidationService.MEDIA_KIND_PRODUCT_VIDEO,
+                null
         ));
 
         assertThat(result.mediaUrl()).contains("/videos/");
@@ -134,6 +142,7 @@ class CreateProductMediaUploadUrlUseCaseTest {
         properties.setEnabled(false);
         CreateProductMediaUploadUrlUseCase disabledUseCase = new CreateProductMediaUploadUrlUseCase(
                 new CreateProductMediaUploadUrlValidationService(properties, new ProductMediaContentValidator(properties)),
+                new CommerceClientUploadOriginValidator(properties),
                 updateProductMediaRepository,
                 properties,
                 productMediaUploadStoragePort
@@ -149,7 +158,8 @@ class CreateProductMediaUploadUrlUseCaseTest {
                 productId,
                 "image/jpeg",
                 1024L,
-                CreateProductMediaUploadUrlValidationService.MEDIA_KIND_PRODUCT_IMAGE
+                CreateProductMediaUploadUrlValidationService.MEDIA_KIND_PRODUCT_IMAGE,
+                null
         )))
                 .isInstanceOf(AppException.class)
                 .extracting(ex -> ((AppException) ex).getErrorCode())

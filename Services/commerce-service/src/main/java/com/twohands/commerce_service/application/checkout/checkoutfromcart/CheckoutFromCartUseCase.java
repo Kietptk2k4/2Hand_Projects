@@ -111,7 +111,9 @@ public class CheckoutFromCartUseCase {
                         orderResult.paymentMethod(),
                         orderResult.paymentId(),
                         prepared.buyerId(),
-                        command.clientIp()
+                        command.clientIp(),
+                        command.frontendReturnUrl(),
+                        command.vnpayReturnUrl()
                 ),
                 false
         );
@@ -135,13 +137,21 @@ public class CheckoutFromCartUseCase {
             PaymentMethod paymentMethod,
             UUID paymentId,
             UUID buyerId,
-            String clientIp
+            String clientIp,
+            String frontendReturnUrl,
+            String vnpayReturnUrl
     ) {
         if (paymentMethod != PaymentMethod.VNPAY) {
             return null;
         }
         CreateVnpayCheckoutUrlResult result = createVnpayCheckoutUrlUseCase.execute(
-                new CreateVnpayCheckoutUrlCommand(paymentId, buyerId, clientIp)
+                new CreateVnpayCheckoutUrlCommand(
+                        paymentId,
+                        buyerId,
+                        clientIp,
+                        frontendReturnUrl,
+                        vnpayReturnUrl
+                )
         );
         return result.checkoutUrl();
     }

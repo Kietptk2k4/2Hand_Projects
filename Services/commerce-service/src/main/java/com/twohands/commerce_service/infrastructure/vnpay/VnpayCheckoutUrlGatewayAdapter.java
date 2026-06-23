@@ -119,10 +119,17 @@ public class VnpayCheckoutUrlGatewayAdapter implements VnpayCheckoutUrlGateway {
         params.put("vnp_OrderInfo", command.orderDescription());
         params.put("vnp_OrderType", "other");
         params.put("vnp_Amount", String.valueOf(toVnpayAmount(command.amount())));
-        params.put("vnp_ReturnUrl", vnpayProperties.getReturnUrl());
+        params.put("vnp_ReturnUrl", resolveReturnUrl(command));
         params.put("vnp_IpAddr", resolveClientIp(command.clientIp()));
         params.put("vnp_CreateDate", CREATE_DATE_FORMAT.format(command.occurredAt().atZone(VNPAY_ZONE)));
         return params;
+    }
+
+    private String resolveReturnUrl(VnpayCreatePaymentUrlCommand command) {
+        if (!StringUtils.hasText(command.vnpayReturnUrl())) {
+            throw new AppException(ErrorCode.VNPAY_PROVIDER_UNAVAILABLE, "VNPay return URL is not configured");
+        }
+        return command.vnpayReturnUrl().trim();
     }
 
     private long toVnpayAmount(BigDecimal amount) {

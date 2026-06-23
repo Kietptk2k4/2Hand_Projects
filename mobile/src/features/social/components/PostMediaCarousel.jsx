@@ -1,8 +1,9 @@
 import { useMemo } from "react";
-import { Image, Pressable, ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { useThemedStyles } from "../../../shared/theme/useThemedStyles";
-import { getPostMediaUrl, isPostVideoMedia } from "../utils/postMediaType";
-import { PostVideoPlayer } from "./PostVideoPlayer";
+import { isPostVideoMedia } from "../utils/postMediaType";
+import { buildPlaybackId, VIDEO_PLAYBACK_SURFACES } from "../utils/videoPlaybackId";
+import { PostMediaItem } from "./PostMediaItem";
 
 function createStyles(colors) {
   return {
@@ -29,14 +30,16 @@ function createStyles(colors) {
   };
 }
 
-export function PostMediaCarousel({ media = [], onMediaPress }) {
+export function PostMediaCarousel({
+  media = [],
+  postId,
+  surface = VIDEO_PLAYBACK_SURFACES.FEED,
+  onMediaPress,
+}) {
   const styles = useThemedStyles(createStyles);
 
   const items = useMemo(
-    () =>
-      (media || [])
-        .filter((item) => item?.url || item?.mediaUrl)
-        .map((item) => ({ ...item, url: getPostMediaUrl(item) })),
+    () => (media || []).filter((item) => item?.url || item?.mediaUrl),
     [media]
   );
 
@@ -46,9 +49,12 @@ export function PostMediaCarousel({ media = [], onMediaPress }) {
     return (
       <MediaTile
         item={items[0]}
+        index={0}
+        postId={postId}
+        surface={surface}
         styles={styles}
         style={styles.single}
-        onPress={onMediaPress ? () => onMediaPress(0) : undefined}
+        onMediaPress={onMediaPress}
       />
     );
   }
@@ -61,34 +67,47 @@ export function PostMediaCarousel({ media = [], onMediaPress }) {
     >
       {items.map((item, index) => (
         <MediaTile
-          key={`${item.url}-${index}`}
+          key={`${item.url || item.mediaUrl}-${index}`}
           item={item}
+          index={index}
+          postId={postId}
+          surface={surface}
           styles={styles}
           style={styles.stripItem}
-          onPress={onMediaPress ? () => onMediaPress(index) : undefined}
+          onMediaPress={onMediaPress}
         />
       ))}
     </ScrollView>
   );
 }
 
-function MediaTile({ item, styles, style, onPress }) {
+function MediaTile({ item, index, postId, surface, styles, style, onMediaPress }) {
   const isVideo = isPostVideoMedia(item);
-  const content = (
+  const playbackId = buildPlaybackId(postId, index, surface);
+  const handlePress = onMediaPress ? () => onMediaPress(index) : undefined;
+
+  const tile = (
     <View style={[styles.tile, style]}>
-      {isVideo ? (
-        <PostVideoPlayer uri={item.url} style={styles.image} />
-      ) : (
-        <Image source={{ uri: item.url }} style={styles.image} resizeMode="cover" />
-      )}
+      <PostMediaItem
+        item={item}
+        variant="inline"
+        style={styles.image}
+        playbackId={playbackId}
+      />
     </View>
   );
 
-  if (!onPress) return content;
+  if (!handlePress || isVideo) {
+    return tile;
+  }
 
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel="Xem bai viet">
-      {content}
+    <Pressable
+      onPress={handlePress}
+      accessibilityRole="button"
+      accessibilityLabel="Xem bai viet"
+    >
+      {tile}
     </Pressable>
   );
 }

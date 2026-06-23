@@ -6,6 +6,7 @@ public record CreateShopMediaUploadUrlCommand(
         UUID sellerId,
         String contentType,
         long fileSizeBytes,
-        String mediaKind
+        String mediaKind,
+        String clientUploadOrigin
 ) {
 }

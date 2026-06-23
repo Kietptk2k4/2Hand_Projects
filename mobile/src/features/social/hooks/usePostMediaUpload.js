@@ -7,7 +7,14 @@ import {
   POST_MEDIA_MIME_TYPES,
   VIDEO_MAX_BYTES,
 } from "../constants/createPostConstants";
+import {
+  logPostMediaPick,
+  logPostMediaUploadDone,
+  logPostMediaUploadError,
+  logPostMediaValidate,
+} from "../../../shared/utils/debugMediaLog";
 import { handleSocialQueryError } from "../utils/handleSocialQueryError";
+import { resolvePostMediaFileSize } from "../utils/postMediaFileUtils";
 
 function createSlotId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -23,17 +30,15 @@ function normalizeMimeType(asset) {
   return "image/jpeg";
 }
 
-function validateAsset(asset) {
-  const mimeType = normalizeMimeType(asset);
+function validateAsset(mimeType, fileSizeBytes) {
   if (!POST_MEDIA_MIME_TYPES.includes(mimeType)) {
     return "Định dạng không được hỗ trợ. Chỉ JPEG, PNG, WEBP, MP4.";
   }
 
   const kind = resolveMediaKind(mimeType);
-  const size = asset.fileSize || 0;
   const maxBytes = kind === "VIDEO" ? VIDEO_MAX_BYTES : IMAGE_MAX_BYTES;
 
-  if (size > maxBytes) {
+  if (fileSizeBytes > maxBytes) {
     return kind === "VIDEO" ? "Video vượt quá 100MB." : "Ảnh vượt quá 10MB.";
   }
 
@@ -46,6 +51,15 @@ export function usePostMediaUpload({ mediaItems, setMediaItems, setGlobalError }
       const mimeType = normalizeMimeType(asset);
       const kind = resolveMediaKind(mimeType);
       const fileSizeBytes = asset.fileSize || 0;
+
+      if (!fileSizeBytes) {
+        logPostMediaUploadError({
+          stage: "presign-precheck",
+          slotId,
+          error: { message: "file_size_bytes is 0 before presign" },
+          extra: { mimeType, mediaKind: kind },
+        });
+      }
 
       setMediaItems((prev) =>
         prev.map((item) =>
@@ -84,9 +98,16 @@ export function usePostMediaUpload({ mediaItems, setMediaItems, setGlobalError }
               : item
           )
         );
+
+        logPostMediaUploadDone({ slotId, mediaUrl: meta.mediaUrl });
       } catch (error) {
         const handled = await handleSocialQueryError(error);
-        if (handled) return;
+        if (handled) {
+          logPostMediaUploadError({ stage: "auth", slotId, error });
+          return;
+        }
+
+        logPostMediaUploadError({ stage: "upload", slotId, error });
 
         setMediaItems((prev) =>
           prev.map((item) =>
@@ -128,10 +149,20 @@ export function usePostMediaUpload({ mediaItems, setMediaItems, setGlobalError }
 
     if (result.canceled || !result.assets?.length) return;
 
-    const newSlots = result.assets.map((asset) => {
-      const validationError = validateAsset(asset);
+    const newSlots = [];
+    for (const asset of result.assets) {
+      logPostMediaPick(asset);
       const mimeType = normalizeMimeType(asset);
-      return {
+      const fileSizeBytes = await resolvePostMediaFileSize(asset);
+      const enrichedAsset = { ...asset, fileSize: fileSizeBytes };
+      const validationError = validateAsset(mimeType, fileSizeBytes);
+      logPostMediaValidate({
+        mimeType,
+        fileSizeBytes,
+        mediaKind: resolveMediaKind(mimeType),
+        errorMessage: validationError,
+      });
+      newSlots.push({
         id: createSlotId(),
         previewUrl: asset.uri,
         mediaUrl: null,
@@ -139,9 +170,9 @@ export function usePostMediaUpload({ mediaItems, setMediaItems, setGlobalError }
         status: validationError ? "error" : "pending",
         progress: 0,
         errorMessage: validationError,
-        asset,
-      };
-    });
+        asset: enrichedAsset,
+      });
+    }
 
     setMediaItems((prev) => [...prev, ...newSlots]);
 

@@ -8,6 +8,7 @@ import com.twohands.commerce_service.config.CommerceIntegrationProperties;
 import com.twohands.commerce_service.domain.payment.PaymentStatus;
 import com.twohands.commerce_service.domain.payment.ProcessPayosPaymentSuccessResult;
 import com.twohands.commerce_service.domain.payment.ProcessVnpayPaymentSuccessRepository;
+import com.twohands.commerce_service.domain.payment.VnpayReturnContextRepository;
 import com.twohands.commerce_service.domain.payment.VnpayTxnRefParser;
 import com.twohands.commerce_service.infrastructure.vnpay.VnpayParamSigner;
 import org.slf4j.Logger;
@@ -15,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -34,6 +37,7 @@ public class ProcessVnpayReturnUseCase {
     private final CommerceIntegrationProperties.Vnpay vnpayProperties;
     private final VnpayParamSigner paramSigner;
     private final ProcessVnpayPaymentSuccessRepository processVnpayPaymentSuccessRepository;
+    private final VnpayReturnContextRepository vnpayReturnContextRepository;
     private final HandlePaymentFailureUseCase handlePaymentFailureUseCase;
     private final ObjectMapper objectMapper;
     private final Clock clock;
@@ -42,6 +46,7 @@ public class ProcessVnpayReturnUseCase {
             CommerceIntegrationProperties integrationProperties,
             VnpayParamSigner paramSigner,
             ProcessVnpayPaymentSuccessRepository processVnpayPaymentSuccessRepository,
+            VnpayReturnContextRepository vnpayReturnContextRepository,
             HandlePaymentFailureUseCase handlePaymentFailureUseCase,
             ObjectMapper objectMapper,
             Clock clock
@@ -49,6 +54,7 @@ public class ProcessVnpayReturnUseCase {
         this.vnpayProperties = integrationProperties.getVnpay();
         this.paramSigner = paramSigner;
         this.processVnpayPaymentSuccessRepository = processVnpayPaymentSuccessRepository;
+        this.vnpayReturnContextRepository = vnpayReturnContextRepository;
         this.handlePaymentFailureUseCase = handlePaymentFailureUseCase;
         this.objectMapper = objectMapper;
         this.clock = clock;
@@ -59,6 +65,9 @@ public class ProcessVnpayReturnUseCase {
         try {
             String txnRef = queryParams.get("vnp_TxnRef");
             UUID orderId = VnpayTxnRefParser.parseOrderId(txnRef);
+            String storedFrontendReturnUrl = vnpayReturnContextRepository
+                    .findFrontendReturnUrlByTxnRef(txnRef)
+                    .orElse(null);
             String responseCode = queryParams.get("vnp_ResponseCode");
             String secureHash = queryParams.get("vnp_SecureHash");
             String transactionNo = queryParams.get("vnp_TransactionNo");
@@ -82,7 +91,7 @@ public class ProcessVnpayReturnUseCase {
                         paidResult.paymentId()
                 );
                 return ProcessVnpayReturnResult.success(
-                        buildFrontendRedirect("success", orderId),
+                        buildFrontendRedirect("success", orderId, storedFrontendReturnUrl),
                         orderId,
                         txnRef
                 );
@@ -99,7 +108,7 @@ public class ProcessVnpayReturnUseCase {
             }
 
             return ProcessVnpayReturnResult.failure(
-                    buildFrontendRedirect("failed", orderId),
+                    buildFrontendRedirect("failed", orderId, storedFrontendReturnUrl),
                     orderId,
                     txnRef
             );
@@ -109,7 +118,15 @@ public class ProcessVnpayReturnUseCase {
         }
     }
 
-    private URI buildFrontendRedirect(String status, UUID orderId) {
+    private URI buildFrontendRedirect(String status, UUID orderId, String storedFrontendReturnUrl) {
+        if (StringUtils.hasText(storedFrontendReturnUrl)) {
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(storedFrontendReturnUrl.trim())
+                    .replaceQuery(null)
+                    .queryParam("status", status)
+                    .queryParam("orderId", orderId != null ? orderId.toString() : "unknown");
+            return builder.build(true).toUri();
+        }
+
         String base = trimTrailingSlash(vnpayProperties.getFrontendReturnBaseUrl());
         StringBuilder url = new StringBuilder(base)
                 .append("/commerce/checkout/vnpay-return?status=")

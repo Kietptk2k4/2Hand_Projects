@@ -1,6 +1,7 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { DEFAULT_USER_DISPLAY_NAME } from "../constants/socialUiStrings";
 import { colors } from "../../../shared/theme/colors";
+import { resolveDevMediaUrl } from "../../../shared/utils/resolveDevMediaUrl";
 
 const DEFAULT_AVATAR = "https://i.pravatar.cc/80?img=11";
 
@@ -17,7 +18,7 @@ export function FollowListRow({ item, onPress }) {
   return (
     <Pressable style={styles.row} onPress={() => onPress?.(item.userId)}>
       {item.avatarUrl ? (
-        <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
+        <Image source={{ uri: resolveDevMediaUrl(item.avatarUrl) }} style={styles.avatar} />
       ) : (
         <View style={styles.avatarFallback}>
           <Text style={styles.initials}>{initialsFromName(displayName)}</Text>

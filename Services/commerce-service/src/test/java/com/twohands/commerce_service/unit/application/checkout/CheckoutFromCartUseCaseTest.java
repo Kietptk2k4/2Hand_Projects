@@ -107,7 +107,9 @@ class CheckoutFromCartUseCaseTest {
                 PaymentMethod.COD,
                 null,
                 "idem-1",
-                "127.0.0.1"
+                "127.0.0.1",
+                null,
+                null
         ));
 
         assertThat(result.orderStatus()).isEqualTo(OrderStatus.PROCESSING);
@@ -125,7 +127,9 @@ class CheckoutFromCartUseCaseTest {
                 PaymentMethod.PAYOS,
                 null,
                 "idem-1",
-                "127.0.0.1"
+                "127.0.0.1",
+                null,
+                null
         )))
                 .isInstanceOf(AppException.class)
                 .extracting(ex -> ((AppException) ex).getErrorCode())
@@ -140,6 +144,8 @@ class CheckoutFromCartUseCaseTest {
                 buyerId,
                 List.of(UUID.randomUUID()),
                 UUID.randomUUID(),
+                null,
+                null,
                 null,
                 null,
                 null,
