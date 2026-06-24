@@ -68,7 +68,7 @@ notification:
   workers:
     process-events:
       enabled: ${NOTIFICATION_PROCESS_EVENTS_ENABLED:false}
-      cron: ${NOTIFICATION_PROCESS_EVENTS_CRON:0/30 * * * * *}
+      cron: ${NOTIFICATION_PROCESS_EVENTS_CRON:0/1 * * * * *}
       batch-size: ${NOTIFICATION_PROCESS_EVENTS_BATCH_SIZE:50}
     retry-events:
       enabled: ${NOTIFICATION_RETRY_EVENTS_ENABLED:false}
