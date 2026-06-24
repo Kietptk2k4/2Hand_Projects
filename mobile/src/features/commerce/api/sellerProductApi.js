@@ -1,5 +1,4 @@
 import { getClientUploadOrigin } from "../../../shared/utils/getDevMediaHost";
-import { resolveDevMediaUrl } from "../../../shared/utils/resolveDevMediaUrl";
 import { commerceApiClient } from "../../../services/http/commerceApiClient";
 import { mapAxiosError, unwrapResponse } from "./commerceApiResponse";
 import * as FileSystem from "expo-file-system/legacy";
@@ -9,7 +8,7 @@ function mapProductMediaUploadUrlResponse(data) {
   return {
     uploadUrl: data.upload_url,
     objectKey: data.object_key,
-    mediaUrl: resolveDevMediaUrl(data.media_url),
+    mediaUrl: data.media_url,
     mediaKind: data.media_kind,
     expiresAt: data.expires_at,
     maxFileSizeBytes: data.max_file_size_bytes,

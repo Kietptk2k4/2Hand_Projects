@@ -52,7 +52,7 @@ public class MinioProductMediaUploadStorageAdapter implements ProductMediaUpload
         String extension = productMediaContentValidator.resolveExtension(contentType);
         String objectKey = buildObjectKey(sellerId, productId, extension, mediaKind);
         String bucket = properties.getProductBucket();
-        String mediaUrl = properties.buildPublicObjectUrl(bucket, objectKey, clientUploadOrigin);
+        String mediaUrl = properties.buildPublicObjectUrl(bucket, objectKey);
         String presignEndpoint = clientUploadOrigin != null
                 ? clientUploadOrigin
                 : properties.resolvePresignedEndpoint();

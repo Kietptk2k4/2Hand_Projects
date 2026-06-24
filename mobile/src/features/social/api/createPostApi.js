@@ -6,7 +6,6 @@ import {
   logPostMediaPutOk,
   logPostMediaPutStart,
 } from "../../../shared/utils/debugMediaLog";
-import { resolveDevMediaUrl } from "../../../shared/utils/resolveDevMediaUrl";
 import { getClientUploadOrigin } from "../../../shared/utils/getDevMediaHost";
 import { socialApiClient } from "../../../services/http/socialApiClient";
 import { mapAxiosError, unwrapResponse } from "./socialApiResponse";
@@ -18,7 +17,8 @@ function mapUploadUrlResponse(data) {
     // Presigned URL is bound to host + signature — never rewrite upload_url on client.
     uploadUrl: data.upload_url,
     objectKey: data.object_key,
-    mediaUrl: resolveDevMediaUrl(data.media_url),
+    // Persist canonical media_url from server; rewrite only when displaying (normalizePostMediaUrl).
+    mediaUrl: data.media_url,
     mediaKind: data.media_kind,
     expiresAt: data.expires_at,
     maxFileSizeBytes: data.max_file_size_bytes,

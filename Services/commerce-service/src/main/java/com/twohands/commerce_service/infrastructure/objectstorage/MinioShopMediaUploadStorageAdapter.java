@@ -46,7 +46,7 @@ public class MinioShopMediaUploadStorageAdapter implements ShopMediaUploadStorag
         String extension = resolveExtension(contentType);
         String objectKey = buildObjectKey(sellerId, mediaKind, extension);
         String bucket = resolveBucket(mediaKind);
-        String mediaUrl = properties.buildPublicObjectUrl(bucket, objectKey, clientUploadOrigin);
+        String mediaUrl = properties.buildPublicObjectUrl(bucket, objectKey);
         String presignEndpoint = clientUploadOrigin != null
                 ? clientUploadOrigin
                 : properties.resolvePresignedEndpoint();

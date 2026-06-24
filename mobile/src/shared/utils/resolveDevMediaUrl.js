@@ -1,31 +1,63 @@
 import { getDevMediaHost } from "./getDevMediaHost";
 import { logMediaUrlRewrite } from "./debugMediaLog";
 
-const LOCAL_HOST_IN_URL = /^(https?:\/\/)(localhost|127\.0\.0\.1)(?=:\d+|\/|$)/i;
+const MINIO_PORT = "9000";
+const TWO_HANDS_BUCKET_SEGMENT = /\/2hands-(avatar|social-post|commerce-product|commerce-review|commerce-shop)\//;
+const LOCAL_LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "10.0.2.2"]);
 
-function rewriteLocalHost(url, devHost) {
-  if (!LOCAL_HOST_IN_URL.test(url)) {
+function isPrivateLanHost(host) {
+  if (!host) return false;
+  const normalized = host.toLowerCase();
+  if (LOCAL_LOOPBACK_HOSTS.has(normalized)) return true;
+  if (normalized.startsWith("192.168.")) return true;
+  if (normalized.startsWith("10.")) return true;
+  const match = /^172\.(\d+)\./.exec(normalized);
+  if (match) {
+    const secondOctet = Number.parseInt(match[1], 10);
+    return secondOctet >= 16 && secondOctet <= 31;
+  }
+  return false;
+}
+
+function isDevMinioObjectUrl(parsed) {
+  if (parsed.port !== MINIO_PORT) {
+    return false;
+  }
+  return TWO_HANDS_BUCKET_SEGMENT.test(parsed.pathname);
+}
+
+function rewriteMinioHost(url, devHost) {
+  try {
+    const parsed = new URL(url);
+    if (!isDevMinioObjectUrl(parsed)) {
+      return url;
+    }
+    if (!isPrivateLanHost(parsed.hostname)) {
+      return url;
+    }
+    parsed.hostname = devHost;
+    parsed.port = MINIO_PORT;
+    return parsed.toString();
+  } catch {
     return url;
   }
-
-  return url.replace(LOCAL_HOST_IN_URL, `$1${devHost}`);
 }
 
 function resolveUrl(trimmed, devHost) {
   if (devHost === "localhost") {
-    return trimmed;
+    return rewriteMinioHost(trimmed, devHost);
   }
 
   if (/^https?:\/\//i.test(trimmed)) {
-    return rewriteLocalHost(trimmed, devHost);
+    return rewriteMinioHost(trimmed, devHost);
   }
 
   if (trimmed.startsWith("//")) {
-    return rewriteLocalHost(`http:${trimmed}`, devHost).replace(/^http:/i, "");
+    return rewriteMinioHost(`http:${trimmed}`, devHost).replace(/^http:/i, "");
   }
 
   if (trimmed.startsWith("/")) {
-    return `http://${devHost}:9000${trimmed}`;
+    return `http://${devHost}:${MINIO_PORT}${trimmed}`;
   }
 
   return trimmed;

@@ -103,4 +103,17 @@ class PostMediaUrlValidatorTest {
                 List.of("https://any.example.com/file.jpg")
         )).doesNotThrowAnyException();
     }
+
+    @Test
+    void buildPublicObjectUrlShouldUseCanonicalHostWithoutClientUploadOrigin() {
+        SocialObjectStorageProperties properties = new SocialObjectStorageProperties();
+        properties.setPublicUrl("http://localhost:9000/2hands-social-post");
+        properties.setPublicPathPrefix("");
+
+        String objectKey = "posts/user-1/video.mp4";
+        assertThat(properties.buildPublicObjectUrl(objectKey))
+                .isEqualTo("http://localhost:9000/2hands-social-post/posts/user-1/video.mp4");
+        assertThat(properties.buildPublicObjectUrl(objectKey, "http://192.168.1.4:9000"))
+                .isEqualTo("http://192.168.1.4:9000/2hands-social-post/posts/user-1/video.mp4");
+    }
 }

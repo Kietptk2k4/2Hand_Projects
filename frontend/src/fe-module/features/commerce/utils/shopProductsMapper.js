@@ -1,4 +1,5 @@
 import { mapProductItem } from "./productListMapper";
+import { resolveDevMediaUrl } from "../../../shared/utils/getClientUploadOrigin";
 
 function mapShopSummary(shop) {
   if (!shop) return null;
@@ -6,8 +7,8 @@ function mapShopSummary(shop) {
     shopId: shop.shop_id,
     shopName: shop.shop_name,
     description: shop.description,
-    avatarUrl: shop.avatar_url,
-    coverUrl: shop.cover_url,
+    avatarUrl: resolveDevMediaUrl(shop.avatar_url),
+    coverUrl: resolveDevMediaUrl(shop.cover_url),
     ratingAvg: shop.rating_avg,
     ratingCount: shop.rating_count,
     shopVacation: shop.shop_vacation,

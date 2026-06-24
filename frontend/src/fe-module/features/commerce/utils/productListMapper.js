@@ -1,9 +1,11 @@
+import { resolveDevMediaUrl } from "../../../shared/utils/getClientUploadOrigin";
+
 export function mapProductItem(item) {
   if (!item) return null;
   return {
     productId: item.product_id,
     title: item.title,
-    thumbnailUrl: item.thumbnail_url,
+    thumbnailUrl: resolveDevMediaUrl(item.thumbnail_url),
     shopId: item.shop_id,
     shopName: item.shop_name,
     categoryId: item.category_id,

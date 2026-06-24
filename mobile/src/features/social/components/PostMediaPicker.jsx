@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../../shared/theme/colors";
-import { isPostVideoMedia } from "../utils/postMediaType";
+import { isPostVideoMedia, getPostMediaUrl } from "../utils/postMediaType";
 
 export function PostMediaPicker({
   mediaItems,
@@ -21,11 +21,14 @@ export function PostMediaPicker({
   fieldError = "",
 }) {
   const activeMedia = mediaItems[activeMediaIndex] || null;
+  const activePreviewUri =
+    activeMedia?.previewUrl ||
+    (activeMedia?.mediaUrl ? getPostMediaUrl(activeMedia) : null);
 
   return (
     <View style={styles.root}>
       <View style={styles.preview}>
-        {activeMedia?.previewUrl || activeMedia?.mediaUrl ? (
+        {activePreviewUri ? (
           isPostVideoMedia(activeMedia) ? (
             <View style={styles.videoPlaceholder}>
               <Ionicons name="videocam" size={48} color={colors.onPrimary} />
@@ -33,7 +36,7 @@ export function PostMediaPicker({
             </View>
           ) : (
             <Image
-              source={{ uri: activeMedia.previewUrl || activeMedia.mediaUrl }}
+              source={{ uri: activePreviewUri }}
               style={styles.previewImage}
               resizeMode="cover"
             />
@@ -86,7 +89,7 @@ export function PostMediaPicker({
             >
               {item.previewUrl || item.mediaUrl ? (
                 <Image
-                  source={{ uri: item.previewUrl || item.mediaUrl }}
+                  source={{ uri: item.previewUrl || getPostMediaUrl(item) }}
                   style={styles.thumbImage}
                 />
               ) : (

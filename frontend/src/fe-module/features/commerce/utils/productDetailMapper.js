@@ -1,10 +1,12 @@
+import { resolveDevMediaUrl } from "../../../shared/utils/getClientUploadOrigin";
+
 export function mapProductDetailResponse(data) {
   if (!data) return null;
 
   const media = (data.media || [])
     .map((item) => ({
       mediaId: item.media_id,
-      mediaUrl: item.media_url,
+      mediaUrl: resolveDevMediaUrl(item.media_url),
       mediaType: item.media_type,
       sortOrder: item.sort_order ?? 0,
     }))
@@ -35,8 +37,8 @@ export function mapProductDetailResponse(data) {
       ? {
           shopId: data.shop.shop_id,
           shopName: data.shop.shop_name,
-          avatarUrl: data.shop.avatar_url,
-          coverUrl: data.shop.cover_url,
+          avatarUrl: resolveDevMediaUrl(data.shop.avatar_url),
+          coverUrl: resolveDevMediaUrl(data.shop.cover_url),
         }
       : null,
     media,

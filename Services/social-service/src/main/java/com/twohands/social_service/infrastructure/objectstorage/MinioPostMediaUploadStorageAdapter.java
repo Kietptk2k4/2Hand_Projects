@@ -45,7 +45,8 @@ public class MinioPostMediaUploadStorageAdapter implements PostMediaUploadStorag
     ) {
         String extension = resolveExtension(contentType);
         String objectKey = "posts/" + userId + "/" + UUID.randomUUID() + "." + extension;
-        String mediaUrl = properties.buildPublicObjectUrl(objectKey, clientUploadOrigin);
+        // Persist canonical URL (publicUrl host); presigned PUT may still target clientUploadOrigin.
+        String mediaUrl = properties.buildPublicObjectUrl(objectKey);
         String presignEndpoint = clientUploadOrigin != null
                 ? clientUploadOrigin
                 : properties.resolvePresignedEndpoint();

@@ -4,6 +4,7 @@ import { SocialSearchSuggestionsPanel } from "../../features/social/components/S
 import { SocialUserSearchDropdown } from "../../features/social/components/SocialUserSearchDropdown";
 import { getMyProfile } from "../../features/auth/api/authApi";
 import { useAuthSession } from "../../features/auth/hooks/useAuthSession.jsx";
+import { resolveDevMediaUrl } from "../utils/getClientUploadOrigin";
 import { buildSocialSearchPath } from "../../features/social/utils/socialSearchRoutes";
 import { APP_ROUTES } from "../constants/routes";
 import { NotificationBell } from "../../features/notification/components/NotificationBell.jsx";
@@ -135,8 +136,9 @@ export function AppHeader({ className = "" }) {
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, [searchOpen]);
 
-  const avatarUrl =
-    profileAvatarUrl || user?.avatar_url || user?.profile?.avatar_url || DEFAULT_AVATAR_URL;
+  const avatarUrl = resolveDevMediaUrl(
+    profileAvatarUrl || user?.avatar_url || user?.profile?.avatar_url || DEFAULT_AVATAR_URL
+  );
   const userLabel = user?.display_name || user?.email || "";
 
   return (

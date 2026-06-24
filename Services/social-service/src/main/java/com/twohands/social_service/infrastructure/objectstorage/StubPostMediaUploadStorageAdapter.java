@@ -35,7 +35,7 @@ public class StubPostMediaUploadStorageAdapter implements PostMediaUploadStorage
             default -> "bin";
         };
         String objectKey = "posts/" + userId + "/" + UUID.randomUUID() + "." + extension;
-        String mediaUrl = properties.buildPublicObjectUrl(objectKey, clientUploadOrigin);
+        String mediaUrl = properties.buildPublicObjectUrl(objectKey);
         return new PostMediaUploadIntent(
                 "https://minio.local/presigned-stub/" + objectKey,
                 objectKey,
