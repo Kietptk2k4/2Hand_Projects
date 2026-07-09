@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { fetchAdminPlatformCodPipeline } from "../../api/adminFinancePlatformApi";
 import { mapPlatformCodPipeline } from "../../utils/adminFinanceMapper";
-import { SellerRevenueBucketCards } from "../../../../../commerce/components/SellerRevenueBucketCards";
 import { useAuthSession } from "../../../../hooks/useAuthSession.jsx";
-import { AccountCard, AccountSkeleton, TabPanelHeader } from "../../../../../../shared/ui/auth/authUi.jsx";
-import { ErrorState } from "../../../../../../shared/ui/PageState.jsx";
+import { AdminFinanceCodPipelineView } from "../AdminFinanceCodPipelineView.jsx";
 
 export function AdminFinanceCodPipelineTab() {
   const { showSessionExpired } = useAuthSession();
@@ -33,21 +31,14 @@ export function AdminFinanceCodPipelineTab() {
     load();
   }, [load]);
 
-  if (status === "error") {
-    return <ErrorState message={errorMessage} onRetry={load} />;
-  }
-
   return (
-    <AccountCard>
-      <TabPanelHeader
-        title="COD pipeline toàn sàn"
-        subtitle="Tổng giá trị đơn hàng theo trạng thái vận chuyển và ghi nhận."
-      />
-      {status === "loading" ? (
-        <AccountSkeleton rows={3} />
-      ) : (
-        <SellerRevenueBucketCards summary={pipeline} isLoading={false} />
-      )}
-    </AccountCard>
+    <AdminFinanceCodPipelineView
+      title="COD pipeline toàn sàn"
+      subtitle="Tổng giá trị đơn hàng theo trạng thái vận chuyển và ghi nhận."
+      status={status}
+      errorMessage={errorMessage}
+      pipeline={pipeline}
+      onRetry={load}
+    />
   );
 }

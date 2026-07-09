@@ -1,77 +1,134 @@
 import { formatDateTime } from "../../../security/utils/formatDateTime.js";
+import {
+  AdminDataTable,
+  AdminDataTableBody,
+  AdminDataTableCell,
+  AdminDataTableHead,
+  AdminDataTableRow,
+  AdminFilterButton,
+  AdminMobileCard,
+  AdminMobileCardList,
+  AdminSurfaceCard,
+} from "../../components/ui";
+import { ConfigActiveBadge } from "./ui/SystemOperationsBadges.jsx";
 
-function ActiveBadge({ active }) {
+function SystemConfigMobileCard({ item, selected, canUpdate, onSelectConfig, onOpenHistory }) {
   return (
-    <span
-      className={[
-        "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold",
-        active ? "bg-green-100 text-green-800" : "bg-slate-100 text-slate-600",
-      ].join(" ")}
-    >
-      {active ? "Bật" : "Tắt"}
-    </span>
+    <AdminMobileCard isSelected={selected} ariaLabel={`Cấu hình ${item.configKey}`}>
+      <div className="flex items-start justify-between gap-2">
+        <p className="min-w-0 flex-1 break-all font-mono text-xs font-medium text-admin-text" title={item.configKey}>
+          {item.configKey}
+        </p>
+        <ConfigActiveBadge active={item.active} />
+      </div>
+      <p className="mt-2 break-all font-mono text-xs text-admin-text-secondary" title={item.configValue}>
+        {item.configValue}
+      </p>
+      <p className="mt-2 text-xs text-admin-text-muted">
+        {item.valueType} · {item.updatedAt ? formatDateTime(item.updatedAt) : formatDateTime(item.createdAt)}
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2 border-t border-admin-border-subtle pt-3">
+        <AdminFilterButton
+          type="button"
+          variant="secondary"
+          className="min-h-11 flex-1 sm:flex-none"
+          onClick={() => onSelectConfig?.(item.configId)}
+        >
+          {canUpdate ? "Sửa" : "Xem"}
+        </AdminFilterButton>
+        <AdminFilterButton
+          type="button"
+          variant="secondary"
+          className="min-h-11 flex-1 sm:flex-none"
+          onClick={() => onOpenHistory?.(item.configId)}
+        >
+          Lịch sử
+        </AdminFilterButton>
+      </div>
+    </AdminMobileCard>
   );
 }
 
-export function SystemConfigTable({ items, selectedConfigId, onSelectConfig, onOpenHistory, canUpdate }) {
+export function SystemConfigTable({
+  items,
+  selectedConfigId,
+  onSelectConfig,
+  onOpenHistory,
+  canUpdate,
+}) {
+  if (!items?.length) return null;
+
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full text-left text-sm">
-        <thead className="border-b border-outline-variant text-xs uppercase text-on-surface-variant">
-          <tr>
-            <th className="px-3 py-3">Key</th>
-            <th className="px-3 py-3">Giá trị</th>
-            <th className="px-3 py-3">Kiểu</th>
-            <th className="px-3 py-3">Trạng thái</th>
-            <th className="px-3 py-3">Cập nhật</th>
-            <th className="px-3 py-3 text-right">Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
+    <>
+      <AdminMobileCardList className="p-4 md:hidden">
+        {items.map((item) => (
+          <SystemConfigMobileCard
+            key={item.configId}
+            item={item}
+            selected={selectedConfigId === item.configId}
+            canUpdate={canUpdate}
+            onSelectConfig={onSelectConfig}
+            onOpenHistory={onOpenHistory}
+          />
+        ))}
+      </AdminMobileCardList>
+
+      <AdminDataTable minWidth="720px" ariaLabel="Danh sách cấu hình hệ thống">
+        <AdminDataTableHead>
+          <AdminDataTableRow>
+            <AdminDataTableCell header>Key</AdminDataTableCell>
+            <AdminDataTableCell header>Giá trị</AdminDataTableCell>
+            <AdminDataTableCell header>Kiểu</AdminDataTableCell>
+            <AdminDataTableCell header>Trạng thái</AdminDataTableCell>
+            <AdminDataTableCell header>Cập nhật</AdminDataTableCell>
+            <AdminDataTableCell header className="text-right">
+              Thao tác
+            </AdminDataTableCell>
+          </AdminDataTableRow>
+        </AdminDataTableHead>
+        <AdminDataTableBody>
           {items.map((item) => {
             const selected = selectedConfigId === item.configId;
             return (
-              <tr
-                key={item.configId}
-                className={[
-                  "border-b border-outline-variant/60",
-                  selected ? "bg-primary/5" : "hover:bg-surface-container-low",
-                ].join(" ")}
-              >
-                <td className="px-3 py-3 font-mono text-xs">{item.configKey}</td>
-                <td className="max-w-xs truncate px-3 py-3 font-mono text-xs" title={item.configValue}>
-                  {item.configValue}
-                </td>
-                <td className="px-3 py-3">{item.valueType}</td>
-                <td className="px-3 py-3">
-                  <ActiveBadge active={item.active} />
-                </td>
-                <td className="px-3 py-3 text-xs text-on-surface-variant">
+              <AdminDataTableRow key={item.configId} isSelected={selected}>
+                <AdminDataTableCell className="font-mono text-xs">{item.configKey}</AdminDataTableCell>
+                <AdminDataTableCell className="max-w-xs">
+                  <span className="block truncate font-mono text-xs" title={item.configValue}>
+                    {item.configValue}
+                  </span>
+                </AdminDataTableCell>
+                <AdminDataTableCell>{item.valueType}</AdminDataTableCell>
+                <AdminDataTableCell>
+                  <ConfigActiveBadge active={item.active} />
+                </AdminDataTableCell>
+                <AdminDataTableCell className="text-xs text-admin-text-secondary">
                   {item.updatedAt ? formatDateTime(item.updatedAt) : formatDateTime(item.createdAt)}
-                </td>
-                <td className="px-3 py-3 text-right">
-                  <div className="flex justify-end gap-2">
-                    <button
+                </AdminDataTableCell>
+                <AdminDataTableCell className="text-right">
+                  <div className="flex flex-wrap justify-end gap-2">
+                    <AdminFilterButton
                       type="button"
+                      variant="secondary"
+                      className="min-h-9 px-2.5 py-1 text-xs"
                       onClick={() => onSelectConfig?.(item.configId)}
-                      className="rounded-lg border border-outline-variant px-2.5 py-1 text-xs font-medium hover:bg-surface-container-low"
                     >
                       {canUpdate ? "Sửa" : "Xem"}
-                    </button>
-                    <button
+                    </AdminFilterButton>
+                    <AdminFilterButton
                       type="button"
+                      variant="secondary"
+                      className="min-h-9 px-2.5 py-1 text-xs"
                       onClick={() => onOpenHistory?.(item.configId)}
-                      className="rounded-lg border border-outline-variant px-2.5 py-1 text-xs font-medium hover:bg-surface-container-low"
                     >
                       Lịch sử
-                    </button>
+                    </AdminFilterButton>
                   </div>
-                </td>
-              </tr>
+                </AdminDataTableCell>
+              </AdminDataTableRow>
             );
           })}
-        </tbody>
-      </table>
-    </div>
+        </AdminDataTableBody>
+      </AdminDataTable>
+    </>
   );
 }

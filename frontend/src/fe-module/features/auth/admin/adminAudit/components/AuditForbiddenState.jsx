@@ -1,9 +1,9 @@
-import { AccountCard } from "../../../../../shared/ui/auth/authUi.jsx";
+import { AdminSurfaceCard } from "../../components/ui";
 
 export function AuditForbiddenState({ message }) {
   return (
-    <AccountCard className="border-amber-200 bg-amber-50/50">
-      <p className="text-sm text-amber-900">{message}</p>
-    </AccountCard>
+    <AdminSurfaceCard padding="md" className="border-admin-warning/40 bg-admin-warning-soft">
+      <p className="text-sm text-admin-warning">{message}</p>
+    </AdminSurfaceCard>
   );
 }

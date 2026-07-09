@@ -5,7 +5,7 @@ import {
   INVESTIGATION_SEARCH_LIMIT,
   INVESTIGATION_SEARCH_MIN_LENGTH,
 } from "../constants/investigationSearchConstants.js";
-import { AccountCard } from "../../../../../shared/ui/auth/authUi.jsx";
+import { AdminUserTargetBarView } from "./AdminUserTargetBarView.jsx";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -157,87 +157,26 @@ export function AdminUserTargetBar({ userId, selectedUser, onTargetChange }) {
       (searchStatus === "ready" && query.trim().length > 0));
 
   return (
-    <AccountCard className="mb-6">
-      <div ref={containerRef}>
-      <label htmlFor="investigation-user-search" className="mb-1.5 block text-xs font-semibold text-on-surface">
-        Người dùng điều tra
-      </label>
-      <div className="relative">
-        <input
-          id="investigation-user-search"
-          type="search"
-          value={query}
-          onChange={handleInputChange}
-          onFocus={() => {
-            if (results.length > 0 || searchStatus === "loading") {
-              setIsOpen(true);
-            }
-          }}
-          placeholder="Tìm theo email hoặc UUID..."
-          autoComplete="off"
-          role="combobox"
-          aria-expanded={showDropdown}
-          aria-controls={listboxId}
-          className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2.5 pr-10 text-base outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
-        />
-        {userId ? (
-          <button
-            type="button"
-            onClick={handleClear}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs font-medium text-on-surface-variant hover:bg-surface-container-high"
-            aria-label="Xóa người dùng đã chọn"
-          >
-            Xóa
-          </button>
-        ) : null}
-
-        {showDropdown ? (
-          <ul
-            id={listboxId}
-            role="listbox"
-            className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-outline-variant bg-white py-1 shadow-lg"
-          >
-            {searchStatus === "loading" ? (
-              <li className="px-3 py-2 text-sm text-on-surface-variant">Đang tìm...</li>
-            ) : null}
-            {searchStatus === "error" ? (
-              <li className="px-3 py-2 text-sm text-error">{searchError}</li>
-            ) : null}
-            {searchStatus === "ready" && results.length === 0 ? (
-              <li className="px-3 py-2 text-sm text-on-surface-variant">
-                Không tìm thấy người dùng phù hợp.
-              </li>
-            ) : null}
-            {results.map((user) => (
-              <li key={user.user_id} role="option">
-                <button
-                  type="button"
-                  onClick={() => handleSelectUser(user)}
-                  className="w-full px-3 py-2 text-left text-sm hover:bg-surface-container-high"
-                >
-                  <span className="block font-medium text-on-surface">{formatUserSummary(user)}</span>
-                  <span className="mt-0.5 block break-all text-xs text-on-surface-variant">
-                    {user.user_id} · {user.status}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </div>
-
-      {selectedUser ? (
-        <p className="mt-2 break-all text-xs text-on-surface-variant">
-          User ID: {selectedUser.user_id}
-        </p>
-      ) : userId ? (
-        <p className="mt-2 break-all text-xs text-on-surface-variant">User ID: {userId}</p>
-      ) : (
-        <p className="mt-2 text-xs text-on-surface-variant">
-          Nhập ít nhất {INVESTIGATION_SEARCH_MIN_LENGTH} ký tự email hoặc dán UUID để tìm người dùng thật từ auth-service.
-        </p>
-      )}
-      </div>
-    </AccountCard>
+    <AdminUserTargetBarView
+      listboxId={listboxId}
+      containerRef={containerRef}
+      query={query}
+      userId={userId}
+      selectedUser={selectedUser}
+      searchStatus={searchStatus}
+      searchError={searchError}
+      showDropdown={showDropdown}
+      results={results}
+      minSearchLength={INVESTIGATION_SEARCH_MIN_LENGTH}
+      onInputChange={handleInputChange}
+      onInputFocus={() => {
+        if (results.length > 0 || searchStatus === "loading") {
+          setIsOpen(true);
+        }
+      }}
+      onSelectUser={handleSelectUser}
+      onClear={handleClear}
+      formatUserSummary={formatUserSummary}
+    />
   );
 }

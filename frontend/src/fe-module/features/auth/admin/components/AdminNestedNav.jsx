@@ -20,7 +20,7 @@ const SECTION_CHILDREN = {
 };
 
 function ParentNavIcon({ sectionId, active }) {
-  const className = `h-5 w-5 shrink-0 ${active ? "text-primary" : "text-on-surface-variant group-hover:text-primary"}`;
+  const className = `h-[18px] w-[18px] shrink-0 ${active ? "text-admin-accent-strong" : "text-admin-text-muted group-hover:text-admin-accent"}`;
 
   if (sectionId === "userInvestigation") {
     return (
@@ -58,7 +58,6 @@ function ParentNavIcon({ sectionId, active }) {
     );
   }
 
-
   if (sectionId === "systemOperations") {
     return (
       <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
@@ -87,11 +86,7 @@ function ParentNavIcon({ sectionId, active }) {
   if (sectionId === "catalogManagement") {
     return (
       <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          d="M4 6h16M4 10h16M4 14h10M4 18h8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+        <path d="M4 6h16M4 10h16M4 14h10M4 18h8" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
   }
@@ -108,7 +103,7 @@ function ParentNavIcon({ sectionId, active }) {
 }
 
 function ChildNavIcon({ name, active }) {
-  const className = `h-4 w-4 shrink-0 ${active ? "text-primary" : "text-on-surface-variant group-hover:text-primary"}`;
+  const className = `h-4 w-4 shrink-0 ${active ? "text-admin-accent-strong" : "text-admin-text-muted group-hover:text-admin-accent"}`;
 
   const icons = {
     list: <path d="M4 6h16M4 12h16M4 18h10" strokeLinecap="round" strokeLinejoin="round" />,
@@ -150,11 +145,7 @@ function ChildNavIcon({ name, active }) {
       />
     ),
     timeline: (
-      <path
-        d="M4 6h16M4 10h16M4 14h10M4 18h8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M4 6h16M4 10h16M4 14h10M4 18h8" strokeLinecap="round" strokeLinejoin="round" />
     ),
     sessions: (
       <path
@@ -226,7 +217,6 @@ function ChildNavIcon({ name, active }) {
         strokeLinejoin="round"
       />
     ),
-
     settings: (
       <path
         d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
@@ -264,18 +254,18 @@ function ParentNavItem({ section, isExpanded, onSelect }) {
       onClick={() => onSelect(section.id)}
       aria-expanded={isExpanded}
       className={[
-        "group relative flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors",
+        "group relative flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent-soft",
         isExpanded
-          ? "bg-account-surface-low font-semibold text-primary"
-          : "text-on-surface-variant hover:bg-account-surface-low hover:text-primary",
+          ? "bg-admin-accent-soft font-medium text-admin-accent-strong"
+          : "text-admin-text-secondary hover:bg-admin-surface-muted hover:text-admin-text",
       ].join(" ")}
     >
       <ParentNavIcon sectionId={section.id} active={isExpanded} />
       <span className="flex-1 text-sm">{section.labelVn}</span>
       <svg
         className={[
-          "h-4 w-4 shrink-0 transition-transform",
-          isExpanded ? "rotate-180 text-primary" : "text-on-surface-variant",
+          "h-3.5 w-3.5 shrink-0 transition-transform",
+          isExpanded ? "rotate-180 text-admin-accent-strong" : "text-admin-text-muted",
         ].join(" ")}
         fill="none"
         stroke="currentColor"
@@ -286,7 +276,10 @@ function ParentNavItem({ section, isExpanded, onSelect }) {
         <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
       {isExpanded ? (
-        <span className="absolute right-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-l-full bg-primary" aria-hidden="true" />
+        <span
+          className="absolute bottom-2 left-0 top-2 w-0.5 rounded-r-full bg-admin-accent"
+          aria-hidden="true"
+        />
       ) : null}
     </button>
   );
@@ -298,16 +291,19 @@ function ChildNavItem({ tab, isActive, onSelect }) {
       type="button"
       onClick={() => onSelect(tab.id)}
       className={[
-        "group relative flex w-full items-center gap-2 rounded-lg py-2.5 pl-10 pr-4 text-left transition-colors",
+        "group relative flex w-full items-center gap-2 rounded-lg py-2 pl-9 pr-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent-soft",
         isActive
-          ? "bg-account-surface-low font-semibold text-primary"
-          : "text-on-surface-variant hover:bg-account-surface-low hover:text-primary",
+          ? "bg-admin-accent-soft font-medium text-admin-accent-strong"
+          : "text-admin-text-muted hover:bg-admin-surface-muted hover:text-admin-text-secondary",
       ].join(" ")}
     >
       <ChildNavIcon name={tab.icon} active={isActive} />
-      <span className="text-sm">{tab.labelVn}</span>
+      <span className="text-[13px]">{tab.labelVn}</span>
       {isActive ? (
-        <span className="absolute right-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-l-full bg-primary" aria-hidden="true" />
+        <span
+          className="absolute bottom-1.5 left-0 top-1.5 w-0.5 rounded-r-full bg-admin-accent"
+          aria-hidden="true"
+        />
       ) : null}
     </button>
   );
@@ -315,13 +311,17 @@ function ChildNavItem({ tab, isActive, onSelect }) {
 
 export function AdminNestedNav({ activeSection, activeChildTab, onSectionChange, onChildTabChange }) {
   return (
-    <aside className="flex w-full shrink-0 flex-col overflow-hidden rounded-lg border border-account-surface-dim bg-account-surface shadow-sm md:w-[280px] md:min-h-[600px]">
-      <div className="border-b border-account-surface-dim px-6 pb-6 pt-8 text-center">
-        <h1 className="text-xl font-semibold text-on-surface">Quan tri</h1>
-        <p className="mt-1 text-sm text-on-surface-variant">Administration</p>
+    <aside className="flex h-auto w-full flex-col border-b border-admin-border bg-admin-sidebar lg:h-dvh lg:border-b-0 lg:border-r">
+      <div className="border-b border-admin-border-subtle px-5 py-5">
+        <p className="text-[11px] font-medium uppercase tracking-[0.1em] text-admin-text-muted">Operations</p>
+        <h1 className="mt-1 text-lg font-semibold tracking-tight text-admin-text">2Hands Admin</h1>
+        <p className="mt-0.5 text-xs text-admin-text-secondary">Closet marketplace console</p>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-1 px-4 py-4" aria-label="Admin navigation">
+      <nav
+        className="flex max-h-[min(420px,50dvh)] flex-col gap-0.5 overflow-y-auto px-3 py-4 lg:max-h-none lg:flex-1"
+        aria-label="Admin navigation"
+      >
         {ADMIN_TOP_TABS.map((section) => {
           const isExpanded = activeSection === section.id;
           const children = SECTION_CHILDREN[section.id] || [];

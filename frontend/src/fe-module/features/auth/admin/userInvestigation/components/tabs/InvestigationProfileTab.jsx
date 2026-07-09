@@ -2,30 +2,23 @@ import { useCallback, useEffect, useState } from "react";
 import { getInvestigationProfile } from "../../api/userInvestigationApi.js";
 import { useAuthSession } from "../../../../hooks/useAuthSession.jsx";
 import {
-  AccountCard,
-  AccountSkeleton,
-  TabPanelHeader,
-} from "../../../../../../shared/ui/auth/authUi.jsx";
-import { ErrorState } from "../../../../../../shared/ui/PageState.jsx";
-import {
   INVESTIGATION_PROFILE_SUBTITLE,
   INVESTIGATION_PROFILE_TITLE,
 } from "../../constants/userInvestigationUiStrings.js";
 import { useInvestigationPermissions } from "../../hooks/useInvestigationPermissions.js";
 import { getInvestigationUserLabel } from "../../utils/investigationUserLabel.js";
-import { EnforcementSummaryTable } from "../EnforcementSummaryTable.jsx";
 import { EnforcementApplyModal } from "../modals/EnforcementApplyModal.jsx";
-import { InvestigationActionToolbar } from "../InvestigationActionToolbar.jsx";
-import { InvestigationEmptyState } from "../InvestigationEmptyState.jsx";
+import { InvestigationActionToolbar, filterInvestigationToolbarActions } from "../InvestigationActionToolbar.jsx";
 import { INVESTIGATION_PERMISSIONS } from "../../constants/investigationPermissions.js";
-import { handleInvestigationLoadError, resolveInvestigationForbiddenMessage } from "../../utils/investigationTabErrors.js";
-import { InvestigationForbiddenState } from "../InvestigationForbiddenState.jsx";
-import { InvestigationPermissionNotice } from "../InvestigationPermissionNotice.jsx";
-import { InvestigationProfileCard } from "../InvestigationProfileCard.jsx";
+import {
+  handleInvestigationLoadError,
+  resolveInvestigationForbiddenMessage,
+} from "../../utils/investigationTabErrors.js";
+import { InvestigationProfileTabView } from "./InvestigationProfileTabView.jsx";
 
 export function InvestigationProfileTab({ userId, onNotify }) {
   const { showSessionExpired } = useAuthSession();
-  const { canReadProfile } = useInvestigationPermissions();
+  const { canReadProfile, canRestrict, canSuspend, canBan } = useInvestigationPermissions();
   const [profile, setProfile] = useState(null);
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -52,7 +45,7 @@ export function InvestigationProfileTab({ userId, onNotify }) {
         notFoundMessage: "Không tìm thấy người dùng trong hệ thống.",
       });
     }
-  }, [userId, showSessionExpired, onNotify]);
+  }, [userId, showSessionExpired]);
 
   useEffect(() => {
     if (!userId) {
@@ -87,101 +80,45 @@ export function InvestigationProfileTab({ userId, onNotify }) {
 
   const userLabel = getInvestigationUserLabel(userId, profile);
 
-  if (!userId) {
-    return (
-      <div>
-        <TabPanelHeader title={INVESTIGATION_PROFILE_TITLE} subtitle={INVESTIGATION_PROFILE_SUBTITLE} />
-        <InvestigationEmptyState />
-      </div>
-    );
-  }
+  const viewStatus = !userId
+    ? "no-user"
+    : status === "loading" || status === "idle"
+      ? "loading"
+      : status;
 
-  if (status === "loading" || status === "idle") {
-    return (
-      <div>
-        <TabPanelHeader title={INVESTIGATION_PROFILE_TITLE} subtitle={INVESTIGATION_PROFILE_SUBTITLE} />
-        <AccountSkeleton />
-      </div>
-    );
-  }
-
-  if (status === "forbidden") {
-    return (
-      <div>
-        <TabPanelHeader title={INVESTIGATION_PROFILE_TITLE} subtitle={INVESTIGATION_PROFILE_SUBTITLE} />
-        <InvestigationForbiddenState message={errorMessage} />
-      </div>
-    );
-  }
-
-  if (status === "error") {
-    return (
-      <div>
-        <TabPanelHeader title={INVESTIGATION_PROFILE_TITLE} subtitle={INVESTIGATION_PROFILE_SUBTITLE} />
-        <AccountCard className="border-error/30">
-          <ErrorState message={errorMessage} />
-          <button
-            type="button"
-            onClick={fetchProfile}
-            className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-          >
-            Thử lại
-          </button>
-        </AccountCard>
-      </div>
-    );
-  }
-
-  if (!profile) {
-    return (
-      <div>
-        <TabPanelHeader title={INVESTIGATION_PROFILE_TITLE} subtitle={INVESTIGATION_PROFILE_SUBTITLE} />
-        <AccountCard className="border-error/30">
-          <ErrorState message="Không tải được hồ sơ điều tra." />
-          <button
-            type="button"
-            onClick={fetchProfile}
-            className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-          >
-            Thử lại
-          </button>
-        </AccountCard>
-      </div>
-    );
-  }
+  const toolbarActions = filterInvestigationToolbarActions({
+    canRestrict,
+    canSuspend,
+    canBan,
+  });
 
   return (
-    <div className="space-y-6">
-      {!canReadProfile ? (
-        <InvestigationPermissionNotice message="Tài khoản của bạn thiếu quyền USER_INVESTIGATION_READ để xem hồ sơ điều tra." />
-      ) : null}
-
-      <div className="flex flex-col gap-4 border-b border-outline-variant pb-4 sm:flex-row sm:items-end sm:justify-between">
-        <header className="mb-0">
-          <h1 className="text-2xl font-semibold text-on-surface md:text-3xl">
-            {INVESTIGATION_PROFILE_TITLE}
-          </h1>
-          <p className="mt-2 text-base text-on-surface-variant">{INVESTIGATION_PROFILE_SUBTITLE}</p>
-        </header>
-        <InvestigationActionToolbar onAction={onEnforcementAction} />
-      </div>
-
-      <InvestigationProfileCard profile={profile} />
-
-      <EnforcementSummaryTable enforcements={profile?.current_enforcements || []} />
-
-      <EnforcementApplyModal
-        open={Boolean(applyModalAction)}
-        actionType={applyModalAction}
-        userId={userId}
-        userLabel={userLabel}
-        onClose={() => setApplyModalAction(null)}
-        onSuccess={() => {
-          onNotify?.({ variant: "success", message: "Áp dụng enforcement thành công." });
-          fetchProfile();
-        }}
-        onError={handleApiError}
-      />
-    </div>
+    <InvestigationProfileTabView
+      title={INVESTIGATION_PROFILE_TITLE}
+      subtitle={INVESTIGATION_PROFILE_SUBTITLE}
+      status={viewStatus}
+      errorMessage={errorMessage}
+      profile={profile}
+      canReadProfile={canReadProfile}
+      permissionNotice="Tài khoản của bạn thiếu quyền USER_INVESTIGATION_READ để xem hồ sơ điều tra."
+      onRetry={fetchProfile}
+      toolbar={
+        <InvestigationActionToolbar actions={toolbarActions} onAction={onEnforcementAction} />
+      }
+      applyModal={
+        <EnforcementApplyModal
+          open={Boolean(applyModalAction)}
+          actionType={applyModalAction}
+          userId={userId}
+          userLabel={userLabel}
+          onClose={() => setApplyModalAction(null)}
+          onSuccess={() => {
+            onNotify?.({ variant: "success", message: "Áp dụng enforcement thành công." });
+            fetchProfile();
+          }}
+          onError={handleApiError}
+        />
+      }
+    />
   );
 }

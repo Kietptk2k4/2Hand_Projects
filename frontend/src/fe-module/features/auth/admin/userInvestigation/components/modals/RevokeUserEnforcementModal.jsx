@@ -3,8 +3,9 @@ import { revokeUserEnforcement } from "../../api/userInvestigationApi.js";
 import { REVOKE_REASON_OPTIONS } from "../../constants/enforcementFormConstants.js";
 import { getEnforcementActionLabel } from "../../utils/investigationLabels.js";
 import { validateRevokeForm } from "../../utils/enforcementFormUtils.js";
-import { EnforcementActionBadge } from "../EnforcementBadges.jsx";
+import { AdminFilterButton } from "../../../components/ui";
 import { InvestigationModalShell } from "./InvestigationModalShell.jsx";
+import { RevokeUserEnforcementModalView } from "./RevokeUserEnforcementModalView.jsx";
 
 export function RevokeUserEnforcementModal({
   open,
@@ -61,80 +62,37 @@ export function RevokeUserEnforcementModal({
       open={open}
       title={`Thu hồi biện pháp: ${getEnforcementActionLabel(enforcement.action_type)}`}
       subtitle="Hành động này sẽ khôi phục quyền truy cập cho người dùng (nếu áp dụng)."
-      titleIcon={<span aria-hidden>뿯↽</span>}
+      titleIcon={<span aria-hidden>↩</span>}
       onClose={onClose}
       maxWidthClass="max-w-[480px]"
       footer={
         <>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="rounded-lg px-4 py-2 text-sm font-medium text-on-surface-variant hover:bg-surface-container-low disabled:opacity-50"
-          >
+          <AdminFilterButton type="button" variant="secondary" disabled={isSubmitting} onClick={onClose}>
             Hủy bỏ
-          </button>
-          <button
+          </AdminFilterButton>
+          <AdminFilterButton
             type="button"
-            onClick={onSubmit}
+            variant="primary"
             disabled={isSubmitting}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={onSubmit}
           >
-            {isSubmitting ? "Đang xử lý..." : "Xác nhận thu hồi"}
-          </button>
+            {isSubmitting ? "Đang xử lý…" : "Xác nhận thu hồi"}
+          </AdminFilterButton>
         </>
       }
     >
-      <div className="space-y-5">
-        <div className="flex items-center gap-4 rounded-lg border border-outline-variant bg-surface-container-low p-4">
-          <div className="min-w-0 flex-1">
-            <p className="font-mono text-xs text-on-surface-variant">
-              ID: {enforcement.enforcement_id?.slice(0, 12)}...
-            </p>
-            <p className="mt-1 text-sm font-semibold text-on-surface">
-              {userLabel || "Người dùng đang điều tra"}
-            </p>
-            <p className="mt-1 text-sm text-on-surface-variant">{enforcement.reason_code}</p>
-          </div>
-          <EnforcementActionBadge actionType={enforcement.action_type} />
-        </div>
-
-        <div>
-          <label htmlFor="revoke-reason" className="mb-1 block text-sm font-medium text-on-surface">
-            Lý do thu hồi <span className="text-error">*</span>
-          </label>
-          <select
-            id="revoke-reason"
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-          >
-            <option value="">Chọn lý do phù hợp</option>
-            {REVOKE_REASON_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          {fieldErrors.reason ? <p className="mt-1 text-sm text-error">{fieldErrors.reason}</p> : null}
-        </div>
-
-        <div>
-          <label htmlFor="revoke-note" className="mb-1 block text-sm font-medium text-on-surface">
-            Ghi chú (tùy chọn)
-          </label>
-          <textarea
-            id="revoke-note"
-            rows={3}
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Nhập thêm chi tiết về quyết định này..."
-            className="w-full resize-none rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-          />
-        </div>
-
-        {submitError ? <p className="text-sm text-error">{submitError}</p> : null}
-      </div>
+      <RevokeUserEnforcementModalView
+        enforcement={enforcement}
+        userLabel={userLabel}
+        reason={reason}
+        note={note}
+        fieldErrors={fieldErrors}
+        submitError={submitError}
+        reasonOptions={REVOKE_REASON_OPTIONS}
+        actionLabel={getEnforcementActionLabel(enforcement.action_type)}
+        onReasonChange={setReason}
+        onNoteChange={setNote}
+      />
     </InvestigationModalShell>
   );
 }

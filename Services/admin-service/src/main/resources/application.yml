@@ -4,6 +4,7 @@ server:
 app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
+    allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:https://*.ngrok-free.dev,https://*.ngrok-free.app,https://*.ngrok.io}
 
 spring:
   application:
@@ -142,6 +143,10 @@ spring:
   config:
     activate:
       on-profile: prod
+
+app:
+  cors:
+    allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:}
 
 logging:
   level:

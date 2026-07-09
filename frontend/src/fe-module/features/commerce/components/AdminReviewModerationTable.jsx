@@ -1,5 +1,15 @@
 import { formatShortOrderId } from "../utils/formatOrderDate";
 import { getBuyerInitials } from "../utils/buyerInitials";
+import {
+  AdminDataTable,
+  AdminDataTableBody,
+  AdminDataTableCell,
+  AdminDataTableHead,
+  AdminDataTableRow,
+  AdminFilterButton,
+  AdminMobileCard,
+  AdminMobileCardList,
+} from "../../auth/admin/components/ui";
 import { AdminReviewStatusBadge } from "./AdminReviewStatusBadge";
 import { StarRating } from "./StarRating";
 
@@ -25,44 +35,102 @@ export function AdminReviewModerationTable({ items, disabled, onModerate }) {
   if (!items?.length) return null;
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-left">
-        <thead>
-          <tr className="border-b border-outline-variant bg-surface-container-low">
-            <th className="p-4 text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
-              Sản phẩm
-            </th>
-            <th className="p-4 text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
-              Người mua
-            </th>
-            <th className="p-4 text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
-              Đánh giá
-            </th>
-            <th className="p-4 text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
-              Trạng thái
-            </th>
-            <th className="p-4 text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
-              Ngày tạo
-            </th>
-            <th className="p-4 text-right text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
+    <>
+      <AdminMobileCardList>
+        {items.map((review) => {
+          const { date, time } = formatCreatedAt(review.createdAt);
+          const isHidden = review.status === "HIDDEN";
+          const actionLabel = isHidden ? "Xem xét lại" : "Kiểm duyệt";
+
+          return (
+            <AdminMobileCard key={review.reviewId}>
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-admin-border bg-admin-surface-muted">
+                  {review.productThumbnailUrl ? (
+                    <img
+                      src={review.productThumbnailUrl}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="material-symbols-outlined text-admin-text-muted" aria-hidden="true">
+                      inventory_2
+                    </span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="line-clamp-2 text-sm font-medium text-admin-text">
+                    {review.productTitle || "—"}
+                  </p>
+                  <p className="mt-0.5 font-mono text-xs text-admin-text-muted">
+                    Order {formatShortOrderId(review.orderItemId)}
+                  </p>
+                  <div className="mt-2">
+                    <StarRating rating={review.rating ?? 0} />
+                  </div>
+                  <p
+                    className={[
+                      "mt-1 line-clamp-2 text-xs",
+                      isHidden
+                        ? "text-admin-text-muted line-through decoration-admin-text-muted/40"
+                        : "text-admin-text-secondary",
+                    ].join(" ")}
+                  >
+                    {review.comment?.trim() || "—"}
+                  </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <AdminReviewStatusBadge status={review.status} />
+                    <span className="text-xs text-admin-text-muted">
+                      {review.buyerDisplayName || "—"}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-admin-text-muted">
+                    {date}
+                    {time ? ` · ${time}` : ""}
+                  </p>
+                </div>
+              </div>
+              <AdminFilterButton
+                type="button"
+                variant={isHidden ? "primary" : "secondary"}
+                className="mt-3 w-full"
+                disabled={disabled}
+                onClick={() => onModerate?.(review)}
+              >
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                  {isHidden ? "visibility" : "gavel"}
+                </span>
+                {actionLabel}
+              </AdminFilterButton>
+            </AdminMobileCard>
+          );
+        })}
+      </AdminMobileCardList>
+
+      <AdminDataTable minWidth="960px" ariaLabel="Danh sách đánh giá kiểm duyệt">
+        <AdminDataTableHead>
+          <AdminDataTableRow>
+            <AdminDataTableCell header>Sản phẩm</AdminDataTableCell>
+            <AdminDataTableCell header>Người mua</AdminDataTableCell>
+            <AdminDataTableCell header>Đánh giá</AdminDataTableCell>
+            <AdminDataTableCell header>Trạng thái</AdminDataTableCell>
+            <AdminDataTableCell header>Ngày tạo</AdminDataTableCell>
+            <AdminDataTableCell header className="text-right">
               Thao tác
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-outline-variant">
+            </AdminDataTableCell>
+          </AdminDataTableRow>
+        </AdminDataTableHead>
+        <AdminDataTableBody>
           {items.map((review) => {
             const { date, time } = formatCreatedAt(review.createdAt);
             const isHidden = review.status === "HIDDEN";
             const actionLabel = isHidden ? "Xem xét lại" : "Kiểm duyệt";
 
             return (
-              <tr
-                key={review.reviewId}
-                className="group transition-colors hover:bg-surface-container-low/40"
-              >
-                <td className="p-4">
+              <AdminDataTableRow key={review.reviewId}>
+                <AdminDataTableCell>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-outline-variant bg-surface-container-high">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-admin-border bg-admin-surface-muted">
                       {review.productThumbnailUrl ? (
                         <img
                           src={review.productThumbnailUrl}
@@ -70,22 +138,22 @@ export function AdminReviewModerationTable({ items, disabled, onModerate }) {
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        <span className="material-symbols-outlined text-on-surface-variant">
+                        <span className="material-symbols-outlined text-admin-text-muted" aria-hidden="true">
                           inventory_2
                         </span>
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="line-clamp-2 text-label-md font-medium text-on-surface group-hover:text-primary">
+                      <p className="line-clamp-2 text-sm font-medium text-admin-text">
                         {review.productTitle || "—"}
                       </p>
-                      <p className="font-mono text-body-sm text-on-surface-variant">
+                      <p className="font-mono text-xs text-admin-text-muted">
                         Order: {formatShortOrderId(review.orderItemId)}
                       </p>
                     </div>
                   </div>
-                </td>
-                <td className="p-4">
+                </AdminDataTableCell>
+                <AdminDataTableCell>
                   <div className="flex items-center gap-2">
                     {review.buyerAvatarUrl ? (
                       <img
@@ -94,58 +162,53 @@ export function AdminReviewModerationTable({ items, disabled, onModerate }) {
                         className="h-8 w-8 rounded-full object-cover"
                       />
                     ) : (
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-label-sm font-semibold text-primary">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-admin-accent-soft text-xs font-semibold text-admin-accent-strong">
                         {getBuyerInitials(review.buyerDisplayName)}
                       </span>
                     )}
-                    <span className="text-body-sm text-on-surface">
+                    <span className="text-sm text-admin-text">
                       {review.buyerDisplayName || "—"}
                     </span>
                   </div>
-                </td>
-                <td className="max-w-xs p-4">
+                </AdminDataTableCell>
+                <AdminDataTableCell className="max-w-xs">
                   <StarRating rating={review.rating ?? 0} />
                   <p
                     className={[
-                      "mt-1 line-clamp-2 text-body-sm",
+                      "mt-1 line-clamp-2 text-sm",
                       isHidden
-                        ? "text-on-surface-variant/70 line-through decoration-on-surface-variant/40"
-                        : "text-on-surface-variant",
+                        ? "text-admin-text-muted line-through decoration-admin-text-muted/40"
+                        : "text-admin-text-secondary",
                     ].join(" ")}
                   >
                     {review.comment?.trim() || "—"}
                   </p>
-                </td>
-                <td className="p-4">
+                </AdminDataTableCell>
+                <AdminDataTableCell>
                   <AdminReviewStatusBadge status={review.status} />
-                </td>
-                <td className="p-4 text-body-sm text-on-surface-variant">
+                </AdminDataTableCell>
+                <AdminDataTableCell className="text-sm text-admin-text-secondary">
                   <div>{date}</div>
-                  {time ? <div className="text-label-sm">{time}</div> : null}
-                </td>
-                <td className="p-4 text-right">
-                  <button
+                  {time ? <div className="text-xs">{time}</div> : null}
+                </AdminDataTableCell>
+                <AdminDataTableCell className="text-right">
+                  <AdminFilterButton
                     type="button"
+                    variant={isHidden ? "primary" : "secondary"}
                     disabled={disabled}
                     onClick={() => onModerate?.(review)}
-                    className={[
-                      "inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-label-sm font-medium transition-colors disabled:opacity-50",
-                      isHidden
-                        ? "border border-primary text-primary hover:bg-primary/5"
-                        : "border border-outline-variant text-on-surface hover:border-primary hover:text-primary",
-                    ].join(" ")}
                   >
                     <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                       {isHidden ? "visibility" : "gavel"}
                     </span>
                     {actionLabel}
-                  </button>
-                </td>
-              </tr>
+                  </AdminFilterButton>
+                </AdminDataTableCell>
+              </AdminDataTableRow>
             );
           })}
-        </tbody>
-      </table>
-    </div>
+        </AdminDataTableBody>
+      </AdminDataTable>
+    </>
   );
 }

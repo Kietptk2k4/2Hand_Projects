@@ -1,4 +1,4 @@
-import { AccountCard } from "../../../../../shared/ui/auth/authUi.jsx";
+import { AdminSurfaceCard } from "../../components/ui";
 import { ADMIN_CONTENT_MODERATION_QA } from "../../../../../shared/constants/adminContentModerationQaIds.js";
 
 const QA_ROWS = {
@@ -35,20 +35,25 @@ export function ContentModerationQaReference({ activeTab }) {
   const rows = QA_ROWS[activeTab];
   if (!rows?.length) return null;
 
-  // return (
-  //   <AccountCard className="mb-6 border border-dashed border-outline-variant bg-surface-container-low/40">
-  //     <p className="text-label-sm font-semibold text-on-surface">QA mock (VITE_USE_MOCK=true)</p>
-  //     <p className="mt-1 text-xs text-on-surface-variant">
-  //       Dang nhap admin@2hands.vn. Write qua admin-service; danh sach commerce van tu commerce API.
-  //     </p>
-  //     <dl className="mt-3 space-y-2">
-  //       {rows.map((row) => (
-  //         <div key={row.label} className="flex flex-col gap-0.5 sm:flex-row sm:gap-3">
-  //           <dt className="shrink-0 text-xs font-medium text-on-surface-variant sm:w-40">{row.label}</dt>
-  //           <dd className="break-all font-mono text-xs text-on-surface">{row.value}</dd>
-  //         </div>
-  //       ))}
-  //     </dl>
-  //   </AccountCard>
-  // );
+  return (
+    <AdminSurfaceCard
+      padding="md"
+      className="mb-6 max-w-full min-w-0 border border-dashed border-admin-border bg-admin-surface-raised/80"
+    >
+      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-admin-text-muted">
+        QA mock (VITE_USE_MOCK=true)
+      </p>
+      <p className="mt-1 text-xs text-admin-text-secondary">
+        Đăng nhập admin@2hands.vn. Write qua admin-service; danh sách commerce vẫn từ commerce API.
+      </p>
+      <dl className="mt-3 space-y-2">
+        {rows.map((row) => (
+          <div key={row.label} className="flex min-w-0 flex-col gap-0.5 sm:flex-row sm:gap-3">
+            <dt className="shrink-0 text-xs font-medium text-admin-text-muted sm:w-40">{row.label}</dt>
+            <dd className="min-w-0 break-all font-mono text-xs text-admin-text">{row.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </AdminSurfaceCard>
+  );
 }

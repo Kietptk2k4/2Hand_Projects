@@ -1,18 +1,11 @@
-import {
-  STATUS_BADGE_CLASS,
-  STATUS_LABELS,
-} from "../constants/adminProductRemovalConstants";
+import { STATUS_LABELS } from "../constants/adminProductRemovalConstants";
+import { AdminStatusBadge } from "../../auth/admin/components/ui";
+import { productStatusBadgeVariant } from "../utils/adminCommerceDisplayUtils";
 
 export function AdminProductStatusBadge({ status }) {
   const label = STATUS_LABELS[status] || status;
-  const className =
-    STATUS_BADGE_CLASS[status] || "bg-surface-container-high text-on-surface-variant";
 
   return (
-    <span
-      className={`inline-flex rounded-full px-2.5 py-0.5 text-label-sm font-medium ${className}`}
-    >
-      {label}
-    </span>
+    <AdminStatusBadge variant={productStatusBadgeVariant(status)}>{label}</AdminStatusBadge>
   );
 }

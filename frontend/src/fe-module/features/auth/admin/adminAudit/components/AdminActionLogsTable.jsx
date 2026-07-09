@@ -1,4 +1,12 @@
 import { formatDateTime } from "../../../security/utils/formatDateTime.js";
+import {
+  AdminDataTable,
+  AdminDataTableBody,
+  AdminDataTableCell,
+  AdminDataTableHead,
+  AdminDataTableRow,
+} from "../../components/ui";
+import { AuditLogCardList } from "./AuditLogCardList.jsx";
 import { AuditStatusBadge } from "./AuditStatusBadge.jsx";
 
 function truncateId(value, length = 12) {
@@ -11,50 +19,54 @@ export function AdminActionLogsTable({ logs, selectedLogId, onSelectLog }) {
   if (!logs?.length) return null;
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-[960px] w-full text-left text-sm">
-        <thead>
-          <tr className="border-b border-outline-variant text-on-surface-variant">
-            <th className="py-3 pr-4 font-medium">Thoi gian</th>
-            <th className="py-3 pr-4 font-medium">Admin</th>
-            <th className="py-3 pr-4 font-medium">Action</th>
-            <th className="py-3 pr-4 font-medium">Target</th>
-            <th className="py-3 pr-4 font-medium">Status</th>
-            <th className="py-3 font-medium">IP</th>
-          </tr>
-        </thead>
-        <tbody>
+    <>
+      <AuditLogCardList logs={logs} selectedLogId={selectedLogId} onSelectLog={onSelectLog} />
+
+      <AdminDataTable minWidth="960px" ariaLabel="Nhật ký hành động admin">
+        <AdminDataTableHead>
+          <AdminDataTableRow>
+            <AdminDataTableCell header>Thời gian</AdminDataTableCell>
+            <AdminDataTableCell header>Admin</AdminDataTableCell>
+            <AdminDataTableCell header>Action</AdminDataTableCell>
+            <AdminDataTableCell header>Target</AdminDataTableCell>
+            <AdminDataTableCell header>Trạng thái</AdminDataTableCell>
+            <AdminDataTableCell header>IP</AdminDataTableCell>
+          </AdminDataTableRow>
+        </AdminDataTableHead>
+        <AdminDataTableBody>
           {logs.map((log) => {
             const isSelected = selectedLogId === log.logId;
             return (
-              <tr
+              <AdminDataTableRow
                 key={log.logId}
+                isSelected={isSelected}
                 onClick={() => onSelectLog?.(log.logId)}
-                className={[
-                  "cursor-pointer border-b border-outline-variant/60 transition-colors",
-                  isSelected ? "bg-primary/5" : "hover:bg-surface-container-low/70",
-                ].join(" ")}
+                className="cursor-pointer"
               >
-                <td className="py-3 pr-4 whitespace-nowrap text-on-surface">
+                <AdminDataTableCell className="whitespace-nowrap">
                   {formatDateTime(log.createdAt)}
-                </td>
-                <td className="py-3 pr-4 font-mono text-xs text-on-surface-variant">
+                </AdminDataTableCell>
+                <AdminDataTableCell className="font-mono text-xs text-admin-text-muted">
                   {truncateId(log.adminId)}
-                </td>
-                <td className="py-3 pr-4 font-medium text-on-surface">{log.actionType}</td>
-                <td className="py-3 pr-4">
-                  <div className="text-xs text-on-surface-variant">{log.targetType || "—"}</div>
-                  <div className="font-mono text-xs text-on-surface">{truncateId(log.targetId, 16)}</div>
-                </td>
-                <td className="py-3 pr-4">
+                </AdminDataTableCell>
+                <AdminDataTableCell className="font-medium">{log.actionType}</AdminDataTableCell>
+                <AdminDataTableCell>
+                  <div className="text-xs text-admin-text-muted">{log.targetType || "—"}</div>
+                  <div className="font-mono text-xs text-admin-text">
+                    {truncateId(log.targetId, 16)}
+                  </div>
+                </AdminDataTableCell>
+                <AdminDataTableCell>
                   <AuditStatusBadge status={log.status} />
-                </td>
-                <td className="py-3 font-mono text-xs text-on-surface-variant">{log.ipAddress || "—"}</td>
-              </tr>
+                </AdminDataTableCell>
+                <AdminDataTableCell className="font-mono text-xs text-admin-text-muted">
+                  {log.ipAddress || "—"}
+                </AdminDataTableCell>
+              </AdminDataTableRow>
             );
           })}
-        </tbody>
-      </table>
-    </div>
+        </AdminDataTableBody>
+      </AdminDataTable>
+    </>
   );
 }

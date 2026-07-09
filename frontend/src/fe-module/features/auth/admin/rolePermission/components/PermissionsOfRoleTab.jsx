@@ -7,15 +7,10 @@ import {
   revokePermissionFromRole,
 } from "../../../api/authApi";
 import { useAuthSession } from "../../../hooks/useAuthSession.jsx";
-import {
-  AccountCard,
-  AccountSkeleton,
-  AuthAlert,
-  PrimaryButton,
-  SecondaryButton,
-  TabPanelHeader,
-} from "../../../../../shared/ui/auth/authUi.jsx";
-import { EmptyState, ErrorState } from "../../../../../shared/ui/PageState.jsx";
+import { PermissionsOfRoleTabView } from "./PermissionsOfRoleTabView.jsx";
+
+const TITLE = "Quyền của vai trò";
+const SUBTITLE = "Xem, gán và thu hồi quyền cho từng vai trò.";
 
 export function PermissionsOfRoleTab({
   selectedRoleId,
@@ -79,21 +74,21 @@ export function PermissionsOfRoleTab({
       }
       if (error?.code === 403) {
         setStatus("forbidden");
-        setErrorMessage(error?.message || "Ban khong co quyen truy cap.");
+        setErrorMessage(error?.message || "Bạn không có quyền truy cập.");
         return;
       }
       if (error?.code === 404) {
         setStatus("not_found");
-        setErrorMessage(error?.message || "Khong tim thay role.");
+        setErrorMessage(error?.message || "Không tìm thấy vai trò.");
         return;
       }
       if (error?.code === 400) {
         setStatus("error");
-        setErrorMessage(error?.message || "Ma vai tro khong hop le.");
+        setErrorMessage(error?.message || "Mã vai trò không hợp lệ.");
         return;
       }
       setStatus("error");
-      setErrorMessage(error?.message || "Khong tai duoc permission.");
+      setErrorMessage(error?.message || "Không tải được permission.");
     }
   }, [roleId, onSelectedRoleIdChange, showSessionExpired]);
 
@@ -171,143 +166,26 @@ export function PermissionsOfRoleTab({
   };
 
   return (
-    <div>
-      <TabPanelHeader
-        title="Quyền của vai trò"
-        subtitle="Xem, gán và thu hồi quyền cho từng vai trò."
-      />
-
-      <AccountCard className="mb-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-          <div className="min-w-0 flex-1">
-            <label htmlFor="role-perm-select" className="mb-1.5 block text-xs font-semibold text-on-surface">
-              Chọn vai trò
-            </label>
-            <select
-              id="role-perm-select"
-              value={roleId}
-              onChange={(e) => setRoleId(e.target.value)}
-              className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2.5 text-base outline-none focus:border-primary"
-            >
-              <option value="">Chọn vai trò...</option>
-              {roles.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {role.code} — {role.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <PrimaryButton type="button" onClick={loadPermissions} disabled={!roleId}>
-            Tải permission
-          </PrimaryButton>
-        </div>
-      </AccountCard>
-
-      {status === "loading" ? <AccountSkeleton /> : null}
-
-      {status === "forbidden" ? <ErrorState message={errorMessage} /> : null}
-
-      {status === "not_found" ? (
-        <AccountCard>
-          <ErrorState message={errorMessage} />
-          <SecondaryButton
-            type="button"
-            className="mt-4"
-            onClick={() => onTabChange?.("role-list")}
-          >
-            Quay lại danh sách vai trò
-          </SecondaryButton>
-        </AccountCard>
-      ) : null}
-
-      {status === "error" ? (
-        <AccountCard>
-          <ErrorState message={errorMessage} />
-          <PrimaryButton type="button" onClick={loadPermissions} className="mt-4">
-            Thử lại
-          </PrimaryButton>
-        </AccountCard>
-      ) : null}
-
-      {status === "ready" && roleMeta ? (
-        <>
-          <AccountCard className="mb-4">
-            <p className="text-sm text-on-surface-variant">Role</p>
-            <p className="mt-1 text-lg font-semibold text-on-surface">
-              {roleMeta.code} — {roleMeta.name}
-            </p>
-          </AccountCard>
-
-          <AccountCard className="mb-4">
-            <p className="text-sm font-semibold text-on-surface">Gán quyền mới</p>
-            {availablePermissions.length === 0 ? (
-              <p className="mt-2 text-sm text-on-surface-variant">
-                Vai trò đã có tất cả quyền trong catalog.
-              </p>
-            ) : (
-              <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">
-                <div className="min-w-0 flex-1">
-                  <label htmlFor="permission-assign-select" className="mb-1.5 block text-xs font-semibold text-on-surface">
-                    Chọn quyền
-                  </label>
-                  <select
-                    id="permission-assign-select"
-                    value={selectedPermissionCode}
-                    onChange={(e) => setSelectedPermissionCode(e.target.value)}
-                    className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2.5 text-base outline-none focus:border-primary"
-                  >
-                    {availablePermissions.map((perm) => (
-                      <option key={perm.code} value={perm.code}>
-                        {perm.code}
-                        {perm.description ? ` — ${perm.description}` : ""}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <PrimaryButton
-                  type="button"
-                  onClick={handleAssignPermission}
-                  disabled={!selectedPermissionCode || isAssigning}
-                >
-                  {isAssigning ? "Đang gán..." : "Gán quyền"}
-                </PrimaryButton>
-              </div>
-            )}
-            <div className="mt-4">
-              <AuthAlert
-                variant="info"
-                message="Sau khi gán hoặc thu hồi quyền, người dùng thuộc vai trò cần đăng xuất và đăng nhập lại để JWT nhận quyền mới."
-              />
-            </div>
-          </AccountCard>
-
-          {permissions.length === 0 ? (
-            <EmptyState message="Vai trò chưa có quyền." />
-          ) : (
-            <AccountCard className="!p-0">
-              <ul className="divide-y divide-outline-variant/50">
-                {permissions.map((perm) => (
-                  <li key={perm.code} className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="font-medium text-on-surface">{perm.code}</p>
-                      {perm.description ? (
-                        <p className="mt-1 text-sm text-on-surface-variant">{perm.description}</p>
-                      ) : null}
-                    </div>
-                    <SecondaryButton
-                      type="button"
-                      onClick={() => handleRevokePermission(perm.code)}
-                      disabled={revokingCode === perm.code}
-                    >
-                      {revokingCode === perm.code ? "Đang thu hồi..." : "Thu hồi"}
-                    </SecondaryButton>
-                  </li>
-                ))}
-              </ul>
-            </AccountCard>
-          )}
-        </>
-      ) : null}
-    </div>
+    <PermissionsOfRoleTabView
+      title={TITLE}
+      subtitle={SUBTITLE}
+      roles={roles}
+      roleId={roleId}
+      roleMeta={roleMeta}
+      status={status}
+      errorMessage={errorMessage}
+      permissions={permissions}
+      availablePermissions={availablePermissions}
+      selectedPermissionCode={selectedPermissionCode}
+      isAssigning={isAssigning}
+      revokingCode={revokingCode}
+      onRoleIdChange={setRoleId}
+      onLoadPermissions={loadPermissions}
+      onPermissionCodeChange={setSelectedPermissionCode}
+      onAssignPermission={handleAssignPermission}
+      onRevokePermission={handleRevokePermission}
+      onBackToRoleList={() => onTabChange?.("role-list")}
+      onRetry={loadPermissions}
+    />
   );
 }

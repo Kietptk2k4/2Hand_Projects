@@ -1,24 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuthSession } from "../../../hooks/useAuthSession.jsx";
-import { formatDateTime } from "../../../security/utils/formatDateTime.js";
-import { AccountCard, AccountSkeleton } from "../../../../../shared/ui/auth/authUi.jsx";
-import { ErrorState } from "../../../../../shared/ui/PageState.jsx";
 import { getCommentsForModeration } from "../api/socialModerationListApi.js";
-import {
-  COMMENT_MODERATION_LIST_PAGE_SIZE,
-  COMMENT_MODERATION_LIST_SORT_OPTIONS,
-  COMMENT_MODERATION_LIST_STATUS_OPTIONS,
-} from "../constants/commentModerationListConstants.js";
-
-function sortColumnLabel(sortField) {
-  const option = COMMENT_MODERATION_LIST_SORT_OPTIONS.find((item) => item.value === sortField);
-  return option?.label || "Ngay tao (moi nhat)";
-}
-
-function truncateId(id) {
-  if (!id || id.length < 12) return id || "-";
-  return `${id.slice(0, 8)}...${id.slice(-4)}`;
-}
+import { COMMENT_MODERATION_LIST_PAGE_SIZE } from "../constants/commentModerationListConstants.js";
+import { CommentModerationListView } from "./CommentModerationListView.jsx";
 
 export function CommentModerationListPanel({
   listFilters,
@@ -76,11 +60,11 @@ export function CommentModerationListPanel({
       }
       if (error?.code === 403) {
         setStatus("forbidden");
-        setErrorMessage(error?.message || "Ban khong co quyen truy cap.");
+        setErrorMessage(error?.message || "Bạn không có quyền truy cập.");
         return;
       }
       setStatus("error");
-      setErrorMessage(error?.message || "Khong tai duoc danh sach binh luan.");
+      setErrorMessage(error?.message || "Không tải được danh sách bình luận.");
     }
   }, [filterStatus, filterPostId, filterQ, filterSort, filterPage, filterSize, showSessionExpired]);
 
@@ -113,183 +97,30 @@ export function CommentModerationListPanel({
   const pagination = result?.pagination;
   const currentPage = filterPage || pagination?.page || 1;
   const totalPages = pagination?.total_pages || 1;
-  const activeSort = filterSort;
-  const items = result?.items || [];
-
-  const handlePageChange = (nextPage) => {
-    onFiltersChange?.({
-      ...listFilters,
-      page: nextPage,
-      size: COMMENT_MODERATION_LIST_PAGE_SIZE,
-    });
-  };
-
-  const handleRowSelect = (row) => {
-    onCommentSelect?.(row.id);
-  };
 
   return (
-    <div className="mb-6 space-y-4">
-      <AccountCard>
-        <form onSubmit={handleApplyFilters} className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <div className="lg:col-span-2">
-            <label className="mb-1 block text-xs font-semibold text-on-surface-variant">Tim kiem</label>
-            <input
-              type="search"
-              value={draftFilters.q}
-              onChange={(e) => setDraftFilters((prev) => ({ ...prev, q: e.target.value }))}
-              placeholder="Comment ID, Post ID hoac noi dung..."
-              className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-on-surface-variant">Post ID</label>
-            <input
-              type="text"
-              value={draftFilters.post_id}
-              onChange={(e) => setDraftFilters((prev) => ({ ...prev, post_id: e.target.value }))}
-              placeholder="Loc theo bai viet..."
-              className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-on-surface-variant">Trang thai</label>
-            <select
-              value={draftFilters.status}
-              onChange={(e) => setDraftFilters((prev) => ({ ...prev, status: e.target.value }))}
-              className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
-            >
-              {COMMENT_MODERATION_LIST_STATUS_OPTIONS.map((option) => (
-                <option key={option.value || "all"} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-on-surface-variant">Sap xep theo</label>
-            <select
-              value={draftFilters.sort}
-              onChange={(e) => setDraftFilters((prev) => ({ ...prev, sort: e.target.value }))}
-              className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
-            >
-              {COMMENT_MODERATION_LIST_SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-end gap-2 md:col-span-2 lg:col-span-4">
-            <button
-              type="submit"
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-            >
-              Ap dung
-            </button>
-            <button
-              type="button"
-              onClick={handleClearFilters}
-              className="rounded-lg border border-outline-variant px-4 py-2 text-sm font-medium text-on-surface-variant hover:bg-surface-container-low"
-            >
-              Xoa loc
-            </button>
-          </div>
-        </form>
-      </AccountCard>
-
-      {status === "loading" ? <AccountSkeleton /> : null}
-      {status === "forbidden" ? <ErrorState message={errorMessage} /> : null}
-
-      {status === "error" ? (
-        <AccountCard className="border-error/30">
-          <ErrorState message={errorMessage} />
-          <button
-            type="button"
-            onClick={fetchList}
-            className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-          >
-            Thu lai
-          </button>
-        </AccountCard>
-      ) : null}
-
-      {status === "ready" ? (
-        <AccountCard>
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm text-on-surface-variant">
-              {pagination?.total_items ?? 0} binh luan · Sap xep: {sortColumnLabel(activeSort)} · Trang{" "}
-              {pagination?.page ?? currentPage}/{totalPages}
-            </p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                disabled={currentPage <= 1}
-                onClick={() => handlePageChange(currentPage - 1)}
-                className="rounded-lg border border-outline-variant px-3 py-1.5 text-sm disabled:opacity-40"
-              >
-                Truoc
-              </button>
-              <button
-                type="button"
-                disabled={currentPage >= totalPages}
-                onClick={() => handlePageChange(currentPage + 1)}
-                className="rounded-lg border border-outline-variant px-3 py-1.5 text-sm disabled:opacity-40"
-              >
-                Sau
-              </button>
-            </div>
-          </div>
-
-          {items.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[880px] text-left text-sm">
-                <thead>
-                  <tr className="border-b border-outline-variant text-on-surface-variant">
-                    <th className="py-2 pr-3 font-medium">Comment ID</th>
-                    <th className="py-2 pr-3 font-medium">Post ID</th>
-                    <th className="py-2 pr-3 font-medium">Noi dung</th>
-                    <th className="py-2 pr-3 font-medium">Trang thai</th>
-                    <th className="py-2 pr-3 font-medium">Thich</th>
-                    <th className="py-2 font-medium">Ngay tao</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((row) => {
-                    const isSelected = selectedCommentId === row.id;
-                    return (
-                      <tr
-                        key={row.id}
-                        className={`cursor-pointer border-b border-outline-variant/60 align-top hover:bg-surface-container-low ${
-                          isSelected ? "bg-primary/5" : ""
-                        }`}
-                        onClick={() => handleRowSelect(row)}
-                      >
-                        <td className="py-3 pr-3 font-mono text-xs" title={row.id}>
-                          {truncateId(row.id)}
-                        </td>
-                        <td className="py-3 pr-3 font-mono text-xs" title={row.post_id}>
-                          {truncateId(row.post_id)}
-                        </td>
-                        <td className="py-3 pr-3 max-w-xs truncate">{row.content_preview || "-"}</td>
-                        <td className="py-3 pr-3">
-                          <span className="inline-flex rounded-full bg-account-surface-low px-2 py-0.5 text-xs font-semibold">
-                            {row.status}
-                          </span>
-                        </td>
-                        <td className="py-3 pr-3">{row.like_count ?? 0}</td>
-                        <td className="py-3">{formatDateTime(row.created_at)}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="text-sm text-on-surface-variant">Khong co binh luan phu hop bo loc.</p>
-          )}
-        </AccountCard>
-      ) : null}
-    </div>
+    <CommentModerationListView
+      status={status}
+      errorMessage={errorMessage}
+      draftFilters={draftFilters}
+      onDraftFiltersChange={setDraftFilters}
+      onApplyFilters={handleApplyFilters}
+      onClearFilters={handleClearFilters}
+      onRetry={fetchList}
+      items={result?.items || []}
+      pagination={pagination}
+      currentPage={currentPage}
+      totalPages={totalPages}
+      activeSort={filterSort}
+      selectedCommentId={selectedCommentId}
+      onPageChange={(nextPage) =>
+        onFiltersChange?.({
+          ...listFilters,
+          page: nextPage,
+          size: COMMENT_MODERATION_LIST_PAGE_SIZE,
+        })
+      }
+      onRowSelect={(row) => onCommentSelect?.(row.id)}
+    />
   );
 }

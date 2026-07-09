@@ -1,5 +1,15 @@
 import { formatVndPrice } from "../../social/utils/formatPrice";
 import { formatShortSellerId, formatShortShopId } from "../utils/formatShortShopId";
+import {
+  AdminDataTable,
+  AdminDataTableBody,
+  AdminDataTableCell,
+  AdminDataTableHead,
+  AdminDataTableRow,
+  AdminFilterButton,
+  AdminMobileCard,
+  AdminMobileCardList,
+} from "../../auth/admin/components/ui";
 import { AdminProductStatusBadge } from "./AdminProductStatusBadge";
 
 export function AdminProductRemovalTable({
@@ -13,44 +23,124 @@ export function AdminProductRemovalTable({
   if (!items?.length) return null;
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-left">
-        <thead>
-          <tr className="border-b border-outline-variant bg-surface">
-            <th className="p-4 text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
-              Sản phẩm
-            </th>
-            <th className="p-4 text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
-              Seller / Shop
-            </th>
-            <th className="p-4 text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
-              Danh mục
-            </th>
-            <th className="p-4 text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
-              Trạng thái
-            </th>
-            <th className="p-4 text-right text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
+    <>
+      <AdminMobileCardList>
+        {items.map((product) => {
+          const isRemoved = product.status === "REMOVED";
+          const shopRef = formatShortShopId(product.shopId);
+          const sellerRef = formatShortSellerId(product.sellerId);
+
+          return (
+            <AdminMobileCard
+              key={product.productId}
+              className={isRemoved ? "border-admin-danger/20 bg-admin-danger-soft/20" : ""}
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-admin-border bg-admin-surface-muted">
+                  {product.thumbnailUrl ? (
+                    <img src={product.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="material-symbols-outlined text-admin-text-muted" aria-hidden="true">
+                      inventory_2
+                    </span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="line-clamp-2 text-sm font-medium text-admin-text">
+                    {product.title || "—"}
+                  </p>
+                  <p className="mt-0.5 text-sm text-admin-text-secondary">
+                    {formatVndPrice(product.effectivePrice ?? product.price)}
+                  </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <AdminProductStatusBadge status={product.status} />
+                    <span className="text-xs text-admin-text-muted">{product.categoryName || "—"}</span>
+                  </div>
+                  <p className="mt-1 font-mono text-xs text-admin-text-muted">
+                    Seller {sellerRef} · Shop {shopRef}
+                  </p>
+                  {product.shopName ? (
+                    <p className="mt-0.5 line-clamp-1 text-xs text-admin-text-secondary">
+                      {product.shopName}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                {isRemoved ? (
+                  <>
+                    <AdminFilterButton
+                      type="button"
+                      variant="secondary"
+                      className="w-full sm:w-auto"
+                      disabled={disabled}
+                      onClick={() => onViewCase?.(product)}
+                    >
+                      Hồ sơ
+                    </AdminFilterButton>
+                    <AdminFilterButton
+                      type="button"
+                      variant="secondary"
+                      className="w-full sm:w-auto"
+                      disabled={disabled}
+                      onClick={() => onViewHistory?.(product)}
+                    >
+                      Lịch sử
+                    </AdminFilterButton>
+                    <AdminFilterButton
+                      type="button"
+                      variant="primary"
+                      className="w-full sm:w-auto"
+                      disabled={disabled}
+                      onClick={() => onRestore?.(product)}
+                    >
+                      Khôi phục
+                    </AdminFilterButton>
+                  </>
+                ) : (
+                  <AdminFilterButton
+                    type="button"
+                    variant="primary"
+                    className="w-full sm:w-auto"
+                    disabled={disabled}
+                    onClick={() => onRemove?.(product)}
+                  >
+                    Kiểm duyệt
+                  </AdminFilterButton>
+                )}
+              </div>
+            </AdminMobileCard>
+          );
+        })}
+      </AdminMobileCardList>
+
+      <AdminDataTable minWidth="900px" ariaLabel="Danh sách sản phẩm kiểm duyệt">
+        <AdminDataTableHead>
+          <AdminDataTableRow>
+            <AdminDataTableCell header>Sản phẩm</AdminDataTableCell>
+            <AdminDataTableCell header>Seller / Shop</AdminDataTableCell>
+            <AdminDataTableCell header>Danh mục</AdminDataTableCell>
+            <AdminDataTableCell header>Trạng thái</AdminDataTableCell>
+            <AdminDataTableCell header className="text-right">
               Thao tác
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-outline-variant">
+            </AdminDataTableCell>
+          </AdminDataTableRow>
+        </AdminDataTableHead>
+        <AdminDataTableBody>
           {items.map((product) => {
             const isRemoved = product.status === "REMOVED";
             const shopRef = formatShortShopId(product.shopId);
             const sellerRef = formatShortSellerId(product.sellerId);
 
             return (
-              <tr
+              <AdminDataTableRow
                 key={product.productId}
-                className={[
-                  "group transition-colors hover:bg-surface-container-low/40",
-                  isRemoved ? "bg-error-container/10" : "",
-                ].join(" ")}
+                className={isRemoved ? "bg-admin-danger-soft/15" : ""}
               >
-                <td className="p-4">
+                <AdminDataTableCell>
                   <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-outline-variant bg-surface-container-high">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-admin-border bg-admin-surface-muted">
                       {product.thumbnailUrl ? (
                         <img
                           src={product.thumbnailUrl}
@@ -58,94 +148,82 @@ export function AdminProductRemovalTable({
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        <span className="material-symbols-outlined text-on-surface-variant">
+                        <span className="material-symbols-outlined text-admin-text-muted" aria-hidden="true">
                           inventory_2
                         </span>
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="line-clamp-1 text-label-md font-medium text-on-surface group-hover:text-primary">
+                      <p className="line-clamp-1 text-sm font-medium text-admin-text">
                         {product.title || "—"}
                       </p>
-                      <p className="mt-0.5 text-body-sm text-on-surface-variant">
+                      <p className="mt-0.5 text-sm text-admin-text-secondary">
                         {formatVndPrice(product.effectivePrice ?? product.price)}
                       </p>
                     </div>
                   </div>
-                </td>
-                <td className="p-4 text-body-sm text-on-surface-variant">
+                </AdminDataTableCell>
+                <AdminDataTableCell className="text-sm text-admin-text-secondary">
                   <p title={product.sellerId}>
-                    <span className="font-mono">{sellerRef}</span>
+                    <span className="font-mono text-xs">{sellerRef}</span>
                   </p>
-                  <p className="mt-0.5 font-mono text-label-sm" title={product.shopId}>
+                  <p className="mt-0.5 font-mono text-xs" title={product.shopId}>
                     {shopRef}
                   </p>
                   {product.shopName ? (
-                    <p className="mt-0.5 line-clamp-1 text-label-sm">{product.shopName}</p>
+                    <p className="mt-0.5 line-clamp-1 text-xs">{product.shopName}</p>
                   ) : null}
-                </td>
-                <td className="p-4 text-body-sm text-on-surface-variant">
+                </AdminDataTableCell>
+                <AdminDataTableCell className="text-sm text-admin-text-secondary">
                   {product.categoryName || "—"}
-                </td>
-                <td className="p-4">
+                </AdminDataTableCell>
+                <AdminDataTableCell>
                   <AdminProductStatusBadge status={product.status} />
-                </td>
-                <td className="p-4 text-right">
+                </AdminDataTableCell>
+                <AdminDataTableCell className="text-right">
                   {isRemoved ? (
                     <div className="flex flex-wrap justify-end gap-2">
-                      <button
+                      <AdminFilterButton
                         type="button"
+                        variant="secondary"
                         disabled={disabled}
                         onClick={() => onViewCase?.(product)}
-                        className="inline-flex items-center gap-1 rounded-lg border border-outline-variant px-3 py-2 text-label-md text-on-surface-variant transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
                       >
-                        <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
-                          folder_open
-                        </span>
                         Hồ sơ
-                      </button>
-                      <button
+                      </AdminFilterButton>
+                      <AdminFilterButton
                         type="button"
+                        variant="secondary"
                         disabled={disabled}
                         onClick={() => onViewHistory?.(product)}
-                        className="inline-flex items-center gap-1 rounded-lg border border-outline-variant px-3 py-2 text-label-md text-on-surface-variant transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
                       >
-                        <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
-                          history
-                        </span>
                         Lịch sử
-                      </button>
-                      <button
+                      </AdminFilterButton>
+                      <AdminFilterButton
                         type="button"
+                        variant="primary"
                         disabled={disabled}
                         onClick={() => onRestore?.(product)}
-                        className="inline-flex items-center gap-1 rounded-lg border border-primary px-3 py-2 text-label-md font-medium text-primary transition-colors hover:bg-primary/5 disabled:opacity-50"
                       >
-                        <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
-                          restore
-                        </span>
                         Khôi phục
-                      </button>
+                      </AdminFilterButton>
                     </div>
                   ) : (
-                    <button
+                    <AdminFilterButton
                       type="button"
+                      variant="primary"
                       disabled={disabled}
                       onClick={() => onRemove?.(product)}
-                      className="inline-flex items-center gap-1 rounded-lg border border-primary px-4 py-2 text-label-md font-medium text-primary transition-colors hover:bg-primary/5 disabled:opacity-50"
                     >
-                      <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
-                        gavel
-                      </span>
                       Kiểm duyệt
-                    </button>
+                    </AdminFilterButton>
                   )}
-                </td>
-              </tr>
+                </AdminDataTableCell>
+              </AdminDataTableRow>
             );
           })}
-        </tbody>
-      </table>
-    </div>
+        </AdminDataTableBody>
+      </AdminDataTable>
+    </>
   );
 }

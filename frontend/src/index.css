@@ -31,6 +31,30 @@
   --color-surface-container-lowest: #ffffff;
   --color-surface-container-high: #dee8ff;
   --color-outline: #727687;
+
+  /* Admin operations console */
+  --color-admin-canvas: #f3f4f8;
+  --color-admin-surface: #ffffff;
+  --color-admin-surface-raised: #fafbfc;
+  --color-admin-surface-muted: #eceef3;
+  --color-admin-border: #dde1e9;
+  --color-admin-border-subtle: #e8eaef;
+  --color-admin-text: #1c1f28;
+  --color-admin-text-secondary: #5f6775;
+  --color-admin-text-muted: #8b93a1;
+  --color-admin-accent: #5c6f82;
+  --color-admin-accent-strong: #465a6d;
+  --color-admin-accent-soft: #e8edf2;
+  --color-admin-accent-border: #c5d0db;
+  --color-admin-sidebar: #ffffff;
+  --color-admin-success: #3f6f57;
+  --color-admin-success-soft: #e8f2ec;
+  --color-admin-warning: #8a7340;
+  --color-admin-warning-soft: #f4efe4;
+  --color-admin-danger: #a85454;
+  --color-admin-danger-soft: #f8ecec;
+  --shadow-admin-header: 0 1px 0 rgba(28, 31, 40, 0.06);
+  --shadow-admin-surface: 0 1px 2px rgba(28, 31, 40, 0.04);
 }
 
 html.dark {
@@ -62,6 +86,29 @@ html.dark {
   --color-surface-container-lowest: #1a1c1e;
   --color-surface-container-high: #2d3135;
   --color-outline: #8b919a;
+
+  --color-admin-canvas: #14161c;
+  --color-admin-surface: #1c1f28;
+  --color-admin-surface-raised: #232730;
+  --color-admin-surface-muted: #2a2f3a;
+  --color-admin-border: #353b48;
+  --color-admin-border-subtle: #2e3440;
+  --color-admin-text: #e8eaef;
+  --color-admin-text-secondary: #a8b0bd;
+  --color-admin-text-muted: #7a8494;
+  --color-admin-accent: #8fa3b8;
+  --color-admin-accent-strong: #b4c4d4;
+  --color-admin-accent-soft: #2a3440;
+  --color-admin-accent-border: #4a5668;
+  --color-admin-sidebar: #1a1d26;
+  --color-admin-success: #6ba888;
+  --color-admin-success-soft: #1f2e28;
+  --color-admin-warning: #c4a86a;
+  --color-admin-warning-soft: #2e2a22;
+  --color-admin-danger: #d48484;
+  --color-admin-danger-soft: #2e2222;
+  --shadow-admin-header: 0 1px 0 rgba(0, 0, 0, 0.24);
+  --shadow-admin-surface: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 @layer base {
@@ -91,6 +138,14 @@ html.dark {
 
   .material-symbols-outlined.fill {
     font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+  }
+
+  .admin-shell {
+    @apply bg-admin-canvas text-admin-text;
+  }
+
+  .admin-shell ::selection {
+    background-color: color-mix(in srgb, var(--color-admin-accent) 24%, transparent);
   }
 
   .material-symbols-outlined {

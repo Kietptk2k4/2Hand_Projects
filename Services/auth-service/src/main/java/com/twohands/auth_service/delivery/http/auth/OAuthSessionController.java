@@ -6,6 +6,8 @@ import com.twohands.auth_service.application.auth.oauth.BootstrapOAuthSessionUse
 import com.twohands.auth_service.common.dto.ApiResponse;
 import com.twohands.auth_service.delivery.http.auth.response.LoginResponse;
 import com.twohands.auth_service.infrastructure.security.oauth.OAuthAuthCookies;
+import com.twohands.auth_service.infrastructure.security.oauth.OAuthHttpSessionCleaner;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -34,6 +36,7 @@ public class OAuthSessionController {
     public ResponseEntity<ApiResponse<LoginResponse>> bootstrapSession(
             @CookieValue(name = OAuthAuthCookies.ACCESS_TOKEN, required = false) String accessToken,
             @CookieValue(name = OAuthAuthCookies.REFRESH_TOKEN, required = false) String refreshToken,
+            HttpServletRequest request,
             HttpServletResponse response
     ) {
         BootstrapOAuthSessionResult result = bootstrapOAuthSessionUseCase.execute(
@@ -41,6 +44,7 @@ public class OAuthSessionController {
         );
 
         OAuthAuthCookies.clear(response, secureCookie);
+        OAuthHttpSessionCleaner.invalidate(request);
 
         LoginResponse body = new LoginResponse(
                 result.accessToken(),

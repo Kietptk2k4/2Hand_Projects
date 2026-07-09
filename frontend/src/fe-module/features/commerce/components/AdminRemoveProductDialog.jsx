@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { formatVndPrice } from "../../social/utils/formatPrice";
+import { AdminFilterButton } from "../../auth/admin/components/ui";
 import {
   REASON_MAX_LENGTH,
   REMOVE_WARNING_POINTS,
@@ -28,27 +29,27 @@ export function AdminRemoveProductDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/40 p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-admin-text/40 p-0 sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="remove-product-title"
     >
-      <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg">
-        <div className="border-b border-outline-variant px-6 py-4">
-          <h2 id="remove-product-title" className="text-headline-sm font-semibold text-on-surface">
+      <div className="flex max-h-[90dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-admin-border bg-admin-surface shadow-[var(--shadow-admin-surface)] sm:rounded-xl">
+        <div className="border-b border-admin-border-subtle px-4 py-4 sm:px-6">
+          <h2 id="remove-product-title" className="text-lg font-semibold text-admin-text">
             Gỡ sản phẩm
           </h2>
-          <p className="mt-1 text-body-sm text-on-surface-variant">{product.title}</p>
+          <p className="mt-1 text-sm text-admin-text-secondary">{product.title}</p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <AdminProductStatusBadge status={product.status} />
-            <span className="text-label-sm text-on-surface-variant">
+            <span className="text-xs text-admin-text-muted">
               {formatVndPrice(product.effectivePrice ?? product.price)}
             </span>
           </div>
         </div>
 
-        <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
-          <div className="flex gap-3 rounded-lg border border-outline-variant bg-surface-container-low/50 p-3">
+        <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-6">
+          <div className="flex gap-3 rounded-lg border border-admin-border bg-admin-surface-muted/50 p-3">
             {product.thumbnailUrl ? (
               <img
                 src={product.thumbnailUrl}
@@ -56,10 +57,10 @@ export function AdminRemoveProductDialog({
                 className="h-16 w-16 shrink-0 rounded-lg object-cover"
               />
             ) : null}
-            <dl className="min-w-0 space-y-1 text-label-sm text-on-surface-variant">
+            <dl className="min-w-0 space-y-1 text-xs text-admin-text-muted">
               <div>
                 <dt className="inline font-medium">product_id: </dt>
-                <dd className="inline font-mono break-all">{product.productId}</dd>
+                <dd className="inline break-all font-mono">{product.productId}</dd>
               </div>
               <div>
                 <dt className="inline font-medium">shop_id: </dt>
@@ -76,9 +77,9 @@ export function AdminRemoveProductDialog({
             </dl>
           </div>
 
-          <div className="rounded-lg border border-error/25 bg-error-container/20 px-3 py-3">
-            <p className="text-label-sm font-semibold text-on-error-container">Lưu ý nghiệp vụ</p>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-body-sm text-on-error-container">
+          <div className="rounded-lg border border-admin-danger/30 bg-admin-danger-soft px-3 py-3">
+            <p className="text-xs font-semibold text-admin-danger">Lưu ý nghiệp vụ</p>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-admin-danger">
               {REMOVE_WARNING_POINTS.map((point) => (
                 <li key={point}>{point}</li>
               ))}
@@ -86,43 +87,39 @@ export function AdminRemoveProductDialog({
           </div>
 
           <label className="block">
-            <span className="text-label-sm font-medium text-on-surface">
-              Lý do gỡ <span className="text-error">*</span>
+            <span className="text-sm font-medium text-admin-text">
+              Lý do gỡ <span className="text-admin-danger">*</span>
             </span>
             <textarea
               value={reason}
-              onChange={(e) => setReason(e.target.value)}
+              onChange={(event) => setReason(event.target.value)}
               rows={4}
               maxLength={REASON_MAX_LENGTH}
               disabled={isSubmitting}
-              placeholder="Mô tả lý do gỡ sản phẩm..."
-              className="mt-1 w-full resize-y rounded-lg border border-outline-variant px-3 py-2 text-body-sm disabled:opacity-50"
+              placeholder="Mô tả lý do gỡ sản phẩm…"
+              className="mt-1 w-full resize-y rounded-lg border border-admin-border bg-admin-surface px-3 py-2 text-sm text-admin-text focus:border-admin-accent focus:outline-none focus:ring-2 focus:ring-admin-accent-soft disabled:opacity-50"
             />
           </label>
-          <p className="text-right text-label-sm text-on-surface-variant">
+          <p className="text-right text-xs text-admin-text-muted">
             {trimmedReason.length}/{REASON_MAX_LENGTH}
           </p>
 
-          {submitError ? <p className="text-sm text-error">{submitError}</p> : null}
+          {submitError ? <p className="text-sm text-admin-danger">{submitError}</p> : null}
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-outline-variant px-6 py-4">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="rounded-lg px-4 py-2 text-label-md text-on-surface-variant hover:bg-surface-container-low disabled:opacity-50"
-          >
+        <div className="flex flex-col-reverse gap-2 border-t border-admin-border-subtle px-4 py-4 sm:flex-row sm:justify-end sm:px-6">
+          <AdminFilterButton type="button" variant="secondary" disabled={isSubmitting} onClick={onClose}>
             Hủy
-          </button>
-          <button
+          </AdminFilterButton>
+          <AdminFilterButton
             type="button"
+            variant="primary"
+            className="!bg-admin-danger !text-white hover:!brightness-95"
             disabled={isSubmitting || !trimmedReason}
             onClick={() => onSubmit?.({ reason: trimmedReason })}
-            className="rounded-lg bg-error px-4 py-2 text-label-md font-medium text-on-error hover:brightness-95 disabled:opacity-50"
           >
-            {isSubmitting ? "Đang xử lý..." : "Gỡ sản phẩm"}
-          </button>
+            {isSubmitting ? "Đang xử lý…" : "Gỡ sản phẩm"}
+          </AdminFilterButton>
         </div>
       </div>
     </div>

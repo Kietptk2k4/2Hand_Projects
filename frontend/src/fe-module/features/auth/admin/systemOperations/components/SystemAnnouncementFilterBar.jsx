@@ -1,5 +1,18 @@
+import {
+  AdminFilterBar,
+  AdminFilterButton,
+  AdminFilterField,
+  AdminFilterInput,
+  AdminFilterSelect,
+} from "../../components/ui";
 import { ANNOUNCEMENT_SEVERITIES, ANNOUNCEMENT_STATUSES } from "../constants/systemAnnouncementConstants.js";
 import { APPLY_FILTERS, CLEAR_FILTERS } from "../constants/systemOperationsUiStrings.js";
+
+const STATUS_LABELS = {
+  DRAFT: "Draft",
+  SENT: "Đã gửi",
+  CANCELLED: "Đã hủy",
+};
 
 export function SystemAnnouncementFilterBar({ filters, onApply, onReset }) {
   const handleSubmit = (event) => {
@@ -15,37 +28,50 @@ export function SystemAnnouncementFilterBar({ filters, onApply, onReset }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <div className="lg:col-span-2">
-        <label className="mb-1 block text-xs font-semibold text-on-surface-variant">Tìm kiếm</label>
-        <input
+    <AdminFilterBar
+      onSubmit={handleSubmit}
+      actions={
+        <>
+          <AdminFilterButton type="submit" variant="primary">
+            {APPLY_FILTERS}
+          </AdminFilterButton>
+          <AdminFilterButton type="button" variant="secondary" onClick={onReset}>
+            {CLEAR_FILTERS}
+          </AdminFilterButton>
+        </>
+      }
+    >
+      <AdminFilterField label="Tìm kiếm" htmlFor="sa-q" className="lg:col-span-2">
+        <AdminFilterInput
+          id="sa-q"
           name="q"
+          type="search"
+          className="text-base"
           defaultValue={filters?.q || ""}
           placeholder="tiêu đề / nội dung"
-          className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
         />
-      </div>
-      <div>
-        <label className="mb-1 block text-xs font-semibold text-on-surface-variant">Trạng thái</label>
-        <select
+      </AdminFilterField>
+      <AdminFilterField label="Trạng thái" htmlFor="sa-status">
+        <AdminFilterSelect
+          id="sa-status"
           name="status"
+          className="text-base"
           defaultValue={filters?.status || ""}
-          className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm"
         >
           <option value="">Tất cả</option>
           {ANNOUNCEMENT_STATUSES.map((status) => (
             <option key={status} value={status}>
-              {status}
+              {STATUS_LABELS[status] ?? status}
             </option>
           ))}
-        </select>
-      </div>
-      <div>
-        <label className="mb-1 block text-xs font-semibold text-on-surface-variant">Mức độ</label>
-        <select
+        </AdminFilterSelect>
+      </AdminFilterField>
+      <AdminFilterField label="Mức độ" htmlFor="sa-severity">
+        <AdminFilterSelect
+          id="sa-severity"
           name="severity"
+          className="text-base"
           defaultValue={filters?.severity || ""}
-          className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm"
         >
           <option value="">Tất cả</option>
           {ANNOUNCEMENT_SEVERITIES.map((severity) => (
@@ -53,20 +79,8 @@ export function SystemAnnouncementFilterBar({ filters, onApply, onReset }) {
               {severity}
             </option>
           ))}
-        </select>
-      </div>
-      <div className="flex items-end gap-2 md:col-span-2 lg:col-span-4">
-        <button type="submit" className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">
-          {APPLY_FILTERS}
-        </button>
-        <button
-          type="button"
-          onClick={onReset}
-          className="rounded-lg border border-outline-variant px-4 py-2 text-sm font-medium text-on-surface-variant"
-        >
-          {CLEAR_FILTERS}
-        </button>
-      </div>
-    </form>
+        </AdminFilterSelect>
+      </AdminFilterField>
+    </AdminFilterBar>
   );
 }

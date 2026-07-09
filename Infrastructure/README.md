@@ -121,7 +121,145 @@ docker compose up -d --force-recreate minio
 docker compose run --rm minio-init
 ```
 
-## PayOS webhook — ngrok (local dev)
+## Remote demo — ngrok gateway (B1)
+
+Expose **web + mobile + MinIO uploads + PayOS webhooks** through **one** public HTTPS URL via `dev-gateway` (nginx) and a single ngrok tunnel.
+
+### Chuẩn bị (một lần)
+
+1. Đăng ký ngrok, lấy authtoken: https://dashboard.ngrok.com/get-started/your-authtoken
+2. Copy env:
+
+```bash
+cd Infrastructure
+cp .env.example .env
+# Sửa .env: NGROK_AUTHTOKEN=<token>
+```
+
+3. Copy ngrok service overrides (sau khi có URL từ bước chạy):
+
+```bash
+# Ví dụ auth — lặp cho social, commerce, admin, notification
+cp ../Services/auth-service/.env.docker.ngrok.example ../Services/auth-service/.env.docker.local
+# Sửa YOUR-NGROK-HOST trong .env.docker.local
+```
+
+Template checklist: [`.env.ngrok.example`](.env.ngrok.example) · Per-service: `Services/*/.env.docker.ngrok.example`
+
+### Chạy (profile `dev` + `ngrok`)
+
+**Khuyến nghị — một lệnh (orchestrate đủ 4 bước):**
+
+```powershell
+cd Infrastructure
+./scripts/start-ngrok-demo.ps1
+```
+
+Script tự chạy theo thứ tự:
+
+1. `docker compose ... --profile dev --profile ngrok up -d` — infra, backends, ngrok (gateway có thể trống lúc đầu)
+2. Chờ tunnel HTTPS → `./scripts/print-ngrok-urls.ps1` — in URL + env checklist
+3. `./scripts/build-frontend-ngrok.ps1` — build FE với `VITE_*` = URL ngrok hiện tại
+4. `docker compose ... --force-recreate dev-gateway` — mount `frontend/dist` mới
+
+Lần đầu (hoặc khi URL ngrok đổi): sau bước 2, sửa `Services/*/.env.docker.local` theo checklist rồi restart các service backend nếu cần (`docker compose ... restart auth-service social-service commerce-service admin-service notification-service`).
+
+**Thủ công (từng bước):**
+
+```powershell
+cd Infrastructure
+
+# 1. Stack + tunnel
+docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.ngrok.yml --profile dev --profile ngrok up -d
+
+# 2. URL + patch .env.docker.local
+./scripts/print-ngrok-urls.ps1
+
+# 3. Build FE (bắt buộc sau khi tunnel online)
+./scripts/build-frontend-ngrok.ps1
+
+# 4. Phục vụ dist mới
+docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.ngrok.yml --profile dev --profile ngrok up -d --force-recreate dev-gateway
+```
+
+Không chạy `build-frontend-ngrok.ps1` trước khi tunnel online — URL bake vào bundle sẽ sai hoặc script sẽ fail.
+
+### Lấy URL + env checklist
+
+```powershell
+cd Infrastructure
+./scripts/print-ngrok-urls.ps1
+./scripts/apply-ngrok-gateway-env.ps1
+```
+
+`apply-ngrok-gateway-env.ps1` cập nhật MinIO/CORS/OAuth env trên auth, social, commerce từ ngrok API (hoặc `-GatewayUrl`). **Không** ghi hostname vào DB — URL cũ `localhost:9000` được rewrite lúc API trả response.
+
+```bash
+sh scripts/print-ngrok-urls.sh
+```
+
+In ra: gateway HTTPS URL, PayOS webhook, `CORS_ALLOWED_ORIGINS`, OAuth redirects, MinIO presign, `VITE_*`, `EXPO_PUBLIC_*`.
+
+### Env matrix (thay `{GATEWAY}` = `https://<ngrok-host>`)
+
+| Biến | Service | Ghi chú |
+|------|---------|---------|
+| `CORS_ALLOWED_ORIGINS` | auth, social, commerce, admin, notification | `{GATEWAY}` |
+| `AUTH_OAUTH2_SUCCESS_REDIRECT_URL` | auth | `{GATEWAY}/oauth/success` |
+| `AUTH_OAUTH2_FAILURE_REDIRECT_URL` | auth | `{GATEWAY}/oauth/failure` |
+| `AUTH_OAUTH2_COOKIE_SECURE` | auth | `true` |
+| `SERVER_FORWARD_HEADERS_STRATEGY` | auth | `framework` (default in `application.yml`; required for OAuth `{baseUrl}` behind gateway) |
+| Google OAuth redirect URI | Google Cloud Console | `{GATEWAY}/login/oauth2/code/google` |
+| Facebook OAuth redirect URI | Meta Developer | `{GATEWAY}/login/oauth2/code/facebook` |
+| `AUTH_MINIO_PRESIGNED_ENDPOINT` | auth | `{GATEWAY}` |
+| `AUTH_MINIO_PUBLIC_URL` | auth | `{GATEWAY}/2hands-avatar` |
+| `SOCIAL_MINIO_PRESIGNED_ENDPOINT` | social | `{GATEWAY}` |
+| `SOCIAL_MINIO_PUBLIC_URL` | social | `{GATEWAY}/2hands-social-post` |
+| `COMMERCE_MINIO_PRESIGNED_ENDPOINT` | commerce | `{GATEWAY}` |
+| `COMMERCE_MINIO_PUBLIC_URL` | commerce | `{GATEWAY}` |
+| `COMMERCE_PAYOS_RETURN_URL` | commerce | `{GATEWAY}/commerce/checkout/payment-result` |
+| `COMMERCE_PAYOS_CANCEL_URL` | commerce | `{GATEWAY}/commerce/checkout/payment-result` |
+| `VITE_*_SERVICE_BASE_URL` (×5) | frontend build | `{GATEWAY}` |
+| `EXPO_PUBLIC_DEV_HOST` | mobile | host only (no `https://`) |
+| `EXPO_PUBLIC_*_BASE_URL` | mobile | `{GATEWAY}` |
+
+Upload ảnh qua gateway: client **không** gửi `client_upload_origin` trên host public; backend dùng `*_MINIO_PRESIGNED_ENDPOINT`.
+
+### ngrok URL rotation (free tier)
+
+URL đổi mỗi lần restart container `ngrok-gateway`:
+
+1. `./scripts/print-ngrok-urls.ps1`
+2. Cập nhật `Services/*/.env.docker.local` và `mobile/.env`
+3. `./scripts/build-frontend-ngrok.ps1` + recreate `dev-gateway`
+4. Cập nhật PayOS webhook trên my.payos.vn
+5. Cập nhật Google/Facebook OAuth authorized redirect URIs (`{GATEWAY}/login/oauth2/code/{provider}`)
+
+### Verification checklist
+
+- [ ] `GET {GATEWAY}/api/v1/auth/...` (health/login) qua ngrok
+- [ ] `GET {GATEWAY}/oauth2/authorization/google` redirect sang Google (không SPA 404)
+- [ ] OAuth web: đăng nhập Google/Facebook → `/oauth/success` → session OK
+- [ ] `GET {GATEWAY}/api/v1/social/feed/global` (JWT)
+- [ ] `GET {GATEWAY}/commerce/api/v1/products` (public catalog)
+- [ ] Browser: `{GATEWAY}/social`, `{GATEWAY}/commerce/checkout` (SPA)
+- [ ] `GET {GATEWAY}/2hands-avatar/...` (MinIO proxy)
+- [ ] Upload avatar/post/product qua presigned PUT
+- [ ] `POST {GATEWAY}/commerce/api/v1/payments/webhooks/payos` reachable (PayOS)
+- [ ] Local dev **không** bật `--profile ngrok` vẫn dùng `localhost` / LAN bình thường
+
+| Service | Container | Port host | Mục đích |
+|---------|-----------|-----------|----------|
+| dev-gateway (profile `ngrok`) | `dev-gateway` | — (internal 8080) | nginx path router + FE static |
+| ngrok (profile `ngrok`) | `ngrok-gateway` | 4040 | Tunnel + API inspect |
+
+Config nginx: [`nginx/dev-gateway.conf`](nginx/dev-gateway.conf)
+
+---
+
+## PayOS webhook — ngrok (legacy, commerce-only)
+
+> **Superseded:** dùng [Remote demo — ngrok gateway (B1)](#remote-demo--ngrok-gateway-b1) ở trên. Profile `payos` chỉ tunnel commerce `:3003` khi chưa dùng full gateway.
 
 Tunnel HTTPS từ internet vào **commerce-service chạy trên host** (port `3003`). Dùng khi test webhook PayOS thật từ [my.payos.vn](https://my.payos.vn).
 

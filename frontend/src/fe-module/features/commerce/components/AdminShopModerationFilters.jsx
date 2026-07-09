@@ -1,4 +1,28 @@
+import {
+  AdminFilterBar,
+  AdminFilterField,
+  AdminFilterInput,
+  AdminFilterSelect,
+} from "../../auth/admin/components/ui";
 import { SHOP_STATUS_FILTER_TABS, SORT_OPTIONS } from "../constants/adminShopModerationConstants";
+
+function StatusChip({ active, disabled, onClick, children }) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={[
+        "inline-flex min-h-9 items-center rounded-full border px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+        active
+          ? "border-admin-accent bg-admin-accent-soft text-admin-accent-strong"
+          : "border-admin-border text-admin-text-secondary hover:border-admin-accent/40 hover:text-admin-accent",
+      ].join(" ")}
+    >
+      {children}
+    </button>
+  );
+}
 
 export function AdminShopModerationFilters({
   activeStatusTabId,
@@ -11,75 +35,52 @@ export function AdminShopModerationFilters({
   disabled,
 }) {
   return (
-    <div className="mb-6 flex flex-col gap-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+    <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
-        {SHOP_STATUS_FILTER_TABS.map((tab) => {
-          const active = tab.id === activeStatusTabId;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              disabled={disabled}
-              onClick={() => onStatusChange(tab.id)}
-              className={[
-                "rounded-full border px-4 py-1.5 text-label-sm transition-colors disabled:opacity-50",
-                active
-                  ? "border-primary bg-primary/10 font-medium text-primary"
-                  : "border-outline-variant text-on-surface-variant hover:border-primary/50 hover:text-primary",
-              ].join(" ")}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
+        {SHOP_STATUS_FILTER_TABS.map((tab) => (
+          <StatusChip
+            key={tab.id}
+            active={tab.id === activeStatusTabId}
+            disabled={disabled}
+            onClick={() => onStatusChange(tab.id)}
+          >
+            {tab.label}
+          </StatusChip>
+        ))}
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <form
-          className="relative min-w-[200px] flex-1"
-          onSubmit={(e) => {
-            e.preventDefault();
-            onSearchSubmit?.();
-          }}
-        >
-          <span
-            className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-on-surface-variant"
-            aria-hidden="true"
-          >
-            search
-          </span>
-          <input
+      <AdminFilterBar
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSearchSubmit?.();
+        }}
+      >
+        <AdminFilterField label="Tìm kiếm" htmlFor="shop-mod-search" className="lg:col-span-2">
+          <AdminFilterInput
+            id="shop-mod-search"
             type="search"
             value={searchInput}
-            onChange={(e) => onSearchInputChange(e.target.value)}
+            onChange={(event) => onSearchInputChange(event.target.value)}
             disabled={disabled}
-            placeholder="Tìm shop, seller..."
-            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest py-2 pl-10 pr-3 text-body-sm disabled:opacity-50"
+            placeholder="Tìm shop, seller…"
           />
-        </form>
+        </AdminFilterField>
 
-        <div className="relative min-w-[180px]">
-          <span
-            className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant"
-            aria-hidden="true"
-          >
-            filter_list
-          </span>
-          <select
+        <AdminFilterField label="Sắp xếp" htmlFor="shop-mod-sort">
+          <AdminFilterSelect
+            id="shop-mod-sort"
             value={sort}
-            onChange={(e) => onSortChange(e.target.value)}
+            onChange={(event) => onSortChange(event.target.value)}
             disabled={disabled}
-            className="w-full appearance-none rounded-lg border border-outline-variant bg-surface-container-lowest py-2 pl-10 pr-8 text-body-sm disabled:opacity-50"
-            aria-label="Sắp xếp"
           >
             {SORT_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
               </option>
             ))}
-          </select>
-        </div>
-      </div>
+          </AdminFilterSelect>
+        </AdminFilterField>
+      </AdminFilterBar>
     </div>
   );
 }

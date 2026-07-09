@@ -7,11 +7,9 @@ import {
 import { useContentModerationPermissions } from "../../hooks/useContentModerationPermissions.js";
 import { useModeratePost } from "../../hooks/useModeratePost.js";
 import { useRestorePost } from "../../hooks/useRestorePost.js";
-import { SocialModerateDialog } from "../SocialModerateDialog.jsx";
-import { SocialModerationPanel } from "../SocialModerationPanel.jsx";
-import { SocialRestoreDialog } from "../SocialRestoreDialog.jsx";
+import { PostModerationForbiddenView, PostModerationTabView } from "../PostModerationTabView.jsx";
 
-const TARGET_LABEL = "bai viet";
+const TARGET_LABEL = "bài viết";
 
 export function PostModerationTab({ postId }) {
   const { canModeratePost, canRestorePost } = useContentModerationPermissions();
@@ -49,77 +47,45 @@ export function PostModerationTab({ postId }) {
   const disabled = isModerating || isRestoring;
 
   if (!canModeratePost && !canRestorePost) {
-    return (
-      <div className="rounded-xl border border-error/30 bg-error-container/20 p-8 text-center">
-        <p className="text-body-md text-on-error-container">
-          Ban khong co quyen POST_MODERATE hoac POST_RESTORE.
-        </p>
-      </div>
-    );
+    return <PostModerationForbiddenView />;
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-headline-sm font-semibold text-on-surface md:text-headline-lg">Kiem duyet bai viet</h2>
-        <p className="mt-1 text-body-sm text-on-surface-variant">
-          Nhap postId (MongoDB ObjectId) o thanh tren, sau do moderate hoac restore qua admin-service.
-        </p>
-      </div>
-
-      {!postId ? (
-        <div className="rounded-xl border border-dashed border-outline-variant bg-surface-container-low/40 p-10 text-center">
-          <span className="material-symbols-outlined mb-2 text-4xl text-outline">post_add</span>
-          <p className="text-body-md text-on-surface-variant">Chon postId de bat dau kiem duyet.</p>
-        </div>
-      ) : (
-        <SocialModerationPanel
-          targetLabel={TARGET_LABEL}
-          targetId={postId}
-          canModerate={canModeratePost}
-          canRestore={canRestorePost}
-          lastResult={lastResult}
-          disabled={disabled}
-          onModerate={() => setModerateOpen(true)}
-          onRestore={() => setRestoreOpen(true)}
-        />
-      )}
-
-      <SocialModerateDialog
-        open={moderateOpen}
-        targetLabel={TARGET_LABEL}
-        targetId={postId}
-        isSubmitting={isModerating}
-        submitError={moderateError}
-        onClose={() => {
-          if (isModerating) return;
-          setModerateOpen(false);
-          clearModerateError();
-        }}
-        onSubmit={async ({ action, reason }) => {
-          if (!postId) return;
-          await submitModerate(postId, { action, reason });
-        }}
-      />
-
-      <SocialRestoreDialog
-        open={restoreOpen}
-        targetLabel={TARGET_LABEL}
-        targetId={postId}
-        isSubmitting={isRestoring}
-        submitError={restoreError}
-        onClose={() => {
-          if (isRestoring) return;
-          setRestoreOpen(false);
-          clearRestoreError();
-        }}
-        onSubmit={async ({ reason }) => {
-          if (!postId) return;
-          await submitRestore(postId, { reason });
-        }}
-      />
-
-      <FeedToast message={toastMessage} onDismiss={() => setToastMessage("")} />
-    </div>
+    <PostModerationTabView
+      postId={postId}
+      canModeratePost={canModeratePost}
+      canRestorePost={canRestorePost}
+      lastResult={lastResult}
+      disabled={disabled}
+      moderateOpen={moderateOpen}
+      restoreOpen={restoreOpen}
+      isModerating={isModerating}
+      isRestoring={isRestoring}
+      moderateError={moderateError}
+      restoreError={restoreError}
+      toastMessage={toastMessage}
+      onDismissToast={() => setToastMessage("")}
+      onModerateOpen={() => setModerateOpen(true)}
+      onRestoreOpen={() => setRestoreOpen(true)}
+      onModerateClose={() => {
+        if (isModerating) return;
+        setModerateOpen(false);
+        clearModerateError();
+      }}
+      onRestoreClose={() => {
+        if (isRestoring) return;
+        setRestoreOpen(false);
+        clearRestoreError();
+      }}
+      onSubmitModerate={async ({ action, reason }) => {
+        if (!postId) return;
+        await submitModerate(postId, { action, reason });
+      }}
+      onSubmitRestore={async ({ reason }) => {
+        if (!postId) return;
+        await submitRestore(postId, { reason });
+      }}
+      ToastComponent={FeedToast}
+    />
   );
 }

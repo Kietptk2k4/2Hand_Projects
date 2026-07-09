@@ -1,7 +1,9 @@
+import { AdminSurfaceCard } from "../../components/ui";
+
 export function SystemOperationsForbiddenState({ message }) {
   return (
-    <div className="rounded-lg border border-error/30 bg-error-container/30 px-6 py-8 text-center">
-      <p className="text-sm text-on-error-container">{message}</p>
-    </div>
+    <AdminSurfaceCard padding="lg" className="border-admin-danger/30 text-center">
+      <p className="text-sm text-admin-danger">{message}</p>
+    </AdminSurfaceCard>
   );
 }

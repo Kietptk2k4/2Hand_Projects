@@ -16,10 +16,17 @@ public class CorsConfig {
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
 
+    @Value("${app.cors.allowed-origin-patterns:}")
+    private String allowedOriginPatterns;
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(parseOrigins(allowedOrigins));
+        List<String> originPatterns = parseOrigins(allowedOriginPatterns);
+        if (!originPatterns.isEmpty()) {
+            configuration.setAllowedOriginPatterns(originPatterns);
+        }
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization"));

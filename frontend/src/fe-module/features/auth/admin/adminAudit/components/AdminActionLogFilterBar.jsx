@@ -1,3 +1,10 @@
+import {
+  AdminFilterBar,
+  AdminFilterButton,
+  AdminFilterField,
+  AdminFilterInput,
+  AdminFilterSelect,
+} from "../../components/ui";
 import { AUDIT_STATUS_OPTIONS } from "../constants/adminAuditConstants.js";
 import { toIsoInstantFromLocalInput, toLocalInputFromIso } from "../utils/auditDateTime.js";
 
@@ -13,7 +20,7 @@ export function AdminActionLogFilterBar({ filters, onApply, onReset }) {
     const formData = new FormData(event.currentTarget);
     const adminId = String(formData.get("admin_id") || "").trim();
     if (adminId && !isValidUuid(adminId)) {
-      window.alert("admin_id phai la UUID hop le.");
+      window.alert("admin_id phải là UUID hợp lệ.");
       return;
     }
 
@@ -31,90 +38,77 @@ export function AdminActionLogFilterBar({ filters, onApply, onReset }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      <div>
-        <label className="mb-1 block text-xs font-semibold text-on-surface-variant">Admin ID</label>
-        <input
+    <AdminFilterBar
+      onSubmit={handleSubmit}
+      className="md:grid-cols-2 lg:grid-cols-3"
+      actions={
+        <>
+          <AdminFilterButton type="submit" variant="primary">
+            Áp dụng bộ lọc
+          </AdminFilterButton>
+          <AdminFilterButton type="button" variant="secondary" onClick={onReset}>
+            Xóa bộ lọc
+          </AdminFilterButton>
+        </>
+      }
+    >
+      <AdminFilterField label="Admin ID" htmlFor="audit-admin-id">
+        <AdminFilterInput
+          id="audit-admin-id"
           name="admin_id"
           defaultValue={filters?.admin_id || ""}
           placeholder="uuid"
-          className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
         />
-      </div>
-      <div>
-        <label className="mb-1 block text-xs font-semibold text-on-surface-variant">Action</label>
-        <input
+      </AdminFilterField>
+      <AdminFilterField label="Action" htmlFor="audit-action">
+        <AdminFilterInput
+          id="audit-action"
           name="action"
           defaultValue={filters?.action || ""}
           placeholder="USER_SUSPEND"
-          className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
         />
-      </div>
-      <div>
-        <label className="mb-1 block text-xs font-semibold text-on-surface-variant">Target type</label>
-        <input
+      </AdminFilterField>
+      <AdminFilterField label="Target type" htmlFor="audit-target-type">
+        <AdminFilterInput
+          id="audit-target-type"
           name="target_type"
           defaultValue={filters?.target_type || ""}
           placeholder="USER"
-          className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
         />
-      </div>
-      <div>
-        <label className="mb-1 block text-xs font-semibold text-on-surface-variant">Target ID</label>
-        <input
+      </AdminFilterField>
+      <AdminFilterField label="Target ID" htmlFor="audit-target-id">
+        <AdminFilterInput
+          id="audit-target-id"
           name="target_id"
           defaultValue={filters?.target_id || ""}
           placeholder="uuid / objectId"
-          className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
         />
-      </div>
-      <div>
-        <label className="mb-1 block text-xs font-semibold text-on-surface-variant">Status</label>
-        <select
-          name="status"
-          defaultValue={filters?.status || ""}
-          className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
-        >
+      </AdminFilterField>
+      <AdminFilterField label="Trạng thái" htmlFor="audit-status">
+        <AdminFilterSelect id="audit-status" name="status" defaultValue={filters?.status || ""}>
           {AUDIT_STATUS_OPTIONS.map((option) => (
             <option key={option.value || "all"} value={option.value}>
               {option.label}
             </option>
           ))}
-        </select>
-      </div>
-      <div>
-        <label className="mb-1 block text-xs font-semibold text-on-surface-variant">Tu (ISO local)</label>
-        <input
+        </AdminFilterSelect>
+      </AdminFilterField>
+      <AdminFilterField label="Từ" htmlFor="audit-from">
+        <AdminFilterInput
+          id="audit-from"
           type="datetime-local"
           name="from"
           defaultValue={toLocalInputFromIso(filters?.from)}
-          className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
         />
-      </div>
-      <div>
-        <label className="mb-1 block text-xs font-semibold text-on-surface-variant">Den (ISO local)</label>
-        <input
+      </AdminFilterField>
+      <AdminFilterField label="Đến" htmlFor="audit-to">
+        <AdminFilterInput
+          id="audit-to"
           type="datetime-local"
           name="to"
           defaultValue={toLocalInputFromIso(filters?.to)}
-          className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
         />
-      </div>
-      <div className="flex items-end gap-2 md:col-span-2 lg:col-span-3">
-        <button
-          type="submit"
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-        >
-          Ap dung bo loc
-        </button>
-        <button
-          type="button"
-          onClick={onReset}
-          className="rounded-lg border border-outline-variant px-4 py-2 text-sm font-medium text-on-surface-variant hover:bg-surface-container-low"
-        >
-          Xoa bo loc
-        </button>
-      </div>
-    </form>
+      </AdminFilterField>
+    </AdminFilterBar>
   );
 }

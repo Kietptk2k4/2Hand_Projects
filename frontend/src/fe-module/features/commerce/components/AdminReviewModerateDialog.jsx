@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { AdminFilterButton } from "../../auth/admin/components/ui";
 import {
   ACTION_DESCRIPTIONS,
   ACTION_LABELS,
@@ -45,31 +46,31 @@ export function AdminReviewModerateDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/40 p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-admin-text/40 p-0 sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="moderate-review-title"
     >
-      <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg">
-        <div className="border-b border-outline-variant px-6 py-4">
-          <h2 id="moderate-review-title" className="text-headline-sm font-semibold text-on-surface">
+      <div className="flex max-h-[90dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-admin-border bg-admin-surface shadow-[var(--shadow-admin-surface)] sm:rounded-xl">
+        <div className="border-b border-admin-border-subtle px-4 py-4 sm:px-6">
+          <h2 id="moderate-review-title" className="text-lg font-semibold text-admin-text">
             Kiểm duyệt đánh giá
           </h2>
-          <p className="mt-1 text-body-sm text-on-surface-variant">{review.productTitle}</p>
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-label-sm text-on-surface-variant">
+          <p className="mt-1 text-sm text-admin-text-secondary">{review.productTitle}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-admin-text-muted">
             <span>Người mua: {review.buyerDisplayName || "—"}</span>
             <AdminReviewStatusBadge status={review.status} />
           </div>
         </div>
 
-        <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
-          <div className="rounded-lg border border-outline-variant bg-surface-container-low/50 p-3">
+        <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-6">
+          <div className="rounded-lg border border-admin-border bg-admin-surface-muted/50 p-3">
             <StarRating rating={review.rating ?? 0} />
-            <p className="mt-2 text-body-sm text-on-surface">{review.comment?.trim() || "—"}</p>
-            <dl className="mt-3 grid gap-1 text-label-sm text-on-surface-variant">
+            <p className="mt-2 text-sm text-admin-text">{review.comment?.trim() || "—"}</p>
+            <dl className="mt-3 grid gap-1 text-xs text-admin-text-muted">
               <div className="flex flex-wrap gap-2">
                 <dt className="font-medium">review_id:</dt>
-                <dd className="font-mono break-all">{review.reviewId}</dd>
+                <dd className="break-all font-mono">{review.reviewId}</dd>
               </div>
               <div className="flex flex-wrap gap-2">
                 <dt className="font-medium">order_item_id:</dt>
@@ -79,12 +80,12 @@ export function AdminReviewModerateDialog({
           </div>
 
           <label className="block">
-            <span className="text-label-sm font-medium text-on-surface">Hành động</span>
+            <span className="text-sm font-medium text-admin-text">Hành động</span>
             <select
               value={action}
-              onChange={(e) => setAction(e.target.value)}
+              onChange={(event) => setAction(event.target.value)}
               disabled={isSubmitting || allowedActions.length === 0}
-              className="mt-1 w-full rounded-lg border border-outline-variant px-3 py-2 text-body-sm disabled:opacity-50"
+              className="mt-1 w-full min-h-11 rounded-lg border border-admin-border bg-admin-surface px-3 py-2 text-sm text-admin-text focus:border-admin-accent focus:outline-none focus:ring-2 focus:ring-admin-accent-soft disabled:opacity-50"
             >
               {allowedActions.map((value) => (
                 <option key={value} value={value}>
@@ -93,68 +94,61 @@ export function AdminReviewModerateDialog({
               ))}
             </select>
             {action ? (
-              <p className="mt-1 text-body-sm text-on-surface-variant">
-                {ACTION_DESCRIPTIONS[action]}
-              </p>
+              <p className="mt-1 text-sm text-admin-text-secondary">{ACTION_DESCRIPTIONS[action]}</p>
             ) : null}
           </label>
 
           {showHideWarning ? (
-            <p className="rounded-lg border border-error/20 bg-error-container/30 px-3 py-2 text-body-sm text-on-error-container">
+            <p className="rounded-lg border border-admin-danger/30 bg-admin-danger-soft px-3 py-2 text-sm text-admin-danger">
               {HIDE_WARNING}
             </p>
           ) : null}
 
           {showRemoveWarning ? (
-            <p className="rounded-lg border border-error/20 bg-error-container/30 px-3 py-2 text-body-sm text-on-error-container">
+            <p className="rounded-lg border border-admin-danger/30 bg-admin-danger-soft px-3 py-2 text-sm text-admin-danger">
               {REMOVE_WARNING}
             </p>
           ) : null}
 
           {showRestoreWarning ? (
-            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-body-sm text-amber-950">
+            <p className="rounded-lg border border-admin-warning/30 bg-admin-warning-soft px-3 py-2 text-sm text-admin-text">
               {RESTORE_WARNING}
             </p>
           ) : null}
 
           <label className="block">
-            <span className="text-label-sm font-medium text-on-surface">
-              Lý do <span className="text-error">*</span>
+            <span className="text-sm font-medium text-admin-text">
+              Lý do <span className="text-admin-danger">*</span>
             </span>
             <textarea
               value={reason}
-              onChange={(e) => setReason(e.target.value)}
+              onChange={(event) => setReason(event.target.value)}
               rows={4}
               maxLength={REASON_MAX_LENGTH}
               disabled={isSubmitting}
-              placeholder="Mô tả lý do kiểm duyệt..."
-              className="mt-1 w-full resize-y rounded-lg border border-outline-variant px-3 py-2 text-body-sm disabled:opacity-50"
+              placeholder="Mô tả lý do kiểm duyệt…"
+              className="mt-1 w-full resize-y rounded-lg border border-admin-border bg-admin-surface px-3 py-2 text-sm text-admin-text focus:border-admin-accent focus:outline-none focus:ring-2 focus:ring-admin-accent-soft disabled:opacity-50"
             />
           </label>
-          <p className="text-right text-label-sm text-on-surface-variant">
+          <p className="text-right text-xs text-admin-text-muted">
             {trimmedReason.length}/{REASON_MAX_LENGTH}
           </p>
 
-          {submitError ? <p className="text-sm text-error">{submitError}</p> : null}
+          {submitError ? <p className="text-sm text-admin-danger">{submitError}</p> : null}
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-outline-variant px-6 py-4">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="rounded-lg px-4 py-2 text-label-md text-on-surface-variant hover:bg-surface-container-low disabled:opacity-50"
-          >
+        <div className="flex flex-col-reverse gap-2 border-t border-admin-border-subtle px-4 py-4 sm:flex-row sm:justify-end sm:px-6">
+          <AdminFilterButton type="button" variant="secondary" disabled={isSubmitting} onClick={onClose}>
             Hủy
-          </button>
-          <button
+          </AdminFilterButton>
+          <AdminFilterButton
             type="button"
+            variant="primary"
             disabled={isSubmitting || !trimmedReason || !action}
             onClick={() => onSubmit?.({ action, reason: trimmedReason })}
-            className="rounded-lg bg-primary px-4 py-2 text-label-md font-medium text-on-primary disabled:opacity-50"
           >
-            {isSubmitting ? "Đang xử lý..." : "Xác nhận"}
-          </button>
+            {isSubmitting ? "Đang xử lý…" : "Xác nhận"}
+          </AdminFilterButton>
         </div>
       </div>
     </div>

@@ -29,8 +29,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
-            String token = authHeader.substring(BEARER_PREFIX.length());
-            if (jwtTokenProvider.isValid(token) && SecurityContextHolder.getContext().getAuthentication() == null) {
+            String token = authHeader.substring(BEARER_PREFIX.length()).trim();
+            if (jwtTokenProvider.isValid(token)) {
                 var authorities = jwtTokenProvider.getAuthorities(token);
                 var authentication = new UsernamePasswordAuthenticationToken(
                         jwtTokenProvider.getSubject(token),

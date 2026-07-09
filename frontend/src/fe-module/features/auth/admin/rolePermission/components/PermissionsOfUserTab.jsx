@@ -1,13 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getUserPermissions } from "../../../api/authApi";
 import { useAuthSession } from "../../../hooks/useAuthSession.jsx";
-import {
-  AccountCard,
-  AccountSkeleton,
-  TabPanelHeader,
-} from "../../../../../shared/ui/auth/authUi.jsx";
-import { EmptyState, ErrorState } from "../../../../../shared/ui/PageState.jsx";
+import { PermissionsOfUserTabView } from "./PermissionsOfUserTabView.jsx";
 import { RbacUserListPanel } from "./RbacUserListPanel.jsx";
+
+const TITLE = "Quyền của người dùng";
+const SUBTITLE = "Xem permission hiệu lực của người dùng (chỉ mã permission).";
 
 function groupPermissionsByPrefix(codes) {
   const groups = {};
@@ -77,17 +75,27 @@ export function PermissionsOfUserTab({
     load();
   }, [load]);
 
-  const codes = permissions.map((p) => p.code);
-  const grouped = groupPermissionsByPrefix(codes);
+  const groupedHint = useMemo(() => {
+    const codes = permissions.map((permission) => permission.code);
+    const grouped = groupPermissionsByPrefix(codes);
+    if (Object.keys(grouped).length <= 1) return "";
+    return `Chỉ để hiển thị — nhóm theo prefix: ${Object.entries(grouped)
+      .map(([prefix, items]) => `${prefix} (${items.length})`)
+      .join(", ")}`;
+  }, [permissions]);
 
   return (
-    <div>
-      <TabPanelHeader
-        title="Quyền của người dùng"
-        subtitle="Xem permission hiệu lực của người dùng (chỉ mã permission)."
-      />
-
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)]">
+    <PermissionsOfUserTabView
+      title={TITLE}
+      subtitle={SUBTITLE}
+      rbacSelectedUserId={rbacSelectedUserId}
+      selectedUser={selectedUser}
+      resolvedUserId={resolvedUserId}
+      status={status}
+      errorMessage={errorMessage}
+      permissions={permissions}
+      groupedHint={groupedHint}
+      userListPanel={
         <RbacUserListPanel
           userListFilters={rbacUserListFilters}
           onFiltersChange={onRbacUserListFiltersChange}
@@ -95,60 +103,7 @@ export function PermissionsOfUserTab({
           onUserSelect={handleUserSelect}
           onSelectedUserSync={setSelectedUser}
         />
-
-        <div className="space-y-4">
-          {!rbacSelectedUserId ? (
-            <AccountCard>
-              <p className="text-sm text-on-surface-variant">
-                Chọn một người dùng từ danh sách bên trái để xem quyền.
-              </p>
-            </AccountCard>
-          ) : null}
-
-          {status === "loading" ? <AccountSkeleton /> : null}
-          {status === "forbidden" || status === "not_found" || status === "error" ? (
-            <ErrorState message={errorMessage} />
-          ) : null}
-
-          {status === "ready" ? (
-            <>
-              <AccountCard>
-                <p className="text-sm text-on-surface-variant">User ID</p>
-                <p className="mt-1 break-all font-mono text-sm text-on-surface">{resolvedUserId}</p>
-                {selectedUser ? (
-                  <p className="mt-2 text-sm text-on-surface-variant">Email: {selectedUser.email}</p>
-                ) : null}
-              </AccountCard>
-
-              {permissions.length === 0 ? (
-                <EmptyState message="Người dùng chưa có quyền nào." />
-              ) : (
-                <AccountCard>
-                  <div className="flex flex-wrap gap-2">
-                    {codes.map((code) => (
-                      <span
-                        key={code}
-                        className="inline-flex rounded-full bg-account-surface-low px-3 py-1 text-xs font-semibold text-on-surface"
-                      >
-                        {code}
-                      </span>
-                    ))}
-                  </div>
-
-                  {Object.keys(grouped).length > 1 ? (
-                    <p className="mt-4 text-xs text-on-surface-variant">
-                      Chỉ để hiển thị — nhóm theo prefix:{" "}
-                      {Object.entries(grouped)
-                        .map(([prefix, items]) => `${prefix} (${items.length})`)
-                        .join(", ")}
-                    </p>
-                  ) : null}
-                </AccountCard>
-              )}
-            </>
-          ) : null}
-        </div>
-      </div>
-    </div>
+      }
+    />
   );
 }

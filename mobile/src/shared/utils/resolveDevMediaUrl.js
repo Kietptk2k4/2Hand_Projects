@@ -19,20 +19,55 @@ function isPrivateLanHost(host) {
   return false;
 }
 
+function isPublicGatewayHost(host) {
+  if (!host) return false;
+  return !isPrivateLanHost(host);
+}
+
+function resolveGatewayOrigin() {
+  const base =
+    process.env.EXPO_PUBLIC_AUTH_SERVICE_BASE_URL ||
+    process.env.EXPO_PUBLIC_SOCIAL_SERVICE_BASE_URL ||
+    process.env.EXPO_PUBLIC_COMMERCE_SERVICE_BASE_URL;
+  if (!base) return null;
+  try {
+    return new URL(base).origin;
+  } catch {
+    return null;
+  }
+}
+
+function isTwoHandsObjectPath(pathname) {
+  return TWO_HANDS_BUCKET_SEGMENT.test(pathname || "");
+}
+
 function isDevMinioObjectUrl(parsed) {
-  if (parsed.port !== MINIO_PORT) {
+  if (!isTwoHandsObjectPath(parsed.pathname)) {
     return false;
   }
-  return TWO_HANDS_BUCKET_SEGMENT.test(parsed.pathname);
+  if (parsed.port === MINIO_PORT || parsed.port === "") {
+    return true;
+  }
+  return false;
 }
 
 function rewriteMinioHost(url, devHost) {
   try {
     const parsed = new URL(url);
-    if (!isDevMinioObjectUrl(parsed)) {
+    if (!isTwoHandsObjectPath(parsed.pathname)) {
       return url;
     }
     if (!isPrivateLanHost(parsed.hostname)) {
+      return url;
+    }
+    if (isPublicGatewayHost(devHost)) {
+      const origin = resolveGatewayOrigin();
+      if (!origin) {
+        return url;
+      }
+      return `${origin}${parsed.pathname}${parsed.search}${parsed.hash}`;
+    }
+    if (!isDevMinioObjectUrl(parsed)) {
       return url;
     }
     parsed.hostname = devHost;
@@ -44,6 +79,21 @@ function rewriteMinioHost(url, devHost) {
 }
 
 function resolveUrl(trimmed, devHost) {
+  if (isPublicGatewayHost(devHost)) {
+    const origin = resolveGatewayOrigin();
+    if (origin) {
+      if (/^https?:\/\//i.test(trimmed)) {
+        return rewriteMinioHost(trimmed, devHost);
+      }
+      if (trimmed.startsWith("//")) {
+        return rewriteMinioHost(`https:${trimmed}`, devHost).replace(/^https:/i, "");
+      }
+      if (trimmed.startsWith("/") && isTwoHandsObjectPath(trimmed)) {
+        return `${origin}${trimmed}`;
+      }
+    }
+  }
+
   if (devHost === "localhost") {
     return rewriteMinioHost(trimmed, devHost);
   }

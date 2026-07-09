@@ -72,7 +72,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                     .queryParam("first_login", result.firstLogin())
                     .build(true)
                     .toUri();
-            response.sendRedirect(redirect.toString());
+            redirectAndInvalidateSession(request, response, redirect);
         } catch (AppException ex) {
             String targetRedirectUrl = redirectUriResolver.resolve(request, failureRedirectUrl);
             URI redirect = UriComponentsBuilder.fromUriString(targetRedirectUrl)
@@ -80,7 +80,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                     .queryParam("code", ex.getErrorCode().code())
                     .build(true)
                     .toUri();
-            response.sendRedirect(redirect.toString());
+            redirectAndInvalidateSession(request, response, redirect);
         } catch (Exception ex) {
             String targetRedirectUrl = redirectUriResolver.resolve(request, failureRedirectUrl);
             URI redirect = UriComponentsBuilder.fromUriString(targetRedirectUrl)
@@ -88,8 +88,17 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                     .queryParam("code", ErrorCode.INTERNAL_ERROR.code())
                     .build(true)
                     .toUri();
-            response.sendRedirect(redirect.toString());
+            redirectAndInvalidateSession(request, response, redirect);
         }
+    }
+
+    private static void redirectAndInvalidateSession(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            URI redirect
+    ) throws IOException {
+        OAuthHttpSessionCleaner.invalidate(request);
+        response.sendRedirect(redirect.toString());
     }
 
     private void addAuthCookies(HttpServletResponse response, OAuthLoginResult result) {

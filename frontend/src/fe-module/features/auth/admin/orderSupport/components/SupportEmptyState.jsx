@@ -1,5 +1,9 @@
-import { EmptyState } from "../../../../../shared/ui/PageState.jsx";
+import { AdminSurfaceCard } from "../../components/ui";
 
 export function SupportEmptyState({ message }) {
-  return <EmptyState message={message} />;
+  return (
+    <AdminSurfaceCard padding="lg" className="text-center">
+      <p className="text-sm text-admin-text-secondary">{message}</p>
+    </AdminSurfaceCard>
+  );
 }

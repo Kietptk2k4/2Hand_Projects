@@ -1,95 +1,154 @@
 import { formatDateTime } from "../../../security/utils/formatDateTime.js";
+import {
+  AdminDataTable,
+  AdminDataTableBody,
+  AdminDataTableCell,
+  AdminDataTableHead,
+  AdminDataTableRow,
+  AdminFilterButton,
+  AdminMobileCard,
+  AdminMobileCardList,
+} from "../../components/ui";
+import { AnnouncementSeverityBadge, AnnouncementStatusBadge } from "./ui/SystemOperationsBadges.jsx";
 
-function StatusBadge({ status }) {
-  const tones = {
-    DRAFT: "bg-slate-100 text-slate-700",
-    SENT: "bg-green-100 text-green-800",
-    CANCELLED: "bg-red-100 text-red-800",
-  };
+function AnnouncementMobileCard({ item, onActionRequest }) {
   return (
-    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${tones[status] || "bg-slate-100"}`}>
-      {status}
-    </span>
+    <AdminMobileCard ariaLabel={`Thông báo ${item.title}`}>
+      <div className="flex items-start justify-between gap-2">
+        <p className="min-w-0 flex-1 font-medium text-admin-text">{item.title}</p>
+        <AnnouncementStatusBadge status={item.status} />
+      </div>
+      <p className="mt-2 line-clamp-3 text-xs text-admin-text-secondary">{item.content}</p>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <AnnouncementSeverityBadge severity={item.severity} />
+        <span className="text-xs text-admin-text-muted">Pin: {item.pinned ? "Có" : "Không"}</span>
+      </div>
+      <p className="mt-1 text-xs text-admin-text-muted">
+        {item.sentAt ? formatDateTime(item.sentAt) : "—"}
+      </p>
+      <div className="mt-3 flex flex-wrap justify-end gap-2 border-t border-admin-border-subtle pt-3">
+        {item.status === "DRAFT" ? (
+          <AdminFilterButton
+            type="button"
+            variant="primary"
+            className="min-h-9 w-full text-xs sm:w-auto"
+            onClick={() => onActionRequest?.({ type: "publish", item })}
+          >
+            Publish
+          </AdminFilterButton>
+        ) : null}
+        {item.status === "SENT" ? (
+          <AdminFilterButton
+            type="button"
+            variant="secondary"
+            className="min-h-9 w-full text-xs sm:w-auto"
+            onClick={() => onActionRequest?.({ type: item.pinned ? "unpin" : "pin", item })}
+          >
+            {item.pinned ? "Bỏ pin" : "Pin"}
+          </AdminFilterButton>
+        ) : null}
+        {item.status !== "CANCELLED" ? (
+          <AdminFilterButton
+            type="button"
+            variant="secondary"
+            className="min-h-9 w-full border-admin-danger/30 text-admin-danger hover:bg-admin-danger-soft sm:w-auto"
+            onClick={() => onActionRequest?.({ type: "cancel", item })}
+          >
+            Hủy
+          </AdminFilterButton>
+        ) : null}
+      </div>
+    </AdminMobileCard>
   );
 }
 
-function SeverityBadge({ severity }) {
-  const tones = {
-    INFO: "text-blue-700",
-    WARNING: "text-amber-700",
-    CRITICAL: "text-red-700",
-  };
-  return <span className={`text-xs font-semibold ${tones[severity] || ""}`}>{severity}</span>;
-}
-
 export function SystemAnnouncementTable({ items, onActionRequest }) {
+  if (!items?.length) return null;
+
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full text-left text-sm">
-        <thead className="border-b border-outline-variant text-xs uppercase text-on-surface-variant">
-          <tr>
-            <th className="px-3 py-3">Tiêu đề</th>
-            <th className="px-3 py-3">Mức độ</th>
-            <th className="px-3 py-3">Trạng thái</th>
-            <th className="px-3 py-3">Pin</th>
-            <th className="px-3 py-3">Gửi lúc</th>
-            <th className="px-3 py-3 text-right">Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
+    <>
+      <AdminMobileCardList className="p-4 md:hidden">
+        {items.map((item) => (
+          <AnnouncementMobileCard key={item.announcementId} item={item} onActionRequest={onActionRequest} />
+        ))}
+      </AdminMobileCardList>
+
+      <AdminDataTable minWidth="800px" ariaLabel="Danh sách thông báo hệ thống">
+        <AdminDataTableHead>
+          <AdminDataTableRow>
+            <AdminDataTableCell header>Tiêu đề</AdminDataTableCell>
+            <AdminDataTableCell header>Mức độ</AdminDataTableCell>
+            <AdminDataTableCell header>Trạng thái</AdminDataTableCell>
+            <AdminDataTableCell header className="hidden sm:table-cell">
+              Pin
+            </AdminDataTableCell>
+            <AdminDataTableCell header className="hidden md:table-cell">
+              Gửi lúc
+            </AdminDataTableCell>
+            <AdminDataTableCell header className="text-right">
+              Thao tác
+            </AdminDataTableCell>
+          </AdminDataTableRow>
+        </AdminDataTableHead>
+        <AdminDataTableBody>
           {items.map((item) => (
-            <tr key={item.announcementId} className="border-b border-outline-variant/60 hover:bg-surface-container-low">
-              <td className="px-3 py-3">
-                <p className="font-medium text-on-surface">{item.title}</p>
-                <p className="mt-1 line-clamp-2 text-xs text-on-surface-variant">{item.content}</p>
-              </td>
-              <td className="px-3 py-3">
-                <SeverityBadge severity={item.severity} />
-              </td>
-              <td className="px-3 py-3">
-                <StatusBadge status={item.status} />
-              </td>
-              <td className="px-3 py-3 text-xs">{item.pinned ? "Có" : "Không"}</td>
-              <td className="px-3 py-3 text-xs text-on-surface-variant">
-                {item.sentAt ? formatDateTime(item.sentAt) : "-"}
-              </td>
-              <td className="px-3 py-3">
+            <AdminDataTableRow key={item.announcementId}>
+              <AdminDataTableCell>
+                <p className="font-medium text-admin-text">{item.title}</p>
+                <p className="mt-1 line-clamp-2 text-xs text-admin-text-secondary">{item.content}</p>
+              </AdminDataTableCell>
+              <AdminDataTableCell>
+                <AnnouncementSeverityBadge severity={item.severity} />
+              </AdminDataTableCell>
+              <AdminDataTableCell>
+                <AnnouncementStatusBadge status={item.status} />
+              </AdminDataTableCell>
+              <AdminDataTableCell className="hidden text-xs sm:table-cell">
+                {item.pinned ? "Có" : "Không"}
+              </AdminDataTableCell>
+              <AdminDataTableCell className="hidden text-xs text-admin-text-secondary md:table-cell">
+                {item.sentAt ? formatDateTime(item.sentAt) : "—"}
+              </AdminDataTableCell>
+              <AdminDataTableCell>
                 <div className="flex flex-wrap justify-end gap-2">
                   {item.status === "DRAFT" ? (
-                    <button
+                    <AdminFilterButton
                       type="button"
+                      variant="primary"
+                      className="min-h-9 px-2.5 py-1 text-xs"
                       onClick={() => onActionRequest?.({ type: "publish", item })}
-                      className="rounded-lg bg-primary px-2.5 py-1 text-xs font-semibold text-white"
                     >
                       Publish
-                    </button>
+                    </AdminFilterButton>
                   ) : null}
                   {item.status === "SENT" ? (
-                    <button
+                    <AdminFilterButton
                       type="button"
+                      variant="secondary"
+                      className="min-h-9 px-2.5 py-1 text-xs"
                       onClick={() =>
                         onActionRequest?.({ type: item.pinned ? "unpin" : "pin", item })
                       }
-                      className="rounded-lg border border-outline-variant px-2.5 py-1 text-xs font-medium"
                     >
                       {item.pinned ? "Bỏ pin" : "Pin"}
-                    </button>
+                    </AdminFilterButton>
                   ) : null}
                   {item.status !== "CANCELLED" ? (
-                    <button
+                    <AdminFilterButton
                       type="button"
+                      variant="secondary"
+                      className="min-h-9 border-admin-danger/30 px-2.5 py-1 text-xs text-admin-danger hover:bg-admin-danger-soft"
                       onClick={() => onActionRequest?.({ type: "cancel", item })}
-                      className="rounded-lg border border-error/40 px-2.5 py-1 text-xs font-medium text-error"
                     >
                       Hủy
-                    </button>
+                    </AdminFilterButton>
                   ) : null}
                 </div>
-              </td>
-            </tr>
+              </AdminDataTableCell>
+            </AdminDataTableRow>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </AdminDataTableBody>
+      </AdminDataTable>
+    </>
   );
 }

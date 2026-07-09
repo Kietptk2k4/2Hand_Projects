@@ -1,13 +1,13 @@
 export const COMMENT_MODERATION_LIST_PAGE_SIZE = 20;
 
 export const COMMENT_MODERATION_LIST_SORT_OPTIONS = [
-  { value: "created_at", label: "Ngay tao (moi nhat)" },
-  { value: "updated_at", label: "Cap nhat gan day" },
-  { value: "like_count", label: "Luot thich" },
+  { value: "created_at", label: "Ngày tạo (mới nhất)" },
+  { value: "updated_at", label: "Cập nhật gần đây" },
+  { value: "like_count", label: "Lượt thích" },
 ];
 
 export const COMMENT_MODERATION_LIST_STATUS_OPTIONS = [
-  { value: "", label: "Tat ca trang thai" },
+  { value: "", label: "Tất cả trạng thái" },
   { value: "ACTIVE", label: "ACTIVE" },
   { value: "DELETED", label: "DELETED" },
 ];

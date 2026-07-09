@@ -1,0 +1,64 @@
+# 2Hands remote dev demo - unified ngrok gateway (B1).
+#
+# Exposes API + frontend (production build) + MinIO through one HTTPS URL.
+#
+# Prerequisites:
+#   1. Copy Infrastructure/.env.example -> Infrastructure/.env and set NGROK_AUTHTOKEN
+#   2. Start app services (profile dev or apps), then build FE: ./scripts/build-frontend-ngrok.ps1
+#   3. Copy Services/*/.env.docker.ngrok.example -> .env.docker.local and set GATEWAY_HTTPS_URL
+#
+# Usage (with dev hot-reload backends):
+#   cd Infrastructure
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.ngrok.yml --profile dev --profile ngrok up -d
+#
+# Print public URL + env checklist:
+#   ./scripts/print-ngrok-urls.ps1
+#
+# ngrok inspect dashboard: http://localhost:4040
+
+services:
+  dev-gateway:
+    image: nginx:1.27-alpine
+    container_name: dev-gateway
+    profiles:
+      - ngrok
+    restart: unless-stopped
+    networks:
+      - default
+    volumes:
+      - ./nginx/dev-gateway.conf:/etc/nginx/conf.d/default.conf:ro
+      - ../frontend/dist:/usr/share/nginx/html:ro
+    expose:
+      - "8080"
+    depends_on:
+      auth-service:
+        condition: service_started
+      social-service:
+        condition: service_started
+      commerce-service:
+        condition: service_started
+      admin-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
+      minio:
+        condition: service_started
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ngrok-gateway
+    profiles:
+      - ngrok
+    restart: unless-stopped
+    command:
+      - http
+      - dev-gateway:8080
+      - --log=stdout
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN:?Set NGROK_AUTHTOKEN in Infrastructure/.env - see .env.example}
+    ports:
+      - "4040:4040"
+    networks:
+      - default
+    depends_on:
+      - dev-gateway

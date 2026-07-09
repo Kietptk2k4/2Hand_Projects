@@ -1,4 +1,5 @@
 # PayOS local dev - ngrok tunnel to commerce-service on the host (port 3003).
+# LEGACY: prefer unified gateway in docker-compose.ngrok.yml (profile ngrok).
 #
 # Prerequisites:
 #   1. Copy Infrastructure/.env.example -> Infrastructure/.env and set NGROK_AUTHTOKEN

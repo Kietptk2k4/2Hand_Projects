@@ -31,7 +31,7 @@ function isSafeRedirectUrl(value) {
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setSession } = useAuthSession();
+  const { setSession, hideSessionExpired } = useAuthSession();
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({ email: "", password: "" });
   const [globalError, setGlobalError] = useState("");
@@ -45,6 +45,10 @@ export function LoginPage() {
     const value = params.get("redirectUrl");
     return isSafeRedirectUrl(value) ? value : APP_ROUTES.socialFeed;
   }, [location.search]);
+
+  useEffect(() => {
+    hideSessionExpired();
+  }, [hideSessionExpired]);
 
   useEffect(() => {
     if (location.state?.logoutMessage) {
@@ -96,6 +100,7 @@ export function LoginPage() {
         user: loginData.user,
         sessionKind: USER_SESSION_KIND,
       });
+      hideSessionExpired();
 
       const isPendingVerification = loginData?.user?.status === "PENDING_VERIFICATION";
       navigate(isPendingVerification ? APP_ROUTES.verifyEmail : redirectUrl, {

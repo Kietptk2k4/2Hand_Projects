@@ -12,12 +12,20 @@ import {
   buildEnforcementPayload,
   validateEnforcementForm,
 } from "../../utils/enforcementFormUtils.js";
+import { AdminFilterButton } from "../../../components/ui";
 import { InvestigationModalShell } from "./InvestigationModalShell.jsx";
+import { EnforcementApplyModalView } from "./EnforcementApplyModalView.jsx";
 
 const SUBMITTERS = {
   suspend: suspendUser,
   restrict: restrictUser,
   ban: banUser,
+};
+
+const CONFIRM_VARIANT = {
+  ban: "bg-admin-danger text-white hover:bg-admin-danger/90",
+  suspend: "bg-admin-warning text-white hover:bg-admin-warning/90",
+  restrict: "bg-admin-accent text-white hover:bg-admin-accent-strong",
 };
 
 export function EnforcementApplyModal({
@@ -93,124 +101,35 @@ export function EnforcementApplyModal({
       onClose={onClose}
       footer={
         <>
-          <button
+          <AdminFilterButton type="button" variant="secondary" disabled={isSubmitting} onClick={onClose}>
+            Hủy
+          </AdminFilterButton>
+          <AdminFilterButton
             type="button"
-            onClick={onClose}
+            variant="primary"
             disabled={isSubmitting}
-            className="rounded-lg border border-outline-variant px-4 py-2 text-sm font-medium text-on-surface-variant hover:bg-surface-container-low disabled:opacity-50"
-          >
-            Huy
-          </button>
-          <button
-            type="button"
+            className={CONFIRM_VARIANT[actionType] ?? ""}
             onClick={onSubmit}
-            disabled={isSubmitting}
-            className={[
-              "rounded-lg px-4 py-2 text-sm font-semibold shadow-sm disabled:cursor-not-allowed disabled:opacity-50",
-              config.confirmClass,
-            ].join(" ")}
           >
-            {isSubmitting ? "Đang xử lý..." : config.confirmLabel}
-          </button>
+            {isSubmitting ? "Đang xử lý…" : config.confirmLabel}
+          </AdminFilterButton>
         </>
       }
     >
-      <div className="space-y-5">
-        <div className="flex items-start gap-2 rounded-lg border border-error-container bg-error-container/30 p-3 text-sm text-on-error-container">
-          <span aria-hidden>i</span>
-          <p>{config.warning}</p>
-        </div>
-
-        <div>
-          <label htmlFor="enforcement-reason" className="mb-1 block text-sm font-medium text-on-surface">
-            {config.reasonLabel} <span className="text-error">*</span>
-          </label>
-          <select
-            id="enforcement-reason"
-            value={reasonCode}
-            onChange={(e) => setReasonCode(e.target.value)}
-            className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-          >
-            <option value="">Chọn lý do</option>
-            {ENFORCEMENT_REASON_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          {fieldErrors.reasonCode ? (
-            <p className="mt-1 text-sm text-error">{fieldErrors.reasonCode}</p>
-          ) : null}
-        </div>
-
-        <div>
-          <label htmlFor="enforcement-description" className="mb-1 block text-sm font-medium text-on-surface">
-            Mô tả chi tiết <span className="text-error">*</span>
-          </label>
-          <textarea
-            id="enforcement-description"
-            rows={3}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Nhập chi tiết vi phạm..."
-            className="w-full resize-none rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-          />
-          {fieldErrors.description ? (
-            <p className="mt-1 text-sm text-error">{fieldErrors.description}</p>
-          ) : null}
-        </div>
-
-        {config.supportsTemporary ? (
-          <div className="space-y-3">
-            <p className="text-sm font-medium text-on-surface">{config.durationLabel}</p>
-            <div className="flex rounded-lg bg-surface-container-low p-1">
-              <button
-                type="button"
-                onClick={() => setDurationMode("temporary")}
-                className={[
-                  "flex-1 rounded-md py-2 text-sm font-medium transition-colors",
-                  durationMode === "temporary"
-                    ? "border border-outline-variant/20 bg-surface-container-lowest text-on-surface shadow-sm"
-                    : "text-on-surface-variant hover:text-on-surface",
-                ].join(" ")}
-              >
-                Tạm thời
-              </button>
-              <button
-                type="button"
-                onClick={() => setDurationMode("permanent")}
-                className={[
-                  "flex-1 rounded-md py-2 text-sm font-medium transition-colors",
-                  durationMode === "permanent"
-                    ? "border border-outline-variant/20 bg-surface-container-lowest text-on-surface shadow-sm"
-                    : "text-on-surface-variant hover:text-on-surface",
-                ].join(" ")}
-              >
-                Vĩnh viễn
-              </button>
-            </div>
-            {durationMode === "temporary" ? (
-              <div>
-                <label htmlFor="enforcement-expires" className="mb-1 block text-xs text-on-surface-variant">
-                  Đến ngày
-                </label>
-                <input
-                  id="enforcement-expires"
-                  type="datetime-local"
-                  value={expiresAt}
-                  onChange={(e) => setExpiresAt(e.target.value)}
-                  className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                />
-                {fieldErrors.expiresAt ? (
-                  <p className="mt-1 text-sm text-error">{fieldErrors.expiresAt}</p>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-
-        {submitError ? <p className="text-sm text-error">{submitError}</p> : null}
-      </div>
+      <EnforcementApplyModalView
+        config={config}
+        reasonCode={reasonCode}
+        description={description}
+        durationMode={durationMode}
+        expiresAt={expiresAt}
+        fieldErrors={fieldErrors}
+        submitError={submitError}
+        reasonOptions={ENFORCEMENT_REASON_OPTIONS}
+        onReasonChange={setReasonCode}
+        onDescriptionChange={setDescription}
+        onDurationModeChange={setDurationMode}
+        onExpiresAtChange={setExpiresAt}
+      />
     </InvestigationModalShell>
   );
 }

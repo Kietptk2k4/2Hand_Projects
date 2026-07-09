@@ -1,7 +1,31 @@
 import {
+  AdminFilterBar,
+  AdminFilterField,
+  AdminFilterInput,
+  AdminFilterSelect,
+} from "../../auth/admin/components/ui";
+import {
   RATING_FILTER_OPTIONS,
   REVIEW_STATUS_FILTER_TABS,
 } from "../constants/adminReviewModerationConstants";
+
+function StatusChip({ active, disabled, onClick, children }) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={[
+        "inline-flex min-h-9 items-center rounded-full border px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+        active
+          ? "border-admin-accent bg-admin-accent-soft text-admin-accent-strong"
+          : "border-admin-border text-admin-text-secondary hover:border-admin-accent/40 hover:text-admin-accent",
+      ].join(" ")}
+    >
+      {children}
+    </button>
+  );
+}
 
 export function AdminReviewModerationFilters({
   activeStatusTabId,
@@ -14,69 +38,54 @@ export function AdminReviewModerationFilters({
   disabled,
 }) {
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+    <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
-        {REVIEW_STATUS_FILTER_TABS.map((tab) => {
-          const active = tab.id === activeStatusTabId;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              disabled={disabled}
-              onClick={() => onStatusChange(tab.id)}
-              className={[
-                "rounded-full border px-4 py-1.5 text-label-sm transition-colors disabled:opacity-50",
-                active
-                  ? "border-primary bg-primary/10 font-medium text-primary"
-                  : "border-outline-variant text-on-surface-variant hover:border-primary/50 hover:text-primary",
-              ].join(" ")}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
+        {REVIEW_STATUS_FILTER_TABS.map((tab) => (
+          <StatusChip
+            key={tab.id}
+            active={tab.id === activeStatusTabId}
+            disabled={disabled}
+            onClick={() => onStatusChange(tab.id)}
+          >
+            {tab.label}
+          </StatusChip>
+        ))}
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <form
-          className="relative min-w-[220px] flex-1"
-          onSubmit={(e) => {
-            e.preventDefault();
-            onSearchSubmit?.();
-          }}
-        >
-          <span
-            className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-on-surface-variant"
-            aria-hidden="true"
-          >
-            search
-          </span>
-          <input
+      <AdminFilterBar
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSearchSubmit?.();
+        }}
+      >
+        <AdminFilterField label="Tìm kiếm" htmlFor="review-mod-search" className="lg:col-span-2">
+          <AdminFilterInput
+            id="review-mod-search"
             type="search"
             value={searchInput}
-            onChange={(e) => onSearchInputChange(e.target.value)}
+            onChange={(event) => onSearchInputChange(event.target.value)}
             disabled={disabled}
-            placeholder="Tìm theo Order ID..."
-            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest py-2 pl-10 pr-3 text-body-sm disabled:opacity-50"
+            placeholder="Tìm theo Order ID…"
           />
-        </form>
+        </AdminFilterField>
 
-        <select
-          value={ratingFilter ?? ""}
-          onChange={(e) =>
-            onRatingChange(e.target.value ? Number(e.target.value) : null)
-          }
-          disabled={disabled}
-          className="min-w-[140px] rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm disabled:opacity-50"
-          aria-label="Lọc theo số sao"
-        >
-          {RATING_FILTER_OPTIONS.map((opt) => (
-            <option key={opt.value || "all"} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      </div>
+        <AdminFilterField label="Số sao" htmlFor="review-mod-rating">
+          <AdminFilterSelect
+            id="review-mod-rating"
+            value={ratingFilter ?? ""}
+            onChange={(event) =>
+              onRatingChange(event.target.value ? Number(event.target.value) : null)
+            }
+            disabled={disabled}
+          >
+            {RATING_FILTER_OPTIONS.map((opt) => (
+              <option key={opt.value || "all"} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </AdminFilterSelect>
+        </AdminFilterField>
+      </AdminFilterBar>
     </div>
   );
 }

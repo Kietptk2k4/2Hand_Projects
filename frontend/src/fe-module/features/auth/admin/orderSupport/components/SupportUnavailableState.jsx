@@ -1,10 +1,10 @@
-import { AccountCard } from "../../../../../shared/ui/auth/authUi.jsx";
+import { AdminSurfaceCard } from "../../components/ui";
 import { ORDER_SUPPORT_COMMERCE_UNAVAILABLE } from "../constants/orderSupportUiStrings.js";
 
 export function SupportUnavailableState({ message = ORDER_SUPPORT_COMMERCE_UNAVAILABLE }) {
   return (
-    <AccountCard className="border-outline-variant bg-surface-container-low">
-      <p className="text-sm text-on-surface-variant">{message}</p>
-    </AccountCard>
+    <AdminSurfaceCard padding="lg" className="border-admin-border bg-admin-surface-muted/50">
+      <p className="text-sm text-admin-text-secondary">{message}</p>
+    </AdminSurfaceCard>
   );
 }

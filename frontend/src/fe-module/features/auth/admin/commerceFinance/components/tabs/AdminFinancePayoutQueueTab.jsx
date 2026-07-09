@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuthSession } from "../../../../hooks/useAuthSession.jsx";
-import { AccountCard, AccountSkeleton, TabPanelHeader } from "../../../../../../shared/ui/auth/authUi.jsx";
-import { ErrorState } from "../../../../../../shared/ui/PageState.jsx";
 import {
   approveAdminPayoutRequest,
   fetchAdminPayoutQueue,
@@ -11,11 +9,8 @@ import {
 import {
   applyPayoutQueueAfterAction,
   mapPayoutQueueResponse,
-  PAYOUT_STATUS_LABELS,
 } from "../../utils/adminFinancePayoutMapper.js";
-import { formatVndPrice } from "../../../../../social/utils/formatPrice";
-
-const STATUS_OPTIONS = ["", "REQUESTED", "APPROVED", "PAID", "REJECTED", "CANCELLED"];
+import { AdminFinancePayoutQueueView } from "../AdminFinancePayoutQueueView.jsx";
 
 export function AdminFinancePayoutQueueTab({ onNotify }) {
   const { showSessionExpired } = useAuthSession();
@@ -91,119 +86,19 @@ export function AdminFinancePayoutQueueTab({ onNotify }) {
   );
 
   return (
-    <AccountCard>
-      <TabPanelHeader
-        title="Hàng đợi rút tiền"
-        subtitle="Duyệt, từ chối hoặc ghi nhận chuyển khoản cho seller."
-      />
-
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <label className="text-body-sm text-on-surface-variant">
-          Trạng thái
-          <select
-            className="ml-2 rounded-lg border border-outline-variant bg-surface px-3 py-2 text-body-md"
-            value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value)}
-          >
-            {STATUS_OPTIONS.map((value) => (
-              <option key={value || "all"} value={value}>
-                {value ? PAYOUT_STATUS_LABELS[value] || value : "Tất cả"}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button
-          type="button"
-          onClick={load}
-          disabled={loadStatus === "loading"}
-          className="rounded-lg border border-outline-variant px-3 py-2 text-label-md hover:bg-surface-container-high disabled:opacity-60"
-        >
-          Làm mới
-        </button>
-      </div>
-
-      {loadStatus === "loading" ? <AccountSkeleton rows={4} /> : null}
-      {loadStatus === "error" ? <ErrorState message={errorMessage} onRetry={load} /> : null}
-
-      {loadStatus === "ready" ? (
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-body-sm">
-            <thead className="border-b border-outline-variant text-on-surface-variant">
-              <tr>
-                <th className="px-3 py-2">Thời gian</th>
-                <th className="px-3 py-2">Seller</th>
-                <th className="px-3 py-2">Số tiền</th>
-                <th className="px-3 py-2">Tài khoản</th>
-                <th className="px-3 py-2">Trạng thái</th>
-                <th className="px-3 py-2">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {queue.items.length ? (
-                queue.items.map((item) => (
-                  <tr key={item.id} className="border-b border-outline-variant/50">
-                    <td className="px-3 py-2">
-                      {item.requestedAt ? new Date(item.requestedAt).toLocaleString("vi-VN") : "—"}
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs">{item.sellerId}</td>
-                    <td className="px-3 py-2 font-medium">{formatVndPrice(item.amount)}</td>
-                    <td className="px-3 py-2">
-                      <div>{item.bankName}</div>
-                      <div className="text-on-surface-variant">
-                        {item.bankAccountName} · {item.bankAccountNumber}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2">{PAYOUT_STATUS_LABELS[item.status] || item.status}</td>
-                    <td className="px-3 py-2">
-                      <div className="flex flex-wrap gap-2">
-                        {item.status === "REQUESTED" ? (
-                          <>
-                            <button
-                              type="button"
-                              disabled={actionId === item.id}
-                              onClick={() => runAction(item.id, "approve")}
-                              className="rounded bg-primary-container px-2 py-1 text-label-sm text-on-primary-container"
-                            >
-                              Duyệt
-                            </button>
-                            <button
-                              type="button"
-                              disabled={actionId === item.id}
-                              onClick={() => runAction(item.id, "reject")}
-                              className="rounded border border-outline-variant px-2 py-1 text-label-sm"
-                            >
-                              Từ chối
-                            </button>
-                          </>
-                        ) : null}
-                        {item.status === "APPROVED" ? (
-                          <button
-                            type="button"
-                            disabled={actionId === item.id}
-                            onClick={() => runAction(item.id, "mark-paid")}
-                            className="rounded bg-tertiary-container px-2 py-1 text-label-sm text-on-tertiary-container"
-                          >
-                            Đã chuyển
-                          </button>
-                        ) : null}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} className="px-3 py-8 text-center text-on-surface-variant">
-                    Không có yêu cầu rút tiền.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          <p className="mt-3 text-body-sm text-on-surface-variant">
-            Tổng {queue.pagination.totalItems} yêu cầu
-          </p>
-        </div>
-      ) : null}
-    </AccountCard>
+    <AdminFinancePayoutQueueView
+      title="Hàng đợi rút tiền"
+      subtitle="Duyệt, từ chối hoặc ghi nhận chuyển khoản cho seller."
+      statusFilter={statusFilter}
+      loadStatus={loadStatus}
+      errorMessage={errorMessage}
+      items={queue.items}
+      totalItems={queue.pagination.totalItems}
+      actionId={actionId}
+      onStatusChange={setStatusFilter}
+      onRefresh={load}
+      onAction={runAction}
+      onRetry={load}
+    />
   );
 }

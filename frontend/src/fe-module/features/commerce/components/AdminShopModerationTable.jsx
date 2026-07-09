@@ -1,4 +1,14 @@
 import { formatShortSellerId, formatShortShopId } from "../utils/formatShortShopId";
+import {
+  AdminDataTable,
+  AdminDataTableBody,
+  AdminDataTableCell,
+  AdminDataTableHead,
+  AdminDataTableRow,
+  AdminFilterButton,
+  AdminMobileCard,
+  AdminMobileCardList,
+} from "../../auth/admin/components/ui";
 import { AdminShopStatusBadge } from "./AdminShopStatusBadge";
 
 function formatCreatedDate(iso) {
@@ -18,80 +28,112 @@ export function AdminShopModerationTable({ items, disabled, onModerate }) {
   if (!items?.length) return null;
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-left">
-        <thead>
-          <tr className="border-b border-outline-variant bg-surface-container-low">
-            <th className="p-4 text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
-              Thông tin shop
-            </th>
-            <th className="p-4 text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
-              Seller ID
-            </th>
-            <th className="p-4 text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
-              Trạng thái
-            </th>
-            <th className="p-4 text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
-              Ngày tạo
-            </th>
-            <th className="p-4 text-right text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
-              Thao tác
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-outline-variant">
-          {items.map((shop) => (
-            <tr
-              key={shop.shopId}
-              className="group transition-colors hover:bg-surface-container-low/40"
+    <>
+      <AdminMobileCardList>
+        {items.map((shop) => (
+          <AdminMobileCard key={shop.shopId}>
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-admin-border bg-admin-surface-muted">
+                {shop.logoUrl ? (
+                  <img src={shop.logoUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="material-symbols-outlined text-admin-text-muted" aria-hidden="true">
+                    storefront
+                  </span>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="line-clamp-2 text-sm font-medium text-admin-text">{shop.shopName}</p>
+                <p className="mt-0.5 font-mono text-xs text-admin-text-muted">
+                  {formatShortShopId(shop.shopId)}
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <AdminShopStatusBadge status={shop.status} />
+                  <span className="text-xs text-admin-text-secondary">
+                    Seller {formatShortSellerId(shop.sellerId)}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-admin-text-muted">
+                  Tạo {formatCreatedDate(shop.createdAt)}
+                </p>
+              </div>
+            </div>
+            <AdminFilterButton
+              type="button"
+              variant="secondary"
+              className="mt-3 w-full"
+              disabled={disabled}
+              onClick={() => onModerate?.(shop)}
             >
-              <td className="p-4">
+              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                gavel
+              </span>
+              Kiểm duyệt
+            </AdminFilterButton>
+          </AdminMobileCard>
+        ))}
+      </AdminMobileCardList>
+
+      <AdminDataTable minWidth="760px" ariaLabel="Danh sách shop kiểm duyệt">
+        <AdminDataTableHead>
+          <AdminDataTableRow>
+            <AdminDataTableCell header>Thông tin shop</AdminDataTableCell>
+            <AdminDataTableCell header>Seller ID</AdminDataTableCell>
+            <AdminDataTableCell header>Trạng thái</AdminDataTableCell>
+            <AdminDataTableCell header>Ngày tạo</AdminDataTableCell>
+            <AdminDataTableCell header className="text-right">
+              Thao tác
+            </AdminDataTableCell>
+          </AdminDataTableRow>
+        </AdminDataTableHead>
+        <AdminDataTableBody>
+          {items.map((shop) => (
+            <AdminDataTableRow key={shop.shopId}>
+              <AdminDataTableCell>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-outline-variant bg-surface-container-high">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-admin-border bg-admin-surface-muted">
                     {shop.logoUrl ? (
                       <img src={shop.logoUrl} alt="" className="h-full w-full object-cover" />
                     ) : (
-                      <span className="material-symbols-outlined text-on-surface-variant">
+                      <span className="material-symbols-outlined text-admin-text-muted" aria-hidden="true">
                         storefront
                       </span>
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="line-clamp-2 text-label-md font-medium text-on-surface group-hover:text-primary">
-                      {shop.shopName}
-                    </p>
-                    <p className="font-mono text-body-sm text-on-surface-variant">
+                    <p className="line-clamp-2 text-sm font-medium text-admin-text">{shop.shopName}</p>
+                    <p className="font-mono text-xs text-admin-text-muted">
                       {formatShortShopId(shop.shopId)}
                     </p>
                   </div>
                 </div>
-              </td>
-              <td className="p-4 font-mono text-body-sm text-on-surface-variant">
+              </AdminDataTableCell>
+              <AdminDataTableCell className="font-mono text-xs text-admin-text-secondary">
                 {formatShortSellerId(shop.sellerId)}
-              </td>
-              <td className="p-4">
+              </AdminDataTableCell>
+              <AdminDataTableCell>
                 <AdminShopStatusBadge status={shop.status} />
-              </td>
-              <td className="p-4 text-body-sm text-on-surface-variant">
+              </AdminDataTableCell>
+              <AdminDataTableCell className="text-sm text-admin-text-secondary">
                 {formatCreatedDate(shop.createdAt)}
-              </td>
-              <td className="p-4 text-right">
-                <button
+              </AdminDataTableCell>
+              <AdminDataTableCell className="text-right">
+                <AdminFilterButton
                   type="button"
+                  variant="secondary"
                   disabled={disabled}
                   onClick={() => onModerate?.(shop)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-outline-variant px-3 py-1.5 text-label-sm font-medium text-on-surface transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
                 >
                   <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                     gavel
                   </span>
-                  Moderate
-                </button>
-              </td>
-            </tr>
+                  Kiểm duyệt
+                </AdminFilterButton>
+              </AdminDataTableCell>
+            </AdminDataTableRow>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </AdminDataTableBody>
+      </AdminDataTable>
+    </>
   );
 }

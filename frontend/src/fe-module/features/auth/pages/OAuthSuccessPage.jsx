@@ -13,7 +13,7 @@ function isSafeRedirectUrl(value) {
 export function OAuthSuccessPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setSession } = useAuthSession();
+  const { setSession, hideSessionExpired } = useAuthSession();
   const [errorMessage, setErrorMessage] = useState("");
 
   const redirectUrl = useMemo(() => {
@@ -46,6 +46,7 @@ export function OAuthSuccessPage() {
           user: sessionData.user,
           sessionKind: USER_SESSION_KIND,
         });
+        hideSessionExpired();
 
         const isPendingVerification = sessionData?.user?.status === "PENDING_VERIFICATION";
         navigate(isPendingVerification ? APP_ROUTES.verifyEmail : redirectUrl, {
@@ -61,7 +62,7 @@ export function OAuthSuccessPage() {
     return () => {
       cancelled = true;
     };
-  }, [location.search, navigate, redirectUrl, setSession]);
+  }, [hideSessionExpired, location.search, navigate, redirectUrl, setSession]);
 
   if (errorMessage) {
     return (

@@ -1,6 +1,4 @@
 import { useMemo } from "react";
-import { AccountCard, AccountSkeleton, TabPanelHeader } from "../../../../../../shared/ui/auth/authUi.jsx";
-import { ErrorState } from "../../../../../../shared/ui/PageState.jsx";
 import { AUDIT_PAGE_SIZE } from "../../constants/adminAuditConstants.js";
 import {
   ADMIN_AUDIT_LOGS_EMPTY,
@@ -11,10 +9,7 @@ import {
 import { useAdminAuditPermissions } from "../../hooks/useAdminAuditPermissions.js";
 import { useAdminActionLogs } from "../../hooks/useAdminActionLogs.js";
 import { AdminActionLogDetailDrawer } from "../AdminActionLogDetailDrawer.jsx";
-import { AdminActionLogFilterBar } from "../AdminActionLogFilterBar.jsx";
-import { AdminActionLogsTable } from "../AdminActionLogsTable.jsx";
-import { AuditEmptyState } from "../AuditEmptyState.jsx";
-import { AuditForbiddenState } from "../AuditForbiddenState.jsx";
+import { AdminActionLogsTabView } from "./AdminActionLogsTabView.jsx";
 
 export function AdminActionLogsTab({
   logId,
@@ -60,97 +55,47 @@ export function AdminActionLogsTab({
 
   const summary = useMemo(() => {
     if (!result) return "";
-    return `${result.totalElements} ban ghi · trang ${result.page}/${Math.max(result.totalPages, 1)}`;
+    return `${result.totalElements} bản ghi · trang ${result.page}/${Math.max(result.totalPages, 1)}`;
   }, [result]);
 
-  if (!canViewAudit) {
-    return (
-      <div className="space-y-6">
-        <TabPanelHeader title={ADMIN_AUDIT_LOGS_TITLE} subtitle={ADMIN_AUDIT_LOGS_SUBTITLE} />
-        <AuditForbiddenState message={ADMIN_AUDIT_LOGS_FORBIDDEN} />
-      </div>
-    );
-  }
+  const filterKey = [
+    auditFilters?.admin_id,
+    auditFilters?.action,
+    auditFilters?.target_type,
+    auditFilters?.target_id,
+    auditFilters?.status,
+    auditFilters?.from,
+    auditFilters?.to,
+  ].join("|");
 
   return (
-    <div className="space-y-6">
-      <TabPanelHeader title={ADMIN_AUDIT_LOGS_TITLE} subtitle={ADMIN_AUDIT_LOGS_SUBTITLE} />
-
-      <AccountCard>
-        <AdminActionLogFilterBar
-          key={[
-            auditFilters?.admin_id,
-            auditFilters?.action,
-            auditFilters?.target_type,
-            auditFilters?.target_id,
-            auditFilters?.status,
-            auditFilters?.from,
-            auditFilters?.to,
-          ].join("|")}
-          filters={auditFilters}
-          onApply={handleApplyFilters}
-          onReset={handleResetFilters}
+    <AdminActionLogsTabView
+      title={ADMIN_AUDIT_LOGS_TITLE}
+      subtitle={ADMIN_AUDIT_LOGS_SUBTITLE}
+      canViewAudit={canViewAudit}
+      forbiddenMessage={ADMIN_AUDIT_LOGS_FORBIDDEN}
+      filterKey={filterKey}
+      auditFilters={auditFilters}
+      status={status}
+      errorMessage={errorMessage}
+      result={result}
+      summary={summary}
+      currentPage={currentPage}
+      totalPages={totalPages}
+      logId={logId}
+      emptyMessage={ADMIN_AUDIT_LOGS_EMPTY}
+      onApplyFilters={handleApplyFilters}
+      onResetFilters={handleResetFilters}
+      onPageChange={handlePageChange}
+      onSelectLog={onLogIdChange}
+      onRetry={refetch}
+      drawer={
+        <AdminActionLogDetailDrawer
+          logId={logId}
+          onClose={() => onLogIdChange?.(null)}
+          onNotify={onNotify}
         />
-      </AccountCard>
-
-      {status === "loading" ? <AccountSkeleton /> : null}
-
-      {status === "forbidden" ? <AuditForbiddenState message={errorMessage} /> : null}
-
-      {status === "error" ? (
-        <AccountCard className="border-error/30">
-          <ErrorState message={errorMessage} />
-          <button
-            type="button"
-            onClick={refetch}
-            className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white"
-          >
-            Thu lai
-          </button>
-        </AccountCard>
-      ) : null}
-
-      {status === "ready" ? (
-        <AccountCard>
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-on-surface-variant">{summary}</p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                disabled={currentPage <= 1}
-                onClick={() => handlePageChange(currentPage - 1)}
-                className="rounded-lg border border-outline-variant px-3 py-1.5 text-sm disabled:opacity-40"
-              >
-                Truoc
-              </button>
-              <button
-                type="button"
-                disabled={currentPage >= totalPages}
-                onClick={() => handlePageChange(currentPage + 1)}
-                className="rounded-lg border border-outline-variant px-3 py-1.5 text-sm disabled:opacity-40"
-              >
-                Sau
-              </button>
-            </div>
-          </div>
-
-          {result?.logs?.length ? (
-            <AdminActionLogsTable
-              logs={result.logs}
-              selectedLogId={logId}
-              onSelectLog={onLogIdChange}
-            />
-          ) : (
-            <AuditEmptyState message={ADMIN_AUDIT_LOGS_EMPTY} />
-          )}
-        </AccountCard>
-      ) : null}
-
-      <AdminActionLogDetailDrawer
-        logId={logId}
-        onClose={() => onLogIdChange?.(null)}
-        onNotify={onNotify}
-      />
-    </div>
+      }
+    />
   );
 }

@@ -39,6 +39,7 @@ public class OAuth2LoginFailureHandler implements AuthenticationFailureHandler {
                 .queryParam("code", ErrorCode.OAUTH_PROVIDER_PROFILE_INVALID.code())
                 .build(true)
                 .toUri();
+        OAuthHttpSessionCleaner.invalidate(request);
         response.sendRedirect(redirect.toString());
     }
 }

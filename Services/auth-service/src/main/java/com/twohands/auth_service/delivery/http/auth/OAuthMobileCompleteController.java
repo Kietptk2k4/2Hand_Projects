@@ -12,7 +12,9 @@ import com.twohands.auth_service.delivery.http.auth.response.LoginResponse;
 import com.twohands.auth_service.exception.AppException;
 import com.twohands.auth_service.exception.ErrorCode;
 import com.twohands.auth_service.infrastructure.security.oauth.OAuthAuthCookies;
+import com.twohands.auth_service.infrastructure.security.oauth.OAuthHttpSessionCleaner;
 import com.twohands.auth_service.infrastructure.security.oauth.OAuthRedirectUriValidator;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,6 +64,7 @@ public class OAuthMobileCompleteController {
             @RequestParam(name = "first_login", required = false) Boolean firstLogin,
             @CookieValue(name = OAuthAuthCookies.ACCESS_TOKEN, required = false) String accessToken,
             @CookieValue(name = OAuthAuthCookies.REFRESH_TOKEN, required = false) String refreshToken,
+            HttpServletRequest request,
             HttpServletResponse response
     ) throws IOException {
         String appReturnUrl = resolveAppReturn(appReturn);
@@ -69,6 +72,7 @@ public class OAuthMobileCompleteController {
         if (!"success".equalsIgnoreCase(status)) {
             OAuthAuthCookies.clear(response, secureCookie);
             redirectToApp(
+                    request,
                     response,
                     appReturnUrl,
                     "error",
@@ -93,10 +97,10 @@ public class OAuthMobileCompleteController {
                     session.status()
             ));
 
-            redirectToApp(response, appReturnUrl, "success", exchangeCode, firstLogin);
+            redirectToApp(request, response, appReturnUrl, "success", exchangeCode, firstLogin);
         } catch (AppException ex) {
             OAuthAuthCookies.clear(response, secureCookie);
-            redirectToApp(response, appReturnUrl, "error", ex.getErrorCode().code(), firstLogin);
+            redirectToApp(request, response, appReturnUrl, "error", ex.getErrorCode().code(), firstLogin);
         }
     }
 
@@ -132,12 +136,14 @@ public class OAuthMobileCompleteController {
     }
 
     private static void redirectToApp(
+            HttpServletRequest request,
             HttpServletResponse response,
             String appReturnUrl,
             String status,
             String code,
             Boolean firstLogin
     ) throws IOException {
+        OAuthHttpSessionCleaner.invalidate(request);
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(appReturnUrl)
                 .queryParam("status", status)
                 .queryParam("code", code);

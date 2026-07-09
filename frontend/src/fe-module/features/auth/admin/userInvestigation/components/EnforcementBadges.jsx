@@ -1,52 +1,39 @@
+import { AdminStatusBadge } from "../../components/ui";
 import {
-  getEnforcementActionClass,
   getEnforcementActionLabel,
-  getEnforcementStatusClass,
   getEnforcementStatusLabel,
-  getUserStatusClass,
   getUserStatusLabel,
 } from "../utils/investigationLabels.js";
+import {
+  getEnforcementActionVariant,
+  getEnforcementStatusVariant,
+  getUserStatusVariant,
+} from "./ui/investigationStatusVariants.js";
 
 export function UserStatusBadge({ status }) {
   return (
-    <span
-      className={[
-        "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold",
-        getUserStatusClass(status),
-      ].join(" ")}
-    >
-      <span className="mr-2 h-2 w-2 rounded-full bg-current opacity-70" />
+    <AdminStatusBadge variant={getUserStatusVariant(status)}>
       {getUserStatusLabel(status)}
-    </span>
+    </AdminStatusBadge>
   );
 }
 
 export function EnforcementActionBadge({ actionType }) {
   return (
-    <span
-      className={[
-        "inline-flex items-center rounded-full px-2 py-1 text-[11px] font-semibold leading-none",
-        getEnforcementActionClass(actionType),
-      ].join(" ")}
-    >
+    <AdminStatusBadge variant={getEnforcementActionVariant(actionType)}>
       {getEnforcementActionLabel(actionType)}
-    </span>
+    </AdminStatusBadge>
   );
 }
 
 export function EnforcementStatusBadge({ status, possiblyExpired = false }) {
   return (
     <span className="inline-flex flex-col items-start gap-1">
-      <span
-        className={[
-          "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold",
-          getEnforcementStatusClass(status),
-        ].join(" ")}
-      >
+      <AdminStatusBadge variant={getEnforcementStatusVariant(status)}>
         {getEnforcementStatusLabel(status)}
-      </span>
+      </AdminStatusBadge>
       {possiblyExpired ? (
-        <span className="text-xs font-medium text-amber-700">Có thể đã hết hạn (chờ job)</span>
+        <span className="text-xs font-medium text-admin-warning">Có thể đã hết hạn (chờ job)</span>
       ) : null}
     </span>
   );

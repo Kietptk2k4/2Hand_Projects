@@ -92,9 +92,24 @@ export function getDevMediaHost() {
   return "localhost";
 }
 
+function isPrivateLanHost(host) {
+  if (!host) return false;
+  const normalized = host.toLowerCase();
+  if (LOCAL_LOOPBACK_HOSTS.has(normalized)) return true;
+  if (normalized.startsWith("192.168.")) return true;
+  if (normalized.startsWith("10.")) return true;
+  const match = /^172\.(\d+)\./.exec(normalized);
+  if (match) {
+    const secondOctet = Number.parseInt(match[1], 10);
+    return secondOctet >= 16 && secondOctet <= 31;
+  }
+  return false;
+}
+
 /**
  * Dev-only MinIO origin for presigned PUT (must match signature host).
  * Omit for localhost / simulator — server presigns with default localhost.
+ * Omit for public ngrok gateway — server uses *_MINIO_PRESIGNED_ENDPOINT.
  */
 export function getClientUploadOrigin() {
   if (!__DEV__) return undefined;
@@ -104,6 +119,8 @@ export function getClientUploadOrigin() {
 
   const lower = host.toLowerCase();
   if (lower === "localhost" || lower === "127.0.0.1") return undefined;
+
+  if (!isPrivateLanHost(host)) return undefined;
 
   return `http://${host}:9000`;
 }

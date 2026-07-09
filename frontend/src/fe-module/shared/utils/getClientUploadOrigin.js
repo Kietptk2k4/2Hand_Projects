@@ -35,6 +35,8 @@ export function getDevMediaHost() {
 
 /**
  * Rewrites local MinIO media URLs to match the current dev environment host.
+ * In production builds served via dev-gateway (ngrok), rewrites dev-origin object URLs
+ * to same-origin so remote clients can load media without DB migrations.
  */
 export function resolveDevMediaUrl(url) {
   if (!url || typeof url !== "string") {
@@ -42,8 +44,12 @@ export function resolveDevMediaUrl(url) {
   }
 
   const trimmed = url.trim();
-  if (!trimmed || !import.meta.env.DEV) {
+  if (!trimmed) {
     return trimmed;
+  }
+
+  if (!import.meta.env.DEV) {
+    return rewriteStoredMediaToSameOrigin(trimmed);
   }
 
   const devHost = getDevMediaHost();
@@ -53,7 +59,7 @@ export function resolveDevMediaUrl(url) {
 
   try {
     const parsed = new URL(trimmed);
-    if (parsed.port !== MINIO_PORT || !TWO_HANDS_BUCKET_SEGMENT.test(parsed.pathname)) {
+    if (!TWO_HANDS_BUCKET_SEGMENT.test(parsed.pathname)) {
       return trimmed;
     }
     if (!isPrivateLanHost(parsed.hostname)) {
@@ -67,9 +73,28 @@ export function resolveDevMediaUrl(url) {
   }
 }
 
+function rewriteStoredMediaToSameOrigin(url) {
+  if (typeof window === "undefined") {
+    return url;
+  }
+  try {
+    const parsed = new URL(url);
+    if (!TWO_HANDS_BUCKET_SEGMENT.test(parsed.pathname)) {
+      return url;
+    }
+    if (!isPrivateLanHost(parsed.hostname)) {
+      return url;
+    }
+    return `${window.location.origin}${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return url;
+  }
+}
+
 /**
  * Dev-only MinIO origin for presigned PUT (must match signature host).
  * Omit on localhost - server presigns with default localhost.
+ * Omit on public gateway (ngrok): server uses *_MINIO_PRESIGNED_ENDPOINT instead.
  */
 export function getClientUploadOrigin() {
   if (!import.meta.env.DEV) {
@@ -78,6 +103,10 @@ export function getClientUploadOrigin() {
 
   const host = typeof window !== "undefined" ? window.location.hostname : "";
   if (!host || LOCAL_HOSTS.has(host.toLowerCase())) {
+    return undefined;
+  }
+
+  if (!isPrivateLanHost(host)) {
     return undefined;
   }
 

@@ -1,4 +1,5 @@
 import { formatVndPrice } from "../../social/utils/formatPrice";
+import { AdminMetricCard, AdminSurfaceCard } from "../../auth/admin/components/ui";
 
 const BUCKETS = [
   {
@@ -7,7 +8,8 @@ const BUCKETS = [
     title: "Đang vận chuyển",
     description: "Đơn đang xử lý hoặc đang giao",
     icon: "local_shipping",
-    accent: "border-primary/30 bg-primary-container/20",
+    accentClass: "text-admin-accent",
+    surfaceClass: "bg-admin-accent-soft/60",
   },
   {
     id: "pending_confirm",
@@ -15,7 +17,8 @@ const BUCKETS = [
     title: "Chờ xác nhận",
     description: "Đã giao, chờ khách xác nhận nhận hàng",
     icon: "inventory",
-    accent: "border-tertiary/30 bg-tertiary-container/20",
+    accentClass: "text-admin-warning",
+    surfaceClass: "bg-admin-warning-soft/70",
   },
   {
     id: "recognized",
@@ -23,53 +26,59 @@ const BUCKETS = [
     title: "Đã ghi nhận",
     description: "Hoàn tất đơn và đã thu COD",
     icon: "paid",
-    accent: "border-secondary/30 bg-secondary-container/20",
+    accentClass: "text-admin-success",
+    surfaceClass: "bg-admin-success-soft/70",
   },
 ];
+
+function BucketSkeleton() {
+  return (
+    <AdminSurfaceCard padding="md" className="animate-pulse">
+      <div className="h-3 w-24 rounded bg-admin-surface-muted" />
+      <div className="mt-4 h-8 w-32 rounded bg-admin-surface-muted" />
+      <div className="mt-2 h-3 w-full rounded bg-admin-surface-muted" />
+    </AdminSurfaceCard>
+  );
+}
 
 export function SellerRevenueBucketCards({ summary, isLoading }) {
   if (isLoading) {
     return (
-      <div className="grid gap-4 md:grid-cols-3">
-        {[0, 1, 2].map((index) => (
-          <div
-            key={index}
-            className="h-36 animate-pulse rounded-xl border border-outline-variant bg-surface-container-low"
-          />
+      <div className="grid max-w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {BUCKETS.map((bucket) => (
+          <BucketSkeleton key={bucket.id} />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid max-w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {BUCKETS.map((bucket) => {
         const data = summary?.[bucket.key] ?? { amount: 0, itemCount: 0 };
+
         return (
-          <article
+          <AdminMetricCard
             key={bucket.id}
-            className={[
-              "rounded-xl border p-5 shadow-sm",
-              bucket.accent,
-            ].join(" ")}
-          >
-            <div className="mb-3 flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-title-md font-semibold text-on-surface">{bucket.title}</h3>
-                <p className="mt-1 text-body-sm text-on-surface-variant">{bucket.description}</p>
+            label={bucket.title}
+            value={formatVndPrice(data.amount)}
+            hint={bucket.description}
+            footer={
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm text-admin-text-secondary">{data.itemCount} dòng đơn</p>
+                <span
+                  className={[
+                    "material-symbols-outlined flex h-9 w-9 items-center justify-center rounded-lg text-xl",
+                    bucket.accentClass,
+                    bucket.surfaceClass,
+                  ].join(" ")}
+                  aria-hidden="true"
+                >
+                  {bucket.icon}
+                </span>
               </div>
-              <span
-                className="material-symbols-outlined text-2xl text-on-surface-variant"
-                aria-hidden="true"
-              >
-                {bucket.icon}
-              </span>
-            </div>
-            <p className="text-headline-sm font-bold text-on-surface">{formatVndPrice(data.amount)}</p>
-            <p className="mt-1 text-body-sm text-on-surface-variant">
-              {data.itemCount} dòng đơn
-            </p>
-          </article>
+            }
+          />
         );
       })}
     </div>
