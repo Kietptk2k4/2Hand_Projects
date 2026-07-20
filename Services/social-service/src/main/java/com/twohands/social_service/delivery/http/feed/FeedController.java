@@ -1,5 +1,6 @@
 package com.twohands.social_service.delivery.http.feed;
 
+import com.twohands.social_service.application.feed.recommendposts.RecommendPostsUseCase;
 import com.twohands.social_service.application.feed.viewfollowingfeed.ViewFollowingFeedUseCase;
 import com.twohands.social_service.application.feed.viewglobalfeed.ViewGlobalFeedResult;
 import com.twohands.social_service.application.feed.viewglobalfeed.ViewGlobalFeedUseCase;
@@ -26,15 +27,18 @@ public class FeedController {
 
     private final ViewGlobalFeedUseCase viewGlobalFeedUseCase;
     private final ViewFollowingFeedUseCase viewFollowingFeedUseCase;
+    private final RecommendPostsUseCase recommendPostsUseCase;
     private final ViewGlobalFeedHttpMapper viewGlobalFeedHttpMapper;
 
     public FeedController(
             ViewGlobalFeedUseCase viewGlobalFeedUseCase,
             ViewFollowingFeedUseCase viewFollowingFeedUseCase,
+            RecommendPostsUseCase recommendPostsUseCase,
             ViewGlobalFeedHttpMapper viewGlobalFeedHttpMapper
     ) {
         this.viewGlobalFeedUseCase = viewGlobalFeedUseCase;
         this.viewFollowingFeedUseCase = viewFollowingFeedUseCase;
+        this.recommendPostsUseCase = recommendPostsUseCase;
         this.viewGlobalFeedHttpMapper = viewGlobalFeedHttpMapper;
     }
 
@@ -70,6 +74,24 @@ public class FeedController {
                 .body(ApiResponse.success(
                         HttpStatus.OK.value(),
                         viewFollowingFeedUseCase.successMessage(),
+                        response
+                ));
+    }
+
+    @GetMapping("/for-you")
+    public ResponseEntity<ApiResponse<ViewGlobalFeedResponse>> viewRecommendFeed(
+            @RequestParam(name = "page", defaultValue = "" + DEFAULT_PAGE) int page,
+            @RequestParam(name = "size", defaultValue = "" + DEFAULT_SIZE) int size,
+            Authentication authentication
+    ) {
+        UUID userId = resolveUserId(authentication);
+        ViewGlobalFeedResult result = recommendPostsUseCase.execute(userId, page, size);
+        ViewGlobalFeedResponse response = viewGlobalFeedHttpMapper.toResponse(result);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        recommendPostsUseCase.successMessage(),
                         response
                 ));
     }

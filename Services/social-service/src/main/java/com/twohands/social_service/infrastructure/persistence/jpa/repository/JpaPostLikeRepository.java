@@ -24,4 +24,7 @@ public interface JpaPostLikeRepository extends JpaRepository<PostLikeEntity, Pos
     );
 
     void deleteByPostIdAndUserId(String postId, UUID userId);
+
+    @Query("SELECT p.postId FROM PostLikeEntity p WHERE p.userId = :userId ORDER BY p.createdAt DESC")
+    java.util.List<String> findRecentLikedPostIds(@Param("userId") UUID userId, Pageable pageable);
 }

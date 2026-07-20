@@ -14,4 +14,6 @@ public interface PostLikeRepository {
     void save(String postId, UUID userId);
 
     void deleteByPostIdAndUserId(String postId, UUID userId);
+
+    java.util.List<String> findRecentLikedPostIds(UUID userId, int limit);
 }
