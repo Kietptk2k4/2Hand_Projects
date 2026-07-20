@@ -17,12 +17,12 @@ import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 import javax.crypto.SecretKey;
 import java.math.BigDecimal;
@@ -50,13 +50,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "jwt.access-secret=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
         "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration"
 })
-class ViewGlobalFeedApiIntegrationTest {
+class ViewRecommendFeedApiIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @MockBean
     private ViewGlobalFeedUseCase viewGlobalFeedUseCase;
@@ -72,7 +69,7 @@ class ViewGlobalFeedApiIntegrationTest {
 
     @Test
     void shouldReturnUnauthorizedWithoutToken() throws Exception {
-        mockMvc.perform(get("/api/v1/social/feed/global")
+        mockMvc.perform(get("/api/v1/social/feed/for-you")
                         .param("page", "0")
                         .param("size", "20")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -82,33 +79,35 @@ class ViewGlobalFeedApiIntegrationTest {
     }
 
     @Test
-    void shouldReturnGlobalFeedWhenAuthenticated() throws Exception {
+    void shouldReturnRecommendFeedWhenAuthenticated() throws Exception {
         UUID userId = UUID.randomUUID();
         String token = buildAccessToken(userId);
         String productId = UUID.randomUUID().toString();
+        
         ViewGlobalFeedResult result = new ViewGlobalFeedResult(
                 List.of(new ViewGlobalFeedResult.FeedPostItem(
-                        "507f1f77bcf86cd799439011",
+                        "recPost1",
                         UUID.randomUUID().toString(),
-                        "hello",
-                        List.of(new ViewGlobalFeedResult.MediaItemData("https://cdn/1.jpg", "IMAGE", null, null)),
+                        "recommend content",
+                        List.of(new ViewGlobalFeedResult.MediaItemData("https://cdn/rec1.jpg", "IMAGE", null, null)),
                         "PUBLIC",
-                        12,
-                        3,
-                        true,
-                        List.of("tag1"),
+                        50,
+                        10,
+                        false,
+                        List.of("recs"),
                         List.of(new com.twohands.social_service.application.post.common.ProductTagSnapshotData(
-                                productId, new BigDecimal("199000"), "Phone", "https://cdn/p.jpg", "Mobile", true)),
+                                productId, new BigDecimal("250000"), "Sneaker", "https://cdn/s.jpg", "Shoes", true)),
                         true,
                         Instant.parse("2026-05-18T10:15:30Z").toString(),
                         Instant.parse("2026-05-18T10:20:30Z").toString()
                 )),
                 new ViewGlobalFeedResult.PageResultMeta(0, 20, 1, 1, false)
         );
-        when(viewGlobalFeedUseCase.execute(eq(userId), eq(0), eq(20))).thenReturn(result);
-        when(viewGlobalFeedUseCase.successMessage()).thenReturn("Lay global feed thanh cong.");
+        
+        when(recommendPostsUseCase.execute(eq(userId), eq(0), eq(20))).thenReturn(result);
+        when(recommendPostsUseCase.successMessage()).thenReturn("Lay recommend feed thanh cong.");
 
-        mockMvc.perform(get("/api/v1/social/feed/global")
+        mockMvc.perform(get("/api/v1/social/feed/for-you")
                         .param("page", "0")
                         .param("size", "20")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
@@ -116,48 +115,11 @@ class ViewGlobalFeedApiIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.code").value(200))
-                .andExpect(jsonPath("$.data.items[0].visibility").value("PUBLIC"))
-                .andExpect(jsonPath("$.data.items[0].likedByMe").value(true))
-                .andExpect(jsonPath("$.data.items[0].productTags[0].productId").value(productId))
-                .andExpect(jsonPath("$.data.items[0].productTags[0].price").value(199000))
-                .andExpect(jsonPath("$.data.meta.totalElements").value(1));
+                .andExpect(jsonPath("$.message").value("Lay recommend feed thanh cong."))
+                .andExpect(jsonPath("$.data.items[0].postId").value("recPost1"))
+                .andExpect(jsonPath("$.data.items[0].likeCount").value(50))
+                .andExpect(jsonPath("$.data.items[0].productTags[0].name").value("Sneaker"));
     }
-
-//     @Test
-//     void shouldReturnFollowingFeedWhenAuthenticated() throws Exception {
-//         UUID userId = UUID.randomUUID();
-//         String token = buildAccessToken(userId);
-//         ViewGlobalFeedResult result = new ViewGlobalFeedResult(
-//                 List.of(new ViewGlobalFeedResult.FeedPostItem(
-//                         "507f1f77bcf86cd799439012",
-//                         UUID.randomUUID().toString(),
-//                         "following post",
-//                         List.of(new ViewGlobalFeedResult.MediaItemData("https://cdn/2.jpg", "IMAGE", null, null)),
-//                         "FOLLOWERS",
-//                         4,
-//                         1,
-//                         false,
-//                         List.of("social"),
-//                         true,
-//                         Instant.parse("2026-05-18T10:16:30Z").toString(),
-//                         Instant.parse("2026-05-18T10:20:40Z").toString()
-//                 )),
-//                 new ViewGlobalFeedResult.PageResultMeta(0, 20, 1, 1, false)
-//         );
-//         when(viewFollowingFeedUseCase.execute(eq(userId), eq(0), eq(20))).thenReturn(result);
-//         when(viewFollowingFeedUseCase.successMessage()).thenReturn("Lay following feed thanh cong.");
-
-//         mockMvc.perform(get("/api/v1/social/feed/following")
-//                         .param("page", "0")
-//                         .param("size", "20")
-//                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-//                         .contentType(MediaType.APPLICATION_JSON))
-//                 .andExpect(status().isOk())
-//                 .andExpect(jsonPath("$.success").value(true))
-//                 .andExpect(jsonPath("$.code").value(200))
-//                 .andExpect(jsonPath("$.message").value("Lay following feed thanh cong."))
-//                 .andExpect(jsonPath("$.data.items[0].visibility").value("FOLLOWERS"));
-//     }
 
     private String buildAccessToken(UUID userId) {
         SecretKey secretKey = Keys.hmacShaKeyFor(

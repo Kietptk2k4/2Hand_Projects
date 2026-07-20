@@ -69,4 +69,9 @@ public class PostLikeRepositoryAdapter implements PostLikeRepository {
     public void deleteByPostIdAndUserId(String postId, UUID userId) {
         jpaPostLikeRepository.deleteByPostIdAndUserId(postId, userId);
     }
+
+    @Override
+    public List<String> findRecentLikedPostIds(UUID userId, int limit) {
+        return jpaPostLikeRepository.findRecentLikedPostIds(userId, PageRequest.of(0, limit));
+    }
 }
