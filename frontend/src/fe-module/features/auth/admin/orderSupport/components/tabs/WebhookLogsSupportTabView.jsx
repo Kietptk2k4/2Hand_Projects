@@ -37,7 +37,7 @@ export function WebhookLogsSupportTabView({
       : "";
 
   return (
-    <div className="mx-auto max-w-[1440px] space-y-4">
+    <div className="w-full min-w-0 space-y-4">
       <AdminPageHeader title={ORDER_SUPPORT_WEBHOOK_TITLE} subtitle={ORDER_SUPPORT_WEBHOOK_SUBTITLE} />
 
       {!canReadWebhook ? (

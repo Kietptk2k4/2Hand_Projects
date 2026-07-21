@@ -91,21 +91,29 @@ public class RoleRepositoryAdapter implements RoleRepository {
 
     @Override
     public Role save(Role role) {
-        String upsertRoleSql = """
-                INSERT INTO roles(id, code, name, created_at, updated_at)
-                VALUES (:id, :code, :name, :createdAt, :updatedAt)
-                ON CONFLICT (id) DO UPDATE
-                SET code = EXCLUDED.code,
-                    name = EXCLUDED.name,
-                    updated_at = EXCLUDED.updated_at
-                """;
-
-        jdbcTemplate.update(upsertRoleSql, new MapSqlParameterSource()
+        MapSqlParameterSource roleParams = new MapSqlParameterSource()
                 .addValue("id", role.id())
                 .addValue("code", role.code())
                 .addValue("name", role.name())
                 .addValue("createdAt", JdbcTimestamps.from(role.createdAt()))
-                .addValue("updatedAt", JdbcTimestamps.from(role.updatedAt())));
+                .addValue("updatedAt", JdbcTimestamps.from(role.updatedAt()));
+
+        if (findById(role.id()).isPresent()) {
+            String updateRoleSql = """
+                    UPDATE roles
+                    SET code = :code,
+                        name = :name,
+                        updated_at = :updatedAt
+                    WHERE id = :id
+                    """;
+            jdbcTemplate.update(updateRoleSql, roleParams);
+        } else {
+            String insertRoleSql = """
+                    INSERT INTO roles(id, code, name, created_at, updated_at)
+                    VALUES (:id, :code, :name, :createdAt, :updatedAt)
+                    """;
+            jdbcTemplate.update(insertRoleSql, roleParams);
+        }
 
         String deletePermissionsSql = "DELETE FROM role_permissions WHERE role_id = :roleId";
         jdbcTemplate.update(deletePermissionsSql, new MapSqlParameterSource("roleId", role.id()));

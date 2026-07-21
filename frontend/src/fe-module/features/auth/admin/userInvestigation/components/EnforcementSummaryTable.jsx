@@ -23,8 +23,17 @@ export function EnforcementSummaryTable({ enforcements = [] }) {
       </div>
 
       {enforcements.length === 0 ? (
-        <div className="p-6">
-          <p className="text-sm text-admin-text-muted">Không có enforcement đang hiệu lực.</p>
+        <div className="px-4 py-8 text-center sm:px-6">
+          <span
+            className="material-symbols-outlined text-3xl text-admin-text-muted"
+            aria-hidden="true"
+          >
+            gavel
+          </span>
+          <p className="mt-3 text-sm font-medium text-admin-text">Không có enforcement đang hiệu lực</p>
+          <p className="mt-1 text-sm text-admin-text-muted">
+            Người dùng này hiện không bị hạn chế, đình chỉ hoặc cấm.
+          </p>
         </div>
       ) : (
         <AdminDataTable minWidth="640px" ariaLabel="Thực thi hiện tại">

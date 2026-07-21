@@ -1,5 +1,6 @@
 import axios from "axios";
 import { getStoredAccessToken, refreshAccessTokenOnce } from "./authRefreshService";
+import { attachNgrokGatewayInterceptor } from "./ngrokGatewayHeaders";
 import { resolveServiceBaseUrl } from "./resolveServiceBaseUrl";
 
 const COMMERCE_BASE_URL = resolveServiceBaseUrl(import.meta.env.VITE_COMMERCE_SERVICE_BASE_URL);
@@ -10,6 +11,8 @@ export const commerceApiClient = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+attachNgrokGatewayInterceptor(commerceApiClient);
 
 commerceApiClient.interceptors.request.use((config) => {
   const token = getStoredAccessToken();

@@ -16,9 +16,13 @@ Services/**/.env
 frontend/.env
 frontend/.env.docker
 frontend/.env.docker.local
+frontend/.env.local
 !frontend/.env.example
 !frontend/.env.docker.example
+!frontend/.env.ngrok.example
 
 # Infrastructure secrets (ngrok authtoken)
 Infrastructure/.env
 Infrastructure/auth-app.jar 
+
+API_DOCS/*

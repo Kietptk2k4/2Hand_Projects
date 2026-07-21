@@ -19,8 +19,8 @@ export function mapAdminActionLogsResponse(data) {
   return {
     page: data?.page ?? 1,
     size: data?.size ?? 20,
-    totalElements: data?.total_elements ?? 0,
-    totalPages: data?.total_pages ?? 0,
+    totalElements: data?.total_elements ?? data?.totalElements ?? 0,
+    totalPages: data?.total_pages ?? data?.totalPages ?? 0,
     logs: (data?.logs || []).map(mapAdminActionLogEntry).filter(Boolean),
   };
 }

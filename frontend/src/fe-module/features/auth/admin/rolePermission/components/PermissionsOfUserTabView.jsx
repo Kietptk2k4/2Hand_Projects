@@ -1,7 +1,13 @@
-import { AdminPageHeader, AdminSurfaceCard } from "../../components/ui";
+import {
+  AdminEmptyPanel,
+  AdminErrorPanel,
+  AdminForbiddenPanel,
+  AdminListSkeleton,
+  AdminWorkspacePageShell,
+} from "../../components/ui";
+import { RBAC_SECTION_EYEBROW } from "../rbacPageContract.js";
+import { RbacSelectedUserSummary } from "./RbacSelectedUserSummary.jsx";
 import { UserPermissionChipList } from "./UserPermissionChipList.jsx";
-import { RbacListSkeleton } from "./ui/RbacListSkeleton.jsx";
-import { RbacRetryPanel } from "./ui/RbacRetryPanel.jsx";
 
 export function PermissionsOfUserTabView({
   title,
@@ -12,45 +18,65 @@ export function PermissionsOfUserTabView({
   status,
   errorMessage,
   permissions,
-  groupedHint,
   userListPanel,
+  onClearUser,
+  onRetry,
 }) {
+  const detailStatus =
+    !rbacSelectedUserId ? "idle" : status === "loading" ? "loading" : status;
+
   return (
-    <div className="space-y-4">
-      <AdminPageHeader title={title} subtitle={subtitle} />
+    <AdminWorkspacePageShell
+      asideSize="comfortable"
+      eyebrow={RBAC_SECTION_EYEBROW}
+      title={title}
+      subtitle={subtitle}
+      sidebar={userListPanel}
+    >
+      {!rbacSelectedUserId ? (
+        <AdminEmptyPanel
+          message="Chưa chọn người dùng"
+          hint="Chọn một dòng trong danh sách để xem quyền hiệu lực."
+          icon="person_search"
+        />
+      ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)]">
-        {userListPanel}
+      {detailStatus === "loading" ? <AdminListSkeleton rows={4} /> : null}
+      {detailStatus === "forbidden" ? (
+        <AdminForbiddenPanel message={errorMessage || "Bạn không có quyền truy cập."} />
+      ) : null}
+      {detailStatus === "not_found" || detailStatus === "error" ? (
+        <AdminErrorPanel
+          message={errorMessage || "Không tải được quyền người dùng."}
+          onRetry={detailStatus === "error" ? onRetry : undefined}
+        />
+      ) : null}
 
+      {detailStatus === "ready" ? (
         <div className="space-y-4">
-          {!rbacSelectedUserId ? (
-            <AdminSurfaceCard padding="md">
-              <p className="text-sm text-admin-text-muted">
-                Chọn một người dùng từ danh sách phía trên để xem quyền.
+          <div className="rounded-xl border border-admin-border bg-admin-surface p-4 shadow-[var(--shadow-admin-surface)] lg:p-5">
+            <RbacSelectedUserSummary
+              selectedUserId={rbacSelectedUserId}
+              selectedUser={selectedUser}
+              onClear={onClearUser}
+            />
+            {resolvedUserId ? (
+              <p className="mt-3 break-all border-t border-admin-border-subtle pt-3 font-mono text-[11px] text-admin-text-muted">
+                ID · {resolvedUserId}
               </p>
-            </AdminSurfaceCard>
-          ) : null}
+            ) : null}
+          </div>
 
-          {status === "loading" ? <RbacListSkeleton rows={4} /> : null}
-          {status === "forbidden" || status === "not_found" || status === "error" ? (
-            <RbacRetryPanel message={errorMessage} />
-          ) : null}
+          <div className="flex items-center justify-between gap-2 rounded-lg border border-admin-border bg-admin-surface-raised px-3 py-2">
+            <p className="text-xs text-admin-text-secondary">Tổng quyền hiệu lực</p>
+            <p className="tabular-nums text-sm font-semibold text-admin-text">
+              {permissions.length}
+            </p>
+          </div>
 
-          {status === "ready" ? (
-            <>
-              <AdminSurfaceCard padding="md">
-                <p className="text-sm text-admin-text-secondary">User ID</p>
-                <p className="mt-1 break-all font-mono text-sm text-admin-text">{resolvedUserId}</p>
-                {selectedUser ? (
-                  <p className="mt-2 text-sm text-admin-text-secondary">Email: {selectedUser.email}</p>
-                ) : null}
-              </AdminSurfaceCard>
-
-              <UserPermissionChipList permissions={permissions} groupedHint={groupedHint} />
-            </>
-          ) : null}
+          <UserPermissionChipList permissions={permissions} />
         </div>
-      </div>
-    </div>
+      ) : null}
+    </AdminWorkspacePageShell>
   );
 }

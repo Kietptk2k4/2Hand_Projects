@@ -24,8 +24,8 @@ export function InvestigationUserListView({
   onRetry,
 }) {
   return (
-    <div className="mb-6 space-y-4">
-      <AdminSurfaceCard padding="md">
+    <AdminSurfaceCard padding="none" className="mb-4 overflow-hidden">
+      <div className="border-b border-admin-border-subtle bg-admin-surface-raised px-4 py-3 lg:px-5">
         <InvestigationUserFilterBar
           draftFilters={draftFilters}
           statusOptions={statusOptions}
@@ -34,22 +34,31 @@ export function InvestigationUserListView({
           onApply={onApplyFilters}
           onClear={onClearFilters}
         />
-      </AdminSurfaceCard>
+      </div>
 
-      {status === "loading" ? <InvestigationListSkeleton rows={5} /> : null}
-      {status === "forbidden" ? <InvestigationRetryPanel message={errorMessage} /> : null}
-
+      {status === "loading" ? (
+        <div className="p-4 lg:p-5">
+          <InvestigationListSkeleton rows={5} bare />
+        </div>
+      ) : null}
+      {status === "forbidden" ? (
+        <div className="p-4 lg:p-5">
+          <InvestigationRetryPanel message={errorMessage} />
+        </div>
+      ) : null}
       {status === "error" ? (
-        <InvestigationRetryPanel message={errorMessage} onRetry={onRetry} />
+        <div className="p-4 lg:p-5">
+          <InvestigationRetryPanel message={errorMessage} onRetry={onRetry} />
+        </div>
       ) : null}
 
       {status === "ready" ? (
-        <AdminSurfaceCard padding="md">
+        <div className="p-4 lg:p-5">
           <AdminPagination
-            className="mb-4"
+            className="mb-3"
             currentPage={currentPage}
             totalPages={totalPages}
-            summary={`${pagination?.total_items ?? 0} người dùng · Sắp xếp: ${activeSortLabel} · Trang ${pagination?.page ?? currentPage}/${totalPages}`}
+            summary={`${pagination?.total_items ?? 0} người dùng · ${activeSortLabel}`}
             onPrevious={() => onPageChange(currentPage - 1)}
             onNext={() => onPageChange(currentPage + 1)}
           />
@@ -59,8 +68,8 @@ export function InvestigationUserListView({
             selectedUserId={selectedUserId}
             onUserSelect={onUserSelect}
           />
-        </AdminSurfaceCard>
+        </div>
       ) : null}
-    </div>
+    </AdminSurfaceCard>
   );
 }

@@ -1,4 +1,6 @@
 export function AdminDataTable({ children, minWidth = "880px", className = "", ariaLabel }) {
+  const resolvedMinWidth = minWidth && minWidth !== "0" ? minWidth : undefined;
+
   return (
     <div
       className={[
@@ -9,8 +11,13 @@ export function AdminDataTable({ children, minWidth = "880px", className = "", a
         .join(" ")}
     >
       <table
-        className="hidden w-full text-left text-sm md:table"
-        style={{ minWidth }}
+        className={[
+          "hidden w-full text-left text-sm md:table",
+          resolvedMinWidth ? "" : "table-fixed",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        style={resolvedMinWidth ? { minWidth: resolvedMinWidth } : undefined}
         aria-label={ariaLabel}
       >
         {children}
@@ -38,18 +45,50 @@ export function AdminDataTableBody({ children }) {
   return <tbody>{children}</tbody>;
 }
 
-export function AdminDataTableRow({ children, className = "", onClick, isSelected, ...props }) {
+export function AdminDataTableRow({
+  children,
+  className = "",
+  onClick,
+  isSelected,
+  tabIndex,
+  ...props
+}) {
+  const resolvedTabIndex =
+    tabIndex !== undefined
+      ? tabIndex
+      : onClick
+        ? isSelected
+          ? 0
+          : -1
+        : undefined;
+
   return (
     <tr
       className={[
         "border-b border-admin-border-subtle align-top transition-colors",
-        onClick ? "cursor-pointer hover:bg-admin-surface-muted" : "",
-        isSelected ? "bg-admin-accent-soft/40" : "",
+        onClick
+          ? "cursor-pointer hover:bg-admin-surface-muted focus-visible:outline-none focus-visible:bg-admin-accent-soft/30"
+          : "",
+        isSelected
+          ? "bg-admin-accent-soft/40 [box-shadow:inset_3px_0_0_0_var(--color-admin-accent)]"
+          : "",
         className,
       ]
         .filter(Boolean)
         .join(" ")}
       onClick={onClick}
+      aria-selected={isSelected ? "true" : undefined}
+      tabIndex={resolvedTabIndex}
+      onKeyDown={
+        onClick
+          ? (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onClick(event);
+              }
+            }
+          : undefined
+      }
       {...props}
     >
       {children}
@@ -57,7 +96,7 @@ export function AdminDataTableRow({ children, className = "", onClick, isSelecte
   );
 }
 
-export function AdminDataTableCell({ children, className = "", header = false }) {
+export function AdminDataTableCell({ children, className = "", header = false, ...props }) {
   const Tag = header ? "th" : "td";
   return (
     <Tag
@@ -67,6 +106,7 @@ export function AdminDataTableCell({ children, className = "", header = false })
       ]
         .filter(Boolean)
         .join(" ")}
+      {...props}
     >
       {children}
     </Tag>

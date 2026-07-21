@@ -82,8 +82,8 @@ export function AppLayout() {
 
   if (isAdminConsoleRoute) {
     return (
-      <div className="flex min-h-screen flex-col bg-surface text-on-surface">
-        <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 py-8">
+      <div className="flex min-h-screen flex-col bg-admin-canvas text-admin-text">
+        <main className="w-full max-w-none flex-1 p-0">
           <Outlet />
         </main>
         <SessionExpiredModal

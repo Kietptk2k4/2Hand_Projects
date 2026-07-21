@@ -1,10 +1,15 @@
-import { AdminSurfaceCard } from "../../components/ui";
+import { AdminEmptyPanel } from "../../components/ui";
 import { INVESTIGATION_EMPTY_USER_MESSAGE } from "../constants/userInvestigationUiStrings.js";
 
-export function InvestigationEmptyState({ message = INVESTIGATION_EMPTY_USER_MESSAGE }) {
+export function InvestigationEmptyState({
+  message = INVESTIGATION_EMPTY_USER_MESSAGE,
+  hint = "Tìm theo email/UUID phía trên, hoặc chọn một dòng trong danh sách người dùng.",
+}) {
   return (
-    <AdminSurfaceCard padding="lg" className="text-center">
-      <p className="text-sm text-admin-text-secondary">{message}</p>
-    </AdminSurfaceCard>
+    <AdminEmptyPanel
+      icon="person_search"
+      message={message}
+      hint={hint}
+    />
   );
 }

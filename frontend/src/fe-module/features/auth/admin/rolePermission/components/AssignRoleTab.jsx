@@ -62,6 +62,14 @@ export function AssignRoleTab({
     onRbacUserSelect?.(userId);
   };
 
+  const handleClearUser = () => {
+    setSelectedUser(null);
+    setRoleId("");
+    setFieldErrors({ userId: "", role_id: "" });
+    setGlobalError("");
+    onRbacUserSelect?.(null);
+  };
+
   const selectedRole = roles.find((role) => role.id === roleId);
 
   const validateForm = () => {
@@ -130,6 +138,7 @@ export function AssignRoleTab({
       }}
       onSubmit={onRequestSubmit}
       onRolesRetry={loadRoles}
+      onClearUser={handleClearUser}
       userListPanel={
         <RbacUserListPanel
           userListFilters={rbacUserListFilters}

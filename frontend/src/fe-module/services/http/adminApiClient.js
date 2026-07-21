@@ -1,5 +1,6 @@
 import axios from "axios";
 import { getStoredAccessToken, refreshAccessTokenOnce } from "./authRefreshService";
+import { attachNgrokGatewayInterceptor } from "./ngrokGatewayHeaders";
 import { resolveServiceBaseUrl } from "./resolveServiceBaseUrl";
 
 const ADMIN_BASE_URL = resolveServiceBaseUrl(import.meta.env.VITE_ADMIN_SERVICE_BASE_URL);
@@ -10,6 +11,8 @@ export const adminApiClient = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+attachNgrokGatewayInterceptor(adminApiClient);
 
 adminApiClient.interceptors.request.use((config) => {
   const token = getStoredAccessToken();

@@ -1,7 +1,9 @@
 import axios from "axios";
 import { apiClient } from "../../../services/http/apiClient";
+import { attachNgrokGatewayInterceptor, ngrokGatewayHeaderObject } from "../../../services/http/ngrokGatewayHeaders";
+import { resolveServiceBaseUrl } from "../../../services/http/resolveServiceBaseUrl";
 
-const AUTH_BASE_URL = import.meta.env.VITE_AUTH_SERVICE_BASE_URL || "";
+const AUTH_BASE_URL = resolveServiceBaseUrl(import.meta.env.VITE_AUTH_SERVICE_BASE_URL);
 
 const httpClient = axios.create({
   baseURL: AUTH_BASE_URL,
@@ -9,6 +11,8 @@ const httpClient = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+attachNgrokGatewayInterceptor(httpClient);
 
 function normalizeErrors(errors) {
   if (!errors) return [];
@@ -117,6 +121,7 @@ export async function fetchOAuthSession() {
   try {
     const response = await axios.get(`${AUTH_BASE_URL}/api/v1/auth/oauth/session`, {
       withCredentials: true,
+      headers: ngrokGatewayHeaderObject(AUTH_BASE_URL),
     });
     return unwrapResponse(response);
   } catch (error) {
@@ -268,6 +273,33 @@ export async function getLoginHistory({ limit = 20, offset = 0 } = {}) {
 export async function getAdminRoles() {
   try {
     const response = await apiClient.get("/api/v1/admin/roles");
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function createAdminRole(payload) {
+  try {
+    const response = await apiClient.post("/api/v1/admin/roles", payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function updateAdminRole(roleId, payload) {
+  try {
+    const response = await apiClient.patch(`/api/v1/admin/roles/${roleId}`, payload);
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
+export async function deleteAdminRole(roleId) {
+  try {
+    const response = await apiClient.delete(`/api/v1/admin/roles/${roleId}`);
     return unwrapResponse(response);
   } catch (error) {
     throw mapAxiosError(error);

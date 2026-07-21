@@ -4,6 +4,10 @@ import { DEFAULT_ORDER_SUPPORT_TAB } from "./orderSupport/orderSupportTabs.js";
 import { DEFAULT_SYSTEM_OPERATIONS_TAB } from "./systemOperations/systemOperationsTabs.js";
 import { DEFAULT_COMMERCE_FINANCE_TAB } from "./commerceFinance/commerceFinanceTabs.js";
 import { DEFAULT_CATALOG_MANAGEMENT_TAB } from "./catalogManagement/catalogManagementTabs.js";
+import {
+  isRbacRoleSelectionTab,
+  isRbacUserListTab,
+} from "./rolePermission/rbacPageContract.js";
 
 const VALID_SECTIONS = [
   "rolePermission",
@@ -102,6 +106,7 @@ const AUDIT_PARAM_KEYS = [
   "to",
   "page",
   "size",
+  "critical_only",
   "logId",
 ];
 
@@ -134,6 +139,8 @@ const RBAC_USER_LIST_FILTER_KEYS = [
   "rbac_size",
   "rbac_user_id",
 ];
+
+const RBAC_ROLE_PARAM_KEYS = ["rbac_role_id"];
 
 const INVESTIGATION_USER_LIST_FILTER_KEYS = [
   "inv_status",
@@ -173,6 +180,7 @@ const MANAGED_PARAM_KEYS = new Set([
   ...SYSTEM_OPERATIONS_ANNOUNCEMENT_FILTER_KEYS,
   ...SYSTEM_OPERATIONS_SELECTION_KEYS,
   ...RBAC_USER_LIST_FILTER_KEYS,
+  ...RBAC_ROLE_PARAM_KEYS,
   ...INVESTIGATION_USER_LIST_FILTER_KEYS,
   ...POST_MODERATION_LIST_FILTER_KEYS,
   ...COMMENT_MODERATION_LIST_FILTER_KEYS,
@@ -266,6 +274,7 @@ export function parseAdminAuditFilters(searchParams) {
     to: searchParams.get("to") || "",
     page: searchParams.get("page") || "1",
     size: searchParams.get("size") || "20",
+    critical_only: searchParams.get("critical_only") || "",
   };
 }
 
@@ -339,6 +348,10 @@ export function parseRbacSelectedUserId(searchParams) {
   return searchParams.get("rbac_user_id") || "";
 }
 
+export function parseRbacSelectedRoleId(searchParams) {
+  return searchParams.get("rbac_role_id") || "";
+}
+
 export function parseInvestigationUserListFilters(searchParams) {
   return {
     status: searchParams.get("inv_status") || "",
@@ -393,6 +406,7 @@ function applyAuditParams(next, auditFilters, logId) {
     to,
     page,
     size,
+    critical_only: criticalOnly,
   } = auditFilters;
 
   if (adminId) next.set("admin_id", adminId);
@@ -404,6 +418,7 @@ function applyAuditParams(next, auditFilters, logId) {
   if (to) next.set("to", to);
   if (page) next.set("page", String(page));
   if (size) next.set("size", String(size));
+  if (criticalOnly === "true") next.set("critical_only", "true");
 
   if (logId) next.set("logId", logId);
 }
@@ -518,6 +533,16 @@ function applyRbacUserListFilterParams(next, rbacUserListFilters, rbacUserId) {
   if (rbacUserId) next.set("rbac_user_id", rbacUserId);
 }
 
+function applyRbacSectionParams(next, { tab, rbacUserListFilters, rbacUserId, rbacRoleId }) {
+  if (isRbacRoleSelectionTab(tab) && rbacRoleId) {
+    next.set("rbac_role_id", rbacRoleId);
+  }
+
+  if (isRbacUserListTab(tab) && rbacUserListFilters) {
+    applyRbacUserListFilterParams(next, rbacUserListFilters, rbacUserId);
+  }
+}
+
 function applyInvestigationUserListFilterParams(next, investigationUserListFilters) {
   if (!investigationUserListFilters) return;
 
@@ -580,6 +605,7 @@ export function buildAdminSearchParams({
   clearConfigSelection = false,
   rbacUserListFilters,
   rbacUserId,
+  rbacRoleId,
   investigationUserListFilters,
   postModerationListFilters,
   commentModerationListFilters,
@@ -591,7 +617,12 @@ export function buildAdminSearchParams({
   next.set("section", section);
   next.set("tab", tab);
 
-  const resolvedUserId = userId ?? (preserve ? preserve.get("userId") : null);
+  const resolvedUserId =
+    userId !== undefined
+      ? userId || null
+      : preserve
+        ? preserve.get("userId")
+        : null;
   if (resolvedUserId) {
     next.set("userId", resolvedUserId);
   }
@@ -683,6 +714,7 @@ export function buildAdminSearchParams({
             to: preserve.get("to") || "",
             page: preserve.get("page") || "1",
             size: preserve.get("size") || "20",
+            critical_only: preserve.get("critical_only") || "",
           }
         : undefined);
 
@@ -745,8 +777,19 @@ export function buildAdminSearchParams({
       rbacUserListFilters ??
       (preserve ? parseRbacUserListFilters(preserve) : undefined);
     const resolvedRbacUserId =
-      rbacUserId ?? (preserve ? parseRbacSelectedUserId(preserve) || undefined : undefined);
-    applyRbacUserListFilterParams(next, resolvedRbacFilters, resolvedRbacUserId);
+      rbacUserId !== undefined
+        ? rbacUserId || undefined
+        : preserve
+          ? parseRbacSelectedUserId(preserve) || undefined
+          : undefined;
+    const resolvedRbacRoleId =
+      rbacRoleId ?? (preserve ? parseRbacSelectedRoleId(preserve) || undefined : undefined);
+    applyRbacSectionParams(next, {
+      tab,
+      rbacUserListFilters: resolvedRbacFilters,
+      rbacUserId: resolvedRbacUserId,
+      rbacRoleId: resolvedRbacRoleId,
+    });
   }
 
   if (section === "userInvestigation") {

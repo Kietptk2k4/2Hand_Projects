@@ -27,7 +27,7 @@ export function AdminRefundApprovalsView({
   formatDateTime,
 }) {
   return (
-    <div className="mx-auto max-w-[1440px] space-y-4">
+    <div className="w-full min-w-0 space-y-4">
       <AdminSurfaceCard padding="lg">
         <AdminPageHeader
           title="Duyệt hoàn tiền"

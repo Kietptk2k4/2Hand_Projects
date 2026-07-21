@@ -1,4 +1,8 @@
 import { formatDateTime } from "../../../security/utils/formatDateTime.js";
+import {
+  getAuditActionLabel,
+  getAuditTargetTypeLabel,
+} from "../constants/adminAuditActionLabels.js";
 import { AdminFilterButton, AdminSurfaceCard } from "../../components/ui";
 import { AuditStatusBadge } from "./AuditStatusBadge.jsx";
 
@@ -103,8 +107,9 @@ export function AdminActionLogDetailDrawerView({
                   value={<AuditStatusBadge status={entry.status} />}
                 />
                 <DetailRow label="Admin ID" value={entry.adminId} mono />
-                <DetailRow label="Action" value={entry.actionType} />
-                <DetailRow label="Target type" value={entry.targetType} />
+                <DetailRow label="Hành động" value={getAuditActionLabel(entry.actionType)} />
+                <DetailRow label="Mã hành động" value={entry.actionType} mono />
+                <DetailRow label="Loại đối tượng" value={getAuditTargetTypeLabel(entry.targetType)} />
                 <DetailRow label="Target ID" value={entry.targetId} mono />
                 <DetailRow label="IP address" value={entry.ipAddress} mono />
                 <DetailRow label="User agent" value={entry.userAgent} className="sm:col-span-2" />

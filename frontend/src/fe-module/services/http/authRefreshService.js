@@ -1,4 +1,5 @@
 import axios from "axios";
+import { ngrokGatewayHeaderObject } from "./ngrokGatewayHeaders";
 import { resolveServiceBaseUrl } from "./resolveServiceBaseUrl";
 
 const AUTH_BASE_URL = resolveServiceBaseUrl(import.meta.env.VITE_AUTH_SERVICE_BASE_URL);
@@ -72,7 +73,12 @@ export async function refreshAccessTokenOnce() {
       const response = await axios.post(
         `${AUTH_BASE_URL}${refreshPath}`,
         { refresh_token: refreshToken },
-        { headers: { "Content-Type": "application/json" } }
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...ngrokGatewayHeaderObject(AUTH_BASE_URL),
+          },
+        }
       );
       const payload = response?.data;
 

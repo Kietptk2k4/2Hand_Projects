@@ -11,8 +11,11 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 function formatUserSummary(user) {
   if (!user) return "";
-  const name = user.display_name?.trim() || user.email;
-  return `${user.email} — ${name}`;
+  const name = user.display_name?.trim();
+  if (name && name !== user.email) {
+    return `${user.email} — ${name}`;
+  }
+  return user.email || "";
 }
 
 function isUuid(value) {
@@ -69,7 +72,8 @@ export function AdminUserTargetBar({ userId, selectedUser, onTargetChange }) {
     }
 
     if (selectedUser?.user_id === userId) {
-      setQuery(formatUserSummary(selectedUser));
+      // Identity strip shows the target; keep search empty for “Đổi người dùng”.
+      setQuery("");
       return;
     }
 
@@ -82,11 +86,11 @@ export function AdminUserTargetBar({ userId, selectedUser, onTargetChange }) {
           data?.users?.find((user) => user.user_id === userId) || data?.users?.[0];
         if (!cancelled && match) {
           onTargetChange({ userId, user: match });
-          setQuery(formatUserSummary(match));
+          setQuery("");
         }
       } catch {
         if (!cancelled) {
-          setQuery(userId);
+          setQuery("");
         }
       }
     })();
@@ -118,7 +122,7 @@ export function AdminUserTargetBar({ userId, selectedUser, onTargetChange }) {
   const handleInputChange = (event) => {
     const next = event.target.value;
     setQuery(next);
-    if (selectedUser && next !== formatUserSummary(selectedUser)) {
+    if (selectedUser) {
       onTargetChange({ userId: "", user: null });
     }
     setIsOpen(true);
@@ -134,7 +138,7 @@ export function AdminUserTargetBar({ userId, selectedUser, onTargetChange }) {
 
   const handleSelectUser = (user) => {
     onTargetChange({ userId: user.user_id, user });
-    setQuery(formatUserSummary(user));
+    setQuery("");
     setResults([]);
     setIsOpen(false);
     setSearchStatus("idle");

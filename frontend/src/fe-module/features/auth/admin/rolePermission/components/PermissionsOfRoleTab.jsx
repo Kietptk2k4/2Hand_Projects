@@ -20,6 +20,7 @@ export function PermissionsOfRoleTab({
 }) {
   const { showSessionExpired } = useAuthSession();
   const [roles, setRoles] = useState([]);
+  const [rolesStatus, setRolesStatus] = useState("loading");
   const [catalog, setCatalog] = useState([]);
   const [roleId, setRoleId] = useState(selectedRoleId || "");
   const [roleMeta, setRoleMeta] = useState(null);
@@ -31,15 +32,29 @@ export function PermissionsOfRoleTab({
   const [revokingCode, setRevokingCode] = useState("");
 
   useEffect(() => {
-    if (selectedRoleId) setRoleId(selectedRoleId);
+    setRoleId(selectedRoleId || "");
   }, [selectedRoleId]);
 
+  const handleRoleIdChange = useCallback(
+    (nextRoleId) => {
+      setRoleId(nextRoleId);
+      onSelectedRoleIdChange?.(nextRoleId || undefined);
+    },
+    [onSelectedRoleIdChange],
+  );
+
   const loadRoles = useCallback(async () => {
+    setRolesStatus("loading");
     try {
       const data = await getAdminRoles();
       setRoles(data?.roles || []);
+      setRolesStatus("ready");
     } catch (error) {
-      if (error?.code === 401) showSessionExpired(error?.message);
+      if (error?.code === 401) {
+        showSessionExpired(error?.message);
+        return;
+      }
+      setRolesStatus("error");
     }
   }, [showSessionExpired]);
 
@@ -60,7 +75,6 @@ export function PermissionsOfRoleTab({
 
     setStatus("loading");
     setErrorMessage("");
-    onSelectedRoleIdChange?.(roleId);
 
     try {
       const data = await getRolePermissions(roleId);
@@ -90,7 +104,7 @@ export function PermissionsOfRoleTab({
       setStatus("error");
       setErrorMessage(error?.message || "Không tải được permission.");
     }
-  }, [roleId, onSelectedRoleIdChange, showSessionExpired]);
+  }, [roleId, showSessionExpired]);
 
   useEffect(() => {
     loadRoles();
@@ -110,6 +124,8 @@ export function PermissionsOfRoleTab({
     () => catalog.filter((perm) => !assignedCodes.has(perm.code)),
     [catalog, assignedCodes],
   );
+
+  const isBusy = isAssigning || revokingCode !== "";
 
   useEffect(() => {
     if (!selectedPermissionCode && availablePermissions.length > 0) {
@@ -170,6 +186,7 @@ export function PermissionsOfRoleTab({
       title={TITLE}
       subtitle={SUBTITLE}
       roles={roles}
+      rolesStatus={rolesStatus}
       roleId={roleId}
       roleMeta={roleMeta}
       status={status}
@@ -179,13 +196,15 @@ export function PermissionsOfRoleTab({
       selectedPermissionCode={selectedPermissionCode}
       isAssigning={isAssigning}
       revokingCode={revokingCode}
-      onRoleIdChange={setRoleId}
+      isBusy={isBusy}
+      onRoleIdChange={handleRoleIdChange}
       onLoadPermissions={loadPermissions}
       onPermissionCodeChange={setSelectedPermissionCode}
       onAssignPermission={handleAssignPermission}
       onRevokePermission={handleRevokePermission}
       onBackToRoleList={() => onTabChange?.("role-list")}
       onRetry={loadPermissions}
+      onRolesRetry={loadRoles}
     />
   );
 }

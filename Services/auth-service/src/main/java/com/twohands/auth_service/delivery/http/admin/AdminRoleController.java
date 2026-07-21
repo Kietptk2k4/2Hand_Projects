@@ -8,6 +8,12 @@ import com.twohands.auth_service.application.rbac.assignrolestousers.AssignRoles
 import com.twohands.auth_service.application.rbac.assignrolestousers.AssignRolesToUsersUseCase;
 import com.twohands.auth_service.application.rbac.checkuserpermission.CheckUserPermissionResult;
 import com.twohands.auth_service.application.rbac.checkuserpermission.CheckUserPermissionUseCase;
+import com.twohands.auth_service.application.rbac.createrole.CreateRoleCommand;
+import com.twohands.auth_service.application.rbac.createrole.CreateRoleResult;
+import com.twohands.auth_service.application.rbac.createrole.CreateRoleUseCase;
+import com.twohands.auth_service.application.rbac.deleterole.DeleteRoleCommand;
+import com.twohands.auth_service.application.rbac.deleterole.DeleteRoleResult;
+import com.twohands.auth_service.application.rbac.deleterole.DeleteRoleUseCase;
 import com.twohands.auth_service.application.rbac.revokepermissionfromrole.RevokePermissionFromRoleCommand;
 import com.twohands.auth_service.application.rbac.revokepermissionfromrole.RevokePermissionFromRoleResult;
 import com.twohands.auth_service.application.rbac.revokepermissionfromrole.RevokePermissionFromRoleUseCase;
@@ -23,12 +29,19 @@ import com.twohands.auth_service.application.rbac.viewrolelist.ViewRoleListUseCa
 import com.twohands.auth_service.application.rbac.viewuserlistforrbac.ViewUserListForRbacCommand;
 import com.twohands.auth_service.application.rbac.viewuserlistforrbac.ViewUserListForRbacResult;
 import com.twohands.auth_service.application.rbac.viewuserlistforrbac.ViewUserListForRbacUseCase;
+import com.twohands.auth_service.application.rbac.updaterole.UpdateRoleCommand;
+import com.twohands.auth_service.application.rbac.updaterole.UpdateRoleResult;
+import com.twohands.auth_service.application.rbac.updaterole.UpdateRoleUseCase;
 import com.twohands.auth_service.common.dto.ApiResponse;
 import com.twohands.auth_service.delivery.http.admin.request.AssignPermissionToRoleRequest;
 import com.twohands.auth_service.delivery.http.admin.request.AssignRolesToUsersRequest;
+import com.twohands.auth_service.delivery.http.admin.request.CreateRoleRequest;
+import com.twohands.auth_service.delivery.http.admin.request.UpdateRoleRequest;
+import com.twohands.auth_service.delivery.http.admin.response.AdminRoleResponse;
 import com.twohands.auth_service.delivery.http.admin.response.AssignPermissionToRoleResponse;
 import com.twohands.auth_service.delivery.http.admin.response.AssignRolesToUsersResponse;
 import com.twohands.auth_service.delivery.http.admin.response.CheckUserPermissionResponse;
+import com.twohands.auth_service.delivery.http.admin.response.DeleteRoleResponse;
 import com.twohands.auth_service.delivery.http.admin.response.RevokePermissionFromRoleResponse;
 import com.twohands.auth_service.delivery.http.admin.response.RevokeRoleFromUserResponse;
 import com.twohands.auth_service.delivery.http.admin.response.ViewPermissionCatalogResponse;
@@ -43,6 +56,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -65,6 +79,9 @@ public class AdminRoleController {
     private final ViewPermissionCatalogUseCase viewPermissionCatalogUseCase;
     private final CheckUserPermissionUseCase checkUserPermissionUseCase;
     private final ViewUserListForRbacUseCase viewUserListForRbacUseCase;
+    private final CreateRoleUseCase createRoleUseCase;
+    private final UpdateRoleUseCase updateRoleUseCase;
+    private final DeleteRoleUseCase deleteRoleUseCase;
 
     public AdminRoleController(
             AssignRolesToUsersUseCase assignRolesToUsersUseCase,
@@ -75,7 +92,10 @@ public class AdminRoleController {
             ViewPermissionsOfRoleUseCase viewPermissionsOfRoleUseCase,
             ViewPermissionCatalogUseCase viewPermissionCatalogUseCase,
             CheckUserPermissionUseCase checkUserPermissionUseCase,
-            ViewUserListForRbacUseCase viewUserListForRbacUseCase
+            ViewUserListForRbacUseCase viewUserListForRbacUseCase,
+            CreateRoleUseCase createRoleUseCase,
+            UpdateRoleUseCase updateRoleUseCase,
+            DeleteRoleUseCase deleteRoleUseCase
     ) {
         this.assignRolesToUsersUseCase = assignRolesToUsersUseCase;
         this.assignPermissionToRoleUseCase = assignPermissionToRoleUseCase;
@@ -86,6 +106,9 @@ public class AdminRoleController {
         this.viewPermissionCatalogUseCase = viewPermissionCatalogUseCase;
         this.checkUserPermissionUseCase = checkUserPermissionUseCase;
         this.viewUserListForRbacUseCase = viewUserListForRbacUseCase;
+        this.createRoleUseCase = createRoleUseCase;
+        this.updateRoleUseCase = updateRoleUseCase;
+        this.deleteRoleUseCase = deleteRoleUseCase;
     }
 
     @GetMapping("/users")
@@ -145,6 +168,62 @@ public class AdminRoleController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(HttpStatus.OK.value(), viewRoleListUseCase.successMessage(), response));
+    }
+
+    @PostMapping("/roles")
+    public ResponseEntity<ApiResponse<AdminRoleResponse>> createRole(
+            @Valid @RequestBody CreateRoleRequest request,
+            Authentication authentication
+    ) {
+        UUID actorUserId = extractUserId(authentication);
+        CreateRoleResult result = createRoleUseCase.execute(
+                new CreateRoleCommand(actorUserId, request.code(), request.name())
+        );
+
+        AdminRoleResponse response = toAdminRoleResponse(result.id(), result.code(), result.name(), result.createdAt(), result.updatedAt());
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(HttpStatus.CREATED.value(), createRoleUseCase.successMessage(), response));
+    }
+
+    @PatchMapping("/roles/{roleId}")
+    public ResponseEntity<ApiResponse<AdminRoleResponse>> updateRole(
+            @PathVariable String roleId,
+            @Valid @RequestBody UpdateRoleRequest request,
+            Authentication authentication
+    ) {
+        UUID actorUserId = extractUserId(authentication);
+        UUID parsedRoleId = parseUuid(roleId, "roleId");
+
+        UpdateRoleResult result = updateRoleUseCase.execute(
+                new UpdateRoleCommand(actorUserId, parsedRoleId, request.name())
+        );
+
+        AdminRoleResponse response = toAdminRoleResponse(result.id(), result.code(), result.name(), result.createdAt(), result.updatedAt());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(HttpStatus.OK.value(), updateRoleUseCase.successMessage(), response));
+    }
+
+    @DeleteMapping("/roles/{roleId}")
+    public ResponseEntity<ApiResponse<DeleteRoleResponse>> deleteRole(
+            @PathVariable String roleId,
+            Authentication authentication
+    ) {
+        UUID actorUserId = extractUserId(authentication);
+        UUID parsedRoleId = parseUuid(roleId, "roleId");
+
+        DeleteRoleResult result = deleteRoleUseCase.execute(
+                new DeleteRoleCommand(actorUserId, parsedRoleId)
+        );
+
+        DeleteRoleResponse response = new DeleteRoleResponse(
+                result.id().toString(),
+                result.code()
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(HttpStatus.OK.value(), deleteRoleUseCase.successMessage(), response));
     }
 
     @GetMapping("/roles/{roleId}/permissions")
@@ -319,5 +398,21 @@ public class AdminRoleController {
         } catch (IllegalArgumentException ex) {
             throw new AppException(ErrorCode.VALIDATION_ERROR, "Du lieu khong hop le.", field, "INVALID_FORMAT");
         }
+    }
+
+    private AdminRoleResponse toAdminRoleResponse(
+            UUID id,
+            String code,
+            String name,
+            java.time.Instant createdAt,
+            java.time.Instant updatedAt
+    ) {
+        return new AdminRoleResponse(
+                id.toString(),
+                code,
+                name,
+                createdAt,
+                updatedAt
+        );
     }
 }

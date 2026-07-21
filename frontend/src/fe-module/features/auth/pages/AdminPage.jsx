@@ -26,6 +26,7 @@ import {
   parseOrderSupportShipmentListFilters,
   parseOrderSupportWebhookFilters,
   parseRbacSelectedUserId,
+  parseRbacSelectedRoleId,
   parseRbacUserListFilters,
   parseSystemOperationsAnnouncementFilters,
   parseSystemOperationsConfigFilters,
@@ -40,6 +41,7 @@ import { RevokeRoleTab } from "../admin/rolePermission/components/RevokeRoleTab.
 import { PermissionsOfRoleTab } from "../admin/rolePermission/components/PermissionsOfRoleTab.jsx";
 import { PermissionsOfUserTab } from "../admin/rolePermission/components/PermissionsOfUserTab.jsx";
 import { RoleListTab } from "../admin/rolePermission/components/RoleListTab.jsx";
+import { resolveRbacUrlParams } from "../admin/rolePermission/rbacPageContract.js";
 import { AdminUserTargetBar } from "../admin/userInvestigation/components/AdminUserTargetBar.jsx";
 import { InvestigationUserListPanel } from "../admin/userInvestigation/components/InvestigationUserListPanel.jsx";
 import { InvestigationCurrentEnforcementTab } from "../admin/userInvestigation/components/tabs/InvestigationCurrentEnforcementTab.jsx";
@@ -162,8 +164,8 @@ export function AdminPage() {
   const commerceFinanceSellerId = parseCommerceFinanceSellerId(searchParams);
   const rbacUserListFilters = parseRbacUserListFilters(searchParams);
   const rbacSelectedUserId = parseRbacSelectedUserId(searchParams);
+  const rbacSelectedRoleId = parseRbacSelectedRoleId(searchParams);
 
-  const [selectedRoleId, setSelectedRoleId] = useState("");
   const [investigationTargetUser, setInvestigationTargetUser] = useState(null);
   const [alert, setAlert] = useState(null);
 
@@ -256,10 +258,13 @@ export function AdminPage() {
             sectionId === "contentModeration" ? contentModerationProductId || undefined : undefined,
           productView:
             sectionId === "contentModeration" ? contentModerationProductView : undefined,
-          rbacUserListFilters:
-            sectionId === "rolePermission" ? rbacUserListFilters : undefined,
-          rbacUserId:
-            sectionId === "rolePermission" ? rbacSelectedUserId || undefined : undefined,
+          ...(sectionId === "rolePermission"
+            ? resolveRbacUrlParams(defaultTab, {
+                rbacUserListFilters,
+                rbacSelectedUserId,
+                rbacSelectedRoleId,
+              })
+            : {}),
           investigationUserListFilters:
             sectionId === "userInvestigation" ? investigationUserListFilters : undefined,
         }),
@@ -284,6 +289,7 @@ export function AdminPage() {
       orderSupportPaymentFilters,
       orderSupportShipmentListFilters,
       rbacSelectedUserId,
+      rbacSelectedRoleId,
       rbacUserListFilters,
       setSearchParams,
     ],
@@ -329,10 +335,13 @@ export function AdminPage() {
               : undefined,
           productView:
             adminTopTab === "contentModeration" ? contentModerationProductView : undefined,
-          rbacUserListFilters:
-            adminTopTab === "rolePermission" ? rbacUserListFilters : undefined,
-          rbacUserId:
-            adminTopTab === "rolePermission" ? rbacSelectedUserId || undefined : undefined,
+          ...(adminTopTab === "rolePermission"
+            ? resolveRbacUrlParams(childId, {
+                rbacUserListFilters,
+                rbacSelectedUserId,
+                rbacSelectedRoleId,
+              })
+            : {}),
           investigationUserListFilters:
             adminTopTab === "userInvestigation" ? investigationUserListFilters : undefined,
           preserve: searchParams,
@@ -359,10 +368,30 @@ export function AdminPage() {
       orderSupportPaymentFilters,
       orderSupportShipmentListFilters,
       rbacSelectedUserId,
+      rbacSelectedRoleId,
       rbacUserListFilters,
       searchParams,
       setSearchParams,
     ],
+  );
+
+  const handleRbacRoleIdChange = useCallback(
+    (nextRoleId) => {
+      setSearchParams(
+        buildAdminSearchParams({
+          section: "rolePermission",
+          tab: activeChildTab,
+          ...resolveRbacUrlParams(activeChildTab, {
+            rbacUserListFilters,
+            rbacSelectedUserId,
+            rbacSelectedRoleId: nextRoleId,
+          }),
+          preserve: searchParams,
+        }),
+        { replace: true },
+      );
+    },
+    [activeChildTab, rbacSelectedUserId, rbacUserListFilters, searchParams, setSearchParams],
   );
 
   const handleInvestigationTargetChange = useCallback(
@@ -372,7 +401,8 @@ export function AdminPage() {
         buildAdminSearchParams({
           section: "userInvestigation",
           tab: activeChildTab,
-          userId: userId || undefined,
+          // null = explicit clear (do not fall back to preserved URL userId)
+          userId: userId ? userId : null,
           investigationUserListFilters,
           preserve: searchParams,
         }),
@@ -818,20 +848,18 @@ export function AdminPage() {
 
   const onViewRolePermissions = useCallback(
     (roleId) => {
-      setSelectedRoleId(roleId);
       setSearchParams(
         buildAdminSearchParams({
           section: "rolePermission",
           tab: "role-permissions",
-          rbacUserListFilters,
-          rbacUserId: rbacSelectedUserId || undefined,
+          rbacRoleId: roleId,
           preserve: searchParams,
         }),
         { replace: true },
       );
       setAlert(null);
     },
-    [rbacSelectedUserId, rbacUserListFilters, searchParams, setSearchParams],
+    [searchParams, setSearchParams],
   );
 
   const handleRbacUserListFiltersChange = useCallback(
@@ -840,14 +868,17 @@ export function AdminPage() {
         buildAdminSearchParams({
           section: "rolePermission",
           tab: activeChildTab,
-          rbacUserListFilters: filters,
-          rbacUserId: rbacSelectedUserId || undefined,
+          ...resolveRbacUrlParams(activeChildTab, {
+            rbacUserListFilters: filters,
+            rbacSelectedUserId,
+            rbacSelectedRoleId,
+          }),
           preserve: searchParams,
         }),
         { replace: true },
       );
     },
-    [activeChildTab, rbacSelectedUserId, searchParams, setSearchParams],
+    [activeChildTab, rbacSelectedRoleId, rbacSelectedUserId, searchParams, setSearchParams],
   );
 
   const handleRbacUserSelect = useCallback(
@@ -856,14 +887,17 @@ export function AdminPage() {
         buildAdminSearchParams({
           section: "rolePermission",
           tab: activeChildTab,
-          rbacUserListFilters,
-          rbacUserId: nextUserId || undefined,
+          ...resolveRbacUrlParams(activeChildTab, {
+            rbacUserListFilters,
+            rbacSelectedUserId: nextUserId,
+            rbacSelectedRoleId,
+          }),
           preserve: searchParams,
         }),
         { replace: true },
       );
     },
-    [activeChildTab, rbacUserListFilters, searchParams, setSearchParams],
+    [activeChildTab, rbacSelectedRoleId, rbacUserListFilters, searchParams, setSearchParams],
   );
 
   const RoleTabComponent = ROLE_PERMISSION_TAB_COMPONENTS[activeChildTab] || RoleListTab;
@@ -885,8 +919,8 @@ export function AdminPage() {
   const roleTabProps = {
     onNotify,
     onTabChange: handleChildTabChange,
-    selectedRoleId,
-    onSelectedRoleIdChange: setSelectedRoleId,
+    selectedRoleId: rbacSelectedRoleId,
+    onSelectedRoleIdChange: handleRbacRoleIdChange,
     onViewRolePermissions,
     rbacUserListFilters,
     rbacSelectedUserId,

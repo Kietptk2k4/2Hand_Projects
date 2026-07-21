@@ -59,7 +59,7 @@ export function AdminMainHeader() {
   const initials = getUserInitials(user);
 
   return (
-    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-4 border-b border-admin-border-subtle bg-admin-surface px-4 shadow-[var(--shadow-admin-header)] sm:gap-5 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-admin-border-subtle bg-admin-surface px-4 shadow-[var(--shadow-admin-header)] sm:gap-4 sm:px-6 lg:px-8">
       <div className="min-w-0 flex-1">
         <label className="relative block max-w-xl">
           <span className="sr-only">Search across console</span>

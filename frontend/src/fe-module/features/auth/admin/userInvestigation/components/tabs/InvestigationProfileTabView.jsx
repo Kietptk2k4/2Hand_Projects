@@ -1,4 +1,4 @@
-import { AdminPageHeader } from "../../../components/ui";
+import { AdminDetailPageShell } from "../../../components/ui";
 import { InvestigationListSkeleton } from "../ui/InvestigationListSkeleton.jsx";
 import { InvestigationRetryPanel } from "../ui/InvestigationRetryPanel.jsx";
 import { EnforcementSummaryTable } from "../EnforcementSummaryTable.jsx";
@@ -6,6 +6,8 @@ import { InvestigationEmptyState } from "../InvestigationEmptyState.jsx";
 import { InvestigationForbiddenState } from "../InvestigationForbiddenState.jsx";
 import { InvestigationPermissionNotice } from "../InvestigationPermissionNotice.jsx";
 import { InvestigationProfileCard } from "../InvestigationProfileCard.jsx";
+
+const SECTION_EYEBROW = "Điều tra người dùng";
 
 export function InvestigationProfileTabView({
   title,
@@ -21,58 +23,53 @@ export function InvestigationProfileTabView({
 }) {
   if (status === "no-user") {
     return (
-      <div>
-        <AdminPageHeader title={title} subtitle={subtitle} />
+      <AdminDetailPageShell eyebrow={SECTION_EYEBROW} title={title} subtitle={subtitle}>
         <InvestigationEmptyState />
-      </div>
+      </AdminDetailPageShell>
     );
   }
 
   if (status === "loading") {
     return (
-      <div>
-        <AdminPageHeader title={title} subtitle={subtitle} />
+      <AdminDetailPageShell eyebrow={SECTION_EYEBROW} title={title} subtitle={subtitle}>
         <InvestigationListSkeleton rows={6} />
-      </div>
+      </AdminDetailPageShell>
     );
   }
 
   if (status === "forbidden") {
     return (
-      <div>
-        <AdminPageHeader title={title} subtitle={subtitle} />
+      <AdminDetailPageShell eyebrow={SECTION_EYEBROW} title={title} subtitle={subtitle}>
         <InvestigationForbiddenState message={errorMessage} />
-      </div>
+      </AdminDetailPageShell>
     );
   }
 
   if (status === "error" || (status === "ready" && !profile)) {
     return (
-      <div>
-        <AdminPageHeader title={title} subtitle={subtitle} />
+      <AdminDetailPageShell eyebrow={SECTION_EYEBROW} title={title} subtitle={subtitle}>
         <InvestigationRetryPanel
           message={errorMessage || "Không tải được hồ sơ điều tra."}
           onRetry={onRetry}
         />
-      </div>
+      </AdminDetailPageShell>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <AdminDetailPageShell
+      eyebrow={SECTION_EYEBROW}
+      title={title}
+      subtitle={subtitle}
+      headerActions={toolbar}
+    >
       {!canReadProfile && permissionNotice ? (
         <InvestigationPermissionNotice message={permissionNotice} />
       ) : null}
 
-      <AdminPageHeader
-        title={title}
-        subtitle={subtitle}
-        actions={toolbar}
-      />
-
       <InvestigationProfileCard profile={profile} />
       <EnforcementSummaryTable enforcements={profile?.current_enforcements || []} />
       {applyModal}
-    </div>
+    </AdminDetailPageShell>
   );
 }

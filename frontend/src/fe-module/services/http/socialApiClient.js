@@ -2,6 +2,7 @@ import axios from "axios";
 import { isSuspendedWriteError } from "../../features/social/utils/socialWriteErrors";
 import { notifySuspendedWrite } from "../../features/social/utils/socialWriteBlockBridge";
 import { getStoredAccessToken, refreshAccessTokenOnce } from "./authRefreshService";
+import { attachNgrokGatewayInterceptor } from "./ngrokGatewayHeaders";
 import { resolveServiceBaseUrl } from "./resolveServiceBaseUrl";
 
 const SOCIAL_BASE_URL = resolveServiceBaseUrl(import.meta.env.VITE_SOCIAL_SERVICE_BASE_URL);
@@ -12,6 +13,8 @@ export const socialApiClient = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+attachNgrokGatewayInterceptor(socialApiClient);
 
 socialApiClient.interceptors.request.use((config) => {
   const token = getStoredAccessToken();

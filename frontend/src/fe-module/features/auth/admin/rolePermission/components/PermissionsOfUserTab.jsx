@@ -1,21 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getUserPermissions } from "../../../api/authApi";
 import { useAuthSession } from "../../../hooks/useAuthSession.jsx";
 import { PermissionsOfUserTabView } from "./PermissionsOfUserTabView.jsx";
 import { RbacUserListPanel } from "./RbacUserListPanel.jsx";
 
 const TITLE = "Quyền của người dùng";
-const SUBTITLE = "Xem permission hiệu lực của người dùng (chỉ mã permission).";
-
-function groupPermissionsByPrefix(codes) {
-  const groups = {};
-  codes.forEach((code) => {
-    const prefix = code.includes("_") ? code.split("_")[0] : "OTHER";
-    if (!groups[prefix]) groups[prefix] = [];
-    groups[prefix].push(code);
-  });
-  return groups;
-}
+const SUBTITLE = "Xem quyền hiệu lực của người dùng theo mã permission từ vai trò được gán.";
 
 export function PermissionsOfUserTab({
   rbacUserListFilters,
@@ -33,6 +23,14 @@ export function PermissionsOfUserTab({
   const handleUserSelect = (userId, userRow) => {
     setSelectedUser(userRow || null);
     onRbacUserSelect?.(userId);
+  };
+
+  const handleClearUser = () => {
+    setSelectedUser(null);
+    setPermissions([]);
+    setResolvedUserId("");
+    setStatus("idle");
+    onRbacUserSelect?.(null);
   };
 
   const load = useCallback(async () => {
@@ -75,14 +73,11 @@ export function PermissionsOfUserTab({
     load();
   }, [load]);
 
-  const groupedHint = useMemo(() => {
-    const codes = permissions.map((permission) => permission.code);
-    const grouped = groupPermissionsByPrefix(codes);
-    if (Object.keys(grouped).length <= 1) return "";
-    return `Chỉ để hiển thị — nhóm theo prefix: ${Object.entries(grouped)
-      .map(([prefix, items]) => `${prefix} (${items.length})`)
-      .join(", ")}`;
-  }, [permissions]);
+  useEffect(() => {
+    if (!rbacSelectedUserId) {
+      setSelectedUser(null);
+    }
+  }, [rbacSelectedUserId]);
 
   return (
     <PermissionsOfUserTabView
@@ -94,7 +89,8 @@ export function PermissionsOfUserTab({
       status={status}
       errorMessage={errorMessage}
       permissions={permissions}
-      groupedHint={groupedHint}
+      onClearUser={handleClearUser}
+      onRetry={load}
       userListPanel={
         <RbacUserListPanel
           userListFilters={rbacUserListFilters}

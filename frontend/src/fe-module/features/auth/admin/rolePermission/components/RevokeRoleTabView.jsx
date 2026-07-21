@@ -1,9 +1,8 @@
-import { AdminFilterButton, AdminPageHeader, AdminSurfaceCard } from "../../components/ui";
+import { AdminFilterButton, AdminSurfaceCard, AdminWorkspacePageShell } from "../../components/ui";
+import { RBAC_SECTION_EYEBROW } from "../rbacPageContract.js";
 import { RbacRoleRadioList } from "./RbacRoleRadioList.jsx";
 import { RbacSelectedUserSummary } from "./RbacSelectedUserSummary.jsx";
 import { RbacInlineAlert } from "./ui/RbacInlineAlert.jsx";
-import { RbacListSkeleton } from "./ui/RbacListSkeleton.jsx";
-import { RbacRetryPanel } from "./ui/RbacRetryPanel.jsx";
 
 export function RevokeRoleTabView({
   title,
@@ -21,70 +20,73 @@ export function RevokeRoleTabView({
   onRoleSelect,
   onSubmit,
   onRolesRetry,
+  onClearUser,
 }) {
-  if (rolesStatus === "loading") {
-    return (
-      <div className="space-y-4">
-        <AdminPageHeader title={title} subtitle={subtitle} />
-        <RbacListSkeleton />
-      </div>
-    );
-  }
-
-  if (rolesStatus === "error") {
-    return (
-      <div className="space-y-4">
-        <AdminPageHeader title={title} subtitle={subtitle} />
-        <RbacRetryPanel message="Không tải được danh sách vai trò." onRetry={onRolesRetry} />
-      </div>
-    );
-  }
-
   const revokeEmptyMessage =
     rbacSelectedUserId && assignableRoles.length === 0
       ? "Người dùng chưa có vai trò nào."
       : undefined;
 
+  const canSubmit =
+    Boolean(rbacSelectedUserId && roleId) &&
+    assignableRoles.length > 0 &&
+    !isSubmitting;
+
+  const disabledHint = !rbacSelectedUserId
+    ? "Chọn người dùng và vai trò"
+    : assignableRoles.length === 0
+      ? "Người dùng chưa có vai trò để thu hồi"
+      : !roleId
+        ? "Chọn một vai trò để tiếp tục"
+        : null;
+
   return (
-    <div className="space-y-4">
-      <AdminPageHeader title={title} subtitle={subtitle} />
+    <AdminWorkspacePageShell
+      eyebrow={RBAC_SECTION_EYEBROW}
+      title={title}
+      subtitle={subtitle}
+      status={rolesStatus}
+      errorMessage="Không tải được danh sách vai trò."
+      onRetry={onRolesRetry}
+      alert={globalError ? <RbacInlineAlert variant="error" message={globalError} /> : null}
+      sidebar={userListPanel}
+      modals={confirmModal}
+    >
+      <AdminSurfaceCard padding="md">
+        <form onSubmit={onSubmit} className="space-y-5" noValidate>
+          <RbacSelectedUserSummary
+            selectedUserId={rbacSelectedUserId}
+            selectedUser={selectedUser}
+            fieldError={fieldErrors.userId}
+            onClear={onClearUser}
+          />
 
-      {globalError ? <RbacInlineAlert variant="error" message={globalError} /> : null}
+          <RbacRoleRadioList
+            name="revoke-role"
+            roles={assignableRoles}
+            selectedRoleId={roleId}
+            onSelect={onRoleSelect}
+            fieldError={fieldErrors.role_id}
+            label="Vai trò cần thu hồi"
+            emptyMessage={revokeEmptyMessage}
+            disabled={!rbacSelectedUserId}
+          />
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)]">
-        {userListPanel}
-
-        <AdminSurfaceCard padding="md">
-          <form onSubmit={onSubmit} className="space-y-5" noValidate>
-            <RbacSelectedUserSummary
-              selectedUserId={rbacSelectedUserId}
-              selectedUser={selectedUser}
-              fieldError={fieldErrors.userId}
-            />
-
-            <RbacRoleRadioList
-              name="revoke-role"
-              roles={assignableRoles}
-              selectedRoleId={roleId}
-              onSelect={onRoleSelect}
-              fieldError={fieldErrors.role_id}
-              label="Vai trò cần thu hồi"
-              emptyMessage={revokeEmptyMessage}
-            />
-
+          <div>
             <AdminFilterButton
               type="submit"
               variant="primary"
-              className="w-full sm:w-auto"
-              disabled={isSubmitting || !rbacSelectedUserId || assignableRoles.length === 0}
+              className="w-full"
+              disabled={!canSubmit}
             >
-              Thu hồi vai trò
+              {isSubmitting ? "Đang thu hồi..." : "Thu hồi vai trò"}
             </AdminFilterButton>
-          </form>
-        </AdminSurfaceCard>
-      </div>
-
-      {confirmModal}
-    </div>
+            {!canSubmit && disabledHint ? (
+              <p className="mt-2 text-xs text-admin-text-muted">{disabledHint}</p>
+            ) : null}
+          </div>
+        </form>
+      </AdminSurfaceCard>
+    </AdminWorkspacePageShell>
   );
 }

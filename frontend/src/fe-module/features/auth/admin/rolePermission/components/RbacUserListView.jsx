@@ -24,8 +24,8 @@ export function RbacUserListView({
   onRetry,
 }) {
   return (
-    <div className="space-y-4">
-      <AdminSurfaceCard padding="md">
+    <AdminSurfaceCard padding="none" className="overflow-hidden">
+      <div className="border-b border-admin-border-subtle bg-admin-surface-raised px-4 py-3 lg:px-5">
         <RbacUserFilterBar
           draftFilters={draftFilters}
           statusOptions={statusOptions}
@@ -34,19 +34,31 @@ export function RbacUserListView({
           onApply={onApplyFilters}
           onClear={onClearFilters}
         />
-      </AdminSurfaceCard>
+      </div>
 
-      {status === "loading" ? <RbacListSkeleton rows={5} /> : null}
-      {status === "forbidden" ? <RbacRetryPanel message={errorMessage} /> : null}
-      {status === "error" ? <RbacRetryPanel message={errorMessage} onRetry={onRetry} /> : null}
+      {status === "loading" ? (
+        <div className="p-4 lg:p-5">
+          <RbacListSkeleton rows={5} bare />
+        </div>
+      ) : null}
+      {status === "forbidden" ? (
+        <div className="p-4 lg:p-5">
+          <RbacRetryPanel message={errorMessage} />
+        </div>
+      ) : null}
+      {status === "error" ? (
+        <div className="p-4 lg:p-5">
+          <RbacRetryPanel message={errorMessage} onRetry={onRetry} />
+        </div>
+      ) : null}
 
       {status === "ready" ? (
-        <AdminSurfaceCard padding="md">
+        <div className="p-4 lg:p-5">
           <AdminPagination
-            className="mb-4"
+            className="mb-3"
             currentPage={currentPage}
             totalPages={totalPages}
-            summary={`${pagination?.total_items ?? 0} người dùng · Sắp xếp: ${activeSortLabel} · Trang ${pagination?.page ?? currentPage}/${totalPages}`}
+            summary={`${pagination?.total_items ?? 0} người dùng · ${activeSortLabel}`}
             onPrevious={() => onPageChange(currentPage - 1)}
             onNext={() => onPageChange(currentPage + 1)}
           />
@@ -55,8 +67,8 @@ export function RbacUserListView({
             selectedUserId={selectedUserId}
             onUserSelect={onUserSelect}
           />
-        </AdminSurfaceCard>
+        </div>
       ) : null}
-    </div>
+    </AdminSurfaceCard>
   );
 }

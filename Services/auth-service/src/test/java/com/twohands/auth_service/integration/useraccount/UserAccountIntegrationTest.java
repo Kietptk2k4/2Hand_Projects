@@ -792,6 +792,123 @@ class UserAccountIntegrationTest {
     }
 
     @Test
+    void createRoleShouldReturn201WithCreatedRole() throws Exception {
+        TestUser actor = insertFullUser("create_role_actor_success@example.com");
+        UUID adminRoleId = insertRole("ADMIN", "Administrator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(adminRoleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), adminRoleId);
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("code", "support");
+        payload.put("name", "Support team");
+
+        mockMvc.perform(post("/api/v1/admin/roles")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Tao vai tro thanh cong."))
+                .andExpect(jsonPath("$.data.code").value("SUPPORT"))
+                .andExpect(jsonPath("$.data.name").value("Support team"));
+    }
+
+    @Test
+    void createRoleShouldReturn403WhenActorLacksPermission() throws Exception {
+        TestUser actor = insertFullUser("create_role_actor_forbidden@example.com");
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("code", "SUPPORT");
+        payload.put("name", "Support team");
+
+        mockMvc.perform(post("/api/v1/admin/roles")
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Access denied"));
+    }
+
+    @Test
+    void updateRoleShouldReturn200WithUpdatedName() throws Exception {
+        TestUser actor = insertFullUser("update_role_actor_success@example.com");
+        UUID adminRoleId = insertRole("ADMIN", "Administrator");
+        UUID supportRoleId = insertRole("SUPPORT", "Support");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(adminRoleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), adminRoleId);
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("name", "Support team");
+
+        mockMvc.perform(patch("/api/v1/admin/roles/" + supportRoleId)
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Cap nhat vai tro thanh cong."))
+                .andExpect(jsonPath("$.data.id").value(supportRoleId.toString()))
+                .andExpect(jsonPath("$.data.code").value("SUPPORT"))
+                .andExpect(jsonPath("$.data.name").value("Support team"));
+    }
+
+    @Test
+    void updateRoleShouldReturn403ForSystemRole() throws Exception {
+        TestUser actor = insertFullUser("update_role_actor_system@example.com");
+        UUID adminRoleId = insertRole("ADMIN", "Administrator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(adminRoleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), adminRoleId);
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("name", "Super admin");
+
+        mockMvc.perform(patch("/api/v1/admin/roles/" + adminRoleId)
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Khong the sua vai tro he thong."));
+    }
+
+    @Test
+    void deleteRoleShouldReturn200WhenRoleIsUnused() throws Exception {
+        TestUser actor = insertFullUser("delete_role_actor_success@example.com");
+        UUID adminRoleId = insertRole("ADMIN", "Administrator");
+        UUID supportRoleId = insertRole("SUPPORT", "Support");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(adminRoleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), adminRoleId);
+
+        mockMvc.perform(delete("/api/v1/admin/roles/" + supportRoleId)
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Xoa vai tro thanh cong."))
+                .andExpect(jsonPath("$.data.id").value(supportRoleId.toString()))
+                .andExpect(jsonPath("$.data.code").value("SUPPORT"));
+    }
+
+    @Test
+    void deleteRoleShouldReturn403ForSystemRole() throws Exception {
+        TestUser actor = insertFullUser("delete_role_actor_system@example.com");
+        UUID adminRoleId = insertRole("ADMIN", "Administrator");
+        UUID assignRolePermissionId = insertPermission("ASSIGN_ROLE", "Assign role permission");
+        insertRolePermission(adminRoleId, assignRolePermissionId);
+        insertUserRole(actor.userId(), adminRoleId);
+
+        mockMvc.perform(delete("/api/v1/admin/roles/" + adminRoleId)
+                        .header(HttpHeaders.AUTHORIZATION, bearerTokenFor(actor.userId(), actor.email())))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Khong the xoa vai tro he thong."));
+    }
+
+    @Test
     void viewPermissionsOfRoleShouldReturn200WithPermissions() throws Exception {
         TestUser actor = insertFullUser("view_role_permissions_actor_success@example.com");
         UUID adminRoleId = insertRole("ADMIN", "Administrator");
