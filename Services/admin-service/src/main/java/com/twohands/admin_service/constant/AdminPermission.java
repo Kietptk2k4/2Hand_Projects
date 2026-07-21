@@ -25,6 +25,7 @@ public final class AdminPermission {
 	public static final String SHOP_RESTORE = "SHOP_RESTORE";
 	public static final String POST_MODERATE = "POST_MODERATE";
 	public static final String POST_RESTORE = "POST_RESTORE";
+	public static final String POST_MODERATION_READ = "POST_MODERATION_READ";
 	public static final String COMMENT_MODERATE = "COMMENT_MODERATE";
 	public static final String COMMENT_RESTORE = "COMMENT_RESTORE";
 	public static final String SYSTEM_CONFIG_UPDATE = "SYSTEM_CONFIG_UPDATE";
@@ -68,6 +69,7 @@ public final class AdminPermission {
 			SHOP_RESTORE,
 			POST_MODERATE,
 			POST_RESTORE,
+			POST_MODERATION_READ,
 			COMMENT_MODERATE,
 			COMMENT_RESTORE,
 			SYSTEM_CONFIG_UPDATE,

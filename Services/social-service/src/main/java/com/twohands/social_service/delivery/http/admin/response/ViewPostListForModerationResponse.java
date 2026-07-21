@@ -13,8 +13,16 @@ public record ViewPostListForModerationResponse(
             String id,
             @JsonProperty("author_id")
             String authorId,
+            @JsonProperty("author_display_name")
+            String authorDisplayName,
+            @JsonProperty("author_avatar_url")
+            String authorAvatarUrl,
             @JsonProperty("caption_preview")
             String captionPreview,
+            @JsonProperty("thumbnail_url")
+            String thumbnailUrl,
+            @JsonProperty("media_count")
+            int mediaCount,
             String status,
             @JsonProperty("moderation_status")
             String moderationStatus,

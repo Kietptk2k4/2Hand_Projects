@@ -58,6 +58,17 @@ export async function getPostsForModeration({
   return request("get", "/api/v1/social/admin/posts", { params });
 }
 
+export async function getPostForModeration(postId) {
+  if (!postId) {
+    throw {
+      code: 400,
+      message: "postId khong hop le.",
+      errors: [],
+    };
+  }
+  return request("get", `/api/v1/social/admin/posts/${postId}`);
+}
+
 export async function getCommentsForModeration({
   status,
   post_id: postId,

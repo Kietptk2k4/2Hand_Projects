@@ -67,6 +67,7 @@ export function AdminActionLogsTabView({
   status,
   errorMessage,
   logs,
+  adminSummaries,
   summary,
   currentPage,
   totalPages,
@@ -142,6 +143,7 @@ export function AdminActionLogsTabView({
               <AdminActionLogsTable
                 logs={logs}
                 selectedLogId={logId}
+                adminSummaries={adminSummaries}
                 onSelectLog={onSelectLog}
               />
             ) : (

@@ -117,8 +117,15 @@ public class RecommendPostsUseCase {
         int totalPages = (int) Math.ceil((double) totalElements / size);
         boolean hasNext = end < totalElements;
 
-        // 8. Log impressions asynchronously
-        postImpressionLogger.logImpressions(userId, pagePostIds);
+        // 8. Log impressions + upsert seen posts asynchronously
+        Integer modelVersion = useLightGbm ? modelLoader.getActiveModelVersion() : null;
+        String modelName = useLightGbm ? modelLoader.getModelName() : null;
+        String requestId = UUID.randomUUID().toString();
+        List<Integer> ranks = new ArrayList<>(pagePostIds.size());
+        for (int i = 0; i < pagePostIds.size(); i++) {
+            ranks.add(start + i + 1);
+        }
+        postImpressionLogger.logImpressions(userId, pagePostIds, ranks, modelVersion, modelName, requestId);
 
         return ViewGlobalFeedResult.from(new PageResult<>(
                 items,

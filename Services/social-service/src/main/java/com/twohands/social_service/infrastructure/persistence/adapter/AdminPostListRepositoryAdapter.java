@@ -1,9 +1,11 @@
 package com.twohands.social_service.infrastructure.persistence.adapter;
 
+import com.twohands.social_service.application.admin.common.PostMediaThumbnailResolver;
 import com.twohands.social_service.domain.admin.AdminModerationListSortField;
 import com.twohands.social_service.domain.admin.AdminPostListCriteria;
 import com.twohands.social_service.domain.admin.AdminPostListItem;
 import com.twohands.social_service.domain.admin.AdminPostListRepository;
+import com.twohands.social_service.domain.post.MediaItem;
 import com.twohands.social_service.domain.post.PageResult;
 import com.twohands.social_service.infrastructure.persistence.mongo.document.PostDocument;
 import org.springframework.data.domain.PageRequest;
@@ -105,16 +107,31 @@ public class AdminPostListRepositoryAdapter implements AdminPostListRepository {
         if (moderationStatus == null || moderationStatus.isBlank()) {
             moderationStatus = "NONE";
         }
+        List<MediaItem> mediaItems = toMediaItems(document.getMedia());
         return new AdminPostListItem(
                 document.getId(),
                 document.getAuthorId(),
+                null,
+                null,
                 toPreview(document.getCaption()),
+                PostMediaThumbnailResolver.resolveThumbnailUrl(mediaItems),
+                PostMediaThumbnailResolver.countMedia(mediaItems),
                 document.getStatus(),
                 moderationStatus,
                 document.getLikeCount(),
                 document.getCreatedAt(),
                 document.getUpdatedAt()
         );
+    }
+
+    private List<MediaItem> toMediaItems(List<PostDocument.MediaDocument> media) {
+        if (media == null || media.isEmpty()) {
+            return List.of();
+        }
+        return media.stream()
+                .filter(item -> item != null)
+                .map(item -> new MediaItem(item.getUrl(), item.getType(), item.getWidth(), item.getHeight()))
+                .toList();
     }
 
     private String toPreview(String caption) {

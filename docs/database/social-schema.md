@@ -69,3 +69,32 @@ Phân hệ mạng xã hội của 2Hands. Kết hợp **MongoDB** cho nội dung
 - `retry_count`: Integer
 - `created_at`: Timestamp
 - `published_at`: Timestamp
+
+### 8. MODEL_ARTIFACTS
+Registry for offline-trained ranking models (LightGBM exported as ONNX, etc.).
+- `id`: UUID (PK)
+- `model_name`: String (e.g. `feed_ranker`)
+- `version`: Integer (unique per `model_name`)
+- `format`: String (e.g. `ONNX`)
+- `artifact_path`: Text (filesystem path Java `ModelLoader` can read)
+- `metrics`: JSONB (AUC, Precision@K, …)
+- `is_active`: Boolean — at most one active row per `model_name` (partial unique index)
+- `trained_at`: Timestamp
+
+### 9. POST_IMPRESSION_LOG
+Logged when Recommend Feed returns Top-K posts (source for training labels).
+- `id`: UUID (PK)
+- `user_id`: UUID
+- `post_id`: String (Mongo post id)
+- `shown_at`: Timestamp
+- `rank_position`: Integer (nullable early)
+- `model_version`: Integer **NULL** when ranking used rule-based fallback (no active ONNX)
+- `model_name`: String (optional, e.g. `feed_ranker`)
+- `request_id`: String (optional, groups one recommend page)
+
+### 10. USER_SEEN_POSTS
+Dedup for Candidate Pool — posts already shown to the user.
+- `user_id`: UUID
+- `post_id`: String
+- `seen_at`: Timestamp
+- PRIMARY KEY (`user_id`, `post_id`)

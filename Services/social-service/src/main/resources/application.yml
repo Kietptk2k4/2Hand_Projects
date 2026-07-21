@@ -133,4 +133,5 @@ social:
       batch-size: ${SOCIAL_OUTBOX_RETRY_BATCH_SIZE:50}
   recommendation:
     model-path: ${SOCIAL_RECOMMENDATION_MODEL_PATH:models/recommend_post_model.onnx}
+    model-name: ${SOCIAL_RECOMMENDATION_MODEL_NAME:feed_ranker}
     reload-cron: ${SOCIAL_RECOMMENDATION_RELOAD_CRON:0 0 * * * *}

@@ -1,0 +1,75 @@
+"""Offline ML ops FastAPI — not used for online recommend serving."""
+
+from __future__ import annotations
+
+import logging
+from typing import Any
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+
+from app.config import get_settings
+from pipelines.clean_data import run_clean_job
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = FastAPI(
+    title="2Hands Recsys Offline",
+    description=(
+        "Offline jobs only (clean / train / evaluate / export). "
+        "Social Service must NOT call this during recommend-feed requests."
+    ),
+    version="0.1.0",
+)
+
+
+class JobAccepted(BaseModel):
+    status: str
+    detail: str
+    result: dict[str, Any] | None = None
+
+
+@app.get("/health")
+def health() -> dict[str, str]:
+    return {"status": "ok", "service": "recsys-offline"}
+
+
+@app.post("/jobs/clean", response_model=JobAccepted)
+def jobs_clean() -> JobAccepted:
+    settings = get_settings()
+    try:
+        summary = run_clean_job(settings)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Clean job failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return JobAccepted(status="success", detail="Clean dataset completed", result=summary)
+
+
+@app.post("/jobs/train", response_model=JobAccepted)
+def jobs_train() -> JobAccepted:
+    return JobAccepted(
+        status="not_implemented",
+        detail="Train LightGBM stub — implement after clean dataset + labels are ready",
+    )
+
+
+@app.post("/jobs/evaluate", response_model=JobAccepted)
+def jobs_evaluate() -> JobAccepted:
+    return JobAccepted(
+        status="not_implemented",
+        detail="Evaluate stub — AUC / Precision@K vs rule-based baseline",
+    )
+
+
+@app.post("/jobs/export-activate", response_model=JobAccepted)
+def jobs_export_activate() -> JobAccepted:
+    return JobAccepted(
+        status="not_implemented",
+        detail=(
+            "Export ONNX + activate model_artifacts stub. "
+            "Does not expose online predict for feed ranking."
+        ),
+    )

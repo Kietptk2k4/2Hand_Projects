@@ -775,10 +775,18 @@ export function AdminPage() {
 
   const handlePostModerationListSelect = useCallback(
     (postId) => {
+      if (postId === contentModerationPostId) {
+        handleContentModerationTargetChange({ postId: "" });
+        return;
+      }
       handleContentModerationTargetChange({ postId });
     },
-    [handleContentModerationTargetChange],
+    [contentModerationPostId, handleContentModerationTargetChange],
   );
+
+  const handlePostModerationClear = useCallback(() => {
+    handleContentModerationTargetChange({ postId: "" });
+  }, [handleContentModerationTargetChange]);
 
   const handleCommentModerationListSelect = useCallback(
     (commentId) => {
@@ -992,7 +1000,10 @@ export function AdminPage() {
     }
     if (adminTopTab === "contentModeration") {
       const TabComponent = ContentModerationTabComponent;
-      if (TabComponent === PostModerationTab || TabComponent === CommentModerationTab) {
+      if (TabComponent === PostModerationTab) {
+        return null;
+      }
+      if (TabComponent === CommentModerationTab) {
         return <TabComponent {...contentModerationTabProps} />;
       }
       if (TabComponent === AdminProductRemovalTab) {
@@ -1098,8 +1109,7 @@ export function AdminPage() {
           />
         ) : null}
 
-        {adminTopTab === "contentModeration" &&
-        (activeChildTab === "post-moderation" || activeChildTab === "comment-moderation") ? (
+        {adminTopTab === "contentModeration" && activeChildTab === "comment-moderation" ? (
           <ContentModerationTargetBar
             activeTab={activeChildTab}
             targetIds={{
@@ -1116,6 +1126,7 @@ export function AdminPage() {
             onFiltersChange={handlePostModerationListFiltersChange}
             selectedPostId={contentModerationPostId}
             onPostSelect={handlePostModerationListSelect}
+            onPostClear={handlePostModerationClear}
           />
         ) : null}
 

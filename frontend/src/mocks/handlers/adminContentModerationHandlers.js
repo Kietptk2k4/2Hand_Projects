@@ -9,10 +9,12 @@ import { moderateAdminShop } from "../data/commerceAdminShopModerationData";
 import {
   moderateCommentByAdmin,
   moderatePostByAdmin,
+  getPostModerationHistory,
   restoreCommentByAdmin,
   restorePostByAdmin,
 } from "../data/adminSocialModerationData";
 import {
+  getModerationPostDetail,
   listModerationComments,
   listModerationPosts,
 } from "../data/adminSocialModerationListData";
@@ -122,6 +124,22 @@ export const adminContentModerationHandlers = [
 
     return HttpResponse.json(
       apiSuccess(200, "Lay danh sach bai viet kiem duyet thanh cong.", data),
+      { status: 200 },
+    );
+  }),
+
+  http.get("*/api/v1/social/admin/posts/:postId", async ({ request, params }) => {
+    await delay(250);
+    const auth = requireAdmin(request);
+    if (auth.error) return auth.error;
+
+    const detail = getModerationPostDetail(params.postId);
+    if (detail.error) {
+      return HttpResponse.json(apiError(detail.error, detail.message), { status: detail.status || 404 });
+    }
+
+    return HttpResponse.json(
+      apiSuccess(200, "Lay chi tiet bai viet kiem duyet thanh cong.", detail),
       { status: 200 },
     );
   }),
@@ -367,6 +385,19 @@ export const adminContentModerationHandlers = [
     }
 
     const result = restorePostByAdmin(params.postId, body);
+    return mapResult(result);
+  }),
+
+  http.get("*/admin/api/v1/social/posts/:postId/moderation-history", async ({ params, request }) => {
+    await delay(300);
+    const auth = requireAdmin(request);
+    if (auth.error) return auth.error;
+
+    const url = new URL(request.url);
+    const result = getPostModerationHistory(params.postId, {
+      page: url.searchParams.get("page") || 1,
+      size: url.searchParams.get("size") || 20,
+    });
     return mapResult(result);
   }),
 

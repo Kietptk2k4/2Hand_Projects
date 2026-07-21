@@ -20,6 +20,10 @@ export function useContentModerationPermissions() {
         permissions,
         CONTENT_MODERATION_PERMISSIONS.POST_RESTORE,
       ),
+      canReadPostHistory: hasContentModerationPermission(
+        permissions,
+        CONTENT_MODERATION_PERMISSIONS.POST_MODERATION_READ,
+      ),
       canModerateComment: hasContentModerationPermission(
         permissions,
         CONTENT_MODERATION_PERMISSIONS.COMMENT_MODERATE,

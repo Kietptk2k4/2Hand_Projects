@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AdminFilterButton,
   AdminFilterField,
@@ -12,6 +12,7 @@ import {
 } from "../constants/adminAuditConstants.js";
 import { toIsoInstantFromLocalInput, toLocalInputFromIso } from "../utils/auditDateTime.js";
 import { AuditActiveFilterChips } from "./AuditActiveFilterChips.jsx";
+import { AuditAdminPicker } from "./AuditAdminPicker.jsx";
 import { AuditQuickFilterChips } from "./AuditQuickFilterChips.jsx";
 
 function isValidUuid(value) {
@@ -27,12 +28,22 @@ export function AdminActionLogFilterBar({
   onQuickFilter,
   onRemoveFilterChip,
 }) {
+  const [adminIdDraft, setAdminIdDraft] = useState(filters?.admin_id || "");
+  const [selectedAdmin, setSelectedAdmin] = useState(null);
   const [adminIdError, setAdminIdError] = useState("");
+
+  useEffect(() => {
+    setAdminIdDraft(filters?.admin_id || "");
+    if (!filters?.admin_id) {
+      setSelectedAdmin(null);
+    }
+  }, [filters?.admin_id]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const adminId = String(formData.get("admin_id") || "").trim();
+    const adminId = String(adminIdDraft || "").trim();
+
     if (adminId && !isValidUuid(adminId)) {
       setAdminIdError("Admin ID phải là UUID hợp lệ.");
       return;
@@ -63,14 +74,15 @@ export function AdminActionLogFilterBar({
       <AuditActiveFilterChips filters={filters} onRemoveChip={onRemoveFilterChip} />
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <AdminFilterField label="Admin ID" htmlFor="audit-admin-id">
-          <AdminFilterInput
-            id="audit-admin-id"
-            name="admin_id"
-            defaultValue={filters?.admin_id || ""}
-            placeholder="uuid"
-            aria-invalid={Boolean(adminIdError)}
-            onChange={() => setAdminIdError("")}
+        <AdminFilterField label="Admin thực hiện" htmlFor="audit-admin-search" className="md:col-span-2">
+          <AuditAdminPicker
+            adminId={adminIdDraft}
+            selectedAdmin={selectedAdmin}
+            onAdminChange={({ adminId, admin }) => {
+              setAdminIdDraft(adminId);
+              setSelectedAdmin(admin);
+              setAdminIdError("");
+            }}
           />
           {adminIdError ? (
             <p className="mt-1 text-xs text-admin-danger">{adminIdError}</p>

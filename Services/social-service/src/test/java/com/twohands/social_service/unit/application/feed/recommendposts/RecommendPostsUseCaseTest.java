@@ -20,6 +20,8 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
 
 class RecommendPostsUseCaseTest {
@@ -113,7 +115,14 @@ class RecommendPostsUseCaseTest {
 
         // Verify Async impression logger was triggered with page item IDs
         ArgumentCaptor<List> listCaptor = ArgumentCaptor.forClass(List.class);
-        verify(postImpressionLogger).logImpressions(eq(userId), listCaptor.capture());
+        verify(postImpressionLogger).logImpressions(
+                eq(userId),
+                listCaptor.capture(),
+                any(),
+                isNull(),
+                isNull(),
+                any()
+        );
         assertThat(listCaptor.getValue()).containsExactly("post2", "post1");
     }
 

@@ -86,6 +86,12 @@ export async function fetchProductModerationHistory(productId, { page = 1, size 
   });
 }
 
+export async function fetchPostModerationHistory(postId, { page = 1, size = 20 } = {}) {
+  return request("get", `/admin/api/v1/social/posts/${postId}/moderation-history`, {
+    params: { page, size },
+  });
+}
+
 export async function hideReview(reviewId, payload) {
   return request("post", `/admin/api/v1/reviews/${reviewId}/hide`, {
     data: moderationBody(payload),

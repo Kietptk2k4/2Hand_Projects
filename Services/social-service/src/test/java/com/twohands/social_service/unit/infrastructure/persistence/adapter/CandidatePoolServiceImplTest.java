@@ -3,6 +3,7 @@ package com.twohands.social_service.unit.infrastructure.persistence.adapter;
 import com.twohands.social_service.domain.follow.FollowRepository;
 import com.twohands.social_service.domain.post.PostCandidate;
 import com.twohands.social_service.domain.post.ProductTag;
+import com.twohands.social_service.domain.post.UserSeenPostsRepository;
 import com.twohands.social_service.infrastructure.persistence.adapter.CandidatePoolServiceImpl;
 import com.twohands.social_service.infrastructure.persistence.mongo.document.PostDocument;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,7 +26,9 @@ class CandidatePoolServiceImplTest {
 
     private final MongoTemplate mongoTemplate = mock(MongoTemplate.class);
     private final FollowRepository followRepository = mock(FollowRepository.class);
-    private final CandidatePoolServiceImpl candidatePoolService = new CandidatePoolServiceImpl(mongoTemplate, followRepository);
+    private final UserSeenPostsRepository userSeenPostsRepository = mock(UserSeenPostsRepository.class);
+    private final CandidatePoolServiceImpl candidatePoolService =
+            new CandidatePoolServiceImpl(mongoTemplate, followRepository, userSeenPostsRepository);
 
     @Test
     void shouldReturnEmptyListWhenUserIdIsNull() {
@@ -39,6 +43,7 @@ class CandidatePoolServiceImplTest {
         UUID followeeId1 = UUID.randomUUID();
         UUID followeeId2 = UUID.randomUUID();
         when(followRepository.findAcceptedFolloweeIds(userId)).thenReturn(List.of(followeeId1, followeeId2));
+        when(userSeenPostsRepository.findSeenPostIds(userId)).thenReturn(Set.of());
 
         // Create mock PostDocuments for Followee Source
         PostDocument doc1 = createMockPostDocument("post1", followeeId1.toString(), "caption 1", 10, 2);

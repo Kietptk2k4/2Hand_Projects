@@ -1,8 +1,10 @@
+import { formatAuditAdminSummary } from "../api/auditAdminApi.js";
 import { getAuditActionLabel, getAuditTargetTypeLabel } from "../constants/adminAuditActionLabels.js";
 import { formatAuditLogDateTime } from "../utils/auditDateTimeDisplay.js";
 import { AdminMobileCard, AdminMobileCardList } from "../../components/ui";
 import { AuditActionTypeBadge } from "./AuditActionTypeBadge.jsx";
 import { AuditStatusBadge } from "./AuditStatusBadge.jsx";
+import { AuditTargetLink } from "./AuditTargetLink.jsx";
 
 function truncateId(value, length = 12) {
   if (!value) return "—";
@@ -10,7 +12,7 @@ function truncateId(value, length = 12) {
   return `${value.slice(0, length)}…`;
 }
 
-export function AuditLogCardList({ logs, selectedLogId, onSelectLog }) {
+export function AuditLogCardList({ logs, selectedLogId, adminSummaries = {}, onSelectLog }) {
   if (!logs?.length) return null;
 
   return (
@@ -18,6 +20,7 @@ export function AuditLogCardList({ logs, selectedLogId, onSelectLog }) {
       {logs.map((log) => {
         const isSelected = selectedLogId === log.logId;
         const { time, date } = formatAuditLogDateTime(log.createdAt);
+        const adminSummary = adminSummaries[log.adminId];
         return (
           <AdminMobileCard
             key={log.logId}
@@ -40,13 +43,27 @@ export function AuditLogCardList({ logs, selectedLogId, onSelectLog }) {
             <dl className="mt-3 grid gap-2 text-sm">
               <div>
                 <dt className="text-admin-text-muted">Admin</dt>
-                <dd className="font-mono text-xs text-admin-text">{truncateId(log.adminId)}</dd>
+                <dd className="text-admin-text">
+                  {adminSummary ? (
+                    <>
+                      <span className="block text-sm">{formatAuditAdminSummary(adminSummary)}</span>
+                      <span className="mt-0.5 block font-mono text-xs text-admin-text-muted">
+                        {truncateId(log.adminId)}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="font-mono text-xs">{truncateId(log.adminId)}</span>
+                  )}
+                </dd>
               </div>
               <div>
                 <dt className="text-admin-text-muted">Đối tượng</dt>
-                <dd className="text-admin-text">
-                  <span className="text-sm">{getAuditTargetTypeLabel(log.targetType)}</span>
-                  <span className="mt-0.5 block font-mono text-xs">{truncateId(log.targetId, 16)}</span>
+                <dd className="flex items-start gap-1 text-admin-text">
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm">{getAuditTargetTypeLabel(log.targetType)}</span>
+                    <span className="mt-0.5 block font-mono text-xs">{truncateId(log.targetId, 16)}</span>
+                  </span>
+                  <AuditTargetLink targetType={log.targetType} targetId={log.targetId} />
                 </dd>
               </div>
             </dl>

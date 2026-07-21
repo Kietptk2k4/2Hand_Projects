@@ -3,11 +3,15 @@ package com.twohands.social_service.delivery.http.admin;
 import com.twohands.social_service.application.admin.viewcommentlistformoderation.ViewCommentListForModerationCommand;
 import com.twohands.social_service.application.admin.viewcommentlistformoderation.ViewCommentListForModerationResult;
 import com.twohands.social_service.application.admin.viewcommentlistformoderation.ViewCommentListForModerationUseCase;
+import com.twohands.social_service.application.admin.viewpostdetailformoderation.ViewPostDetailForModerationCommand;
+import com.twohands.social_service.application.admin.viewpostdetailformoderation.ViewPostDetailForModerationResult;
+import com.twohands.social_service.application.admin.viewpostdetailformoderation.ViewPostDetailForModerationUseCase;
 import com.twohands.social_service.application.admin.viewpostlistformoderation.ViewPostListForModerationCommand;
 import com.twohands.social_service.application.admin.viewpostlistformoderation.ViewPostListForModerationResult;
 import com.twohands.social_service.application.admin.viewpostlistformoderation.ViewPostListForModerationUseCase;
 import com.twohands.social_service.common.dto.ApiResponse;
 import com.twohands.social_service.delivery.http.admin.response.ViewCommentListForModerationResponse;
+import com.twohands.social_service.delivery.http.admin.response.ViewPostDetailForModerationResponse;
 import com.twohands.social_service.delivery.http.admin.response.ViewPostListForModerationResponse;
 import com.twohands.social_service.exception.AppException;
 import com.twohands.social_service.exception.ErrorCode;
@@ -16,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,13 +30,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class SocialAdminModerationController {
 
     private final ViewPostListForModerationUseCase viewPostListForModerationUseCase;
+    private final ViewPostDetailForModerationUseCase viewPostDetailForModerationUseCase;
     private final ViewCommentListForModerationUseCase viewCommentListForModerationUseCase;
 
     public SocialAdminModerationController(
             ViewPostListForModerationUseCase viewPostListForModerationUseCase,
+            ViewPostDetailForModerationUseCase viewPostDetailForModerationUseCase,
             ViewCommentListForModerationUseCase viewCommentListForModerationUseCase
     ) {
         this.viewPostListForModerationUseCase = viewPostListForModerationUseCase;
+        this.viewPostDetailForModerationUseCase = viewPostDetailForModerationUseCase;
         this.viewCommentListForModerationUseCase = viewCommentListForModerationUseCase;
     }
 
@@ -62,6 +70,23 @@ public class SocialAdminModerationController {
                         HttpStatus.OK.value(),
                         viewPostListForModerationUseCase.successMessage(),
                         toPostResponse(result)
+                ));
+    }
+
+    @GetMapping("/posts/{postId}")
+    public ResponseEntity<ApiResponse<ViewPostDetailForModerationResponse>> viewPostDetail(
+            @PathVariable String postId,
+            Authentication authentication
+    ) {
+        ViewPostDetailForModerationResult result = viewPostDetailForModerationUseCase.execute(
+                new ViewPostDetailForModerationCommand(resolveActor(authentication), postId)
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        viewPostDetailForModerationUseCase.successMessage(),
+                        toPostDetailResponse(result)
                 ));
     }
 
@@ -101,7 +126,11 @@ public class SocialAdminModerationController {
                         .map(item -> new ViewPostListForModerationResponse.ItemData(
                                 item.id(),
                                 item.authorId(),
+                                item.authorDisplayName(),
+                                item.authorAvatarUrl(),
                                 item.captionPreview(),
+                                item.thumbnailUrl(),
+                                item.mediaCount(),
                                 item.status(),
                                 item.moderationStatus(),
                                 item.likeCount(),
@@ -116,6 +145,39 @@ public class SocialAdminModerationController {
                         result.pagination().totalPages(),
                         result.pagination().hasNext()
                 )
+        );
+    }
+
+    private ViewPostDetailForModerationResponse toPostDetailResponse(ViewPostDetailForModerationResult result) {
+        return new ViewPostDetailForModerationResponse(
+                result.id(),
+                new ViewPostDetailForModerationResponse.AuthorData(
+                        result.author().userId(),
+                        result.author().displayName(),
+                        result.author().avatarUrl()
+                ),
+                result.caption(),
+                result.media().stream()
+                        .map(item -> new ViewPostDetailForModerationResponse.MediaData(
+                                item.url(),
+                                item.type(),
+                                item.width(),
+                                item.height()
+                        ))
+                        .toList(),
+                result.thumbnailUrl(),
+                result.mediaCount(),
+                result.status(),
+                result.moderationStatus(),
+                result.moderationReason(),
+                result.lastModerationLogId(),
+                result.visibility(),
+                result.likeCount(),
+                result.replyCount(),
+                result.hashtags(),
+                result.allowComments(),
+                result.createdAt(),
+                result.updatedAt()
         );
     }
 

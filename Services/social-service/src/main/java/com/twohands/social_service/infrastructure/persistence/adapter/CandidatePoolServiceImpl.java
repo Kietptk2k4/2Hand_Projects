@@ -4,6 +4,7 @@ import com.twohands.social_service.domain.follow.FollowRepository;
 import com.twohands.social_service.domain.post.CandidatePoolService;
 import com.twohands.social_service.domain.post.PostCandidate;
 import com.twohands.social_service.domain.post.ProductTag;
+import com.twohands.social_service.domain.post.UserSeenPostsRepository;
 import com.twohands.social_service.infrastructure.persistence.mongo.document.PostDocument;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -20,10 +21,16 @@ public class CandidatePoolServiceImpl implements CandidatePoolService {
 
     private final MongoTemplate mongoTemplate;
     private final FollowRepository followRepository;
+    private final UserSeenPostsRepository userSeenPostsRepository;
 
-    public CandidatePoolServiceImpl(MongoTemplate mongoTemplate, FollowRepository followRepository) {
+    public CandidatePoolServiceImpl(
+            MongoTemplate mongoTemplate,
+            FollowRepository followRepository,
+            UserSeenPostsRepository userSeenPostsRepository
+    ) {
         this.mongoTemplate = mongoTemplate;
         this.followRepository = followRepository;
+        this.userSeenPostsRepository = userSeenPostsRepository;
     }
 
     @Override
@@ -73,8 +80,12 @@ public class CandidatePoolServiceImpl implements CandidatePoolService {
         List<PostCandidate> candidates = new ArrayList<>();
         Set<String> addedIds = new HashSet<>();
 
-        // TODO: Query from user_seen_posts database when migration is ready (Nhiệm vụ 3)
-        Set<String> seenPostIds = Set.of();
+        Set<String> seenPostIds;
+        try {
+            seenPostIds = userSeenPostsRepository.findSeenPostIds(userId);
+        } catch (Exception ex) {
+            seenPostIds = Set.of();
+        }
 
         for (PostDocument doc : followeeDocs) {
             if (addedIds.add(doc.getId()) && !seenPostIds.contains(doc.getId())) {

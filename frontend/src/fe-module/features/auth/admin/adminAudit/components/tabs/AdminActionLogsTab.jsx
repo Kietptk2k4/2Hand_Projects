@@ -9,6 +9,7 @@ import {
 } from "../../constants/adminAuditUiStrings.js";
 import { useAdminAuditPermissions } from "../../hooks/useAdminAuditPermissions.js";
 import { useAdminActionLogs } from "../../hooks/useAdminActionLogs.js";
+import { useAuditAdminSummaries } from "../../hooks/useAuditAdminSummaries.js";
 import {
   buildAuditQuickDateRange,
   filterAuditLogsForDisplay,
@@ -39,6 +40,8 @@ export function AdminActionLogsTab({
     () => filterAuditLogsForDisplay(result?.logs, auditFilters),
     [auditFilters, result?.logs],
   );
+
+  const adminSummaries = useAuditAdminSummaries(displayLogs.map((log) => log.adminId));
 
   const handleApplyFilters = (nextFilters) => {
     onFiltersChange?.(nextFilters);
@@ -161,6 +164,7 @@ export function AdminActionLogsTab({
       status={status}
       errorMessage={errorMessage}
       logs={displayLogs}
+      adminSummaries={adminSummaries}
       summary={summary}
       currentPage={currentPage}
       totalPages={totalPages}

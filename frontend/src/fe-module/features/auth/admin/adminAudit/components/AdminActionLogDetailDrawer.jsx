@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { buildAdminSearchParams } from "../../adminUrlParams.js";
+import { lookupAuditAdminById } from "../api/auditAdminApi.js";
 import { fetchAdminActionLogDetail } from "../api/adminAuditApi.js";
 import { mapAdminActionLogEntry } from "../utils/adminAuditMapper.js";
 import { handleAuditLoadError } from "../utils/adminAuditTabErrors.js";
@@ -11,6 +12,7 @@ export function AdminActionLogDetailDrawer({ logId, onClose, onNotify }) {
   const { showSessionExpired } = useAuthSession();
   const [, setSearchParams] = useSearchParams();
   const [entry, setEntry] = useState(null);
+  const [adminSummary, setAdminSummary] = useState(null);
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -18,10 +20,20 @@ export function AdminActionLogDetailDrawer({ logId, onClose, onNotify }) {
     if (!logId) return;
     setStatus("loading");
     setErrorMessage("");
+    setAdminSummary(null);
     try {
       const data = await fetchAdminActionLogDetail(logId);
-      setEntry(mapAdminActionLogEntry(data));
+      const mapped = mapAdminActionLogEntry(data);
+      setEntry(mapped);
       setStatus("ready");
+
+      if (mapped?.adminId) {
+        lookupAuditAdminById(mapped.adminId)
+          .then((admin) => {
+            if (admin) setAdminSummary(admin);
+          })
+          .catch(() => {});
+      }
     } catch (error) {
       handleAuditLoadError(error, {
         showSessionExpired,
@@ -42,6 +54,7 @@ export function AdminActionLogDetailDrawer({ logId, onClose, onNotify }) {
   useEffect(() => {
     if (!logId) {
       setEntry(null);
+      setAdminSummary(null);
       setStatus("idle");
       setErrorMessage("");
       return;
@@ -49,22 +62,40 @@ export function AdminActionLogDetailDrawer({ logId, onClose, onNotify }) {
     fetchDetail();
   }, [fetchDetail, logId]);
 
-  const showFilterSameTarget = Boolean(entry?.targetType && entry?.targetId);
-
   const handleFilterSameTarget = () => {
     if (!entry?.targetType || !entry?.targetId) return;
-    const targetFilterParams = buildAdminSearchParams({
-      section: "adminAudit",
-      tab: "action-logs",
-      auditFilters: {
-        target_type: entry.targetType,
-        target_id: entry.targetId,
-        page: "1",
-        size: "20",
-      },
-      clearLogId: true,
-    });
-    setSearchParams(targetFilterParams, { replace: true });
+    setSearchParams(
+      buildAdminSearchParams({
+        section: "adminAudit",
+        tab: "action-logs",
+        auditFilters: {
+          target_type: entry.targetType,
+          target_id: entry.targetId,
+          page: "1",
+          size: "20",
+        },
+        clearLogId: true,
+      }),
+      { replace: true },
+    );
+    onClose?.();
+  };
+
+  const handleFilterSameAdmin = () => {
+    if (!entry?.adminId) return;
+    setSearchParams(
+      buildAdminSearchParams({
+        section: "adminAudit",
+        tab: "action-logs",
+        auditFilters: {
+          admin_id: entry.adminId,
+          page: "1",
+          size: "20",
+        },
+        clearLogId: true,
+      }),
+      { replace: true },
+    );
     onClose?.();
   };
 
@@ -74,9 +105,10 @@ export function AdminActionLogDetailDrawer({ logId, onClose, onNotify }) {
       status={status}
       errorMessage={errorMessage}
       entry={entry}
-      showFilterSameTarget={showFilterSameTarget}
+      adminSummary={adminSummary}
       onClose={onClose}
       onRetry={fetchDetail}
+      onFilterSameAdmin={handleFilterSameAdmin}
       onFilterSameTarget={handleFilterSameTarget}
     />
   );

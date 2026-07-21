@@ -62,14 +62,32 @@ export function mapProductModerationHistoryResponse(data) {
     size: data.size ?? 20,
     totalElements: data.total_elements ?? data.totalElements ?? 0,
     totalPages: data.total_pages ?? data.totalPages ?? 0,
-    history: (data.history || []).map((entry) => ({
-      moderationLogId: pick(entry, "moderationLogId", "moderation_log_id"),
-      action: entry.action,
-      reason: entry.reason,
-      note: entry.note,
-      adminId: pick(entry, "adminId", "admin_id"),
-      createdAt: pick(entry, "createdAt", "created_at"),
-    })),
+    history: (data.history || []).map(mapModerationHistoryEntry),
+  };
+}
+
+export function mapPostModerationHistoryResponse(data) {
+  if (!data) {
+    return { postId: null, page: 1, size: 20, totalElements: 0, totalPages: 0, history: [] };
+  }
+  return {
+    postId: pick(data, "postId", "post_id"),
+    page: data.page ?? 1,
+    size: data.size ?? 20,
+    totalElements: data.total_elements ?? data.totalElements ?? 0,
+    totalPages: data.total_pages ?? data.totalPages ?? 0,
+    history: (data.history || []).map(mapModerationHistoryEntry),
+  };
+}
+
+function mapModerationHistoryEntry(entry) {
+  return {
+    moderationLogId: pick(entry, "moderationLogId", "moderation_log_id"),
+    action: entry.action,
+    reason: entry.reason,
+    note: entry.note,
+    adminId: pick(entry, "adminId", "admin_id"),
+    createdAt: pick(entry, "createdAt", "created_at"),
   };
 }
 

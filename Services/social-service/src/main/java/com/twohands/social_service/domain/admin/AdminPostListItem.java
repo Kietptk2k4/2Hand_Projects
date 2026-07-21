@@ -5,7 +5,11 @@ import java.time.Instant;
 public record AdminPostListItem(
         String id,
         String authorId,
+        String authorDisplayName,
+        String authorAvatarUrl,
         String captionPreview,
+        String thumbnailUrl,
+        int mediaCount,
         String status,
         String moderationStatus,
         long likeCount,

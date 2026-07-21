@@ -3,6 +3,7 @@ package com.twohands.social_service.unit.application.admin.viewpostlistformodera
 import com.twohands.social_service.application.admin.viewpostlistformoderation.ViewPostListForModerationCommand;
 import com.twohands.social_service.application.admin.viewpostlistformoderation.ViewPostListForModerationResult;
 import com.twohands.social_service.application.admin.viewpostlistformoderation.ViewPostListForModerationUseCase;
+import com.twohands.social_service.application.admin.common.AdminModerationAuthorResolver;
 import com.twohands.social_service.domain.admin.AdminModerationListSortField;
 import com.twohands.social_service.domain.admin.AdminPostListCriteria;
 import com.twohands.social_service.domain.admin.AdminPostListItem;
@@ -18,6 +19,7 @@ import org.mockito.Mockito;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,13 +32,15 @@ import static org.mockito.Mockito.when;
 class ViewPostListForModerationUseCaseTest {
 
     private final AdminPostListRepository adminPostListRepository = Mockito.mock(AdminPostListRepository.class);
+    private final AdminModerationAuthorResolver authorResolver = Mockito.mock(AdminModerationAuthorResolver.class);
     private ViewPostListForModerationUseCase useCase;
     private AuthenticatedUser actor;
 
     @BeforeEach
     void setup() {
-        useCase = new ViewPostListForModerationUseCase(adminPostListRepository);
+        useCase = new ViewPostListForModerationUseCase(adminPostListRepository, authorResolver);
         actor = new AuthenticatedUser(UUID.randomUUID(), List.of("ADMIN"), List.of("POST_MODERATE"));
+        when(authorResolver.resolveAuthors(Mockito.any())).thenReturn(Map.of());
     }
 
     @Test
@@ -46,7 +50,11 @@ class ViewPostListForModerationUseCaseTest {
                         List.of(new AdminPostListItem(
                                 "507f1f77bcf86cd799439011",
                                 UUID.randomUUID().toString(),
+                                null,
+                                null,
                                 "Caption",
+                                "https://cdn.example/post.jpg",
+                                1,
                                 "ACTIVE",
                                 "NONE",
                                 3L,

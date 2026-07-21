@@ -3,13 +3,18 @@ import {
   getAuditActionLabel,
   getAuditTargetTypeLabel,
 } from "../constants/adminAuditActionLabels.js";
+import { formatAuditAdminSummary } from "../api/auditAdminApi.js";
 import { AdminFilterButton, AdminSurfaceCard } from "../../components/ui";
+import { AuditActionTypeBadge } from "./AuditActionTypeBadge.jsx";
+import { AuditCopyableId } from "./AuditCopyableId.jsx";
+import { AuditDrawerActions } from "./AuditDrawerActions.jsx";
+import { AuditJsonBlock } from "./AuditJsonBlock.jsx";
 import { AuditStatusBadge } from "./AuditStatusBadge.jsx";
 
 export function DetailRow({ label, value, mono = false, className = "" }) {
   return (
     <div className={className}>
-      <dt className="text-xs font-medium uppercase tracking-wide text-admin-text-muted">{label}</dt>
+      <dt className="text-xs font-medium tracking-wide text-admin-text-muted uppercase">{label}</dt>
       <dd
         className={[
           "mt-1 text-sm text-admin-text",
@@ -24,25 +29,15 @@ export function DetailRow({ label, value, mono = false, className = "" }) {
   );
 }
 
-export function JsonBlock({ label, value }) {
-  return (
-    <div className="min-w-0">
-      <h3 className="mb-2 text-sm font-semibold text-admin-text">{label}</h3>
-      <pre className="max-h-72 max-w-full overflow-x-auto overflow-y-auto rounded-lg border border-admin-border bg-admin-surface-muted p-3 text-xs leading-relaxed text-admin-text [scrollbar-width:thin]">
-        {value == null ? "—" : JSON.stringify(value, null, 2)}
-      </pre>
-    </div>
-  );
-}
-
 export function AdminActionLogDetailDrawerView({
   logId,
   status,
   errorMessage,
   entry,
-  showFilterSameTarget,
+  adminSummary,
   onClose,
   onRetry,
+  onFilterSameAdmin,
   onFilterSameTarget,
 }) {
   if (!logId) return null;
@@ -62,20 +57,41 @@ export function AdminActionLogDetailDrawerView({
       />
 
       <aside className="relative z-10 flex h-full max-h-dvh w-full flex-col bg-admin-surface shadow-[var(--shadow-admin-surface)] sm:max-w-xl sm:border-l sm:border-admin-border">
-        <div className="flex shrink-0 items-start justify-between gap-3 border-b border-admin-border bg-admin-surface-muted px-4 py-4 sm:px-6">
-          <div className="min-w-0 flex-1">
-            <h2 id="audit-log-drawer-title" className="text-lg font-semibold text-admin-text">
-              Chi tiết nhật ký hành động
-            </h2>
-            <p className="mt-1 break-all font-mono text-xs text-admin-text-muted">{logId}</p>
+        <div className="shrink-0 border-b border-admin-border bg-admin-surface-muted px-4 py-4 sm:px-6">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              {status === "ready" && entry ? (
+                <>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <AuditStatusBadge status={entry.status} />
+                    <AuditActionTypeBadge actionType={entry.actionType} />
+                  </div>
+                  <h2
+                    id="audit-log-drawer-title"
+                    className="mt-2 text-balance text-lg font-semibold tracking-tight text-admin-text"
+                  >
+                    {getAuditActionLabel(entry.actionType)}
+                  </h2>
+                  <p className="mt-1 font-mono text-xs text-admin-text-muted">{entry.actionType}</p>
+                  <p className="mt-2 text-sm tabular-nums text-admin-text-secondary">
+                    {formatDateTime(entry.createdAt)}
+                  </p>
+                </>
+              ) : (
+                <h2 id="audit-log-drawer-title" className="text-lg font-semibold text-admin-text">
+                  Chi tiết nhật ký hành động
+                </h2>
+              )}
+              <p className="mt-2 break-all font-mono text-[11px] text-admin-text-muted">{logId}</p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-sm font-medium text-admin-text-secondary transition-colors hover:bg-admin-surface hover:text-admin-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent-soft"
+            >
+              Đóng
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-sm font-medium text-admin-text-secondary transition-colors hover:bg-admin-surface hover:text-admin-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent-soft"
-          >
-            Đóng
-          </button>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6">
@@ -100,34 +116,35 @@ export function AdminActionLogDetailDrawerView({
 
           {status === "ready" && entry ? (
             <div className="space-y-6">
+              <AuditDrawerActions
+                entry={entry}
+                onFilterSameAdmin={onFilterSameAdmin}
+                onFilterSameTarget={onFilterSameTarget}
+                onClose={onClose}
+              />
+
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <DetailRow label="Thời gian" value={formatDateTime(entry.createdAt)} />
                 <DetailRow
-                  label="Trạng thái"
-                  value={<AuditStatusBadge status={entry.status} />}
+                  label="Admin"
+                  value={
+                    adminSummary
+                      ? formatAuditAdminSummary(adminSummary)
+                      : entry.adminId
+                  }
                 />
-                <DetailRow label="Admin ID" value={entry.adminId} mono />
-                <DetailRow label="Hành động" value={getAuditActionLabel(entry.actionType)} />
-                <DetailRow label="Mã hành động" value={entry.actionType} mono />
-                <DetailRow label="Loại đối tượng" value={getAuditTargetTypeLabel(entry.targetType)} />
-                <DetailRow label="Target ID" value={entry.targetId} mono />
-                <DetailRow label="IP address" value={entry.ipAddress} mono />
+                <AuditCopyableId label="Admin ID" value={entry.adminId} />
+                <DetailRow
+                  label="Loại đối tượng"
+                  value={getAuditTargetTypeLabel(entry.targetType)}
+                  className="sm:col-span-2 sm:col-auto"
+                />
+                <AuditCopyableId label="Target ID" value={entry.targetId} />
+                <AuditCopyableId label="IP address" value={entry.ipAddress} className="sm:col-span-2" />
                 <DetailRow label="User agent" value={entry.userAgent} className="sm:col-span-2" />
               </div>
 
-              {showFilterSameTarget ? (
-                <AdminFilterButton
-                  type="button"
-                  variant="secondary"
-                  className="w-full text-admin-accent sm:w-auto"
-                  onClick={onFilterSameTarget}
-                >
-                  Lọc nhật ký cùng target
-                </AdminFilterButton>
-              ) : null}
-
-              <JsonBlock label="Request payload" value={entry.requestPayload} />
-              <JsonBlock label="Response payload" value={entry.responsePayload} />
+              <AuditJsonBlock label="Request payload" value={entry.requestPayload} />
+              <AuditJsonBlock label="Response payload" value={entry.responsePayload} />
             </div>
           ) : null}
         </div>
