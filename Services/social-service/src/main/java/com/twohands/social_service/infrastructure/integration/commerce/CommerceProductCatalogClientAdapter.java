@@ -65,13 +65,23 @@ public class CommerceProductCatalogClientAdapter implements CommerceProductCatal
 
             String title = text(data, "title");
             String categoryName = data.path("category").path("name").asText(null);
+            String categoryId = text(data.path("category"), "category_id");
+            if (categoryId == null) {
+                categoryId = text(data.path("category"), "id");
+            }
+            String shopId = text(data.path("shop"), "shop_id");
+            if (shopId == null) {
+                shopId = text(data.path("shop"), "id");
+            }
             String imageUrl = firstImageUrl(data.path("media"));
 
             return Optional.of(new CommerceProductSnapshot(
                     productId,
                     title,
                     imageUrl,
-                    categoryName
+                    categoryName,
+                    categoryId,
+                    shopId
             ));
         } catch (Exception ex) {
             log.warn("Cannot parse commerce product snapshot. productId={}, error={}", productId, ex.getMessage());

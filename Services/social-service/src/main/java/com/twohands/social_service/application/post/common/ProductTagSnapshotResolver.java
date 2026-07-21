@@ -39,21 +39,26 @@ public class ProductTagSnapshotResolver {
                 catalog.title(),
                 catalog.imageUrl(),
                 catalog.categoryName(),
+                catalog.categoryId() != null ? catalog.categoryId() : tag.categoryId(),
+                catalog.shopId() != null ? catalog.shopId() : tag.shopId(),
                 true
         );
     }
 
     private ProductTag preserveUnavailable(ProductTag tag) {
-        if (tag.name() != null || tag.imageUrl() != null || tag.category() != null) {
+        if (tag.name() != null || tag.imageUrl() != null || tag.category() != null
+                || tag.categoryId() != null || tag.shopId() != null) {
             return new ProductTag(
                     tag.productId(),
                     tag.price(),
                     tag.name(),
                     tag.imageUrl(),
                     tag.category(),
+                    tag.categoryId(),
+                    tag.shopId(),
                     false
             );
         }
-        return new ProductTag(tag.productId(), tag.price(), null, null, null, false);
+        return new ProductTag(tag.productId(), tag.price(), null, null, null, null, null, false);
     }
 }

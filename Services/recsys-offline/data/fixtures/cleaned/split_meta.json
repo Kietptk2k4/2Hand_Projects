@@ -1,0 +1,7 @@
+{
+  "total": 2,
+  "train": 1,
+  "val": 0,
+  "test": 1,
+  "output_dir": "D:\\Projects\\2Hand_Projects\\Services\\recsys-offline\\data\\fixtures\\cleaned"
+}

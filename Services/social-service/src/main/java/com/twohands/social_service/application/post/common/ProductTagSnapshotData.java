@@ -10,8 +10,22 @@ public record ProductTagSnapshotData(
         String name,
         String imageUrl,
         String category,
+        String categoryId,
+        String shopId,
         boolean available
 ) {
+    /** Legacy snapshot shape without Commerce category/shop IDs. */
+    public ProductTagSnapshotData(
+            String productId,
+            BigDecimal price,
+            String name,
+            String imageUrl,
+            String category,
+            boolean available
+    ) {
+        this(productId, price, name, imageUrl, category, null, null, available);
+    }
+
     public static ProductTagSnapshotData fromDomain(ProductTag tag) {
         if (tag == null) {
             return null;
@@ -22,6 +36,8 @@ public record ProductTagSnapshotData(
                 tag.name(),
                 tag.imageUrl(),
                 tag.category(),
+                tag.categoryId(),
+                tag.shopId(),
                 tag.isAvailable()
         );
     }

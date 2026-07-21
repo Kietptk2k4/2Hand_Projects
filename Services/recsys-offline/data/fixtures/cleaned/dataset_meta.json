@@ -1,0 +1,9 @@
+{
+  "rows": 2,
+  "positives": 1,
+  "positive_rate": 0.5,
+  "dropped_missing_post": 0,
+  "warnings": [],
+  "finished_at": "2026-07-21T18:30:15.063682Z",
+  "output_path": "D:\\Projects\\2Hand_Projects\\Services\\recsys-offline\\data\\fixtures\\cleaned\\dataset.parquet"
+}

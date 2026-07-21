@@ -8,10 +8,23 @@ public record ProductTag(
         String name,
         String imageUrl,
         String category,
+        String categoryId,
+        String shopId,
         Boolean available
 ) {
     public ProductTag(String productId, BigDecimal price) {
-        this(productId, price, null, null, null, null);
+        this(productId, price, null, null, null, null, null, null);
+    }
+
+    public ProductTag(
+            String productId,
+            BigDecimal price,
+            String name,
+            String imageUrl,
+            String category,
+            Boolean available
+    ) {
+        this(productId, price, name, imageUrl, category, null, null, available);
     }
 
     public boolean isAvailable() {

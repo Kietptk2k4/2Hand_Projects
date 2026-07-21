@@ -2,6 +2,8 @@ package com.twohands.social_service.unit.application.feed.recommendposts;
 
 import com.twohands.social_service.application.feed.recommendposts.PostFeatureBuilder;
 import com.twohands.social_service.domain.follow.FollowRepository;
+import com.twohands.social_service.domain.integration.UserProductAffinity;
+import com.twohands.social_service.domain.integration.UserProductAffinityClient;
 import com.twohands.social_service.domain.post.*;
 import com.twohands.social_service.domain.search.SearchHistoryRepository;
 import org.junit.jupiter.api.Test;
@@ -28,9 +30,11 @@ class PostFeatureBuilderTest {
     private final PostSaveRepository postSaveRepository = mock(PostSaveRepository.class);
     private final FollowRepository followRepository = mock(FollowRepository.class);
     private final SearchHistoryRepository searchHistoryRepository = mock(SearchHistoryRepository.class);
+    private final UserProductAffinityClient userProductAffinityClient = mock(UserProductAffinityClient.class);
 
     private final PostFeatureBuilder featureBuilder = new PostFeatureBuilder(
-            postRepository, postLikeRepository, postSaveRepository, followRepository, searchHistoryRepository
+            postRepository, postLikeRepository, postSaveRepository, followRepository, searchHistoryRepository,
+            userProductAffinityClient
     );
 
     @Test
@@ -62,6 +66,7 @@ class PostFeatureBuilderTest {
 
         // 3. Mock Search Keywords
         when(searchHistoryRepository.findRecentKeywordsByUserId(userId, 20)).thenReturn(List.of("Soccer", "sports"));
+        when(userProductAffinityClient.findByUserId(userId)).thenReturn(UserProductAffinity.empty());
 
         // 4. Candidates input
         Instant now = Instant.now();

@@ -9,7 +9,8 @@ Phân hệ mạng xã hội của 2Hands. Kết hợp **MongoDB** cho nội dung
 - `author_id`: UUID (String)
 - `caption`: Text
 - `media`: Array<{url: String, type: String}>
-- `productTags`: Array<{product_id: UUID, price: Decimal}>
+- `productTags`: Array<{product_id, price, name?, image_url?, category?, category_id?, shop_id?, available?}>
+  - `category_id` / `shop_id`: optional Commerce identifiers for recommendation cross-domain features (new posts should populate via snapshot resolver; legacy docs may omit them).
 - `status`: Enum (DRAFT, ACTIVE, DELETED)
 - `visibility`: Enum (PUBLIC, FOLLOWERS)
 - `like_count`: Integer

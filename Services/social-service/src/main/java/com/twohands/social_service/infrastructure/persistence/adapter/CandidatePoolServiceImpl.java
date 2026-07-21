@@ -127,6 +127,8 @@ public class CandidatePoolServiceImpl implements CandidatePoolService {
                 pt.getName(),
                 pt.getImageUrl(),
                 pt.getCategory(),
+                pt.getCategoryId(),
+                pt.getShopId(),
                 pt.getAvailable()
         );
     }

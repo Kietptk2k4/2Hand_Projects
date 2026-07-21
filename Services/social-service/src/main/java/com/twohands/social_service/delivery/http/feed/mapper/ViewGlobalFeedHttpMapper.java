@@ -37,6 +37,8 @@ public class ViewGlobalFeedHttpMapper {
                         tag.name(),
                         tag.imageUrl(),
                         tag.category(),
+                        tag.categoryId(),
+                        tag.shopId(),
                         tag.available()
                 ))
                 .toList();

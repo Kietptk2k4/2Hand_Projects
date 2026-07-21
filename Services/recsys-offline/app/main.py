@@ -9,7 +9,9 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from app.config import get_settings
+from pipelines.build_dataset import run_build_dataset
 from pipelines.clean_data import run_clean_job
+from pipelines.split_dataset import run_split_dataset
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -17,10 +19,10 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="2Hands Recsys Offline",
     description=(
-        "Offline jobs only (clean / train / evaluate / export). "
+        "Offline jobs only (clean / build-dataset / train / evaluate / export). "
         "Social Service must NOT call this during recommend-feed requests."
     ),
-    version="0.1.0",
+    version="0.2.0",
 )
 
 
@@ -48,11 +50,37 @@ def jobs_clean() -> JobAccepted:
     return JobAccepted(status="success", detail="Clean dataset completed", result=summary)
 
 
+@app.post("/jobs/build-dataset", response_model=JobAccepted)
+def jobs_build_dataset() -> JobAccepted:
+    settings = get_settings()
+    try:
+        summary = run_build_dataset(settings)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Build dataset failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return JobAccepted(status="success", detail="Build dataset completed", result=summary)
+
+
+@app.post("/jobs/split-dataset", response_model=JobAccepted)
+def jobs_split_dataset() -> JobAccepted:
+    settings = get_settings()
+    try:
+        summary = run_split_dataset(settings)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Split dataset failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return JobAccepted(status="success", detail="Split dataset completed", result=summary)
+
+
 @app.post("/jobs/train", response_model=JobAccepted)
 def jobs_train() -> JobAccepted:
     return JobAccepted(
         status="not_implemented",
-        detail="Train LightGBM stub — implement after clean dataset + labels are ready",
+        detail="Train LightGBM stub — implement after dataset.parquet is ready",
     )
 
 

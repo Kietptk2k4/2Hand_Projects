@@ -34,3 +34,14 @@ The offline service SHALL provide job hooks (implemented or stubbed with clear c
 #### Scenario: No online predict API for feed
 - **WHEN** a client inspects the offline FastAPI routes intended for Phase 1
 - **THEN** there is no public recommend/predict endpoint that returns ranked posts for a user feed request
+
+### Requirement: Build dataset job endpoint
+The offline FastAPI service SHALL expose a job endpoint to run the build-dataset pipeline without exposing online recommend or predict APIs for end-user feeds.
+
+#### Scenario: Trigger build dataset
+- **WHEN** an operator calls the build-dataset job endpoint with valid configuration
+- **THEN** the service runs the pipeline and returns success or a structured failure detail
+
+#### Scenario: Still no feed predict route
+- **WHEN** a client lists Phase 1 offline routes
+- **THEN** there is still no public endpoint that returns ranked posts for a user feed request

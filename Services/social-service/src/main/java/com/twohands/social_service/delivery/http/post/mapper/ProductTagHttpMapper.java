@@ -17,6 +17,8 @@ public final class ProductTagHttpMapper {
                 tag.name(),
                 tag.imageUrl(),
                 tag.category(),
+                tag.categoryId(),
+                tag.shopId(),
                 tag.available()
         );
     }
@@ -28,6 +30,8 @@ public final class ProductTagHttpMapper {
                 tag.name(),
                 tag.imageUrl(),
                 tag.category(),
+                tag.categoryId(),
+                tag.shopId(),
                 tag.available()
         );
     }
@@ -39,6 +43,8 @@ public final class ProductTagHttpMapper {
                 tag.name(),
                 tag.imageUrl(),
                 tag.category(),
+                tag.categoryId(),
+                tag.shopId(),
                 tag.available()
         );
     }

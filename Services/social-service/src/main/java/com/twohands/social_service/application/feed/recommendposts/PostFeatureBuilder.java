@@ -1,6 +1,8 @@
 package com.twohands.social_service.application.feed.recommendposts;
 
 import com.twohands.social_service.domain.follow.FollowRepository;
+import com.twohands.social_service.domain.integration.UserProductAffinity;
+import com.twohands.social_service.domain.integration.UserProductAffinityClient;
 import com.twohands.social_service.domain.post.*;
 import com.twohands.social_service.domain.search.SearchHistoryRepository;
 import org.springframework.stereotype.Component;
@@ -17,19 +19,22 @@ public class PostFeatureBuilder {
     private final PostSaveRepository postSaveRepository;
     private final FollowRepository followRepository;
     private final SearchHistoryRepository searchHistoryRepository;
+    private final UserProductAffinityClient userProductAffinityClient;
 
     public PostFeatureBuilder(
             PostRepository postRepository,
             PostLikeRepository postLikeRepository,
             PostSaveRepository postSaveRepository,
             FollowRepository followRepository,
-            SearchHistoryRepository searchHistoryRepository
+            SearchHistoryRepository searchHistoryRepository,
+            UserProductAffinityClient userProductAffinityClient
     ) {
         this.postRepository = postRepository;
         this.postLikeRepository = postLikeRepository;
         this.postSaveRepository = postSaveRepository;
         this.followRepository = followRepository;
         this.searchHistoryRepository = searchHistoryRepository;
+        this.userProductAffinityClient = userProductAffinityClient;
     }
 
     public List<PostFeatureVector> buildFeatureVectors(UUID userId, List<PostCandidate> candidates) {
@@ -37,17 +42,14 @@ public class PostFeatureBuilder {
             return List.of();
         }
 
-        // 1. Fetch user's following list (once)
         Set<UUID> userFollowing = new HashSet<>(followRepository.findAcceptedFolloweeIds(userId));
 
-        // 2. Fetch user's interactions for Hashtag Match and Author Affinity
         List<String> likedPostIds = postLikeRepository.findRecentLikedPostIds(userId, 50);
         PageResult<PostSaveEntry> savedResult = postSaveRepository.findByUserId(userId, 0, 50);
         List<String> savedPostIds = savedResult != null
                 ? savedResult.items().stream().map(PostSaveEntry::postId).toList()
                 : List.of();
 
-        // Batch fetch all interaction posts
         Set<String> interactionIds = new HashSet<>();
         interactionIds.addAll(likedPostIds);
         interactionIds.addAll(savedPostIds);
@@ -56,7 +58,6 @@ public class PostFeatureBuilder {
         Map<String, Post> postMap = interactionPosts.stream()
                 .collect(Collectors.toMap(Post::id, post -> post, (p1, p2) -> p1));
 
-        // Map liked and saved hashtags/authors
         Set<String> likedTags = new HashSet<>();
         Map<String, Integer> likedAuthorCounts = new HashMap<>();
         for (String postId : likedPostIds) {
@@ -81,16 +82,17 @@ public class PostFeatureBuilder {
             }
         }
 
-        // Fetch recent search keywords
         List<String> recentKeywords = searchHistoryRepository.findRecentKeywordsByUserId(userId, 20);
         Set<String> searchTerms = recentKeywords != null
                 ? recentKeywords.stream().map(String::toLowerCase).collect(Collectors.toSet())
                 : Set.of();
 
-        // 3. Cache for author following lists to prevent N+1 queries during Jaccard calculation
+        UserProductAffinity affinity = userProductAffinityClient != null
+                ? userProductAffinityClient.findByUserId(userId)
+                : UserProductAffinity.empty();
+
         Map<UUID, Set<UUID>> authorFollowingCache = new HashMap<>();
 
-        // 4. Calculate raw values
         int size = candidates.size();
         double[] recencyScores = new double[size];
         double[] rawEngagement = new double[size];
@@ -110,19 +112,17 @@ public class PostFeatureBuilder {
             UUID authorUuid = null;
             try {
                 authorUuid = UUID.fromString(candidate.authorId());
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
 
-            // A. Recency decay score (absolute value, between 0.0 and 1.0)
             double deltaSeconds = Math.max(0, now.getEpochSecond() - candidate.createdAt().getEpochSecond());
-            double halfLifeSeconds = 7.0 * 24.0 * 3600.0; // 7 days decay half-life
+            double halfLifeSeconds = 7.0 * 24.0 * 3600.0;
             recencyScores[i] = Math.pow(2.0, -deltaSeconds / halfLifeSeconds);
 
-            // B. Engagement score (raw)
             rawEngagement[i] = Math.log(1.0 + candidate.likeCount()) + 2.0 * Math.log(1.0 + candidate.commentCount());
             minEngagement = Math.min(minEngagement, rawEngagement[i]);
             maxEngagement = Math.max(maxEngagement, rawEngagement[i]);
 
-            // C. Hashtag Match Score (raw)
             double hashtagScore = 0.0;
             if (candidate.hashtags() != null) {
                 for (String tag : candidate.hashtags()) {
@@ -142,7 +142,6 @@ public class PostFeatureBuilder {
             minHashtag = Math.min(minHashtag, rawHashtagMatch[i]);
             maxHashtag = Math.max(maxHashtag, rawHashtagMatch[i]);
 
-            // D. Author Affinity Score (raw)
             double affinityScore = 0.0;
             if (authorUuid != null) {
                 boolean followsAuthor = userFollowing.contains(authorUuid);
@@ -154,7 +153,6 @@ public class PostFeatureBuilder {
             minAffinity = Math.min(minAffinity, rawAuthorAffinity[i]);
             maxAffinity = Math.max(maxAffinity, rawAuthorAffinity[i]);
 
-            // E. Mutual Follow Score (Jaccard index, or 1.0 if direct follow)
             if (authorUuid != null) {
                 if (userFollowing.contains(authorUuid)) {
                     mutualFollowScores[i] = 1.0;
@@ -167,25 +165,22 @@ public class PostFeatureBuilder {
                             return Set.of();
                         }
                     });
-                    
+
                     Set<UUID> intersection = new HashSet<>(userFollowing);
                     intersection.retainAll(authorFollowing);
-                    
+
                     Set<UUID> union = new HashSet<>(userFollowing);
                     union.addAll(authorFollowing);
-                    
+
                     mutualFollowScores[i] = union.isEmpty() ? 0.0 : (double) intersection.size() / union.size();
                 }
             } else {
                 mutualFollowScores[i] = 0.0;
             }
 
-            // F. Cross Domain Product Score (Mocked to 0.0)
-            // TODO: Integrate user_product_affinity from Kafka consumer in commerce-service (Nhiệm vụ 3)
-            crossDomainProductScores[i] = 0.0;
+            crossDomainProductScores[i] = CrossDomainProductScore.compute(affinity, candidate.productTags());
         }
 
-        // 5. Min-Max normalize raw scores to [0.0, 1.0] and package into PostFeatureVector list
         List<PostFeatureVector> vectors = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             double engagementNorm = normalize(rawEngagement[i], minEngagement, maxEngagement);

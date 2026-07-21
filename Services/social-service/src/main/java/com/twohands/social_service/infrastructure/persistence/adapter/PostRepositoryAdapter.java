@@ -356,6 +356,8 @@ public class PostRepositoryAdapter implements PostRepository {
         document.setName(tag.name());
         document.setImageUrl(tag.imageUrl());
         document.setCategory(tag.category());
+        document.setCategoryId(tag.categoryId());
+        document.setShopId(tag.shopId());
         document.setAvailable(tag.available());
         return document;
     }
@@ -367,6 +369,8 @@ public class PostRepositoryAdapter implements PostRepository {
                 pt.getName(),
                 pt.getImageUrl(),
                 pt.getCategory(),
+                pt.getCategoryId(),
+                pt.getShopId(),
                 pt.getAvailable()
         );
     }

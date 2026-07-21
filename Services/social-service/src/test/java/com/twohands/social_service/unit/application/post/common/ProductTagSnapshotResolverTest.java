@@ -28,7 +28,9 @@ class ProductTagSnapshotResolverTest {
                         productId,
                         "iPhone 14",
                         "https://cdn/phone.jpg",
-                        "Mobile"
+                        "Mobile",
+                        "cat-mobile",
+                        "shop-1"
                 )));
 
         List<ProductTag> resolved = resolver.resolve(List.of(new ProductTag(productId, new BigDecimal("19900000"))));
@@ -37,6 +39,8 @@ class ProductTagSnapshotResolverTest {
         assertThat(resolved.getFirst().name()).isEqualTo("iPhone 14");
         assertThat(resolved.getFirst().imageUrl()).isEqualTo("https://cdn/phone.jpg");
         assertThat(resolved.getFirst().category()).isEqualTo("Mobile");
+        assertThat(resolved.getFirst().categoryId()).isEqualTo("cat-mobile");
+        assertThat(resolved.getFirst().shopId()).isEqualTo("shop-1");
         assertThat(resolved.getFirst().isAvailable()).isTrue();
     }
 

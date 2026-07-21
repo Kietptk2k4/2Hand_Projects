@@ -275,6 +275,12 @@ public class PostDocument {
         @Field("category")
         private String category;
 
+        @Field("category_id")
+        private String categoryId;
+
+        @Field("shop_id")
+        private String shopId;
+
         @Field("available")
         private Boolean available;
 
@@ -324,6 +330,22 @@ public class PostDocument {
 
         public void setCategory(String category) {
             this.category = category;
+        }
+
+        public String getCategoryId() {
+            return categoryId;
+        }
+
+        public void setCategoryId(String categoryId) {
+            this.categoryId = categoryId;
+        }
+
+        public String getShopId() {
+            return shopId;
+        }
+
+        public void setShopId(String shopId) {
+            this.shopId = shopId;
         }
 
         public Boolean getAvailable() {

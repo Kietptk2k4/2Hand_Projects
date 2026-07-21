@@ -30,6 +30,8 @@ public record ViewGlobalFeedResponse(
             String name,
             String imageUrl,
             String category,
+            String categoryId,
+            String shopId,
             boolean available
     ) {
     }
