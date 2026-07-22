@@ -1,42 +1,42 @@
 {
-  "total_input_rows": 20,
-  "usable_rows": 20,
-  "train": 16,
-  "val": 2,
-  "test": 2,
+  "total_input_rows": 50,
+  "usable_rows": 50,
+  "train": 40,
+  "val": 5,
+  "test": 5,
   "ratio": {
     "train": 0.8,
     "val": 0.1,
     "test": 0.1
   },
   "positive_rate": {
-    "train": 0.25,
-    "val": 0.5,
-    "test": 0.0
+    "train": 0.35,
+    "val": 0.2,
+    "test": 0.4
   },
   "time_range": {
     "train": {
       "min_shown_at": "2026-01-01T00:00:00Z",
-      "max_shown_at": "2026-01-01T15:00:00Z"
+      "max_shown_at": "2026-01-02T15:00:00Z"
     },
     "val": {
-      "min_shown_at": "2026-01-01T16:00:00Z",
-      "max_shown_at": "2026-01-01T17:00:00Z"
+      "min_shown_at": "2026-01-02T16:00:00Z",
+      "max_shown_at": "2026-01-02T20:00:00Z"
     },
     "test": {
-      "min_shown_at": "2026-01-01T18:00:00Z",
-      "max_shown_at": "2026-01-01T19:00:00Z"
+      "min_shown_at": "2026-01-02T21:00:00Z",
+      "max_shown_at": "2026-01-03T01:00:00Z"
     }
   },
   "user_overlap_pct": {
-    "train_val": 66.66666666666667,
-    "train_test": 66.66666666666667,
-    "val_test": 33.333333333333336
+    "train_val": 100.0,
+    "train_test": 100.0,
+    "val_test": 100.0
   },
   "post_overlap_pct": {
-    "train_val": 40.0,
-    "train_test": 40.0,
-    "val_test": 0.0
+    "train_val": 71.42857142857143,
+    "train_test": 71.42857142857143,
+    "val_test": 42.857142857142854
   },
   "temporal_ok": true,
   "warnings": [],

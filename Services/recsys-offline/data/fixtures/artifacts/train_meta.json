@@ -1,0 +1,41 @@
+{
+  "feature_order": [
+    "recency_score",
+    "engagement_score",
+    "hashtag_match_score",
+    "author_affinity_score",
+    "mutual_follow_score",
+    "cross_domain_product_score"
+  ],
+  "train_rows": 40,
+  "val_rows": 5,
+  "positive_rate_train": 0.35,
+  "positive_rate_val": 0.2,
+  "model_path": "D:\\Projects\\2Hand_Projects\\Services\\recsys-offline\\data\\fixtures\\artifacts\\model.txt",
+  "meta_path": "D:\\Projects\\2Hand_Projects\\Services\\recsys-offline\\data\\fixtures\\artifacts\\train_meta.json",
+  "used_early_stopping": true,
+  "best_iteration": 1,
+  "params": {
+    "objective": "binary",
+    "metric": [
+      "binary_logloss",
+      "auc"
+    ],
+    "learning_rate": 0.05,
+    "num_leaves": 31,
+    "feature_fraction": 0.8,
+    "bagging_fraction": 0.8,
+    "bagging_freq": 1,
+    "verbosity": -1,
+    "seed": 42
+  },
+  "metrics": {
+    "val_binary_logloss_best": 0.5545907577736989,
+    "val_auc_best": 0.5,
+    "train_binary_logloss_last": 0.6474466390346326,
+    "train_auc_last": 0.5
+  },
+  "warnings": [],
+  "num_boost_round": 200,
+  "early_stopping_rounds": 30
+}

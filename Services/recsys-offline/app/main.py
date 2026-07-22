@@ -12,6 +12,8 @@ from app.config import get_settings
 from pipelines.build_dataset import run_build_dataset
 from pipelines.clean_data import run_clean_job
 from pipelines.split_dataset import run_split_dataset
+from pipelines.train import run_train_job
+from pipelines.evaluate import run_evaluate_job
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -78,18 +80,28 @@ def jobs_split_dataset() -> JobAccepted:
 
 @app.post("/jobs/train", response_model=JobAccepted)
 def jobs_train() -> JobAccepted:
-    return JobAccepted(
-        status="not_implemented",
-        detail="Train LightGBM stub — implement after dataset.parquet is ready",
-    )
+    settings = get_settings()
+    try:
+        summary = run_train_job(settings)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Train job failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return JobAccepted(status="success", detail="Train LightGBM completed", result=summary)
 
 
 @app.post("/jobs/evaluate", response_model=JobAccepted)
 def jobs_evaluate() -> JobAccepted:
-    return JobAccepted(
-        status="not_implemented",
-        detail="Evaluate stub — AUC / Precision@K vs rule-based baseline",
-    )
+    settings = get_settings()
+    try:
+        summary = run_evaluate_job(settings)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Evaluate job failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return JobAccepted(status="success", detail="Evaluate completed", result=summary)
 
 
 @app.post("/jobs/export-activate", response_model=JobAccepted)

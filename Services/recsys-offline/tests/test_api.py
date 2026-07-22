@@ -51,8 +51,37 @@ def test_split_dataset_fails_when_parquet_missing(monkeypatch, tmp_path):
     assert "dataset.parquet" in response.json()["detail"]
 
 
+def test_train_job_fails_when_train_parquet_missing(monkeypatch, tmp_path):
+    from app import config
+
+    monkeypatch.setattr(
+        "app.main.get_settings",
+        lambda: config.Settings(
+            recsys_dataset_output_dir=str(tmp_path),
+            recsys_artifact_dir=str(tmp_path / "arts"),
+        ),
+    )
+    response = client.post("/jobs/train")
+    assert response.status_code == 400
+    assert "not found" in response.json()["detail"].lower() or "parquet" in response.json()["detail"].lower()
+
+
+def test_evaluate_job_fails_when_test_parquet_missing(monkeypatch, tmp_path):
+    from app import config
+
+    monkeypatch.setattr(
+        "app.main.get_settings",
+        lambda: config.Settings(
+            recsys_dataset_output_dir=str(tmp_path),
+            recsys_artifact_dir=str(tmp_path / "arts"),
+        ),
+    )
+    response = client.post("/jobs/evaluate")
+    assert response.status_code == 400
+
+
 def test_stub_jobs_do_not_expose_predict():
-    for path in ("/jobs/train", "/jobs/evaluate", "/jobs/export-activate"):
+    for path in ("/jobs/export-activate",):
         response = client.post(path)
         assert response.status_code == 200
         assert response.json()["status"] == "not_implemented"
