@@ -71,6 +71,7 @@ import { CategoryManagementTab } from "../admin/catalogManagement/components/tab
 import { BrandManagementTab } from "../admin/catalogManagement/components/tabs/BrandManagementTab.jsx";
 import { SystemConfigsTab } from "../admin/systemOperations/components/tabs/SystemConfigsTab.jsx";
 import { SystemAnnouncementsTab } from "../admin/systemOperations/components/tabs/SystemAnnouncementsTab.jsx";
+import { ModelRegistryTab } from "../admin/systemOperations/components/tabs/ModelRegistryTab.jsx";
 import { AuthAlert } from "../../../shared/ui/auth/authUi.jsx";
 
 const CONTENT_MODERATION_TAB_COMPONENTS = {
@@ -104,6 +105,7 @@ const USER_INVESTIGATION_TAB_COMPONENTS = {
 const SYSTEM_OPERATIONS_TAB_COMPONENTS = {
   "system-configs": SystemConfigsTab,
   "system-announcements": SystemAnnouncementsTab,
+  "model-registry": ModelRegistryTab,
 };
 
 const ORDER_SUPPORT_TAB_COMPONENTS = {

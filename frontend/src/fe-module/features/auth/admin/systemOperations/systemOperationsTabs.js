@@ -11,6 +11,12 @@ export const SYSTEM_OPERATIONS_TABS = [
     labelEn: "System Announcements",
     icon: "announcement",
   },
+  {
+    id: "model-registry",
+    labelVn: "Model registry",
+    labelEn: "Model Registry",
+    icon: "model",
+  },
 ];
 
 export const DEFAULT_SYSTEM_OPERATIONS_TAB = "system-configs";

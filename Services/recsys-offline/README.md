@@ -13,17 +13,17 @@ Social Service ranks posts in-process (ONNX + rule-based fallback) and never cal
 - `POST /jobs/split-dataset` — time-ordered **80/10/10** train/val/test by `shown_at` (no shuffle); fail-closed temporal leak checks; writes overlap + positive-rate report in `split_meta.json`
 - `POST /jobs/train` — LightGBM **binary** train from `dataset_train.parquet` → `model.txt` + `train_meta.json`
 - `POST /jobs/evaluate` — pointwise ROC-AUC + Precision/Recall/HitRate@10 (by `request_id`) vs rule-based baseline → `evaluate_report.json`
-- Stub: `POST /jobs/export-activate`
+- `POST /jobs/export-activate` — LightGBM→ONNX, parity smoke, versioned `model_artifacts` insert, metric gate, activate or soft-reject
 
 ## Config (env)
 
 | Variable | Purpose |
 |----------|---------|
-| `SOCIAL_POSTGRES_URL` | Postgres URL for clean extract |
+| `SOCIAL_POSTGRES_URL` | Postgres URL for clean extract **and** `model_artifacts` write |
 | `SOCIAL_MONGO_URL` | Mongo URI for clean extract |
 | `SOCIAL_MONGO_DB` | Mongo database name (default `social_db`) |
 | `RECSYS_DATASET_OUTPUT_DIR` | Cleaned CSV + `dataset.parquet` directory (default `data/cleaned`) |
-| `RECSYS_ARTIFACT_DIR` | Model artifact directory (`model.txt`, `train_meta.json`) |
+| `RECSYS_ARTIFACT_DIR` | Model artifact directory (`model.txt`, `train_meta.json`, ONNX, reports) |
 
 ## Typical offline flow
 
@@ -42,6 +42,9 @@ curl -X POST http://localhost:8095/jobs/train
 
 # 5) Evaluate on test split vs rule-based baseline
 curl -X POST http://localhost:8095/jobs/evaluate
+
+# 6) Export ONNX + gate + activate (needs SOCIAL_POSTGRES_URL)
+curl -X POST http://localhost:8095/jobs/export-activate
 ```
 
 Outputs (under `RECSYS_DATASET_OUTPUT_DIR`):
@@ -56,6 +59,8 @@ Train outputs (under `RECSYS_ARTIFACT_DIR`):
 - `model.txt` — LightGBM native text model
 - `train_meta.json` — feature_order, params, metrics, warnings, best_iteration
 - `evaluate_report.json` — AUC + @10 metrics for model and baseline (after evaluate)
+- `feed_ranker_v{N}.onnx` — exported ONNX (after export-activate)
+- Social DB `model_artifacts` row for version N
 
 Train policy:
 
@@ -64,7 +69,6 @@ Train policy:
 - If `dataset_val.parquet` exists and is non-empty → early stopping
 - If val missing/empty → warning `no_early_stopping`, still trains (does not fail)
 - Missing `dataset_train.parquet` → fail closed (HTTP 400)
-- ONNX export / DB activate are separate follow-up jobs
 
 Evaluate policy:
 
@@ -77,10 +81,21 @@ Evaluate policy:
   (recency, engagement, hashtag, author_affinity, mutual_follow, cross_domain)
 - Report: JSON only (`evaluate_report.json`) — no markdown
 
-Online status (Social Service, not this package):
+Export-activate policy:
 
-- `GET /api/v1/social/admin/recommendation-model-status` — ADMIN/MODERATOR  
-  Returns active model id/version, runtime mode (`onnx` | `rule_based`), load ok, fallback reason.
+- Inputs: `model.txt` + `evaluate_report.json` + `dataset_test.parquet` (≥32 rows) + `SOCIAL_POSTGRES_URL`
+- Convert LightGBM → ONNX; smoke 32–64 samples; fail job (no DB write) if `max_abs_diff > 1e-4`
+- Insert `model_artifacts` with `version = MAX+1`, `feature_version=1`, metrics JSONB
+- Gate activate when AUC ≥ baseline **and** Precision@10 ≥ baseline (null → fail closed)
+- Gate fail → insert inactive + `rejected_by_metrics`; keep prior active (`status: exported_not_activated`)
+- Gate pass → transactional activate (`status: activated`); Social `ModelLoader` cron reloads ONNX
+- Does **not** re-run evaluate
+
+Online admin (Social Service, not this package):
+
+- `GET /api/v1/social/admin/recommendation-model-status` — mode / version / fallback reason
+- `GET /api/v1/social/admin/recommendation-model-artifacts` — registry list for Admin FE
+- Admin UI: System Operations → **Model registry** (read-only; no export button)
 
 Split notes:
 

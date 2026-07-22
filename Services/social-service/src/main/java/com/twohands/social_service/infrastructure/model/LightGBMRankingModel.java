@@ -62,12 +62,15 @@ public class LightGBMRankingModel implements RankingModel {
             String inputName = session.getInputNames().iterator().next();
 
             try (OrtSession.Result results = session.run(Map.of(inputName, inputTensor))) {
-                Object value = results.get(0).getValue();
+                Object value = resolveScoreOutput(results);
                 List<Double> scores = new ArrayList<>(batchSize);
-                
+
                 if (value instanceof float[][] output2d) {
                     for (int i = 0; i < batchSize; i++) {
-                        scores.add((double) output2d[i][0]);
+                        float[] row = output2d[i];
+                        // Binary classifier probabilities: use positive class (index 1) when present.
+                        float score = row.length >= 2 ? row[1] : row[0];
+                        scores.add((double) score);
                     }
                 } else if (value instanceof float[] output1d) {
                     for (int i = 0; i < batchSize; i++) {
@@ -77,7 +80,7 @@ public class LightGBMRankingModel implements RankingModel {
                     log.warn("Unexpected ONNX output value type: {}", value.getClass().getName());
                     return featuresList.stream().map(f -> 0.0).toList();
                 }
-                
+
                 return scores;
             } finally {
                 inputTensor.close();
@@ -86,5 +89,15 @@ public class LightGBMRankingModel implements RankingModel {
             log.error("Failed to perform ONNX model predictBatch, falling back to 0.0 scores.", e);
             return featuresList.stream().map(f -> 0.0).toList();
         }
+    }
+
+    /**
+     * Prefer probability tensor (LightGBM classifier ONNX) over label tensor.
+     */
+    private static Object resolveScoreOutput(OrtSession.Result results) throws Exception {
+        if (results.size() >= 2) {
+            return results.get(1).getValue();
+        }
+        return results.get(0).getValue();
     }
 }

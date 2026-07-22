@@ -14,6 +14,7 @@ from pipelines.clean_data import run_clean_job
 from pipelines.split_dataset import run_split_dataset
 from pipelines.train import run_train_job
 from pipelines.evaluate import run_evaluate_job
+from pipelines.export_activate import run_export_activate_job
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -106,10 +107,20 @@ def jobs_evaluate() -> JobAccepted:
 
 @app.post("/jobs/export-activate", response_model=JobAccepted)
 def jobs_export_activate() -> JobAccepted:
-    return JobAccepted(
-        status="not_implemented",
-        detail=(
-            "Export ONNX + activate model_artifacts stub. "
-            "Does not expose online predict for feed ranking."
-        ),
+    settings = get_settings()
+    try:
+        summary = run_export_activate_job(settings)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Export-activate job failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    job_status = str(summary.get("status") or "success")
+    detail = (
+        "Model activated"
+        if job_status == "activated"
+        else "Model exported but not activated (gate rejected)"
+        if job_status == "exported_not_activated"
+        else "Export-activate completed"
     )
+    return JobAccepted(status=job_status, detail=detail, result=summary)
