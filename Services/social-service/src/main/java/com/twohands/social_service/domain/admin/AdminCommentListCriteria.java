@@ -4,6 +4,7 @@ import java.util.Optional;
 
 public record AdminCommentListCriteria(
         Optional<String> status,
+        Optional<String> moderationStatus,
         Optional<String> postId,
         Optional<String> query,
         AdminCommentListSortField sortField,

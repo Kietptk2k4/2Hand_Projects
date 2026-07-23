@@ -66,12 +66,40 @@ export function mapProductModerationHistoryResponse(data) {
   };
 }
 
+export function mapReviewModerationHistoryResponse(data) {
+  if (!data) {
+    return { reviewId: null, page: 1, size: 20, totalElements: 0, totalPages: 0, history: [] };
+  }
+  return {
+    reviewId: pick(data, "reviewId", "review_id"),
+    page: data.page ?? 1,
+    size: data.size ?? 20,
+    totalElements: data.total_elements ?? data.totalElements ?? 0,
+    totalPages: data.total_pages ?? data.totalPages ?? 0,
+    history: (data.history || []).map(mapModerationHistoryEntry),
+  };
+}
+
 export function mapPostModerationHistoryResponse(data) {
   if (!data) {
     return { postId: null, page: 1, size: 20, totalElements: 0, totalPages: 0, history: [] };
   }
   return {
     postId: pick(data, "postId", "post_id"),
+    page: data.page ?? 1,
+    size: data.size ?? 20,
+    totalElements: data.total_elements ?? data.totalElements ?? 0,
+    totalPages: data.total_pages ?? data.totalPages ?? 0,
+    history: (data.history || []).map(mapModerationHistoryEntry),
+  };
+}
+
+export function mapCommentModerationHistoryResponse(data) {
+  if (!data) {
+    return { commentId: null, page: 1, size: 20, totalElements: 0, totalPages: 0, history: [] };
+  }
+  return {
+    commentId: pick(data, "commentId", "comment_id"),
     page: data.page ?? 1,
     size: data.size ?? 20,
     totalElements: data.total_elements ?? data.totalElements ?? 0,

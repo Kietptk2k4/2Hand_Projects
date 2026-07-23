@@ -1,4 +1,5 @@
 import { commerceApiClient } from "../../../services/http/commerceApiClient";
+import { buildVnpayCheckoutPayload } from "../utils/vnpayRedirectUrls";
 import { mapAxiosError, unwrapResponse } from "./commerceApiResponse";
 
 export async function fetchCheckoutQuote({ cartItemIds, addressId, shipmentType }) {
@@ -41,6 +42,7 @@ export async function submitCheckout({
       payment_method: paymentMethod,
       shipment_type: shipmentType,
       idempotency_key: idempotencyKey,
+      ...buildVnpayCheckoutPayload(),
     });
     return unwrapResponse(response);
   } catch (error) {

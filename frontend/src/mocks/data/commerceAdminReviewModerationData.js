@@ -121,7 +121,7 @@ function computeSellerRating(sellerId) {
   };
 }
 
-export function validateAdminReviewListQuery({ page, limit, status, rating, q }) {
+export function validateAdminReviewListQuery({ page, limit, status, rating, q, sort }) {
   const pageNum = Number(page);
   const limitNum = Number(limit);
 
@@ -129,7 +129,7 @@ export function validateAdminReviewListQuery({ page, limit, status, rating, q })
     return { error: "COMMERCE-400-PAGINATION", status: 400 };
   }
 
-  if (!Number.isInteger(limitNum) || limitNum < 1 || limitNum > 50) {
+  if (!Number.isInteger(limitNum) || limitNum < 1 || limitNum > 100) {
     return { error: "COMMERCE-400-PAGINATION", status: 400 };
   }
 
@@ -142,13 +142,28 @@ export function validateAdminReviewListQuery({ page, limit, status, rating, q })
     if (!Number.isInteger(ratingNum) || ratingNum < 1 || ratingNum > 5) {
       return { error: "COMMERCE-400-VALIDATION", status: 400 };
     }
-    return { page: pageNum, limit: limitNum, status: status || null, rating: ratingNum, q: q || null };
+    return { page: pageNum, limit: limitNum, status: status || null, rating: ratingNum, q: q || null, sort: sort || "NEWEST" };
   }
 
-  return { page: pageNum, limit: limitNum, status: status || null, rating: null, q: q || null };
+  return { page: pageNum, limit: limitNum, status: status || null, rating: null, q: q || null, sort: sort || "NEWEST" };
 }
 
-export function listAdminReviewsForAdmin({ page, limit, status, rating, q }) {
+export function getAdminReviewDetail(reviewId) {
+  const review = reviewsById.get(reviewId);
+  if (!review) {
+    return { error: "COMMERCE-404-REVIEW", status: 404 };
+  }
+  return {
+    data: {
+      ...review,
+      shop_id: MOCK_DEMO_SELLER_SHOP_ID,
+      shop_name: "Demo Seller Shop",
+      updated_at: review.created_at,
+    },
+  };
+}
+
+export function listAdminReviewsForAdmin({ page, limit, status, rating, q, sort = "NEWEST" }) {
   let items = [...reviewsById.values()];
 
   if (status) {
@@ -171,7 +186,18 @@ export function listAdminReviewsForAdmin({ page, limit, status, rating, q }) {
     }
   }
 
-  items.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  items.sort((a, b) => {
+    if (sort === "OLDEST") {
+      return new Date(a.created_at) - new Date(b.created_at);
+    }
+    if (sort === "RATING_ASC") {
+      return a.rating - b.rating || new Date(b.created_at) - new Date(a.created_at);
+    }
+    if (sort === "RATING_DESC") {
+      return b.rating - a.rating || new Date(b.created_at) - new Date(a.created_at);
+    }
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
 
   const total = items.length;
   const totalPages = Math.max(1, Math.ceil(total / limit) || 1);

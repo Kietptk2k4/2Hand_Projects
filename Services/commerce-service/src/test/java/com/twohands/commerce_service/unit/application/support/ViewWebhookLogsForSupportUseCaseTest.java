@@ -36,10 +36,12 @@ class ViewWebhookLogsForSupportUseCaseTest {
 				"PAYMENT_SUCCESS",
 				"PROCESSED",
 				true,
-				0,
 				"PAYOS:PAYOS-123:PAYMENT_SUCCESS",
 				Map.of("code", "00"),
-				Instant.parse("2026-05-20T10:00:00Z")
+				Instant.parse("2026-05-20T10:00:00Z"),
+				UUID.randomUUID(),
+				null,
+				UUID.randomUUID()
 		);
 		when(repository.search(any(WebhookLogSupportSearchCriteria.class), eq(new WebhookSupportPageRequest(1, 20))))
 				.thenReturn(new WebhookLogSupportPagedResult(List.of(entry), 1, 20, 1L, 1));
@@ -47,6 +49,8 @@ class ViewWebhookLogsForSupportUseCaseTest {
 		ViewWebhookLogsForSupportResult result = useCase.execute(new ViewWebhookLogsForSupportQuery(
 				"PAYOS",
 				"PAYOS-123",
+				null,
+				null,
 				"PROCESSED",
 				null,
 				null,

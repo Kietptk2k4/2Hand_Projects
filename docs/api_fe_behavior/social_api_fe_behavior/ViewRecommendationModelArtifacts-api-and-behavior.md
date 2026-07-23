@@ -26,6 +26,7 @@
     {
       "version": 3,
       "format": "ONNX",
+      "modelName": "feed_ranker",
       "artifactPath": "artifacts/feed_ranker/v3/model.onnx",
       "isActive": true,
       "trainedAt": "2026-07-22T08:30:00Z",

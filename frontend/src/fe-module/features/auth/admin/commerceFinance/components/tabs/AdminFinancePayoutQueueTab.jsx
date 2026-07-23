@@ -1,104 +1,144 @@
-import { useCallback, useEffect, useState } from "react";
-import { useAuthSession } from "../../../../hooks/useAuthSession.jsx";
+import { useCallback, useState } from "react";
 import {
   approveAdminPayoutRequest,
-  fetchAdminPayoutQueue,
   markAdminPayoutRequestPaid,
   rejectAdminPayoutRequest,
 } from "../../api/adminFinancePayoutApi.js";
 import {
   applyPayoutQueueAfterAction,
-  mapPayoutQueueResponse,
+  mapPayoutQueueItem,
 } from "../../utils/adminFinancePayoutMapper.js";
+import { useAdminFinancePayoutQueue } from "../../hooks/useAdminFinancePayoutQueue.js";
 import { AdminFinancePayoutQueueView } from "../AdminFinancePayoutQueueView.jsx";
 
 export function AdminFinancePayoutQueueTab({ onNotify }) {
-  const { showSessionExpired } = useAuthSession();
-  const [statusFilter, setStatusFilter] = useState("REQUESTED");
-  const [queue, setQueue] = useState({ items: [], pagination: { page: 1, totalItems: 0 } });
-  const [loadStatus, setLoadStatus] = useState("idle");
-  const [errorMessage, setErrorMessage] = useState("");
+  const {
+    statusFilter,
+    resolvedRange,
+    rangeId,
+    queue,
+    setQueueState,
+    listPanel,
+    overviewPanel,
+    heroMetrics,
+    isOverviewLoading,
+    handleStatusChange,
+    handlePageChange,
+    handleRangeChange,
+    handleKpiStatusClick,
+    refreshAll,
+    retryList,
+    retryOverview,
+    navigateToSellerDetail,
+  } = useAdminFinancePayoutQueue();
+
   const [actionId, setActionId] = useState("");
+  const [actionPending, setActionPending] = useState(false);
+  const [actionRequest, setActionRequest] = useState(null);
+  const [detailItem, setDetailItem] = useState(null);
 
-  const load = useCallback(async () => {
-    setLoadStatus("loading");
-    setErrorMessage("");
-    try {
-      const raw = await fetchAdminPayoutQueue({ status: statusFilter || undefined, page: 1, limit: 20 });
-      setQueue(mapPayoutQueueResponse(raw));
-      setLoadStatus("ready");
-    } catch (error) {
-      if (String(error?.code ?? "").includes("401")) {
-        showSessionExpired(error?.message);
-        setLoadStatus("error");
-        return;
-      }
-      setErrorMessage(error?.message || "Không tải được hàng đợi rút tiền.");
-      setLoadStatus("error");
-    }
-  }, [showSessionExpired, statusFilter]);
+  const handleActionRequest = useCallback((item, action) => {
+    if (!item?.id) return;
+    setActionRequest({ item, action });
+  }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  const handleActionClose = useCallback(() => {
+    if (actionPending) return;
+    setActionRequest(null);
+  }, [actionPending]);
 
-  const runAction = useCallback(
-    async (payoutRequestId, action) => {
-      setActionId(payoutRequestId);
+  const runConfirmedAction = useCallback(
+    async (payload = {}) => {
+      const request = actionRequest;
+      if (!request?.item?.id) return;
+
+      const { item, action } = request;
+      setActionPending(true);
+      setActionId(item.id);
+
       try {
         let updatedItem = null;
 
         if (action === "approve") {
-          updatedItem = await approveAdminPayoutRequest(payoutRequestId);
+          updatedItem = await approveAdminPayoutRequest(item.id);
           onNotify?.({ variant: "success", message: "Đã duyệt yêu cầu rút tiền." });
         }
 
         if (action === "reject") {
-          const note = window.prompt("Lý do từ chối (bắt buộc)");
-          if (note === null) return;
-          const trimmedNote = note.trim();
-          if (!trimmedNote) {
+          const note = payload.adminNote?.trim();
+          if (!note) {
             onNotify?.({ variant: "error", message: "Vui lòng nhập lý do từ chối." });
             return;
           }
-          updatedItem = await rejectAdminPayoutRequest(payoutRequestId, trimmedNote);
+          updatedItem = await rejectAdminPayoutRequest(item.id, note);
           onNotify?.({ variant: "success", message: "Đã từ chối yêu cầu rút tiền." });
         }
 
         if (action === "mark-paid") {
-          const ref = window.prompt("Mã tham chiếu chuyển khoản");
-          if (!ref?.trim()) return;
-          updatedItem = await markAdminPayoutRequestPaid(payoutRequestId, ref.trim());
+          const ref = payload.bankTransferRef?.trim();
+          if (!ref) {
+            onNotify?.({ variant: "error", message: "Vui lòng nhập mã tham chiếu chuyển khoản." });
+            return;
+          }
+          updatedItem = await markAdminPayoutRequestPaid(item.id, ref);
           onNotify?.({ variant: "success", message: "Đã ghi nhận chuyển khoản." });
         }
 
         if (updatedItem) {
-          setQueue((prev) => applyPayoutQueueAfterAction(prev, updatedItem, statusFilter));
+          const mapped = mapPayoutQueueItem(updatedItem);
+          setQueueState((prev) => applyPayoutQueueAfterAction(prev, updatedItem, statusFilter));
+          setDetailItem((current) => (current?.id === item.id ? mapped : current));
         }
-        await load();
+
+        setActionRequest(null);
+        await Promise.all([retryList(), retryOverview()]);
       } catch (error) {
         onNotify?.({ variant: "error", message: error?.message || "Thao tác thất bại." });
       } finally {
+        setActionPending(false);
         setActionId("");
       }
     },
-    [load, onNotify, statusFilter],
+    [actionRequest, onNotify, retryList, retryOverview, setQueueState, statusFilter],
   );
+
+  const handleOpenDetail = useCallback((item) => {
+    setDetailItem(item);
+  }, []);
+
+  const handleCloseDetail = useCallback(() => {
+    setDetailItem(null);
+  }, []);
 
   return (
     <AdminFinancePayoutQueueView
-      title="Hàng đợi rút tiền"
-      subtitle="Duyệt, từ chối hoặc ghi nhận chuyển khoản cho seller."
       statusFilter={statusFilter}
-      loadStatus={loadStatus}
-      errorMessage={errorMessage}
+      from={resolvedRange.from}
+      to={resolvedRange.to}
+      activeRangeId={rangeId}
+      heroMetrics={heroMetrics}
+      isOverviewLoading={isOverviewLoading}
+      overviewPanel={overviewPanel}
+      listPanel={listPanel}
       items={queue.items}
-      totalItems={queue.pagination.totalItems}
+      pagination={queue.pagination}
       actionId={actionId}
-      onStatusChange={setStatusFilter}
-      onRefresh={load}
-      onAction={runAction}
-      onRetry={load}
+      actionRequest={actionRequest}
+      actionPending={actionPending}
+      detailItem={detailItem}
+      onStatusChange={handleStatusChange}
+      onRangeChange={handleRangeChange}
+      onRefresh={refreshAll}
+      onKpiStatusClick={handleKpiStatusClick}
+      onPageChange={handlePageChange}
+      onRetryList={retryList}
+      onRetryOverview={retryOverview}
+      onActionRequest={handleActionRequest}
+      onActionConfirm={runConfirmedAction}
+      onActionClose={handleActionClose}
+      onOpenDetail={handleOpenDetail}
+      onCloseDetail={handleCloseDetail}
+      onSellerDetail={navigateToSellerDetail}
     />
   );
 }

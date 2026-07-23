@@ -4,6 +4,7 @@ import com.twohands.commerce_service.domain.order.OrderStatus;
 import com.twohands.commerce_service.domain.order.OrderSupportListQueryPolicy;
 import com.twohands.commerce_service.domain.order.OrderSupportListSortField;
 import com.twohands.commerce_service.domain.payment.PaymentMethod;
+import com.twohands.commerce_service.domain.payment.PaymentStatus;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,31 @@ class OrderSupportListQueryPolicyTest {
 	void parsePaymentMethod_acceptsValidMethodAndBlank() {
 		assertTrue(OrderSupportListQueryPolicy.parsePaymentMethod(null).isEmpty());
 		assertEquals(Optional.of(PaymentMethod.COD), OrderSupportListQueryPolicy.parsePaymentMethod("cod"));
+	}
+
+	@Test
+	void parsePaymentMethod_acceptsVnpay() {
+		assertEquals(Optional.of(PaymentMethod.VNPAY), OrderSupportListQueryPolicy.parsePaymentMethod("vnpay"));
+	}
+
+	@Test
+	void parsePaymentStatus_acceptsValidStatusAndBlank() {
+		assertTrue(OrderSupportListQueryPolicy.parsePaymentStatus(null).isEmpty());
+		assertEquals(Optional.of(PaymentStatus.PAID), OrderSupportListQueryPolicy.parsePaymentStatus("paid"));
+	}
+
+	@Test
+	void parsePaymentStatus_rejectsUnknownStatus() {
+		AppException ex = assertThrows(AppException.class, () -> OrderSupportListQueryPolicy.parsePaymentStatus("UNKNOWN"));
+		assertEquals(ErrorCode.VALIDATION_ERROR, ex.getErrorCode());
+	}
+
+	@Test
+	void parseSearchQuery_acceptsUuidFragmentAndRejectsInvalidCharacters() {
+		assertTrue(OrderSupportListQueryPolicy.parseSearchQuery(null).isEmpty());
+		assertEquals(Optional.of("f1000000"), OrderSupportListQueryPolicy.parseSearchQuery("f1000000"));
+		AppException ex = assertThrows(AppException.class, () -> OrderSupportListQueryPolicy.parseSearchQuery("not-a-uuid"));
+		assertEquals(ErrorCode.VALIDATION_ERROR, ex.getErrorCode());
 	}
 
 	@Test

@@ -19,6 +19,8 @@ public record OrderSupportDetail(
 		OrderSupportPayment payment,
 		List<OrderSupportItem> items,
 		List<OrderSupportShipment> shipments,
-		List<OrderSupportOrderTimelineEntry> orderTimeline
+		List<OrderSupportOrderTimelineEntry> orderTimeline,
+		OrderSupportActiveRefundRequest activeRefundRequest,
+		String cancellationNote
 ) {
 }

@@ -33,6 +33,20 @@ public final class WebhookLogSupportQueryPolicy {
         return referenceId.trim();
     }
 
+    public static String normalizeSearchQuery(String searchQuery) {
+        if (searchQuery == null || searchQuery.isBlank()) {
+            return null;
+        }
+        return searchQuery.trim();
+    }
+
+    public static String normalizeEventType(String eventType) {
+        if (eventType == null || eventType.isBlank()) {
+            return null;
+        }
+        return eventType.trim();
+    }
+
     public static String normalizeProcessingStatus(String status) {
         if (status == null || status.isBlank()) {
             return null;

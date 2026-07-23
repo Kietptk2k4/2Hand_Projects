@@ -2,6 +2,7 @@ package com.twohands.commerce_service.infrastructure.persistence.admin;
 
 import com.twohands.commerce_service.common.pagination.PageQuery;
 import com.twohands.commerce_service.domain.admin.AdminProductListEntry;
+import com.twohands.commerce_service.domain.admin.AdminProductListSort;
 import com.twohands.commerce_service.domain.admin.ViewAdminProductsForModerationRepository;
 import com.twohands.commerce_service.domain.product.ProductStatus;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -58,7 +59,8 @@ public class ViewAdminProductsForModerationRepositoryAdapter implements ViewAdmi
                    active_price.effective_price,
                    p.status::text AS status,
                    p.created_at,
-                   CASE WHEN p.status::text = 'REMOVED' THEN p.updated_at ELSE NULL END AS removed_at
+                   CASE WHEN p.status::text = 'REMOVED' THEN p.updated_at ELSE NULL END AS removed_at,
+                   p.remove_reason
             """;
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
@@ -87,6 +89,7 @@ public class ViewAdminProductsForModerationRepositoryAdapter implements ViewAdmi
     public List<AdminProductListEntry> find(
             Optional<ProductStatus> status,
             Optional<String> searchQuery,
+            AdminProductListSort sort,
             PageQuery pageQuery
     ) {
         MapSqlParameterSource params = baseParams(status, searchQuery)
@@ -94,13 +97,22 @@ public class ViewAdminProductsForModerationRepositoryAdapter implements ViewAdmi
                 .addValue("offset", pageQuery.offset());
 
         return jdbcTemplate.query(
-                SELECT_COLUMNS + BASE_FROM + filterClause(status, searchQuery) + """
-                        ORDER BY p.created_at DESC, p.id DESC
+                SELECT_COLUMNS + BASE_FROM + filterClause(status, searchQuery) + orderByClause(sort) + """
                         LIMIT :limit OFFSET :offset
                         """,
                 params,
                 this::mapEntry
         );
+    }
+
+    private String orderByClause(AdminProductListSort sort) {
+        return switch (sort) {
+            case OLDEST -> " ORDER BY p.created_at ASC, p.id ASC ";
+            case PRICE_ASC -> " ORDER BY active_price.effective_price ASC NULLS LAST, p.id DESC ";
+            case PRICE_DESC -> " ORDER BY active_price.effective_price DESC NULLS LAST, p.id DESC ";
+            case UPDATED_AT -> " ORDER BY p.updated_at DESC, p.id DESC ";
+            case NEWEST -> " ORDER BY p.created_at DESC, p.id DESC ";
+        };
     }
 
     private MapSqlParameterSource baseParams(Optional<ProductStatus> status, Optional<String> searchQuery) {
@@ -140,7 +152,7 @@ public class ViewAdminProductsForModerationRepositoryAdapter implements ViewAdmi
                 productStatus,
                 toInstant(rs.getTimestamp("created_at")),
                 toInstant(rs.getTimestamp("removed_at")),
-                null
+                rs.getString("remove_reason")
         );
     }
 

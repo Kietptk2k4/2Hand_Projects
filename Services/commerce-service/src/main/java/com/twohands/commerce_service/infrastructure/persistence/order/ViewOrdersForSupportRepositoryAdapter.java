@@ -100,6 +100,8 @@ public class ViewOrdersForSupportRepositoryAdapter implements ViewOrdersForSuppo
         MapSqlParameterSource params = new MapSqlParameterSource();
         criteria.status().ifPresent(status -> params.addValue("status", status.name()));
         criteria.paymentMethod().ifPresent(method -> params.addValue("paymentMethod", method.name()));
+        criteria.paymentStatus().ifPresent(status -> params.addValue("paymentStatus", status.name()));
+        criteria.searchQuery().ifPresent(value -> params.addValue("searchPattern", "%" + value + "%"));
         if (criteria.from() != null) {
             params.addValue("from", Timestamp.from(criteria.from()));
         }
@@ -116,6 +118,17 @@ public class ViewOrdersForSupportRepositoryAdapter implements ViewOrdersForSuppo
         }
         if (criteria.paymentMethod().isPresent()) {
             clause.append(" AND o.payment_method::text = :paymentMethod");
+        }
+        if (criteria.paymentStatus().isPresent()) {
+            clause.append(" AND o.payment_status::text = :paymentStatus");
+        }
+        if (criteria.searchQuery().isPresent()) {
+            clause.append("""
+                     AND (
+                        CAST(o.id AS TEXT) ILIKE :searchPattern
+                        OR CAST(o.buyer_id AS TEXT) ILIKE :searchPattern
+                    )
+                    """);
         }
         if (criteria.from() != null) {
             clause.append(" AND o.created_at >= :from");

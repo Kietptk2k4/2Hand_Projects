@@ -22,18 +22,7 @@ public class ViewWebhookLogsForSupportUseCase {
 
     @Transactional(readOnly = true)
     public ViewWebhookLogsForSupportResult execute(ViewWebhookLogsForSupportQuery query) {
-        Instant from = WebhookLogSupportQueryPolicy.parseInstant(query.from(), "from");
-        Instant to = WebhookLogSupportQueryPolicy.parseInstant(query.to(), "to");
-        WebhookLogSupportQueryPolicy.validateDateRange(from, to);
-
-        WebhookLogSupportSearchCriteria criteria = new WebhookLogSupportSearchCriteria(
-                WebhookLogSupportQueryPolicy.normalizeProvider(query.provider()),
-                WebhookLogSupportQueryPolicy.normalizeReferenceId(query.referenceId()),
-                WebhookLogSupportQueryPolicy.normalizeProcessingStatus(query.status()),
-                from,
-                to
-        );
-
+        WebhookLogSupportSearchCriteria criteria = buildCriteria(query);
         WebhookSupportPageRequest pageRequest = WebhookSupportPaginationPolicy.normalize(query.page(), query.size());
         WebhookLogSupportPagedResult page = viewWebhookLogsForSupportRepository.search(criteria, pageRequest);
 
@@ -43,6 +32,22 @@ public class ViewWebhookLogsForSupportUseCase {
                 page.totalElements(),
                 page.totalPages(),
                 page.items()
+        );
+    }
+
+    public static WebhookLogSupportSearchCriteria buildCriteria(ViewWebhookLogsForSupportQuery query) {
+        Instant from = WebhookLogSupportQueryPolicy.parseInstant(query.from(), "from");
+        Instant to = WebhookLogSupportQueryPolicy.parseInstant(query.to(), "to");
+        WebhookLogSupportQueryPolicy.validateDateRange(from, to);
+
+        return new WebhookLogSupportSearchCriteria(
+                WebhookLogSupportQueryPolicy.normalizeProvider(query.provider()),
+                WebhookLogSupportQueryPolicy.normalizeReferenceId(query.referenceId()),
+                WebhookLogSupportQueryPolicy.normalizeSearchQuery(query.searchQuery()),
+                WebhookLogSupportQueryPolicy.normalizeEventType(query.eventType()),
+                WebhookLogSupportQueryPolicy.normalizeProcessingStatus(query.status()),
+                from,
+                to
         );
     }
 

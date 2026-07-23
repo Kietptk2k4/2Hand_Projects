@@ -2,9 +2,58 @@
 
 ## Routing & shell
 - [x] `adminTabs.js` — section `orderSupport`
-- [x] `adminUrlParams.js` — `orderId`, `paymentId`, `shipmentId`, webhook filters
-- [x] `AdminPage.jsx` — tab map + `onNotify` + `onNavigate`
-- [x] `AdminSupportTargetBar.jsx` — tra cuu UUID
+- [x] `adminUrlParams.js` — refund + order/payment/shipment filter keys
+- [x] `AdminPage.jsx` — list panels sibling + refund tab returns `null`
+- [x] UUID lookup gộp vào `OrderSupportFilterBar` (ẩn `AdminSupportTargetBar` trên tab order-detail)
+
+## Order support list (redesign)
+- [x] `OrderSupportListPanel` + `OrderSupportListView`
+- [x] `OrderSupportStatsBar` — preset theo trạng thái
+- [x] Quick/active filter chips + numbered pagination + page size
+- [x] `OrderSupportDrawer` — Tóm tắt | Sản phẩm | Timeline
+- [x] UUID truncate + copy + VI badges
+- [x] `listOrdersForSupport` — `q`, `payment_status`
+- [x] MSW list filters + detail cho mọi row mock
+- [x] Unit tests `orderSupportDisplayUtils.test.js`
+
+## Payment support list (redesign)
+- [x] `PaymentSupportListPanel` + `PaymentSupportListView`
+- [x] `PaymentSupportStatsBar` — preset theo trạng thái thanh toán
+- [x] Quick/active filter chips + numbered pagination + page size
+- [x] `PaymentSupportDrawer` — Tóm tắt | Timeline | Webhook
+- [x] UUID truncate + copy + VI badges (`kind="payment"`, `kind="reconciliation"`)
+- [x] `getPaymentsForSupport` — `q`, `reconciliation_status`
+- [x] URL `paymentId`, `paymentView`, `pay_q`, `pay_reconciliation_status`
+- [x] Ẩn `AdminSupportTargetBar` trên tab payment-detail
+- [x] MSW list filters + detail cho mọi row mock + VNPAY row
+- [x] Unit tests `paymentSupportFilterHelpers.test.js`
+- [x] API doc `ViewPaymentsForSupport-api-and-behavior.md`
+
+## Shipment support list (redesign)
+- [x] `ShipmentSupportListPanel` + `ShipmentSupportListView`
+- [x] `ShipmentSupportStatsBar` — preset theo trạng thái vận chuyển
+- [x] Quick/active filter chips + numbered pagination + page size
+- [x] `ShipmentSupportDrawer` — Tóm tắt | Timeline | Webhook | Ghi đè
+- [x] UUID truncate + copy + VI badges (`kind="shipment"`)
+- [x] `listShipmentSupport` — `q`, `order_id`, `from`, `to`
+- [x] URL `shipmentId`, `shipmentView`, `sh_q`, `sh_order_id`, `sh_from`, `sh_to`
+- [x] Ẩn `AdminSupportTargetBar` trên tab shipment-detail
+- [x] MSW list filters + detail cho mọi row mock
+- [x] Unit tests `shipmentSupportFilterHelpers.test.js`
+- [x] API doc `ViewShipmentsForSupport-api-and-behavior.md`
+
+## Refund approvals (redesign)
+- [x] `RefundSupportListPanel` + `RefundSupportListView`
+- [x] `RefundSupportStatsBar` — preset theo trạng thái hoàn tiền
+- [x] Quick/active filter chips + numbered pagination + page size
+- [x] `RefundSupportDrawer` — Tóm tắt | Chi tiết đơn | Ghi chú admin + confirm/reject
+- [x] UUID truncate + copy + VI badges (`kind="refund"`)
+- [x] `fetchAdminRefundApprovals` — `q`, `requested_by`, `payment_method`, `from`, `to`
+- [x] URL `refundRequestId`, `refundView`, `ref_*` filters
+- [x] Permission gating `REFUND_SUPPORT_READ` / `REFUND_SUPPORT_APPROVE`
+- [x] MSW multi-row + filters + confirm/reject
+- [x] Unit tests `refundSupportFilterHelpers.test.js`
+- [x] API doc `RefundApprovals-api-and-behavior.md`
 
 ## Permissions (auth V3 + JWT re-login)
 - [x] `SHIPMENT_SUPPORT_READ` — xem chi tiet van chuyen
@@ -12,9 +61,9 @@
 - [x] `SHIPMENT_SUPPORT_FORCE_WRITE` — checkbox force
 - [x] `orderSupportPermissions.js` + `useOrderSupportPermissions.js`
 
-## Shipment support detail (read)
+## Order support detail (legacy tab content)
 - [x] `getShipmentSupportDetail` — GET `/admin/api/v1/support/shipments/{id}`
-- [x] `ShipmentSupportDetailTab` — status, tracking, address masked, history, webhook events
+- [x] `ShipmentSupportDetailTab` — returns `null`; detail trong drawer
 - [x] Link sang order detail / webhook logs GHN
 - [x] Error states: 401, 403, 404, 503
 
@@ -29,8 +78,10 @@
 
 ## Backend (Phases 0–2)
 - [x] Auth seed permissions `SHIPMENT_SUPPORT_WRITE`, `SHIPMENT_SUPPORT_FORCE_WRITE`
+- [x] Commerce list `GET .../commerce/api/v1/admin/support/shipments` — `q`, `order_id`, `from`, `to`
 - [x] Commerce `PATCH .../commerce/api/v1/admin/support/shipments/{id}/status`
-- [x] Admin gateway forward + audit `SHIPMENT_STATUS_OVERRIDE`
+- [x] Admin gateway forward list filters + audit `SHIPMENT_SUPPORT_VIEW`
+- [x] Admin gateway forward override + audit `SHIPMENT_STATUS_OVERRIDE`
 - [x] `AdminActionLogPolicy` critical action type
 - [x] Unit + integration tests (admin-service)
 
@@ -74,6 +125,9 @@
 ## Docs
 - [x] `docs/business_flow/admin_business_flow/order-support-flow.md`
 - [x] `docs/use_cases/admin_use_cases/uc-order-support.md` (UC 5.5)
+- [x] `docs/api_fe_behavior/admin_api_fe_behavior/ViewOrdersForSupport-api-and-behavior.md`
+- [x] `docs/api_fe_behavior/admin_api_fe_behavior/ViewOrderSupportDetail-api-and-behavior.md`
+- [x] `docs/api_fe_behavior/admin_api_fe_behavior/ViewShipmentsForSupport-api-and-behavior.md`
 - [x] `docs/api_fe_behavior/admin_api_fe_behavior/AdminOverrideShipmentStatus-api-and-behavior.md`
 - [x] `docs/business_flow/commerce_business_flow/shipping-lifecycle-flow.md` §10
 

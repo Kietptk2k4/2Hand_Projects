@@ -44,6 +44,11 @@ public class HttpCommerceRefundSupportGateway implements CommerceRefundSupportGa
 	@Override
 	public AdminRefundApprovalListResult listRefundApprovals(
 			Optional<String> status,
+			Optional<String> q,
+			Optional<String> requestedBy,
+			Optional<String> paymentMethod,
+			Optional<String> from,
+			Optional<String> to,
 			Integer page,
 			Integer limit,
 			String bearerToken
@@ -52,6 +57,11 @@ public class HttpCommerceRefundSupportGateway implements CommerceRefundSupportGa
 			UriComponentsBuilder builder = UriComponentsBuilder
 					.fromPath("/commerce/api/v1/admin/refund-approvals");
 			status.filter(value -> !value.isBlank()).ifPresent(value -> builder.queryParam("status", value));
+			q.filter(value -> !value.isBlank()).ifPresent(value -> builder.queryParam("q", value));
+			requestedBy.filter(value -> !value.isBlank()).ifPresent(value -> builder.queryParam("requested_by", value));
+			paymentMethod.filter(value -> !value.isBlank()).ifPresent(value -> builder.queryParam("payment_method", value));
+			from.filter(value -> !value.isBlank()).ifPresent(value -> builder.queryParam("from", value));
+			to.filter(value -> !value.isBlank()).ifPresent(value -> builder.queryParam("to", value));
 			if (page != null) {
 				builder.queryParam("page", page);
 			}

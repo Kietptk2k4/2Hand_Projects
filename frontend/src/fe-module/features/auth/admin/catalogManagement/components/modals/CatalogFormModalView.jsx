@@ -46,6 +46,8 @@ export function CatalogFormModalView({
   parentId,
   showParentField,
   parentOptions,
+  parentSearch = "",
+  onParentSearchChange,
   error,
   isSubmitting,
   submitLabel,
@@ -94,20 +96,30 @@ export function CatalogFormModalView({
           />
         </AdminFilterField>
         {showParentField ? (
-          <AdminFilterField label="Danh mục cha" htmlFor="catalog-parent">
-            <AdminFilterSelect
-              id="catalog-parent"
-              value={parentId}
-              onChange={(e) => onParentIdChange(e.target.value)}
-            >
-              <option value="">— Không có (gốc) —</option>
-              {parentOptions.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {"—".repeat(option.level)} {option.name}
-                </option>
-              ))}
-            </AdminFilterSelect>
-          </AdminFilterField>
+          <>
+            <AdminFilterField label="Tìm danh mục cha" htmlFor="catalog-parent-search">
+              <AdminFilterInput
+                id="catalog-parent-search"
+                value={parentSearch}
+                onChange={(e) => onParentSearchChange?.(e.target.value)}
+                placeholder="Lọc theo tên hoặc slug"
+              />
+            </AdminFilterField>
+            <AdminFilterField label="Danh mục cha" htmlFor="catalog-parent">
+              <AdminFilterSelect
+                id="catalog-parent"
+                value={parentId}
+                onChange={(e) => onParentIdChange(e.target.value)}
+              >
+                <option value="">— Không có (gốc) —</option>
+                {parentOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {"—".repeat(option.level)} {option.name}
+                  </option>
+                ))}
+              </AdminFilterSelect>
+            </AdminFilterField>
+          </>
         ) : null}
         {error ? <p className="text-sm text-admin-danger">{error}</p> : null}
       </form>

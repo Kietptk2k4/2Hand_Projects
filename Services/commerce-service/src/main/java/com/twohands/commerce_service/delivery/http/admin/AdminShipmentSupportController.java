@@ -53,6 +53,10 @@ public class AdminShipmentSupportController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String carrier,
             @RequestParam(required = false) String sort,
+            @RequestParam(required = false) String q,
+            @RequestParam(name = "order_id", required = false) String orderId,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to,
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size,
             Authentication authentication
@@ -64,7 +68,7 @@ public class AdminShipmentSupportController {
         );
 
         ViewShipmentSupportListResult result = viewShipmentSupportListUseCase.execute(
-                new ViewShipmentSupportListQuery(status, carrier, sort, page, size)
+                new ViewShipmentSupportListQuery(status, carrier, sort, q, orderId, from, to, page, size)
         );
 
         return ResponseEntity.ok(ApiResponse.success(

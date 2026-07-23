@@ -1,6 +1,7 @@
 package com.twohands.admin_service.delivery.http.support;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.twohands.admin_service.domain.support.OrderSupportActiveRefundRequest;
 import com.twohands.admin_service.domain.support.OrderSupportDetail;
 import com.twohands.admin_service.domain.support.OrderSupportItem;
 import com.twohands.admin_service.domain.support.OrderSupportOrderTimelineEntry;
@@ -31,6 +32,8 @@ public record ViewOrderSupportDetailResponse(
 		List<ItemResponse> items,
 		List<ShipmentResponse> shipments,
 		@JsonProperty("order_timeline") List<OrderTimelineEntryResponse> orderTimeline,
+		@JsonProperty("active_refund_request") ActiveRefundRequestResponse activeRefundRequest,
+		@JsonProperty("cancellation_note") String cancellationNote,
 		@JsonProperty("contact_fields_masked") boolean contactFieldsMasked
 ) {
 	public static ViewOrderSupportDetailResponse from(OrderSupportDetail detail, boolean contactFieldsMasked) {
@@ -49,8 +52,33 @@ public record ViewOrderSupportDetailResponse(
 				detail.items().stream().map(ItemResponse::from).toList(),
 				detail.shipments().stream().map(ShipmentResponse::from).toList(),
 				detail.orderTimeline().stream().map(OrderTimelineEntryResponse::from).toList(),
+				ActiveRefundRequestResponse.from(detail.activeRefundRequest()),
+				detail.cancellationNote(),
 				contactFieldsMasked
 		);
+	}
+
+	public record ActiveRefundRequestResponse(
+			@JsonProperty("refund_request_id") UUID refundRequestId,
+			String status,
+			@JsonProperty("requested_by") String requestedBy,
+			BigDecimal amount,
+			String reason,
+			@JsonProperty("requested_at") Instant requestedAt
+	) {
+		static ActiveRefundRequestResponse from(OrderSupportActiveRefundRequest refundRequest) {
+			if (refundRequest == null) {
+				return null;
+			}
+			return new ActiveRefundRequestResponse(
+					refundRequest.refundRequestId(),
+					refundRequest.status(),
+					refundRequest.requestedBy(),
+					refundRequest.amount(),
+					refundRequest.reason(),
+					refundRequest.requestedAt()
+			);
+		}
 	}
 
 	public record PaymentResponse(

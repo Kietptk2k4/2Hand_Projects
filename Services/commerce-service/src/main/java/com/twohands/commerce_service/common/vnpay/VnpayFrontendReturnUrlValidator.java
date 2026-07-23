@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Component
@@ -19,13 +20,16 @@ public class VnpayFrontendReturnUrlValidator {
     public static final String BACKEND_RETURN_PATH = "/commerce/api/v1/payments/vnpay/return";
 
     private final List<String> allowedWebOrigins;
+    private final List<Pattern> allowedWebOriginPatterns;
     private final Set<String> allowedAppSchemes;
 
     public VnpayFrontendReturnUrlValidator(
             @Value("${app.cors.allowed-origins}") String corsOrigins,
+            @Value("${app.cors.allowed-origin-patterns:}") String corsOriginPatterns,
             @Value("${commerce.integrations.vnpay.allowed-app-schemes:twohands,exp}") String appSchemes
     ) {
         this.allowedWebOrigins = parseOrigins(corsOrigins);
+        this.allowedWebOriginPatterns = parseOriginPatterns(corsOriginPatterns);
         this.allowedAppSchemes = Arrays.stream(appSchemes.split(","))
                 .map(String::trim)
                 .filter(value -> !value.isEmpty())
@@ -75,10 +79,23 @@ public class VnpayFrontendReturnUrlValidator {
                 return true;
             }
 
-            return allowedWebOrigins.contains(origin);
+            return allowedWebOrigins.contains(origin) || matchesAllowedOriginPattern(origin);
         } catch (IllegalArgumentException ex) {
             return false;
         }
+    }
+
+    private boolean isAllowedWebOrigin(String origin) {
+        return allowedWebOrigins.contains(origin) || matchesAllowedOriginPattern(origin);
+    }
+
+    private boolean matchesAllowedOriginPattern(String origin) {
+        for (Pattern pattern : allowedWebOriginPatterns) {
+            if (pattern.matcher(origin).matches()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isAllowedWebFrontendReturn(URI uri) {
@@ -86,7 +103,7 @@ public class VnpayFrontendReturnUrlValidator {
             return false;
         }
         String origin = normalizeOrigin(uri.getScheme(), uri.getHost(), uri.getPort());
-        return allowedWebOrigins.contains(origin);
+        return isAllowedWebOrigin(origin);
     }
 
     private static boolean hasFrontendReturnPath(URI uri) {
@@ -140,5 +157,35 @@ public class VnpayFrontendReturnUrlValidator {
                 .map(value -> value.endsWith("/") ? value.substring(0, value.length() - 1) : value)
                 .map(value -> value.toLowerCase(Locale.ROOT))
                 .toList();
+    }
+
+    private static List<Pattern> parseOriginPatterns(String corsOriginPatterns) {
+        return Arrays.stream(corsOriginPatterns.split(","))
+                .map(String::trim)
+                .filter(value -> !value.isEmpty())
+                .map(value -> value.endsWith("/") ? value.substring(0, value.length() - 1) : value)
+                .map(value -> value.toLowerCase(Locale.ROOT))
+                .map(VnpayFrontendReturnUrlValidator::toOriginPatternRegex)
+                .map(regex -> Pattern.compile(regex, Pattern.CASE_INSENSITIVE))
+                .toList();
+    }
+
+    private static String toOriginPatternRegex(String pattern) {
+        StringBuilder regex = new StringBuilder("^");
+        int start = 0;
+        int wildcardIndex = pattern.indexOf('*');
+        while (wildcardIndex >= 0) {
+            if (wildcardIndex > start) {
+                regex.append(Pattern.quote(pattern.substring(start, wildcardIndex)));
+            }
+            regex.append(".*");
+            start = wildcardIndex + 1;
+            wildcardIndex = pattern.indexOf('*', start);
+        }
+        if (start < pattern.length()) {
+            regex.append(Pattern.quote(pattern.substring(start)));
+        }
+        regex.append("$");
+        return regex.toString();
     }
 }

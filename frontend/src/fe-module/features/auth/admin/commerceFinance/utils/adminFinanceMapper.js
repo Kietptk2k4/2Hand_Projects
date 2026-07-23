@@ -79,6 +79,15 @@ export function mapPlatformTopSellers(raw) {
   }));
 }
 
+export function mapPlatformPayoutOverview(raw) {
+  const items = raw?.items ?? raw ?? [];
+  return items.map((item) => ({
+    status: item.status ?? "",
+    requestCount: toNumber(item.request_count ?? item.requestCount),
+    totalAmount: toNumber(item.total_amount ?? item.totalAmount),
+  }));
+}
+
 export function mapSellerFinanceSummary(raw) {
   const balanceRaw = raw?.balance ?? {};
   return {
@@ -89,8 +98,11 @@ export function mapSellerFinanceSummary(raw) {
     balance: {
       availableBalance: toNumber(balanceRaw.available_balance ?? balanceRaw.availableBalance),
       totalPlatformFee: toNumber(balanceRaw.total_platform_fee ?? balanceRaw.totalPlatformFee),
+      totalNetCredited: toNumber(balanceRaw.total_net_credited ?? balanceRaw.totalNetCredited),
       pendingPayoutAmount: toNumber(balanceRaw.pending_payout_amount ?? balanceRaw.pendingPayoutAmount),
     },
+    from: raw?.from ?? null,
+    to: raw?.to ?? null,
   };
 }
 
@@ -105,11 +117,18 @@ export function mapSellerFinanceLedger(raw) {
       grossAmount: toNumber(entry.gross_amount ?? entry.grossAmount),
       platformFeeAmount: toNumber(entry.platform_fee_amount ?? entry.platformFeeAmount),
       netAmount: toNumber(entry.net_amount ?? entry.netAmount),
+      commissionRateSnapshot: toNumber(
+        entry.commission_rate_snapshot ?? entry.commissionRateSnapshot,
+      ),
+      status: entry.status ?? "",
       createdAt: entry.created_at ?? entry.createdAt,
     })),
     pagination: {
       page: toNumber(paginationRaw.page) || 1,
+      limit: toNumber(paginationRaw.limit) || 20,
       totalItems: toNumber(paginationRaw.total_items ?? paginationRaw.totalItems),
+      totalPages: toNumber(paginationRaw.total_pages ?? paginationRaw.totalPages),
+      hasNext: Boolean(paginationRaw.has_next ?? paginationRaw.hasNext),
     },
   };
 }

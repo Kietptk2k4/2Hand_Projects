@@ -65,6 +65,8 @@ class ViewOrdersForSupportUseCaseTest {
 		when(commerceOrderSupportGateway.searchOrders(
 				eq("PROCESSING"),
 				eq("PAYOS"),
+				eq("PAID"),
+				eq("f1000000"),
 				eq(null),
 				eq(null),
 				eq("created_at"),
@@ -76,6 +78,8 @@ class ViewOrdersForSupportUseCaseTest {
 		ViewOrdersForSupportResult result = useCase.execute(new ViewOrdersForSupportQuery(
 				"PROCESSING",
 				"PAYOS",
+				"PAID",
+				"f1000000",
 				null,
 				null,
 				"created_at",
@@ -94,7 +98,15 @@ class ViewOrdersForSupportUseCaseTest {
 				eq(AdminActionTargetType.ORDER),
 				eq("search"),
 				any(),
-				eq(Map.of("status", "PROCESSING", "paymentMethod", "PAYOS", "sort", "created_at", "page", 1, "size", 20)),
+				eq(Map.of(
+						"status", "PROCESSING",
+						"paymentMethod", "PAYOS",
+						"paymentStatus", "PAID",
+						"q", "f1000000",
+						"sort", "created_at",
+						"page", 1,
+						"size", 20
+				)),
 				eq(Map.of("totalElements", 1L))
 		);
 	}
@@ -105,7 +117,7 @@ class ViewOrdersForSupportUseCaseTest {
 		when(commerceOrderSupportGateway.isEnabled()).thenReturn(false);
 
 		AppException ex = assertThrows(AppException.class, () -> useCase.execute(
-				new ViewOrdersForSupportQuery(null, null, null, null, null, 1, 20, "token")
+				new ViewOrdersForSupportQuery(null, null, null, null, null, null, null, 1, 20, "token")
 		));
 
 		assertEquals(ErrorCode.SERVICE_UNAVAILABLE, ex.getErrorCode());

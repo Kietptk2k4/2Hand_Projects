@@ -9,6 +9,8 @@ import com.twohands.commerce_service.domain.support.WebhookSupportPaginationPoli
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+
 @Service
 public class ViewShipmentSupportListUseCase {
 
@@ -20,10 +22,18 @@ public class ViewShipmentSupportListUseCase {
 
     @Transactional(readOnly = true)
     public ViewShipmentSupportListResult execute(ViewShipmentSupportListQuery query) {
+        Instant from = ShipmentSupportListQueryPolicy.parseInstant(query.from(), "from");
+        Instant to = ShipmentSupportListQueryPolicy.parseInstant(query.to(), "to");
+        ShipmentSupportListQueryPolicy.validateDateRange(from, to);
+
         ShipmentSupportListSearchCriteria criteria = new ShipmentSupportListSearchCriteria(
                 ShipmentSupportListQueryPolicy.parseStatus(query.status()),
                 ShipmentSupportListQueryPolicy.parseCarrier(query.carrier()),
-                ShipmentSupportListQueryPolicy.parseSortField(query.sort())
+                ShipmentSupportListQueryPolicy.parseSortField(query.sort()),
+                ShipmentSupportListQueryPolicy.parseSearchQuery(query.q()),
+                ShipmentSupportListQueryPolicy.parseOrderId(query.orderId()),
+                from,
+                to
         );
         WebhookSupportPageRequest pageRequest = WebhookSupportPaginationPolicy.normalize(query.page(), query.size());
         ShipmentSupportListPagedResult page = viewShipmentSupportListRepository.search(criteria, pageRequest);

@@ -40,6 +40,8 @@ public class OrderSupportController {
 	public ResponseEntity<ApiResponse<ViewOrdersForSupportResponse>> listOrdersForSupport(
 			@RequestParam(required = false) String status,
 			@RequestParam(name = "payment_method", required = false) String paymentMethod,
+			@RequestParam(name = "payment_status", required = false) String paymentStatus,
+			@RequestParam(required = false) String q,
 			@RequestParam(required = false) String from,
 			@RequestParam(required = false) String to,
 			@RequestParam(required = false) String sort,
@@ -51,6 +53,8 @@ public class OrderSupportController {
 				new ViewOrdersForSupportQuery(
 						status,
 						paymentMethod,
+						paymentStatus,
+						q,
 						from,
 						to,
 						sort,

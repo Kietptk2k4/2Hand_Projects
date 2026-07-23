@@ -17,7 +17,7 @@ export function useRestoreProductByAdmin({ onSuccess }) {
   const [submitError, setSubmitError] = useState("");
 
   const submit = useCallback(
-    async (productId, { reason }) => {
+    async (productId, { reason, note }) => {
       const trimmed = String(reason ?? "").trim();
       if (!trimmed) {
         setSubmitError("Vui lòng nhập lý do khôi phục sản phẩm.");
@@ -28,7 +28,7 @@ export function useRestoreProductByAdmin({ onSuccess }) {
       setSubmitError("");
 
       try {
-        const raw = await restoreProduct(productId, mapModerationPayload({ reason: trimmed }));
+        const raw = await restoreProduct(productId, mapModerationPayload({ reason: trimmed, note }));
         const result = mapProductModerationResponse(raw);
         onSuccess?.(result);
         return result;

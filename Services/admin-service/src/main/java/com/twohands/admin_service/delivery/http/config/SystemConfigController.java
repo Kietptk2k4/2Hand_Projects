@@ -1,5 +1,8 @@
 package com.twohands.admin_service.delivery.http.config;
 
+import com.twohands.admin_service.application.config.getsystemconfig.GetSystemConfigQuery;
+import com.twohands.admin_service.application.config.getsystemconfig.GetSystemConfigResult;
+import com.twohands.admin_service.application.config.getsystemconfig.GetSystemConfigUseCase;
 import com.twohands.admin_service.application.config.listsystemconfigs.ListSystemConfigsQuery;
 import com.twohands.admin_service.application.config.listsystemconfigs.ListSystemConfigsResult;
 import com.twohands.admin_service.application.config.listsystemconfigs.ListSystemConfigsUseCase;
@@ -41,6 +44,7 @@ public class SystemConfigController {
 	private final CreateSystemConfigUseCase createSystemConfigUseCase;
 	private final UpdateSystemConfigUseCase updateSystemConfigUseCase;
 	private final ToggleSystemConfigUseCase toggleSystemConfigUseCase;
+	private final GetSystemConfigUseCase getSystemConfigUseCase;
 	private final ViewSystemConfigHistoryUseCase viewSystemConfigHistoryUseCase;
 
 	public SystemConfigController(
@@ -48,12 +52,14 @@ public class SystemConfigController {
 			CreateSystemConfigUseCase createSystemConfigUseCase,
 			UpdateSystemConfigUseCase updateSystemConfigUseCase,
 			ToggleSystemConfigUseCase toggleSystemConfigUseCase,
+			GetSystemConfigUseCase getSystemConfigUseCase,
 			ViewSystemConfigHistoryUseCase viewSystemConfigHistoryUseCase
 	) {
 		this.listSystemConfigsUseCase = listSystemConfigsUseCase;
 		this.createSystemConfigUseCase = createSystemConfigUseCase;
 		this.updateSystemConfigUseCase = updateSystemConfigUseCase;
 		this.toggleSystemConfigUseCase = toggleSystemConfigUseCase;
+		this.getSystemConfigUseCase = getSystemConfigUseCase;
 		this.viewSystemConfigHistoryUseCase = viewSystemConfigHistoryUseCase;
 	}
 
@@ -178,6 +184,18 @@ public class SystemConfigController {
 		));
 	}
 
+	@GetMapping("/{configId}")
+	@RequireAdminPermission(AdminPermission.SYSTEM_CONFIG_VIEW)
+	public ResponseEntity<ApiResponse<ViewSystemConfigDetailResponse>> getDetail(@PathVariable UUID configId) {
+		GetSystemConfigResult result = getSystemConfigUseCase.execute(new GetSystemConfigQuery(configId));
+
+		return ResponseEntity.ok(ApiResponse.success(
+				HttpStatus.OK.value(),
+				getSystemConfigUseCase.successMessage(),
+				toDetailResponse(result)
+		));
+	}
+
 	@GetMapping("/{configId}/history")
 	@RequireAdminPermission(AdminPermission.SYSTEM_CONFIG_VIEW)
 	public ResponseEntity<ApiResponse<ViewSystemConfigHistoryResponse>> viewHistory(
@@ -217,7 +235,24 @@ public class SystemConfigController {
 				item.createdBy(),
 				item.createdAt(),
 				item.updatedBy(),
-				item.updatedAt()
+				item.updatedAt(),
+				item.valueMasked()
+		);
+	}
+
+	private ViewSystemConfigDetailResponse toDetailResponse(GetSystemConfigResult result) {
+		return new ViewSystemConfigDetailResponse(
+				result.configId(),
+				result.configKey(),
+				result.configValue(),
+				result.valueType().name(),
+				result.description(),
+				result.active(),
+				result.createdBy(),
+				result.createdAt(),
+				result.updatedBy(),
+				result.updatedAt(),
+				result.valueMasked()
 		);
 	}
 

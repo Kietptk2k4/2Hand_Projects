@@ -33,6 +33,9 @@ public record SystemConfigListEntryResponse(
 		UUID updatedBy,
 
 		@JsonProperty("updated_at")
-		Instant updatedAt
+		Instant updatedAt,
+
+		@JsonProperty("value_masked")
+		boolean valueMasked
 ) {
 }

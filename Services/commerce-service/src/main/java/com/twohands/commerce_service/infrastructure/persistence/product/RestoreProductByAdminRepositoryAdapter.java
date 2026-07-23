@@ -52,6 +52,7 @@ public class RestoreProductByAdminRepositoryAdapter implements RestoreProductByA
         String sql = """
                 UPDATE products
                 SET status = CAST(:newStatus AS product_status),
+                    remove_reason = NULL,
                     updated_at = :now
                 WHERE id = :productId
                   AND status = CAST(:currentStatus AS product_status)

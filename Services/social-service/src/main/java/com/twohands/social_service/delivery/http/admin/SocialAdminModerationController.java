@@ -1,5 +1,8 @@
 package com.twohands.social_service.delivery.http.admin;
 
+import com.twohands.social_service.application.admin.viewcommentdetailformoderation.ViewCommentDetailForModerationCommand;
+import com.twohands.social_service.application.admin.viewcommentdetailformoderation.ViewCommentDetailForModerationResult;
+import com.twohands.social_service.application.admin.viewcommentdetailformoderation.ViewCommentDetailForModerationUseCase;
 import com.twohands.social_service.application.admin.viewcommentlistformoderation.ViewCommentListForModerationCommand;
 import com.twohands.social_service.application.admin.viewcommentlistformoderation.ViewCommentListForModerationResult;
 import com.twohands.social_service.application.admin.viewcommentlistformoderation.ViewCommentListForModerationUseCase;
@@ -10,6 +13,7 @@ import com.twohands.social_service.application.admin.viewpostlistformoderation.V
 import com.twohands.social_service.application.admin.viewpostlistformoderation.ViewPostListForModerationResult;
 import com.twohands.social_service.application.admin.viewpostlistformoderation.ViewPostListForModerationUseCase;
 import com.twohands.social_service.common.dto.ApiResponse;
+import com.twohands.social_service.delivery.http.admin.response.ViewCommentDetailForModerationResponse;
 import com.twohands.social_service.delivery.http.admin.response.ViewCommentListForModerationResponse;
 import com.twohands.social_service.delivery.http.admin.response.ViewPostDetailForModerationResponse;
 import com.twohands.social_service.delivery.http.admin.response.ViewPostListForModerationResponse;
@@ -32,15 +36,18 @@ public class SocialAdminModerationController {
     private final ViewPostListForModerationUseCase viewPostListForModerationUseCase;
     private final ViewPostDetailForModerationUseCase viewPostDetailForModerationUseCase;
     private final ViewCommentListForModerationUseCase viewCommentListForModerationUseCase;
+    private final ViewCommentDetailForModerationUseCase viewCommentDetailForModerationUseCase;
 
     public SocialAdminModerationController(
             ViewPostListForModerationUseCase viewPostListForModerationUseCase,
             ViewPostDetailForModerationUseCase viewPostDetailForModerationUseCase,
-            ViewCommentListForModerationUseCase viewCommentListForModerationUseCase
+            ViewCommentListForModerationUseCase viewCommentListForModerationUseCase,
+            ViewCommentDetailForModerationUseCase viewCommentDetailForModerationUseCase
     ) {
         this.viewPostListForModerationUseCase = viewPostListForModerationUseCase;
         this.viewPostDetailForModerationUseCase = viewPostDetailForModerationUseCase;
         this.viewCommentListForModerationUseCase = viewCommentListForModerationUseCase;
+        this.viewCommentDetailForModerationUseCase = viewCommentDetailForModerationUseCase;
     }
 
     @GetMapping("/posts")
@@ -93,6 +100,7 @@ public class SocialAdminModerationController {
     @GetMapping("/comments")
     public ResponseEntity<ApiResponse<ViewCommentListForModerationResponse>> viewCommentList(
             @RequestParam(required = false) String status,
+            @RequestParam(name = "moderation_status", required = false) String moderationStatus,
             @RequestParam(name = "post_id", required = false) String postId,
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String sort,
@@ -104,6 +112,7 @@ public class SocialAdminModerationController {
                 new ViewCommentListForModerationCommand(
                         resolveActor(authentication),
                         status,
+                        moderationStatus,
                         postId,
                         q,
                         sort,
@@ -117,6 +126,23 @@ public class SocialAdminModerationController {
                         HttpStatus.OK.value(),
                         viewCommentListForModerationUseCase.successMessage(),
                         toCommentResponse(result)
+                ));
+    }
+
+    @GetMapping("/comments/{commentId}")
+    public ResponseEntity<ApiResponse<ViewCommentDetailForModerationResponse>> viewCommentDetail(
+            @PathVariable String commentId,
+            Authentication authentication
+    ) {
+        ViewCommentDetailForModerationResult result = viewCommentDetailForModerationUseCase.execute(
+                new ViewCommentDetailForModerationCommand(resolveActor(authentication), commentId)
+        );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(
+                        HttpStatus.OK.value(),
+                        viewCommentDetailForModerationUseCase.successMessage(),
+                        toCommentDetailResponse(result)
                 ));
     }
 
@@ -188,8 +214,13 @@ public class SocialAdminModerationController {
                                 item.id(),
                                 item.postId(),
                                 item.authorId(),
+                                item.authorDisplayName(),
+                                item.authorAvatarUrl(),
+                                item.parentCommentId(),
                                 item.contentPreview(),
                                 item.status(),
+                                item.moderationStatus(),
+                                item.mediaCount(),
                                 item.likeCount(),
                                 item.createdAt(),
                                 item.updatedAt()
@@ -202,6 +233,44 @@ public class SocialAdminModerationController {
                         result.pagination().totalPages(),
                         result.pagination().hasNext()
                 )
+        );
+    }
+
+    private ViewCommentDetailForModerationResponse toCommentDetailResponse(ViewCommentDetailForModerationResult result) {
+        ViewCommentDetailForModerationResult.ParentCommentSummary parent = result.parentComment();
+        ViewCommentDetailForModerationResult.PostContextSummary post = result.post();
+
+        return new ViewCommentDetailForModerationResponse(
+                result.id(),
+                result.postId(),
+                new ViewCommentDetailForModerationResponse.AuthorData(
+                        result.author().userId(),
+                        result.author().displayName(),
+                        result.author().avatarUrl()
+                ),
+                result.parentCommentId(),
+                parent == null ? null : new ViewCommentDetailForModerationResponse.ParentCommentData(
+                        parent.id(),
+                        parent.contentPreview()
+                ),
+                result.contentText(),
+                result.media().stream()
+                        .map(item -> new ViewCommentDetailForModerationResponse.MediaData(item.url(), item.type()))
+                        .toList(),
+                result.mediaCount(),
+                result.status(),
+                result.moderationStatus(),
+                result.moderationReason(),
+                result.lastModerationLogId(),
+                result.likeCount(),
+                post == null ? null : new ViewCommentDetailForModerationResponse.PostContextData(
+                        post.id(),
+                        post.captionPreview(),
+                        post.thumbnailUrl(),
+                        post.moderationStatus()
+                ),
+                result.createdAt(),
+                result.updatedAt()
         );
     }
 

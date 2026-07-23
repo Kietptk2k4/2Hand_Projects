@@ -21,10 +21,12 @@ record CommerceWebhookLogsSupportPayload(
 			@JsonProperty("event_type") String eventType,
 			@JsonProperty("processing_status") String processingStatus,
 			@JsonProperty("signature_valid") Boolean signatureValid,
-			@JsonProperty("retry_count") int retryCount,
 			@JsonProperty("idempotency_key") String idempotencyKey,
 			@JsonProperty("payload_summary") Map<String, Object> payloadSummary,
-			@JsonProperty("received_at") Instant receivedAt
+			@JsonProperty("received_at") Instant receivedAt,
+			@JsonProperty("payment_id") UUID paymentId,
+			@JsonProperty("shipment_id") UUID shipmentId,
+			@JsonProperty("order_id") UUID orderId
 	) {
 	}
 }

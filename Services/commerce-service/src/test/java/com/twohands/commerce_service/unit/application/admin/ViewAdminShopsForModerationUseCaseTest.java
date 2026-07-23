@@ -49,7 +49,10 @@ class ViewAdminShopsForModerationUseCaseTest {
                 "Demo Shop",
                 "https://example.com/logo.png",
                 ShopStatus.ACTIVE,
-                Instant.parse("2026-05-01T08:00:00Z")
+                Instant.parse("2026-05-01T08:00:00Z"),
+                Instant.parse("2026-05-01T08:00:00Z"),
+                12L,
+                10L
         );
 
         when(repository.count(Optional.empty(), Optional.empty())).thenReturn(1L);

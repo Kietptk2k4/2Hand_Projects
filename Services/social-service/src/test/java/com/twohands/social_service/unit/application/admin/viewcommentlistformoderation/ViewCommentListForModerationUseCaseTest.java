@@ -1,5 +1,6 @@
 package com.twohands.social_service.unit.application.admin.viewcommentlistformoderation;
 
+import com.twohands.social_service.application.admin.common.AdminModerationAuthorResolver;
 import com.twohands.social_service.application.admin.viewcommentlistformoderation.ViewCommentListForModerationCommand;
 import com.twohands.social_service.application.admin.viewcommentlistformoderation.ViewCommentListForModerationResult;
 import com.twohands.social_service.application.admin.viewcommentlistformoderation.ViewCommentListForModerationUseCase;
@@ -31,13 +32,16 @@ class ViewCommentListForModerationUseCaseTest {
 
     private final AdminCommentListRepository adminCommentListRepository =
             Mockito.mock(AdminCommentListRepository.class);
+    private final AdminModerationAuthorResolver authorResolver =
+            Mockito.mock(AdminModerationAuthorResolver.class);
     private ViewCommentListForModerationUseCase useCase;
     private AuthenticatedUser actor;
 
     @BeforeEach
     void setup() {
-        useCase = new ViewCommentListForModerationUseCase(adminCommentListRepository);
+        useCase = new ViewCommentListForModerationUseCase(adminCommentListRepository, authorResolver);
         actor = new AuthenticatedUser(UUID.randomUUID(), List.of("MODERATOR"), List.of("COMMENT_MODERATE"));
+        when(authorResolver.resolveAuthors(any())).thenReturn(java.util.Map.of());
     }
 
     @Test
@@ -48,8 +52,13 @@ class ViewCommentListForModerationUseCaseTest {
                                 "674b100000000000000001",
                                 "507f1f77bcf86cd799439011",
                                 UUID.randomUUID().toString(),
+                                null,
+                                null,
+                                null,
                                 "Hello",
                                 "ACTIVE",
+                                "NONE",
+                                0,
                                 1L,
                                 Instant.parse("2026-05-17T10:00:00Z"),
                                 Instant.parse("2026-05-17T10:30:00Z")
@@ -63,7 +72,7 @@ class ViewCommentListForModerationUseCaseTest {
         );
 
         ViewCommentListForModerationResult result = useCase.execute(
-                new ViewCommentListForModerationCommand(actor, null, null, null, null, 1, 20)
+                new ViewCommentListForModerationCommand(actor, null, null, null, null, null, 1, 20)
         );
 
         assertEquals(1, result.items().size());
@@ -79,7 +88,7 @@ class ViewCommentListForModerationUseCaseTest {
 
         AppException ex = assertThrows(
                 AppException.class,
-                () -> useCase.execute(new ViewCommentListForModerationCommand(regularUser, null, null, null, null, 1, 20))
+                () -> useCase.execute(new ViewCommentListForModerationCommand(regularUser, null, null, null, null, null, 1, 20))
         );
 
         assertEquals(ErrorCode.FORBIDDEN, ex.getErrorCode());

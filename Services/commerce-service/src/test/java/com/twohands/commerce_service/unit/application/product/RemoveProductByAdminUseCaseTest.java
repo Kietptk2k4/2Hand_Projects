@@ -69,7 +69,7 @@ class RemoveProductByAdminUseCaseTest {
     void removesActiveProductAndInvalidatesCart() {
         ProductForModeration product = activeProduct();
         when(removeProductByAdminRepository.findById(productId)).thenReturn(Optional.of(product));
-        when(removeProductByAdminRepository.updateStatusToRemoved(productId, ProductStatus.ACTIVE, now))
+        when(removeProductByAdminRepository.updateStatusToRemoved(productId, ProductStatus.ACTIVE, now, "Policy violation"))
                 .thenReturn(true);
         when(cartItemRepository.markInvalidByProductId(productId, now)).thenReturn(4);
         when(productRemovedOutboxService.build(any(), any(), any(), any(), any(), any(), any()))
@@ -98,7 +98,7 @@ class RemoveProductByAdminUseCaseTest {
         );
 
         assertThat(result.alreadyRemoved()).isTrue();
-        verify(removeProductByAdminRepository, never()).updateStatusToRemoved(any(), any(), any());
+        verify(removeProductByAdminRepository, never()).updateStatusToRemoved(any(), any(), any(), any());
         verify(outboxEventRepository, never()).save(any());
     }
 

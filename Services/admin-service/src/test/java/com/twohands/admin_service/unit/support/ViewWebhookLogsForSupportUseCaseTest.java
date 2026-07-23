@@ -57,15 +57,19 @@ class ViewWebhookLogsForSupportUseCaseTest {
 				"PAYMENT_SUCCESS",
 				"PROCESSED",
 				true,
-				0,
 				"PAYOS:PAYOS-1:PAYMENT_SUCCESS",
 				Map.of("code", "00"),
-				Instant.parse("2026-05-20T10:00:00Z")
+				Instant.parse("2026-05-20T10:00:00Z"),
+				UUID.randomUUID(),
+				null,
+				UUID.randomUUID()
 		);
 		when(adminAuthorizationService.requireCurrentAdminId()).thenReturn(adminId);
 		when(commerceWebhookSupportGateway.isEnabled()).thenReturn(true);
 		when(commerceWebhookSupportGateway.searchWebhookLogs(
 				eq("PAYOS"),
+				isNull(),
+				isNull(),
 				isNull(),
 				isNull(),
 				isNull(),
@@ -77,6 +81,8 @@ class ViewWebhookLogsForSupportUseCaseTest {
 
 		ViewWebhookLogsForSupportResult result = useCase.execute(new ViewWebhookLogsForSupportQuery(
 				"PAYOS",
+				null,
+				null,
 				null,
 				null,
 				null,
@@ -107,7 +113,7 @@ class ViewWebhookLogsForSupportUseCaseTest {
 		when(commerceWebhookSupportGateway.isEnabled()).thenReturn(false);
 
 		AppException ex = assertThrows(AppException.class, () -> useCase.execute(
-				new ViewWebhookLogsForSupportQuery(null, null, null, null, null, 1, 20, "token")
+				new ViewWebhookLogsForSupportQuery(null, null, null, null, null, null, null, 1, 20, "token")
 		));
 
 		assertEquals(ErrorCode.SERVICE_UNAVAILABLE, ex.getErrorCode());

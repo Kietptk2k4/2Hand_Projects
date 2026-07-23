@@ -1,5 +1,6 @@
 import { delay, http, HttpResponse } from "msw";
 import {
+  getAdminProductDetail,
   listAdminProductsForAdmin,
   userHasAdminProductAccess,
   validateAdminProductListQuery,
@@ -39,7 +40,6 @@ function mapError(result) {
 
 export const commerceAdminProductRemovalHandlers = [
   /**
-   * FE-only GET list — chua co backend contract chinh thuc cho admin product list.
    * GET /commerce/api/v1/admin/products
    */
   http.get("*/commerce/api/v1/admin/products", async ({ request }) => {
@@ -51,11 +51,13 @@ export const commerceAdminProductRemovalHandlers = [
     if (denied) return denied.error;
 
     const url = new URL(request.url);
+
     const validated = validateAdminProductListQuery({
       page: url.searchParams.get("page") || "1",
       limit: url.searchParams.get("limit") || "20",
       status: url.searchParams.get("status") || undefined,
       q: url.searchParams.get("q") || undefined,
+      sort: url.searchParams.get("sort") || undefined,
     });
 
     if (validated.error) return mapError(validated);
@@ -63,6 +65,26 @@ export const commerceAdminProductRemovalHandlers = [
     const result = listAdminProductsForAdmin(validated);
     return HttpResponse.json(
       apiSuccess(200, "Lay danh sach san pham admin thanh cong.", result.data),
+      { status: 200 },
+    );
+  }),
+
+  /**
+   * GET /commerce/api/v1/admin/products/:productId
+   */
+  http.get("*/commerce/api/v1/admin/products/:productId", async ({ request, params }) => {
+    await delay(250);
+    const auth = requireAuth(request);
+    if (auth.error) return auth.error;
+
+    const denied = requireAdmin(auth.user);
+    if (denied) return denied.error;
+
+    const result = getAdminProductDetail(params.productId);
+    if (result.error) return mapError(result);
+
+    return HttpResponse.json(
+      apiSuccess(200, "Lay chi tiet san pham kiem duyet thanh cong.", result.data),
       { status: 200 },
     );
   }),

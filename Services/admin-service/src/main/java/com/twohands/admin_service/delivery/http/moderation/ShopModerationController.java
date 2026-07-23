@@ -9,16 +9,21 @@ import com.twohands.admin_service.application.moderation.reopenshop.ReopenShopUs
 import com.twohands.admin_service.application.moderation.suspendshop.SuspendShopCommand;
 import com.twohands.admin_service.application.moderation.suspendshop.SuspendShopResult;
 import com.twohands.admin_service.application.moderation.suspendshop.SuspendShopUseCase;
+import com.twohands.admin_service.application.moderation.viewshophistory.ViewShopModerationHistoryQuery;
+import com.twohands.admin_service.application.moderation.viewshophistory.ViewShopModerationHistoryResult;
+import com.twohands.admin_service.application.moderation.viewshophistory.ViewShopModerationHistoryUseCase;
 import com.twohands.admin_service.common.dto.ApiResponse;
 import com.twohands.admin_service.constant.AdminPermission;
 import com.twohands.admin_service.security.annotation.RequireAdminPermission;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -30,15 +35,36 @@ public class ShopModerationController {
 	private final SuspendShopUseCase suspendShopUseCase;
 	private final CloseShopUseCase closeShopUseCase;
 	private final ReopenShopUseCase reopenShopUseCase;
+	private final ViewShopModerationHistoryUseCase viewShopModerationHistoryUseCase;
 
 	public ShopModerationController(
 			SuspendShopUseCase suspendShopUseCase,
 			CloseShopUseCase closeShopUseCase,
-			ReopenShopUseCase reopenShopUseCase
+			ReopenShopUseCase reopenShopUseCase,
+			ViewShopModerationHistoryUseCase viewShopModerationHistoryUseCase
 	) {
 		this.suspendShopUseCase = suspendShopUseCase;
 		this.closeShopUseCase = closeShopUseCase;
 		this.reopenShopUseCase = reopenShopUseCase;
+		this.viewShopModerationHistoryUseCase = viewShopModerationHistoryUseCase;
+	}
+
+	@GetMapping("/{shopId}/moderation-history")
+	@RequireAdminPermission(AdminPermission.SHOP_MODERATION_READ)
+	public ResponseEntity<ApiResponse<ViewShopModerationHistoryResponse>> viewModerationHistory(
+			@PathVariable UUID shopId,
+			@RequestParam(required = false) Integer page,
+			@RequestParam(required = false) Integer size
+	) {
+		ViewShopModerationHistoryResult result = viewShopModerationHistoryUseCase.execute(
+				new ViewShopModerationHistoryQuery(shopId, page, size)
+		);
+
+		return ResponseEntity.ok(ApiResponse.success(
+				HttpStatus.OK.value(),
+				viewShopModerationHistoryUseCase.successMessage(),
+				toHistoryResponse(result)
+		));
 	}
 
 	@PostMapping("/{shopId}/suspend")
@@ -117,5 +143,25 @@ public class ShopModerationController {
 
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(ApiResponse.success(HttpStatus.OK.value(), reopenShopUseCase.successMessage(), data));
+	}
+
+	private ViewShopModerationHistoryResponse toHistoryResponse(ViewShopModerationHistoryResult result) {
+		return new ViewShopModerationHistoryResponse(
+				result.shopId(),
+				result.page(),
+				result.size(),
+				result.totalElements(),
+				result.totalPages(),
+				result.history().stream()
+						.map(item -> new ShopModerationHistoryEntryResponse(
+								item.moderationLogId(),
+								item.action().name(),
+								item.reason(),
+								item.note(),
+								item.adminId(),
+								item.createdAt()
+						))
+						.toList()
+		);
 	}
 }

@@ -50,6 +50,10 @@ public class ShipmentSupportController {
 			@RequestParam(required = false) String status,
 			@RequestParam(required = false) String carrier,
 			@RequestParam(required = false) String sort,
+			@RequestParam(required = false) String q,
+			@RequestParam(name = "order_id", required = false) String orderId,
+			@RequestParam(required = false) String from,
+			@RequestParam(required = false) String to,
 			@RequestParam(required = false) Integer page,
 			@RequestParam(required = false) Integer size,
 			HttpServletRequest httpServletRequest
@@ -59,6 +63,10 @@ public class ShipmentSupportController {
 						status,
 						carrier,
 						sort,
+						q,
+						orderId,
+						from,
+						to,
 						page,
 						size,
 						resolveBearerToken(httpServletRequest)

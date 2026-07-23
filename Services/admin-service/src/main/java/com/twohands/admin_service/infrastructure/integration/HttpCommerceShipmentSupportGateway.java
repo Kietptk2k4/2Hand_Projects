@@ -76,6 +76,10 @@ public class HttpCommerceShipmentSupportGateway implements CommerceShipmentSuppo
 			String status,
 			String carrier,
 			String sort,
+			String q,
+			String orderId,
+			String from,
+			String to,
 			Integer page,
 			Integer size,
 			String bearerToken
@@ -92,6 +96,18 @@ public class HttpCommerceShipmentSupportGateway implements CommerceShipmentSuppo
 						}
 						if (StringUtils.hasText(sort)) {
 							builder.queryParam("sort", sort);
+						}
+						if (StringUtils.hasText(q)) {
+							builder.queryParam("q", q);
+						}
+						if (StringUtils.hasText(orderId)) {
+							builder.queryParam("order_id", orderId);
+						}
+						if (StringUtils.hasText(from)) {
+							builder.queryParam("from", from);
+						}
+						if (StringUtils.hasText(to)) {
+							builder.queryParam("to", to);
 						}
 						if (page != null) {
 							builder.queryParam("page", page);

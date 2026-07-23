@@ -46,8 +46,16 @@ export async function fetchSystemAnnouncements(params) {
   return request("get", "/admin/api/v1/system-announcements", { params });
 }
 
+export async function fetchSystemAnnouncementDetail(announcementId) {
+  return request("get", `/admin/api/v1/system-announcements/${announcementId}`);
+}
+
 export async function createSystemAnnouncement(body) {
   return request("post", "/admin/api/v1/system-announcements", { data: body });
+}
+
+export async function updateSystemAnnouncement(announcementId, body) {
+  return request("patch", `/admin/api/v1/system-announcements/${announcementId}`, { data: body });
 }
 
 export async function publishSystemAnnouncement(announcementId, body) {

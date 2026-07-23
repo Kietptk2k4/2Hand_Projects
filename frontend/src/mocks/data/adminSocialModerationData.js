@@ -6,6 +6,8 @@ const MOCK_ADMIN_ID = "a1000000-0000-4000-8000-000000000001";
 
 /** @type {Map<string, Array<object>>} */
 const moderationHistoryByPostId = new Map();
+/** @type {Map<string, Array<object>>} */
+const moderationHistoryByCommentId = new Map();
 
 function nextId(prefix) {
   return `${prefix}-${Date.now().toString(36)}`;
@@ -14,6 +16,11 @@ function nextId(prefix) {
 function appendPostHistory(postId, entry) {
   const list = moderationHistoryByPostId.get(postId) || [];
   moderationHistoryByPostId.set(postId, [entry, ...list]);
+}
+
+function appendCommentHistory(commentId, entry) {
+  const list = moderationHistoryByCommentId.get(commentId) || [];
+  moderationHistoryByCommentId.set(commentId, [entry, ...list]);
 }
 
 function seedPostHistory() {
@@ -27,7 +34,19 @@ function seedPostHistory() {
   });
 }
 
+function seedCommentHistory() {
+  appendCommentHistory(ADMIN_CONTENT_MODERATION_QA.comment.sample, {
+    moderation_log_id: "cmh-0000-4000-8000-000000000001",
+    action: "HIDE",
+    reason: "Noi dung co dau hieu spam.",
+    note: null,
+    admin_id: MOCK_ADMIN_ID,
+    created_at: "2026-05-18T15:00:00Z",
+  });
+}
+
 seedPostHistory();
+seedCommentHistory();
 
 function validateReason(reason) {
   const trimmed = String(reason ?? "").trim();
@@ -109,11 +128,22 @@ function buildPostRestoreResponse({ targetId, reason, note }) {
 
 function buildCommentModerateResponse({ targetId, action, reason, note }) {
   const actedAt = new Date().toISOString();
+  const moderationLogId = nextId("cml");
+
+  appendCommentHistory(targetId, {
+    moderation_log_id: moderationLogId,
+    action,
+    reason,
+    note: note || null,
+    admin_id: MOCK_ADMIN_ID,
+    created_at: actedAt,
+  });
+
   return {
     data: {
       comment_id: targetId,
       action,
-      moderation_log_id: nextId("cml"),
+      moderation_log_id: moderationLogId,
       reason,
       note: note || null,
       moderated_by: MOCK_ADMIN_ID,
@@ -126,10 +156,21 @@ function buildCommentModerateResponse({ targetId, action, reason, note }) {
 
 function buildCommentRestoreResponse({ targetId, reason, note }) {
   const actedAt = new Date().toISOString();
+  const moderationLogId = nextId("cml");
+
+  appendCommentHistory(targetId, {
+    moderation_log_id: moderationLogId,
+    action: "RESTORE",
+    reason,
+    note: note || null,
+    admin_id: MOCK_ADMIN_ID,
+    created_at: actedAt,
+  });
+
   return {
     data: {
       comment_id: targetId,
-      moderation_log_id: nextId("cml"),
+      moderation_log_id: moderationLogId,
       reason,
       note: note || null,
       restored_by: MOCK_ADMIN_ID,
@@ -203,6 +244,35 @@ export function getPostModerationHistory(postId, { page = 1, size = 20 } = {}) {
       history: all.slice(start, start + sizeNum),
     },
     message: "Post moderation history retrieved successfully",
+  };
+}
+
+export function getCommentModerationHistory(commentId, { page = 1, size = 20 } = {}) {
+  const idError = validateObjectId(commentId);
+  if (idError) return idError;
+
+  const pageNum = Number(page);
+  const sizeNum = Number(size);
+
+  if (!Number.isInteger(pageNum) || pageNum < 1 || !Number.isInteger(sizeNum) || sizeNum < 1) {
+    return { error: "ADMIN-400-PAGINATION", status: 400 };
+  }
+
+  const all = moderationHistoryByCommentId.get(commentId) || [];
+  const totalElements = all.length;
+  const totalPages = Math.max(1, Math.ceil(totalElements / sizeNum) || 1);
+  const start = (pageNum - 1) * sizeNum;
+
+  return {
+    data: {
+      comment_id: commentId,
+      page: pageNum,
+      size: sizeNum,
+      total_elements: totalElements,
+      total_pages: totalPages,
+      history: all.slice(start, start + sizeNum),
+    },
+    message: "Comment moderation history retrieved successfully",
   };
 }
 

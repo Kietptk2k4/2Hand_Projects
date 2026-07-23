@@ -32,6 +32,10 @@ export function useContentModerationPermissions() {
         permissions,
         CONTENT_MODERATION_PERMISSIONS.COMMENT_RESTORE,
       ),
+      canReadCommentHistory: hasContentModerationPermission(
+        permissions,
+        CONTENT_MODERATION_PERMISSIONS.COMMENT_MODERATION_READ,
+      ),
       canSuspendShop: hasContentModerationPermission(
         permissions,
         CONTENT_MODERATION_PERMISSIONS.SHOP_SUSPEND,
@@ -43,6 +47,10 @@ export function useContentModerationPermissions() {
       canReopenShop: hasContentModerationPermission(
         permissions,
         CONTENT_MODERATION_PERMISSIONS.SHOP_RESTORE,
+      ),
+      canReadShopHistory: hasContentModerationPermission(
+        permissions,
+        CONTENT_MODERATION_PERMISSIONS.SHOP_MODERATION_READ,
       ),
       canRemoveProduct: hasContentModerationPermission(
         permissions,
@@ -67,6 +75,10 @@ export function useContentModerationPermissions() {
       canRestoreReview: hasContentModerationPermission(
         permissions,
         CONTENT_MODERATION_PERMISSIONS.REVIEW_RESTORE,
+      ),
+      canReadReviewHistory: hasContentModerationPermission(
+        permissions,
+        CONTENT_MODERATION_PERMISSIONS.REVIEW_MODERATION_READ,
       ),
     }),
     [permissions],

@@ -34,6 +34,16 @@ export function toCreateSystemAnnouncementPayload(form) {
   };
 }
 
+export function toUpdateSystemAnnouncementPayload(form) {
+  return {
+    title: form.title,
+    content: form.content,
+    severity: form.severity,
+    is_pinned: Boolean(form.pinned),
+    dismissible: form.dismissible !== false,
+  };
+}
+
 export function toPinSystemAnnouncementPayload(pinned) {
   return { is_pinned: Boolean(pinned) };
 }

@@ -40,10 +40,16 @@ public class RemoveProductByAdminRepositoryAdapter implements RemoveProductByAdm
     }
 
     @Override
-    public boolean updateStatusToRemoved(UUID productId, ProductStatus currentStatus, Instant occurredAt) {
+    public boolean updateStatusToRemoved(
+            UUID productId,
+            ProductStatus currentStatus,
+            Instant occurredAt,
+            String reason
+    ) {
         String sql = """
                 UPDATE products
                 SET status = CAST(:newStatus AS product_status),
+                    remove_reason = :reason,
                     updated_at = :now
                 WHERE id = :productId
                   AND status = CAST(:currentStatus AS product_status)
@@ -52,6 +58,7 @@ public class RemoveProductByAdminRepositoryAdapter implements RemoveProductByAdm
                 .addValue("productId", productId)
                 .addValue("currentStatus", currentStatus.name())
                 .addValue("newStatus", ProductStatus.REMOVED.name())
+                .addValue("reason", reason)
                 .addValue("now", Timestamp.from(occurredAt)));
         return updated == 1;
     }

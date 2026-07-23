@@ -32,6 +32,11 @@ export const commerceAdminRefundApprovalHandlers = [
     const url = new URL(request.url);
     const result = listAdminRefundApprovals({
       status: url.searchParams.get("status") || undefined,
+      q: url.searchParams.get("q") || undefined,
+      requested_by: url.searchParams.get("requested_by") || undefined,
+      payment_method: url.searchParams.get("payment_method") || undefined,
+      from: url.searchParams.get("from") || undefined,
+      to: url.searchParams.get("to") || undefined,
       page: url.searchParams.get("page") || "1",
       limit: url.searchParams.get("limit") || "20",
     });
@@ -73,6 +78,11 @@ export const commerceAdminRefundApprovalHandlers = [
     const url = new URL(request.url);
     const result = listAdminRefundApprovals({
       status: url.searchParams.get("status") || undefined,
+      q: url.searchParams.get("q") || undefined,
+      requested_by: url.searchParams.get("requested_by") || undefined,
+      payment_method: url.searchParams.get("payment_method") || undefined,
+      from: url.searchParams.get("from") || undefined,
+      to: url.searchParams.get("to") || undefined,
       page: url.searchParams.get("page") || "1",
       limit: url.searchParams.get("limit") || "20",
     });

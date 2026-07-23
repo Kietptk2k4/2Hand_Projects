@@ -90,37 +90,50 @@ export const MOCK_MODERATION_POST_LIST = [
   }),
 ];
 
+function enrichCommentListItem(item) {
+  return {
+    ...item,
+    author_display_name: MOCK_AUTHOR.display_name,
+    author_avatar_url: MOCK_AUTHOR.avatar_url,
+    moderation_status: item.moderation_status || "NONE",
+    media_count: item.media_count ?? 0,
+  };
+}
+
 export const MOCK_MODERATION_COMMENT_LIST = [
-  {
+  enrichCommentListItem({
     id: ADMIN_CONTENT_MODERATION_QA.comment.sample,
     post_id: MOCK_POST_IDS.SUCCESS,
     author_id: MOCK_AUTHOR_ID,
     content_preview: "Binh luan mau cho QA moderation",
     status: "ACTIVE",
+    moderation_status: "NONE",
     like_count: 5,
     created_at: "2025-11-10T09:00:00.000Z",
     updated_at: "2025-11-10T09:00:00.000Z",
-  },
-  {
+  }),
+  enrichCommentListItem({
     id: "674b100000000000000002",
     post_id: MOCK_POST_IDS.SUCCESS,
     author_id: MOCK_AUTHOR_ID,
     content_preview: "Noi dung spam can kiem duyet",
     status: "ACTIVE",
+    moderation_status: "HIDDEN",
     like_count: 0,
     created_at: "2025-11-11T10:30:00.000Z",
     updated_at: "2025-11-11T10:30:00.000Z",
-  },
-  {
+  }),
+  enrichCommentListItem({
     id: "674b100000000000000003",
     post_id: "674a10000000000000000002",
     author_id: MOCK_AUTHOR_ID,
     content_preview: "Binh luan tren bai da an",
     status: "ACTIVE",
+    moderation_status: "REMOVED",
     like_count: 1,
     created_at: "2025-10-06T08:00:00.000Z",
     updated_at: "2025-10-06T08:00:00.000Z",
-  },
+  }),
 ];
 
 function includesQuery(text, q) {
@@ -173,9 +186,10 @@ export function getModerationPostDetail(postId) {
   };
 }
 
-export function listModerationComments({ status, post_id, q, sort, page, size }) {
+export function listModerationComments({ status, moderation_status, post_id, q, sort, page, size }) {
   let items = [...MOCK_MODERATION_COMMENT_LIST];
   if (status) items = items.filter((item) => item.status === status);
+  if (moderation_status) items = items.filter((item) => item.moderation_status === moderation_status);
   if (post_id) items = items.filter((item) => item.post_id === post_id);
   if (q) {
     const needle = q.toLowerCase();
@@ -216,6 +230,9 @@ function sortModerationComments(items, sort) {
     case "updated_at":
       sorted.sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)));
       break;
+    case "moderation_status":
+      sorted.sort((a, b) => a.moderation_status.localeCompare(b.moderation_status));
+      break;
     case "like_count":
       sorted.sort((a, b) => b.like_count - a.like_count);
       break;
@@ -225,6 +242,44 @@ function sortModerationComments(items, sort) {
       break;
   }
   return sorted;
+}
+
+export function getModerationCommentDetail(commentId) {
+  const item = MOCK_MODERATION_COMMENT_LIST.find((entry) => entry.id === commentId);
+  if (!item) {
+    return { error: "SOCIAL_COMMENT_NOT_FOUND", message: "Binh luan khong ton tai.", status: 404 };
+  }
+
+  const postMeta = MOCK_POST_MEDIA[item.post_id] || {};
+  const postListItem = MOCK_MODERATION_POST_LIST.find((entry) => entry.id === item.post_id);
+
+  return {
+    id: item.id,
+    post_id: item.post_id,
+    author: {
+      user_id: item.author_id,
+      display_name: item.author_display_name,
+      avatar_url: item.author_avatar_url,
+    },
+    parent_comment_id: null,
+    parent_comment: null,
+    content_text: item.content_preview,
+    media: [],
+    media_count: item.media_count || 0,
+    status: item.status,
+    moderation_status: item.moderation_status,
+    moderation_reason: item.moderation_status === "HIDDEN" ? "Spam / quang cao" : "",
+    last_moderation_log_id: "mock-log-" + item.id.slice(-4),
+    like_count: item.like_count,
+    post: {
+      id: item.post_id,
+      caption_preview: postMeta.caption || postListItem?.caption_preview || "",
+      thumbnail_url: postMeta.thumbnail_url || postListItem?.thumbnail_url || "",
+      moderation_status: postListItem?.moderation_status || "NONE",
+    },
+    created_at: item.created_at,
+    updated_at: item.updated_at,
+  };
 }
 
 function paginate(items, page, size) {

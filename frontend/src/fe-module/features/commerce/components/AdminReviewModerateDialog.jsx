@@ -18,6 +18,7 @@ import { StarRating } from "./StarRating";
 export function AdminReviewModerateDialog({
   open,
   review,
+  initialAction,
   isSubmitting,
   submitError,
   onClose,
@@ -30,12 +31,15 @@ export function AdminReviewModerateDialog({
 
   const [action, setAction] = useState("");
   const [reason, setReason] = useState("");
+  const [note, setNote] = useState("");
 
   useEffect(() => {
     if (!open || !review) return;
-    setAction(getDefaultActionForReview(review.status));
+    const defaultAction = initialAction || getDefaultActionForReview(review.status);
+    setAction(allowedActions.includes(defaultAction) ? defaultAction : getDefaultActionForReview(review.status));
     setReason("");
-  }, [open, review?.reviewId, review?.status]);
+    setNote("");
+  }, [allowedActions, initialAction, open, review?.reviewId, review?.status]);
 
   if (!open || !review) return null;
 
@@ -134,6 +138,19 @@ export function AdminReviewModerateDialog({
             {trimmedReason.length}/{REASON_MAX_LENGTH}
           </p>
 
+          <label className="block">
+            <span className="text-sm font-medium text-admin-text">Ghi chú nội bộ (tuỳ chọn)</span>
+            <textarea
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+              rows={2}
+              maxLength={REASON_MAX_LENGTH}
+              disabled={isSubmitting}
+              placeholder="Ghi chú chỉ hiển thị trong lịch sử moderation…"
+              className="mt-1 w-full resize-y rounded-lg border border-admin-border bg-admin-surface px-3 py-2 text-sm text-admin-text focus:border-admin-accent focus:outline-none focus:ring-2 focus:ring-admin-accent-soft disabled:opacity-50"
+            />
+          </label>
+
           {submitError ? <p className="text-sm text-admin-danger">{submitError}</p> : null}
         </div>
 
@@ -145,7 +162,9 @@ export function AdminReviewModerateDialog({
             type="button"
             variant="primary"
             disabled={isSubmitting || !trimmedReason || !action}
-            onClick={() => onSubmit?.({ action, reason: trimmedReason })}
+            onClick={() =>
+              onSubmit?.({ action, reason: trimmedReason, note: note.trim() || undefined })
+            }
           >
             {isSubmitting ? "Đang xử lý…" : "Xác nhận"}
           </AdminFilterButton>

@@ -43,6 +43,8 @@ public class HttpCommerceOrderSupportGateway implements CommerceOrderSupportGate
 	public PagedResult<OrderSupportListEntry> searchOrders(
 			String status,
 			String paymentMethod,
+			String paymentStatus,
+			String q,
 			String from,
 			String to,
 			String sort,
@@ -59,6 +61,12 @@ public class HttpCommerceOrderSupportGateway implements CommerceOrderSupportGate
 						}
 						if (StringUtils.hasText(paymentMethod)) {
 							builder.queryParam("payment_method", paymentMethod);
+						}
+						if (StringUtils.hasText(paymentStatus)) {
+							builder.queryParam("payment_status", paymentStatus);
+						}
+						if (StringUtils.hasText(q)) {
+							builder.queryParam("q", q);
 						}
 						if (StringUtils.hasText(from)) {
 							builder.queryParam("from", from);

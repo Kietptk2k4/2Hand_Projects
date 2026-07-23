@@ -3,7 +3,7 @@ export const ORDER_SUPPORT_TABS = [
   { id: "payment-detail", labelVn: "Chi tiết thanh toán", icon: "payment" },
   { id: "shipment-detail", labelVn: "Chi tiết vận chuyển", icon: "shipment" },
   { id: "refund-approvals", labelVn: "Duyệt hoàn tiền", icon: "refund" },
-  { id: "webhook-logs", labelVn: "Webhook logs", icon: "webhook" },
+  { id: "webhook-logs", labelVn: "Nhật ký webhook", icon: "webhook" },
 ];
 
 export const DEFAULT_ORDER_SUPPORT_TAB = "order-detail";

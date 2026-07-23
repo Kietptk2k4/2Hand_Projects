@@ -67,6 +67,8 @@ class ViewPaymentsForSupportUseCaseTest {
 				eq(null),
 				eq(null),
 				eq(null),
+				eq(null),
+				eq(null),
 				eq(1),
 				eq(20),
 				eq("token")
@@ -75,6 +77,8 @@ class ViewPaymentsForSupportUseCaseTest {
 		ViewPaymentsForSupportResult result = useCase.execute(new ViewPaymentsForSupportQuery(
 				null,
 				"COD",
+				null,
+				null,
 				null,
 				null,
 				null,

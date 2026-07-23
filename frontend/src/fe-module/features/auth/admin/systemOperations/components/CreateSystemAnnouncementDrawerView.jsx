@@ -1,11 +1,13 @@
 import { AdminFilterButton, AdminFilterField, AdminFilterInput, AdminFilterSelect } from "../../components/ui";
 import { ANNOUNCEMENT_SEVERITIES } from "../constants/systemAnnouncementConstants.js";
+import { ANNOUNCEMENT_SEVERITY_LABELS } from "../constants/announcementListConstants.js";
 import { GENERIC_CANCEL, GENERIC_CREATE } from "../constants/systemOperationsUiStrings.js";
 import { SystemOperationsDrawerShell } from "./ui/SystemOperationsDrawerShell.jsx";
 
 export function CreateSystemAnnouncementDrawerView({
   open,
   form,
+  fieldErrors = {},
   pending,
   onFieldChange,
   onClose,
@@ -36,6 +38,7 @@ export function CreateSystemAnnouncementDrawerView({
             value={form.title}
             onChange={(e) => onFieldChange({ title: e.target.value })}
           />
+          {fieldErrors.title ? <p className="mt-1 text-xs text-admin-danger">{fieldErrors.title}</p> : null}
         </AdminFilterField>
         <AdminFilterField label="Nội dung" htmlFor="create-announcement-content">
           <textarea
@@ -46,6 +49,7 @@ export function CreateSystemAnnouncementDrawerView({
             value={form.content}
             onChange={(e) => onFieldChange({ content: e.target.value })}
           />
+          {fieldErrors.content ? <p className="mt-1 text-xs text-admin-danger">{fieldErrors.content}</p> : null}
         </AdminFilterField>
         <AdminFilterField label="Mức độ" htmlFor="create-announcement-severity">
           <AdminFilterSelect
@@ -56,10 +60,11 @@ export function CreateSystemAnnouncementDrawerView({
           >
             {ANNOUNCEMENT_SEVERITIES.map((severity) => (
               <option key={severity} value={severity}>
-                {severity}
+                {ANNOUNCEMENT_SEVERITY_LABELS[severity] || severity}
               </option>
             ))}
           </AdminFilterSelect>
+          {fieldErrors.severity ? <p className="mt-1 text-xs text-admin-danger">{fieldErrors.severity}</p> : null}
         </AdminFilterField>
         <label className="flex min-h-11 items-center gap-2 text-sm text-admin-text">
           <input

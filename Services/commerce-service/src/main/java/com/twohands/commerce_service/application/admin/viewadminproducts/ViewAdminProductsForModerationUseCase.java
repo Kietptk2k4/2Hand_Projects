@@ -3,6 +3,7 @@ package com.twohands.commerce_service.application.admin.viewadminproducts;
 import com.twohands.commerce_service.common.pagination.PageMeta;
 import com.twohands.commerce_service.common.pagination.PageQuery;
 import com.twohands.commerce_service.domain.admin.AdminProductListEntry;
+import com.twohands.commerce_service.domain.admin.AdminProductListSort;
 import com.twohands.commerce_service.domain.admin.ViewAdminProductsForModerationRepository;
 import com.twohands.commerce_service.domain.admin.ViewAdminProductsForModerationResult;
 import com.twohands.commerce_service.domain.product.ProductStatus;
@@ -20,7 +21,7 @@ public class ViewAdminProductsForModerationUseCase {
 
     private static final int DEFAULT_PAGE = 1;
     private static final int DEFAULT_LIMIT = 20;
-    private static final int MAX_LIMIT = 50;
+    private static final int MAX_LIMIT = 100;
 
     private final ViewAdminProductsForModerationRepository viewAdminProductsForModerationRepository;
 
@@ -35,11 +36,12 @@ public class ViewAdminProductsForModerationUseCase {
         PageQuery pageQuery = resolvePageQuery(command.page(), command.limit());
         Optional<ProductStatus> status = parseStatusFilter(command.status());
         Optional<String> searchQuery = normalizeSearchQuery(command.searchQuery());
+        AdminProductListSort sort = parseSort(command.sort());
 
         long totalItems = viewAdminProductsForModerationRepository.count(status, searchQuery);
         List<AdminProductListEntry> items = totalItems == 0
                 ? List.of()
-                : viewAdminProductsForModerationRepository.find(status, searchQuery, pageQuery);
+                : viewAdminProductsForModerationRepository.find(status, searchQuery, sort, pageQuery);
 
         return new ViewAdminProductsForModerationResult(
                 items,
@@ -90,5 +92,21 @@ public class ViewAdminProductsForModerationUseCase {
         }
         String trimmed = searchQuery.trim();
         return trimmed.isEmpty() ? Optional.empty() : Optional.of(trimmed);
+    }
+
+    private AdminProductListSort parseSort(String sort) {
+        if (!StringUtils.hasText(sort)) {
+            return AdminProductListSort.NEWEST;
+        }
+        try {
+            return AdminProductListSort.valueOf(sort.trim().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new AppException(
+                    ErrorCode.VALIDATION_ERROR,
+                    "Validation failed",
+                    "sort",
+                    "must be one of NEWEST, OLDEST, PRICE_ASC, PRICE_DESC, UPDATED_AT"
+            );
+        }
     }
 }

@@ -77,6 +77,15 @@ function paginate(items, page = 1, size = 20) {
   };
 }
 
+function maskConfigValue(item) {
+  const key = String(item.config_key || "").toUpperCase();
+  const secret = ["PASSWORD", "SECRET", "TOKEN", "API_KEY"].some((fragment) => key.includes(fragment));
+  if (!secret) {
+    return { ...item, value_masked: false };
+  }
+  return { ...item, config_value: "********", value_masked: true };
+}
+
 export const adminSystemOperationsHandlers = [
   http.get("*/admin/api/v1/system-configs", async ({ request }) => {
     await delay(250);
@@ -99,8 +108,19 @@ export const adminSystemOperationsHandlers = [
       const flag = active === "true";
       items = items.filter((item) => item.is_active === flag);
     }
-    const data = paginate(items, url.searchParams.get("page"), url.searchParams.get("size"));
+    const data = paginate(items.map(maskConfigValue), url.searchParams.get("page"), url.searchParams.get("size"));
     return HttpResponse.json(apiSuccess(200, "OK", data));
+  }),
+
+  http.get("*/admin/api/v1/system-configs/:configId", async ({ request, params }) => {
+    await delay(200);
+    const actor = getActor(request);
+    if (!actor?.is_admin) {
+      return HttpResponse.json(apiError("ADMIN-403", "Missing permission: SYSTEM_CONFIG_VIEW"), { status: 403 });
+    }
+    const item = MOCK_CONFIGS.find((c) => c.config_id === params.configId);
+    if (!item) return HttpResponse.json(apiError("ADMIN-404", "Not found"), { status: 404 });
+    return HttpResponse.json(apiSuccess(200, "OK", maskConfigValue(item)));
   }),
 
   http.post("*/admin/api/v1/system-configs", async ({ request }) => {
@@ -206,6 +226,17 @@ export const adminSystemOperationsHandlers = [
     return HttpResponse.json(apiSuccess(200, "OK", data));
   }),
 
+  http.get("*/admin/api/v1/system-announcements/:announcementId", async ({ request, params }) => {
+    await delay(200);
+    const actor = getActor(request);
+    if (!actor?.is_admin) {
+      return HttpResponse.json(apiError("ADMIN-403", "Forbidden"), { status: 403 });
+    }
+    const item = MOCK_ANNOUNCEMENTS.find((a) => a.announcement_id === params.announcementId);
+    if (!item) return HttpResponse.json(apiError("ADMIN-404", "Not found"), { status: 404 });
+    return HttpResponse.json(apiSuccess(200, "OK", item));
+  }),
+
   http.post("*/admin/api/v1/system-announcements", async ({ request }) => {
     await delay(300);
     const body = await request.json();
@@ -223,6 +254,22 @@ export const adminSystemOperationsHandlers = [
     };
     MOCK_ANNOUNCEMENTS.unshift(created);
     return HttpResponse.json(apiSuccess(201, "Created", created), { status: 201 });
+  }),
+
+  http.patch("*/admin/api/v1/system-announcements/:announcementId", async ({ request, params }) => {
+    await delay(250);
+    const item = MOCK_ANNOUNCEMENTS.find((a) => a.announcement_id === params.announcementId);
+    if (!item) return HttpResponse.json(apiError("ADMIN-404", "Not found"), { status: 404 });
+    if (item.status !== "DRAFT") {
+      return HttpResponse.json(apiError("ADMIN-409", "Only draft can be updated"), { status: 409 });
+    }
+    const body = await request.json();
+    item.title = body.title ?? item.title;
+    item.content = body.content ?? item.content;
+    item.severity = body.severity ?? item.severity;
+    item.is_pinned = Boolean(body.is_pinned ?? item.is_pinned);
+    item.dismissible = body.dismissible !== false;
+    return HttpResponse.json(apiSuccess(200, "Updated", item));
   }),
 
   http.post("*/admin/api/v1/system-announcements/:announcementId/publish", async ({ params }) => {

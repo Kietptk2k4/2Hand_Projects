@@ -1,6 +1,7 @@
 import { delay, http, HttpResponse } from "msw";
 import {
   listAdminShops,
+  getAdminShopDetailForModeration,
   userHasAdminShopModerationAccess,
   validateAdminShopListQuery,
 } from "../data/commerceAdminShopModerationData";
@@ -64,6 +65,23 @@ export const commerceAdminShopModerationHandlers = [
     const result = listAdminShops(validated);
     return HttpResponse.json(
       apiSuccess(200, "Lay danh sach shop admin thanh cong.", result.data),
+      { status: 200 },
+    );
+  }),
+
+  http.get("*/commerce/api/v1/admin/shops/:shopId", async ({ request, params }) => {
+    await delay(250);
+    const auth = requireAuth(request);
+    if (auth.error) return auth.error;
+
+    const denied = requireAdmin(auth.user);
+    if (denied) return denied.error;
+
+    const result = getAdminShopDetailForModeration(params.shopId);
+    if (result.error) return mapError(result);
+
+    return HttpResponse.json(
+      apiSuccess(200, "Lay chi tiet shop kiem duyet thanh cong.", result.data),
       { status: 200 },
     );
   }),

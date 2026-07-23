@@ -5,15 +5,17 @@ import {
   restoreProductByAdmin,
 } from "../data/commerceAdminProductRemovalData";
 import { moderateAdminReview } from "../data/commerceAdminReviewModerationData";
-import { moderateAdminShop } from "../data/commerceAdminShopModerationData";
+import { moderateAdminShop, getShopModerationHistory } from "../data/commerceAdminShopModerationData";
 import {
   moderateCommentByAdmin,
   moderatePostByAdmin,
+  getCommentModerationHistory,
   getPostModerationHistory,
   restoreCommentByAdmin,
   restorePostByAdmin,
 } from "../data/adminSocialModerationData";
 import {
+  getModerationCommentDetail,
   getModerationPostDetail,
   listModerationComments,
   listModerationPosts,
@@ -152,6 +154,7 @@ export const adminContentModerationHandlers = [
     const url = new URL(request.url);
     const data = listModerationComments({
       status: url.searchParams.get("status") || "",
+      moderation_status: url.searchParams.get("moderation_status") || "",
       post_id: (url.searchParams.get("post_id") || "").trim(),
       q: (url.searchParams.get("q") || "").trim(),
       sort: url.searchParams.get("sort") || "created_at",
@@ -161,6 +164,22 @@ export const adminContentModerationHandlers = [
 
     return HttpResponse.json(
       apiSuccess(200, "Lay danh sach binh luan kiem duyet thanh cong.", data),
+      { status: 200 },
+    );
+  }),
+
+  http.get("*/api/v1/social/admin/comments/:commentId", async ({ request, params }) => {
+    await delay(250);
+    const auth = requireAdmin(request);
+    if (auth.error) return auth.error;
+
+    const detail = getModerationCommentDetail(params.commentId);
+    if (detail.error) {
+      return HttpResponse.json(apiError(detail.error, detail.message), { status: detail.status || 404 });
+    }
+
+    return HttpResponse.json(
+      apiSuccess(200, "Lay chi tiet binh luan kiem duyet thanh cong.", detail),
       { status: 200 },
     );
   }),
@@ -426,6 +445,32 @@ export const adminContentModerationHandlers = [
     }
 
     const result = restoreCommentByAdmin(params.commentId, body);
+    return mapResult(result);
+  }),
+
+  http.get("*/admin/api/v1/social/comments/:commentId/moderation-history", async ({ params, request }) => {
+    await delay(300);
+    const auth = requireAdmin(request);
+    if (auth.error) return auth.error;
+
+    const url = new URL(request.url);
+    const result = getCommentModerationHistory(params.commentId, {
+      page: url.searchParams.get("page") || 1,
+      size: url.searchParams.get("size") || 20,
+    });
+    return mapResult(result);
+  }),
+
+  http.get("*/admin/api/v1/shops/:shopId/moderation-history", async ({ params, request }) => {
+    await delay(300);
+    const auth = requireAdmin(request);
+    if (auth.error) return auth.error;
+
+    const url = new URL(request.url);
+    const result = getShopModerationHistory(params.shopId, {
+      page: url.searchParams.get("page") || 1,
+      size: url.searchParams.get("size") || 20,
+    });
     return mapResult(result);
   }),
 ];

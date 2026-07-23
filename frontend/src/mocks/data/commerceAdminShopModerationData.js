@@ -18,6 +18,12 @@ const TRANSITIONS = {
 };
 
 const shopsById = new Map();
+const moderationHistoryByShopId = new Map();
+
+function appendShopHistory(shopId, entry) {
+  const list = moderationHistoryByShopId.get(shopId) || [];
+  moderationHistoryByShopId.set(shopId, [entry, ...list]);
+}
 
 function buildShop(index, overrides = {}) {
   const seed = String(index).padStart(12, "0");
@@ -32,9 +38,13 @@ function buildShop(index, overrides = {}) {
     logo_url:
       overrides.logo_url ??
       `https://picsum.photos/seed/admin-shop-${index}/80/80`,
+    description: overrides.description ?? `Mô tả cửa hàng mẫu ${index}`,
     status: overrides.status ?? "ACTIVE",
     created_at: overrides.created_at ?? created,
     updated_at: overrides.updated_at ?? created,
+    product_count: overrides.product_count ?? index * 3 + 2,
+    active_product_count: overrides.active_product_count ?? index * 2 + 1,
+    open_order_count: overrides.open_order_count ?? index % 5,
   };
 }
 
@@ -109,7 +119,7 @@ export function validateAdminShopListQuery({ page, limit, status, q, sort }) {
     return { error: "COMMERCE-400-PAGINATION", status: 400 };
   }
 
-  if (!Number.isInteger(limitNum) || limitNum < 1 || limitNum > 50) {
+  if (!Number.isInteger(limitNum) || limitNum < 1 || limitNum > 100) {
     return { error: "COMMERCE-400-PAGINATION", status: 400 };
   }
 
@@ -118,7 +128,7 @@ export function validateAdminShopListQuery({ page, limit, status, q, sort }) {
   }
 
   const sortValue = sort || "NEWEST";
-  if (!["NEWEST", "OLDEST", "NAME_ASC"].includes(sortValue)) {
+  if (!["NEWEST", "OLDEST", "NAME_ASC", "UPDATED_AT"].includes(sortValue)) {
     return { error: "COMMERCE-400-VALIDATION", status: 400 };
   }
 
@@ -152,6 +162,8 @@ export function listAdminShops({ page, limit, status, q, sort }) {
     items.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
   } else if (sort === "NAME_ASC") {
     items.sort((a, b) => a.shop_name.localeCompare(b.shop_name, "vi"));
+  } else if (sort === "UPDATED_AT") {
+    items.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
   } else {
     items.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   }
@@ -182,11 +194,68 @@ function toListItem(record) {
     logo_url: record.logo_url,
     status: record.status,
     created_at: record.created_at,
+    updated_at: record.updated_at,
+    product_count: record.product_count ?? Math.floor(Math.random() * 20) + 1,
+    active_product_count: record.active_product_count ?? Math.floor(Math.random() * 15) + 1,
   };
 }
 
 export function getAdminShopById(shopId) {
   return shopsById.get(shopId) || null;
+}
+
+export function getAdminShopDetailForModeration(shopId) {
+  const record = getAdminShopById(shopId);
+  if (!record) {
+    return { error: "COMMERCE-404-SHOP", status: 404 };
+  }
+
+  return {
+    data: {
+      shop_id: record.shop_id,
+      seller_id: record.seller_id,
+      shop_name: record.shop_name,
+      description: record.description || "",
+      logo_url: record.logo_url,
+      status: record.status,
+      created_at: record.created_at,
+      updated_at: record.updated_at,
+      total_product_count: record.product_count ?? 0,
+      active_product_count: record.active_product_count ?? 0,
+      open_order_count: record.open_order_count ?? 0,
+    },
+  };
+}
+
+export function getShopModerationHistory(shopId, { page = 1, size = 20 } = {}) {
+  const record = getAdminShopById(shopId);
+  if (!record) {
+    return { error: "ADMIN-404", status: 404, message: "Shop not found." };
+  }
+
+  const pageNum = Number(page);
+  const sizeNum = Number(size);
+
+  if (!Number.isInteger(pageNum) || pageNum < 1 || !Number.isInteger(sizeNum) || sizeNum < 1) {
+    return { error: "ADMIN-400-PAGINATION", status: 400 };
+  }
+
+  const all = moderationHistoryByShopId.get(shopId) || [];
+  const totalElements = all.length;
+  const totalPages = Math.max(1, Math.ceil(totalElements / sizeNum) || 1);
+  const start = (pageNum - 1) * sizeNum;
+
+  return {
+    data: {
+      shop_id: shopId,
+      page: pageNum,
+      size: sizeNum,
+      total_elements: totalElements,
+      total_pages: totalPages,
+      history: all.slice(start, start + sizeNum),
+    },
+    message: "Shop moderation history retrieved successfully",
+  };
 }
 
 function actionMessage(action) {
@@ -229,6 +298,14 @@ export function moderateAdminShop(shopId, body, { isAdmin, permissions = [] }) {
     record.status = nextStatus;
     record.updated_at = new Date().toISOString();
     shopsById.set(shopId, record);
+    appendShopHistory(shopId, {
+      moderation_log_id: `smh-${Date.now().toString(36)}`,
+      action,
+      reason,
+      note: body?.note || null,
+      admin_id: "a1000000-0000-4000-8000-000000000001",
+      created_at: new Date().toISOString(),
+    });
   }
 
   const cartInvalidated =

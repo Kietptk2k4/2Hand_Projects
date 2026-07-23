@@ -29,6 +29,8 @@ public class ViewOrdersForSupportUseCase {
         OrderSupportListSearchCriteria criteria = new OrderSupportListSearchCriteria(
                 OrderSupportListQueryPolicy.parseStatus(query.status()),
                 OrderSupportListQueryPolicy.parsePaymentMethod(query.paymentMethod()),
+                OrderSupportListQueryPolicy.parsePaymentStatus(query.paymentStatus()),
+                OrderSupportListQueryPolicy.parseSearchQuery(query.q()),
                 from,
                 to,
                 OrderSupportListQueryPolicy.parseSortField(query.sort())

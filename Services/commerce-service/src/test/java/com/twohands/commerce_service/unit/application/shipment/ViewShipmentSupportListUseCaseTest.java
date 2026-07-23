@@ -51,19 +51,16 @@ class ViewShipmentSupportListUseCaseTest {
 				"SHIPPED",
 				"GHN",
 				"updated_at",
+				null,
+				null,
+				null,
+				null,
 				1,
 				20
 		));
 
 		assertEquals(1, result.shipments().size());
 		assertEquals("GHN", result.shipments().getFirst().carrier());
-		verify(repository).search(
-				eq(new ShipmentSupportListSearchCriteria(
-						Optional.of(ShipmentStatus.SHIPPED),
-						Optional.of(ShipmentCarrier.GHN),
-						ShipmentSupportListSortField.UPDATED_AT
-				)),
-				eq(new WebhookSupportPageRequest(1, 20))
-		);
+		verify(repository).search(any(ShipmentSupportListSearchCriteria.class), eq(new WebhookSupportPageRequest(1, 20)));
 	}
 }

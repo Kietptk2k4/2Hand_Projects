@@ -1,4 +1,8 @@
 import { AdminStatusBadge } from "../../../components/ui";
+import {
+  ANNOUNCEMENT_SEVERITY_LABELS,
+  ANNOUNCEMENT_STATUS_LABELS,
+} from "../../constants/announcementListConstants.js";
 
 export function ConfigActiveBadge({ active }) {
   return (
@@ -23,7 +27,7 @@ const ANNOUNCEMENT_SEVERITY_VARIANTS = {
 export function AnnouncementStatusBadge({ status }) {
   return (
     <AdminStatusBadge variant={ANNOUNCEMENT_STATUS_VARIANTS[status] ?? "neutral"}>
-      {status}
+      {ANNOUNCEMENT_STATUS_LABELS[status] || status}
     </AdminStatusBadge>
   );
 }
@@ -31,7 +35,7 @@ export function AnnouncementStatusBadge({ status }) {
 export function AnnouncementSeverityBadge({ severity }) {
   return (
     <AdminStatusBadge variant={ANNOUNCEMENT_SEVERITY_VARIANTS[severity] ?? "neutral"}>
-      {severity}
+      {ANNOUNCEMENT_SEVERITY_LABELS[severity] || severity}
     </AdminStatusBadge>
   );
 }

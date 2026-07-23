@@ -8,5 +8,10 @@ public interface RemoveProductByAdminRepository {
 
     Optional<ProductForModeration> findById(UUID productId);
 
-    boolean updateStatusToRemoved(UUID productId, ProductStatus currentStatus, Instant occurredAt);
+    boolean updateStatusToRemoved(
+            UUID productId,
+            ProductStatus currentStatus,
+            Instant occurredAt,
+            String reason
+    );
 }

@@ -2,6 +2,7 @@ package com.twohands.admin_service.infrastructure.integration;
 
 import com.twohands.admin_service.domain.common.PagedResult;
 import com.twohands.admin_service.domain.support.WebhookSupportLogEntry;
+import com.twohands.admin_service.domain.support.WebhookSupportLogStats;
 
 import java.util.List;
 
@@ -26,7 +27,7 @@ final class CommerceWebhookSupportGatewayMapper {
 		);
 	}
 
-	private static WebhookSupportLogEntry toEntry(CommerceWebhookLogsSupportPayload.WebhookLogPayload log) {
+	static WebhookSupportLogEntry toEntry(CommerceWebhookLogsSupportPayload.WebhookLogPayload log) {
 		return new WebhookSupportLogEntry(
 				log.logId(),
 				log.provider(),
@@ -34,10 +35,28 @@ final class CommerceWebhookSupportGatewayMapper {
 				log.eventType(),
 				log.processingStatus(),
 				log.signatureValid(),
-				log.retryCount(),
 				log.idempotencyKey(),
 				log.payloadSummary(),
-				log.receivedAt()
+				log.receivedAt(),
+				log.paymentId(),
+				log.shipmentId(),
+				log.orderId()
+		);
+	}
+
+	static WebhookSupportLogStats toStats(CommerceWebhookLogsStatsPayload payload) {
+		if (payload == null) {
+			return new WebhookSupportLogStats(0L, 0L, 0L, 0L, 0L, 0L);
+		}
+		long payos = payload.byProvider() == null ? 0L : payload.byProvider().payos();
+		long ghn = payload.byProvider() == null ? 0L : payload.byProvider().ghn();
+		return new WebhookSupportLogStats(
+				payload.total(),
+				payload.pending(),
+				payload.invalidSignature(),
+				payload.processed(),
+				payos,
+				ghn
 		);
 	}
 }

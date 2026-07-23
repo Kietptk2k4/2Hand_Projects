@@ -57,7 +57,9 @@ class OrderSupportDetailPolicyTest {
 				null,
 				List.of(),
 				List.of(shipment),
-				List.of()
+				List.of(),
+				null,
+				null
 		);
 
 		OrderSupportDetail masked = OrderSupportDetailPolicy.maskContactFields(detail, false);
@@ -107,7 +109,9 @@ class OrderSupportDetailPolicyTest {
 						address,
 						List.of()
 				)),
-				List.of()
+				List.of(),
+				null,
+				null
 		);
 
 		OrderSupportDetail revealed = OrderSupportDetailPolicy.maskContactFields(detail, true);

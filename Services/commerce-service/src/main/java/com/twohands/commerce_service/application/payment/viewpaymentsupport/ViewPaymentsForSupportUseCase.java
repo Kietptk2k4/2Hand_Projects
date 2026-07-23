@@ -30,6 +30,8 @@ public class ViewPaymentsForSupportUseCase {
                 PaymentSupportQueryPolicy.normalizeStatus(query.status()),
                 PaymentSupportQueryPolicy.normalizePaymentMethod(query.paymentMethod()),
                 PaymentSupportQueryPolicy.normalizeOrderId(query.orderId()),
+                PaymentSupportQueryPolicy.parseSearchQuery(query.q()).orElse(null),
+                PaymentSupportQueryPolicy.normalizeReconciliationStatus(query.reconciliationStatus()),
                 from,
                 to
         );

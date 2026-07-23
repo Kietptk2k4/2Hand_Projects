@@ -46,6 +46,18 @@ export async function fetchAdminPlatformTopSellers({ from, to, limit = 10 } = {}
   }
 }
 
+export async function fetchAdminPlatformPayoutOverview({ from, to } = {}) {
+  try {
+    const params = {};
+    if (from) params.from = from;
+    if (to) params.to = to;
+    const response = await adminApiClient.get("/admin/api/v1/finance/platform/payout-overview", { params });
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export async function fetchAdminSellerFinanceSummary(sellerId, { from, to } = {}) {
   try {
     const params = {};

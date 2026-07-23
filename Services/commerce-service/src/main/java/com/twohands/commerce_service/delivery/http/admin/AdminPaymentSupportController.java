@@ -45,6 +45,8 @@ public class AdminPaymentSupportController {
             @RequestParam(required = false) String status,
             @RequestParam(name = "payment_method", required = false) String paymentMethod,
             @RequestParam(name = "order_id", required = false) String orderId,
+            @RequestParam(required = false) String q,
+            @RequestParam(name = "reconciliation_status", required = false) String reconciliationStatus,
             @RequestParam(required = false) String from,
             @RequestParam(required = false) String to,
             @RequestParam(required = false) Integer page,
@@ -58,7 +60,17 @@ public class AdminPaymentSupportController {
         );
 
         ViewPaymentsForSupportResult result = viewPaymentsForSupportUseCase.execute(
-                new ViewPaymentsForSupportQuery(status, paymentMethod, orderId, from, to, page, size)
+                new ViewPaymentsForSupportQuery(
+                        status,
+                        paymentMethod,
+                        orderId,
+                        q,
+                        reconciliationStatus,
+                        from,
+                        to,
+                        page,
+                        size
+                )
         );
 
         return ResponseEntity.ok(ApiResponse.success(

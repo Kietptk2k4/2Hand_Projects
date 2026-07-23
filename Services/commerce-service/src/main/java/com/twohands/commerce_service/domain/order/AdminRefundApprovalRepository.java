@@ -1,6 +1,7 @@
 package com.twohands.commerce_service.domain.order;
 
 import com.twohands.commerce_service.common.pagination.PageQuery;
+import com.twohands.commerce_service.domain.order.AdminRefundApprovalListSearchCriteria;
 import com.twohands.commerce_service.domain.payment.PaymentRefundRequestStatus;
 
 import java.time.Instant;
@@ -10,10 +11,10 @@ import java.util.UUID;
 
 public interface AdminRefundApprovalRepository {
 
-    long countAdminRefundApprovals(Optional<PaymentRefundRequestStatus> status);
+    long countAdminRefundApprovals(AdminRefundApprovalListSearchCriteria criteria);
 
     List<AdminRefundApprovalItem> findAdminRefundApprovals(
-            Optional<PaymentRefundRequestStatus> status,
+            AdminRefundApprovalListSearchCriteria criteria,
             PageQuery pageQuery
     );
 

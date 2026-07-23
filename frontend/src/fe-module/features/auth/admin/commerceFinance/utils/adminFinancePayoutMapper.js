@@ -20,6 +20,10 @@ export function mapPayoutQueueItem(raw) {
     bankAccountName: raw.bank_account_name ?? raw.bankAccountName,
     bankAccountNumber: raw.bank_account_number ?? raw.bankAccountNumber,
     requestedAt: raw.requested_at ?? raw.requestedAt,
+    approvedAt: raw.approved_at ?? raw.approvedAt,
+    paidAt: raw.paid_at ?? raw.paidAt,
+    rejectedAt: raw.rejected_at ?? raw.rejectedAt,
+    cancelledAt: raw.cancelled_at ?? raw.cancelledAt,
     adminNote: raw.admin_note ?? raw.adminNote,
     bankTransferRef: raw.bank_transfer_ref ?? raw.bankTransferRef,
   };
@@ -27,11 +31,20 @@ export function mapPayoutQueueItem(raw) {
 
 export function mapPayoutQueueResponse(raw) {
   const pagination = raw?.pagination ?? {};
+  const page = Number(pagination.page) || 1;
+  const limit = Number(pagination.limit) || 20;
+  const totalItems = Number(pagination.total_items ?? pagination.totalItems) || 0;
+  const totalPages = Number(pagination.total_pages ?? pagination.totalPages) || 0;
+  const hasNext = Boolean(pagination.has_next ?? pagination.hasNext);
+
   return {
     items: (raw?.items ?? []).map(mapPayoutQueueItem).filter(Boolean),
     pagination: {
-      page: Number(pagination.page) || 1,
-      totalItems: Number(pagination.total_items ?? pagination.totalItems) || 0,
+      page,
+      limit,
+      totalItems,
+      totalPages: totalPages || Math.max(1, Math.ceil(totalItems / limit) || 1),
+      hasNext,
     },
   };
 }

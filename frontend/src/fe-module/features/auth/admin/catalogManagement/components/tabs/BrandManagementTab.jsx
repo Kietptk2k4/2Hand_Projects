@@ -1,100 +1,102 @@
-import { useCallback, useEffect, useState } from "react";
-import { useAuthSession } from "../../../../hooks/useAuthSession.jsx";
+import { useCallback, useState } from "react";
 import {
   activateAdminBrand,
   createAdminBrand,
   deactivateAdminBrand,
-  fetchAdminBrands,
   updateAdminBrand,
 } from "../../api/adminCatalogApi.js";
-import { isCatalogForbiddenError } from "../../constants/catalogPermissions.js";
-import { CatalogFormModal } from "../modals/CatalogFormModal.jsx";
+import { mapBrand } from "../../utils/adminCatalogMapper.js";
+import { useCatalogBrands } from "../../hooks/useCatalogBrands.js";
 import { useCatalogPermissions } from "../../hooks/useCatalogPermissions.js";
+import { CatalogFormModal } from "../modals/CatalogFormModal.jsx";
 import { BrandManagementTabView } from "./BrandManagementTabView.jsx";
-
-function mapBrand(item) {
-  return {
-    id: item.id,
-    name: item.name,
-    slug: item.slug,
-    active: item.is_active ?? item.isActive ?? true,
-    productCount: item.product_count ?? item.productCount ?? 0,
-  };
-}
 
 const TITLE = "Quản lý thương hiệu";
 const SUBTITLE = "Thêm, sửa và vô hiệu hóa thương hiệu trong catalog.";
-const EMPTY_MESSAGE = "Không có thương hiệu phù hợp.";
 
 export function BrandManagementTab({ onNotify }) {
-  const { showSessionExpired } = useAuthSession();
   const { canRead, canWrite } = useCatalogPermissions();
-  const [items, setItems] = useState([]);
-  const [query, setQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState("");
-  const [loadStatus, setLoadStatus] = useState("idle");
-  const [errorMessage, setErrorMessage] = useState("");
+  const {
+    filters,
+    items,
+    pagination,
+    heroMetrics,
+    loadStatus,
+    errorMessage,
+    handleQueryChange,
+    handleStatusChange,
+    handlePageChange,
+    handleKpiStatusClick,
+    refreshAll,
+    setListState,
+  } = useCatalogBrands({ canRead });
+
   const [modal, setModal] = useState(null);
   const [actionId, setActionId] = useState("");
+  const [detailItem, setDetailItem] = useState(null);
+  const [deactivateItem, setDeactivateItem] = useState(null);
+  const [deactivatePending, setDeactivatePending] = useState(false);
 
-  const load = useCallback(async () => {
-    setLoadStatus("loading");
-    setErrorMessage("");
-    try {
-      const data = await fetchAdminBrands({
-        q: query || undefined,
-        isActive: activeFilter === "" ? undefined : activeFilter === "true",
-        page: 1,
-        limit: 50,
-      });
-      setItems((data?.items || []).map(mapBrand));
-      setLoadStatus("ready");
-    } catch (error) {
-      if (String(error?.code ?? "").includes("401")) {
-        showSessionExpired(error?.message);
-        return;
-      }
-      if (isCatalogForbiddenError(error)) {
-        setErrorMessage(error?.message || "Tài khoản thiếu quyền CATALOG_READ.");
-        setLoadStatus("forbidden");
-        return;
-      }
-      setErrorMessage(error?.message || "Không tải được thương hiệu.");
-      setLoadStatus("error");
-    }
-  }, [activeFilter, query, showSessionExpired]);
-
-  useEffect(() => {
-    if (canRead) load();
-  }, [canRead, load]);
-
-  const runToggle = async (brandId, active) => {
-    setActionId(brandId);
-    try {
-      if (active) {
-        await activateAdminBrand(brandId);
+  const runActivate = useCallback(
+    async (brandId) => {
+      setActionId(brandId);
+      try {
+        const updated = await activateAdminBrand(brandId);
+        const mapped = mapBrand(updated);
+        if (mapped) {
+          setListState((prev) => ({
+            ...prev,
+            items: prev.items.map((item) => (item.id === mapped.id ? mapped : item)),
+          }));
+        }
         onNotify?.({ variant: "success", message: "Đã kích hoạt thương hiệu." });
-      } else {
-        await deactivateAdminBrand(brandId);
-        onNotify?.({ variant: "success", message: "Đã vô hiệu hóa thương hiệu." });
+        setDetailItem((current) => (current?.id === brandId ? mapped : current));
+        refreshAll();
+      } catch (error) {
+        onNotify?.({ variant: "error", message: error?.message || "Không thể kích hoạt thương hiệu." });
+      } finally {
+        setActionId("");
       }
-      await load();
+    },
+    [onNotify, refreshAll, setListState],
+  );
+
+  const runDeactivateConfirm = useCallback(async () => {
+    if (!deactivateItem?.id) return;
+    setDeactivatePending(true);
+    setActionId(deactivateItem.id);
+    try {
+      await deactivateAdminBrand(deactivateItem.id);
+      onNotify?.({ variant: "success", message: "Đã vô hiệu hóa thương hiệu." });
+      setDeactivateItem(null);
+      setDetailItem((current) =>
+        current?.id === deactivateItem.id ? { ...current, active: false } : current,
+      );
+      refreshAll();
     } catch (error) {
-      onNotify?.({ variant: "error", message: error?.message || "Không thể cập nhật trạng thái." });
+      onNotify?.({ variant: "error", message: error?.message || "Không thể vô hiệu hóa thương hiệu." });
     } finally {
+      setDeactivatePending(false);
       setActionId("");
     }
-  };
+  }, [deactivateItem, onNotify, refreshAll]);
 
   const handleSubmit = async (payload) => {
     if (modal?.mode === "edit") {
-      await updateAdminBrand(modal.item.id, payload);
+      const updated = await updateAdminBrand(modal.item.id, payload);
       onNotify?.({ variant: "success", message: "Đã cập nhật thương hiệu." });
+      const mapped = mapBrand(updated);
+      if (mapped) {
+        setListState((prev) => ({
+          ...prev,
+          items: prev.items.map((item) => (item.id === mapped.id ? mapped : item)),
+        }));
+      }
     } else {
       await createAdminBrand(payload);
       onNotify?.({ variant: "success", message: "Đã tạo thương hiệu mới." });
     }
-    await load();
+    await refreshAll();
   };
 
   return (
@@ -103,21 +105,35 @@ export function BrandManagementTab({ onNotify }) {
       subtitle={SUBTITLE}
       canRead={canRead}
       canWrite={canWrite}
-      query={query}
-      activeFilter={activeFilter}
+      filters={filters}
+      pagination={pagination}
       loadStatus={loadStatus}
       errorMessage={errorMessage}
+      heroMetrics={heroMetrics}
       items={items}
       actionId={actionId}
-      emptyMessage={EMPTY_MESSAGE}
-      onQueryChange={setQuery}
-      onActiveFilterChange={setActiveFilter}
-      onFilter={load}
+      detailItem={detailItem}
+      deactivateItem={deactivateItem}
+      deactivatePending={deactivatePending}
+      onQueryChange={handleQueryChange}
+      onStatusChange={handleStatusChange}
+      onPageChange={handlePageChange}
+      onKpiStatusClick={handleKpiStatusClick}
+      onRefresh={refreshAll}
       onAdd={() => setModal({ mode: "create" })}
-      onEdit={(item) => setModal({ mode: "edit", item })}
-      onDeactivate={(id) => runToggle(id, false)}
-      onActivate={(id) => runToggle(id, true)}
-      onRetry={load}
+      onEdit={(item) => {
+        setDetailItem(null);
+        setModal({ mode: "edit", item });
+      }}
+      onDeactivateRequest={(item) => setDeactivateItem(item)}
+      onDeactivateConfirm={runDeactivateConfirm}
+      onDeactivateClose={() => {
+        if (!deactivatePending) setDeactivateItem(null);
+      }}
+      onActivate={runActivate}
+      onOpenDetail={setDetailItem}
+      onCloseDetail={() => setDetailItem(null)}
+      onRetry={refreshAll}
       modal={
         <CatalogFormModal
           open={Boolean(modal)}

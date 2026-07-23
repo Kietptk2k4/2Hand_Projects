@@ -9,17 +9,22 @@ Cho phép admin/support tra cứu **webhook logs** PayOS/GHN để debug callbac
 | Method | URL | Auth |
 |--------|-----|------|
 | GET | `/admin/api/v1/support/webhook-logs` | Bearer + `WEBHOOK_SUPPORT_READ` |
+| GET | `/admin/api/v1/support/webhook-logs/stats` | Bearer + `WEBHOOK_SUPPORT_READ` |
+| GET | `/admin/api/v1/support/webhook-logs/{log_id}?provider=PAYOS\|GHN` | Bearer + `WEBHOOK_SUPPORT_READ` |
+| GET | `/admin/api/v1/support/webhook-logs/export?format=csv` | Bearer + `WEBHOOK_SUPPORT_READ` |
 
-**Query params:**
+**Query params (list/stats/export):**
 
 | Param | Mô tả |
 |-------|--------|
 | `provider` | `PAYOS` hoặc `GHN` |
-| `reference_id` | `payos_order_code` hoặc `ghn_order_code` |
+| `reference_id` | Khớp chính xác `payos_order_code` / `ghn_order_code` |
+| `q` | Tìm một phần mã tham chiếu (ILIKE) |
+| `event_type` | Khớp chính xác loại sự kiện PayOS / status GHN |
 | `status` | `PROCESSED`, `PENDING`, `INVALID_SIGNATURE` (PayOS only) |
 | `from` / `to` | ISO-8601 instant |
-| `page` | Mặc định `1` |
-| `size` | Mặc định `20`, max `100` |
+| `page` | Mặc định `1` (list only) |
+| `size` | Mặc định `20`, max `100` (list only) |
 
 **Success (200):**
 
@@ -41,10 +46,12 @@ Cho phép admin/support tra cứu **webhook logs** PayOS/GHN để debug callbac
         "event_type": "PAYMENT_SUCCESS",
         "processing_status": "PROCESSED",
         "signature_valid": true,
-        "retry_count": 0,
         "idempotency_key": "PAYOS:PAYOS-123:PAYMENT_SUCCESS",
         "payload_summary": { "code": "00", "order_code": "PAYOS-123" },
-        "received_at": "2026-05-20T10:00:00Z"
+        "received_at": "2026-05-20T10:00:00Z",
+        "payment_id": "uuid|null",
+        "shipment_id": "uuid|null",
+        "order_id": "uuid|null"
       }
     ]
   }
@@ -52,8 +59,9 @@ Cho phép admin/support tra cứu **webhook logs** PayOS/GHN để debug callbac
 ```
 
 - Không trả raw `payload`, signature, secret.
-- `payload_summary`: trường an toàn đã sanitize.
-- `retry_count`: `0` (schema hiện tại chưa track retry).
+- `payload_summary`: trường an toàn đã sanitize; `parse_error: true` khi không parse được payload.
+- `payment_id` / `shipment_id` / `order_id`: liên kết cross-navigation (nullable).
+- Export CSV: tối đa 5000 dòng, cùng bộ filter với list.
 
 ## 3. Commerce integration
 

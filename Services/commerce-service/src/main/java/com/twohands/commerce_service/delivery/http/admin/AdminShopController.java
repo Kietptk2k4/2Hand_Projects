@@ -2,6 +2,9 @@ package com.twohands.commerce_service.delivery.http.admin;
 
 import com.twohands.commerce_service.application.admin.viewadminshops.ViewAdminShopsForModerationCommand;
 import com.twohands.commerce_service.application.admin.viewadminshops.ViewAdminShopsForModerationUseCase;
+import com.twohands.commerce_service.application.admin.viewshopdetailformoderation.ViewShopDetailForModerationCommand;
+import com.twohands.commerce_service.application.admin.viewshopdetailformoderation.ViewShopDetailForModerationResult;
+import com.twohands.commerce_service.application.admin.viewshopdetailformoderation.ViewShopDetailForModerationUseCase;
 import com.twohands.commerce_service.application.shop.moderateshop.ModerateShopCommand;
 import com.twohands.commerce_service.application.shop.moderateshop.ModerateShopUseCase;
 import com.twohands.commerce_service.domain.admin.ViewAdminShopsForModerationResult;
@@ -31,15 +34,18 @@ import java.util.UUID;
 public class AdminShopController {
 
     private final ViewAdminShopsForModerationUseCase viewAdminShopsForModerationUseCase;
+    private final ViewShopDetailForModerationUseCase viewShopDetailForModerationUseCase;
     private final ModerateShopUseCase moderateShopUseCase;
     private final CommerceAdminAuthorization commerceAdminAuthorization;
 
     public AdminShopController(
             ViewAdminShopsForModerationUseCase viewAdminShopsForModerationUseCase,
+            ViewShopDetailForModerationUseCase viewShopDetailForModerationUseCase,
             ModerateShopUseCase moderateShopUseCase,
             CommerceAdminAuthorization commerceAdminAuthorization
     ) {
         this.viewAdminShopsForModerationUseCase = viewAdminShopsForModerationUseCase;
+        this.viewShopDetailForModerationUseCase = viewShopDetailForModerationUseCase;
         this.moderateShopUseCase = moderateShopUseCase;
         this.commerceAdminAuthorization = commerceAdminAuthorization;
     }
@@ -68,6 +74,29 @@ public class AdminShopController {
                 HttpStatus.OK.value(),
                 viewAdminShopsForModerationUseCase.successMessage(),
                 AdminModerationListResponseMapper.toShopListResponse(result)
+        ));
+    }
+
+    @GetMapping("/{shopId}")
+    public ResponseEntity<ApiResponse<AdminShopDetailResponse>> getShopDetail(
+            @PathVariable UUID shopId,
+            Authentication authentication
+    ) {
+        AuthenticatedUser admin = resolveAuthenticatedUser(authentication);
+        commerceAdminAuthorization.requireAnyPermission(
+                admin,
+                CommerceAdminAuthorization.PERMISSION_SHOP_SUSPEND,
+                CommerceAdminAuthorization.PERMISSION_SHOP_CLOSE
+        );
+
+        ViewShopDetailForModerationResult result = viewShopDetailForModerationUseCase.execute(
+                new ViewShopDetailForModerationCommand(shopId)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewShopDetailForModerationUseCase.successMessage(),
+                toDetailResponse(result)
         ));
     }
 
@@ -136,6 +165,22 @@ public class AdminShopController {
                 result.alreadyModerated(),
                 result.cartItemsInvalidated(),
                 result.moderatedAt()
+        );
+    }
+
+    private AdminShopDetailResponse toDetailResponse(ViewShopDetailForModerationResult result) {
+        return new AdminShopDetailResponse(
+                result.shopId(),
+                result.sellerId(),
+                result.shopName(),
+                result.description(),
+                result.logoUrl(),
+                result.status(),
+                result.createdAt(),
+                result.updatedAt(),
+                result.totalProductCount(),
+                result.activeProductCount(),
+                result.openOrderCount()
         );
     }
 }

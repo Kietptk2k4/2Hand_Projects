@@ -11,6 +11,9 @@ public record AdminShopListEntry(
         String shopName,
         String logoUrl,
         ShopStatus status,
-        Instant createdAt
+        Instant createdAt,
+        Instant updatedAt,
+        long productCount,
+        long activeProductCount
 ) {
 }

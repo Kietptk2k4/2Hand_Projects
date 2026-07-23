@@ -62,6 +62,15 @@ public final class SystemAnnouncementPolicy {
 		}
 	}
 
+	public static void assertDraftForUpdate(SystemAnnouncementStatus status) {
+		if (status != SystemAnnouncementStatus.DRAFT) {
+			throw new AppException(
+					ErrorCode.SYSTEM_ANNOUNCEMENT_CONFLICT,
+					"Only draft announcements can be updated"
+			);
+		}
+	}
+
 	public static void assertPinAllowed(SystemAnnouncementStatus status) {
 		if (status == SystemAnnouncementStatus.CANCELLED) {
 			throw new AppException(

@@ -46,6 +46,11 @@ public class ListAdminRefundApprovalsUseCase {
 
 		AdminRefundApprovalListResult result = commerceRefundSupportGateway.listRefundApprovals(
 				query.status(),
+				query.q(),
+				query.requestedBy(),
+				query.paymentMethod(),
+				query.from(),
+				query.to(),
 				query.page(),
 				query.limit(),
 				query.bearerToken()
@@ -57,7 +62,11 @@ public class ListAdminRefundApprovalsUseCase {
 				AdminActionTargetType.REFUND_REQUEST,
 				"queue",
 				"Refund approval queue viewed",
-				Map.of("status", query.status().orElse("ALL"), "page", query.page(), "limit", query.limit()),
+				Map.of(
+						"status", query.status().orElse("ALL"),
+						"page", query.page(),
+						"limit", query.limit()
+				),
 				Map.of("totalItems", result.totalItems())
 		);
 

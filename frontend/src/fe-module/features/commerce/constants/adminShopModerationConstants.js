@@ -2,14 +2,15 @@ export const PAGE_SIZE = 20;
 
 export const SHOP_STATUS_FILTER_TABS = [
   { id: "all", label: "Tất cả", status: null },
-  { id: "active", label: "Active", status: "ACTIVE" },
-  { id: "suspended", label: "Suspended", status: "SUSPENDED" },
-  { id: "closed", label: "Closed", status: "CLOSED" },
+  { id: "active", label: "Đang hoạt động", status: "ACTIVE" },
+  { id: "suspended", label: "Tạm ngưng", status: "SUSPENDED" },
+  { id: "closed", label: "Đã đóng", status: "CLOSED" },
 ];
 
 export const SORT_OPTIONS = [
   { value: "NEWEST", label: "Mới nhất" },
   { value: "OLDEST", label: "Cũ nhất" },
+  { value: "UPDATED_AT", label: "Cập nhật gần đây" },
   { value: "NAME_ASC", label: "Tên (A–Z)" },
 ];
 
@@ -20,9 +21,9 @@ export const MODERATION_ACTIONS = {
 };
 
 export const ACTION_LABELS = {
-  SUSPEND: "Tạm ngưng (Suspend)",
-  CLOSE: "Đóng shop (Close)",
-  RESTORE: "Khôi phục (Restore)",
+  SUSPEND: "Tạm ngưng",
+  CLOSE: "Đóng shop",
+  RESTORE: "Khôi phục",
 };
 
 export const ACTION_DESCRIPTIONS = {
@@ -32,9 +33,9 @@ export const ACTION_DESCRIPTIONS = {
 };
 
 export const SHOP_STATUS_LABELS = {
-  ACTIVE: "Active",
-  SUSPENDED: "Suspended",
-  CLOSED: "Closed",
+  ACTIVE: "Đang hoạt động",
+  SUSPENDED: "Tạm ngưng",
+  CLOSED: "Đã đóng",
 };
 
 export const SHOP_STATUS_BADGE_CLASS = {

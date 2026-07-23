@@ -4,6 +4,7 @@ import com.twohands.commerce_service.domain.payment.PaymentMethod;
 import com.twohands.commerce_service.domain.payment.PaymentStatus;
 import com.twohands.commerce_service.domain.payment.PaymentSupportListEntry;
 import com.twohands.commerce_service.domain.payment.PaymentSupportPagedResult;
+import com.twohands.commerce_service.domain.payment.PaymentSupportReconciliationStatus;
 import com.twohands.commerce_service.domain.payment.PaymentSupportSearchCriteria;
 import com.twohands.commerce_service.domain.payment.ViewPaymentsForSupportRepository;
 import com.twohands.commerce_service.domain.support.WebhookSupportPageRequest;
@@ -21,6 +22,16 @@ import java.util.UUID;
 
 @Repository
 public class ViewPaymentsForSupportRepositoryAdapter implements ViewPaymentsForSupportRepository {
+
+    private static final String HAS_VALID_WEBHOOK = """
+            EXISTS (
+                SELECT 1
+                FROM payment_webhook_logs w
+                WHERE w.payos_order_code = p.payos_order_code
+                  AND w.processed = true
+                  AND w.signature_valid = true
+            )
+            """;
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
@@ -86,6 +97,13 @@ public class ViewPaymentsForSupportRepositoryAdapter implements ViewPaymentsForS
             where.append(" AND p.order_id = :orderId");
             params.addValue("orderId", criteria.orderId());
         }
+        if (criteria.searchQuery() != null && !criteria.searchQuery().isBlank()) {
+            where.append(" AND CAST(p.id AS TEXT) ILIKE :searchPattern");
+            params.addValue("searchPattern", "%" + criteria.searchQuery() + "%");
+        }
+        if (criteria.reconciliationStatus() != null) {
+            where.append(reconciliationClause(criteria.reconciliationStatus()));
+        }
         if (criteria.from() != null) {
             where.append(" AND p.created_at >= :from");
             params.addValue("from", Timestamp.from(criteria.from()));
@@ -95,6 +113,18 @@ public class ViewPaymentsForSupportRepositoryAdapter implements ViewPaymentsForS
             params.addValue("to", Timestamp.from(criteria.to()));
         }
         return where.toString();
+    }
+
+    private String reconciliationClause(PaymentSupportReconciliationStatus reconciliationStatus) {
+        return switch (reconciliationStatus) {
+            case NOT_APPLICABLE -> " AND p.payment_method::text != 'PAYOS'";
+            case RECONCILED -> " AND p.payment_method::text = 'PAYOS' AND p.status::text = 'PAID' AND " + HAS_VALID_WEBHOOK;
+            case OUTSTANDING -> " AND p.payment_method::text = 'PAYOS' AND p.status::text = 'PAID' AND NOT (" + HAS_VALID_WEBHOOK + ")";
+            case AWAITING_WEBHOOK -> " AND p.payment_method::text = 'PAYOS' AND p.status::text = 'PENDING' AND NOT (" + HAS_VALID_WEBHOOK + ")";
+            case WEBHOOK_RECEIVED -> " AND p.payment_method::text = 'PAYOS' AND p.status::text = 'PENDING' AND " + HAS_VALID_WEBHOOK;
+            case TERMINAL_RECONCILED -> " AND p.payment_method::text = 'PAYOS' AND p.status::text IN ('FAILED','CANCELLED','EXPIRED','REFUNDED') AND " + HAS_VALID_WEBHOOK;
+            case TERMINAL_OUTSTANDING -> " AND p.payment_method::text = 'PAYOS' AND p.status::text IN ('FAILED','CANCELLED','EXPIRED','REFUNDED') AND NOT (" + HAS_VALID_WEBHOOK + ")";
+        };
     }
 
     private PaymentSupportListEntry mapRow(ResultSet rs, int rowNum) throws SQLException {

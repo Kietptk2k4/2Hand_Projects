@@ -23,6 +23,7 @@ class VnpayFrontendReturnUrlValidatorTest {
   void setUp() {
     validator = new VnpayFrontendReturnUrlValidator(
         "http://localhost:5173,http://127.0.0.1:5173",
+        "https://*.ngrok-free.dev,https://*.ngrok-free.app,https://*.ngrok.io",
         "twohands,exp"
     );
   }
@@ -44,6 +45,21 @@ class VnpayFrontendReturnUrlValidatorTest {
   void shouldAllowWebFrontendReturn() {
     assertThat(validator.isAllowedFrontendReturnUrl(
         "http://localhost:5173/commerce/checkout/vnpay-return"
+    )).isTrue();
+  }
+
+  @Test
+  void shouldAllowNgrokFrontendReturn() {
+    assertThat(validator.isAllowedFrontendReturnUrl(
+        "https://palm-giggling-lumping.ngrok-free.dev/commerce/checkout/vnpay-return"
+    )).isTrue();
+  }
+
+  @Test
+  void shouldAllowNgrokBackendReturn() {
+    assertThat(validator.isAllowedBackendReturnUrl(
+        "https://palm-giggling-lumping.ngrok-free.dev/commerce/api/v1/payments/vnpay/return",
+        request
     )).isTrue();
   }
 

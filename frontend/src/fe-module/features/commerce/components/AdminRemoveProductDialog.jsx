@@ -17,10 +17,12 @@ export function AdminRemoveProductDialog({
   onSubmit,
 }) {
   const [reason, setReason] = useState("");
+  const [note, setNote] = useState("");
 
   useEffect(() => {
     if (!open || !product) return;
     setReason("");
+    setNote("");
   }, [open, product?.productId]);
 
   if (!open || !product) return null;
@@ -104,6 +106,19 @@ export function AdminRemoveProductDialog({
             {trimmedReason.length}/{REASON_MAX_LENGTH}
           </p>
 
+          <label className="block">
+            <span className="text-sm font-medium text-admin-text">Ghi chú nội bộ (tuỳ chọn)</span>
+            <textarea
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+              rows={2}
+              maxLength={REASON_MAX_LENGTH}
+              disabled={isSubmitting}
+              placeholder="Ghi chú chỉ hiển thị trong lịch sử moderation…"
+              className="mt-1 w-full resize-y rounded-lg border border-admin-border bg-admin-surface px-3 py-2 text-sm text-admin-text focus:border-admin-accent focus:outline-none focus:ring-2 focus:ring-admin-accent-soft disabled:opacity-50"
+            />
+          </label>
+
           {submitError ? <p className="text-sm text-admin-danger">{submitError}</p> : null}
         </div>
 
@@ -116,7 +131,7 @@ export function AdminRemoveProductDialog({
             variant="primary"
             className="!bg-admin-danger !text-white hover:!brightness-95"
             disabled={isSubmitting || !trimmedReason}
-            onClick={() => onSubmit?.({ reason: trimmedReason })}
+            onClick={() => onSubmit?.({ reason: trimmedReason, note: note.trim() || undefined })}
           >
             {isSubmitting ? "Đang xử lý…" : "Gỡ sản phẩm"}
           </AdminFilterButton>

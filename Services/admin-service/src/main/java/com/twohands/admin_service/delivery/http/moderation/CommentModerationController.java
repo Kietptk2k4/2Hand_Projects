@@ -6,6 +6,9 @@ import com.twohands.admin_service.application.moderation.moderatecomment.Moderat
 import com.twohands.admin_service.application.moderation.restorecomment.RestoreCommentCommand;
 import com.twohands.admin_service.application.moderation.restorecomment.RestoreCommentResult;
 import com.twohands.admin_service.application.moderation.restorecomment.RestoreCommentUseCase;
+import com.twohands.admin_service.application.moderation.viewcommenthistory.ViewCommentModerationHistoryQuery;
+import com.twohands.admin_service.application.moderation.viewcommenthistory.ViewCommentModerationHistoryResult;
+import com.twohands.admin_service.application.moderation.viewcommenthistory.ViewCommentModerationHistoryUseCase;
 import com.twohands.admin_service.common.dto.ApiResponse;
 import com.twohands.admin_service.constant.AdminPermission;
 import com.twohands.admin_service.domain.moderation.ContentModerationAction;
@@ -15,10 +18,12 @@ import com.twohands.admin_service.security.annotation.RequireAdminPermission;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -27,13 +32,34 @@ public class CommentModerationController {
 
 	private final ModerateCommentUseCase moderateCommentUseCase;
 	private final RestoreCommentUseCase restoreCommentUseCase;
+	private final ViewCommentModerationHistoryUseCase viewCommentModerationHistoryUseCase;
 
 	public CommentModerationController(
 			ModerateCommentUseCase moderateCommentUseCase,
-			RestoreCommentUseCase restoreCommentUseCase
+			RestoreCommentUseCase restoreCommentUseCase,
+			ViewCommentModerationHistoryUseCase viewCommentModerationHistoryUseCase
 	) {
 		this.moderateCommentUseCase = moderateCommentUseCase;
 		this.restoreCommentUseCase = restoreCommentUseCase;
+		this.viewCommentModerationHistoryUseCase = viewCommentModerationHistoryUseCase;
+	}
+
+	@GetMapping("/{commentId}/moderation-history")
+	@RequireAdminPermission(AdminPermission.COMMENT_MODERATION_READ)
+	public ResponseEntity<ApiResponse<ViewCommentModerationHistoryResponse>> viewModerationHistory(
+			@PathVariable String commentId,
+			@RequestParam(required = false) Integer page,
+			@RequestParam(required = false) Integer size
+	) {
+		ViewCommentModerationHistoryResult result = viewCommentModerationHistoryUseCase.execute(
+				new ViewCommentModerationHistoryQuery(commentId, page, size)
+		);
+
+		return ResponseEntity.ok(ApiResponse.success(
+				HttpStatus.OK.value(),
+				viewCommentModerationHistoryUseCase.successMessage(),
+				toHistoryResponse(result)
+		));
 	}
 
 	@PostMapping("/{commentId}/moderate")
@@ -115,5 +141,25 @@ public class CommentModerationController {
 					"Action must be HIDE or REMOVE"
 			);
 		}
+	}
+
+	private ViewCommentModerationHistoryResponse toHistoryResponse(ViewCommentModerationHistoryResult result) {
+		return new ViewCommentModerationHistoryResponse(
+				result.commentId(),
+				result.page(),
+				result.size(),
+				result.totalElements(),
+				result.totalPages(),
+				result.history().stream()
+						.map(item -> new CommentModerationHistoryEntryResponse(
+								item.moderationLogId(),
+								item.action().name(),
+								item.reason(),
+								item.note(),
+								item.adminId(),
+								item.createdAt()
+						))
+						.toList()
+		);
 	}
 }

@@ -12,6 +12,9 @@ public record AdminShopListItemResponse(
         @JsonProperty("shop_name") String shopName,
         @JsonProperty("logo_url") String logoUrl,
         ShopStatus status,
-        @JsonProperty("created_at") Instant createdAt
+        @JsonProperty("created_at") Instant createdAt,
+        @JsonProperty("updated_at") Instant updatedAt,
+        @JsonProperty("product_count") long productCount,
+        @JsonProperty("active_product_count") long activeProductCount
 ) {
 }

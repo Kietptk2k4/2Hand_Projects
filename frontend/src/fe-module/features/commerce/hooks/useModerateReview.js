@@ -36,7 +36,7 @@ export function useModerateReview({ onSuccess }) {
   const [submitError, setSubmitError] = useState("");
 
   const submit = useCallback(
-    async (reviewId, { action, reason }) => {
+    async (reviewId, { action, reason, note }) => {
       const trimmed = String(reason ?? "").trim();
       if (!trimmed) {
         setSubmitError("Vui lòng nhập lý do kiểm duyệt.");
@@ -47,7 +47,7 @@ export function useModerateReview({ onSuccess }) {
       setSubmitError("");
 
       try {
-        const raw = await executeReviewAction(reviewId, action, { reason: trimmed });
+        const raw = await executeReviewAction(reviewId, action, { reason: trimmed, note });
         const result = mapReviewModerationResponse(raw);
         onSuccess?.(result, action);
         return result;

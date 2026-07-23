@@ -17,6 +17,10 @@ public interface CommerceShipmentSupportGateway {
 			String status,
 			String carrier,
 			String sort,
+			String q,
+			String orderId,
+			String from,
+			String to,
 			Integer page,
 			Integer size,
 			String bearerToken

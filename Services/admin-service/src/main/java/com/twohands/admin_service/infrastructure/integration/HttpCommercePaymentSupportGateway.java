@@ -44,6 +44,8 @@ public class HttpCommercePaymentSupportGateway implements CommercePaymentSupport
 			String status,
 			String paymentMethod,
 			String orderId,
+			String q,
+			String reconciliationStatus,
 			String from,
 			String to,
 			Integer page,
@@ -62,6 +64,12 @@ public class HttpCommercePaymentSupportGateway implements CommercePaymentSupport
 						}
 						if (StringUtils.hasText(orderId)) {
 							builder.queryParam("order_id", orderId);
+						}
+						if (StringUtils.hasText(q)) {
+							builder.queryParam("q", q);
+						}
+						if (StringUtils.hasText(reconciliationStatus)) {
+							builder.queryParam("reconciliation_status", reconciliationStatus);
 						}
 						if (StringUtils.hasText(from)) {
 							builder.queryParam("from", from);

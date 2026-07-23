@@ -5,6 +5,7 @@ import com.twohands.admin_service.domain.auth.AdminAuthorizationService;
 import com.twohands.admin_service.domain.common.PageRequest;
 import com.twohands.admin_service.domain.common.PagedResult;
 import com.twohands.admin_service.domain.common.PaginationPolicy;
+import com.twohands.admin_service.domain.config.SystemConfigPolicy;
 import com.twohands.admin_service.domain.config.SystemConfigSearchCriteria;
 import com.twohands.admin_service.domain.config.SystemConfigValueType;
 import com.twohands.admin_service.exception.AppException;
@@ -64,17 +65,19 @@ public class ListSystemConfigsUseCase {
 	}
 
 	private SystemConfigListItem toItem(SystemConfigEntity entity) {
+		boolean valueMasked = SystemConfigPolicy.isSecretLikeKey(entity.getConfigKey());
 		return new SystemConfigListItem(
 				entity.getId(),
 				entity.getConfigKey(),
-				entity.getConfigValue(),
+				SystemConfigPolicy.maskValueIfSecret(entity.getConfigKey(), entity.getConfigValue()),
 				SystemConfigValueType.valueOf(entity.getValueType().name()),
 				entity.getDescription(),
 				entity.isActive(),
 				entity.getCreatedBy(),
 				entity.getCreatedAt(),
 				entity.getUpdatedBy(),
-				entity.getUpdatedAt()
+				entity.getUpdatedAt(),
+				valueMasked
 		);
 	}
 

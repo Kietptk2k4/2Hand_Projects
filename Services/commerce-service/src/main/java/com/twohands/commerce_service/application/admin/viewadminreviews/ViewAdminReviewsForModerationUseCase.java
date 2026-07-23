@@ -3,6 +3,7 @@ package com.twohands.commerce_service.application.admin.viewadminreviews;
 import com.twohands.commerce_service.common.pagination.PageMeta;
 import com.twohands.commerce_service.common.pagination.PageQuery;
 import com.twohands.commerce_service.domain.admin.AdminReviewListEntry;
+import com.twohands.commerce_service.domain.admin.AdminReviewListSort;
 import com.twohands.commerce_service.domain.admin.ViewAdminReviewsForModerationRepository;
 import com.twohands.commerce_service.domain.admin.ViewAdminReviewsForModerationResult;
 import com.twohands.commerce_service.domain.review.ReviewStatus;
@@ -20,7 +21,7 @@ public class ViewAdminReviewsForModerationUseCase {
 
     private static final int DEFAULT_PAGE = 1;
     private static final int DEFAULT_LIMIT = 20;
-    private static final int MAX_LIMIT = 50;
+    private static final int MAX_LIMIT = 100;
     private static final int MIN_RATING = 1;
     private static final int MAX_RATING = 5;
 
@@ -38,11 +39,12 @@ public class ViewAdminReviewsForModerationUseCase {
         Optional<ReviewStatus> status = parseStatusFilter(command.status());
         Optional<Integer> rating = resolveRatingFilter(command.rating());
         Optional<String> searchQuery = normalizeSearchQuery(command.searchQuery());
+        AdminReviewListSort sort = parseSort(command.sort());
 
         long totalItems = viewAdminReviewsForModerationRepository.count(status, rating, searchQuery);
         List<AdminReviewListEntry> items = totalItems == 0
                 ? List.of()
-                : viewAdminReviewsForModerationRepository.find(status, rating, searchQuery, pageQuery);
+                : viewAdminReviewsForModerationRepository.find(status, rating, searchQuery, sort, pageQuery);
 
         return new ViewAdminReviewsForModerationResult(
                 items,
@@ -108,5 +110,21 @@ public class ViewAdminReviewsForModerationUseCase {
         }
         String trimmed = searchQuery.trim();
         return trimmed.isEmpty() ? Optional.empty() : Optional.of(trimmed);
+    }
+
+    private AdminReviewListSort parseSort(String sort) {
+        if (!StringUtils.hasText(sort)) {
+            return AdminReviewListSort.NEWEST;
+        }
+        try {
+            return AdminReviewListSort.valueOf(sort.trim().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new AppException(
+                    ErrorCode.VALIDATION_ERROR,
+                    "Validation failed",
+                    "sort",
+                    "must be one of NEWEST, OLDEST, RATING_ASC, RATING_DESC"
+            );
+        }
     }
 }

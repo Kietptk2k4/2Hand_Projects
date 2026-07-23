@@ -28,7 +28,9 @@ public final class OrderSupportDetailPolicy {
 				detail.payment(),
 				detail.items(),
 				maskedShipments,
-				detail.orderTimeline()
+				detail.orderTimeline(),
+				detail.activeRefundRequest(),
+				detail.cancellationNote()
 		);
 	}
 

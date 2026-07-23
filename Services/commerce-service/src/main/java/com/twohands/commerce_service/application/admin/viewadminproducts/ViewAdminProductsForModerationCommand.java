@@ -4,6 +4,7 @@ public record ViewAdminProductsForModerationCommand(
         Integer page,
         Integer limit,
         String status,
-        String searchQuery
+        String searchQuery,
+        String sort
 ) {
 }

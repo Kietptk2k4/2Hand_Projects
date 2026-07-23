@@ -51,6 +51,8 @@ public class ViewOrdersForSupportUseCase {
 		PagedResult<OrderSupportListEntry> page = commerceOrderSupportGateway.searchOrders(
 				query.status(),
 				query.paymentMethod(),
+				query.paymentStatus(),
+				query.q(),
 				query.from(),
 				query.to(),
 				query.sort(),
@@ -89,6 +91,12 @@ public class ViewOrdersForSupportUseCase {
 		}
 		if (query.paymentMethod() != null && !query.paymentMethod().isBlank()) {
 			request.put("paymentMethod", query.paymentMethod());
+		}
+		if (query.paymentStatus() != null && !query.paymentStatus().isBlank()) {
+			request.put("paymentStatus", query.paymentStatus());
+		}
+		if (query.q() != null && !query.q().isBlank()) {
+			request.put("q", query.q());
 		}
 		if (query.from() != null && !query.from().isBlank()) {
 			request.put("from", query.from());

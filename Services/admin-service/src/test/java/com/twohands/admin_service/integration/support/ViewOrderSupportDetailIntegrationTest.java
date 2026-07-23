@@ -90,7 +90,9 @@ class ViewOrderSupportDetailIntegrationTest {
 						address,
 						List.of()
 				)),
-				List.of()
+				List.of(),
+				null,
+				null
 		);
 	}
 }

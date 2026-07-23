@@ -1,69 +1,120 @@
-import { formatVndPrice } from "../../../../social/utils/formatPrice";
-import { AdminMetricCard, AdminPageHeader, AdminSurfaceCard } from "../../components/ui";
-import { SellerRevenueBucketCards } from "../../../../commerce/components/SellerRevenueBucketCards.jsx";
+import { AdminPageHeader } from "../../components/ui";
+import { CodPipelineStageStrip } from "./CodPipelineStageStrip.jsx";
+import { FinanceDateRangeToolbar } from "./FinanceDateRangeToolbar.jsx";
 import { LedgerTable } from "./LedgerTable.jsx";
-import { CommerceFinanceEmptyState } from "./ui/CommerceFinanceEmptyState.jsx";
-import { CommerceFinanceListSkeleton } from "./ui/CommerceFinanceListSkeleton.jsx";
+import { SellerDetailHeader } from "./SellerDetailHeader.jsx";
+import { SellerDetailHeroStrip } from "./SellerDetailHeroStrip.jsx";
+import { SellerDetailPicker } from "./SellerDetailPicker.jsx";
 import { CommerceFinanceRetryPanel } from "./ui/CommerceFinanceRetryPanel.jsx";
+
+function formatPeriodLabel(from, to) {
+  if (!from || !to) return null;
+  const fromDate = new Date(from);
+  const toDate = new Date(to);
+  if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) return null;
+  const inclusiveEnd = new Date(toDate);
+  inclusiveEnd.setUTCDate(inclusiveEnd.getUTCDate() - 1);
+  const formatter = new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+  return `${formatter.format(fromDate)} – ${formatter.format(inclusiveEnd)}`;
+}
 
 export function AdminFinanceSellerDetailView({
   sellerId,
-  title,
-  subtitle,
-  emptyMessage,
+  sellerShop,
   status,
   errorMessage,
   summary,
+  heroMetrics,
+  pipeline,
+  bucketShares,
   ledgerItems,
+  ledgerPagination,
+  from,
+  to,
+  activeRangeId,
+  onRangeChange,
   onRetry,
+  onLedgerPageChange,
+  onSubmitSellerId,
+  onOpenTopSellers,
+  onBackToTopSellers,
 }) {
+  const isLoading = status === "loading" || status === "idle";
+  const periodLabel = formatPeriodLabel(from, to);
+
   if (!sellerId) {
     return (
-      <div className="max-w-full min-w-0 space-y-4">
-        <AdminPageHeader title={title} subtitle={subtitle} />
-        <CommerceFinanceEmptyState message={emptyMessage} />
+      <div className="mb-6 max-w-full min-w-0 space-y-6">
+        <AdminPageHeader
+          eyebrow="Tài chính thương mại"
+          title="Chi tiết tài chính seller"
+          subtitle="Theo dõi số dư, pipeline fulfillment và sổ cái theo seller."
+        />
+        <SellerDetailPicker
+          onSubmitSellerId={onSubmitSellerId}
+          onOpenTopSellers={onOpenTopSellers}
+        />
       </div>
     );
   }
 
-  if (status === "error") {
+  if (status === "error" && !summary) {
     return (
-      <div className="max-w-full min-w-0 space-y-4">
-        <AdminPageHeader title={title} subtitle={`Seller ID: ${sellerId}`} />
+      <div className="mb-6 max-w-full min-w-0 space-y-4">
+        <SellerDetailHeader
+          sellerId={sellerId}
+          shopName={sellerShop}
+          onBackToTopSellers={onBackToTopSellers}
+        />
         <CommerceFinanceRetryPanel message={errorMessage} onRetry={onRetry} />
       </div>
     );
   }
 
   return (
-    <div className="max-w-full min-w-0 space-y-4">
-      <AdminPageHeader title={title} subtitle={`Seller ID: ${sellerId}`} />
+    <div className="mb-6 max-w-full min-w-0 space-y-6">
+      <div>
+        <p className="mb-1 text-[11px] font-medium uppercase tracking-[0.08em] text-admin-text-muted">
+          Tài chính thương mại
+        </p>
+        <SellerDetailHeader
+          sellerId={sellerId}
+          shopName={sellerShop}
+          onBackToTopSellers={onBackToTopSellers}
+        />
+        {periodLabel ? (
+          <p className="mt-2 text-sm text-admin-text-secondary">
+            Pipeline theo kỳ · {periodLabel}
+          </p>
+        ) : null}
+      </div>
 
-      {status === "loading" ? <CommerceFinanceListSkeleton rows={4} /> : null}
+      <FinanceDateRangeToolbar
+        activeRangeId={activeRangeId}
+        onRangeChange={onRangeChange}
+        onRefresh={onRetry}
+        isLoading={isLoading}
+        showGranularity={false}
+      />
 
-      {status === "ready" ? (
-        <>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <AdminMetricCard
-              label="Số dư khả dụng"
-              value={formatVndPrice(summary?.balance?.availableBalance ?? 0)}
-            />
-            <AdminMetricCard
-              label="Payout đang chờ"
-              value={formatVndPrice(summary?.balance?.pendingPayoutAmount ?? 0)}
-            />
-          </div>
+      <SellerDetailHeroStrip metrics={heroMetrics} isLoading={isLoading} />
 
-          <AdminSurfaceCard padding="md" className="max-w-full min-w-0">
-            <SellerRevenueBucketCards summary={summary} isLoading={false} />
-          </AdminSurfaceCard>
+      <CodPipelineStageStrip
+        pipeline={pipeline}
+        shares={bucketShares}
+        isLoading={isLoading}
+      />
 
-          <AdminSurfaceCard padding="md" className="max-w-full min-w-0">
-            <h3 className="mb-4 text-base font-semibold text-admin-text">Sổ cái (10 gần nhất)</h3>
-            <LedgerTable items={ledgerItems} />
-          </AdminSurfaceCard>
-        </>
-      ) : null}
+      <LedgerTable
+        items={ledgerItems}
+        pagination={ledgerPagination}
+        onPageChange={onLedgerPageChange}
+        isLoading={isLoading}
+      />
     </div>
   );
 }

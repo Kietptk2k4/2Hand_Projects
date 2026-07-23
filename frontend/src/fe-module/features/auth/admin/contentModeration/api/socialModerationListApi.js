@@ -71,6 +71,7 @@ export async function getPostForModeration(postId) {
 
 export async function getCommentsForModeration({
   status,
+  moderation_status: moderationStatus,
   post_id: postId,
   q,
   sort = "created_at",
@@ -79,7 +80,19 @@ export async function getCommentsForModeration({
 } = {}) {
   const params = { sort, page, size };
   if (status) params.status = status;
+  if (moderationStatus) params.moderation_status = moderationStatus;
   if (postId) params.post_id = postId;
   if (q) params.q = q;
   return request("get", "/api/v1/social/admin/comments", { params });
+}
+
+export async function getCommentForModeration(commentId) {
+  if (!commentId) {
+    throw {
+      code: 400,
+      message: "commentId khong hop le.",
+      errors: [],
+    };
+  }
+  return request("get", `/api/v1/social/admin/comments/${commentId}`);
 }

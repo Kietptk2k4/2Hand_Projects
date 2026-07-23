@@ -14,6 +14,7 @@ public interface ViewAdminReviewsForModerationRepository {
             Optional<ReviewStatus> status,
             Optional<Integer> rating,
             Optional<String> searchQuery,
+            AdminReviewListSort sort,
             PageQuery pageQuery
     );
 }

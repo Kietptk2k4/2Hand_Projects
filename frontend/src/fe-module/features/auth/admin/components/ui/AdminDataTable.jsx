@@ -1,10 +1,24 @@
-export function AdminDataTable({ children, minWidth = "880px", className = "", ariaLabel }) {
+export function AdminDataTable({
+  children,
+  minWidth = "880px",
+  tableLayout,
+  className = "",
+  ariaLabel,
+}) {
   const resolvedMinWidth = minWidth && minWidth !== "0" ? minWidth : undefined;
+  const layoutClass =
+    tableLayout === "auto"
+      ? "table-auto"
+      : tableLayout === "fixed"
+        ? "table-fixed"
+        : resolvedMinWidth
+          ? ""
+          : "table-fixed";
 
   return (
     <div
       className={[
-        "max-w-full overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch] [scrollbar-width:thin]",
+        "w-full max-w-full overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch] [scrollbar-width:thin]",
         className,
       ]
         .filter(Boolean)
@@ -12,8 +26,8 @@ export function AdminDataTable({ children, minWidth = "880px", className = "", a
     >
       <table
         className={[
-          "hidden w-full text-left text-sm md:table",
-          resolvedMinWidth ? "" : "table-fixed",
+          "hidden w-full min-w-full text-left text-sm md:table",
+          layoutClass,
         ]
           .filter(Boolean)
           .join(" ")}

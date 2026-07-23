@@ -50,6 +50,8 @@ class ViewOrdersForSupportUseCaseTest {
 		ViewOrdersForSupportResult result = useCase.execute(new ViewOrdersForSupportQuery(
 				"PROCESSING",
 				"PAYOS",
+				"PAID",
+				"f1000000",
 				null,
 				null,
 				"created_at",
@@ -63,6 +65,8 @@ class ViewOrdersForSupportUseCaseTest {
 				eq(new OrderSupportListSearchCriteria(
 						Optional.of(OrderStatus.PROCESSING),
 						Optional.of(PaymentMethod.PAYOS),
+						Optional.of(PaymentStatus.PAID),
+						Optional.of("f1000000"),
 						null,
 						null,
 						OrderSupportListSortField.CREATED_AT

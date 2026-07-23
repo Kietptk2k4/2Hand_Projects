@@ -46,6 +46,10 @@ export async function fetchSystemConfigs(params) {
   return request("get", "/admin/api/v1/system-configs", { params });
 }
 
+export async function fetchSystemConfigDetail(configId) {
+  return request("get", `/admin/api/v1/system-configs/${configId}`);
+}
+
 export async function createSystemConfig(body) {
   return request("post", "/admin/api/v1/system-configs", { data: body });
 }

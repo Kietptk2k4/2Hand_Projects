@@ -1,10 +1,24 @@
 import { adminApiClient } from "../../../../../services/http/adminApiClient";
 import { mapAxiosError, unwrapResponse } from "../../../../commerce/api/commerceApiResponse";
 
-export async function fetchAdminRefundApprovals({ status, page = 1, limit = 20 } = {}) {
+export async function fetchAdminRefundApprovals({
+  status,
+  q,
+  requested_by,
+  payment_method,
+  from,
+  to,
+  page = 1,
+  limit = 20,
+} = {}) {
   try {
     const params = { page, limit };
     if (status) params.status = status;
+    if (q) params.q = q;
+    if (requested_by) params.requested_by = requested_by;
+    if (payment_method) params.payment_method = payment_method;
+    if (from) params.from = from;
+    if (to) params.to = to;
     const response = await adminApiClient.get("/admin/api/v1/refund-approvals", { params });
     return unwrapResponse(response);
   } catch (error) {

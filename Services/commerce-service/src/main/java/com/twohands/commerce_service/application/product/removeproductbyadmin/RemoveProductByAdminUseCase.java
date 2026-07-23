@@ -55,7 +55,8 @@ public class RemoveProductByAdminUseCase {
         boolean updated = removeProductByAdminRepository.updateStatusToRemoved(
                 product.productId(),
                 product.status(),
-                occurredAt
+                occurredAt,
+                command.reason()
         );
         if (!updated) {
             ProductForModeration latest = removeProductByAdminRepository.findById(command.productId())

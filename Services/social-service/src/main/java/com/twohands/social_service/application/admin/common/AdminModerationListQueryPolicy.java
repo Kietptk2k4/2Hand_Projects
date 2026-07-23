@@ -13,6 +13,7 @@ public final class AdminModerationListQueryPolicy {
     private static final Set<String> POST_STATUSES = Set.of("ACTIVE", "DRAFT", "DELETED");
     private static final Set<String> POST_MODERATION_STATUSES = Set.of("NONE", "HIDDEN", "REMOVED");
     private static final Set<String> COMMENT_STATUSES = Set.of("ACTIVE", "DELETED");
+    private static final Set<String> COMMENT_MODERATION_STATUSES = Set.of("NONE", "HIDDEN", "REMOVED");
 
     private AdminModerationListQueryPolicy() {
     }
@@ -51,6 +52,7 @@ public final class AdminModerationListQueryPolicy {
         return switch (rawSort.trim().toLowerCase(Locale.ROOT)) {
             case "created_at" -> AdminCommentListSortField.CREATED_AT;
             case "updated_at" -> AdminCommentListSortField.UPDATED_AT;
+            case "moderation_status" -> AdminCommentListSortField.MODERATION_STATUS;
             case "like_count" -> AdminCommentListSortField.LIKE_COUNT;
             default -> throw validationError("sort");
         };
@@ -66,6 +68,10 @@ public final class AdminModerationListQueryPolicy {
 
     public static String normalizeCommentStatus(String rawStatus) {
         return normalizeEnum(rawStatus, COMMENT_STATUSES, "status");
+    }
+
+    public static String normalizeCommentModerationStatus(String rawStatus) {
+        return normalizeEnum(rawStatus, COMMENT_MODERATION_STATUSES, "moderation_status");
     }
 
     public static String normalizeQuery(String rawQuery) {

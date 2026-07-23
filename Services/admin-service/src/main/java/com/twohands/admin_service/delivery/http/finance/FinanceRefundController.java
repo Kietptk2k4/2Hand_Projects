@@ -53,6 +53,11 @@ public class FinanceRefundController {
 	@RequireAdminPermission(AdminPermission.REFUND_SUPPORT_READ)
 	public ResponseEntity<ApiResponse<AdminFinanceRefundResponse.ListPayload>> listRefundApprovals(
 			@RequestParam(required = false) String status,
+			@RequestParam(required = false) String q,
+			@RequestParam(name = "requested_by", required = false) String requestedBy,
+			@RequestParam(name = "payment_method", required = false) String paymentMethod,
+			@RequestParam(required = false) String from,
+			@RequestParam(required = false) String to,
 			@RequestParam(required = false) Integer page,
 			@RequestParam(required = false) Integer limit,
 			HttpServletRequest httpServletRequest
@@ -60,6 +65,11 @@ public class FinanceRefundController {
 		AdminRefundApprovalListResult result = listAdminRefundApprovalsUseCase.execute(
 				new ListAdminRefundApprovalsQuery(
 						Optional.ofNullable(status),
+						Optional.ofNullable(q),
+						Optional.ofNullable(requestedBy),
+						Optional.ofNullable(paymentMethod),
+						Optional.ofNullable(from),
+						Optional.ofNullable(to),
 						page,
 						limit,
 						resolveBearerToken(httpServletRequest)

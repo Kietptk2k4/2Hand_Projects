@@ -1,5 +1,6 @@
 {
   "java.import.gradle.enabled": true,
+  "java.import.gradle.wrapper.enabled": true,
   "java.import.maven.enabled": true,
   "java.configuration.updateBuildConfiguration": "automatic",
   "java.jdt.ls.lombokSupport.enabled": true

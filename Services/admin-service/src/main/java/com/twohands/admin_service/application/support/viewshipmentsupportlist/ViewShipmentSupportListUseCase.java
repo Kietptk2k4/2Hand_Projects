@@ -52,6 +52,10 @@ public class ViewShipmentSupportListUseCase {
 				query.status(),
 				query.carrier(),
 				query.sort(),
+				query.q(),
+				query.orderId(),
+				query.from(),
+				query.to(),
 				query.page(),
 				query.size(),
 				query.bearerToken()
@@ -87,6 +91,18 @@ public class ViewShipmentSupportListUseCase {
 		}
 		if (query.carrier() != null && !query.carrier().isBlank()) {
 			request.put("carrier", query.carrier());
+		}
+		if (query.q() != null && !query.q().isBlank()) {
+			request.put("q", query.q());
+		}
+		if (query.orderId() != null && !query.orderId().isBlank()) {
+			request.put("orderId", query.orderId());
+		}
+		if (query.from() != null && !query.from().isBlank()) {
+			request.put("from", query.from());
+		}
+		if (query.to() != null && !query.to().isBlank()) {
+			request.put("to", query.to());
 		}
 		if (query.sort() != null && !query.sort().isBlank()) {
 			request.put("sort", query.sort());

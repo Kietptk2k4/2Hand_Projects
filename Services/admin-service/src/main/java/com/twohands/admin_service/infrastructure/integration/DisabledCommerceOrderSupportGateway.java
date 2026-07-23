@@ -24,6 +24,8 @@ public class DisabledCommerceOrderSupportGateway implements CommerceOrderSupport
 	public PagedResult<OrderSupportListEntry> searchOrders(
 			String status,
 			String paymentMethod,
+			String paymentStatus,
+			String q,
 			String from,
 			String to,
 			String sort,

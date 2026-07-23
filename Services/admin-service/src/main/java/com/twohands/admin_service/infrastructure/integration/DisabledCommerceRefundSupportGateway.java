@@ -30,6 +30,11 @@ public class DisabledCommerceRefundSupportGateway implements CommerceRefundSuppo
 	@Override
 	public AdminRefundApprovalListResult listRefundApprovals(
 			Optional<String> status,
+			Optional<String> q,
+			Optional<String> requestedBy,
+			Optional<String> paymentMethod,
+			Optional<String> from,
+			Optional<String> to,
 			Integer page,
 			Integer limit,
 			String bearerToken

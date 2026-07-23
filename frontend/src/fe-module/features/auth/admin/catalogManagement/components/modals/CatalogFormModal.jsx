@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CatalogFormModalView } from "./CatalogFormModalView.jsx";
 
 export function CatalogFormModal({
@@ -14,14 +14,25 @@ export function CatalogFormModal({
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [parentId, setParentId] = useState("");
+  const [parentSearch, setParentSearch] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const filteredParentOptions = useMemo(() => {
+    const query = parentSearch.trim().toLowerCase();
+    if (!query) return parentOptions;
+    return parentOptions.filter(
+      (option) =>
+        option.name.toLowerCase().includes(query) || option.slug.toLowerCase().includes(query),
+    );
+  }, [parentOptions, parentSearch]);
 
   useEffect(() => {
     if (!open) return;
     setName(initialValues?.name || "");
     setSlug(initialValues?.slug || "");
     setParentId(initialValues?.parentId || "");
+    setParentSearch("");
     setError("");
     setIsSubmitting(false);
   }, [open, initialValues]);
@@ -57,7 +68,9 @@ export function CatalogFormModal({
       slug={slug}
       parentId={parentId}
       showParentField={showParentField}
-      parentOptions={parentOptions}
+      parentOptions={filteredParentOptions}
+      parentSearch={parentSearch}
+      onParentSearchChange={setParentSearch}
       error={error}
       isSubmitting={isSubmitting}
       submitLabel={submitLabel}

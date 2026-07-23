@@ -1,5 +1,6 @@
 package com.twohands.admin_service.infrastructure.integration;
 
+import com.twohands.admin_service.domain.support.OrderSupportActiveRefundRequest;
 import com.twohands.admin_service.domain.support.OrderSupportDetail;
 import com.twohands.admin_service.domain.support.OrderSupportItem;
 import com.twohands.admin_service.domain.support.OrderSupportOrderTimelineEntry;
@@ -35,7 +36,25 @@ final class CommerceOrderSupportDetailMapper {
 				toPayment(payload.payment()),
 				toItems(payload.items()),
 				toShipments(payload.shipments()),
-				toOrderTimeline(payload.orderTimeline())
+				toOrderTimeline(payload.orderTimeline()),
+				toActiveRefundRequest(payload.activeRefundRequest()),
+				payload.cancellationNote()
+		);
+	}
+
+	private static OrderSupportActiveRefundRequest toActiveRefundRequest(
+			CommerceOrderSupportDetailPayload.ActiveRefundRequestPayload refundRequest
+	) {
+		if (refundRequest == null) {
+			return null;
+		}
+		return new OrderSupportActiveRefundRequest(
+				refundRequest.refundRequestId(),
+				refundRequest.status(),
+				refundRequest.requestedBy(),
+				refundRequest.amount(),
+				refundRequest.reason(),
+				refundRequest.requestedAt()
 		);
 	}
 

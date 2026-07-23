@@ -1,7 +1,14 @@
-import { AdminPageHeader, AdminSurfaceCard } from "../../../components/ui";
+import { AdminPageHeader, AdminPagination, AdminSurfaceCard } from "../../../components/ui";
+import { BrandDetailDrawer } from "../BrandDetailDrawer.jsx";
+import { BrandDeactivateDialog } from "../BrandDeactivateDialog.jsx";
+import { BrandHeroStrip } from "../BrandHeroStrip.jsx";
 import { BrandTable } from "../BrandTable.jsx";
-import { CatalogFilterBar } from "../CatalogFilterBar.jsx";
+import { BrandToolbar } from "../BrandToolbar.jsx";
 import { CatalogForbiddenState } from "../CatalogForbiddenState.jsx";
+import {
+  buildBrandPaginationSummary,
+  getBrandEmptyMessage,
+} from "../../utils/brandHelpers.js";
 
 function CatalogListSkeleton() {
   return (
@@ -35,50 +42,79 @@ export function BrandManagementTabView({
   subtitle,
   canRead,
   canWrite,
-  query,
-  activeFilter,
+  filters,
+  pagination,
   loadStatus,
   errorMessage,
+  heroMetrics,
   items,
   actionId,
-  emptyMessage,
+  detailItem,
+  deactivateItem,
+  deactivatePending,
   modal,
   onQueryChange,
-  onActiveFilterChange,
-  onFilter,
+  onStatusChange,
+  onPageChange,
+  onKpiStatusClick,
+  onRefresh,
   onAdd,
   onEdit,
-  onDeactivate,
+  onDeactivateRequest,
+  onDeactivateConfirm,
+  onDeactivateClose,
   onActivate,
+  onOpenDetail,
+  onCloseDetail,
   onRetry,
 }) {
+  const isLoading = loadStatus === "loading" || loadStatus === "idle";
+  const emptyMessage = getBrandEmptyMessage(filters.status, filters.q);
+  const actionPending = Boolean(actionId) || deactivatePending;
+
   if (!canRead) {
     return (
-      <div className="space-y-4">
-        <AdminPageHeader title={title} subtitle={subtitle} />
+      <div className="mb-6 space-y-4">
+        <AdminPageHeader eyebrow="Quản lý catalog" title={title} subtitle={subtitle} />
         <CatalogForbiddenState />
       </div>
     );
   }
 
-  return (
-    <div className="space-y-4">
-      <AdminPageHeader title={title} subtitle={subtitle} />
+  if (loadStatus === "error") {
+    return (
+      <div className="mb-6 space-y-4">
+        <AdminPageHeader eyebrow="Quản lý catalog" title={title} subtitle={subtitle} />
+        <CatalogRetryPanel message={errorMessage} onRetry={onRetry} />
+      </div>
+    );
+  }
 
-      <CatalogFilterBar
-        query={query}
-        activeFilter={activeFilter}
+  return (
+    <div className="mb-6 space-y-6">
+      <AdminPageHeader eyebrow="Quản lý catalog" title={title} subtitle={subtitle} />
+
+      <BrandHeroStrip
+        metrics={heroMetrics}
+        activeStatusFilter={filters.status}
+        isLoading={isLoading}
+        onStatusClick={onKpiStatusClick}
+      />
+
+      <BrandToolbar
+        query={filters.q}
+        statusFilter={filters.status}
         canWrite={canWrite}
-        addLabel="Thêm thương hiệu"
+        isLoading={isLoading}
         onQueryChange={onQueryChange}
-        onActiveFilterChange={onActiveFilterChange}
-        onFilter={onFilter}
+        onStatusChange={onStatusChange}
+        onRefresh={onRefresh}
         onAdd={onAdd}
       />
 
-      {loadStatus === "loading" ? <CatalogListSkeleton /> : null}
+      {isLoading ? <CatalogListSkeleton /> : null}
+
       {loadStatus === "forbidden" ? <CatalogForbiddenState message={errorMessage} /> : null}
-      {loadStatus === "error" ? <CatalogRetryPanel message={errorMessage} onRetry={onRetry} /> : null}
 
       {loadStatus === "ready" ? (
         <AdminSurfaceCard padding="md">
@@ -88,13 +124,47 @@ export function BrandManagementTabView({
             actionId={actionId}
             emptyMessage={emptyMessage}
             onEdit={onEdit}
-            onDeactivate={onDeactivate}
+            onDeactivate={onDeactivateRequest}
             onActivate={onActivate}
+            onOpenDetail={onOpenDetail}
           />
+          {items?.length ? (
+            <AdminPagination
+              className="mt-4"
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+              summary={buildBrandPaginationSummary({
+                page: pagination.page,
+                limit: pagination.limit,
+                totalItems: pagination.totalItems,
+              })}
+              onPrevious={() => onPageChange?.(pagination.page - 1)}
+              onNext={() => onPageChange?.(pagination.page + 1)}
+              disabled={actionPending}
+            />
+          ) : null}
         </AdminSurfaceCard>
       ) : null}
 
       {modal}
+
+      <BrandDetailDrawer
+        open={Boolean(detailItem)}
+        item={detailItem}
+        canWrite={canWrite}
+        actionId={actionId}
+        onClose={onCloseDetail}
+        onEdit={onEdit}
+        onDeactivate={onDeactivateRequest}
+        onActivate={onActivate}
+      />
+
+      <BrandDeactivateDialog
+        item={deactivateItem}
+        pending={deactivatePending}
+        onConfirm={onDeactivateConfirm}
+        onClose={onDeactivateClose}
+      />
     </div>
   );
 }

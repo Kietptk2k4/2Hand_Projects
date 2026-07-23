@@ -1,7 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
+import { FeedToast } from "../../../../social/components/FeedToast.jsx";
 import { useAuthSession } from "../../../hooks/useAuthSession.jsx";
 import { getCommentsForModeration } from "../api/socialModerationListApi.js";
 import { COMMENT_MODERATION_LIST_PAGE_SIZE } from "../constants/commentModerationListConstants.js";
+import { useBulkCommentModeration } from "../hooks/useBulkCommentModeration.js";
+import { useContentModerationPermissions } from "../hooks/useContentModerationPermissions.js";
+import { usePostAuthorSummaries } from "../hooks/usePostAuthorSummaries.js";
+import { useCommentModerationStats } from "../hooks/useCommentModerationStats.js";
+import {
+  buildCommentModerationQuickFilter,
+  removeCommentModerationFilterChip,
+} from "../utils/commentModerationFilterHelpers.js";
+import { mapCommentModerationListResponse } from "../utils/commentModerationListMapper.js";
+import { CommentModerationBulkDialog } from "./CommentModerationBulkDialog.jsx";
+import { CommentModerationDrawer } from "./CommentModerationDrawer.jsx";
 import { CommentModerationListView } from "./CommentModerationListView.jsx";
 
 export function CommentModerationListPanel({
@@ -9,13 +21,19 @@ export function CommentModerationListPanel({
   onFiltersChange,
   selectedCommentId,
   onCommentSelect,
+  onCommentClear,
 }) {
   const { showSessionExpired } = useAuthSession();
+  const { canModerateComment, canRestoreComment } = useContentModerationPermissions();
   const [result, setResult] = useState(null);
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [selectedCommentIds, setSelectedCommentIds] = useState([]);
+  const [bulkDialogMode, setBulkDialogMode] = useState(null);
+  const [toastMessage, setToastMessage] = useState("");
 
   const filterStatus = listFilters.status || "";
+  const filterModerationStatus = listFilters.moderation_status || "";
   const filterPostId = listFilters.post_id || "";
   const filterQ = listFilters.q || "";
   const filterSort = listFilters.sort || "created_at";
@@ -24,19 +42,42 @@ export function CommentModerationListPanel({
 
   const [draftFilters, setDraftFilters] = useState({
     status: filterStatus,
+    moderation_status: filterModerationStatus,
     post_id: filterPostId,
     q: filterQ,
     sort: filterSort,
   });
 
+  const selectionEnabled = canModerateComment || canRestoreComment;
+  const { stats, status: statsStatus, refetch: refetchStats } = useCommentModerationStats();
+  const {
+    isSubmitting: isBulkSubmitting,
+    submitError: bulkSubmitError,
+    execute: executeBulk,
+    clearError: clearBulkError,
+  } = useBulkCommentModeration();
+
   useEffect(() => {
     setDraftFilters({
       status: filterStatus,
+      moderation_status: filterModerationStatus,
       post_id: filterPostId,
       q: filterQ,
       sort: filterSort,
     });
-  }, [filterStatus, filterPostId, filterQ, filterSort]);
+  }, [filterStatus, filterModerationStatus, filterPostId, filterQ, filterSort]);
+
+  useEffect(() => {
+    setSelectedCommentIds([]);
+  }, [
+    filterStatus,
+    filterModerationStatus,
+    filterPostId,
+    filterQ,
+    filterSort,
+    filterPage,
+    filterSize,
+  ]);
 
   const fetchList = useCallback(async () => {
     setStatus("loading");
@@ -45,13 +86,14 @@ export function CommentModerationListPanel({
     try {
       const data = await getCommentsForModeration({
         status: filterStatus || undefined,
+        moderation_status: filterModerationStatus || undefined,
         post_id: filterPostId || undefined,
         q: filterQ || undefined,
         sort: filterSort,
         page: filterPage,
         size: filterSize,
       });
-      setResult(data);
+      setResult(mapCommentModerationListResponse(data));
       setStatus("ready");
     } catch (error) {
       if (error?.code === 401) {
@@ -66,61 +108,217 @@ export function CommentModerationListPanel({
       setStatus("error");
       setErrorMessage(error?.message || "Không tải được danh sách bình luận.");
     }
-  }, [filterStatus, filterPostId, filterQ, filterSort, filterPage, filterSize, showSessionExpired]);
+  }, [
+    filterStatus,
+    filterModerationStatus,
+    filterPostId,
+    filterQ,
+    filterSort,
+    filterPage,
+    filterSize,
+    showSessionExpired,
+  ]);
 
   useEffect(() => {
     fetchList();
   }, [fetchList]);
 
+  const refreshAll = useCallback(() => {
+    fetchList();
+    refetchStats();
+  }, [fetchList, refetchStats]);
+
+  const applyFiltersPatch = useCallback(
+    (patch) => {
+      onFiltersChange?.({
+        ...listFilters,
+        ...patch,
+      });
+    },
+    [listFilters, onFiltersChange],
+  );
+
   const handleApplyFilters = (event) => {
     event.preventDefault();
-    onFiltersChange?.({
+    applyFiltersPatch({
       ...draftFilters,
       page: 1,
-      size: COMMENT_MODERATION_LIST_PAGE_SIZE,
+      size: String(filterSize),
     });
   };
 
   const handleClearFilters = () => {
     const cleared = {
       status: "",
+      moderation_status: "",
       post_id: "",
       q: "",
       sort: "created_at",
       page: 1,
-      size: COMMENT_MODERATION_LIST_PAGE_SIZE,
+      size: String(COMMENT_MODERATION_LIST_PAGE_SIZE),
     };
     setDraftFilters(cleared);
     onFiltersChange?.(cleared);
   };
 
+  const handleQuickFilter = (preset) => {
+    const next = buildCommentModerationQuickFilter(preset);
+    setDraftFilters({
+      status: next.status,
+      moderation_status: next.moderation_status,
+      post_id: next.post_id,
+      q: next.q,
+      sort: next.sort,
+    });
+    applyFiltersPatch({
+      ...next,
+      size: String(filterSize),
+    });
+  };
+
+  const handleRemoveFilterChip = (chipKey) => {
+    const next = removeCommentModerationFilterChip(listFilters, chipKey);
+    setDraftFilters({
+      status: next.status,
+      moderation_status: next.moderation_status,
+      post_id: next.post_id,
+      q: next.q,
+      sort: next.sort,
+    });
+    applyFiltersPatch({
+      ...next,
+      size: String(filterSize),
+    });
+  };
+
+  const handleToggleComment = useCallback((commentId) => {
+    setSelectedCommentIds((current) =>
+      current.includes(commentId) ? current.filter((id) => id !== commentId) : [...current, commentId],
+    );
+  }, []);
+
+  const handleToggleAll = useCallback((pageItems) => {
+    const pageIds = pageItems.map((item) => item.id);
+    setSelectedCommentIds((current) => {
+      const allSelected = pageIds.every((id) => current.includes(id));
+      if (allSelected) {
+        return current.filter((id) => !pageIds.includes(id));
+      }
+      return [...new Set([...current, ...pageIds])];
+    });
+  }, []);
+
+  const handleBulkSubmit = useCallback(
+    async ({ mode, action, reason }) => {
+      const { succeeded, failed } = await executeBulk({
+        commentIds: selectedCommentIds,
+        mode,
+        action,
+        reason,
+      });
+
+      if (succeeded.length) {
+        setToastMessage(
+          `Đã xử lý ${succeeded.length} bình luận${failed.length ? `, ${failed.length} thất bại` : ""}.`,
+        );
+        setSelectedCommentIds(failed.map((item) => item.commentId));
+        setBulkDialogMode(null);
+        clearBulkError();
+        refreshAll();
+      }
+    },
+    [clearBulkError, executeBulk, refreshAll, selectedCommentIds],
+  );
+
   const pagination = result?.pagination;
   const currentPage = filterPage || pagination?.page || 1;
   const totalPages = pagination?.total_pages || 1;
+  const items = result?.items || [];
+  const authorIdsNeedingFallback = items
+    .filter((item) => item.author_id && !item.author_display_name)
+    .map((item) => item.author_id);
+  const authorSummaries = usePostAuthorSummaries(authorIdsNeedingFallback);
+  const selectedComment = items.find((item) => item.id === selectedCommentId) || null;
 
   return (
-    <CommentModerationListView
-      status={status}
-      errorMessage={errorMessage}
-      draftFilters={draftFilters}
-      onDraftFiltersChange={setDraftFilters}
-      onApplyFilters={handleApplyFilters}
-      onClearFilters={handleClearFilters}
-      onRetry={fetchList}
-      items={result?.items || []}
-      pagination={pagination}
-      currentPage={currentPage}
-      totalPages={totalPages}
-      activeSort={filterSort}
-      selectedCommentId={selectedCommentId}
-      onPageChange={(nextPage) =>
-        onFiltersChange?.({
-          ...listFilters,
-          page: nextPage,
-          size: COMMENT_MODERATION_LIST_PAGE_SIZE,
-        })
-      }
-      onRowSelect={(row) => onCommentSelect?.(row.id)}
-    />
+    <>
+      <CommentModerationListView
+        status={status}
+        errorMessage={errorMessage}
+        appliedFilters={listFilters}
+        draftFilters={draftFilters}
+        onDraftFiltersChange={setDraftFilters}
+        onApplyFilters={handleApplyFilters}
+        onClearFilters={handleClearFilters}
+        onQuickFilter={handleQuickFilter}
+        onRemoveFilterChip={handleRemoveFilterChip}
+        onRetry={fetchList}
+        stats={stats}
+        statsStatus={statsStatus}
+        onStatPresetClick={handleQuickFilter}
+        items={items}
+        authorSummaries={authorSummaries}
+        pagination={pagination}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={String(filterSize)}
+        activeSort={filterSort}
+        selectedCommentId={selectedCommentId}
+        selectedCommentIds={selectedCommentIds}
+        selectionEnabled={selectionEnabled}
+        canModerateComment={canModerateComment}
+        canRestoreComment={canRestoreComment}
+        bulkSubmitting={isBulkSubmitting}
+        onToggleComment={handleToggleComment}
+        onToggleAll={handleToggleAll}
+        onOpenBulkModerate={() => setBulkDialogMode("moderate")}
+        onOpenBulkRestore={() => setBulkDialogMode("restore")}
+        onClearBulkSelection={() => setSelectedCommentIds([])}
+        onPageChange={(nextPage) =>
+          applyFiltersPatch({
+            page: String(nextPage),
+            size: String(filterSize),
+          })
+        }
+        onPageSizeChange={(nextSize) =>
+          applyFiltersPatch({
+            page: "1",
+            size: nextSize,
+          })
+        }
+        onRowSelect={(row) => {
+          if (selectedCommentId === row.id) {
+            onCommentClear?.();
+            return;
+          }
+          onCommentSelect?.(row.id);
+        }}
+        drawer={
+          selectedCommentId ? (
+            <CommentModerationDrawer
+              commentId={selectedCommentId}
+              comment={selectedComment}
+              onClose={() => onCommentClear?.()}
+              onRefresh={refreshAll}
+            />
+          ) : null
+        }
+      />
+
+      <CommentModerationBulkDialog
+        open={Boolean(bulkDialogMode)}
+        mode={bulkDialogMode}
+        selectedCount={selectedCommentIds.length}
+        isSubmitting={isBulkSubmitting}
+        submitError={bulkSubmitError}
+        onClose={() => {
+          if (isBulkSubmitting) return;
+          setBulkDialogMode(null);
+          clearBulkError();
+        }}
+        onSubmit={handleBulkSubmit}
+      />
+      <FeedToast message={toastMessage} onDismiss={() => setToastMessage("")} />
+    </>
   );
 }

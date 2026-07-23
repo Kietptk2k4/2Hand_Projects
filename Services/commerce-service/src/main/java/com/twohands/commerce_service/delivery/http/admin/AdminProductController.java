@@ -2,6 +2,9 @@ package com.twohands.commerce_service.delivery.http.admin;
 
 import com.twohands.commerce_service.application.admin.viewadminproducts.ViewAdminProductsForModerationCommand;
 import com.twohands.commerce_service.application.admin.viewadminproducts.ViewAdminProductsForModerationUseCase;
+import com.twohands.commerce_service.application.admin.viewproductdetailformoderation.ViewProductDetailForModerationCommand;
+import com.twohands.commerce_service.application.admin.viewproductdetailformoderation.ViewProductDetailForModerationResult;
+import com.twohands.commerce_service.application.admin.viewproductdetailformoderation.ViewProductDetailForModerationUseCase;
 import com.twohands.commerce_service.application.product.removeproductbyadmin.RemoveProductByAdminCommand;
 import com.twohands.commerce_service.application.product.removeproductbyadmin.RemoveProductByAdminUseCase;
 import com.twohands.commerce_service.domain.admin.ViewAdminProductsForModerationResult;
@@ -30,15 +33,18 @@ import java.util.UUID;
 public class AdminProductController {
 
     private final ViewAdminProductsForModerationUseCase viewAdminProductsForModerationUseCase;
+    private final ViewProductDetailForModerationUseCase viewProductDetailForModerationUseCase;
     private final RemoveProductByAdminUseCase removeProductByAdminUseCase;
     private final CommerceAdminAuthorization commerceAdminAuthorization;
 
     public AdminProductController(
             ViewAdminProductsForModerationUseCase viewAdminProductsForModerationUseCase,
+            ViewProductDetailForModerationUseCase viewProductDetailForModerationUseCase,
             RemoveProductByAdminUseCase removeProductByAdminUseCase,
             CommerceAdminAuthorization commerceAdminAuthorization
     ) {
         this.viewAdminProductsForModerationUseCase = viewAdminProductsForModerationUseCase;
+        this.viewProductDetailForModerationUseCase = viewProductDetailForModerationUseCase;
         this.removeProductByAdminUseCase = removeProductByAdminUseCase;
         this.commerceAdminAuthorization = commerceAdminAuthorization;
     }
@@ -49,6 +55,7 @@ public class AdminProductController {
             @RequestParam(required = false) Integer limit,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String q,
+            @RequestParam(required = false) String sort,
             Authentication authentication
     ) {
         AuthenticatedUser admin = resolveAuthenticatedUser(authentication);
@@ -58,13 +65,35 @@ public class AdminProductController {
         );
 
         ViewAdminProductsForModerationResult result = viewAdminProductsForModerationUseCase.execute(
-                new ViewAdminProductsForModerationCommand(page, limit, status, q)
+                new ViewAdminProductsForModerationCommand(page, limit, status, q, sort)
         );
 
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK.value(),
                 viewAdminProductsForModerationUseCase.successMessage(),
                 AdminModerationListResponseMapper.toProductListResponse(result)
+        ));
+    }
+
+    @GetMapping("/{productId}")
+    public ResponseEntity<ApiResponse<AdminProductDetailResponse>> getProductDetail(
+            @PathVariable UUID productId,
+            Authentication authentication
+    ) {
+        AuthenticatedUser admin = resolveAuthenticatedUser(authentication);
+        commerceAdminAuthorization.requirePermission(
+                admin,
+                CommerceAdminAuthorization.PERMISSION_PRODUCT_REMOVE
+        );
+
+        ViewProductDetailForModerationResult result = viewProductDetailForModerationUseCase.execute(
+                new ViewProductDetailForModerationCommand(productId)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewProductDetailForModerationUseCase.successMessage(),
+                toDetailResponse(result)
         ));
     }
 
@@ -109,6 +138,41 @@ public class AdminProductController {
                 result.alreadyRemoved(),
                 result.cartItemsInvalidated(),
                 result.removedAt()
+        );
+    }
+
+    private AdminProductDetailResponse toDetailResponse(ViewProductDetailForModerationResult result) {
+        return new AdminProductDetailResponse(
+                result.productId(),
+                result.sellerId(),
+                result.shopId(),
+                result.shopName(),
+                result.title(),
+                result.description(),
+                result.status(),
+                result.categoryId(),
+                result.categoryName(),
+                result.price(),
+                result.effectivePrice(),
+                result.stockQuantity(),
+                result.createdAt(),
+                result.updatedAt(),
+                result.removedAt(),
+                result.removeReason(),
+                result.openOrderCount(),
+                result.media().stream()
+                        .map(item -> new AdminProductDetailMediaResponse(
+                                item.mediaUrl(),
+                                item.mediaType(),
+                                item.sortOrder()
+                        ))
+                        .toList(),
+                result.attributes().stream()
+                        .map(item -> new AdminProductDetailAttributeResponse(
+                                item.name(),
+                                item.value()
+                        ))
+                        .toList()
         );
     }
 }

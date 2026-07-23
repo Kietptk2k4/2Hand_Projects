@@ -15,6 +15,7 @@ public record SystemConfigListItem(
 		UUID createdBy,
 		Instant createdAt,
 		UUID updatedBy,
-		Instant updatedAt
+		Instant updatedAt,
+		boolean valueMasked
 ) {
 }

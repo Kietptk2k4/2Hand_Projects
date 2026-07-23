@@ -2,6 +2,7 @@ package com.twohands.commerce_service.infrastructure.persistence.admin;
 
 import com.twohands.commerce_service.common.pagination.PageQuery;
 import com.twohands.commerce_service.domain.admin.AdminReviewListEntry;
+import com.twohands.commerce_service.domain.admin.AdminReviewListSort;
 import com.twohands.commerce_service.domain.admin.ViewAdminReviewsForModerationRepository;
 import com.twohands.commerce_service.domain.review.ReviewStatus;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -61,6 +62,7 @@ public class ViewAdminReviewsForModerationRepositoryAdapter implements ViewAdmin
             Optional<ReviewStatus> status,
             Optional<Integer> rating,
             Optional<String> searchQuery,
+            AdminReviewListSort sort,
             PageQuery pageQuery
     ) {
         MapSqlParameterSource params = baseParams(status, rating, searchQuery)
@@ -68,13 +70,21 @@ public class ViewAdminReviewsForModerationRepositoryAdapter implements ViewAdmin
                 .addValue("offset", pageQuery.offset());
 
         return jdbcTemplate.query(
-                SELECT_COLUMNS + BASE_FROM + filterClause(status, rating, searchQuery) + """
-                        ORDER BY r.created_at DESC, r.id DESC
+                SELECT_COLUMNS + BASE_FROM + filterClause(status, rating, searchQuery) + orderByClause(sort) + """
                         LIMIT :limit OFFSET :offset
                         """,
                 params,
                 this::mapEntry
         );
+    }
+
+    private String orderByClause(AdminReviewListSort sort) {
+        return switch (sort) {
+            case OLDEST -> " ORDER BY r.created_at ASC, r.id ASC ";
+            case RATING_ASC -> " ORDER BY r.rating ASC, r.created_at DESC, r.id DESC ";
+            case RATING_DESC -> " ORDER BY r.rating DESC, r.created_at DESC, r.id DESC ";
+            case NEWEST -> " ORDER BY r.created_at DESC, r.id DESC ";
+        };
     }
 
     private MapSqlParameterSource baseParams(

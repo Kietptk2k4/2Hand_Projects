@@ -22,6 +22,13 @@ public class ViewAdminShopsForModerationRepositoryAdapter implements ViewAdminSh
 
     private static final String BASE_FROM = """
             FROM seller_shops ss
+            LEFT JOIN (
+                SELECT shop_id,
+                       COUNT(*) AS total_count,
+                       COUNT(*) FILTER (WHERE status = 'ACTIVE') AS active_count
+                FROM products
+                GROUP BY shop_id
+            ) pc ON pc.shop_id = ss.id
             WHERE 1 = 1
             """;
 
@@ -31,7 +38,10 @@ public class ViewAdminShopsForModerationRepositoryAdapter implements ViewAdminSh
                    ss.shop_name,
                    ss.avatar_url AS logo_url,
                    ss.status::text AS status,
-                   ss.created_at
+                   ss.created_at,
+                   ss.updated_at,
+                   COALESCE(pc.total_count, 0) AS product_count,
+                   COALESCE(pc.active_count, 0) AS active_product_count
             """;
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
@@ -95,6 +105,7 @@ public class ViewAdminShopsForModerationRepositoryAdapter implements ViewAdminSh
         return switch (sort) {
             case OLDEST -> " ORDER BY ss.created_at ASC, ss.id ASC ";
             case NAME_ASC -> " ORDER BY ss.shop_name ASC, ss.id ASC ";
+            case UPDATED_AT -> " ORDER BY ss.updated_at DESC, ss.id DESC ";
             case NEWEST -> " ORDER BY ss.created_at DESC, ss.id DESC ";
         };
     }
@@ -106,7 +117,10 @@ public class ViewAdminShopsForModerationRepositoryAdapter implements ViewAdminSh
                 rs.getString("shop_name"),
                 rs.getString("logo_url"),
                 ShopStatus.valueOf(rs.getString("status")),
-                toInstant(rs.getTimestamp("created_at"))
+                toInstant(rs.getTimestamp("created_at")),
+                toInstant(rs.getTimestamp("updated_at")),
+                rs.getLong("product_count"),
+                rs.getLong("active_product_count")
         );
     }
 

@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/commerce/api/v1/admin/refund-approvals")
@@ -55,6 +56,11 @@ public class AdminRefundApprovalController {
     @GetMapping
     public ResponseEntity<ApiResponse<ViewAdminRefundApprovalsResponse>> listRefundApprovals(
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) String q,
+            @RequestParam(name = "requested_by", required = false) String requestedBy,
+            @RequestParam(name = "payment_method", required = false) String paymentMethod,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to,
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer limit,
             Authentication authentication
@@ -68,6 +74,11 @@ public class AdminRefundApprovalController {
         ViewAdminRefundApprovalsResult result = listAdminRefundApprovalsUseCase.execute(
                 new ListAdminRefundApprovalsCommand(
                         RefundApprovalStatusParser.parseOptional(status),
+                        Optional.ofNullable(q).filter(value -> !value.isBlank()),
+                        Optional.ofNullable(requestedBy).filter(value -> !value.isBlank()),
+                        Optional.ofNullable(paymentMethod).filter(value -> !value.isBlank()),
+                        Optional.ofNullable(from).filter(value -> !value.isBlank()),
+                        Optional.ofNullable(to).filter(value -> !value.isBlank()),
                         page,
                         limit
                 )

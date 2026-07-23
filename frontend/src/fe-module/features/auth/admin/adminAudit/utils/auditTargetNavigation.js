@@ -107,6 +107,7 @@ export function resolveAuditTargetNavigation(targetType, targetId) {
               buildAdminSearchParams({
                 section: "contentModeration",
                 tab: "review-moderation",
+                reviewId: id,
                 preserve,
               }),
           }
@@ -120,6 +121,7 @@ export function resolveAuditTargetNavigation(targetType, targetId) {
               buildAdminSearchParams({
                 section: "contentModeration",
                 tab: "shop-moderation",
+                shopId: id,
                 preserve,
               }),
           }
@@ -179,16 +181,28 @@ export function resolveAuditTargetNavigation(targetType, targetId) {
           }),
       };
     case "ANNOUNCEMENT":
-      return {
-        id: `ANNOUNCEMENT:${id || "list"}`,
-        label: "Mở thông báo hệ thống",
-        buildParams: (preserve) =>
-          buildAdminSearchParams({
-            section: "systemOperations",
-            tab: "system-announcements",
-            preserve,
-          }),
-      };
+      return id
+        ? {
+            id: `ANNOUNCEMENT:${id}`,
+            label: "Mở thông báo hệ thống",
+            buildParams: (preserve) =>
+              buildAdminSearchParams({
+                section: "systemOperations",
+                tab: "system-announcements",
+                announcementId: id,
+                preserve,
+              }),
+          }
+        : {
+            id: "ANNOUNCEMENT:list",
+            label: "Mở thông báo hệ thống",
+            buildParams: (preserve) =>
+              buildAdminSearchParams({
+                section: "systemOperations",
+                tab: "system-announcements",
+                preserve,
+              }),
+          };
     case "CATEGORY":
       return {
         id: "CATEGORY",

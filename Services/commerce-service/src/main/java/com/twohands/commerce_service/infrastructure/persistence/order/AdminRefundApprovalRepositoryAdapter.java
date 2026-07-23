@@ -8,6 +8,7 @@ import com.twohands.commerce_service.application.payment.common.PaymentRefundedO
 import com.twohands.commerce_service.domain.inventory.ReserveInventoryRepository;
 import com.twohands.commerce_service.common.pagination.PageQuery;
 import com.twohands.commerce_service.domain.order.AdminRefundApprovalItem;
+import com.twohands.commerce_service.domain.order.AdminRefundApprovalListSearchCriteria;
 import com.twohands.commerce_service.domain.order.AdminRefundApprovalRepository;
 import com.twohands.commerce_service.domain.order.OrderItemQuantity;
 import com.twohands.commerce_service.domain.order.OrderStatus;
@@ -70,21 +71,23 @@ public class AdminRefundApprovalRepositoryAdapter implements AdminRefundApproval
     }
 
     @Override
-    public long countAdminRefundApprovals(Optional<PaymentRefundRequestStatus> status) {
+    public long countAdminRefundApprovals(AdminRefundApprovalListSearchCriteria criteria) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
         String sql = """
                 SELECT COUNT(*)
                 FROM payment_refund_requests r
-                WHERE (:status IS NULL OR r.status = CAST(:status AS payment_refund_request_status))
-                """;
-        Long count = jdbcTemplate.queryForObject(sql, statusParams(status), Long.class);
+                JOIN orders o ON o.id = r.order_id
+                """ + buildListWhereClause(criteria, params);
+        Long count = jdbcTemplate.queryForObject(sql, params, Long.class);
         return count == null ? 0L : count;
     }
 
     @Override
     public List<AdminRefundApprovalItem> findAdminRefundApprovals(
-            Optional<PaymentRefundRequestStatus> status,
+            AdminRefundApprovalListSearchCriteria criteria,
             PageQuery pageQuery
     ) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
         String sql = """
                 SELECT r.id, r.payment_id, r.order_id, o.buyer_id,
                        r.requested_by::text AS requested_by, r.requested_by_user_id,
@@ -95,13 +98,13 @@ public class AdminRefundApprovalRepositoryAdapter implements AdminRefundApproval
                        r.created_at, r.confirmed_at, r.rejected_at
                 FROM payment_refund_requests r
                 JOIN orders o ON o.id = r.order_id
-                WHERE (:status IS NULL OR r.status = CAST(:status AS payment_refund_request_status))
+                """ + buildListWhereClause(criteria, params) + """
+                
                 ORDER BY r.created_at DESC
                 LIMIT :limit OFFSET :offset
                 """;
-        MapSqlParameterSource params = statusParams(status)
-                .addValue("limit", pageQuery.limit())
-                .addValue("offset", pageQuery.offset());
+        params.addValue("limit", pageQuery.limit());
+        params.addValue("offset", pageQuery.offset());
         return jdbcTemplate.query(sql, params, (rs, rowNum) -> mapItem(rs));
     }
 
@@ -459,9 +462,41 @@ public class AdminRefundApprovalRepositoryAdapter implements AdminRefundApproval
         }
     }
 
-    private MapSqlParameterSource statusParams(Optional<PaymentRefundRequestStatus> status) {
-        return new MapSqlParameterSource()
-                .addValue("status", status.map(PaymentRefundRequestStatus::name).orElse(null));
+    private String buildListWhereClause(
+            AdminRefundApprovalListSearchCriteria criteria,
+            MapSqlParameterSource params
+    ) {
+        StringBuilder where = new StringBuilder(" WHERE 1=1");
+        criteria.status().ifPresent(status -> {
+            where.append(" AND r.status::text = :status");
+            params.addValue("status", status.name());
+        });
+        criteria.searchQuery().ifPresent(searchQuery -> {
+            where.append("""
+                     AND (
+                        CAST(r.id AS TEXT) ILIKE :searchPattern
+                        OR CAST(r.payment_id AS TEXT) ILIKE :searchPattern
+                        OR CAST(r.order_id AS TEXT) ILIKE :searchPattern
+                     )""");
+            params.addValue("searchPattern", "%" + searchQuery + "%");
+        });
+        criteria.requestedBy().ifPresent(requestedBy -> {
+            where.append(" AND r.requested_by::text = :requestedBy");
+            params.addValue("requestedBy", requestedBy.name());
+        });
+        criteria.paymentMethod().ifPresent(paymentMethod -> {
+            where.append(" AND o.payment_method::text = :paymentMethod");
+            params.addValue("paymentMethod", paymentMethod.name());
+        });
+        criteria.from().ifPresent(from -> {
+            where.append(" AND r.created_at >= :from");
+            params.addValue("from", Timestamp.from(from));
+        });
+        criteria.to().ifPresent(to -> {
+            where.append(" AND r.created_at <= :to");
+            params.addValue("to", Timestamp.from(to));
+        });
+        return where.toString();
     }
 
     private String resolveNote(String adminNote) {

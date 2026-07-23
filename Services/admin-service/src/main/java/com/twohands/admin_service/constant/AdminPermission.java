@@ -20,14 +20,17 @@ public final class AdminPermission {
 	public static final String REVIEW_HIDE = "REVIEW_HIDE";
 	public static final String REVIEW_REMOVE = "REVIEW_REMOVE";
 	public static final String REVIEW_RESTORE = "REVIEW_RESTORE";
+	public static final String REVIEW_MODERATION_READ = "REVIEW_MODERATION_READ";
 	public static final String SHOP_SUSPEND = "SHOP_SUSPEND";
 	public static final String SHOP_CLOSE = "SHOP_CLOSE";
 	public static final String SHOP_RESTORE = "SHOP_RESTORE";
+	public static final String SHOP_MODERATION_READ = "SHOP_MODERATION_READ";
 	public static final String POST_MODERATE = "POST_MODERATE";
 	public static final String POST_RESTORE = "POST_RESTORE";
 	public static final String POST_MODERATION_READ = "POST_MODERATION_READ";
 	public static final String COMMENT_MODERATE = "COMMENT_MODERATE";
 	public static final String COMMENT_RESTORE = "COMMENT_RESTORE";
+	public static final String COMMENT_MODERATION_READ = "COMMENT_MODERATION_READ";
 	public static final String SYSTEM_CONFIG_UPDATE = "SYSTEM_CONFIG_UPDATE";
 	public static final String SYSTEM_CONFIG_VIEW = "SYSTEM_CONFIG_VIEW";
 	public static final String SYSTEM_ANNOUNCEMENT_CREATE = "SYSTEM_ANNOUNCEMENT_CREATE";
@@ -64,14 +67,17 @@ public final class AdminPermission {
 			REVIEW_HIDE,
 			REVIEW_REMOVE,
 			REVIEW_RESTORE,
+			REVIEW_MODERATION_READ,
 			SHOP_SUSPEND,
 			SHOP_CLOSE,
 			SHOP_RESTORE,
+			SHOP_MODERATION_READ,
 			POST_MODERATE,
 			POST_RESTORE,
 			POST_MODERATION_READ,
 			COMMENT_MODERATE,
 			COMMENT_RESTORE,
+			COMMENT_MODERATION_READ,
 			SYSTEM_CONFIG_UPDATE,
 			SYSTEM_CONFIG_VIEW,
 			SYSTEM_ANNOUNCEMENT_CREATE,

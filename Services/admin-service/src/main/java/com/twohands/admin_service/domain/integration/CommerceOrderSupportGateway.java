@@ -13,6 +13,8 @@ public interface CommerceOrderSupportGateway {
 	PagedResult<OrderSupportListEntry> searchOrders(
 			String status,
 			String paymentMethod,
+			String paymentStatus,
+			String q,
 			String from,
 			String to,
 			String sort,

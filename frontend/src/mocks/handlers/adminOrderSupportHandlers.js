@@ -8,6 +8,7 @@ import {
   getMockShipmentSupportDetail,
   getMockShipmentSupportList,
   getMockWebhookLogs,
+  getMockWebhookLogStats,
 } from "../data/adminOrderSupportData";
 import { apiError, apiSuccess } from "../utils/response";
 
@@ -41,13 +42,27 @@ export const adminOrderSupportHandlers = [
     }
 
     const url = new URL(request.url);
+    const q = url.searchParams.get("q") || "";
     const status = url.searchParams.get("status") || "";
+    const paymentStatus = url.searchParams.get("payment_status") || "";
     const paymentMethod = url.searchParams.get("payment_method") || "";
+    const from = url.searchParams.get("from") || "";
+    const to = url.searchParams.get("to") || "";
     const sort = url.searchParams.get("sort") || "created_at";
     const page = Number(url.searchParams.get("page") || 1);
     const size = Number(url.searchParams.get("size") || 20);
 
-    const data = getMockOrdersForSupport({ status, payment_method: paymentMethod, sort, page, size });
+    const data = getMockOrdersForSupport({
+      q,
+      status,
+      payment_status: paymentStatus,
+      payment_method: paymentMethod,
+      from,
+      to,
+      sort,
+      page,
+      size,
+    });
 
     return HttpResponse.json(apiSuccess(200, "Orders retrieved successfully", data), { status: 200 });
   }),
@@ -89,16 +104,24 @@ export const adminOrderSupportHandlers = [
     }
 
     const url = new URL(request.url);
+    const q = url.searchParams.get("q") || "";
     const status = url.searchParams.get("status") || "";
+    const reconciliationStatus = url.searchParams.get("reconciliation_status") || "";
     const paymentMethod = url.searchParams.get("payment_method") || "";
     const orderId = url.searchParams.get("order_id") || "";
+    const from = url.searchParams.get("from") || "";
+    const to = url.searchParams.get("to") || "";
     const page = Number(url.searchParams.get("page") || 1);
     const size = Number(url.searchParams.get("size") || 20);
 
     const data = getMockPaymentsForSupport({
+      q,
       status,
+      reconciliation_status: reconciliationStatus,
       payment_method: paymentMethod,
       order_id: orderId,
+      from,
+      to,
       page,
       size,
     });
@@ -146,13 +169,27 @@ export const adminOrderSupportHandlers = [
     }
 
     const url = new URL(request.url);
+    const q = url.searchParams.get("q") || "";
     const status = url.searchParams.get("status") || "";
     const carrier = url.searchParams.get("carrier") || "";
+    const order_id = url.searchParams.get("order_id") || "";
+    const from = url.searchParams.get("from") || "";
+    const to = url.searchParams.get("to") || "";
     const sort = url.searchParams.get("sort") || "updated_at";
     const page = Number(url.searchParams.get("page") || 1);
     const size = Number(url.searchParams.get("size") || 20);
 
-    const data = getMockShipmentSupportList({ status, carrier, sort, page, size });
+    const data = getMockShipmentSupportList({
+      q,
+      status,
+      carrier,
+      order_id,
+      from,
+      to,
+      sort,
+      page,
+      size,
+    });
 
     return HttpResponse.json(
       apiSuccess(200, "Shipment support list retrieved successfully", data),
@@ -184,6 +221,41 @@ export const adminOrderSupportHandlers = [
       apiSuccess(200, "Shipment support detail retrieved successfully", detail),
       { status: 200 },
     );
+  }),
+
+  http.get("*/admin/api/v1/support/webhook-logs/stats", async ({ request }) => {
+    await delay(200);
+    const actor = getActorFromRequest(request);
+    if (!actor || !isAdminActor(actor)) {
+      return HttpResponse.json(apiError(403, "Forbidden"), { status: 403 });
+    }
+    const url = new URL(request.url);
+    const data = getMockWebhookLogStats(
+      getMockWebhookLogs({
+        provider: url.searchParams.get("provider") || "",
+        reference_id: url.searchParams.get("reference_id") || "",
+        q: url.searchParams.get("q") || "",
+        status: url.searchParams.get("status") || "",
+        page: 1,
+        size: 100,
+      }).logs,
+    );
+    return HttpResponse.json(apiSuccess(200, "Webhook log stats retrieved successfully", data));
+  }),
+
+  http.get("*/admin/api/v1/support/webhook-logs/:logId", async ({ request, params }) => {
+    await delay(200);
+    const actor = getActorFromRequest(request);
+    if (!actor || !isAdminActor(actor)) {
+      return HttpResponse.json(apiError(403, "Forbidden"), { status: 403 });
+    }
+    const log = getMockWebhookLogs({ page: 1, size: 100 }).logs.find(
+      (item) => item.log_id === params.logId,
+    );
+    if (!log) {
+      return HttpResponse.json(apiError(404, "Not found"), { status: 404 });
+    }
+    return HttpResponse.json(apiSuccess(200, "Webhook log retrieved successfully", log));
   }),
 
   http.get("*/admin/api/v1/support/webhook-logs", async ({ request }) => {

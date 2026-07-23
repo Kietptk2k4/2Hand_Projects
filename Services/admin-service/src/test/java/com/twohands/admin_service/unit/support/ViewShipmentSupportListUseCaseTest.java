@@ -68,6 +68,10 @@ class ViewShipmentSupportListUseCaseTest {
 				eq("SHIPPED"),
 				eq("GHN"),
 				eq("updated_at"),
+				eq(null),
+				eq(null),
+				eq(null),
+				eq(null),
 				eq(1),
 				eq(20),
 				eq("token")
@@ -77,6 +81,10 @@ class ViewShipmentSupportListUseCaseTest {
 				"SHIPPED",
 				"GHN",
 				"updated_at",
+				null,
+				null,
+				null,
+				null,
 				1,
 				20,
 				"token"
@@ -103,7 +111,7 @@ class ViewShipmentSupportListUseCaseTest {
 		when(commerceShipmentSupportGateway.isEnabled()).thenReturn(false);
 
 		AppException ex = assertThrows(AppException.class, () -> useCase.execute(
-				new ViewShipmentSupportListQuery(null, null, null, 1, 20, "token")
+				new ViewShipmentSupportListQuery(null, null, null, null, null, null, null, 1, 20, "token")
 		));
 
 		assertEquals(ErrorCode.SERVICE_UNAVAILABLE, ex.getErrorCode());

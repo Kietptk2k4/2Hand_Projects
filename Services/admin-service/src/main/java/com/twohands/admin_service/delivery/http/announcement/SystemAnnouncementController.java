@@ -1,9 +1,15 @@
 package com.twohands.admin_service.delivery.http.announcement;
 
+import com.twohands.admin_service.application.announcement.getsystemannouncement.GetSystemAnnouncementQuery;
+import com.twohands.admin_service.application.announcement.getsystemannouncement.GetSystemAnnouncementResult;
+import com.twohands.admin_service.application.announcement.getsystemannouncement.GetSystemAnnouncementUseCase;
 import com.twohands.admin_service.application.announcement.listsystemannouncements.ListSystemAnnouncementsQuery;
 import com.twohands.admin_service.application.announcement.listsystemannouncements.ListSystemAnnouncementsResult;
 import com.twohands.admin_service.application.announcement.listsystemannouncements.ListSystemAnnouncementsUseCase;
 import com.twohands.admin_service.application.announcement.listsystemannouncements.SystemAnnouncementListItem;
+import com.twohands.admin_service.application.announcement.updatesystemannouncement.UpdateSystemAnnouncementCommand;
+import com.twohands.admin_service.application.announcement.updatesystemannouncement.UpdateSystemAnnouncementResult;
+import com.twohands.admin_service.application.announcement.updatesystemannouncement.UpdateSystemAnnouncementUseCase;
 import com.twohands.admin_service.application.announcement.dismisssystemannouncement.DismissSystemAnnouncementCommand;
 import com.twohands.admin_service.application.announcement.dismisssystemannouncement.DismissSystemAnnouncementResult;
 import com.twohands.admin_service.application.announcement.dismisssystemannouncement.DismissSystemAnnouncementUseCase;
@@ -42,7 +48,9 @@ import java.util.UUID;
 public class SystemAnnouncementController {
 
 	private final ListSystemAnnouncementsUseCase listSystemAnnouncementsUseCase;
+	private final GetSystemAnnouncementUseCase getSystemAnnouncementUseCase;
 	private final CreateSystemAnnouncementUseCase createSystemAnnouncementUseCase;
+	private final UpdateSystemAnnouncementUseCase updateSystemAnnouncementUseCase;
 	private final PublishSystemAnnouncementUseCase publishSystemAnnouncementUseCase;
 	private final PinSystemAnnouncementUseCase pinSystemAnnouncementUseCase;
 	private final CancelSystemAnnouncementUseCase cancelSystemAnnouncementUseCase;
@@ -50,14 +58,18 @@ public class SystemAnnouncementController {
 
 	public SystemAnnouncementController(
 			ListSystemAnnouncementsUseCase listSystemAnnouncementsUseCase,
+			GetSystemAnnouncementUseCase getSystemAnnouncementUseCase,
 			CreateSystemAnnouncementUseCase createSystemAnnouncementUseCase,
+			UpdateSystemAnnouncementUseCase updateSystemAnnouncementUseCase,
 			PublishSystemAnnouncementUseCase publishSystemAnnouncementUseCase,
 			PinSystemAnnouncementUseCase pinSystemAnnouncementUseCase,
 			CancelSystemAnnouncementUseCase cancelSystemAnnouncementUseCase,
 			DismissSystemAnnouncementUseCase dismissSystemAnnouncementUseCase
 	) {
 		this.listSystemAnnouncementsUseCase = listSystemAnnouncementsUseCase;
+		this.getSystemAnnouncementUseCase = getSystemAnnouncementUseCase;
 		this.createSystemAnnouncementUseCase = createSystemAnnouncementUseCase;
+		this.updateSystemAnnouncementUseCase = updateSystemAnnouncementUseCase;
 		this.publishSystemAnnouncementUseCase = publishSystemAnnouncementUseCase;
 		this.pinSystemAnnouncementUseCase = pinSystemAnnouncementUseCase;
 		this.cancelSystemAnnouncementUseCase = cancelSystemAnnouncementUseCase;
@@ -86,6 +98,27 @@ public class SystemAnnouncementController {
 				HttpStatus.OK.value(),
 				listSystemAnnouncementsUseCase.successMessage(),
 				toListResponse(result)
+		));
+	}
+
+	@GetMapping("/{announcementId}")
+	@RequireAdminPermission({
+			AdminPermission.SYSTEM_ANNOUNCEMENT_CREATE,
+			AdminPermission.SYSTEM_ANNOUNCEMENT_UPDATE,
+			AdminPermission.SYSTEM_ANNOUNCEMENT_PUBLISH,
+			AdminPermission.SYSTEM_ANNOUNCEMENT_CANCEL
+	})
+	public ResponseEntity<ApiResponse<ViewSystemAnnouncementDetailResponse>> getDetail(
+			@PathVariable UUID announcementId
+	) {
+		GetSystemAnnouncementResult result = getSystemAnnouncementUseCase.execute(
+				new GetSystemAnnouncementQuery(announcementId)
+		);
+
+		return ResponseEntity.ok(ApiResponse.success(
+				HttpStatus.OK.value(),
+				getSystemAnnouncementUseCase.successMessage(),
+				toDetailResponse(result)
 		));
 	}
 
@@ -122,6 +155,30 @@ public class SystemAnnouncementController {
 						createSystemAnnouncementUseCase.successMessage(),
 						data
 				));
+	}
+
+	@PatchMapping("/{announcementId}")
+	@RequireAdminPermission(AdminPermission.SYSTEM_ANNOUNCEMENT_UPDATE)
+	public ResponseEntity<ApiResponse<ViewSystemAnnouncementDetailResponse>> update(
+			@PathVariable UUID announcementId,
+			@Valid @RequestBody UpdateSystemAnnouncementRequest request
+	) {
+		UpdateSystemAnnouncementResult result = updateSystemAnnouncementUseCase.execute(
+				new UpdateSystemAnnouncementCommand(
+						announcementId,
+						request.title(),
+						request.content(),
+						request.severity(),
+						request.pinned(),
+						request.dismissible()
+				)
+		);
+
+		return ResponseEntity.ok(ApiResponse.success(
+				HttpStatus.OK.value(),
+				updateSystemAnnouncementUseCase.successMessage(),
+				toDetailResponse(result)
+		));
 	}
 
 	@PostMapping("/{announcementId}/publish")
@@ -227,6 +284,36 @@ public class SystemAnnouncementController {
 				item.createdBy(),
 				item.createdAt(),
 				item.sentAt()
+		);
+	}
+
+	private ViewSystemAnnouncementDetailResponse toDetailResponse(GetSystemAnnouncementResult result) {
+		return new ViewSystemAnnouncementDetailResponse(
+				result.announcementId(),
+				result.title(),
+				result.content(),
+				result.severity().name(),
+				result.status().name(),
+				result.pinned(),
+				result.dismissible(),
+				result.createdBy(),
+				result.createdAt(),
+				result.sentAt()
+		);
+	}
+
+	private ViewSystemAnnouncementDetailResponse toDetailResponse(UpdateSystemAnnouncementResult result) {
+		return new ViewSystemAnnouncementDetailResponse(
+				result.announcementId(),
+				result.title(),
+				result.content(),
+				result.severity().name(),
+				result.status().name(),
+				result.pinned(),
+				result.dismissible(),
+				result.createdBy(),
+				result.createdAt(),
+				result.sentAt()
 		);
 	}
 

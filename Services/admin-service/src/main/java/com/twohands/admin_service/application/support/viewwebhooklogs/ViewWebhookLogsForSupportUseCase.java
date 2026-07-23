@@ -51,6 +51,8 @@ public class ViewWebhookLogsForSupportUseCase {
 		PagedResult<WebhookSupportLogEntry> page = commerceWebhookSupportGateway.searchWebhookLogs(
 				query.provider(),
 				query.referenceId(),
+				query.searchQuery(),
+				query.eventType(),
 				query.status(),
 				query.from(),
 				query.to(),
@@ -89,6 +91,12 @@ public class ViewWebhookLogsForSupportUseCase {
 		}
 		if (query.referenceId() != null && !query.referenceId().isBlank()) {
 			request.put("referenceId", query.referenceId());
+		}
+		if (query.searchQuery() != null && !query.searchQuery().isBlank()) {
+			request.put("searchQuery", query.searchQuery());
+		}
+		if (query.eventType() != null && !query.eventType().isBlank()) {
+			request.put("eventType", query.eventType());
 		}
 		if (query.status() != null && !query.status().isBlank()) {
 			request.put("status", query.status());

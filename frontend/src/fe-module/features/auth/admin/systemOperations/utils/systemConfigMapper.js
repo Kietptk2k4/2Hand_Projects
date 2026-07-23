@@ -11,6 +11,7 @@ export function mapSystemConfigEntry(entry) {
     createdAt: entry.created_at,
     updatedBy: entry.updated_by,
     updatedAt: entry.updated_at,
+    valueMasked: Boolean(entry.value_masked),
   };
 }
 

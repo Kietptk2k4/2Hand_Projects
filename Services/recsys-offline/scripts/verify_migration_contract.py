@@ -16,7 +16,7 @@ MIGRATION = (
     / "resources"
     / "db"
     / "migration"
-    / "V2__create_recsys_training_tables.sql"
+    / "V3__create_recsys_training_tables.sql"
 )
 
 
@@ -26,7 +26,7 @@ def main() -> None:
     assert "WHERE is_active = TRUE" in text
     assert "model_version INT" in text
     assert "user_seen_posts" in text
-    print("OK: V2 migration contains one-active index and INT model_version")
+    print("OK: V3 migration contains one-active index and INT model_version")
 
 
 if __name__ == "__main__":

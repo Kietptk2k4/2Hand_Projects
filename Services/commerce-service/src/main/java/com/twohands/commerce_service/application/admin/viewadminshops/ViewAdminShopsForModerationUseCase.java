@@ -21,7 +21,7 @@ public class ViewAdminShopsForModerationUseCase {
 
     private static final int DEFAULT_PAGE = 1;
     private static final int DEFAULT_LIMIT = 20;
-    private static final int MAX_LIMIT = 50;
+    private static final int MAX_LIMIT = 100;
 
     private final ViewAdminShopsForModerationRepository viewAdminShopsForModerationRepository;
 
@@ -97,7 +97,7 @@ public class ViewAdminShopsForModerationUseCase {
                     ErrorCode.VALIDATION_ERROR,
                     "Validation failed",
                     "sort",
-                    "must be one of NEWEST, OLDEST, NAME_ASC"
+                    "must be one of NEWEST, OLDEST, NAME_ASC, UPDATED_AT"
             );
         }
     }

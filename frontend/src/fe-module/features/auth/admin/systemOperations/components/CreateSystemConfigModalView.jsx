@@ -1,11 +1,19 @@
-import { AdminFilterButton, AdminFilterField, AdminFilterInput, AdminFilterSelect } from "../../components/ui";
+import {
+  AdminFilterButton,
+  AdminFilterField,
+  AdminFilterInput,
+  AdminFilterSelect,
+} from "../../components/ui";
 import { CONFIG_VALUE_TYPES } from "../constants/systemConfigConstants.js";
+import { SYSTEM_CONFIG_VALUE_TYPE_LABELS } from "../constants/systemConfigListConstants.js";
 import { GENERIC_CANCEL, GENERIC_CREATE } from "../constants/systemOperationsUiStrings.js";
+import { SystemConfigValueEditor } from "./SystemConfigValueEditor.jsx";
 import { SystemOperationsModalShell } from "./ui/SystemOperationsModalShell.jsx";
 
 export function CreateSystemConfigModalView({
   open,
   form,
+  fieldErrors = {},
   pending,
   onFieldChange,
   onClose,
@@ -36,15 +44,17 @@ export function CreateSystemConfigModalView({
             value={form.configKey}
             onChange={(e) => onFieldChange({ configKey: e.target.value })}
           />
+          {fieldErrors.config_key ? (
+            <p className="mt-1 text-xs text-admin-danger">{fieldErrors.config_key}</p>
+          ) : null}
         </AdminFilterField>
         <AdminFilterField label="Giá trị" htmlFor="create-config-value">
-          <textarea
-            id="create-config-value"
-            required
-            rows={3}
+          <SystemConfigValueEditor
+            valueType={form.valueType}
+            configKey={form.configKey}
             value={form.configValue}
-            onChange={(e) => onFieldChange({ configValue: e.target.value })}
-            className="w-full rounded-lg border border-admin-border bg-admin-surface px-3 py-2 text-base font-mono text-admin-text outline-none focus:border-admin-accent-border focus:ring-2 focus:ring-admin-accent-soft"
+            fieldError={fieldErrors.config_value}
+            onChange={(nextValue) => onFieldChange({ configValue: nextValue })}
           />
         </AdminFilterField>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -57,10 +67,13 @@ export function CreateSystemConfigModalView({
             >
               {CONFIG_VALUE_TYPES.map((type) => (
                 <option key={type} value={type}>
-                  {type}
+                  {SYSTEM_CONFIG_VALUE_TYPE_LABELS[type] || type}
                 </option>
               ))}
             </AdminFilterSelect>
+            {fieldErrors.value_type ? (
+              <p className="mt-1 text-xs text-admin-danger">{fieldErrors.value_type}</p>
+            ) : null}
           </AdminFilterField>
           <div className="flex items-end pb-1">
             <label className="flex min-h-11 items-center gap-2 text-sm text-admin-text">
@@ -81,6 +94,9 @@ export function CreateSystemConfigModalView({
             value={form.description}
             onChange={(e) => onFieldChange({ description: e.target.value })}
           />
+          {fieldErrors.description ? (
+            <p className="mt-1 text-xs text-admin-danger">{fieldErrors.description}</p>
+          ) : null}
         </AdminFilterField>
         <AdminFilterField label="Lý do thay đổi" htmlFor="create-config-reason">
           <textarea
@@ -91,6 +107,9 @@ export function CreateSystemConfigModalView({
             onChange={(e) => onFieldChange({ reason: e.target.value })}
             className="w-full rounded-lg border border-admin-border bg-admin-surface px-3 py-2 text-base text-admin-text outline-none focus:border-admin-accent-border focus:ring-2 focus:ring-admin-accent-soft"
           />
+          {fieldErrors.reason ? (
+            <p className="mt-1 text-xs text-admin-danger">{fieldErrors.reason}</p>
+          ) : null}
         </AdminFilterField>
       </form>
     </SystemOperationsModalShell>

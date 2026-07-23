@@ -1,7 +1,11 @@
 import { AdminPageHeader, AdminSurfaceCard } from "../../../components/ui";
-import { CatalogFilterBar } from "../CatalogFilterBar.jsx";
+import { CategoryDetailDrawer } from "../CategoryDetailDrawer.jsx";
+import { CategoryDeactivateDialog } from "../CategoryDeactivateDialog.jsx";
+import { CategoryHeroStrip } from "../CategoryHeroStrip.jsx";
+import { CategoryToolbar } from "../CategoryToolbar.jsx";
+import { CategoryTreeTable } from "../CategoryTreeTable.jsx";
 import { CatalogForbiddenState } from "../CatalogForbiddenState.jsx";
-import { CategoryTable } from "../CategoryTable.jsx";
+import { getCategoryEmptyMessage } from "../../utils/categoryHelpers.js";
 
 function CatalogListSkeleton() {
   return (
@@ -35,66 +39,121 @@ export function CategoryManagementTabView({
   subtitle,
   canRead,
   canWrite,
-  query,
-  activeFilter,
+  filters,
   loadStatus,
   errorMessage,
-  items,
+  heroMetrics,
+  tree,
+  categoryIndex,
+  allItems,
+  expandedIds,
   actionId,
-  emptyMessage,
+  detailItem,
+  deactivateItem,
+  deactivatePending,
   modal,
   onQueryChange,
-  onActiveFilterChange,
-  onFilter,
+  onStatusChange,
+  onKpiStatusClick,
+  onRefresh,
   onAdd,
   onEdit,
-  onDeactivate,
+  onDeactivateRequest,
+  onDeactivateConfirm,
+  onDeactivateClose,
   onActivate,
+  onToggleExpand,
+  onOpenDetail,
+  onCloseDetail,
   onRetry,
 }) {
+  const isLoading = loadStatus === "loading" || loadStatus === "idle";
+  const emptyMessage = getCategoryEmptyMessage(filters.status, filters.q);
+
   if (!canRead) {
     return (
-      <div className="space-y-4">
-        <AdminPageHeader title={title} subtitle={subtitle} />
+      <div className="mb-6 space-y-4">
+        <AdminPageHeader eyebrow="Quản lý catalog" title={title} subtitle={subtitle} />
         <CatalogForbiddenState />
       </div>
     );
   }
 
-  return (
-    <div className="space-y-4">
-      <AdminPageHeader title={title} subtitle={subtitle} />
+  if (loadStatus === "error") {
+    return (
+      <div className="mb-6 space-y-4">
+        <AdminPageHeader eyebrow="Quản lý catalog" title={title} subtitle={subtitle} />
+        <CatalogRetryPanel message={errorMessage} onRetry={onRetry} />
+      </div>
+    );
+  }
 
-      <CatalogFilterBar
-        query={query}
-        activeFilter={activeFilter}
+  return (
+    <div className="mb-6 space-y-6">
+      <AdminPageHeader eyebrow="Quản lý catalog" title={title} subtitle={subtitle} />
+
+      <CategoryHeroStrip
+        metrics={heroMetrics}
+        activeStatusFilter={filters.status}
+        isLoading={isLoading}
+        onStatusClick={onKpiStatusClick}
+      />
+
+      <CategoryToolbar
+        query={filters.q}
+        statusFilter={filters.status}
         canWrite={canWrite}
-        addLabel="Thêm danh mục"
+        isLoading={isLoading}
         onQueryChange={onQueryChange}
-        onActiveFilterChange={onActiveFilterChange}
-        onFilter={onFilter}
+        onStatusChange={onStatusChange}
+        onRefresh={onRefresh}
         onAdd={onAdd}
       />
 
-      {loadStatus === "loading" ? <CatalogListSkeleton /> : null}
+      {isLoading ? <CatalogListSkeleton /> : null}
+
       {loadStatus === "forbidden" ? <CatalogForbiddenState message={errorMessage} /> : null}
-      {loadStatus === "error" ? <CatalogRetryPanel message={errorMessage} onRetry={onRetry} /> : null}
 
       {loadStatus === "ready" ? (
         <AdminSurfaceCard padding="md">
-          <CategoryTable
-            items={items}
+          <CategoryTreeTable
+            tree={tree}
+            categoryIndex={categoryIndex}
+            expandedIds={expandedIds}
             canWrite={canWrite}
             actionId={actionId}
             emptyMessage={emptyMessage}
+            onToggleExpand={onToggleExpand}
             onEdit={onEdit}
-            onDeactivate={onDeactivate}
+            onDeactivate={onDeactivateRequest}
             onActivate={onActivate}
+            onOpenDetail={onOpenDetail}
           />
         </AdminSurfaceCard>
       ) : null}
 
       {modal}
+
+      <CategoryDetailDrawer
+        open={Boolean(detailItem)}
+        item={detailItem}
+        categoryIndex={categoryIndex}
+        allItems={allItems}
+        canWrite={canWrite}
+        actionId={actionId}
+        onClose={onCloseDetail}
+        onEdit={onEdit}
+        onDeactivate={onDeactivateRequest}
+        onActivate={onActivate}
+      />
+
+      <CategoryDeactivateDialog
+        item={deactivateItem}
+        allItems={allItems}
+        pending={deactivatePending}
+        onConfirm={onDeactivateConfirm}
+        onClose={onDeactivateClose}
+      />
     </div>
   );
 }

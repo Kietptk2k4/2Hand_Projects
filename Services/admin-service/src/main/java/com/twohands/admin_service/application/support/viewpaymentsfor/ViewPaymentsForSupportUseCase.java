@@ -52,6 +52,8 @@ public class ViewPaymentsForSupportUseCase {
 				query.status(),
 				query.paymentMethod(),
 				query.orderId(),
+				query.q(),
+				query.reconciliationStatus(),
 				query.from(),
 				query.to(),
 				query.page(),
@@ -92,6 +94,12 @@ public class ViewPaymentsForSupportUseCase {
 		}
 		if (query.orderId() != null && !query.orderId().isBlank()) {
 			request.put("orderId", query.orderId());
+		}
+		if (query.q() != null && !query.q().isBlank()) {
+			request.put("q", query.q());
+		}
+		if (query.reconciliationStatus() != null && !query.reconciliationStatus().isBlank()) {
+			request.put("reconciliationStatus", query.reconciliationStatus());
 		}
 		if (query.page() != null) {
 			request.put("page", query.page());

@@ -46,7 +46,10 @@ final class AdminModerationListResponseMapper {
                 entry.shopName(),
                 entry.logoUrl(),
                 entry.status(),
-                entry.createdAt()
+                entry.createdAt(),
+                entry.updatedAt(),
+                entry.productCount(),
+                entry.activeProductCount()
         );
     }
 

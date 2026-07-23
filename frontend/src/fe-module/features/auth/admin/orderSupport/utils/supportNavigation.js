@@ -2,6 +2,18 @@ const SUPPORT_PARAM_KEYS = [
   "orderId",
   "paymentId",
   "shipmentId",
+  "wh_provider",
+  "wh_reference_id",
+  "wh_q",
+  "wh_event_type",
+  "wh_status",
+  "wh_from",
+  "wh_to",
+  "wh_page",
+  "wh_size",
+  "wh_log_id",
+  "wh_log_provider",
+  // legacy webhook keys
   "provider",
   "reference_id",
   "status",
@@ -49,6 +61,8 @@ export function buildSupportSearchParams({
   const {
     provider,
     reference_id: referenceId,
+    q,
+    event_type: eventType,
     status,
     from,
     to,
@@ -56,13 +70,15 @@ export function buildSupportSearchParams({
     size,
   } = webhookFilters;
 
-  if (provider) next.set("provider", provider);
-  if (referenceId) next.set("reference_id", referenceId);
-  if (status) next.set("status", status);
-  if (from) next.set("from", from);
-  if (to) next.set("to", to);
-  if (page) next.set("page", String(page));
-  if (size) next.set("size", String(size));
+  if (provider) next.set("wh_provider", provider);
+  if (referenceId) next.set("wh_reference_id", referenceId);
+  if (q) next.set("wh_q", q);
+  if (eventType) next.set("wh_event_type", eventType);
+  if (status) next.set("wh_status", status);
+  if (from) next.set("wh_from", from);
+  if (to) next.set("wh_to", to);
+  if (page) next.set("wh_page", String(page));
+  if (size) next.set("wh_size", String(size));
 
   return next;
 }

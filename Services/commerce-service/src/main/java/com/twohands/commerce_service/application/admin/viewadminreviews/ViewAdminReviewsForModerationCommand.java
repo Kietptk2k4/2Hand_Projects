@@ -5,6 +5,7 @@ public record ViewAdminReviewsForModerationCommand(
         Integer limit,
         String status,
         Integer rating,
-        String searchQuery
+        String searchQuery,
+        String sort
 ) {
 }

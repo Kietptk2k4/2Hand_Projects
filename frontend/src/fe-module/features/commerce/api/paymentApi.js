@@ -1,4 +1,5 @@
 import { commerceApiClient } from "../../../services/http/commerceApiClient";
+import { buildVnpayCheckoutPayload } from "../utils/vnpayRedirectUrls";
 import { mapAxiosError, unwrapResponse } from "./commerceApiResponse";
 
 export async function createPayOsCheckoutUrl(paymentId) {
@@ -15,7 +16,8 @@ export async function createPayOsCheckoutUrl(paymentId) {
 export async function createVnpayCheckoutUrl(paymentId) {
   try {
     const response = await commerceApiClient.post(
-      `/commerce/api/v1/payments/${paymentId}/vnpay-checkout-url`
+      `/commerce/api/v1/payments/${paymentId}/vnpay-checkout-url`,
+      buildVnpayCheckoutPayload()
     );
     return unwrapResponse(response);
   } catch (error) {
@@ -26,7 +28,8 @@ export async function createVnpayCheckoutUrl(paymentId) {
 export async function retryVnpayPayment(orderId) {
   try {
     const response = await commerceApiClient.post(
-      `/commerce/api/v1/orders/${orderId}/payments/vnpay/retry`
+      `/commerce/api/v1/orders/${orderId}/payments/vnpay/retry`,
+      buildVnpayCheckoutPayload()
     );
     return unwrapResponse(response);
   } catch (error) {

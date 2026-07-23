@@ -43,11 +43,15 @@ Cho phép admin/support xem **chi tiết đơn hàng** phục vụ tranh chấp,
       }
     ],
     "order_timeline": [],
-    "contact_fields_masked": true
+    "contact_fields_masked": true,
+    "cancellation_note": null,
+    "active_refund_request": null
   }
 }
 ```
 
+- `cancellation_note`: lý do hủy đơn (nếu có), passthrough từ Commerce.
+- `active_refund_request`: yêu cầu hoàn tiền đang mở `{ status, amount, ... }` (nếu có).
 - `contact_fields_masked`: `true` khi PII shipping đã được mask (mặc định với `ORDER_SUPPORT_READ`).
 - Không trả password, token, OTP.
 

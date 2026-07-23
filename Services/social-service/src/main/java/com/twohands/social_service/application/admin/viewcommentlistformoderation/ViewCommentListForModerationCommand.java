@@ -5,6 +5,7 @@ import com.twohands.social_service.security.AuthenticatedUser;
 public record ViewCommentListForModerationCommand(
         AuthenticatedUser actor,
         String status,
+        String moderationStatus,
         String postId,
         String query,
         String sort,

@@ -35,6 +35,17 @@ public class AdminCommentListRepositoryAdapter implements AdminCommentListReposi
         List<Criteria> filters = new ArrayList<>();
 
         criteria.status().ifPresent(status -> filters.add(Criteria.where("status").is(status)));
+        criteria.moderationStatus().ifPresent(status -> {
+            if ("NONE".equals(status)) {
+                filters.add(new Criteria().orOperator(
+                        Criteria.where("moderation_status").exists(false),
+                        Criteria.where("moderation_status").is(null),
+                        Criteria.where("moderation_status").is("NONE")
+                ));
+            } else {
+                filters.add(Criteria.where("moderation_status").is(status));
+            }
+        });
         criteria.postId().ifPresent(postId -> filters.add(Criteria.where("post_id").is(postId)));
         criteria.query().ifPresent(fragment -> filters.add(buildSearchCriteria(fragment)));
 
@@ -83,17 +94,29 @@ public class AdminCommentListRepositoryAdapter implements AdminCommentListReposi
         return switch (sortField) {
             case CREATED_AT -> Sort.by(Sort.Order.desc("created_at"), Sort.Order.desc("_id"));
             case UPDATED_AT -> Sort.by(Sort.Order.desc("updated_at"), Sort.Order.desc("_id"));
+            case MODERATION_STATUS -> Sort.by(Sort.Order.desc("moderation_status"), Sort.Order.desc("_id"));
             case LIKE_COUNT -> Sort.by(Sort.Order.desc("like_count"), Sort.Order.desc("_id"));
         };
     }
 
     private AdminCommentListItem toListItem(CommentDocument document) {
+        String moderationStatus = document.getModerationStatus();
+        if (moderationStatus == null || moderationStatus.isBlank()) {
+            moderationStatus = "NONE";
+        }
+        List<CommentDocument.MediaDocument> media = document.getMedia() == null ? List.of() : document.getMedia();
+
         return new AdminCommentListItem(
                 document.getId(),
                 document.getPostId(),
                 document.getAuthorId(),
+                null,
+                null,
+                document.getParentCommentId(),
                 toPreview(document.getContentText()),
                 document.getStatus(),
+                moderationStatus,
+                media.size(),
                 document.getLikeCount(),
                 document.getCreatedAt(),
                 document.getUpdatedAt()

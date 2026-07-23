@@ -13,6 +13,7 @@ public interface ViewAdminProductsForModerationRepository {
     List<AdminProductListEntry> find(
             Optional<ProductStatus> status,
             Optional<String> searchQuery,
+            AdminProductListSort sort,
             PageQuery pageQuery
     );
 }

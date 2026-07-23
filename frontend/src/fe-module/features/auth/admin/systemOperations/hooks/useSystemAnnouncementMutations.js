@@ -4,10 +4,12 @@ import {
   createSystemAnnouncement,
   pinSystemAnnouncement,
   publishSystemAnnouncement,
+  updateSystemAnnouncement,
 } from "../api/systemAnnouncementApi.js";
 import {
   toCreateSystemAnnouncementPayload,
   toPinSystemAnnouncementPayload,
+  toUpdateSystemAnnouncementPayload,
 } from "../utils/systemAnnouncementMapper.js";
 
 export function useSystemAnnouncementMutations({ onSuccess, onError }) {
@@ -46,10 +48,23 @@ export function useSystemAnnouncementMutations({ onSuccess, onError }) {
     [run],
   );
 
+  const updateAnnouncement = useCallback(
+    (announcementId, form) =>
+      run(() => updateSystemAnnouncement(announcementId, toUpdateSystemAnnouncementPayload(form))),
+    [run],
+  );
+
   const cancelAnnouncement = useCallback(
     (announcementId) => run(() => cancelSystemAnnouncement(announcementId)),
     [run],
   );
 
-  return { pending, createAnnouncement, publishAnnouncement, pinAnnouncement, cancelAnnouncement };
+  return {
+    pending,
+    createAnnouncement,
+    updateAnnouncement,
+    publishAnnouncement,
+    pinAnnouncement,
+    cancelAnnouncement,
+  };
 }

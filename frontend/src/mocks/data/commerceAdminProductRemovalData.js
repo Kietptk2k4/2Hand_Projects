@@ -132,7 +132,7 @@ function mockCartInvalidated(productId) {
   return hash % 6;
 }
 
-export function validateAdminProductListQuery({ page, limit, status, q }) {
+export function validateAdminProductListQuery({ page, limit, status, q, sort }) {
   const pageNum = Number(page);
   const limitNum = Number(limit);
 
@@ -140,7 +140,7 @@ export function validateAdminProductListQuery({ page, limit, status, q }) {
     return { error: "COMMERCE-400-PAGINATION", status: 400 };
   }
 
-  if (!Number.isInteger(limitNum) || limitNum < 1 || limitNum > 50) {
+  if (!Number.isInteger(limitNum) || limitNum < 1 || limitNum > 100) {
     return { error: "COMMERCE-400-PAGINATION", status: 400 };
   }
 
@@ -148,10 +148,82 @@ export function validateAdminProductListQuery({ page, limit, status, q }) {
     return { error: "COMMERCE-400-VALIDATION", status: 400 };
   }
 
-  return { page: pageNum, limit: limitNum, status: status || null, q: q || null };
+  const validSorts = ["NEWEST", "OLDEST", "PRICE_ASC", "PRICE_DESC", "UPDATED_AT"];
+  if (sort && !validSorts.includes(sort)) {
+    return { error: "COMMERCE-400-VALIDATION", status: 400 };
+  }
+
+  return { page: pageNum, limit: limitNum, status: status || null, q: q || null, sort: sort || "NEWEST" };
 }
 
-export function listAdminProductsForAdmin({ page, limit, status, q }) {
+function sortAdminProducts(items, sort) {
+  const next = [...items];
+  switch (sort) {
+    case "OLDEST":
+      return next.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    case "PRICE_ASC":
+      return next.sort(
+        (a, b) => (a.effective_price ?? a.price) - (b.effective_price ?? b.price),
+      );
+    case "PRICE_DESC":
+      return next.sort(
+        (a, b) => (b.effective_price ?? b.price) - (a.effective_price ?? a.price),
+      );
+    case "UPDATED_AT":
+      return next.sort(
+        (a, b) =>
+          new Date(b.removed_at || b.created_at) - new Date(a.removed_at || a.created_at),
+      );
+    case "NEWEST":
+    default:
+      return next.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  }
+}
+
+export function getAdminProductDetail(productId) {
+  const product = productsById.get(productId);
+  if (!product) {
+    return { error: "COMMERCE-404-PRODUCT", status: 404 };
+  }
+
+  return {
+    data: {
+      product_id: product.product_id,
+      seller_id: product.seller_id,
+      shop_id: product.shop_id,
+      shop_name: product.shop_name,
+      title: product.title,
+      description: `Mô tả mẫu cho ${product.title}. Đây là dữ liệu mock cho drawer kiểm duyệt.`,
+      status: product.status,
+      category_id: product.category_id,
+      category_name: product.category_name,
+      price: product.price,
+      effective_price: product.effective_price,
+      stock_quantity: product.status === "OUT_OF_STOCK" ? 0 : 12,
+      created_at: product.created_at,
+      updated_at: product.removed_at || product.created_at,
+      removed_at: product.removed_at,
+      remove_reason: product.remove_reason,
+      open_order_count: product.status === "REMOVED" ? 0 : 2,
+      media: product.thumbnail_url
+        ? [
+            { media_url: product.thumbnail_url, media_type: "image", sort_order: 0 },
+            {
+              media_url: `https://picsum.photos/seed/${product.product_id.slice(0, 8)}/400/400`,
+              media_type: "image",
+              sort_order: 1,
+            },
+          ]
+        : [],
+      attributes: [
+        { attribute_name: "Size", attribute_value: "M" },
+        { attribute_name: "Color", attribute_value: "Black" },
+      ],
+    },
+  };
+}
+
+export function listAdminProductsForAdmin({ page, limit, status, q, sort = "NEWEST" }) {
   let items = [...productsById.values()];
 
   if (status) {
@@ -171,7 +243,7 @@ export function listAdminProductsForAdmin({ page, limit, status, q }) {
     }
   }
 
-  items.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  items = sortAdminProducts(items, sort);
 
   const total = items.length;
   const totalPages = Math.max(1, Math.ceil(total / limit) || 1);

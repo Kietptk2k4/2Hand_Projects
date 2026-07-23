@@ -47,6 +47,8 @@ class ViewWebhookLogsForSupportIntegrationTest {
 				isNull(),
 				isNull(),
 				isNull(),
+				isNull(),
+				isNull(),
 				eq(1),
 				eq(10),
 				eq("bearer")
@@ -58,10 +60,12 @@ class ViewWebhookLogsForSupportIntegrationTest {
 						"delivered",
 						"PROCESSED",
 						null,
-						0,
 						"GHN:GHN-100:delivered",
 						Map.of("status", "delivered"),
-						Instant.parse("2026-05-20T11:00:00Z")
+						Instant.parse("2026-05-20T11:00:00Z"),
+						null,
+						UUID.randomUUID(),
+						UUID.randomUUID()
 				)),
 				1,
 				10,
@@ -71,6 +75,8 @@ class ViewWebhookLogsForSupportIntegrationTest {
 
 		var result = viewWebhookLogsForSupportUseCase.execute(new ViewWebhookLogsForSupportQuery(
 				"GHN",
+				null,
+				null,
 				null,
 				null,
 				null,

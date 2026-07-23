@@ -2,6 +2,9 @@ package com.twohands.commerce_service.delivery.http.admin;
 
 import com.twohands.commerce_service.application.admin.viewadminreviews.ViewAdminReviewsForModerationCommand;
 import com.twohands.commerce_service.application.admin.viewadminreviews.ViewAdminReviewsForModerationUseCase;
+import com.twohands.commerce_service.application.admin.viewreviewdetailformoderation.ViewReviewDetailForModerationCommand;
+import com.twohands.commerce_service.application.admin.viewreviewdetailformoderation.ViewReviewDetailForModerationResult;
+import com.twohands.commerce_service.application.admin.viewreviewdetailformoderation.ViewReviewDetailForModerationUseCase;
 import com.twohands.commerce_service.application.review.moderatereview.ModerateReviewCommand;
 import com.twohands.commerce_service.application.review.moderatereview.ModerateReviewUseCase;
 import com.twohands.commerce_service.domain.admin.ViewAdminReviewsForModerationResult;
@@ -31,15 +34,18 @@ import java.util.UUID;
 public class AdminReviewController {
 
     private final ViewAdminReviewsForModerationUseCase viewAdminReviewsForModerationUseCase;
+    private final ViewReviewDetailForModerationUseCase viewReviewDetailForModerationUseCase;
     private final ModerateReviewUseCase moderateReviewUseCase;
     private final CommerceAdminAuthorization commerceAdminAuthorization;
 
     public AdminReviewController(
             ViewAdminReviewsForModerationUseCase viewAdminReviewsForModerationUseCase,
+            ViewReviewDetailForModerationUseCase viewReviewDetailForModerationUseCase,
             ModerateReviewUseCase moderateReviewUseCase,
             CommerceAdminAuthorization commerceAdminAuthorization
     ) {
         this.viewAdminReviewsForModerationUseCase = viewAdminReviewsForModerationUseCase;
+        this.viewReviewDetailForModerationUseCase = viewReviewDetailForModerationUseCase;
         this.moderateReviewUseCase = moderateReviewUseCase;
         this.commerceAdminAuthorization = commerceAdminAuthorization;
     }
@@ -51,6 +57,7 @@ public class AdminReviewController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Integer rating,
             @RequestParam(required = false) String q,
+            @RequestParam(required = false) String sort,
             Authentication authentication
     ) {
         AuthenticatedUser admin = resolveAuthenticatedUser(authentication);
@@ -60,13 +67,35 @@ public class AdminReviewController {
         );
 
         ViewAdminReviewsForModerationResult result = viewAdminReviewsForModerationUseCase.execute(
-                new ViewAdminReviewsForModerationCommand(page, limit, status, rating, q)
+                new ViewAdminReviewsForModerationCommand(page, limit, status, rating, q, sort)
         );
 
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK.value(),
                 viewAdminReviewsForModerationUseCase.successMessage(),
                 AdminModerationListResponseMapper.toReviewListResponse(result)
+        ));
+    }
+
+    @GetMapping("/{reviewId}")
+    public ResponseEntity<ApiResponse<AdminReviewDetailResponse>> getReviewDetail(
+            @PathVariable UUID reviewId,
+            Authentication authentication
+    ) {
+        AuthenticatedUser admin = resolveAuthenticatedUser(authentication);
+        commerceAdminAuthorization.requirePermission(
+                admin,
+                CommerceAdminAuthorization.PERMISSION_REVIEW_HIDE
+        );
+
+        ViewReviewDetailForModerationResult result = viewReviewDetailForModerationUseCase.execute(
+                new ViewReviewDetailForModerationCommand(reviewId)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewReviewDetailForModerationUseCase.successMessage(),
+                toDetailResponse(result)
         ));
     }
 
@@ -107,6 +136,27 @@ public class AdminReviewController {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         return principal;
+    }
+
+    private AdminReviewDetailResponse toDetailResponse(ViewReviewDetailForModerationResult result) {
+        return new AdminReviewDetailResponse(
+                result.reviewId(),
+                result.orderItemId(),
+                result.productId(),
+                result.productTitle(),
+                result.productThumbnailUrl(),
+                result.buyerId(),
+                null,
+                null,
+                result.sellerId(),
+                result.shopId(),
+                result.shopName(),
+                result.rating(),
+                result.comment(),
+                result.status(),
+                result.createdAt(),
+                result.updatedAt()
+        );
     }
 
     private ModerateReviewResponse toResponse(ModerateReviewResult result) {

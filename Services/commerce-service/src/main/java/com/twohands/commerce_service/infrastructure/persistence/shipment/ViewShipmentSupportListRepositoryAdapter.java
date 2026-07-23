@@ -99,6 +99,14 @@ public class ViewShipmentSupportListRepositoryAdapter implements ViewShipmentSup
         MapSqlParameterSource params = new MapSqlParameterSource();
         criteria.status().ifPresent(status -> params.addValue("status", status.name()));
         criteria.carrier().ifPresent(carrier -> params.addValue("carrier", carrier.name()));
+        criteria.searchQuery().ifPresent(value -> params.addValue("searchPattern", "%" + value + "%"));
+        criteria.orderId().ifPresent(orderId -> params.addValue("orderId", orderId));
+        if (criteria.from() != null) {
+            params.addValue("from", Timestamp.from(criteria.from()));
+        }
+        if (criteria.to() != null) {
+            params.addValue("to", Timestamp.from(criteria.to()));
+        }
         return params;
     }
 
@@ -109,6 +117,25 @@ public class ViewShipmentSupportListRepositoryAdapter implements ViewShipmentSup
         }
         if (criteria.carrier().isPresent()) {
             clause.append(" AND s.carrier::text = :carrier");
+        }
+        if (criteria.searchQuery().isPresent()) {
+            clause.append("""
+                     AND (
+                        s.id::text ILIKE :searchPattern
+                        OR s.order_id::text ILIKE :searchPattern
+                        OR COALESCE(s.tracking_number, '') ILIKE :searchPattern
+                        OR COALESCE(s.ghn_order_code, '') ILIKE :searchPattern
+                     )
+                    """);
+        }
+        if (criteria.orderId().isPresent()) {
+            clause.append(" AND s.order_id = :orderId");
+        }
+        if (criteria.from() != null) {
+            clause.append(" AND s.created_at >= :from");
+        }
+        if (criteria.to() != null) {
+            clause.append(" AND s.created_at <= :to");
         }
         return clause.toString();
     }

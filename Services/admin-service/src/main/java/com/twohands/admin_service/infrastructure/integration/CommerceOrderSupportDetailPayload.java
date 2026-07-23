@@ -22,8 +22,20 @@ record CommerceOrderSupportDetailPayload(
 		PaymentPayload payment,
 		List<ItemPayload> items,
 		List<ShipmentPayload> shipments,
-		@JsonProperty("order_timeline") List<OrderTimelinePayload> orderTimeline
+		@JsonProperty("order_timeline") List<OrderTimelinePayload> orderTimeline,
+		@JsonProperty("active_refund_request") ActiveRefundRequestPayload activeRefundRequest,
+		@JsonProperty("cancellation_note") String cancellationNote
 ) {
+	record ActiveRefundRequestPayload(
+			@JsonProperty("refund_request_id") UUID refundRequestId,
+			String status,
+			@JsonProperty("requested_by") String requestedBy,
+			BigDecimal amount,
+			String reason,
+			@JsonProperty("requested_at") Instant requestedAt
+	) {
+	}
+
 	record PaymentPayload(
 			@JsonProperty("payment_id") UUID paymentId,
 			String status,

@@ -36,11 +36,20 @@ export function mapRefundApprovalItem(raw) {
 
 export function mapRefundApprovalQueueResponse(raw) {
   const pagination = raw?.pagination ?? {};
+  const totalItems = Number(pagination.total_items ?? pagination.totalItems) || 0;
+  const limit = Number(pagination.limit) || 20;
+  const page = Number(pagination.page) || 1;
+  const totalPages =
+    Number(pagination.total_pages ?? pagination.totalPages) || Math.max(1, Math.ceil(totalItems / limit));
+
   return {
     items: (raw?.items ?? []).map(mapRefundApprovalItem).filter(Boolean),
     pagination: {
-      page: Number(pagination.page) || 1,
-      totalItems: Number(pagination.total_items ?? pagination.totalItems) || 0,
+      page,
+      limit,
+      totalItems,
+      totalPages,
+      hasNext: Boolean(pagination.has_next ?? pagination.hasNext),
     },
   };
 }

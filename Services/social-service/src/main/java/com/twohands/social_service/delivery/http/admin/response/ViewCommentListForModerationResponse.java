@@ -15,9 +15,19 @@ public record ViewCommentListForModerationResponse(
             String postId,
             @JsonProperty("author_id")
             String authorId,
+            @JsonProperty("author_display_name")
+            String authorDisplayName,
+            @JsonProperty("author_avatar_url")
+            String authorAvatarUrl,
+            @JsonProperty("parent_comment_id")
+            String parentCommentId,
             @JsonProperty("content_preview")
             String contentPreview,
             String status,
+            @JsonProperty("moderation_status")
+            String moderationStatus,
+            @JsonProperty("media_count")
+            int mediaCount,
             @JsonProperty("like_count")
             long likeCount,
             @JsonProperty("created_at")

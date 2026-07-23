@@ -89,6 +89,7 @@ public class SocialAdminRecommendationController {
             ModelArtifactRepository.ModelArtifactListItem item
     ) {
         return new RecommendationModelArtifactResponse(
+                item.modelName(),
                 item.version(),
                 item.format(),
                 item.artifactPath(),

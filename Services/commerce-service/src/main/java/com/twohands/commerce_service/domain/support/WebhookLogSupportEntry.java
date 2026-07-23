@@ -11,9 +11,11 @@ public record WebhookLogSupportEntry(
         String eventType,
         String processingStatus,
         Boolean signatureValid,
-        int retryCount,
         String idempotencyKey,
         Map<String, Object> payloadSummary,
-        Instant receivedAt
+        Instant receivedAt,
+        UUID paymentId,
+        UUID shipmentId,
+        UUID orderId
 ) {
 }

@@ -9,16 +9,21 @@ import com.twohands.admin_service.application.moderation.removereview.RemoveRevi
 import com.twohands.admin_service.application.moderation.restorereview.RestoreReviewCommand;
 import com.twohands.admin_service.application.moderation.restorereview.RestoreReviewResult;
 import com.twohands.admin_service.application.moderation.restorereview.RestoreReviewUseCase;
+import com.twohands.admin_service.application.moderation.viewreviewhistory.ViewReviewModerationHistoryQuery;
+import com.twohands.admin_service.application.moderation.viewreviewhistory.ViewReviewModerationHistoryResult;
+import com.twohands.admin_service.application.moderation.viewreviewhistory.ViewReviewModerationHistoryUseCase;
 import com.twohands.admin_service.common.dto.ApiResponse;
 import com.twohands.admin_service.constant.AdminPermission;
 import com.twohands.admin_service.security.annotation.RequireAdminPermission;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -30,15 +35,36 @@ public class ReviewModerationController {
 	private final HideReviewUseCase hideReviewUseCase;
 	private final RemoveReviewUseCase removeReviewUseCase;
 	private final RestoreReviewUseCase restoreReviewUseCase;
+	private final ViewReviewModerationHistoryUseCase viewReviewModerationHistoryUseCase;
 
 	public ReviewModerationController(
 			HideReviewUseCase hideReviewUseCase,
 			RemoveReviewUseCase removeReviewUseCase,
-			RestoreReviewUseCase restoreReviewUseCase
+			RestoreReviewUseCase restoreReviewUseCase,
+			ViewReviewModerationHistoryUseCase viewReviewModerationHistoryUseCase
 	) {
 		this.hideReviewUseCase = hideReviewUseCase;
 		this.removeReviewUseCase = removeReviewUseCase;
 		this.restoreReviewUseCase = restoreReviewUseCase;
+		this.viewReviewModerationHistoryUseCase = viewReviewModerationHistoryUseCase;
+	}
+
+	@GetMapping("/{reviewId}/moderation-history")
+	@RequireAdminPermission(AdminPermission.REVIEW_MODERATION_READ)
+	public ResponseEntity<ApiResponse<ViewReviewModerationHistoryResponse>> viewModerationHistory(
+			@PathVariable UUID reviewId,
+			@RequestParam(required = false) Integer page,
+			@RequestParam(required = false) Integer size
+	) {
+		ViewReviewModerationHistoryResult result = viewReviewModerationHistoryUseCase.execute(
+				new ViewReviewModerationHistoryQuery(reviewId, page, size)
+		);
+
+		return ResponseEntity.ok(ApiResponse.success(
+				HttpStatus.OK.value(),
+				viewReviewModerationHistoryUseCase.successMessage(),
+				toHistoryResponse(result)
+		));
 	}
 
 	@PostMapping("/{reviewId}/hide")
@@ -117,5 +143,25 @@ public class ReviewModerationController {
 
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(ApiResponse.success(HttpStatus.OK.value(), restoreReviewUseCase.successMessage(), data));
+	}
+
+	private ViewReviewModerationHistoryResponse toHistoryResponse(ViewReviewModerationHistoryResult result) {
+		return new ViewReviewModerationHistoryResponse(
+				result.reviewId(),
+				result.page(),
+				result.size(),
+				result.totalElements(),
+				result.totalPages(),
+				result.history().stream()
+						.map(item -> new ReviewModerationHistoryEntryResponse(
+								item.moderationLogId(),
+								item.action().name(),
+								item.reason(),
+								item.note(),
+								item.adminId(),
+								item.createdAt()
+						))
+						.toList()
+		);
 	}
 }

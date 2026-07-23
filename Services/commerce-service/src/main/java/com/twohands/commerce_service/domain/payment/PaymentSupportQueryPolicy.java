@@ -6,6 +6,8 @@ import com.twohands.commerce_service.exception.ErrorCode;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -17,6 +19,10 @@ public final class PaymentSupportQueryPolicy {
             .collect(Collectors.toUnmodifiableSet());
 
     private static final Set<String> ALLOWED_METHODS = Arrays.stream(PaymentMethod.values())
+            .map(Enum::name)
+            .collect(Collectors.toUnmodifiableSet());
+
+    private static final Set<String> ALLOWED_RECONCILIATION_STATUSES = Arrays.stream(PaymentSupportReconciliationStatus.values())
             .map(Enum::name)
             .collect(Collectors.toUnmodifiableSet());
 
@@ -40,7 +46,7 @@ public final class PaymentSupportQueryPolicy {
         }
         String normalized = paymentMethod.trim().toUpperCase();
         if (!ALLOWED_METHODS.contains(normalized)) {
-            throw validationError("payment_method", "payment_method must be COD or PAYOS");
+            throw validationError("payment_method", "payment_method must be one of " + ALLOWED_METHODS);
         }
         return PaymentMethod.valueOf(normalized);
     }
@@ -54,6 +60,34 @@ public final class PaymentSupportQueryPolicy {
         } catch (IllegalArgumentException ex) {
             throw validationError("order_id", "order_id must be a valid UUID");
         }
+    }
+
+    public static Optional<String> parseSearchQuery(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return Optional.empty();
+        }
+        String trimmed = raw.trim();
+        if (trimmed.isEmpty()) {
+            return Optional.empty();
+        }
+        if (!trimmed.matches("[0-9a-fA-F-]+")) {
+            throw validationError("q", "q must contain only hexadecimal UUID characters");
+        }
+        return Optional.of(trimmed);
+    }
+
+    public static PaymentSupportReconciliationStatus normalizeReconciliationStatus(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        String normalized = raw.trim().toUpperCase(Locale.ROOT);
+        if (!ALLOWED_RECONCILIATION_STATUSES.contains(normalized)) {
+            throw validationError(
+                    "reconciliation_status",
+                    "reconciliation_status must be one of " + ALLOWED_RECONCILIATION_STATUSES
+            );
+        }
+        return PaymentSupportReconciliationStatus.valueOf(normalized);
     }
 
     public static Instant parseInstant(String value, String fieldName) {

@@ -1,5 +1,6 @@
 import { delay, http, HttpResponse } from "msw";
 import {
+  getAdminReviewDetail,
   listAdminReviewsForAdmin,
   userHasAdminReviewAccess,
   validateAdminReviewListQuery,
@@ -57,6 +58,7 @@ export const commerceAdminReviewModerationHandlers = [
       status: url.searchParams.get("status") || undefined,
       rating: url.searchParams.get("rating") || undefined,
       q: url.searchParams.get("q") || undefined,
+      sort: url.searchParams.get("sort") || undefined,
     });
 
     if (validated.error) return mapError(validated);
@@ -64,6 +66,23 @@ export const commerceAdminReviewModerationHandlers = [
     const result = listAdminReviewsForAdmin(validated);
     return HttpResponse.json(
       apiSuccess(200, "Lay danh sach danh gia admin thanh cong.", result.data),
+      { status: 200 },
+    );
+  }),
+
+  http.get("*/commerce/api/v1/admin/reviews/:reviewId", async ({ request, params }) => {
+    await delay(200);
+    const auth = requireAuth(request);
+    if (auth.error) return auth.error;
+
+    const denied = requireAdmin(auth.user);
+    if (denied) return denied.error;
+
+    const result = getAdminReviewDetail(params.reviewId);
+    if (result.error) return mapError(result);
+
+    return HttpResponse.json(
+      apiSuccess(200, "Lay chi tiet review kiem duyet thanh cong.", result.data),
       { status: 200 },
     );
   }),

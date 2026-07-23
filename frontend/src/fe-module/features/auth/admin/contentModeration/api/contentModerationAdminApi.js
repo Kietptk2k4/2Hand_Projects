@@ -92,6 +92,24 @@ export async function fetchPostModerationHistory(postId, { page = 1, size = 20 }
   });
 }
 
+export async function fetchCommentModerationHistory(commentId, { page = 1, size = 20 } = {}) {
+  return request("get", `/admin/api/v1/social/comments/${commentId}/moderation-history`, {
+    params: { page, size },
+  });
+}
+
+export async function fetchShopModerationHistory(shopId, { page = 1, size = 20 } = {}) {
+  return request("get", `/admin/api/v1/shops/${shopId}/moderation-history`, {
+    params: { page, size },
+  });
+}
+
+export async function fetchReviewModerationHistory(reviewId, { page = 1, size = 20 } = {}) {
+  return request("get", `/admin/api/v1/reviews/${reviewId}/moderation-history`, {
+    params: { page, size },
+  });
+}
+
 export async function hideReview(reviewId, payload) {
   return request("post", `/admin/api/v1/reviews/${reviewId}/hide`, {
     data: moderationBody(payload),

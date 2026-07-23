@@ -7,6 +7,8 @@ public record PaymentSupportSearchCriteria(
         PaymentStatus status,
         PaymentMethod paymentMethod,
         UUID orderId,
+        String searchQuery,
+        PaymentSupportReconciliationStatus reconciliationStatus,
         Instant from,
         Instant to
 ) {
