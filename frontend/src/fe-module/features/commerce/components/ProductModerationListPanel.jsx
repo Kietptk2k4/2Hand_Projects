@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { FeedToast } from "../../social/components/FeedToast";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { useContentModerationPermissions } from "../../auth/admin/contentModeration/hooks/useContentModerationPermissions.js";
+import { useSyncedDrawerId } from "../../auth/admin/hooks/useSyncedDrawerId.js";
 import { fetchAdminProductList } from "../api/adminProductRemovalApi";
 import { mapAdminProductRemovalApiError } from "../constants/adminProductRemovalConstants";
 import { PRODUCT_MODERATION_LIST_PAGE_SIZE } from "../constants/productModerationListConstants.js";
@@ -204,7 +205,11 @@ export function ProductModerationListPanel({
   const currentPage = filterPage || pagination?.page || 1;
   const totalPages = pagination?.totalPages || pagination?.total_pages || 1;
   const items = result?.items || [];
-  const selectedProduct = items.find((item) => item.productId === selectedProductId) || null;
+  const { openId: drawerProductId, closeDrawer } = useSyncedDrawerId(
+    selectedProductId,
+    onProductClear,
+  );
+  const selectedProduct = items.find((item) => item.productId === drawerProductId) || null;
 
   return (
     <>
@@ -228,7 +233,7 @@ export function ProductModerationListPanel({
         totalPages={totalPages}
         pageSize={String(filterSize)}
         activeSort={filterSort}
-        selectedProductId={selectedProductId}
+        selectedProductId={drawerProductId}
         selectedProductIds={selectedProductIds}
         selectionEnabled={selectionEnabled}
         canRemoveProduct={canRemoveProduct}
@@ -251,13 +256,19 @@ export function ProductModerationListPanel({
             size: String(nextSize),
           })
         }
-        onRowSelect={(product) => onProductSelect?.(product.productId)}
+        onRowSelect={(product) => {
+          if (product.productId === drawerProductId) {
+            closeDrawer();
+            return;
+          }
+          onProductSelect?.(product.productId);
+        }}
         drawer={
-          selectedProductId ? (
+          drawerProductId ? (
             <ProductModerationDrawer
-              productId={selectedProductId}
+              productId={drawerProductId}
               product={selectedProduct}
-              onClose={onProductClear}
+              onClose={closeDrawer}
               onRefresh={refreshAll}
             />
           ) : null

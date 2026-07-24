@@ -3,10 +3,10 @@ export const NOTIFICATION_LIST_TABS = {
   UNREAD: "unread",
 };
 
-export const NOTIFICATION_POLL_INTERVAL_MS = 60_000;
+export const NOTIFICATION_POLL_INTERVAL_MS = 15_000;
 
 /** Auto-dismiss duration for new-notification toasts (Phase 3). */
-export const NOTIFICATION_TOAST_AUTO_DISMISS_MS = 5_000;
+export const NOTIFICATION_TOAST_AUTO_DISMISS_MS = 6_500;
 
 export const NOTIFICATION_NO_DEEP_LINK_MESSAGE =
   "Thông báo này không có liên kết chi tiết.";

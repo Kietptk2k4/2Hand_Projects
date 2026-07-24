@@ -7,7 +7,7 @@ import { AdminMainHeader } from "./AdminMainHeader.jsx";
 export function AdminPageLayout({ nav, children }) {
   return (
     <div className="flex min-h-dvh w-full bg-admin-canvas">
-      <div className="w-full shrink-0 lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:w-64">{nav}</div>
+      <div className="w-full shrink-0 lg:fixed lg:inset-y-0 lg:left-0 lg:z-[60] lg:w-64">{nav}</div>
 
       <div className="flex min-w-0 flex-1 flex-col lg:pl-64">
         <AdminMainHeader />

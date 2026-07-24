@@ -14,6 +14,7 @@ import org.springframework.web.client.RestClient;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -52,6 +53,42 @@ class GhnShipmentGatewayAdapterTest {
         assertThat(result.ghnOrderCode()).isEqualTo("5ENLKKHD");
         assertThat(result.trackingNumber()).isEqualTo("5ENLKKHD");
         assertThat(result.mockProvider()).isFalse();
+        assertThat(result.expectedDeliveryDate()).isEqualTo(LocalDate.of(2026, 6, 10));
+    }
+
+    @Test
+    void parseCreateResponse_readsIsoExpectedDeliveryTime() {
+        String json = """
+                {
+                  "code": 200,
+                  "message": "Success",
+                  "data": {
+                    "order_code": "FFFNL9HH",
+                    "expected_delivery_time": "2020-06-03T16:00:00Z"
+                  }
+                }
+                """;
+
+        GhnCreateOrderResult result = adapter.parseCreateResponse(json);
+
+        assertThat(result.expectedDeliveryDate()).isEqualTo(LocalDate.of(2020, 6, 3));
+    }
+
+    @Test
+    void parseCreateResponse_allowsMissingExpectedDeliveryTime() {
+        String json = """
+                {
+                  "code": 200,
+                  "message": "Success",
+                  "data": {
+                    "order_code": "5ENLKKHD"
+                  }
+                }
+                """;
+
+        GhnCreateOrderResult result = adapter.parseCreateResponse(json);
+
+        assertThat(result.expectedDeliveryDate()).isNull();
     }
 
     @Test

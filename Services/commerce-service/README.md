@@ -223,6 +223,18 @@ FE dùng để chọn `district_code` (GHN district id) + `ward_code` khi tạo 
 
 Doc GHN: `GHN.API Get Province.txt`, `GHN.Get District.txt`, `GHN.Get Ward.txt`, `GHN.Cancel Order.txt`, `GHN.Print Order.txt`.
 
+### 9. GHN Sprint 5 (leadtime ETA + create ETA + print FE)
+
+**Checkout ETA:** `POST /commerce/api/v1/shipping/fee` khi GHN live gọi song song **Calculate Fee** + **leadtime** (`/shipping-order/leadtime`). Leadtime fail → giữ fee, ETA fallback heuristic (`STANDARD` +3 / `EXPRESS` +1 / `SAME_DAY`).
+
+**Create shipment ETA:** parse `expected_delivery_time` từ GHN Create Order → cập nhật `shipments.estimated_delivery_date` (override heuristic lúc insert).
+
+**Seller FE:** trang chi tiết vận đơn GHN có nút **In vận đơn** → `GET .../ghn/print-label` → mở `print_url` (default A5).
+
+**Out of scope:** GHN Return Order API.
+
+Doc GHN: `GHN.Calculate the expected delivery tim.txt`, `GHN.Create Order.txt`, `GHN.Print Order.txt`.
+
 ---
 
 ## Kiểm thử

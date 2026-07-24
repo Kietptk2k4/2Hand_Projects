@@ -4,6 +4,8 @@ import { buildAdminSearchParams } from "../../auth/admin/adminUrlParams.js";
 import { DetailRow } from "../../auth/admin/adminAudit/components/AdminActionLogDetailDrawerView.jsx";
 import { AuditCopyableId } from "../../auth/admin/adminAudit/components/AuditCopyableId.jsx";
 import { AdminFilterButton } from "../../auth/admin/components/ui";
+import { AdminDrawerPortal } from "../../auth/admin/components/AdminDrawerPortal.jsx";
+import { useAdminDrawerDismiss } from "../../auth/admin/hooks/useAdminDrawerDismiss.js";
 import { PostAuthorInvestigationLink } from "../../auth/admin/contentModeration/components/PostAuthorInvestigationLink.jsx";
 import { formatShortShopId } from "../utils/formatShortShopId";
 import { AdminReviewStatusBadge } from "./AdminReviewStatusBadge";
@@ -66,6 +68,8 @@ export function ReviewModerationDrawerView({
   onRemove,
   onRestore,
 }) {
+  useAdminDrawerDismiss(onClose, Boolean(reviewId));
+
   if (!reviewId) return null;
 
   const preview = review || {};
@@ -74,9 +78,14 @@ export function ReviewModerationDrawerView({
     canRemoveReview && (preview.status === "VISIBLE" || preview.status === "HIDDEN");
   const canRestore = canRestoreReview && preview.status === "HIDDEN";
 
+  const handleClose = () => {
+    onClose?.();
+  };
+
   return (
+    <AdminDrawerPortal>
     <div
-      className="fixed inset-0 z-50 flex min-h-dvh sm:justify-end"
+      className="fixed inset-0 z-[80] flex min-h-dvh sm:justify-end lg:left-64"
       role="dialog"
       aria-modal="true"
       aria-labelledby="review-mod-drawer-title"
@@ -85,7 +94,7 @@ export function ReviewModerationDrawerView({
         type="button"
         aria-label="Đóng chi tiết đánh giá"
         className="absolute inset-0 bg-admin-text/40 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={handleClose}
       />
 
       <aside className="relative z-10 flex h-full max-h-dvh w-full flex-col bg-admin-surface shadow-[var(--shadow-admin-surface)] sm:max-w-xl sm:border-l sm:border-admin-border">
@@ -105,8 +114,8 @@ export function ReviewModerationDrawerView({
             </div>
             <button
               type="button"
-              onClick={onClose}
-              className="inline-flex min-h-10 min-w-10 shrink-0 items-center justify-center rounded-lg border border-admin-border text-admin-text-secondary transition-colors hover:bg-admin-surface-muted hover:text-admin-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent-soft"
+              onClick={handleClose}
+              className="relative z-20 inline-flex min-h-10 min-w-10 shrink-0 items-center justify-center rounded-lg border border-admin-border text-admin-text-secondary transition-colors hover:bg-admin-surface-muted hover:text-admin-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent-soft"
               aria-label="Đóng drawer"
             >
               <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
@@ -208,5 +217,6 @@ export function ReviewModerationDrawerView({
         </div>
       </aside>
     </div>
+    </AdminDrawerPortal>
   );
 }

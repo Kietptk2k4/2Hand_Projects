@@ -7,6 +7,7 @@ import { useBulkCommentModeration } from "../hooks/useBulkCommentModeration.js";
 import { useContentModerationPermissions } from "../hooks/useContentModerationPermissions.js";
 import { usePostAuthorSummaries } from "../hooks/usePostAuthorSummaries.js";
 import { useCommentModerationStats } from "../hooks/useCommentModerationStats.js";
+import { useSyncedDrawerId } from "../../hooks/useSyncedDrawerId.js";
 import {
   buildCommentModerationQuickFilter,
   removeCommentModerationFilterChip,
@@ -238,7 +239,11 @@ export function CommentModerationListPanel({
     .filter((item) => item.author_id && !item.author_display_name)
     .map((item) => item.author_id);
   const authorSummaries = usePostAuthorSummaries(authorIdsNeedingFallback);
-  const selectedComment = items.find((item) => item.id === selectedCommentId) || null;
+  const { openId: drawerCommentId, closeDrawer } = useSyncedDrawerId(
+    selectedCommentId,
+    onCommentClear,
+  );
+  const selectedComment = items.find((item) => item.id === drawerCommentId) || null;
 
   return (
     <>
@@ -263,7 +268,7 @@ export function CommentModerationListPanel({
         totalPages={totalPages}
         pageSize={String(filterSize)}
         activeSort={filterSort}
-        selectedCommentId={selectedCommentId}
+        selectedCommentId={drawerCommentId}
         selectedCommentIds={selectedCommentIds}
         selectionEnabled={selectionEnabled}
         canModerateComment={canModerateComment}
@@ -287,18 +292,18 @@ export function CommentModerationListPanel({
           })
         }
         onRowSelect={(row) => {
-          if (selectedCommentId === row.id) {
-            onCommentClear?.();
+          if (drawerCommentId === row.id) {
+            closeDrawer();
             return;
           }
           onCommentSelect?.(row.id);
         }}
         drawer={
-          selectedCommentId ? (
+          drawerCommentId ? (
             <CommentModerationDrawer
-              commentId={selectedCommentId}
+              commentId={drawerCommentId}
               comment={selectedComment}
-              onClose={() => onCommentClear?.()}
+              onClose={closeDrawer}
               onRefresh={refreshAll}
             />
           ) : null

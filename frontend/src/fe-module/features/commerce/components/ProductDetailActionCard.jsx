@@ -1,6 +1,11 @@
 import { getConditionLabel } from "../constants/productDetailConstants";
 import { formatVndPrice } from "../../social/utils/formatPrice";
-import { getStockLabel, isAddToCartDisabled, isProductOnSale } from "../utils/productDetailDisplay";
+import {
+  getStockLabel,
+  isAddToCartDisabled,
+  isOwnListing,
+  isProductOnSale,
+} from "../utils/productDetailDisplay";
 
 export function ProductDetailActionCard({
   product,
@@ -10,10 +15,12 @@ export function ProductDetailActionCard({
   onBuyNow,
   isAddingToCart = false,
   isBuyingNow = false,
+  currentUserId = null,
 }) {
   if (!product) return null;
 
-  const addDisabled = isAddToCartDisabled(product);
+  const ownListing = isOwnListing(product, currentUserId);
+  const addDisabled = isAddToCartDisabled(product, currentUserId);
   const isOnSale = isProductOnSale(product);
   const stockLabel = getStockLabel(product);
   const actionsDisabled = addDisabled || isAddingToCart || isBuyingNow;
@@ -41,6 +48,12 @@ export function ProductDetailActionCard({
           {getConditionLabel(product.condition)} — sản phẩm được kiểm tra trước khi đăng bán.
         </p>
       </div>
+
+      {ownListing ? (
+        <p className="mb-3 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-body-sm text-on-surface-variant">
+          Đây là sản phẩm của bạn — không thể mua.
+        </p>
+      ) : null}
 
       <button
         type="button"

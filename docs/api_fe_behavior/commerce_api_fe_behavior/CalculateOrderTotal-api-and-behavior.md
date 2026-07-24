@@ -75,6 +75,7 @@ Cho phep buyer xem truoc tong tien don hang (subtotal + phi ship + final amount)
 | 404  | `COMMERCE-404-PRODUCT`              | Product lien ket cart item khong ton tai           |
 | 409  | `COMMERCE-409-PRICE`                | Khong co active price                                |
 | 409  | `COMMERCE-409-SHIPPING-PROFILE`     | Seller chua co shipping profile                    |
+| 409  | `COMMERCE-409-SELF-PURCHASE`        | Co line thuoc listing cua chinh buyer              |
 | 503  | `COMMERCE-503-SHIPPING`             | GHN bat nhung khong co mock fallback                 |
 | 500  | `COMMERCE-500`                      | Loi server                                           |
 
@@ -83,6 +84,7 @@ Cho phep buyer xem truoc tong tien don hang (subtotal + phi ship + final amount)
 - `unit_price` = `sale_price` neu hop le, nguoc lai `price` (active price hien tai).
 - `item_total = unit_price * quantity`.
 - `total_amount = sum(item_total)`.
+- Buyer khong the quote listing cua chinh minh (`seller_id` == buyer id) → `COMMERCE-409-SELF-PURCHASE`.
 - Phi ship tinh **theo seller group** (moi seller mot nhom trong MVP).
 - `shipping_fee = sum(phi ship tung seller group)`.
 - `shipping_fee_allocated` chia theo ty le `item_total` trong cung seller group; tong allocated = phi ship group.

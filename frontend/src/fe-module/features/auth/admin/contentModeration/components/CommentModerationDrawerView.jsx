@@ -1,7 +1,9 @@
 import { formatDateTime } from "../../../security/utils/formatDateTime.js";
 import { DetailRow } from "../../adminAudit/components/AdminActionLogDetailDrawerView.jsx";
 import { AuditCopyableId } from "../../adminAudit/components/AuditCopyableId.jsx";
+import { AdminDrawerPortal } from "../../components/AdminDrawerPortal.jsx";
 import { AdminFilterButton, AdminStatusBadge } from "../../components/ui";
+import { useAdminDrawerDismiss } from "../../hooks/useAdminDrawerDismiss.js";
 import {
   getCommentModerationStatusLabel,
   getCommentStatusLabel,
@@ -41,6 +43,8 @@ export function CommentModerationDrawerView({
   onModerate,
   onRestore,
 }) {
+  useAdminDrawerDismiss(onClose, Boolean(commentId));
+
   if (!commentId) return null;
 
   const status = comment?.status;
@@ -49,9 +53,14 @@ export function CommentModerationDrawerView({
   const media = comment?.media || [];
   const postContext = comment?.post;
 
+  const handleClose = () => {
+    onClose?.();
+  };
+
   return (
+    <AdminDrawerPortal>
     <div
-      className="fixed inset-0 z-50 flex min-h-dvh sm:justify-end"
+      className="fixed inset-0 z-[80] flex min-h-dvh sm:justify-end lg:left-64"
       role="dialog"
       aria-modal="true"
       aria-labelledby="comment-mod-drawer-title"
@@ -60,7 +69,7 @@ export function CommentModerationDrawerView({
         type="button"
         aria-label="Đóng chi tiết bình luận"
         className="absolute inset-0 bg-admin-text/40 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={handleClose}
       />
 
       <aside className="relative z-10 flex h-full max-h-dvh w-full flex-col bg-admin-surface shadow-[var(--shadow-admin-surface)] sm:max-w-xl sm:border-l sm:border-admin-border">
@@ -96,8 +105,8 @@ export function CommentModerationDrawerView({
             </div>
             <button
               type="button"
-              onClick={onClose}
-              className="inline-flex min-h-10 min-w-10 shrink-0 items-center justify-center rounded-lg border border-admin-border text-admin-text-secondary transition-colors hover:bg-admin-surface-muted hover:text-admin-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent-soft"
+              onClick={handleClose}
+              className="relative z-20 inline-flex min-h-10 min-w-10 shrink-0 items-center justify-center rounded-lg border border-admin-border text-admin-text-secondary transition-colors hover:bg-admin-surface-muted hover:text-admin-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent-soft"
               aria-label="Đóng"
             >
               <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
@@ -261,5 +270,6 @@ export function CommentModerationDrawerView({
         </div>
       </aside>
     </div>
+    </AdminDrawerPortal>
   );
 }

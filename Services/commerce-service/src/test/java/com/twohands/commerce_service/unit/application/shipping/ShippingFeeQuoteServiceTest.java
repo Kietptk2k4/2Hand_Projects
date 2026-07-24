@@ -3,6 +3,9 @@ package com.twohands.commerce_service.unit.application.shipping;
 import com.twohands.commerce_service.application.shipping.ShippingFeeQuoteService;
 import com.twohands.commerce_service.application.shipping.ghn.ResolveGhnServiceUseCase;
 import com.twohands.commerce_service.config.CommerceIntegrationProperties;
+import com.twohands.commerce_service.domain.shipment.GhnLeadtimeGateway;
+import com.twohands.commerce_service.domain.shipment.GhnLeadtimeQuery;
+import com.twohands.commerce_service.domain.shipment.GhnLeadtimeResult;
 import com.twohands.commerce_service.domain.shipment.GhnResolvedService;
 import com.twohands.commerce_service.domain.shipment.GhnShippingFeeGateway;
 import com.twohands.commerce_service.domain.shipment.GhnShippingFeeQuery;
@@ -42,6 +45,8 @@ class ShippingFeeQuoteServiceTest {
     @Mock
     private GhnShippingFeeGateway ghnShippingFeeGateway;
     @Mock
+    private GhnLeadtimeGateway ghnLeadtimeGateway;
+    @Mock
     private ResolveGhnServiceUseCase resolveGhnServiceUseCase;
 
     private CommerceIntegrationProperties integrationProperties;
@@ -58,6 +63,7 @@ class ShippingFeeQuoteServiceTest {
                 mockShippingFeeCalculator,
                 integrationProperties,
                 ghnShippingFeeGateway,
+                ghnLeadtimeGateway,
                 resolveGhnServiceUseCase,
                 clock
         );
@@ -95,6 +101,47 @@ class ShippingFeeQuoteServiceTest {
                         "{}",
                         false
                 ));
+        when(ghnLeadtimeGateway.calculateLeadtime(any(GhnLeadtimeQuery.class)))
+                .thenReturn(new GhnLeadtimeResult(LocalDate.of(2026, 6, 12), "{}"));
+
+        ShippingGroupFeeQuote quote = service.quoteGroup(
+                profile,
+                "79",
+                "1442",
+                "20309",
+                1200,
+                ShipmentType.STANDARD
+        );
+
+        assertThat(quote.shippingFee()).isEqualByComparingTo(BigDecimal.valueOf(36_300));
+        assertThat(quote.estimatedDeliveryDate()).isEqualTo(LocalDate.of(2026, 6, 12));
+
+        ArgumentCaptor<GhnShippingFeeQuery> captor = ArgumentCaptor.forClass(GhnShippingFeeQuery.class);
+        verify(ghnShippingFeeGateway).calculateFee(captor.capture());
+        GhnShippingFeeQuery query = captor.getValue();
+        assertThat(query.fromDistrictId()).isEqualTo(1444);
+        assertThat(query.toDistrictId()).isEqualTo(1442);
+        assertThat(query.fromWardCode()).isEqualTo("20308");
+        assertThat(query.toWardCode()).isEqualTo("20309");
+        assertThat(query.serviceId()).isEqualTo(53320);
+        assertThat(query.weightGram()).isEqualTo(1200);
+    }
+
+    @Test
+    void shouldFallbackToHeuristicEtaWhenLeadtimeFails() {
+        enableGhn();
+        SellerShippingProfile profile = profile("1444", "20308");
+        when(resolveGhnServiceUseCase.resolveForRoute(1444, 1442))
+                .thenReturn(new GhnResolvedService(53320, 2, "Chuan", true));
+        when(ghnShippingFeeGateway.calculateFee(any(GhnShippingFeeQuery.class)))
+                .thenReturn(new GhnShippingFeeResult(
+                        BigDecimal.valueOf(36_300),
+                        BigDecimal.valueOf(36_300),
+                        "{}",
+                        false
+                ));
+        when(ghnLeadtimeGateway.calculateLeadtime(any(GhnLeadtimeQuery.class)))
+                .thenThrow(new AppException(ErrorCode.GHN_PROVIDER_UNAVAILABLE, "leadtime down"));
 
         ShippingGroupFeeQuote quote = service.quoteGroup(
                 profile,
@@ -107,16 +154,6 @@ class ShippingFeeQuoteServiceTest {
 
         assertThat(quote.shippingFee()).isEqualByComparingTo(BigDecimal.valueOf(36_300));
         assertThat(quote.estimatedDeliveryDate()).isEqualTo(LocalDate.of(2026, 6, 10));
-
-        ArgumentCaptor<GhnShippingFeeQuery> captor = ArgumentCaptor.forClass(GhnShippingFeeQuery.class);
-        verify(ghnShippingFeeGateway).calculateFee(captor.capture());
-        GhnShippingFeeQuery query = captor.getValue();
-        assertThat(query.fromDistrictId()).isEqualTo(1444);
-        assertThat(query.toDistrictId()).isEqualTo(1442);
-        assertThat(query.fromWardCode()).isEqualTo("20308");
-        assertThat(query.toWardCode()).isEqualTo("20309");
-        assertThat(query.serviceId()).isEqualTo(53320);
-        assertThat(query.weightGram()).isEqualTo(1200);
     }
 
     @Test

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { FeedToast } from "../../social/components/FeedToast";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { useContentModerationPermissions } from "../../auth/admin/contentModeration/hooks/useContentModerationPermissions.js";
+import { useSyncedDrawerId } from "../../auth/admin/hooks/useSyncedDrawerId.js";
 import { fetchAdminShopList } from "../api/adminShopModerationApi";
 import { mapAdminShopModerationApiError } from "../constants/adminShopModerationConstants";
 import { SHOP_MODERATION_LIST_PAGE_SIZE } from "../constants/shopModerationListConstants.js";
@@ -204,7 +205,8 @@ export function ShopModerationListPanel({
   const currentPage = filterPage || pagination?.page || 1;
   const totalPages = pagination?.total_pages || 1;
   const items = result?.items || [];
-  const selectedShop = items.find((item) => item.shopId === selectedShopId) || null;
+  const { openId: drawerShopId, closeDrawer } = useSyncedDrawerId(selectedShopId, onShopClear);
+  const selectedShop = items.find((item) => item.shopId === drawerShopId) || null;
 
   return (
     <>
@@ -228,7 +230,7 @@ export function ShopModerationListPanel({
         totalPages={totalPages}
         pageSize={String(filterSize)}
         activeSort={filterSort}
-        selectedShopId={selectedShopId}
+        selectedShopId={drawerShopId}
         selectedShopIds={selectedShopIds}
         selectionEnabled={selectionEnabled}
         canSuspendShop={canSuspendShop}
@@ -251,13 +253,19 @@ export function ShopModerationListPanel({
             size: String(nextSize),
           })
         }
-        onRowSelect={(shop) => onShopSelect?.(shop.shopId)}
+        onRowSelect={(shop) => {
+          if (shop.shopId === drawerShopId) {
+            closeDrawer();
+            return;
+          }
+          onShopSelect?.(shop.shopId);
+        }}
         drawer={
-          selectedShopId ? (
+          drawerShopId ? (
             <ShopModerationDrawer
-              shopId={selectedShopId}
+              shopId={drawerShopId}
               shop={selectedShop}
-              onClose={onShopClear}
+              onClose={closeDrawer}
               onRefresh={refreshAll}
             />
           ) : null

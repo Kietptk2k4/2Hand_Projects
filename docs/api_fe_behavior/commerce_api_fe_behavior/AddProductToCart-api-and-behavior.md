@@ -69,12 +69,14 @@ Cho phep buyer them san pham vao gio hang. Neu buyer chua co cart, he thong tu t
 | 409  | `COMMERCE-409-NOT-PURCHASABLE` | Product/shop/category khong hop le de mua         |
 | 409  | `COMMERCE-409-PRICE`           | Khong co active price                           |
 | 409  | `COMMERCE-409-STOCK`           | Stock = 0 (reject add moi)                      |
+| 409  | `COMMERCE-409-SELF-PURCHASE`   | Buyer khong the mua san pham cua chinh minh     |
 | 500  | `COMMERCE-500`                 | Loi server                                      |
 
 ## 5. Business Rules
 
 - Buyer chi thao tac cart cua minh (`user_id` tu JWT).
 - Product phai `ACTIVE`, shop `ACTIVE`, category active.
+- Buyer khong the them san pham cua chinh minh (`seller_id` == buyer id) → `COMMERCE-409-SELF-PURCHASE`.
 - Phai co active price (`start_at <= now`, `end_at` null hoac > now).
 - Stock = 0 → reject 409 (khong tao item moi).
 - Cung `(cart_id, product_id)` → upsert (cap nhat quantity), khong duplicate.

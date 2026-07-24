@@ -21,6 +21,7 @@ export function mapProductDetailResponse(data) {
 
   return {
     productId: data.product_id,
+    sellerId: data.seller_id ?? null,
     title: data.title,
     description: data.description,
     condition: data.condition,

@@ -4,6 +4,7 @@ import { useAuthSession } from "../../features/auth/hooks/useAuthSession.jsx";
 import { SessionExpiredModal } from "../../features/auth/components/SessionExpiredModal.jsx";
 import { AppFooter } from "../../shared/ui/AppFooter.jsx";
 import { SystemAnnouncementBanner } from "../../features/notification/components/SystemAnnouncementBanner.jsx";
+import { NotificationToastHost } from "../../features/notification/components/NotificationToastHost.jsx";
 import { AppHeader } from "../../shared/ui/AppHeader.jsx";
 
 export function AppLayout() {
@@ -69,6 +70,7 @@ export function AppLayout() {
           <Outlet />
         </main>
         <AppFooter />
+        <NotificationToastHost />
         <SessionExpiredModal
           open={sessionExpiredState.isOpen}
           message={sessionExpiredState.message}
@@ -86,6 +88,7 @@ export function AppLayout() {
         <main className="w-full max-w-none flex-1 p-0">
           <Outlet />
         </main>
+        <NotificationToastHost />
         <SessionExpiredModal
           open={sessionExpiredState.isOpen}
           message={sessionExpiredState.message}
@@ -115,6 +118,7 @@ export function AppLayout() {
         <Outlet />
       </main>
       <AppFooter />
+      <NotificationToastHost />
       <SessionExpiredModal
         open={sessionExpiredState.isOpen}
         message={sessionExpiredState.message}

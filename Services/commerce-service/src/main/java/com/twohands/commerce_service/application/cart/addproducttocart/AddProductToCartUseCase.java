@@ -7,6 +7,7 @@ import com.twohands.commerce_service.domain.cart.CartItemStatus;
 import com.twohands.commerce_service.domain.cart.CartRepository;
 import com.twohands.commerce_service.domain.catalog.ProductPurchaseContext;
 import com.twohands.commerce_service.domain.catalog.ProductPurchaseReadRepository;
+import com.twohands.commerce_service.domain.checkout.SelfPurchasePolicy;
 import com.twohands.commerce_service.domain.product.ProductStatus;
 import com.twohands.commerce_service.domain.shop.ShopStatus;
 import com.twohands.commerce_service.exception.AppException;
@@ -42,6 +43,7 @@ public class AddProductToCartUseCase {
         ProductPurchaseContext context = productPurchaseReadRepository.findByProductId(command.productId())
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
+        SelfPurchasePolicy.assertNotOwnListing(command.userId(), context.sellerId());
         validatePurchasable(context);
         rejectWhenStockZero(context);
 

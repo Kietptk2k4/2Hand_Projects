@@ -199,6 +199,7 @@ public class CreateShipmentRepositoryAdapter implements CreateShipmentRepository
                 SET ghn_order_code = :ghnOrderCode,
                     ghn_shop_id = :ghnShopId,
                     tracking_number = COALESCE(:trackingNumber, tracking_number),
+                    estimated_delivery_date = COALESCE(:estimatedDeliveryDate, estimated_delivery_date),
                     external_provider_response = CAST(:providerResponse AS jsonb),
                     updated_at = :now
                 WHERE id = :shipmentId
@@ -208,6 +209,7 @@ public class CreateShipmentRepositoryAdapter implements CreateShipmentRepository
                 .addValue("ghnOrderCode", ghnResult.ghnOrderCode())
                 .addValue("ghnShopId", ghnResult.ghnShopId())
                 .addValue("trackingNumber", ghnResult.trackingNumber())
+                .addValue("estimatedDeliveryDate", ghnResult.expectedDeliveryDate())
                 .addValue("providerResponse", ghnResult.providerResponseJson())
                 .addValue("now", Timestamp.from(occurredAt)));
     }

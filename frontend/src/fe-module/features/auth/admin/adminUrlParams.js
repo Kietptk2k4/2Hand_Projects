@@ -897,10 +897,19 @@ function applySystemOperationsParams(
 
 function applyContentModerationParams(next, { postId, commentId, shopId, productId, reviewId }) {
   if (postId) next.set("postId", postId);
+  else next.delete("postId");
+
   if (commentId) next.set("commentId", commentId);
+  else next.delete("commentId");
+
   if (shopId) next.set("shopId", shopId);
+  else next.delete("shopId");
+
   if (productId) next.set("productId", productId);
+  else next.delete("productId");
+
   if (reviewId) next.set("reviewId", reviewId);
+  else next.delete("reviewId");
 }
 
 function applyPaymentFilterParams(next, paymentFilters) {
@@ -1149,6 +1158,11 @@ export function buildAdminSearchParams({
   shopId,
   productId,
   reviewId,
+  clearPostSelection = false,
+  clearCommentSelection = false,
+  clearShopSelection = false,
+  clearProductSelection = false,
+  clearReviewSelection = false,
   configFilters,
   announcementFilters,
   configId,
@@ -1417,38 +1431,80 @@ export function buildAdminSearchParams({
   }
 
   if (section === "contentModeration") {
+    const resolvedTab = tab || preserve?.get("tab") || DEFAULT_CONTENT_MODERATION_TAB;
+
+    const resolveSelectionId = (activeTab, key, explicitValue, clearSelection) => {
+      if (clearSelection) return null;
+      if (resolvedTab !== activeTab) return null;
+      if (explicitValue !== undefined && explicitValue !== null && String(explicitValue).trim() !== "") {
+        return String(explicitValue).trim();
+      }
+      if (explicitValue === "" || explicitValue === null) return null;
+      return preserve?.get(key) || null;
+    };
+
     applyContentModerationParams(next, {
-      postId: postId ?? (preserve ? preserve.get("postId") : null),
-      commentId: commentId ?? (preserve ? preserve.get("commentId") : null),
-      shopId: shopId ?? (preserve ? preserve.get("shopId") : null),
-      productId: productId ?? (preserve ? preserve.get("productId") : null),
-      reviewId: reviewId ?? (preserve ? preserve.get("reviewId") : null),
+      postId: resolveSelectionId("post-moderation", "postId", postId, clearPostSelection),
+      commentId: resolveSelectionId(
+        "comment-moderation",
+        "commentId",
+        commentId,
+        clearCommentSelection,
+      ),
+      shopId: resolveSelectionId("shop-moderation", "shopId", shopId, clearShopSelection),
+      productId: resolveSelectionId(
+        "product-moderation",
+        "productId",
+        productId,
+        clearProductSelection,
+      ),
+      reviewId: resolveSelectionId(
+        "review-moderation",
+        "reviewId",
+        reviewId,
+        clearReviewSelection,
+      ),
     });
-    applyPostModerationListFilterParams(
-      next,
-      postModerationListFilters ??
-        (preserve ? parsePostModerationListFilters(preserve) : undefined),
-    );
-    applyCommentModerationListFilterParams(
-      next,
-      commentModerationListFilters ??
-        (preserve ? parseCommentModerationListFilters(preserve) : undefined),
-    );
-    applyShopModerationListFilterParams(
-      next,
-      shopModerationListFilters ??
-        (preserve ? parseShopModerationListFilters(preserve) : undefined),
-    );
-    applyProductModerationListFilterParams(
-      next,
-      productModerationListFilters ??
-        (preserve ? parseProductModerationListFilters(preserve) : undefined),
-    );
-    applyReviewModerationListFilterParams(
-      next,
-      reviewModerationListFilters ??
-        (preserve ? parseReviewModerationListFilters(preserve) : undefined),
-    );
+
+    if (resolvedTab === "post-moderation") {
+      applyPostModerationListFilterParams(
+        next,
+        postModerationListFilters ??
+          (preserve ? parsePostModerationListFilters(preserve) : undefined),
+      );
+    }
+
+    if (resolvedTab === "comment-moderation") {
+      applyCommentModerationListFilterParams(
+        next,
+        commentModerationListFilters ??
+          (preserve ? parseCommentModerationListFilters(preserve) : undefined),
+      );
+    }
+
+    if (resolvedTab === "shop-moderation") {
+      applyShopModerationListFilterParams(
+        next,
+        shopModerationListFilters ??
+          (preserve ? parseShopModerationListFilters(preserve) : undefined),
+      );
+    }
+
+    if (resolvedTab === "product-moderation") {
+      applyProductModerationListFilterParams(
+        next,
+        productModerationListFilters ??
+          (preserve ? parseProductModerationListFilters(preserve) : undefined),
+      );
+    }
+
+    if (resolvedTab === "review-moderation") {
+      applyReviewModerationListFilterParams(
+        next,
+        reviewModerationListFilters ??
+          (preserve ? parseReviewModerationListFilters(preserve) : undefined),
+      );
+    }
   }
 
   if (section === "rolePermission") {

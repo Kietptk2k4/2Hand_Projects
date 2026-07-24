@@ -119,14 +119,37 @@ class CreateShipmentUseCaseTest {
                 "SHOP-1",
                 "TRK-GHN-1",
                 "{\"mock\":true}",
-                true
+                true,
+                null
         ));
 
         CreateShipmentResult result = useCase.execute(command("GHN", "EXPRESS", 500, null));
 
         assertThat(result.ghnOrderCode()).isEqualTo("GHN-MOCK-123");
         assertThat(result.trackingNumber()).isEqualTo("TRK-GHN-1");
+        assertThat(result.estimatedDeliveryDate()).isEqualTo(LocalDate.of(2026, 5, 24));
         verify(createShipmentTransactionService).updateGhnFields(eq(local.shipmentId()), any(GhnCreateOrderResult.class), eq(now));
+    }
+
+    @Test
+    void shouldOverrideEstimatedDeliveryDateFromGhnCreateResponse() {
+        CreateShipmentResult local = localResult(ShipmentCarrier.GHN, null);
+        stubHappyPath(PaymentMethod.PAYOS, PaymentStatus.PAID, local);
+        when(resolveGhnServiceUseCase.resolveForRoute(760, 1))
+                .thenReturn(new GhnResolvedService(53320, 2, "Chuan", true));
+        when(ghnShipmentGateway.createOrder(any())).thenReturn(new GhnCreateOrderResult(
+                "GHN-REAL-1",
+                "885",
+                "GHN-REAL-1",
+                "{}",
+                false,
+                LocalDate.of(2026, 6, 12)
+        ));
+
+        CreateShipmentResult result = useCase.execute(command("GHN", "STANDARD", 500, null));
+
+        assertThat(result.estimatedDeliveryDate()).isEqualTo(LocalDate.of(2026, 6, 12));
+        assertThat(result.ghnOrderCode()).isEqualTo("GHN-REAL-1");
     }
 
     @Test

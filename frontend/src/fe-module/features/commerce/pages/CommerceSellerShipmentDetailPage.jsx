@@ -9,7 +9,9 @@ import {
   MANUAL_NEXT_ACTIONS,
   SHIPMENT_STATUS_BADGE_CLASS,
   SHIPMENT_STATUS_LABELS,
+  GHN_PRINT_FORMATS,
   canCancelSellerShipment,
+  canPrintGhnLabel,
 } from "../constants/sellerShipmentConstants";
 import { useSellerShipmentDetail } from "../hooks/useSellerShipmentDetail";
 import { formatShortOrderId } from "../utils/formatOrderDate";
@@ -26,27 +28,33 @@ export function CommerceSellerShipmentDetailPage() {
   const [pendingAction, setPendingAction] = useState(null);
   const [pendingTrackingSave, setPendingTrackingSave] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [printFormat, setPrintFormat] = useState("a5");
 
   const {
     detail,
     isLoading,
     isUpdating,
     isCancelling,
+    isPrinting,
     errorMessage,
     updateError,
     cancelError,
+    printError,
     isNotFound,
     retry,
     patchShipment,
     cancelShipment,
+    printGhnLabel,
     clearUpdateError,
     clearCancelError,
+    clearPrintError,
   } = useSellerShipmentDetail(shipmentId);
 
   const isGhn = detail?.carrier === "GHN";
   const isManual = detail?.carrier === "MANUAL" || detail?.carrier === "SELF_DELIVERY";
   const canEdit = isManual && detail && !TERMINAL.includes(detail.status);
   const canCancel = detail && canCancelSellerShipment(detail);
+  const canPrint = detail && canPrintGhnLabel(detail);
 
   const nextAction = detail ? MANUAL_NEXT_ACTIONS[detail.status] : null;
   const nextActions = Array.isArray(nextAction) ? nextAction : nextAction ? [nextAction] : [];
@@ -58,6 +66,23 @@ export function CommerceSellerShipmentDetailPage() {
       setToastMessage("Đã hủy vận đơn. Các mục đơn đã được trả về trạng thái xử lý.");
     }
   }, [cancelShipment]);
+
+  const handlePrintLabel = useCallback(async () => {
+    clearPrintError();
+    const result = await printGhnLabel(printFormat);
+    if (!result?.printUrl) return;
+
+    const opened = window.open(result.printUrl, "_blank", "noopener,noreferrer");
+    if (!opened) {
+      setToastMessage(
+        `Trình duyệt chặn popup. Mở link in trong ${result.expiresInMinutes || 30} phút: ${result.printUrl}`,
+      );
+      return;
+    }
+    setToastMessage(
+      `Đã mở phiếu in GHN (${(result.format || printFormat).toUpperCase()}). Link hết hạn sau ${result.expiresInMinutes || 30} phút.`,
+    );
+  }, [clearPrintError, printFormat, printGhnLabel]);
 
   const handleConfirmStatus = useCallback(async () => {
     if (!pendingAction) return;
@@ -227,6 +252,39 @@ export function CommerceSellerShipmentDetailPage() {
                 ))}
               </ul>
             </section>
+
+            {canPrint ? (
+              <section className="mt-6 rounded-xl border border-primary/25 bg-primary/5 p-6">
+                <h2 className="text-headline-sm font-semibold text-on-surface">In vận đơn GHN</h2>
+                <p className="mt-2 text-body-sm text-on-surface-variant">
+                  Tạo link in phiếu gửi hàng từ GHN (token hết hạn khoảng 30 phút). Mặc định khổ A5.
+                </p>
+                <label className="mt-4 block max-w-xs">
+                  <span className="text-label-sm font-medium text-on-surface">Khổ in</span>
+                  <select
+                    value={printFormat}
+                    onChange={(e) => setPrintFormat(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm"
+                  >
+                    {GHN_PRINT_FORMATS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {printError ? <p className="mt-2 text-sm text-error">{printError}</p> : null}
+                <button
+                  type="button"
+                  disabled={isPrinting || isCancelling || isUpdating}
+                  onClick={handlePrintLabel}
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-label-md font-medium text-on-primary disabled:opacity-50"
+                >
+                  <span className="material-symbols-outlined text-[18px]">print</span>
+                  {isPrinting ? "Đang tạo link…" : "In vận đơn"}
+                </button>
+              </section>
+            ) : null}
 
             {canCancel ? (
               <section className="mt-6 rounded-xl border border-error/30 bg-error-container/20 p-6">

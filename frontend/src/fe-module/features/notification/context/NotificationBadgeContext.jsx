@@ -7,15 +7,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { FeedToast } from "../../social/components/FeedToast";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { fetchUnreadNotificationCount, fetchUnreadNotifications } from "../api/notificationApi";
-import {
-  NOTIFICATION_POLL_INTERVAL_MS,
-  NOTIFICATION_TOAST_AUTO_DISMISS_MS,
-} from "../constants/notificationConstants";
+import { NOTIFICATION_POLL_INTERVAL_MS } from "../constants/notificationConstants";
 import { mapNotificationListResponse } from "../utils/notificationMapper";
-import { buildNewNotificationToastMessage } from "../utils/notificationToast";
+import { buildNewNotificationToastPayload } from "../utils/notificationToast";
 
 const NotificationBadgeContext = createContext(null);
 const SEEN_UNREAD_SEED_PAGE_SIZE = 50;
@@ -24,6 +20,19 @@ const NEW_UNREAD_FETCH_MAX_SIZE = 20;
 function isUnauthorizedError(error) {
   const code = String(error?.code ?? "");
   return code === "401" || code.includes("401");
+}
+
+function readUnreadCount(data) {
+  const raw = data?.count ?? data?.unread_count ?? data?.unreadCount;
+  const nextCount = Number(raw ?? 0);
+  return Number.isFinite(nextCount) ? Math.max(0, nextCount) : 0;
+}
+
+function isDocumentVisible() {
+  if (typeof document === "undefined") {
+    return true;
+  }
+  return document.visibilityState === "visible";
 }
 
 async function seedSeenUnreadNotificationIds(seenNotificationIdsRef) {
@@ -43,17 +52,18 @@ async function seedSeenUnreadNotificationIds(seenNotificationIdsRef) {
 export function NotificationBadgeProvider({ children }) {
   const { isAuthenticated, user, showSessionExpired } = useAuthSession();
   const [unreadCount, setUnreadCount] = useState(0);
-  const [newNotificationToast, setNewNotificationToast] = useState("");
+  const [notificationToast, setNotificationToast] = useState(null);
 
   const previousUnreadCountRef = useRef(null);
   const baselineEstablishedRef = useRef(false);
   const seenNotificationIdsRef = useRef(new Set());
+  const refetchRef = useRef(null);
 
   const resetTrackingState = useCallback(() => {
     previousUnreadCountRef.current = null;
     baselineEstablishedRef.current = false;
     seenNotificationIdsRef.current = new Set();
-    setNewNotificationToast("");
+    setNotificationToast(null);
   }, []);
 
   const showToastForNewNotifications = useCallback(async (previousCount, nextCount) => {
@@ -80,9 +90,9 @@ export function NotificationBadgeProvider({ children }) {
         (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
       )[0];
 
-      setNewNotificationToast(buildNewNotificationToastMessage(delta, newest));
+      setNotificationToast(buildNewNotificationToastPayload(delta, newest ?? null));
     } catch {
-      setNewNotificationToast(buildNewNotificationToastMessage(delta, null));
+      setNotificationToast(buildNewNotificationToastPayload(delta, null));
     }
   }, []);
 
@@ -95,7 +105,7 @@ export function NotificationBadgeProvider({ children }) {
 
     try {
       const data = await fetchUnreadNotificationCount();
-      const nextCount = Math.max(0, Number(data?.count ?? 0));
+      const nextCount = readUnreadCount(data);
 
       if (!baselineEstablishedRef.current) {
         await seedSeenUnreadNotificationIds(seenNotificationIdsRef);
@@ -121,6 +131,8 @@ export function NotificationBadgeProvider({ children }) {
     }
   }, [isAuthenticated, resetTrackingState, showSessionExpired, showToastForNewNotifications]);
 
+  refetchRef.current = refetch;
+
   const syncTrackedCount = useCallback((nextCount) => {
     const safeCount = Math.max(0, Number(nextCount) || 0);
     previousUnreadCountRef.current = safeCount;
@@ -145,8 +157,8 @@ export function NotificationBadgeProvider({ children }) {
     setUnreadCount(syncTrackedCount(0));
   }, [syncTrackedCount]);
 
-  const dismissNewNotificationToast = useCallback(() => {
-    setNewNotificationToast("");
+  const dismissNotificationToast = useCallback(() => {
+    setNotificationToast(null);
   }, []);
 
   useEffect(() => {
@@ -164,10 +176,49 @@ export function NotificationBadgeProvider({ children }) {
       return undefined;
     }
 
-    refetch();
-    const intervalId = window.setInterval(refetch, NOTIFICATION_POLL_INTERVAL_MS);
-    return () => window.clearInterval(intervalId);
-  }, [isAuthenticated, user?.id, refetch]);
+    let intervalId = null;
+
+    const clearPoll = () => {
+      if (intervalId != null) {
+        window.clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+
+    const startPoll = () => {
+      clearPoll();
+      if (!isDocumentVisible()) {
+        return;
+      }
+      intervalId = window.setInterval(() => {
+        void refetchRef.current?.();
+      }, NOTIFICATION_POLL_INTERVAL_MS);
+    };
+
+    const runVisibleCycle = () => {
+      void refetchRef.current?.();
+      startPoll();
+    };
+
+    const onVisibilityChange = () => {
+      if (!isDocumentVisible()) {
+        clearPoll();
+        return;
+      }
+      // Resume: refetch immediately, then restart interval. Do not reset baseline/seen ids.
+      runVisibleCycle();
+    };
+
+    if (isDocumentVisible()) {
+      runVisibleCycle();
+    }
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      clearPoll();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [isAuthenticated, user?.id]);
 
   const value = useMemo(
     () => ({
@@ -176,18 +227,23 @@ export function NotificationBadgeProvider({ children }) {
       setCount,
       decrementUnread,
       clearUnread,
+      notificationToast,
+      dismissNotificationToast,
     }),
-    [unreadCount, refetch, setCount, decrementUnread, clearUnread]
+    [
+      unreadCount,
+      refetch,
+      setCount,
+      decrementUnread,
+      clearUnread,
+      notificationToast,
+      dismissNotificationToast,
+    ]
   );
 
   return (
     <NotificationBadgeContext.Provider value={value}>
       {children}
-      <FeedToast
-        message={newNotificationToast}
-        onDismiss={dismissNewNotificationToast}
-        autoDismissMs={NOTIFICATION_TOAST_AUTO_DISMISS_MS}
-      />
     </NotificationBadgeContext.Provider>
   );
 }

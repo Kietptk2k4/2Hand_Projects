@@ -1,17 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { getInvestigationProfile } from "../../userInvestigation/api/userInvestigationApi.js";
+
+function buildAuthorIdsKey(authorIds) {
+  return [...new Set((authorIds || []).map((id) => String(id || "").trim()).filter(Boolean))]
+    .sort()
+    .join("|");
+}
 
 export function usePostAuthorSummaries(authorIds) {
   const [summaries, setSummaries] = useState({});
-
-  const uniqueIds = useMemo(
-    () => [...new Set((authorIds || []).map((id) => String(id || "").trim()).filter(Boolean))],
-    [authorIds],
-  );
-
-  const idsKey = uniqueIds.join("|");
+  const idsKey = buildAuthorIdsKey(authorIds);
 
   useEffect(() => {
+    const uniqueIds = idsKey ? idsKey.split("|") : [];
+
     if (!uniqueIds.length) {
       setSummaries({});
       return;
@@ -50,7 +52,7 @@ export function usePostAuthorSummaries(authorIds) {
     return () => {
       cancelled = true;
     };
-  }, [idsKey, uniqueIds]);
+  }, [idsKey]);
 
   return summaries;
 }

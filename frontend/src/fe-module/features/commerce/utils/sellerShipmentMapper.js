@@ -107,3 +107,15 @@ export function mapUpdateShipmentPayload({ status, trackingNumber }) {
   }
   return payload;
 }
+
+export function mapGhnPrintLabelResponse(data) {
+  if (!data) return null;
+  return {
+    shipmentId: pick(data, "shipmentId", "shipment_id"),
+    ghnOrderCode: pick(data, "ghnOrderCode", "ghn_order_code"),
+    format: data.format,
+    printToken: pick(data, "printToken", "print_token"),
+    printUrl: pick(data, "printUrl", "print_url"),
+    expiresInMinutes: data.expires_in_minutes ?? data.expiresInMinutes,
+  };
+}

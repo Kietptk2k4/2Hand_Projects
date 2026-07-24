@@ -242,6 +242,10 @@ public class CreateShipmentUseCase {
 
         createShipmentTransactionService.updateGhnFields(local.shipmentId(), ghnResult, occurredAt);
 
+        LocalDate estimatedDeliveryDate = ghnResult.expectedDeliveryDate() != null
+                ? ghnResult.expectedDeliveryDate()
+                : local.estimatedDeliveryDate();
+
         return new CreateShipmentResult(
                 local.shipmentId(),
                 local.orderId(),
@@ -254,7 +258,7 @@ public class CreateShipmentUseCase {
                 local.shippingFee(),
                 local.codAmount(),
                 local.weightGram(),
-                local.estimatedDeliveryDate(),
+                estimatedDeliveryDate,
                 local.orderItemIds(),
                 local.createdAt()
         );

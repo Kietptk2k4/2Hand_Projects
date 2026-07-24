@@ -23,6 +23,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 
 @Component
 public class GhnShipmentGatewayAdapter implements GhnShipmentGateway {
@@ -161,15 +165,39 @@ public class GhnShipmentGatewayAdapter implements GhnShipmentGateway {
             if (orderCode == null || orderCode.isBlank()) {
                 throw new AppException(ErrorCode.GHN_PROVIDER_UNAVAILABLE, "GHN response missing order_code");
             }
+            LocalDate expectedDeliveryDate = parseExpectedDeliveryTime(
+                    data.path("expected_delivery_time").asText(null)
+            );
             return new GhnCreateOrderResult(
                     orderCode,
                     ghnProperties.getShopId(),
                     orderCode,
                     rawResponse,
-                    false
+                    false,
+                    expectedDeliveryDate
             );
         } catch (JsonProcessingException ex) {
             throw new AppException(ErrorCode.GHN_PROVIDER_UNAVAILABLE, "Cannot parse GHN response", ex);
+        }
+    }
+
+    LocalDate parseExpectedDeliveryTime(String raw) {
+        if (!StringUtils.hasText(raw)) {
+            return null;
+        }
+        String value = raw.trim();
+        try {
+            if (value.contains("T")) {
+                try {
+                    return OffsetDateTime.parse(value).toLocalDate();
+                } catch (DateTimeParseException ignored) {
+                    return LocalDateTime.parse(value).toLocalDate();
+                }
+            }
+            return LocalDate.parse(value);
+        } catch (DateTimeParseException ex) {
+            log.warn("Cannot parse GHN expected_delivery_time '{}': {}", value, ex.getMessage());
+            return null;
         }
     }
 
@@ -188,7 +216,8 @@ public class GhnShipmentGatewayAdapter implements GhnShipmentGateway {
                     ghnProperties.getShopId() != null ? ghnProperties.getShopId() : "MOCK-SHOP",
                     tracking,
                     objectMapper.writeValueAsString(payload),
-                    true
+                    true,
+                    null
             );
         } catch (JsonProcessingException ex) {
             throw new AppException(ErrorCode.INTERNAL_ERROR, "Cannot serialize mock GHN payload", ex);

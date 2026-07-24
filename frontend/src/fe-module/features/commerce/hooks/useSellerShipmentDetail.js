@@ -3,11 +3,13 @@ import {
   fetchSellerShipmentDetail,
   updateSellerShipment,
   cancelSellerShipment,
+  fetchGhnPrintLabel,
 } from "../api/sellerShipmentApi";
 import { mapSellerShipmentApiError } from "../constants/sellerShipmentConstants";
 import {
   mapSellerShipmentDetail,
   mapUpdateShipmentPayload,
+  mapGhnPrintLabelResponse,
 } from "../utils/sellerShipmentMapper";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 
@@ -26,9 +28,11 @@ export function useSellerShipmentDetail(shipmentId) {
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [updateError, setUpdateError] = useState("");
   const [cancelError, setCancelError] = useState("");
+  const [printError, setPrintError] = useState("");
   const [isNotFound, setIsNotFound] = useState(false);
   const requestIdRef = useRef(0);
 
@@ -101,6 +105,7 @@ export function useSellerShipmentDetail(shipmentId) {
 
   const clearUpdateError = useCallback(() => setUpdateError(""), []);
   const clearCancelError = useCallback(() => setCancelError(""), []);
+  const clearPrintError = useCallback(() => setPrintError(""), []);
 
   const cancelShipment = useCallback(async () => {
     if (!shipmentId) return null;
@@ -125,20 +130,48 @@ export function useSellerShipmentDetail(shipmentId) {
     }
   }, [shipmentId, showSessionExpired]);
 
+  const printGhnLabel = useCallback(
+    async (format = "a5") => {
+      if (!shipmentId) return null;
+
+      setIsPrinting(true);
+      setPrintError("");
+
+      try {
+        const raw = await fetchGhnPrintLabel(shipmentId, format);
+        return mapGhnPrintLabelResponse(raw);
+      } catch (error) {
+        if (isUnauthorizedError(error)) {
+          showSessionExpired(error?.message);
+          throw error;
+        }
+        setPrintError(mapSellerShipmentApiError(error));
+        return null;
+      } finally {
+        setIsPrinting(false);
+      }
+    },
+    [shipmentId, showSessionExpired],
+  );
+
   return {
     detail,
     isLoading,
     isUpdating,
     isCancelling,
+    isPrinting,
     errorMessage,
     updateError,
     cancelError,
+    printError,
     isNotFound,
     retry: load,
     refresh: load,
     patchShipment,
     cancelShipment,
+    printGhnLabel,
     clearUpdateError,
     clearCancelError,
+    clearPrintError,
   };
 }

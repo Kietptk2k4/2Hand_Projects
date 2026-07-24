@@ -8,6 +8,7 @@ import { ShopProductsHeader } from "../components/ShopProductsHeader";
 import { ShopStorefrontHero } from "../components/ShopStorefrontHero";
 import { ShopStorefrontHeroSkeleton } from "../components/ShopStorefrontHeroSkeleton";
 import { ShopVacationBanner } from "../components/ShopVacationBanner";
+import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { useCommerceAddToCart } from "../hooks/useCommerceAddToCart";
 import { useCommerceBuyNow } from "../hooks/useCommerceBuyNow";
 import { useShopProducts } from "../hooks/useShopProducts";
@@ -19,6 +20,7 @@ const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
 export function CommerceShopProductsPage() {
   const { shopId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuthSession();
   const [toastMessage, setToastMessage] = useState("");
 
   const {
@@ -162,7 +164,12 @@ export function CommerceShopProductsPage() {
                     onBuyNow={buyNow}
                     isAddingToCart={isAddingProduct(product.productId)}
                     isBuyingNow={isBuyingProduct(product.productId)}
-                    disabledActions={shop?.shopVacation}
+                    disabledActions={
+                      Boolean(shop?.shopVacation) ||
+                      (Boolean(shop?.sellerId) &&
+                        Boolean(user?.id) &&
+                        String(shop.sellerId) === String(user.id))
+                    }
                   />
                 ))}
               </div>

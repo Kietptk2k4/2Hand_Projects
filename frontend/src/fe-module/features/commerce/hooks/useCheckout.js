@@ -12,6 +12,7 @@ import {
   mapCreateAddressResponse,
   toCreateAddressPayload,
 } from "../utils/addressMapper";
+import { mapCheckoutApiError } from "../constants/cartApiError";
 import {
   mapCheckoutResponse,
   mapQuoteResponse,
@@ -152,7 +153,9 @@ export function useCheckout(cartItemIds) {
 
       setQuote(null);
       setShippingFee(null);
-      setQuoteError(error?.message || "Không tính được tổng tiền. Vui lòng thử lại.");
+      setQuoteError(
+        mapCheckoutApiError(error, "Không tính được tổng tiền. Vui lòng thử lại.")
+      );
       setStatus("ready");
     }
   }, [cartItemIds, selectedAddressId, showSessionExpired, validate]);
@@ -227,7 +230,7 @@ export function useCheckout(cartItemIds) {
         showSessionExpired(error?.message);
         return null;
       }
-      setSubmitError(error?.message || "Không thể đặt hàng. Vui lòng thử lại.");
+      setSubmitError(mapCheckoutApiError(error, "Không thể đặt hàng. Vui lòng thử lại."));
       return null;
     } finally {
       setIsSubmitting(false);

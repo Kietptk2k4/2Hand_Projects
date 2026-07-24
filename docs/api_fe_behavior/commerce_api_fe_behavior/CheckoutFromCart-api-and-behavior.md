@@ -75,6 +75,7 @@ Buyer checkout cac cart items da chon de tao order, order items (snapshots), pay
 | 409  | `COMMERCE-409-STOCK`            | Khong du ton kho                           |
 | 409  | `COMMERCE-409-CART-ITEM`        | Cart item REMOVED / INVALID_PRODUCT        |
 | 409  | `COMMERCE-409-SHIPPING-PROFILE` | Thieu seller shipping profile              |
+| 409  | `COMMERCE-409-SELF-PURCHASE`    | Co line thuoc listing cua chinh buyer      |
 | 500  | `COMMERCE-500`                  | Loi server (inventory conflict)            |
 
 ## 5. Business Rules
@@ -82,6 +83,7 @@ Buyer checkout cac cart items da chon de tao order, order items (snapshots), pay
 - Revalidate server-side: khong tin gia/status tu client.
 - Cart item khong duoc `REMOVED` / `INVALID_PRODUCT`.
 - Product `ACTIVE`, shop `ACTIVE`, category active, khong vacation.
+- Buyer khong the checkout listing cua chinh minh (`seller_id` == buyer id) → `COMMERCE-409-SELF-PURCHASE`.
 - `stock_quantity >= quantity` (gom gop theo product neu trung).
 - Reserve (internal `ReserveInventoryUseCase`): `stock_quantity -= q`, `reserved_quantity += q` — xem `ReserveInventory-api-and-behavior.md`.
 - Snapshots tren `order_items`: ten SP, shop, SKU, image, attributes JSON, gia, phi ship allocated.

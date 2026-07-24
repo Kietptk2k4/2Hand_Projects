@@ -12,8 +12,17 @@ export function isProductOutOfStock(product) {
   );
 }
 
-export function isAddToCartDisabled(product) {
-  return isProductOutOfStock(product) || Boolean(product?.shopVacation);
+export function isOwnListing(product, currentUserId) {
+  if (!product?.sellerId || !currentUserId) return false;
+  return String(product.sellerId) === String(currentUserId);
+}
+
+export function isAddToCartDisabled(product, currentUserId) {
+  return (
+    isProductOutOfStock(product) ||
+    Boolean(product?.shopVacation) ||
+    isOwnListing(product, currentUserId)
+  );
 }
 
 export function getStockLabel(product) {

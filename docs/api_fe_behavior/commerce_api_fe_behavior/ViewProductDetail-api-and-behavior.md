@@ -27,6 +27,7 @@ Buyer/guest xem chi tiet san pham buyer-visible truoc khi add cart/checkout: tho
   "message": "Lay chi tiet san pham thanh cong.",
   "data": {
     "product_id": "550e8400-e29b-41d4-a716-446655440000",
+    "seller_id": "660e8400-e29b-41d4-a716-446655440000",
     "title": "iPhone 15",
     "description": "Like new device",
     "condition": "LIKE_NEW",
@@ -77,6 +78,7 @@ Buyer/guest xem chi tiet san pham buyer-visible truoc khi add cart/checkout: tho
 
 | Field | Mo ta |
 |-------|-------|
+| `seller_id` | Auth user UUID cua seller (dung de soft-block buy CTA tren FE) |
 | `status` | `ACTIVE` hoac `OUT_OF_STOCK` (buyer-visible) |
 | `effective_price` | `sale_price` neu co, nguoc lai `price` |
 | `inventory_summary` | Chi `stock_quantity`, `low_stock_threshold`, `in_stock`, `low_stock` — **khong** tra `reserved_quantity` |

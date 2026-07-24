@@ -40,6 +40,7 @@ public enum ErrorCode {
     SHOP_VACATION("COMMERCE-409-SHOP-VACATION", HttpStatus.CONFLICT, "Shop is on vacation"),
     INVALID_CART_ITEM("COMMERCE-409-CART-ITEM", HttpStatus.CONFLICT, "Cart item is not available for checkout"),
     NOT_PURCHASABLE("COMMERCE-409-NOT-PURCHASABLE", HttpStatus.CONFLICT, "Product is not purchasable"),
+    SELF_PURCHASE("COMMERCE-409-SELF-PURCHASE", HttpStatus.CONFLICT, "Cannot purchase your own product"),
     ACTIVE_PRICE_MISSING("COMMERCE-409-PRICE", HttpStatus.CONFLICT, "Active price is missing"),
     PRICE_WINDOW_OVERLAP("COMMERCE-409-PRICE-WINDOW", HttpStatus.CONFLICT, "Product price window overlaps an existing price"),
     ORDER_SNAPSHOT_INCOMPLETE("COMMERCE-409-ORDER-SNAPSHOT", HttpStatus.CONFLICT, "Order snapshot data is incomplete"),

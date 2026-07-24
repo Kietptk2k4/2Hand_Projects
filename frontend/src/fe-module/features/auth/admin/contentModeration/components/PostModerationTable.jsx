@@ -74,14 +74,17 @@ export function PostModerationTable({
                     <p className="font-mono text-xs text-admin-text-muted" title={row.id}>
                       {truncateModerationId(row.id)}
                     </p>
-                    <AdminStatusBadge variant={moderationStatusBadgeVariant(row.moderation_status)}>
-                      {getPostModerationStatusLabel(row.moderation_status)}
-                    </AdminStatusBadge>
+                    <span className="material-symbols-outlined shrink-0 text-admin-text-muted" aria-hidden="true">
+                      chevron_right
+                    </span>
                   </div>
                   <p className="mt-2 line-clamp-2 text-sm text-admin-text">{row.caption_preview || "—"}</p>
                 </div>
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-admin-text-secondary">
+                <AdminStatusBadge variant={moderationStatusBadgeVariant(row.moderation_status)}>
+                  {getPostModerationStatusLabel(row.moderation_status)}
+                </AdminStatusBadge>
                 <AdminStatusBadge variant={statusBadgeVariant(row.status)}>
                   {getPostStatusLabel(row.status)}
                 </AdminStatusBadge>
@@ -118,6 +121,7 @@ export function PostModerationTable({
             <AdminDataTableCell header>Kiểm duyệt</AdminDataTableCell>
             <AdminDataTableCell header>Thích</AdminDataTableCell>
             <AdminDataTableCell header>Ngày tạo</AdminDataTableCell>
+            <AdminDataTableCell header className="w-10" />
           </AdminDataTableRow>
         </AdminDataTableHead>
         <AdminDataTableBody>
@@ -172,6 +176,11 @@ export function PostModerationTable({
                 <AdminDataTableCell className="whitespace-nowrap">
                   <div className="text-sm text-admin-text">{createdAt.time}</div>
                   <div className="text-xs text-admin-text-muted">{createdAt.date}</div>
+                </AdminDataTableCell>
+                <AdminDataTableCell className="text-admin-text-muted">
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                    chevron_right
+                  </span>
                 </AdminDataTableCell>
               </AdminDataTableRow>
             );

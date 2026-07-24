@@ -77,8 +77,10 @@ class ViewProductDetailUseCaseTest {
     private ViewProductDetailResult sampleResult() {
         UUID categoryId = UUID.randomUUID();
         UUID shopId = UUID.randomUUID();
+        UUID sellerId = UUID.randomUUID();
         return new ViewProductDetailResult(
                 productId,
+                sellerId,
                 "iPhone 15",
                 "Like new device",
                 "LIKE_NEW",

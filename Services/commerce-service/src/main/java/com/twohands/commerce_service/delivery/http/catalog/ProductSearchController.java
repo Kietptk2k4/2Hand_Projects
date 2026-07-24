@@ -215,6 +215,7 @@ public class ProductSearchController {
     private ViewProductDetailResponse toDetailResponse(ViewProductDetailResult result) {
         return new ViewProductDetailResponse(
                 result.productId(),
+                result.sellerId(),
                 result.title(),
                 result.description(),
                 result.condition(),

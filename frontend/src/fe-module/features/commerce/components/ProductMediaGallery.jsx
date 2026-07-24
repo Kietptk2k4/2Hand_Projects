@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { getConditionLabel } from "../constants/productDetailConstants";
-import { isAddToCartDisabled, isProductOnSale } from "../utils/productDetailDisplay";
+import { isProductOnSale, isProductOutOfStock } from "../utils/productDetailDisplay";
 import { ProductImageStickers } from "./ProductImageStickers";
 import { ProductMediaLightbox } from "./ProductMediaLightbox";
 
@@ -258,7 +258,7 @@ export function ProductMediaGallery({ product }) {
   }, [product]);
 
   const isOnSale = isProductOnSale(product);
-  const isOutOfStock = isAddToCartDisabled(product);
+  const isOutOfStock = isProductOutOfStock(product);
   const conditionLabel = getConditionLabel(product?.condition);
   const lowStock = product?.inventorySummary?.lowStock ?? false;
 

@@ -11,6 +11,7 @@ import com.twohands.commerce_service.domain.catalog.ActiveProductPrice;
 import com.twohands.commerce_service.domain.catalog.ProductPurchaseContext;
 import com.twohands.commerce_service.domain.catalog.ProductPurchaseReadRepository;
 import com.twohands.commerce_service.domain.checkout.OrderLineTotalCalculator;
+import com.twohands.commerce_service.domain.checkout.SelfPurchasePolicy;
 import com.twohands.commerce_service.domain.checkout.ShippingFeeAllocator;
 import com.twohands.commerce_service.domain.shipping.SellerShippingProfile;
 import com.twohands.commerce_service.domain.shipping.SellerShippingProfileRepository;
@@ -70,7 +71,7 @@ public class CalculateOrderTotalUseCase {
                 cartItems.stream().map(CartItem::productId).distinct().toList()
         );
 
-        List<LineDraft> lineDrafts = buildLineDrafts(cartItems, productsById);
+        List<LineDraft> lineDrafts = buildLineDrafts(cartItems, productsById, command.userId());
         Map<UUID, SellerGroupDraft> sellerGroups = groupBySeller(lineDrafts);
 
         Map<UUID, SellerShippingProfile> profiles = sellerShippingProfileRepository.findByShopIds(
@@ -158,7 +159,8 @@ public class CalculateOrderTotalUseCase {
 
     private List<LineDraft> buildLineDrafts(
             List<CartItem> cartItems,
-            Map<UUID, ProductPurchaseContext> productsById
+            Map<UUID, ProductPurchaseContext> productsById,
+            UUID buyerId
     ) {
         List<LineDraft> drafts = new ArrayList<>();
         for (CartItem cartItem : cartItems) {
@@ -166,6 +168,7 @@ public class CalculateOrderTotalUseCase {
             if (product == null) {
                 throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
             }
+            SelfPurchasePolicy.assertNotOwnListing(buyerId, product.sellerId());
             ActiveProductPrice activePrice = product.activePrice();
             if (activePrice == null) {
                 throw new AppException(ErrorCode.ACTIVE_PRICE_MISSING);
@@ -177,7 +180,7 @@ public class CalculateOrderTotalUseCase {
             drafts.add(new LineDraft(
                     cartItem.id(),
                     cartItem.productId(),
-                    cartItem.sellerId(),
+                    product.sellerId(),
                     product.shopId(),
                     unitPrice,
                     cartItem.quantity(),

@@ -101,6 +101,27 @@ class CalculateOrderTotalUseCaseTest {
     }
 
     @Test
+    void shouldRejectWhenBuyerOwnsProduct() {
+        Instant now = Instant.now();
+        when(cartRepository.findByUserId(userId)).thenReturn(Optional.of(new Cart(cartId, userId, now, now)));
+        when(cartItemRepository.findByCartIdAndIds(eq(cartId), any()))
+                .thenReturn(List.of(new CartItem(
+                        cartItemId, cartId, productId, userId, 1, CartItemStatus.ACTIVE, now, now
+                )));
+        when(userAddressRepository.findByIdAndUserId(addressId, userId))
+                .thenReturn(Optional.of(new UserAddress(addressId, userId, "79", "760", "26734")));
+        when(productPurchaseReadRepository.findByProductIds(any()))
+                .thenReturn(Map.of(productId, productContext(userId)));
+
+        assertThatThrownBy(() -> useCase.execute(new CalculateOrderTotalCommand(
+                userId, List.of(cartItemId), addressId, null
+        )))
+                .isInstanceOf(AppException.class)
+                .extracting(ex -> ((AppException) ex).getErrorCode())
+                .isEqualTo(ErrorCode.SELF_PURCHASE);
+    }
+
+    @Test
     void shouldRejectWhenCartItemNotFound() {
         when(cartRepository.findByUserId(userId)).thenReturn(Optional.of(new Cart(cartId, userId, Instant.now(), Instant.now())));
         when(cartItemRepository.findByCartIdAndIds(eq(cartId), any())).thenReturn(List.of());
@@ -136,9 +157,13 @@ class CalculateOrderTotalUseCaseTest {
     }
 
     private ProductPurchaseContext productContext() {
+        return productContext(sellerId);
+    }
+
+    private ProductPurchaseContext productContext(UUID productSellerId) {
         return new ProductPurchaseContext(
                 productId,
-                sellerId,
+                productSellerId,
                 shopId,
                 "Phone",
                 ProductStatus.ACTIVE,

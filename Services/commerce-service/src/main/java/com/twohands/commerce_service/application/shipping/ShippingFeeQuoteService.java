@@ -3,6 +3,9 @@ package com.twohands.commerce_service.application.shipping;
 import com.twohands.commerce_service.application.shipping.ghn.ResolveGhnServiceUseCase;
 import com.twohands.commerce_service.config.CommerceIntegrationProperties;
 import com.twohands.commerce_service.domain.shipment.GhnAddressReadinessPolicy;
+import com.twohands.commerce_service.domain.shipment.GhnLeadtimeGateway;
+import com.twohands.commerce_service.domain.shipment.GhnLeadtimeQuery;
+import com.twohands.commerce_service.domain.shipment.GhnLeadtimeResult;
 import com.twohands.commerce_service.domain.shipment.GhnResolvedService;
 import com.twohands.commerce_service.domain.shipment.GhnShippingFeeGateway;
 import com.twohands.commerce_service.domain.shipment.GhnShippingFeeQuery;
@@ -34,6 +37,7 @@ public class ShippingFeeQuoteService {
     private final MockShippingFeeCalculator mockShippingFeeCalculator;
     private final CommerceIntegrationProperties integrationProperties;
     private final GhnShippingFeeGateway ghnShippingFeeGateway;
+    private final GhnLeadtimeGateway ghnLeadtimeGateway;
     private final ResolveGhnServiceUseCase resolveGhnServiceUseCase;
     private final Clock clock;
 
@@ -41,12 +45,14 @@ public class ShippingFeeQuoteService {
             MockShippingFeeCalculator mockShippingFeeCalculator,
             CommerceIntegrationProperties integrationProperties,
             GhnShippingFeeGateway ghnShippingFeeGateway,
+            GhnLeadtimeGateway ghnLeadtimeGateway,
             ResolveGhnServiceUseCase resolveGhnServiceUseCase,
             Clock clock
     ) {
         this.mockShippingFeeCalculator = mockShippingFeeCalculator;
         this.integrationProperties = integrationProperties;
         this.ghnShippingFeeGateway = ghnShippingFeeGateway;
+        this.ghnLeadtimeGateway = ghnLeadtimeGateway;
         this.resolveGhnServiceUseCase = resolveGhnServiceUseCase;
         this.clock = clock;
     }
@@ -146,26 +152,55 @@ public class ShippingFeeQuoteService {
 
         CommerceIntegrationProperties.Ghn ghn = integrationProperties.getGhn();
         int weightGram = Math.max(totalWeightGram, 1);
-        GhnShippingFeeResult feeResult = ghnShippingFeeGateway.calculateFee(new GhnShippingFeeQuery(
+        String fromWard = pickupProfile.wardCode().trim();
+        String toWard = destinationWardCode.trim();
+
+        GhnShippingFeeQuery feeQuery = new GhnShippingFeeQuery(
                 fromDistrictId,
-                pickupProfile.wardCode().trim(),
+                fromWard,
                 toDistrictId,
-                destinationWardCode.trim(),
+                toWard,
                 weightGram,
                 resolvedService.serviceId(),
                 resolvedService.serviceTypeId(),
                 ghn.getDefaultPackageLengthCm(),
                 ghn.getDefaultPackageWidthCm(),
                 ghn.getDefaultPackageHeightCm()
-        ));
+        );
+        GhnLeadtimeQuery leadtimeQuery = new GhnLeadtimeQuery(
+                fromDistrictId,
+                fromWard,
+                toDistrictId,
+                toWard,
+                resolvedService.serviceId()
+        );
 
+        // Sequential on the request thread: avoids blocking ForkJoinPool.commonPool()
+        // under concurrent checkout quotes (fee must succeed; leadtime soft-fails).
+        GhnShippingFeeResult feeResult = ghnShippingFeeGateway.calculateFee(feeQuery);
         ShipmentType resolvedType = shipmentType == null ? ShipmentType.STANDARD : shipmentType;
-        LocalDate estimatedDeliveryDate = ShippingDeliveryEstimator.estimateDeliveryDate(
+        LocalDate heuristicEta = ShippingDeliveryEstimator.estimateDeliveryDate(
                 resolvedType,
                 LocalDate.now(clock)
         );
+        LocalDate leadtimeEta = fetchLeadtimeOrNull(leadtimeQuery);
+        LocalDate estimatedDeliveryDate = leadtimeEta != null ? leadtimeEta : heuristicEta;
         BigDecimal fee = feeResult.totalFee();
         return new ShippingGroupFeeQuote(fee, fee, estimatedDeliveryDate);
+    }
+
+    private LocalDate fetchLeadtimeOrNull(GhnLeadtimeQuery query) {
+        try {
+            GhnLeadtimeResult result = ghnLeadtimeGateway.calculateLeadtime(query);
+            if (result == null || result.estimatedDeliveryDate() == null) {
+                log.warn("GHN leadtime returned empty date; falling back to heuristic ETA");
+                return null;
+            }
+            return result.estimatedDeliveryDate();
+        } catch (RuntimeException ex) {
+            log.warn("GHN leadtime failed; falling back to heuristic ETA: {}", ex.getMessage());
+            return null;
+        }
     }
 
     private void validateGhnAddresses(

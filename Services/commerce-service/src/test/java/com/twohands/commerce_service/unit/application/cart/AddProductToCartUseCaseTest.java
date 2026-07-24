@@ -165,6 +165,23 @@ class AddProductToCartUseCaseTest {
     }
 
     @Test
+    void shouldRejectWhenBuyerOwnsProduct() {
+        stubCart();
+        ProductPurchaseContext ownProduct = new ProductPurchaseContext(
+                productId, userId, shopId, "My listing", ProductStatus.ACTIVE, ShopStatus.ACTIVE,
+                true, 500, 5, activePrice(), null
+        );
+        when(productPurchaseReadRepository.findByProductId(productId)).thenReturn(Optional.of(ownProduct));
+
+        assertThatThrownBy(() -> useCase.execute(new AddProductToCartCommand(userId, productId, 1)))
+                .isInstanceOf(AppException.class)
+                .extracting(ex -> ((AppException) ex).getErrorCode())
+                .isEqualTo(ErrorCode.SELF_PURCHASE);
+
+        verify(cartItemRepository, never()).save(any());
+    }
+
+    @Test
     void shouldRejectWhenStockIsZero() {
         stubCart();
         when(productPurchaseReadRepository.findByProductId(productId)).thenReturn(Optional.of(purchasableContext(0)));

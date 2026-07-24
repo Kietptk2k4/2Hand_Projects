@@ -6,6 +6,7 @@ import java.util.UUID;
 
 public record ViewProductDetailResult(
         UUID productId,
+        UUID sellerId,
         String title,
         String description,
         String condition,

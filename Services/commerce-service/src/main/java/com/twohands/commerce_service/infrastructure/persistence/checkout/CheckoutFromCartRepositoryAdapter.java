@@ -15,6 +15,7 @@ import com.twohands.commerce_service.domain.catalog.ProductPriceCalculator;
 import com.twohands.commerce_service.domain.checkout.CheckoutFromCartRepository;
 import com.twohands.commerce_service.domain.checkout.CheckoutFromCartRequest;
 import com.twohands.commerce_service.domain.checkout.CheckoutFromCartResult;
+import com.twohands.commerce_service.domain.checkout.SelfPurchasePolicy;
 import com.twohands.commerce_service.domain.checkout.ShippingFeeAllocator;
 import com.twohands.commerce_service.domain.inventory.InventoryReservationLine;
 import com.twohands.commerce_service.domain.order.OrderStatus;
@@ -92,7 +93,7 @@ public class CheckoutFromCartRepositoryAdapter implements CheckoutFromCartReposi
                 .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
 
         ShipmentType shipmentType = request.shipmentType() == null ? ShipmentType.STANDARD : request.shipmentType();
-        List<PreparedLine> lines = buildAndValidateLines(cartItems, now);
+        List<PreparedLine> lines = buildAndValidateLines(cartItems, now, request.buyerId());
         BigDecimal totalAmount = lines.stream().map(PreparedLine::itemTotal).reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal shippingFee = calculateShippingFee(lines, address, shipmentType);
         allocateShippingFees(lines, shippingFee);
@@ -171,10 +172,11 @@ public class CheckoutFromCartRepositoryAdapter implements CheckoutFromCartReposi
         return loaded;
     }
 
-    private List<PreparedLine> buildAndValidateLines(List<CartItem> cartItems, Instant now) {
+    private List<PreparedLine> buildAndValidateLines(List<CartItem> cartItems, Instant now, UUID buyerId) {
         List<PreparedLine> lines = new ArrayList<>();
         for (CartItem cartItem : cartItems) {
             ProductCheckoutRow product = loadProductCheckoutRow(cartItem.productId(), now);
+            SelfPurchasePolicy.assertNotOwnListing(buyerId, product.sellerId());
             validateProductForCheckout(product, cartItem.quantity());
 
             BigDecimal unitPrice = ProductPriceCalculator.effectivePrice(product.price(), product.salePrice());
@@ -183,7 +185,7 @@ public class CheckoutFromCartRepositoryAdapter implements CheckoutFromCartReposi
             lines.add(new PreparedLine(
                     cartItem.id(),
                     cartItem.productId(),
-                    cartItem.sellerId(),
+                    product.sellerId(),
                     product.shopId(),
                     product.title(),
                     product.shopName(),

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { FeedToast } from "../../social/components/FeedToast";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { useContentModerationPermissions } from "../../auth/admin/contentModeration/hooks/useContentModerationPermissions.js";
+import { useSyncedDrawerId } from "../../auth/admin/hooks/useSyncedDrawerId.js";
 import { fetchAdminReviewList } from "../api/adminReviewModerationApi";
 import { mapAdminReviewModerationApiError } from "../constants/adminReviewModerationConstants";
 import { REVIEW_MODERATION_LIST_PAGE_SIZE } from "../constants/reviewModerationListConstants.js";
@@ -219,7 +220,11 @@ export function ReviewModerationListPanel({
   const currentPage = filterPage || pagination?.page || 1;
   const totalPages = pagination?.totalPages || pagination?.total_pages || 1;
   const items = result?.items || [];
-  const selectedReview = items.find((item) => item.reviewId === selectedReviewId) || null;
+  const { openId: drawerReviewId, closeDrawer } = useSyncedDrawerId(
+    selectedReviewId,
+    onReviewClear,
+  );
+  const selectedReview = items.find((item) => item.reviewId === drawerReviewId) || null;
 
   return (
     <>
@@ -243,7 +248,7 @@ export function ReviewModerationListPanel({
         totalPages={totalPages}
         pageSize={String(filterSize)}
         activeSort={filterSort}
-        selectedReviewId={selectedReviewId}
+        selectedReviewId={drawerReviewId}
         selectedReviewIds={selectedReviewIds}
         selectionEnabled={selectionEnabled}
         canHideReview={canHideReview}
@@ -266,13 +271,19 @@ export function ReviewModerationListPanel({
             size: String(nextSize),
           })
         }
-        onRowSelect={(review) => onReviewSelect?.(review.reviewId)}
+        onRowSelect={(review) => {
+          if (review.reviewId === drawerReviewId) {
+            closeDrawer();
+            return;
+          }
+          onReviewSelect?.(review.reviewId);
+        }}
         drawer={
-          selectedReviewId ? (
+          drawerReviewId ? (
             <ReviewModerationDrawer
-              reviewId={selectedReviewId}
+              reviewId={drawerReviewId}
               review={selectedReview}
-              onClose={onReviewClear}
+              onClose={closeDrawer}
               onRefresh={refreshAll}
             />
           ) : null

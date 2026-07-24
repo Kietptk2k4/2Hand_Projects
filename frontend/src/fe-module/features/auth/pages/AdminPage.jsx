@@ -934,15 +934,46 @@ export function AdminPage() {
 
   const handleContentModerationTargetChange = useCallback(
     (patch) => {
+      const clearPostSelection = "postId" in patch && !patch.postId;
+      const clearCommentSelection = "commentId" in patch && !patch.commentId;
+      const clearShopSelection = "shopId" in patch && !patch.shopId;
+      const clearProductSelection = "productId" in patch && !patch.productId;
+      const clearReviewSelection = "reviewId" in patch && !patch.reviewId;
+
       setSearchParams(
         buildAdminSearchParams({
           section: "contentModeration",
           tab: activeChildTab,
-          postId: "postId" in patch ? patch.postId : contentModerationPostId,
-          commentId: "commentId" in patch ? patch.commentId : contentModerationCommentId,
-          shopId: "shopId" in patch ? patch.shopId : contentModerationShopId,
-          productId: "productId" in patch ? patch.productId : contentModerationProductId,
-          reviewId: "reviewId" in patch ? patch.reviewId : contentModerationReviewId,
+          postId: clearPostSelection
+            ? undefined
+            : "postId" in patch
+              ? patch.postId || undefined
+              : contentModerationPostId || undefined,
+          commentId: clearCommentSelection
+            ? undefined
+            : "commentId" in patch
+              ? patch.commentId || undefined
+              : contentModerationCommentId || undefined,
+          shopId: clearShopSelection
+            ? undefined
+            : "shopId" in patch
+              ? patch.shopId || undefined
+              : contentModerationShopId || undefined,
+          productId: clearProductSelection
+            ? undefined
+            : "productId" in patch
+              ? patch.productId || undefined
+              : contentModerationProductId || undefined,
+          reviewId: clearReviewSelection
+            ? undefined
+            : "reviewId" in patch
+              ? patch.reviewId || undefined
+              : contentModerationReviewId || undefined,
+          clearPostSelection,
+          clearCommentSelection,
+          clearShopSelection,
+          clearProductSelection,
+          clearReviewSelection,
           postModerationListFilters,
           commentModerationListFilters,
           shopModerationListFilters,
@@ -1054,12 +1085,26 @@ export function AdminPage() {
   );
 
   const handlePostModerationClear = useCallback(() => {
-    handleContentModerationTargetChange({ postId: "" });
-  }, [handleContentModerationTargetChange]);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("postId");
+        return next;
+      },
+      { replace: true },
+    );
+  }, [setSearchParams]);
 
   const handleCommentModerationClear = useCallback(() => {
-    handleContentModerationTargetChange({ commentId: "" });
-  }, [handleContentModerationTargetChange]);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("commentId");
+        return next;
+      },
+      { replace: true },
+    );
+  }, [setSearchParams]);
 
   const handleCommentModerationListSelect = useCallback(
     (commentId) => {
@@ -1108,8 +1153,15 @@ export function AdminPage() {
   );
 
   const handleShopModerationClear = useCallback(() => {
-    handleContentModerationTargetChange({ shopId: "" });
-  }, [handleContentModerationTargetChange]);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("shopId");
+        return next;
+      },
+      { replace: true },
+    );
+  }, [setSearchParams]);
 
   const handleShopModerationListSelect = useCallback(
     (shopId) => {
@@ -1157,8 +1209,16 @@ export function AdminPage() {
   );
 
   const handleProductModerationClear = useCallback(() => {
-    handleContentModerationTargetChange({ productId: "" });
-  }, [handleContentModerationTargetChange]);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("productId");
+        next.delete("productView");
+        return next;
+      },
+      { replace: true },
+    );
+  }, [setSearchParams]);
 
   const handleProductModerationListSelect = useCallback(
     (productId) => {
@@ -1209,8 +1269,15 @@ export function AdminPage() {
   );
 
   const handleReviewModerationClear = useCallback(() => {
-    handleContentModerationTargetChange({ reviewId: "" });
-  }, [handleContentModerationTargetChange]);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("reviewId");
+        return next;
+      },
+      { replace: true },
+    );
+  }, [setSearchParams]);
 
   const handleReviewModerationListSelect = useCallback(
     (reviewId) => {
@@ -1528,6 +1595,9 @@ export function AdminPage() {
         return null;
       }
       if (TabComponent === AdminProductRemovalTab) {
+        return null;
+      }
+      if (TabComponent === AdminReviewModerationTab) {
         return null;
       }
       return <TabComponent />;

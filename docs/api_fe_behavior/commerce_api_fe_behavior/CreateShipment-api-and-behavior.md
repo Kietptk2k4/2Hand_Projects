@@ -66,6 +66,7 @@ Seller tao shipment cho order items cua shop sau khi order o trang thai `PROCESS
 - Chi goi sau khi order `PROCESSING` va (PayOS da `PAID` hoac COD cho phep `PENDING`).
 - `seller_id` khong gui tu client — lay tu JWT.
 - GHN: `ghn_order_code` / `tracking_number` co sau khi provider tra ve (mock khi `COMMERCE_GHN_MOCK_FALLBACK_ENABLED=true`).
+- GHN: `estimated_delivery_date` uu tien parse tu Create Order `expected_delivery_time`; neu thieu/loi parse giu heuristic luc insert.
 - Dia chi giao: buyer default `user_addresses` (MVP; chua snapshot tai checkout).
 
 ## 5. Errors

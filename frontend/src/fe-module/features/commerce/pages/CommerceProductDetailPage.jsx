@@ -10,6 +10,7 @@ import { ProductDetailShopCard } from "../components/ProductDetailShopCard";
 import { ProductDetailSkeleton } from "../components/ProductDetailSkeleton";
 import { ProductMediaGallery } from "../components/ProductMediaGallery";
 import { ShopVacationBanner } from "../components/ShopVacationBanner";
+import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { useCommerceAddToCart } from "../hooks/useCommerceAddToCart";
 import { useCommerceBuyNow } from "../hooks/useCommerceBuyNow";
 import { useProductDetail } from "../hooks/useProductDetail";
@@ -27,6 +28,7 @@ const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
 export function CommerceProductDetailPage() {
   const { productId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuthSession();
   const [toastMessage, setToastMessage] = useState("");
   const { product, isLoading, isNotFound, isError, errorMessage, retry } =
     useProductDetail(productId);
@@ -184,6 +186,7 @@ export function CommerceProductDetailPage() {
                   onBuyNow={onBuyNow}
                   isAddingToCart={isAddingToCart}
                   isBuyingNow={isBuyingProduct(product.productId)}
+                  currentUserId={user?.id}
                 />
                 <ProductDetailShopCard
                   product={product}

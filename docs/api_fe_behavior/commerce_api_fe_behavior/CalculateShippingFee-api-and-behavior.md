@@ -73,7 +73,10 @@ Cho phep buyer uoc tinh phi van chuyen theo seller group truoc checkout, dua tre
 - Seller phai co `seller_shipping_profiles` de tinh phi.
 - `total_shipping_fee = sum(shipping_fee tung seller group)`.
 - MVP mock: `shipping_fee_origin` = `shipping_fee` (chua co giam gia GHN).
-- `estimated_delivery_date` (mock): `STANDARD` +3 ngay, `EXPRESS` +1 ngay, `SAME_DAY` cung ngay.
+- `estimated_delivery_date`:
+  - Mock / GHN disabled / mock fallback: heuristic `STANDARD` +3 ngay, `EXPRESS` +1 ngay, `SAME_DAY` cung ngay.
+  - GHN live: goi **leadtime** song song voi Calculate Fee; map `leadtime` (unix) → `LocalDate`.
+  - Neu leadtime fail/empty: van tra fee GHN, ETA fallback heuristic (WARN log).
 - GHN disabled hoac `COMMERCE_GHN_MOCK_FALLBACK_ENABLED=true` → dung mock calculator.
 - Checkout/order total se tinh lai phi ship; quote khong dam bao cuoi cung.
 
@@ -90,5 +93,5 @@ Cho phep buyer uoc tinh phi van chuyen theo seller group truoc checkout, dua tre
 ## 8. FE Integration Notes
 
 - Co the goi doc lap truoc checkout preview hoac cung luong voi `POST /commerce/api/v1/checkout/quote`.
-- Hien `estimated_delivery_date` neu co; co the null khi provider khong tra (GHN future).
+- Hien `estimated_delivery_date` (FE checkout: "Du kien giao"); khi GHN live uu tien leadtime, khi fail van co heuristic.
 - Khong luu quote vao DB.

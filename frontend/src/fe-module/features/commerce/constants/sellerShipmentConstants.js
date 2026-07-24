@@ -67,6 +67,16 @@ export function canCancelSellerShipment({ carrier, status } = {}) {
   return false;
 }
 
+export function canPrintGhnLabel({ carrier, ghnOrderCode } = {}) {
+  return carrier === "GHN" && Boolean(ghnOrderCode);
+}
+
+export const GHN_PRINT_FORMATS = [
+  { value: "a5", label: "A5" },
+  { value: "80x80", label: "80×80" },
+  { value: "52x70", label: "52×70" },
+];
+
 export const SELLER_SHIPMENT_ERROR_MESSAGES = {
   "COMMERCE-401": "Phiên đăng nhập không hợp lệ.",
   "COMMERCE-400": "Vui lòng nhập trạng thái hoặc mã vận đơn.",
@@ -84,6 +94,7 @@ export const SELLER_SHIPMENT_ERROR_MESSAGES = {
   "COMMERCE-409-SHIPMENT-CARRIER": "Vận đơn GHN cập nhật tự động — không chỉnh tay.",
   "COMMERCE-409-TRACKING": "Mã vận đơn đã được sử dụng.",
   "COMMERCE-409-SELLER-SHOP": "Bạn chưa có cửa hàng.",
+  "COMMERCE-503-GHN": "Không kết nối được GHN. Thử lại sau.",
 };
 
 export function mapSellerShipmentApiError(error) {

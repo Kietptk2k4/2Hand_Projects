@@ -43,6 +43,15 @@ Chi tiet: [CreateShipment-api-and-behavior.md](./CreateShipment-api-and-behavior
 
 Seller **khong** duoc dat order item `COMPLETED` (buyer confirm / auto-complete xu ly).
 
+### 2.4 Print GHN label
+
+- **Method:** GET
+- **URL:** `/commerce/api/v1/seller/shipments/{shipmentId}/ghn/print-label?format=a5|80x80|52x70`
+- **Auth:** Bearer JWT (seller)
+- Chi tiet: [ViewGhnPrintLabel-api-and-behavior.md](./ViewGhnPrintLabel-api-and-behavior.md)
+
+FE seller detail: hien nut **In van don** khi `carrier=GHN` va co `ghn_order_code`; default `a5`; mo `print_url` tab moi.
+
 ## 3. Response – Success (GET / PATCH)
 
 **HTTP 200 OK**

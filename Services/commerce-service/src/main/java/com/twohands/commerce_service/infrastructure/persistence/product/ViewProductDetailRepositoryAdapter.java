@@ -27,6 +27,7 @@ public class ViewProductDetailRepositoryAdapter implements ViewProductDetailRepo
 
     private static final String HEADER_SQL = """
             SELECT p.id AS product_id,
+                   p.seller_id,
                    p.title,
                    p.description,
                    p.condition,
@@ -93,6 +94,7 @@ public class ViewProductDetailRepositoryAdapter implements ViewProductDetailRepo
 
         return Optional.of(new ViewProductDetailResult(
                 header.productId(),
+                header.sellerId(),
                 header.title(),
                 header.description(),
                 header.condition(),
@@ -189,6 +191,7 @@ public class ViewProductDetailRepositoryAdapter implements ViewProductDetailRepo
     private ProductHeaderRow mapHeader(ResultSet rs, int rowNum) throws SQLException {
         return new ProductHeaderRow(
                 UUID.fromString(rs.getString("product_id")),
+                UUID.fromString(rs.getString("seller_id")),
                 rs.getString("title"),
                 rs.getString("description"),
                 rs.getString("condition"),
@@ -213,6 +216,7 @@ public class ViewProductDetailRepositoryAdapter implements ViewProductDetailRepo
 
     private record ProductHeaderRow(
             UUID productId,
+            UUID sellerId,
             String title,
             String description,
             String condition,

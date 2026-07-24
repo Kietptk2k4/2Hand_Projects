@@ -9,6 +9,7 @@ import java.util.UUID;
 
 public record ViewProductDetailResponse(
         @JsonProperty("product_id") UUID productId,
+        @JsonProperty("seller_id") UUID sellerId,
         String title,
         String description,
         String condition,

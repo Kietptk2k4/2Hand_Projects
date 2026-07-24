@@ -7,6 +7,7 @@ import { useBulkPostModeration } from "../hooks/useBulkPostModeration.js";
 import { useContentModerationPermissions } from "../hooks/useContentModerationPermissions.js";
 import { usePostAuthorSummaries } from "../hooks/usePostAuthorSummaries.js";
 import { usePostModerationStats } from "../hooks/usePostModerationStats.js";
+import { useSyncedDrawerId } from "../../hooks/useSyncedDrawerId.js";
 import {
   buildPostModerationQuickFilter,
   removePostModerationFilterChip,
@@ -222,7 +223,8 @@ export function PostModerationListPanel({
     .filter((item) => item.author_id && !item.author_display_name)
     .map((item) => item.author_id);
   const authorSummaries = usePostAuthorSummaries(authorIdsNeedingFallback);
-  const selectedPost = items.find((item) => item.id === selectedPostId) || null;
+  const { openId: drawerPostId, closeDrawer } = useSyncedDrawerId(selectedPostId, onPostClear);
+  const selectedPost = items.find((item) => item.id === drawerPostId) || null;
 
   return (
     <>
@@ -247,7 +249,7 @@ export function PostModerationListPanel({
         totalPages={totalPages}
         pageSize={String(filterSize)}
         activeSort={filterSort}
-        selectedPostId={selectedPostId}
+        selectedPostId={drawerPostId}
         selectedPostIds={selectedPostIds}
         selectionEnabled={selectionEnabled}
         canModeratePost={canModeratePost}
@@ -271,18 +273,18 @@ export function PostModerationListPanel({
           })
         }
         onRowSelect={(row) => {
-          if (selectedPostId === row.id) {
-            onPostClear?.();
+          if (drawerPostId === row.id) {
+            closeDrawer();
             return;
           }
           onPostSelect?.(row.id);
         }}
         drawer={
-          selectedPostId ? (
+          drawerPostId ? (
             <PostModerationDrawer
-              postId={selectedPostId}
+              postId={drawerPostId}
               post={selectedPost}
-              onClose={() => onPostClear?.()}
+              onClose={closeDrawer}
               onRefresh={refreshAll}
             />
           ) : null

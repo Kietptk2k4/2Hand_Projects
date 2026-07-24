@@ -56,3 +56,18 @@ export async function cancelSellerShipment(shipmentId) {
     throw mapAxiosError(error);
   }
 }
+
+export async function fetchGhnPrintLabel(shipmentId, format = "a5") {
+  try {
+    const params = {};
+    if (format) params.format = format;
+
+    const response = await commerceApiClient.get(
+      `/commerce/api/v1/seller/shipments/${shipmentId}/ghn/print-label`,
+      { params },
+    );
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
