@@ -3,8 +3,8 @@ server:
 
 app:
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
-    allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:https://*.ngrok-free.dev,https://*.ngrok-free.app,https://*.ngrok.io}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:5174,http://localhost:5175,http://127.0.0.1:5173,http://127.0.0.1:5174,http://127.0.0.1:5175}
+    allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:*,http://127.0.0.1:*,https://*.ngrok-free.dev,https://*.ngrok-free.app,https://*.ngrok.io}
 
 logging:
   level:
@@ -39,6 +39,7 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+    ignore-migration-patterns: "*:missing"
     locations: classpath:db/migration
 
   data:

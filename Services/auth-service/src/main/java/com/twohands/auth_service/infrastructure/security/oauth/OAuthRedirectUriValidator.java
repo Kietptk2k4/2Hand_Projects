@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Component
@@ -23,13 +24,16 @@ public class OAuthRedirectUriValidator {
     private static final Set<String> APP_CALLBACK_PATHS = Set.of("/oauth/success", "/oauth/failure");
 
     private final List<String> allowedWebOrigins;
+    private final List<Pattern> allowedWebOriginPatterns;
     private final Set<String> allowedAppSchemes;
 
     public OAuthRedirectUriValidator(
             @Value("${app.cors.allowed-origins}") String corsOrigins,
+            @Value("${app.cors.allowed-origin-patterns:}") String corsOriginPatterns,
             @Value("${auth.oauth2.redirect.allowed-app-schemes:twohands}") String appSchemes
     ) {
         this.allowedWebOrigins = parseOrigins(corsOrigins);
+        this.allowedWebOriginPatterns = parseOriginPatterns(corsOriginPatterns);
         this.allowedAppSchemes = Arrays.stream(appSchemes.split(","))
                 .map(String::trim)
                 .filter(value -> !value.isEmpty())
@@ -109,10 +113,19 @@ public class OAuthRedirectUriValidator {
 
     private boolean isAllowedWebCallback(URI uri) {
         String origin = uri.getScheme() + "://" + uri.getAuthority();
-        if (!allowedWebOrigins.contains(origin)) {
+        if (!allowedWebOrigins.contains(origin) && !matchesAllowedOriginPattern(origin)) {
             return false;
         }
         return WEB_CALLBACK_PATHS.contains(normalizePath(uri.getPath()));
+    }
+
+    private boolean matchesAllowedOriginPattern(String origin) {
+        for (Pattern pattern : allowedWebOriginPatterns) {
+            if (pattern.matcher(origin).matches()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isAllowedAppSchemeUri(URI uri) {
@@ -174,5 +187,35 @@ public class OAuthRedirectUriValidator {
                 .map(String::trim)
                 .filter(origin -> !origin.isEmpty())
                 .toList();
+    }
+
+    private static List<Pattern> parseOriginPatterns(String corsOriginPatterns) {
+        return Arrays.stream(corsOriginPatterns.split(","))
+                .map(String::trim)
+                .filter(value -> !value.isEmpty())
+                .map(value -> value.endsWith("/") ? value.substring(0, value.length() - 1) : value)
+                .map(value -> value.toLowerCase(Locale.ROOT))
+                .map(OAuthRedirectUriValidator::toOriginPatternRegex)
+                .map(regex -> Pattern.compile(regex, Pattern.CASE_INSENSITIVE))
+                .toList();
+    }
+
+    private static String toOriginPatternRegex(String pattern) {
+        StringBuilder regex = new StringBuilder("^");
+        int start = 0;
+        int wildcardIndex = pattern.indexOf('*');
+        while (wildcardIndex >= 0) {
+            if (wildcardIndex > start) {
+                regex.append(Pattern.quote(pattern.substring(start, wildcardIndex)));
+            }
+            regex.append(".*");
+            start = wildcardIndex + 1;
+            wildcardIndex = pattern.indexOf('*', start);
+        }
+        if (start < pattern.length()) {
+            regex.append(Pattern.quote(pattern.substring(start)));
+        }
+        regex.append("$");
+        return regex.toString();
     }
 }

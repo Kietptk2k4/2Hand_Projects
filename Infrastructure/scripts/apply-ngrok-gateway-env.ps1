@@ -90,7 +90,7 @@ if ([string]::IsNullOrWhiteSpace($GatewayUrl)) {
 
 $gateway = $GatewayUrl.TrimEnd("/")
 $localOrigin = $LocalFrontendOrigin.TrimEnd("/")
-$localCors = "$gateway,http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174"
+$localCors = "$gateway,http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:5175,http://127.0.0.1:5175"
 
 Write-Host "Applying gateway env: $gateway" -ForegroundColor Cyan
 Write-Host "Local Vite origin (OAuth redirects): $localOrigin" -ForegroundColor Cyan

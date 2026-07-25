@@ -1,28 +1,20 @@
 node_modules/
-frontend/node_modules/
-frontend/.env
+**/node_modules/
 
 # Local dev DB/object-storage dumps (PII — do not commit)
 dev-dumps/
 *.dev-dump.zip
 
-# Service secrets — never commit
-Services/*/.env
-Services/**/.env
-!Services/**/.env.example
-!Services/**/.env.docker.example
+# Environment & Secret files - NEVER COMMIT
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.*.example
+!**/.env.docker.example
+!**/.env.ngrok.example
 
-# Frontend local env
-frontend/.env
-frontend/.env.docker
-frontend/.env.docker.local
-frontend/.env.local
-!frontend/.env.example
-!frontend/.env.docker.example
-!frontend/.env.ngrok.example
-
-# Infrastructure secrets (ngrok authtoken)
+# Infrastructure secrets
 Infrastructure/.env
 Infrastructure/auth-app.jar 
 
-API_DOCS/*
+API_DOCS/*

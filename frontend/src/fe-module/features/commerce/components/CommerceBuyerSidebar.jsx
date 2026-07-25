@@ -66,7 +66,7 @@ export function CommerceBuyerSidebar({ onComingSoon, pulseToken = 0 }) {
         {
           id: "seller-hub",
           icon: "storefront",
-          label: "Khu bán hàng",
+          label: "Khu bán hàng (Seller)",
           route: APP_ROUTES.commerceSellerProducts,
           requiresAuth: true,
         },
@@ -104,9 +104,9 @@ export function CommerceBuyerSidebar({ onComingSoon, pulseToken = 0 }) {
 
   return (
     <CommerceSidebarFrame
-      icon="business_center"
+      icon="shopping_bag"
       title="2Hands Commerce"
-      subtitle="Khám phá sản phẩm"
+      subtitle="Chợ mua bán 2Hand"
     >
       {links.map((link) => {
         const active = isBuyerLinkActive(link, pathname);
@@ -117,15 +117,15 @@ export function CommerceBuyerSidebar({ onComingSoon, pulseToken = 0 }) {
             type="button"
             onClick={() => handleLinkClick(link)}
             className={[
-              "flex items-center gap-3 rounded-lg px-4 py-3 text-left text-label-md transition-colors",
+              "flex items-center gap-3 rounded-xl px-4 py-3 text-left text-xs font-bold transition-all",
               active
-                ? "bg-primary text-on-primary"
-                : "text-on-surface-variant hover:bg-surface-container-high",
+                ? "bg-primary text-on-primary shadow-xs"
+                : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",
             ].join(" ")}
           >
             <span
               ref={link.id === "cart" ? setSidebarCartTargetRef : undefined}
-              className="material-symbols-outlined"
+              className="material-symbols-outlined text-lg"
               style={
                 (link.id === "cart" || link.id === "orders") && active
                   ? { fontVariationSettings: "'FILL' 1" }
@@ -147,6 +147,17 @@ export function CommerceBuyerSidebar({ onComingSoon, pulseToken = 0 }) {
           </button>
         );
       })}
+
+      {/* Mini Promotion Banner inside Sidebar */}
+      <div className="mt-8 rounded-xl border border-amber-200/80 bg-gradient-to-br from-amber-50 to-orange-50 p-4 text-xs text-slate-800">
+        <div className="flex items-center gap-1.5 font-bold text-amber-700">
+          <span className="material-symbols-outlined text-base">verified</span>
+          <span>Bảo Vệ Người Mua</span>
+        </div>
+        <p className="mt-1 text-[11px] text-slate-600 leading-relaxed">
+          Thanh toán qua 2Hands - Hoàn tiền 100% nếu hàng không đúng mô tả.
+        </p>
+      </div>
     </CommerceSidebarFrame>
   );
 }
