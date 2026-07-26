@@ -135,4 +135,10 @@ social:
   recommendation:
     model-path: ${SOCIAL_RECOMMENDATION_MODEL_PATH:models/recommend_post_model.onnx}
     model-name: ${SOCIAL_RECOMMENDATION_MODEL_NAME:feed_ranker}
+    # Ops alias MODEL_ROOT — directory containing portable artifact basenames from model_artifacts
+    model-root: ${SOCIAL_RECOMMENDATION_MODEL_ROOT:}
     reload-cron: ${SOCIAL_RECOMMENDATION_RELOAD_CRON:0 0 * * * *}
+    recall:
+      # Widen created_at window when unseen pool size < min-pool-size (recency half-life stays 7d)
+      min-pool-size: ${SOCIAL_RECOMMENDATION_RECALL_MIN_POOL_SIZE:20}
+      window-days: ${SOCIAL_RECOMMENDATION_RECALL_WINDOW_DAYS:7,30,90}

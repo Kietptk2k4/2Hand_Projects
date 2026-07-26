@@ -54,10 +54,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3002:3002"
+    volumes:
+      - ../Services/recsys-offline/data/artifacts:/models/recsys:ro
     env_file:
       - ../Services/social-service/.env.docker
       - path: ../Services/social-service/.env.docker.local
         required: false
+    environment:
+      SOCIAL_RECOMMENDATION_MODEL_ROOT: /models/recsys
     depends_on:
       postgres-social:
         condition: service_started

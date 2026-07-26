@@ -221,6 +221,11 @@ def test_smoke_export_activates_when_gate_passes(tmp_path):
     assert summary["status"] == "activated"
     assert summary["version"] == 1
     assert store["inserted"]["is_active"] is True
+    assert store["inserted"]["artifact_path"] == "feed_ranker_v1.onnx"
+    assert not Path(store["inserted"]["artifact_path"]).is_absolute()
+    assert summary["artifact_path"] == "feed_ranker_v1.onnx"
+    assert "artifact_local_path" in summary
+    assert Path(summary["artifact_local_path"]).is_absolute()
     assert (arts / "feed_ranker_v1.onnx").exists()
 
 

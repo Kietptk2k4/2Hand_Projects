@@ -12,6 +12,17 @@ export async function fetchGlobalFeed({ page = 0, size = 20 } = {}) {
   }
 }
 
+export async function fetchForYouFeed({ page = 0, size = 20 } = {}) {
+  try {
+    const response = await socialApiClient.get("/api/v1/social/feed/for-you", {
+      params: { page, size },
+    });
+    return unwrapResponse(response);
+  } catch (error) {
+    throw mapAxiosError(error);
+  }
+}
+
 export async function fetchFollowingFeed({ page = 0, size = 20 } = {}) {
   try {
     const response = await socialApiClient.get("/api/v1/social/feed/following", {

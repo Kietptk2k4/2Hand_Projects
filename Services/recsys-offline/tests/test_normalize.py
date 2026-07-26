@@ -36,8 +36,47 @@ def test_clean_posts_drops_null_author_and_draft():
     assert len(kept) == 1
     assert kept[0]["post_id"] == "p3"
     assert kept[0]["hashtags"] == ["sneaker"]
+    assert kept[0]["product_tags"] == []
     assert drops["null_author"] == 1
     assert drops["status_draft"] == 1
+
+
+def test_clean_posts_retains_product_tag_commerce_ids():
+    rows = [
+        {
+            "_id": "p1",
+            "author_id": "11111111-1111-1111-1111-111111111111",
+            "created_at": "2026-01-01T00:00:00Z",
+            "status": "ACTIVE",
+            "productTags": [
+                {
+                    "productId": "prod-1",
+                    "categoryId": "f1000000-0000-4000-8000-000000000023",
+                    "shopId": "shop-1",
+                    "name": "Nike Dunk",
+                }
+            ],
+        },
+        {
+            "_id": "p2",
+            "author_id": "11111111-1111-1111-1111-111111111111",
+            "created_at": "2026-01-01T00:00:00Z",
+            "status": "ACTIVE",
+            "hashtags": ["ootd"],
+        },
+    ]
+    kept, drops = clean_posts(rows)
+    assert drops == Counter()
+    assert len(kept) == 2
+    assert kept[0]["product_tags"] == [
+        {
+            "productId": "prod-1",
+            "categoryId": "f1000000-0000-4000-8000-000000000023",
+            "shopId": "shop-1",
+            "name": "Nike Dunk",
+        }
+    ]
+    assert kept[1]["product_tags"] == []
 
 
 def test_clean_follows_rejects_self_follow():

@@ -1,0 +1,18 @@
+# Local Python env & caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Generated training / model artifacts (regenerate via jobs)
+data/cleaned/
+data/artifacts/
+data/raw/
+*.parquet
+!tests/**/*.parquet
+
+# Local notebooks / scratch
+*.ipynb_checkpoints/

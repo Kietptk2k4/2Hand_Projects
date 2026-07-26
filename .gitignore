@@ -15,6 +15,45 @@ dev-dumps/
 
 # Infrastructure secrets
 Infrastructure/.env
-Infrastructure/auth-app.jar 
+Infrastructure/auth-app.jar
 
-API_DOCS/*
+API_DOCS/*
+
+# Python
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.venv/
+**/venv/
+**/.Python
+
+# Java / Gradle
+**/.gradle/
+**/build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+!**/gradle/wrapper/gradle-wrapper.jar
+
+# Frontend / mobile build outputs
+frontend/dist/
+**/.expo/
+**/web-build/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+**/.idea/
+*.iml
+.vscode/
+!.vscode/extensions.json
+
+# Logs & coverage
+*.log
+**/coverage/
+**/htmlcov/
+**/.coverage
+**/test-results/
+**/playwright-report/

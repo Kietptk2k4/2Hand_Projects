@@ -6,6 +6,9 @@ import com.twohands.social_service.domain.post.PostCandidate;
 import com.twohands.social_service.domain.post.ProductTag;
 import com.twohands.social_service.domain.post.UserSeenPostsRepository;
 import com.twohands.social_service.infrastructure.persistence.mongo.document.PostDocument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -14,14 +17,26 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @Component
 public class CandidatePoolServiceImpl implements CandidatePoolService {
 
+    private static final Logger log = LoggerFactory.getLogger(CandidatePoolServiceImpl.class);
+    private static final List<Integer> DEFAULT_WINDOW_DAYS = List.of(7, 30, 90);
+    private static final int DEFAULT_MIN_POOL_SIZE = 20;
+
     private final MongoTemplate mongoTemplate;
     private final FollowRepository followRepository;
     private final UserSeenPostsRepository userSeenPostsRepository;
+
+    private int minPoolSize = DEFAULT_MIN_POOL_SIZE;
+    private List<Integer> windowDays = DEFAULT_WINDOW_DAYS;
 
     public CandidatePoolServiceImpl(
             MongoTemplate mongoTemplate,
@@ -33,30 +48,90 @@ public class CandidatePoolServiceImpl implements CandidatePoolService {
         this.userSeenPostsRepository = userSeenPostsRepository;
     }
 
+    @Value("${social.recommendation.recall.min-pool-size:20}")
+    void setMinPoolSize(int minPoolSize) {
+        this.minPoolSize = minPoolSize > 0 ? minPoolSize : DEFAULT_MIN_POOL_SIZE;
+    }
+
+    @Value("${social.recommendation.recall.window-days:7,30,90}")
+    void setWindowDays(String windowDaysRaw) {
+        this.windowDays = parseWindowDays(windowDaysRaw);
+    }
+
+    public static List<Integer> parseWindowDays(String windowDaysRaw) {
+        if (windowDaysRaw == null || windowDaysRaw.isBlank()) {
+            return DEFAULT_WINDOW_DAYS;
+        }
+        List<Integer> parsed = Arrays.stream(windowDaysRaw.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(Integer::valueOf)
+                .filter(d -> d > 0)
+                .toList();
+        return parsed.isEmpty() ? DEFAULT_WINDOW_DAYS : List.copyOf(parsed);
+    }
+
     @Override
     public List<PostCandidate> getCandidates(UUID userId, int maxSize) {
         if (userId == null) {
             return List.of();
         }
 
-        // 1. Get followee IDs
         List<UUID> followeeIds = followRepository.findAcceptedFolloweeIds(userId);
-        List<String> followeeAuthorIds = followeeIds != null 
-                ? followeeIds.stream().map(UUID::toString).toList() 
+        List<String> followeeAuthorIds = followeeIds != null
+                ? followeeIds.stream().map(UUID::toString).toList()
                 : List.of();
 
-        // 2. Base Query Criteria
-        Instant sevenDaysAgo = Instant.now().minus(7, ChronoUnit.DAYS);
+        Set<String> seenPostIds;
+        try {
+            seenPostIds = userSeenPostsRepository.findSeenPostIds(userId);
+        } catch (Exception ex) {
+            seenPostIds = Set.of();
+        }
+
+        List<PostCandidate> chosen = List.of();
+        int chosenWindowDays = windowDays.get(windowDays.size() - 1);
+
+        for (int windowDay : windowDays) {
+            List<PostCandidate> pool = buildPoolForWindow(
+                    maxSize,
+                    windowDay,
+                    followeeAuthorIds,
+                    seenPostIds
+            );
+            chosen = pool;
+            chosenWindowDays = windowDay;
+            if (pool.size() >= minPoolSize) {
+                break;
+            }
+        }
+
+        log.info(
+                "Recommend candidate recall: windowDays={}, poolSize={}, minPoolSize={}, userId={}",
+                chosenWindowDays,
+                chosen.size(),
+                minPoolSize,
+                userId
+        );
+        return chosen;
+    }
+
+    private List<PostCandidate> buildPoolForWindow(
+            int maxSize,
+            int windowDays,
+            List<String> followeeAuthorIds,
+            Set<String> seenPostIds
+    ) {
+        Instant cutoff = Instant.now().minus(windowDays, ChronoUnit.DAYS);
         Criteria baseCriteria = Criteria.where("status").is("ACTIVE")
                 .and("visibility").is("PUBLIC")
-                .and("created_at").gte(sevenDaysAgo)
+                .and("created_at").gte(cutoff)
                 .andOperator(new Criteria().orOperator(
                         Criteria.where("moderation_status").exists(false),
                         Criteria.where("moderation_status").is(null),
                         Criteria.where("moderation_status").is("NONE")
                 ));
 
-        // Source 1: Prioritize posts from author that user follows (~300 candidates)
         List<PostDocument> followeeDocs = List.of();
         if (!followeeAuthorIds.isEmpty()) {
             Query followeeQuery = new Query(
@@ -70,22 +145,13 @@ public class CandidatePoolServiceImpl implements CandidatePoolService {
             followeeDocs = mongoTemplate.find(followeeQuery, PostDocument.class);
         }
 
-        // Source 2: General public posts to fill the rest of the pool
         Query globalQuery = new Query(baseCriteria);
         globalQuery.with(Sort.by(Sort.Direction.DESC, "created_at"));
         globalQuery.limit(maxSize);
         List<PostDocument> globalDocs = mongoTemplate.find(globalQuery, PostDocument.class);
 
-        // 3. Deduplicate, filter seen posts, and merge up to maxSize
         List<PostCandidate> candidates = new ArrayList<>();
         Set<String> addedIds = new HashSet<>();
-
-        Set<String> seenPostIds;
-        try {
-            seenPostIds = userSeenPostsRepository.findSeenPostIds(userId);
-        } catch (Exception ex) {
-            seenPostIds = Set.of();
-        }
 
         for (PostDocument doc : followeeDocs) {
             if (addedIds.add(doc.getId()) && !seenPostIds.contains(doc.getId())) {

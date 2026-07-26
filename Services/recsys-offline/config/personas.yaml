@@ -1,0 +1,84 @@
+# Fashion-only personas for Recommended Feed simulation.
+# Search keywords MUST equal normalized hashtag tokens (lowercase, no leading #).
+
+version: 1
+vertical: fashion-secondhand
+
+niches:
+  sneaker:
+    hashtags: [sneaker, kicks, dunk, jordan, giay]
+    category_ids:
+      - f1000000-0000-4000-8000-000000000023  # giay-dep-nam
+      - f1000000-0000-4000-8000-000000000013  # giay-dep-nu
+  streetwear:
+    hashtags: [streetwear, ootd, hoodie, unisex]
+    category_ids:
+      - f1000000-0000-4000-8000-000000000030  # unisex-streetwear
+      - f1000000-0000-4000-8000-000000000021  # ao-nam
+  vintage:
+    hashtags: [vintage, designer, thrift, secondhand]
+    category_ids:
+      - f1000000-0000-4000-8000-000000000040  # vintage-designer
+      - f1000000-0000-4000-8000-000000000011  # ao-nu
+  bag:
+    hashtags: [bag, tote, phukien, handbag]
+    category_ids:
+      - f1000000-0000-4000-8000-000000000014  # tui-phu-kien-nu
+      - f1000000-0000-4000-8000-000000000024  # phu-kien-nam
+  minimal:
+    hashtags: [minimal, basic, aonu, quannu]
+    category_ids:
+      - f1000000-0000-4000-8000-000000000011  # ao-nu
+      - f1000000-0000-4000-8000-000000000012  # quan-vay-nu
+
+# persona × niche affinity in [0, 1]
+affinity:
+  SneakerHead:   { sneaker: 0.85, streetwear: 0.35, vintage: 0.15, bag: 0.05, minimal: 0.05 }
+  StreetwearKid: { sneaker: 0.40, streetwear: 0.85, vintage: 0.25, bag: 0.10, minimal: 0.15 }
+  VintageLover:  { sneaker: 0.10, streetwear: 0.30, vintage: 0.85, bag: 0.25, minimal: 0.30 }
+  BagCollector:  { sneaker: 0.10, streetwear: 0.15, vintage: 0.30, bag: 0.85, minimal: 0.20 }
+  OOTDMinimal:   { sneaker: 0.20, streetwear: 0.25, vintage: 0.20, bag: 0.20, minimal: 0.70 }
+
+# Engage probabilities from affinity a: p_like = like_base + like_scale * a^2
+engage:
+  like_base: 0.05
+  like_scale: 0.42
+  save_of_like: 0.40
+  comment_of_like: 0.15
+  follow_scale: 0.12
+  search_per_session: 0.60
+  cart_after_engage: 0.55
+  purchase_after_cart: 0.80
+  product_tag_rate: 0.60
+
+personas:
+  - id: SneakerHead
+    primary_niche: sneaker
+  - id: StreetwearKid
+    primary_niche: streetwear
+  - id: VintageLover
+    primary_niche: vintage
+  - id: BagCollector
+    primary_niche: bag
+  - id: OOTDMinimal
+    primary_niche: minimal
+
+volumes:
+  full:
+    users: 120
+    sellers: 40
+    posts: 600
+    products: 400
+    shops: 40
+    sessions_per_user: 12
+    feed_size: 20
+    sim_days: 21
+  smoke:
+    users: 10
+    sellers: 4
+    posts: 40
+    products: 24
+    shops: 4
+    sessions_per_user: 5
+    feed_size: 8
+    sim_days: 7

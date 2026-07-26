@@ -2,7 +2,7 @@
 
 Nền tảng **thương mại điện tử kết hợp mạng xã hội**: đăng ký/đăng nhập, feed & bài viết, mua bán & thanh toán, kiểm duyệt admin, thông báo đa kênh.
 
-Repo này gom **microservices Spring Boot**, **tài liệu nghiệp vụ/kỹ thuật**, **hạ tầng Docker local** và **frontend React (Vite)** trong một workspace. Kiến trúc: **Microservices + Clean Architecture + Event-Driven (Outbox Pattern)**.
+Repo này gom **microservices Spring Boot**, **tài liệu nghiệp vụ/kỹ thuật**, **hạ tầng Docker local**, **frontend React (Vite)** và **ngrok + nginx `dev-gateway`** (demo HTTPS remote) trong một workspace. Kiến trúc: **Microservices + Clean Architecture + Event-Driven (Outbox Pattern)**.
 
 Tài liệu tổng quan: [`docs/Master Specification.md`](docs/Master%20Specification.md) · Kiến trúc: [`docs/architecture/system-architecture.md`](docs/architecture/system-architecture.md)
 
@@ -10,15 +10,31 @@ Tài liệu tổng quan: [`docs/Master Specification.md`](docs/Master%20Specific
 
 ## Sơ đồ hệ thống (MVP)
 
+Hai cách vào hệ thống hiện tại:
+
+| Chế độ | Luồng | Khi nào dùng |
+|--------|--------|----------------|
+| **Local** | Browser → Vite (`:5173`) hoặc gọi thẳng `:3001–3005` | Dev hàng ngày trên máy |
+| **Remote demo (ngrok)** | Browser → **ngrok HTTPS** → **`dev-gateway` (nginx `:8080`)** → FE `dist` + 5 API + MinIO | Demo / webhook payOS·GHN / share URL public |
+
 ```mermaid
 flowchart TB
   subgraph clients [Clients]
-    Web[frontend — React/Vite]
-    Mobile[Mobile app — tương lai]
+    LocalBrowser[Browser local]
+    RemoteBrowser[Browser / mobile remote]
   end
 
-  subgraph gateway [Planned]
-    GW[Api_gateway — chưa triển khai]
+  subgraph localPath [Local entry]
+    Vite[Vite :5173 / direct ports]
+  end
+
+  subgraph ngrokPath [Remote demo — ngrok]
+    Ngrok[ngrok HTTPS tunnel<br/>container ngrok-gateway<br/>inspect :4040]
+    DevGW[dev-gateway nginx :8080<br/>FE dist + reverse proxy<br/>compose profile ngrok]
+  end
+
+  subgraph planned [Production — chưa triển khai]
+    ProdGW[Api_gateway — api.2hands.vn]
   end
 
   subgraph services [Services — Spring Boot 3.5 / Java 21]
@@ -33,36 +49,46 @@ flowchart TB
     PG[(PostgreSQL ×5)]
     Mongo[(MongoDB)]
     Redis[(Redis)]
-    MinIO[(MinIO)]
-    Kafka[(Kafka :9092)]
+    MinIO[(MinIO :9000)]
+    Kafka[(Kafka KRaft :9092)]
+    KafkaUI[Kafka UI :8080]
+    MailHog[MailHog :1025 / :8025]
   end
 
   subgraph external [Third-party]
+    OAuth[Google / Facebook OAuth]
     PayOS[payOS]
     GHN[GHN]
-    FCM[FCM / Email]
+    FCM[FCM Push — tương lai]
   end
 
-  Web --> GW
-  Mobile --> GW
-  GW -.-> Auth & Social & Commerce & Admin & Notif
-  Web -. dev direct .-> Auth & Social & Commerce & Admin & Notif
+  LocalBrowser --> Vite
+  RemoteBrowser --> Ngrok
+  Ngrok --> DevGW
+  PayOS -.->|webhook HTTPS| Ngrok
+  GHN -.->|webhook HTTPS| Ngrok
 
-  Auth --> PG
-  Social --> PG & Mongo & Redis
-  Commerce --> PG & Redis
+  Vite --> Auth & Social & Commerce & Admin & Notif
+  DevGW --> Auth & Social & Commerce & Admin & Notif
+  DevGW --> MinIO
+  ProdGW -.-> Auth & Social & Commerce & Admin & Notif
+
+  Auth --> PG & Redis & MinIO & OAuth
+  Social --> PG & Mongo & Redis & MinIO
+  Commerce --> PG & Redis & MinIO & PayOS & GHN
   Admin --> PG & Redis
-  Notif --> PG
+  Notif --> PG & MailHog
+  Notif -.-> FCM
 
-  Commerce --> PayOS & GHN
-  Notif --> FCM
-  Social & Commerce & Admin -. outbox / Kafka .-> Notif
-
-  Auth & Admin & Commerce --> MinIO
-  Social --> MinIO
+  Auth & Social & Commerce & Admin -->|Transactional Outbox| Kafka
+  Kafka -->|consume| Notif
+  Kafka -->|projection / moderation| Social
+  Kafka -->|enforcement| Auth
+  Kafka --> KafkaUI
 ```
 
-\* Cổng mặc định: `notification-service` **3005**, `admin-service` **3004** (đã tách trong `.env.example` / `.env.docker.example`).
+\* Cổng service: auth **3001**, social **3002**, commerce **3003**, admin **3004**, notification **3005**.  
+\* **ngrok:** `Infrastructure/docker-compose.ngrok.yml` (`profile ngrok`) — `ngrok` → `dev-gateway` phục vụ FE `frontend/dist`, proxy API (`/api/v1/*`, `/commerce/api/*`, `/admin/api/*`) và MinIO path-style (`/2hands-*`). Inspect: http://localhost:4040.
 
 ---
 
@@ -77,12 +103,13 @@ flowchart TB
 │   ├── admin-service/
 │   ├── notification-service/
 │   └── skeleton-service/  # Template tham chiếu (auth scaffold)
-├── Infrastructure/        # docker-compose.yml — Postgres, Mongo, Redis, MinIO, Kafka, MailHog
-│                          # + docker-compose.apps.yml / dev.yml — 5 backend + frontend
+├── Infrastructure/        # docker-compose.yml — Postgres×5, Mongo, Redis, MinIO, Kafka, MailHog
+│                          # + apps.yml / dev.yml — 5 backend + frontend
+│                          # + ngrok.yml — nginx dev-gateway + ngrok tunnel
 ├── docs/                  # Spec, FR, API behavior, schema, use cases
 ├── frontend/              # React 19 + Vite + Tailwind (MSW) + Dockerfile
 ├── .cursor/rules/         # Chuẩn implement theo domain (admin, commerce, social)
-├── Api_gateway/           # (placeholder — chưa có mã)
+├── Api_gateway/           # (placeholder — production gateway chưa có mã)
 ├── Packages/              # (placeholder — shared libs tương lai)
 └── Scripts/               # (placeholder — automation tương lai)
 ```
@@ -355,9 +382,9 @@ Ma trận event: [`docs/architecture/event-driven-architecture.md`](docs/archite
 
 ## Roadmap / giới hạn hiện tại
 
-- **Api_gateway:** thư mục trống — client dev gọi thẳng port service (hoặc qua FE proxy tương lai).
+- **Api_gateway (production):** thư mục trống — chưa có gateway production (`api.2hands.vn`). Local: gọi thẳng port service / Vite proxy. Demo remote: **ngrok + `dev-gateway` (nginx)** trong `Infrastructure/docker-compose.ngrok.yml`.
 - **Kafka:** broker + UI + outbox publisher/consumer — bật qua env (xem `docs/kafka/`).
-- **Docker:** `docker-compose.apps.yml` (JAR + nginx FE) và `docker-compose.dev.yml` (bootRun + Vite HMR).
+- **Docker:** `docker-compose.apps.yml` (JAR + nginx FE), `docker-compose.dev.yml` (bootRun + Vite HMR), `docker-compose.ngrok.yml` (HTTPS demo).
 - **Packages / Scripts:** automation tùy chọn; `Infrastructure/scripts/setup-docker-env.*` dùng cho onboarding Docker.
 
 ---
