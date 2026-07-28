@@ -2,7 +2,7 @@
 
 Nền tảng **thương mại điện tử kết hợp mạng xã hội**: đăng ký/đăng nhập, feed & bài viết, mua bán & thanh toán, kiểm duyệt admin, thông báo đa kênh.
 
-Repo này gom **microservices Spring Boot**, **tài liệu nghiệp vụ/kỹ thuật**, **hạ tầng Docker local** và **frontend React (Vite)** trong một workspace. Kiến trúc: **Microservices + Clean Architecture + Event-Driven (Outbox Pattern)**.
+Repo này gom **microservices Spring Boot**, **tài liệu nghiệp vụ/kỹ thuật**, **hạ tầng Docker local**, **frontend React (Vite)** và **ngrok + nginx `dev-gateway`** (demo HTTPS remote) trong một workspace. Kiến trúc: **Microservices + Clean Architecture + Event-Driven (Outbox Pattern)**.
 
 Tài liệu tổng quan: [`docs/Master Specification.md`](docs/Master%20Specification.md) · Kiến trúc: [`docs/architecture/system-architecture.md`](docs/architecture/system-architecture.md)
 
@@ -10,15 +10,31 @@ Tài liệu tổng quan: [`docs/Master Specification.md`](docs/Master%20Specific
 
 ## Sơ đồ hệ thống (MVP)
 
+Hai cách vào hệ thống hiện tại:
+
+| Chế độ | Luồng | Khi nào dùng |
+|--------|--------|----------------|
+| **Local** | Browser → Vite (`:5173`) hoặc gọi thẳng `:3001–3005` | Dev hàng ngày trên máy |
+| **Remote demo (ngrok)** | Browser → **ngrok HTTPS** → **`dev-gateway` (nginx `:8080`)** → FE `dist` + 5 API + MinIO | Demo / webhook payOS·GHN / share URL public |
+
 ```mermaid
 flowchart TB
   subgraph clients [Clients]
-    Web[frontend — React/Vite]
-    Mobile[Mobile app — tương lai]
+    LocalBrowser[Browser local]
+    RemoteBrowser[Browser / mobile remote]
   end
 
-  subgraph gateway [Planned]
-    GW[Api_gateway — chưa triển khai]
+  subgraph localPath [Local entry]
+    Vite[Vite :5173 / direct ports]
+  end
+
+  subgraph ngrokPath [Remote demo — ngrok]
+    Ngrok[ngrok HTTPS tunnel<br/>container ngrok-gateway<br/>inspect :4040]
+    DevGW[dev-gateway nginx :8080<br/>FE dist + reverse proxy<br/>compose profile ngrok]
+  end
+
+  subgraph planned [Production — chưa triển khai]
+    ProdGW[Api_gateway — api.2hands.vn]
   end
 
   subgraph services [Services — Spring Boot 3.5 / Java 21]
@@ -33,36 +49,46 @@ flowchart TB
     PG[(PostgreSQL ×5)]
     Mongo[(MongoDB)]
     Redis[(Redis)]
-    MinIO[(MinIO)]
-    Kafka[(Kafka :9092)]
+    MinIO[(MinIO :9000)]
+    Kafka[(Kafka KRaft :9092)]
+    KafkaUI[Kafka UI :8080]
+    MailHog[MailHog :1025 / :8025]
   end
 
   subgraph external [Third-party]
+    OAuth[Google / Facebook OAuth]
     PayOS[payOS]
     GHN[GHN]
-    FCM[FCM / Email]
+    FCM[FCM Push — tương lai]
   end
 
-  Web --> GW
-  Mobile --> GW
-  GW -.-> Auth & Social & Commerce & Admin & Notif
-  Web -. dev direct .-> Auth & Social & Commerce & Admin & Notif
+  LocalBrowser --> Vite
+  RemoteBrowser --> Ngrok
+  Ngrok --> DevGW
+  PayOS -.->|webhook HTTPS| Ngrok
+  GHN -.->|webhook HTTPS| Ngrok
 
-  Auth --> PG
-  Social --> PG & Mongo & Redis
-  Commerce --> PG & Redis
+  Vite --> Auth & Social & Commerce & Admin & Notif
+  DevGW --> Auth & Social & Commerce & Admin & Notif
+  DevGW --> MinIO
+  ProdGW -.-> Auth & Social & Commerce & Admin & Notif
+
+  Auth --> PG & Redis & MinIO & OAuth
+  Social --> PG & Mongo & Redis & MinIO
+  Commerce --> PG & Redis & MinIO & PayOS & GHN
   Admin --> PG & Redis
-  Notif --> PG
+  Notif --> PG & MailHog
+  Notif -.-> FCM
 
-  Commerce --> PayOS & GHN
-  Notif --> FCM
-  Social & Commerce & Admin -. outbox / Kafka .-> Notif
-
-  Auth & Admin & Commerce --> MinIO
-  Social --> MinIO
+  Auth & Social & Commerce & Admin -->|Transactional Outbox| Kafka
+  Kafka -->|consume| Notif
+  Kafka -->|projection / moderation| Social
+  Kafka -->|enforcement| Auth
+  Kafka --> KafkaUI
 ```
 
-\* Cổng mặc định: `notification-service` **3005**, `admin-service` **3004** (đã tách trong `.env.example` / `.env.docker.example`).
+\* Cổng service: auth **3001**, social **3002**, commerce **3003**, admin **3004**, notification **3005**.  
+\* **ngrok:** `Infrastructure/docker-compose.ngrok.yml` (`profile ngrok`) — `ngrok` → `dev-gateway` phục vụ FE `frontend/dist`, proxy API (`/api/v1/*`, `/commerce/api/*`, `/admin/api/*`) và MinIO path-style (`/2hands-*`). Inspect: http://localhost:4040.
 
 ---
 
@@ -77,12 +103,13 @@ flowchart TB
 │   ├── admin-service/
 │   ├── notification-service/
 │   └── skeleton-service/  # Template tham chiếu (auth scaffold)
-├── Infrastructure/        # docker-compose.yml — Postgres, Mongo, Redis, MinIO, Kafka, MailHog
-│                          # + docker-compose.apps.yml / dev.yml — 5 backend + frontend
+├── Infrastructure/        # docker-compose.yml — Postgres×5, Mongo, Redis, MinIO, Kafka, MailHog
+│                          # + apps.yml / dev.yml — 5 backend + frontend
+│                          # + ngrok.yml — nginx dev-gateway + ngrok tunnel
 ├── docs/                  # Spec, FR, API behavior, schema, use cases
 ├── frontend/              # React 19 + Vite + Tailwind (MSW) + Dockerfile
 ├── .cursor/rules/         # Chuẩn implement theo domain (admin, commerce, social)
-├── Api_gateway/           # (placeholder — chưa có mã)
+├── Api_gateway/           # (placeholder — production gateway chưa có mã)
 ├── Packages/              # (placeholder — shared libs tương lai)
 └── Scripts/               # (placeholder — automation tương lai)
 ```
@@ -204,7 +231,9 @@ Mỗi dev mặc định có **stack Docker riêng** — data test (user, post, a
 
 **Cần dump:** PostgreSQL ×5, MongoDB `social_db`, MinIO buckets (avatar, post media, commerce media). **Không cần:** Redis (session/cart), Kafka.
 
-**Yêu cầu:** Docker infra đang chạy; [MinIO Client `mc`](https://min.io/docs/minio/linux/reference/minio-mc.html) (`winget install MinIO.mc`) hoặc dùng image `minio/mc` qua Docker.
+**Yêu cầu:** Docker infra đang chạy (`docker compose up -d` trong `Infrastructure/`). MinIO: [MinIO Client `mc`](https://min.io/docs/minio/linux/reference/minio-mc.html) (`winget install MinIO.mc`) **hoặc** image `minio/mc` qua Docker (Cách B bên dưới).
+
+> **Windows / PowerShell:** Không dùng `>` để redirect `pg_dump -Fc` (binary bị hỏng). Luôn ghi file **trong container** rồi `docker cp` ra host.
 
 #### Export (máy có data)
 
@@ -213,38 +242,52 @@ cd Infrastructure
 docker compose up -d
 
 $DATE = Get-Date -Format "yyyy-MM-dd"
-$DUMP = "..\dev-dumps\$DATE"
+$DUMP = (Resolve-Path "..").Path + "\dev-dumps\$DATE"
 New-Item -ItemType Directory -Force -Path $DUMP | Out-Null
-Set-Location $DUMP
+New-Item -ItemType Directory -Force -Path "$DUMP\minio" | Out-Null
 
-docker exec postgres-auth         pg_dump -U postgres -Fc auth_db         > auth_db.dump
-docker exec postgres-social       pg_dump -U postgres -Fc social_db       > social_db.dump
-docker exec postgres-commerce     pg_dump -U postgres -Fc commerce_db     > commerce_db.dump
-docker exec postgres-admin        pg_dump -U postgres -Fc admin_db        > admin_db.dump
-docker exec postgres-notification pg_dump -U postgres -Fc notification_db > notification_db.dump
+# --- PostgreSQL ×5 (custom format -Fc) ---
+docker exec postgres-auth         pg_dump -U postgres -Fc -f /tmp/auth_db.dump auth_db
+docker exec postgres-social       pg_dump -U postgres -Fc -f /tmp/social_db.dump social_db
+docker exec postgres-commerce     pg_dump -U postgres -Fc -f /tmp/commerce_db.dump commerce_db
+docker exec postgres-admin        pg_dump -U postgres -Fc -f /tmp/admin_db.dump admin_db
+docker exec postgres-notification pg_dump -U postgres -Fc -f /tmp/notification_db.dump notification_db
 
+docker cp postgres-auth:/tmp/auth_db.dump                 "$DUMP\auth_db.dump"
+docker cp postgres-social:/tmp/social_db.dump             "$DUMP\social_db.dump"
+docker cp postgres-commerce:/tmp/commerce_db.dump         "$DUMP\commerce_db.dump"
+docker cp postgres-admin:/tmp/admin_db.dump               "$DUMP\admin_db.dump"
+docker cp postgres-notification:/tmp/notification_db.dump "$DUMP\notification_db.dump"
+
+# --- MongoDB (social_db) ---
 docker exec mongodb mongodump --db=social_db --archive=/tmp/social_db.archive
-docker cp mongodb:/tmp/social_db.archive ./social_db.archive
+docker cp mongodb:/tmp/social_db.archive "$DUMP\social_db.archive"
 
+# --- MinIO (5 buckets) — Cách A: đã cài `mc` trên host ---
 mc alias set local http://localhost:9000 admin password123
-New-Item -ItemType Directory -Force -Path .\minio | Out-Null
-mc mirror local/2hands-avatar           .\minio\2hands-avatar
-mc mirror local/2hands-social-post      .\minio\2hands-social-post
-mc mirror local/2hands-commerce-product .\minio\2hands-commerce-product
-mc mirror local/2hands-commerce-review  .\minio\2hands-commerce-review
-mc mirror local/2hands-commerce-shop    .\minio\2hands-commerce-shop
+mc mirror --overwrite local/2hands-avatar           "$DUMP\minio\2hands-avatar"
+mc mirror --overwrite local/2hands-social-post      "$DUMP\minio\2hands-social-post"
+mc mirror --overwrite local/2hands-commerce-product "$DUMP\minio\2hands-commerce-product"
+mc mirror --overwrite local/2hands-commerce-review  "$DUMP\minio\2hands-commerce-review"
+mc mirror --overwrite local/2hands-commerce-shop    "$DUMP\minio\2hands-commerce-shop"
 
-Set-Location ..
-Compress-Archive -Path $DATE -DestinationPath "2hands-dev-dump-$DATE.zip"
+# Cách B (không cài mc) — network mặc định: infrastructure_default
+# docker run --rm --network infrastructure_default -v "${DUMP}/minio:/backup" minio/mc `
+#   sh -c 'mc alias set local http://minio:9000 admin password123 &&
+#     for b in 2hands-avatar 2hands-social-post 2hands-commerce-product 2hands-commerce-review 2hands-commerce-shop; do
+#       mc mirror --overwrite local/$b /backup/$b; done'
+
+Compress-Archive -Path $DUMP -DestinationPath "..\dev-dumps\2hands-dev-dump-$DATE.zip" -Force
+Write-Host "Dump ready: $DUMP  and  ..\dev-dumps\2hands-dev-dump-$DATE.zip"
 ```
 
-Bucket MinIO trống → thư mục tương ứng rỗng; vẫn restore được.
+Bucket MinIO trống → thư mục tương ứng rỗng / thiếu; vẫn restore được. Nếu Cách B fail, kiểm tra network: `docker network ls`.
 
-#### Restore (máy đồng nghiệp)
+#### Restore / Import (máy đồng nghiệp)
 
-1. Giải nén vào `dev-dumps/<ngày>/`.
-2. Tắt các service backend (`bootRun`).
-3. Infra + bucket MinIO:
+1. Giải nén zip vào `dev-dumps/<ngày>/` (phải thấy `*_db.dump`, `social_db.archive`, thư mục `minio/`).
+2. Tắt backend (`bootRun` / container apps) để tránh ghi đè trong lúc restore.
+3. Infra + tạo bucket MinIO:
 
 ```powershell
 cd Infrastructure
@@ -252,40 +295,51 @@ docker compose up -d
 docker compose run --rm minio-init
 ```
 
-4. Restore (đổi `<ngày>` cho đúng):
+4. Import (đổi `$DUMP` cho đúng đường dẫn):
 
 ```powershell
-cd ..\dev-dumps\<ngày>
+$DUMP = "..\dev-dumps\<ngày>"   # ví dụ: ..\dev-dumps\2026-07-26
 
-docker cp auth_db.dump postgres-auth:/tmp/auth_db.dump
-docker exec postgres-auth pg_restore -U postgres -d auth_db --clean --if-exists /tmp/auth_db.dump
+# --- PostgreSQL ×5 ---
+docker cp "$DUMP\auth_db.dump"         postgres-auth:/tmp/auth_db.dump
+docker cp "$DUMP\social_db.dump"       postgres-social:/tmp/social_db.dump
+docker cp "$DUMP\commerce_db.dump"     postgres-commerce:/tmp/commerce_db.dump
+docker cp "$DUMP\admin_db.dump"        postgres-admin:/tmp/admin_db.dump
+docker cp "$DUMP\notification_db.dump" postgres-notification:/tmp/notification_db.dump
 
-docker cp social_db.dump postgres-social:/tmp/social_db.dump
-docker exec postgres-social pg_restore -U postgres -d social_db --clean --if-exists /tmp/social_db.dump
-
-docker cp commerce_db.dump postgres-commerce:/tmp/commerce_db.dump
-docker exec postgres-commerce pg_restore -U postgres -d commerce_db --clean --if-exists /tmp/commerce_db.dump
-
-docker cp admin_db.dump postgres-admin:/tmp/admin_db.dump
-docker exec postgres-admin pg_restore -U postgres -d admin_db --clean --if-exists /tmp/admin_db.dump
-
-docker cp notification_db.dump postgres-notification:/tmp/notification_db.dump
+docker exec postgres-auth         pg_restore -U postgres -d auth_db         --clean --if-exists /tmp/auth_db.dump
+docker exec postgres-social       pg_restore -U postgres -d social_db       --clean --if-exists /tmp/social_db.dump
+docker exec postgres-commerce     pg_restore -U postgres -d commerce_db     --clean --if-exists /tmp/commerce_db.dump
+docker exec postgres-admin        pg_restore -U postgres -d admin_db        --clean --if-exists /tmp/admin_db.dump
 docker exec postgres-notification pg_restore -U postgres -d notification_db --clean --if-exists /tmp/notification_db.dump
 
-docker cp social_db.archive mongodb:/tmp/social_db.archive
+# --- MongoDB ---
+docker cp "$DUMP\social_db.archive" mongodb:/tmp/social_db.archive
 docker exec mongodb mongorestore --db=social_db --drop --archive=/tmp/social_db.archive
 
+# --- MinIO — Cách A: mc trên host ---
 mc alias set local http://localhost:9000 admin password123
-mc mirror .\minio\2hands-avatar           local/2hands-avatar
-mc mirror .\minio\2hands-social-post      local/2hands-social-post
-mc mirror .\minio\2hands-commerce-product local/2hands-commerce-product
-mc mirror .\minio\2hands-commerce-review  local/2hands-commerce-review
-mc mirror .\minio\2hands-commerce-shop    local/2hands-commerce-shop
+mc mirror --overwrite "$DUMP\minio\2hands-avatar"           local/2hands-avatar
+mc mirror --overwrite "$DUMP\minio\2hands-social-post"      local/2hands-social-post
+mc mirror --overwrite "$DUMP\minio\2hands-commerce-product" local/2hands-commerce-product
+mc mirror --overwrite "$DUMP\minio\2hands-commerce-review"  local/2hands-commerce-review
+mc mirror --overwrite "$DUMP\minio\2hands-commerce-shop"    local/2hands-commerce-shop
+
+# Cách B (không cài mc):
+# $abs = (Resolve-Path $DUMP).Path
+# docker run --rm --network infrastructure_default -v "${abs}/minio:/backup" minio/mc `
+#   sh -c 'mc alias set local http://minio:9000 admin password123 &&
+#     for b in 2hands-avatar 2hands-social-post 2hands-commerce-product 2hands-commerce-review 2hands-commerce-shop; do
+#       mc mirror --overwrite /backup/$b local/$b; done'
 ```
 
 5. Chạy lại backend + FE; **đăng nhập lại** (token/Redis không nằm trong dump).
 
-**Lưu ý:** `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` trong `.env` các service nên **giống nhau** giữa người export và import (hoặc chỉ dùng login mới sau restore). URL media dạng `http://localhost:9000/...` hoạt động nếu cùng port infra local.
+**Lưu ý:**
+- `pg_restore --clean --if-exists` xóa object cũ trong DB đích trước khi nạp — dùng khi muốn **thay toàn bộ** data local bằng dump.
+- `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` trong `.env` các service nên **giống nhau** giữa người export và import (hoặc chỉ dùng login mới sau restore).
+- URL media dạng `http://localhost:9000/...` hoạt động nếu cùng port infra local.
+- Credential mặc định (compose): Postgres `postgres` / `123456`; MinIO `admin` / `password123`.
 
 Chi tiết MinIO init: [Infrastructure/README.md](Infrastructure/README.md).
 
@@ -355,9 +409,9 @@ Ma trận event: [`docs/architecture/event-driven-architecture.md`](docs/archite
 
 ## Roadmap / giới hạn hiện tại
 
-- **Api_gateway:** thư mục trống — client dev gọi thẳng port service (hoặc qua FE proxy tương lai).
+- **Api_gateway (production):** thư mục trống — chưa có gateway production (`api.2hands.vn`). Local: gọi thẳng port service / Vite proxy. Demo remote: **ngrok + `dev-gateway` (nginx)** trong `Infrastructure/docker-compose.ngrok.yml`.
 - **Kafka:** broker + UI + outbox publisher/consumer — bật qua env (xem `docs/kafka/`).
-- **Docker:** `docker-compose.apps.yml` (JAR + nginx FE) và `docker-compose.dev.yml` (bootRun + Vite HMR).
+- **Docker:** `docker-compose.apps.yml` (JAR + nginx FE), `docker-compose.dev.yml` (bootRun + Vite HMR), `docker-compose.ngrok.yml` (HTTPS demo).
 - **Packages / Scripts:** automation tùy chọn; `Infrastructure/scripts/setup-docker-env.*` dùng cho onboarding Docker.
 
 ---

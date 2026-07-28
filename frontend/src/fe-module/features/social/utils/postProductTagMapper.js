@@ -9,6 +9,8 @@ export function mapSellerListItemToPickerProduct(item) {
     productId: item.productId,
     name: item.title || "Sản phẩm",
     category: item.categoryName || "",
+    categoryId: item.categoryId || null,
+    shopId: item.shopId || null,
     defaultPrice,
     imageUrl: item.thumbnailUrl || null,
     status: item.status,
@@ -26,6 +28,8 @@ export function mapProductDetailToCatalogEntry(detail) {
     productId: detail.productId,
     name: detail.title || "Sản phẩm",
     category: detail.category?.name || "",
+    categoryId: detail.category?.id || detail.categoryId || null,
+    shopId: detail.shop?.id || detail.shopId || null,
     imageUrl,
     defaultPrice: detail.effectivePrice ?? detail.salePrice ?? detail.price ?? 0,
   };
@@ -39,10 +43,13 @@ export function mergeTagWithCatalog(tag, catalog) {
 
   return {
     productId: tag.productId,
-    name: catalog?.name || "Sản phẩm",
-    category: catalog?.category || "",
-    imageUrl: catalog?.imageUrl || null,
+    name: tag.name || catalog?.name || "Sản phẩm",
+    category: tag.category || catalog?.category || "",
+    categoryId: tag.categoryId || catalog?.categoryId || null,
+    shopId: tag.shopId || catalog?.shopId || null,
+    imageUrl: tag.imageUrl || catalog?.imageUrl || null,
     defaultPrice,
     price: Number.isFinite(price) && price >= 0 ? price : defaultPrice,
+    available: tag.available !== false,
   };
 }

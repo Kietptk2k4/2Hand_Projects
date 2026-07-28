@@ -31,7 +31,7 @@ const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
 export function SocialFeedPage() {
   const navigate = useNavigate();
   const { user } = useAuthSession();
-  const [activeTab, setActiveTab] = useState(FEED_TABS.GLOBAL);
+  const [activeTab, setActiveTab] = useState(FEED_TABS.FOR_YOU);
   const [toastMessage, setToastMessage] = useState("");
   const [detailRefreshKey, setDetailRefreshKey] = useState(0);
   const { postId, focusComments, isOpen, openPost, closePost } = usePostDetailModal();
@@ -135,8 +135,8 @@ export function SocialFeedPage() {
   const onCreateSuccess = useCallback(
     (_created, { publish }) => {
       if (publish) {
-        if (activeTab !== FEED_TABS.GLOBAL) {
-          setActiveTab(FEED_TABS.GLOBAL);
+        if (activeTab !== FEED_TABS.FOR_YOU) {
+          setActiveTab(FEED_TABS.FOR_YOU);
         }
         refetch();
         setToastMessage("Đăng bài thành công.");

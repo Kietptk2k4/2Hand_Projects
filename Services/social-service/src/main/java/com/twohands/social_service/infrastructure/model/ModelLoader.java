@@ -12,6 +12,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Component
 public class ModelLoader {
@@ -29,6 +31,13 @@ public class ModelLoader {
 
     @Value("${social.recommendation.model-name:feed_ranker}")
     private String modelName;
+
+    /**
+     * Directory that contains ONNX files referenced by portable {@code model_artifacts.artifact_path}
+     * basenames. Ops alias: {@code MODEL_ROOT}. Env: {@code SOCIAL_RECOMMENDATION_MODEL_ROOT}.
+     */
+    @Value("${social.recommendation.model-root:}")
+    private String modelRoot;
 
     private volatile OrtSession session;
     private volatile Integer activeModelVersion;
@@ -56,6 +65,42 @@ public class ModelLoader {
         loadModelInternal();
     }
 
+    /**
+     * Phase 1: only a single path segment (basename) is allowed — no separators, {@code ..}, or absolutes.
+     */
+    public static boolean isSafeArtifactBasename(String artifactPath) {
+        if (artifactPath == null) {
+            return false;
+        }
+        String trimmed = artifactPath.trim();
+        if (trimmed.isEmpty()) {
+            return false;
+        }
+        if (trimmed.contains("/") || trimmed.contains("\\") || trimmed.contains("..")) {
+            return false;
+        }
+        Path asPath = Paths.get(trimmed);
+        return !asPath.isAbsolute();
+    }
+
+    /**
+     * Join model root with a safe basename. Returns null if root blank, basename unsafe, or escapes root.
+     */
+    public static Path resolveUnderModelRoot(String modelRoot, String artifactBasename) {
+        if (modelRoot == null || modelRoot.isBlank()) {
+            return null;
+        }
+        if (!isSafeArtifactBasename(artifactBasename)) {
+            return null;
+        }
+        Path root = Paths.get(modelRoot.trim()).toAbsolutePath().normalize();
+        Path resolved = root.resolve(artifactBasename.trim()).normalize();
+        if (!resolved.startsWith(root)) {
+            return null;
+        }
+        return resolved;
+    }
+
     private synchronized void loadModelInternal() {
         String resolvedPath = modelPath;
         Integer resolvedVersion = null;
@@ -66,9 +111,10 @@ public class ModelLoader {
             );
             if (active.isPresent()) {
                 ModelArtifactRepository.ActiveModelArtifact artifact = active.get();
-                File artifactFile = new File(artifact.artifactPath());
-                if (artifactFile.exists()) {
-                    resolvedPath = artifact.artifactPath();
+                String stored = artifact.artifactPath();
+                Path underRoot = resolveUnderModelRoot(modelRoot, stored);
+                if (underRoot != null && underRoot.toFile().exists()) {
+                    resolvedPath = underRoot.toString();
                     resolvedVersion = artifact.version();
                     log.info(
                             "Resolved active model artifact {} v{} at {}",
@@ -76,10 +122,18 @@ public class ModelLoader {
                             artifact.version(),
                             resolvedPath
                     );
+                } else if (underRoot != null) {
+                    log.warn(
+                            "Active model artifact missing under model-root: {}. Falling back to configured model-path {}",
+                            underRoot,
+                            modelPath
+                    );
                 } else {
                     log.warn(
-                            "Active model artifact path missing: {}. Falling back to configured model-path {}",
-                            artifact.artifactPath(),
+                            "Active model artifact_path is not a safe relative basename under model-root "
+                                    + "(path='{}', modelRoot='{}'). Falling back to configured model-path {}",
+                            stored,
+                            modelRoot,
                             modelPath
                     );
                 }

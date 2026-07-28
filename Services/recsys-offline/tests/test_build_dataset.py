@@ -70,3 +70,43 @@ def test_build_rows_schema_and_label():
         "label",
     ):
         assert col in rows[0]
+
+
+def test_build_rows_cross_domain_from_cleaned_product_tags():
+    shown = datetime(2026, 1, 1, 12, tzinfo=timezone.utc)
+    cat = "f1000000-0000-4000-8000-000000000023"
+    shop = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+    raw = {
+        "posts": [
+            {
+                "post_id": "p1",
+                "author_id": "11111111-1111-1111-1111-111111111111",
+                "hashtags": "[]",
+                "like_count": 0,
+                "reply_count": 0,
+                "created_at": (shown - timedelta(days=1)).isoformat(),
+                "product_tags": (
+                    '[{"productId":"prod-1","categoryId":"%s","shopId":"%s"}]' % (cat, shop)
+                ),
+            }
+        ],
+        "comments": [],
+        "post_likes": [],
+        "post_saves": [],
+        "follows": [],
+        "search_history": [],
+        "post_impression_log": [
+            {
+                "user_id": "u1",
+                "post_id": "p1",
+                "shown_at": shown.isoformat(),
+                "request_id": "r1",
+                "rank_position": 1,
+            }
+        ],
+        "user_purchase_profile": [
+            {"user_id": "u1", "category_ids": f'["{cat}"]', "shop_ids": "[]"},
+        ],
+    }
+    rows, _ = build_rows(raw)
+    assert rows[0]["cross_domain_product_score"] >= 0.6

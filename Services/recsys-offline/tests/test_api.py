@@ -94,6 +94,19 @@ def test_export_activate_fails_when_model_missing(monkeypatch, tmp_path):
     assert response.status_code == 400
 
 
+def test_export_purchase_profile_fails_when_commerce_url_missing(monkeypatch):
+    from app import config
+
+    monkeypatch.setattr(
+        "app.main.get_settings",
+        lambda: config.Settings(commerce_postgres_url=None),
+    )
+    response = client.post("/jobs/export-purchase-profile", json={})
+    assert response.status_code == 400
+    assert "COMMERCE_POSTGRES_URL" in response.json()["detail"]
+
+
 def test_stub_jobs_do_not_expose_predict():
     assert client.get("/recommend").status_code == 404
     assert client.post("/predict").status_code == 404
+

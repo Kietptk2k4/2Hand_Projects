@@ -83,6 +83,14 @@ export const socialFeedHandlers = [
     )
   ),
 
+  http.get("*/api/v1/social/feed/for-you", (ctx) =>
+    handleFeedRequest(
+      ctx.request,
+      visibleFeedPosts(mockGlobalFeedPosts),
+      "Lay recommend feed thanh cong."
+    )
+  ),
+
   http.get("*/api/v1/social/feed/following", (ctx) =>
     handleFeedRequest(
       ctx.request,

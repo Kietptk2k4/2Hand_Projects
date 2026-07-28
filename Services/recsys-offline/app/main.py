@@ -6,7 +6,7 @@ import logging
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.config import get_settings
 from pipelines.build_dataset import run_build_dataset
@@ -15,6 +15,7 @@ from pipelines.split_dataset import run_split_dataset
 from pipelines.train import run_train_job
 from pipelines.evaluate import run_evaluate_job
 from pipelines.export_activate import run_export_activate_job
+from pipelines.export_purchase_profile import run_export_purchase_profile
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ app = FastAPI(
         "Offline jobs only (clean / build-dataset / train / evaluate / export). "
         "Social Service must NOT call this during recommend-feed requests."
     ),
-    version="0.2.0",
+    version="0.3.0",
 )
 
 
@@ -33,6 +34,13 @@ class JobAccepted(BaseModel):
     status: str
     detail: str
     result: dict[str, Any] | None = None
+
+
+class ExportPurchaseProfileRequest(BaseModel):
+    as_of: str | None = Field(
+        default=None,
+        description="Train cutoff ISO timestamp (T_cut). Omit for provisional full export.",
+    )
 
 
 @app.get("/health")
@@ -124,3 +132,24 @@ def jobs_export_activate() -> JobAccepted:
         else "Export-activate completed"
     )
     return JobAccepted(status=job_status, detail=detail, result=summary)
+
+
+@app.post("/jobs/export-purchase-profile", response_model=JobAccepted)
+def jobs_export_purchase_profile(
+    body: ExportPurchaseProfileRequest | None = None,
+) -> JobAccepted:
+    settings = get_settings()
+    payload = body or ExportPurchaseProfileRequest()
+    try:
+        settings.require_commerce_url()
+        summary = run_export_purchase_profile(settings, as_of=payload.as_of)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Export purchase profile failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return JobAccepted(
+        status="success",
+        detail="Purchase profile export completed",
+        result=summary,
+    )

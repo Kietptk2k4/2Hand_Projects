@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 from collections import Counter
 from datetime import datetime, timezone
@@ -124,10 +125,59 @@ def clean_posts(rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], Count
                 "reply_count": int(row.get("reply_count") or row.get("comment_count") or 0),
                 "created_at": created_at,
                 "updated_at": to_utc_iso(row.get("updated_at")),
+                "product_tags": normalize_product_tags(
+                    row.get("product_tags") if "product_tags" in row else row.get("productTags")
+                ),
             }
         )
 
     return kept, drops
+
+
+def normalize_product_tags(raw: Any) -> list[dict[str, Any]]:
+    """Preserve commerce identifiers on product tags for cross_domain features."""
+    tags = raw
+    if tags is None:
+        return []
+    if isinstance(tags, str):
+        text = tags.strip()
+        if not text:
+            return []
+        try:
+            tags = json.loads(text)
+        except json.JSONDecodeError:
+            return []
+    if not isinstance(tags, (list, tuple)):
+        return []
+
+    out: list[dict[str, Any]] = []
+    for tag in tags:
+        if not isinstance(tag, dict):
+            continue
+        product_id = tag.get("productId") or tag.get("product_id")
+        category_id = tag.get("categoryId") or tag.get("category_id")
+        shop_id = tag.get("shopId") or tag.get("shop_id")
+        cleaned: dict[str, Any] = {}
+        if product_id:
+            cleaned["productId"] = str(product_id)
+        if category_id:
+            cleaned["categoryId"] = str(category_id)
+        if shop_id:
+            cleaned["shopId"] = str(shop_id)
+        # Keep common display fields when present (non-breaking for consumers)
+        for src, dst in (
+            ("name", "name"),
+            ("imageUrl", "imageUrl"),
+            ("image_url", "imageUrl"),
+            ("price", "price"),
+            ("available", "available"),
+            ("category", "category"),
+        ):
+            if src in tag and tag[src] is not None and dst not in cleaned:
+                cleaned[dst] = tag[src]
+        if cleaned:
+            out.append(cleaned)
+    return out
 
 
 def clean_comments(rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], Counter]:

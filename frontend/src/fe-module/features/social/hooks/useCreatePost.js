@@ -230,6 +230,8 @@ export function useCreatePost({ onSuccess }) {
           productId: product.productId,
           name: product.name,
           category: product.category,
+          categoryId: product.categoryId || null,
+          shopId: product.shopId || null,
           price: product.defaultPrice,
         },
       ];

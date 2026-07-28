@@ -323,11 +323,13 @@ def run_export_activate_job(
             onnx_verify=onnx_verify,
             gate=gate,
         )
+        # Portable relative name for Social MODEL_ROOT join (not host-absolute).
+        artifact_basename = onnx_path.name
         persist_model_artifact(
             conn,
             model_name=MODEL_NAME,
             version=version,
-            artifact_path=str(onnx_path.resolve()),
+            artifact_path=artifact_basename,
             metrics=metrics,
             activate=activate,
         )
@@ -337,7 +339,8 @@ def run_export_activate_job(
         "status": status,
         "model_name": MODEL_NAME,
         "version": version,
-        "artifact_path": str(onnx_path.resolve()),
+        "artifact_path": artifact_basename,
+        "artifact_local_path": str(onnx_path.resolve()),
         "is_active": activate,
         "gate": gate,
         "onnx_verify": onnx_verify,
