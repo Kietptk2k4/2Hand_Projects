@@ -1,5 +1,21 @@
 import { getUnavailableReasonLabel } from "../constants/cartConstants";
 
+export function getDisplayShopName(item, shopNamesMap = {}) {
+  if (!item) return "Cửa hàng 2Hand";
+
+  const shopId = item.shopId || item.shop_id || item.sellerId;
+  if (shopId && shopNamesMap[shopId]) {
+    return shopNamesMap[shopId];
+  }
+
+  const rawName = item.shopName || item.shop_name || item.shopTitle;
+  if (rawName && rawName.trim()) {
+    return rawName;
+  }
+
+  return "Cửa hàng 2Hand";
+}
+
 export function isCartItemInvalid(item) {
   return !item?.inStock || Boolean(item?.unavailableReason);
 }

@@ -24,6 +24,8 @@ export function mapOrderListItem(item) {
 
   return {
     orderId: item.order_id,
+    shopId: item.shop_id || item.seller_id || item.shopId || item.sellerId || item.target_shop_id || item.targetShopId,
+    shopName: item.shop_name || item.shopName || item.shop_title || item.shopTitle,
     orderStatus: item.order_status,
     orderPaymentStatus: item.order_payment_status,
     paymentMethod: item.payment_method,

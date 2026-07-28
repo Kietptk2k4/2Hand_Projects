@@ -3,7 +3,7 @@ import { ORDER_STATUS_FILTERS } from "../constants/orderListConstants";
 export function OrderListFilters({ activeFilterId, onChange, disabled }) {
   return (
     <div
-      className="-mx-1 flex gap-2 overflow-x-auto overscroll-x-contain px-1 pb-1 scrollbar-thin"
+      className="flex items-center gap-2 overflow-x-auto rounded-2xl border border-outline-variant bg-surface-container-lowest p-2 shadow-xs no-scrollbar"
       role="tablist"
       aria-label="Lọc trạng thái đơn hàng"
     >
@@ -19,10 +19,10 @@ export function OrderListFilters({ activeFilterId, onChange, disabled }) {
             disabled={disabled}
             onClick={() => onChange(filter.status)}
             className={[
-              "shrink-0 rounded-full px-4 py-2 text-label-md transition-colors",
+              "shrink-0 rounded-xl px-4 py-2.5 text-xs font-bold transition-all sm:text-sm cursor-pointer",
               active
-                ? "bg-primary text-on-primary"
-                : "border border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low",
+                ? "bg-primary text-on-primary shadow-xs"
+                : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",
               disabled ? "cursor-not-allowed opacity-60" : "",
             ].join(" ")}
           >

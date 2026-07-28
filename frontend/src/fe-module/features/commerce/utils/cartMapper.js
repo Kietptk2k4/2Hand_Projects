@@ -9,6 +9,7 @@ function mapCartProductSnapshot(product) {
     productId: pick(product, "product_id", "productId"),
     sellerId: pick(product, "seller_id", "sellerId"),
     shopId: pick(product, "shop_id", "shopId"),
+    shopName: pick(product, "shop_name", "shopName") || pick(product, "shop_title", "shopTitle"),
     productName: pick(product, "product_name", "productName"),
     imageUrl: pick(product, "image_url", "imageUrl"),
     price: product.price,
@@ -52,18 +53,19 @@ export function mapCartResponse(data) {
   if (!data) return null;
 
   const items = (data.items || []).map((item) => ({
-    cartItemId: item.cart_item_id,
-    productId: item.product_id,
-    sellerId: item.seller_id,
-    shopId: item.shop_id,
-    productName: item.product_name,
-    imageUrl: item.image_url,
+    cartItemId: pick(item, "cart_item_id", "cartItemId"),
+    productId: pick(item, "product_id", "productId"),
+    sellerId: pick(item, "seller_id", "sellerId"),
+    shopId: pick(item, "shop_id", "shopId"),
+    shopName: pick(item, "shop_name", "shopName") || pick(item, "shop_title", "shopTitle"),
+    productName: pick(item, "product_name", "productName"),
+    imageUrl: pick(item, "image_url", "imageUrl"),
     quantity: item.quantity,
     status: item.status,
-    effectivePrice: item.effective_price,
-    inStock: item.in_stock,
-    availableQuantity: item.available_quantity,
-    unavailableReason: item.unavailable_reason,
+    effectivePrice: pick(item, "effective_price", "effectivePrice"),
+    inStock: pick(item, "in_stock", "inStock"),
+    availableQuantity: pick(item, "available_quantity", "availableQuantity"),
+    unavailableReason: pick(item, "unavailable_reason", "unavailableReason"),
   }));
 
   const summary = data.summary || {};
