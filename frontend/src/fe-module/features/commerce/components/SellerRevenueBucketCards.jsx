@@ -1,43 +1,39 @@
 import { formatVndPrice } from "../../social/utils/formatPrice";
-import { AdminMetricCard, AdminSurfaceCard } from "../../auth/admin/components/ui";
 
 const BUCKETS = [
   {
     id: "in_transit",
     key: "inTransit",
-    title: "Đang vận chuyển",
+    title: "ĐANG VẬN CHUYỂN",
     description: "Đơn đang xử lý hoặc đang giao",
     icon: "local_shipping",
-    accentClass: "text-admin-accent",
-    surfaceClass: "bg-admin-accent-soft/60",
+    badgeColor: "bg-blue-50 text-blue-600 border-blue-200",
   },
   {
     id: "pending_confirm",
     key: "pendingConfirm",
-    title: "Chờ xác nhận",
+    title: "CHỜ XÁC NHẬN",
     description: "Đã giao, chờ khách xác nhận nhận hàng",
-    icon: "inventory",
-    accentClass: "text-admin-warning",
-    surfaceClass: "bg-admin-warning-soft/70",
+    icon: "inventory_2",
+    badgeColor: "bg-amber-50 text-amber-600 border-amber-200",
   },
   {
     id: "recognized",
     key: "recognized",
-    title: "Đã ghi nhận",
+    title: "ĐÃ GHI NHẬN",
     description: "Hoàn tất đơn và đã thu COD",
     icon: "paid",
-    accentClass: "text-admin-success",
-    surfaceClass: "bg-admin-success-soft/70",
+    badgeColor: "bg-emerald-50 text-emerald-600 border-emerald-200",
   },
 ];
 
 function BucketSkeleton() {
   return (
-    <AdminSurfaceCard padding="md" className="animate-pulse">
-      <div className="h-3 w-24 rounded bg-admin-surface-muted" />
-      <div className="mt-4 h-8 w-32 rounded bg-admin-surface-muted" />
-      <div className="mt-2 h-3 w-full rounded bg-admin-surface-muted" />
-    </AdminSurfaceCard>
+    <div className="animate-pulse rounded-2xl border border-outline-variant/80 bg-surface-container-lowest p-6 shadow-xs">
+      <div className="h-3 w-24 rounded bg-surface-container-high" />
+      <div className="mt-4 h-8 w-32 rounded bg-surface-container-high" />
+      <div className="mt-2 h-3 w-full rounded bg-surface-container-high" />
+    </div>
   );
 }
 
@@ -58,27 +54,33 @@ export function SellerRevenueBucketCards({ summary, isLoading }) {
         const data = summary?.[bucket.key] ?? { amount: 0, itemCount: 0 };
 
         return (
-          <AdminMetricCard
+          <div
             key={bucket.id}
-            label={bucket.title}
-            value={formatVndPrice(data.amount)}
-            hint={bucket.description}
-            footer={
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-sm text-admin-text-secondary">{data.itemCount} dòng đơn</p>
-                <span
-                  className={[
-                    "material-symbols-outlined flex h-9 w-9 items-center justify-center rounded-lg text-xl",
-                    bucket.accentClass,
-                    bucket.surfaceClass,
-                  ].join(" ")}
-                  aria-hidden="true"
-                >
-                  {bucket.icon}
+            className="flex flex-col justify-between rounded-2xl border border-outline-variant/80 bg-surface-container-lowest p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md"
+          >
+            <div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+                  {bucket.title}
                 </span>
+                <div className={`flex h-10 w-10 items-center justify-center rounded-xl border ${bucket.badgeColor}`}>
+                  <span className="material-symbols-outlined text-lg" aria-hidden="true">
+                    {bucket.icon}
+                  </span>
+                </div>
               </div>
-            }
-          />
+              <p className="mt-2 text-2xl font-black text-on-surface">
+                {formatVndPrice(data.amount)}
+              </p>
+              <p className="mt-1 text-xs text-on-surface-variant">{bucket.description}</p>
+            </div>
+
+            <div className="mt-4 border-t border-outline-variant/40 pt-3">
+              <span className="inline-flex items-center gap-1 rounded-md bg-surface-container-high px-2.5 py-1 text-xs font-bold text-on-surface">
+                {data.itemCount} dòng đơn
+              </span>
+            </div>
+          </div>
         );
       })}
     </div>

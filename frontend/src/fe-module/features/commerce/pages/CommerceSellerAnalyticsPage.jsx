@@ -5,6 +5,7 @@ import { CommerceShell } from "../components/CommerceShell";
 import { SellerPayoutSection } from "../components/SellerPayoutSection";
 import { SellerRevenueBucketCards } from "../components/SellerRevenueBucketCards";
 import { SellerRevenueTrendChart } from "../components/SellerRevenueTrendChart";
+import { CommerceFooterTrustSection } from "../components/CommerceFooterTrustSection";
 import { useSellerFinanceAnalytics } from "../hooks/useSellerFinanceAnalytics";
 
 const GRANULARITY_OPTIONS = [
@@ -29,20 +30,21 @@ export function CommerceSellerAnalyticsPage() {
   return (
     <CommerceShell onComingSoon={showComingSoon}>
       <div className="mx-auto w-full max-w-[1280px]">
-        <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        {/* Header */}
+        <header className="mb-6 flex flex-wrap items-start justify-between gap-4 border-b border-outline-variant/60 pb-4">
           <div>
-            <h1 className="text-headline-lg-mobile font-bold text-on-surface md:text-headline-lg">
-              Thống kê doanh thu
+            <h1 className="text-xl font-black text-on-surface sm:text-2xl">
+              THỐNG KÊ DOANH THU & VÍ SELLER
             </h1>
-            <p className="mt-1 text-body-md text-on-surface-variant">
-              Theo dõi doanh thu theo trạng thái đơn hàng. Chỉ tính giá hàng, không gồm phí vận chuyển.
+            <p className="mt-1 text-xs font-semibold text-on-surface-variant">
+              Theo dõi doanh thu theo trạng thái đơn hàng (chỉ tính giá sản phẩm, chưa gồm phí ship)
             </p>
           </div>
           <button
             type="button"
             onClick={retry}
             disabled={isLoading}
-            className="inline-flex items-center gap-2 rounded-lg border border-outline-variant px-4 py-2 text-label-md text-on-surface transition-colors hover:bg-surface-container-high disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-outline-variant bg-surface-container-lowest px-5 py-2.5 text-xs font-bold text-on-surface shadow-xs transition-all hover:bg-surface-container-low disabled:opacity-60 cursor-pointer"
           >
             <span className="material-symbols-outlined text-base" aria-hidden="true">
               refresh
@@ -51,49 +53,80 @@ export function CommerceSellerAnalyticsPage() {
           </button>
         </header>
 
+        {/* Error Notification */}
         {errorMessage ? (
-          <div className="mb-6 rounded-xl border border-error/30 bg-error-container/30 px-4 py-3 text-body-md text-on-error-container">
+          <div className="mb-6 rounded-2xl border border-error/30 bg-error-container/40 p-4 text-xs font-semibold text-on-error-container shadow-xs">
             {errorMessage}
           </div>
         ) : null}
 
+        {/* 3 Main Finance Metric Cards */}
         <section className="mb-6 grid gap-4 md:grid-cols-3">
-          <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
-            <p className="text-label-md text-on-surface-variant">Tổng doanh thu (gross)</p>
-            <p className="mt-2 text-headline-md font-bold text-on-surface">
-              {isLoading ? "—" : formatVndPrice(summary?.totalGross ?? 0)}
-            </p>
+          {/* Card 1: Gross Revenue */}
+          <div className="flex items-center justify-between rounded-2xl border border-outline-variant/80 bg-surface-container-lowest p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md">
+            <div>
+              <p className="text-xs font-bold text-on-surface-variant">Tổng doanh thu (Gross)</p>
+              <p className="mt-2 text-2xl font-black text-on-surface">
+                {isLoading ? "—" : formatVndPrice(summary?.totalGross ?? 0)}
+              </p>
+            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border bg-blue-50 text-blue-600 border-blue-200">
+              <span className="material-symbols-outlined text-xl" aria-hidden="true">
+                payments
+              </span>
+            </div>
           </div>
-          <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
-            <p className="text-label-md text-on-surface-variant">Số dư khả dụng (sau phí 10%)</p>
-            <p className="mt-2 text-headline-md font-bold text-primary">
-              {isLoading ? "—" : formatVndPrice(summary?.balance?.availableBalance ?? 0)}
-            </p>
+
+          {/* Card 2: Available Balance */}
+          <div className="flex items-center justify-between rounded-2xl border border-outline-variant/80 bg-surface-container-lowest p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md">
+            <div>
+              <p className="text-xs font-bold text-on-surface-variant">Số dư khả dụng (sau phí 10%)</p>
+              <p className="mt-2 text-2xl font-black text-emerald-600">
+                {isLoading ? "—" : formatVndPrice(summary?.balance?.availableBalance ?? 0)}
+              </p>
+            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border bg-emerald-50 text-emerald-600 border-emerald-200">
+              <span className="material-symbols-outlined text-xl" aria-hidden="true">
+                account_balance_wallet
+              </span>
+            </div>
           </div>
-          <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
-            <p className="text-label-md text-on-surface-variant">Phí sàn đã ghi nhận</p>
-            <p className="mt-2 text-headline-md font-bold text-on-surface">
-              {isLoading ? "—" : formatVndPrice(summary?.balance?.totalPlatformFee ?? 0)}
-            </p>
+
+          {/* Card 3: Platform Fee */}
+          <div className="flex items-center justify-between rounded-2xl border border-outline-variant/80 bg-surface-container-lowest p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md">
+            <div>
+              <p className="text-xs font-bold text-on-surface-variant">Phí sàn đã ghi nhận (10%)</p>
+              <p className="mt-2 text-2xl font-black text-purple-600">
+                {isLoading ? "—" : formatVndPrice(summary?.balance?.totalPlatformFee ?? 0)}
+              </p>
+            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border bg-purple-50 text-purple-600 border-purple-200">
+              <span className="material-symbols-outlined text-xl" aria-hidden="true">
+                receipt_long
+              </span>
+            </div>
           </div>
         </section>
 
+        {/* Status Bucket Cards */}
         <section className="mb-8">
           <SellerRevenueBucketCards summary={summary} isLoading={isLoading} />
         </section>
 
+        {/* Wallet & Payout Section */}
         <div id="payout">
           <SellerPayoutSection
-          availableBalance={summary?.balance?.availableBalance ?? 0}
-          pendingPayoutAmount={summary?.balance?.pendingPayoutAmount ?? 0}
-          onNotify={setToastMessage}
-          onFinanceChange={retry}
+            availableBalance={summary?.balance?.availableBalance ?? 0}
+            pendingPayoutAmount={summary?.balance?.pendingPayoutAmount ?? 0}
+            onNotify={setToastMessage}
+            onFinanceChange={retry}
           />
         </div>
 
-        <section className="mb-8">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-title-lg font-semibold text-on-surface">Biểu đồ doanh thu</h2>
+        {/* Revenue Trend Chart */}
+        <section className="mb-8 rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 shadow-xs">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant/60 pb-3">
+            <h2 className="text-lg font-black text-on-surface">Biểu đồ doanh thu</h2>
             <div className="flex flex-wrap gap-2">
               {GRANULARITY_OPTIONS.map((option) => {
                 const active = granularity === option.value;
@@ -103,10 +136,10 @@ export function CommerceSellerAnalyticsPage() {
                     type="button"
                     onClick={() => setGranularity(option.value)}
                     className={[
-                      "rounded-full px-4 py-2 text-label-md transition-colors",
+                      "rounded-xl px-4 py-1.5 text-xs font-bold transition-all cursor-pointer",
                       active
-                        ? "bg-primary text-on-primary"
-                        : "border border-outline-variant text-on-surface-variant hover:bg-surface-container-high",
+                        ? "bg-primary text-on-primary shadow-xs"
+                        : "border border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-high",
                     ].join(" ")}
                   >
                     {option.label}
@@ -118,53 +151,61 @@ export function CommerceSellerAnalyticsPage() {
           <SellerRevenueTrendChart trend={trend} isLoading={isLoading} />
         </section>
 
-        <section>
-          <h2 className="mb-4 text-title-lg font-semibold text-on-surface">Sổ cái ghi nhận</h2>
-          <div className="overflow-x-auto rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
-            <table className="min-w-full text-left text-body-sm">
-              <thead className="border-b border-outline-variant bg-surface-container-low">
-                <tr>
-                  <th className="px-4 py-3 font-medium text-on-surface-variant">Thời gian</th>
-                  <th className="px-4 py-3 font-medium text-on-surface-variant">Gross</th>
-                  <th className="px-4 py-3 font-medium text-on-surface-variant">Phí sàn</th>
-                  <th className="px-4 py-3 font-medium text-on-surface-variant">Net</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading ? (
+        {/* Ledger Table */}
+        <section className="mb-8">
+          <h2 className="mb-4 text-lg font-black text-on-surface">Sổ cái ghi nhận</h2>
+          <div className="overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-left text-xs">
+                <thead className="border-b border-outline-variant/60 bg-surface-container-low text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
                   <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-on-surface-variant">
-                      Đang tải...
-                    </td>
+                    <th className="px-4 py-3.5">Thời gian</th>
+                    <th className="px-4 py-3.5">Doanh thu Gross</th>
+                    <th className="px-4 py-3.5">Phí sàn (10%)</th>
+                    <th className="px-4 py-3.5 font-bold">Thực nhận (Net)</th>
                   </tr>
-                ) : ledger?.items?.length ? (
-                  ledger.items.map((entry) => (
-                    <tr key={entry.id} className="border-b border-outline-variant/60 last:border-0">
-                      <td className="px-4 py-3 text-on-surface">
-                        {entry.createdAt
-                          ? new Date(entry.createdAt).toLocaleString("vi-VN")
-                          : "—"}
-                      </td>
-                      <td className="px-4 py-3">{formatVndPrice(entry.grossAmount)}</td>
-                      <td className="px-4 py-3 text-on-surface-variant">
-                        {formatVndPrice(entry.platformFeeAmount)}
-                      </td>
-                      <td className="px-4 py-3 font-medium text-on-surface">
-                        {formatVndPrice(entry.netAmount)}
+                </thead>
+                <tbody className="divide-y divide-outline-variant/40">
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={4} className="px-4 py-8 text-center text-slate-400 font-semibold">
+                        Đang tải bút toán...
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-on-surface-variant">
-                      Chưa có bút toán ghi nhận.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  ) : ledger?.items?.length ? (
+                    ledger.items.map((entry) => (
+                      <tr key={entry.id} className="transition-colors hover:bg-surface-container-low/50">
+                        <td className="px-4 py-3.5 text-on-surface font-medium">
+                          {entry.createdAt
+                            ? new Date(entry.createdAt).toLocaleString("vi-VN")
+                            : "—"}
+                        </td>
+                        <td className="px-4 py-3.5 font-semibold text-on-surface">
+                          {formatVndPrice(entry.grossAmount)}
+                        </td>
+                        <td className="px-4 py-3.5 text-purple-600 font-semibold">
+                          {formatVndPrice(entry.platformFeeAmount)}
+                        </td>
+                        <td className="px-4 py-3.5 font-black text-emerald-600">
+                          {formatVndPrice(entry.netAmount)}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="px-4 py-8 text-center text-slate-400 font-semibold">
+                        Chưa có bút toán ghi nhận.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
+
+        {/* E-Commerce Trust Badges Footer */}
+        <CommerceFooterTrustSection />
       </div>
 
       <FeedToast message={toastMessage} onDismiss={dismissToast} />
