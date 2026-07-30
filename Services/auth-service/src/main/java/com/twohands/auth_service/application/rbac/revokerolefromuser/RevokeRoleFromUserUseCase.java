@@ -8,7 +8,7 @@ import com.twohands.auth_service.domain.rbac.RoleAssignmentDomainService;
 import com.twohands.auth_service.domain.rbac.RoleRepository;
 import com.twohands.auth_service.domain.rbac.UserRoleAssignment;
 import com.twohands.auth_service.domain.rbac.UserRoleAssignmentRepository;
-import com.twohands.auth_service.domain.session.RefreshTokenSessionRepository;
+import com.twohands.auth_service.application.session.RevokeAllUserSessionsService;
 import com.twohands.auth_service.domain.user.User;
 import com.twohands.auth_service.domain.user.UserRepository;
 import com.twohands.auth_service.domain.user.UserStatus;
@@ -34,14 +34,14 @@ public class RevokeRoleFromUserUseCase {
     private final PermissionQueryRepository permissionQueryRepository;
     private final RoleAssignmentDomainService roleAssignmentDomainService;
     private final AuthorizationDomainService authorizationDomainService;
-    private final RefreshTokenSessionRepository refreshTokenSessionRepository;
+    private final RevokeAllUserSessionsService revokeAllUserSessionsService;
 
     public RevokeRoleFromUserUseCase(
             UserRepository userRepository,
             RoleRepository roleRepository,
             UserRoleAssignmentRepository userRoleAssignmentRepository,
             PermissionQueryRepository permissionQueryRepository,
-            RefreshTokenSessionRepository refreshTokenSessionRepository
+            RevokeAllUserSessionsService revokeAllUserSessionsService
     ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -49,7 +49,7 @@ public class RevokeRoleFromUserUseCase {
         this.permissionQueryRepository = permissionQueryRepository;
         this.roleAssignmentDomainService = new RoleAssignmentDomainService();
         this.authorizationDomainService = new AuthorizationDomainService();
-        this.refreshTokenSessionRepository = refreshTokenSessionRepository;
+        this.revokeAllUserSessionsService = revokeAllUserSessionsService;
     }
 
     @Transactional
@@ -78,7 +78,7 @@ public class RevokeRoleFromUserUseCase {
         userRoleAssignmentRepository.save(assignment);
 
         // Revoke active sessions so target user must refresh claims.
-        refreshTokenSessionRepository.revokeAllByUserId(targetUser.id());
+        revokeAllUserSessionsService.revokeAll(targetUser.id());
 
         return new RevokeRoleFromUserResult(targetUser.id(), role.id());
     }

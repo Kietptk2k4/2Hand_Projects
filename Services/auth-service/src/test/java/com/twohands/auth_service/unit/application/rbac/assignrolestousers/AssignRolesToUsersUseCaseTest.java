@@ -8,7 +8,7 @@ import com.twohands.auth_service.domain.rbac.Role;
 import com.twohands.auth_service.domain.rbac.RoleRepository;
 import com.twohands.auth_service.domain.rbac.UserRoleAssignment;
 import com.twohands.auth_service.domain.rbac.UserRoleAssignmentRepository;
-import com.twohands.auth_service.domain.session.RefreshTokenSessionRepository;
+import com.twohands.auth_service.application.session.RevokeAllUserSessionsService;
 import com.twohands.auth_service.domain.user.EmailAddress;
 import com.twohands.auth_service.domain.user.PasswordHash;
 import com.twohands.auth_service.domain.user.User;
@@ -38,7 +38,7 @@ class AssignRolesToUsersUseCaseTest {
     private final RoleRepository roleRepository = Mockito.mock(RoleRepository.class);
     private final UserRoleAssignmentRepository userRoleAssignmentRepository = Mockito.mock(UserRoleAssignmentRepository.class);
     private final PermissionQueryRepository permissionQueryRepository = Mockito.mock(PermissionQueryRepository.class);
-    private final RefreshTokenSessionRepository refreshTokenSessionRepository = Mockito.mock(RefreshTokenSessionRepository.class);
+    private final RevokeAllUserSessionsService revokeAllUserSessionsService = Mockito.mock(RevokeAllUserSessionsService.class);
 
     private AssignRolesToUsersUseCase useCase;
 
@@ -53,7 +53,7 @@ class AssignRolesToUsersUseCaseTest {
                 roleRepository,
                 userRoleAssignmentRepository,
                 permissionQueryRepository,
-                refreshTokenSessionRepository
+                revokeAllUserSessionsService
         );
 
         actorUserId = UUID.randomUUID();
@@ -73,7 +73,7 @@ class AssignRolesToUsersUseCaseTest {
         assertEquals(targetUserId, result.userId());
         assertEquals(roleId, result.roleId());
         verify(userRoleAssignmentRepository).save(any(UserRoleAssignment.class));
-        verify(refreshTokenSessionRepository).revokeAllByUserId(targetUserId);
+        verify(revokeAllUserSessionsService).revokeAll(targetUserId);
     }
 
     @Test

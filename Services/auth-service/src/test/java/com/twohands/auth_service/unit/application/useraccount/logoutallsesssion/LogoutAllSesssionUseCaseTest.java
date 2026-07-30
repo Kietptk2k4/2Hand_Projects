@@ -2,7 +2,7 @@ package com.twohands.auth_service.unit.application.useraccount.logoutallsesssion
 
 import com.twohands.auth_service.application.useraccount.common.UserAccountAuthContextService;
 import com.twohands.auth_service.application.useraccount.logoutallsesssion.LogoutAllSesssionUseCase;
-import com.twohands.auth_service.domain.session.RefreshTokenSessionRepository;
+import com.twohands.auth_service.application.session.RevokeAllUserSessionsService;
 import com.twohands.auth_service.domain.user.EmailAddress;
 import com.twohands.auth_service.domain.user.PasswordHash;
 import com.twohands.auth_service.domain.user.User;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 class LogoutAllSesssionUseCaseTest {
 
     private final UserRepository userRepository = Mockito.mock(UserRepository.class);
-    private final RefreshTokenSessionRepository refreshTokenSessionRepository = Mockito.mock(RefreshTokenSessionRepository.class);
+    private final RevokeAllUserSessionsService revokeAllUserSessionsService = Mockito.mock(RevokeAllUserSessionsService.class);
 
     private LogoutAllSesssionUseCase useCase;
     private UUID userId;
@@ -31,7 +31,7 @@ class LogoutAllSesssionUseCaseTest {
     void setup() {
         useCase = new LogoutAllSesssionUseCase(
                 userRepository,
-                refreshTokenSessionRepository,
+                revokeAllUserSessionsService,
                 new UserAccountAuthContextService()
         );
         userId = UUID.randomUUID();
@@ -42,14 +42,14 @@ class LogoutAllSesssionUseCaseTest {
     void shouldRevokeAllActiveSessions() {
         useCase.execute(userId);
 
-        verify(refreshTokenSessionRepository).revokeAllByUserId(userId);
+        verify(revokeAllUserSessionsService).revokeAll(userId);
     }
 
     @Test
     void shouldStillSucceedWhenNoActiveSessions() {
         useCase.execute(userId);
 
-        verify(refreshTokenSessionRepository).revokeAllByUserId(userId);
+        verify(revokeAllUserSessionsService).revokeAll(userId);
     }
 
     private User buildUser(UUID id) {

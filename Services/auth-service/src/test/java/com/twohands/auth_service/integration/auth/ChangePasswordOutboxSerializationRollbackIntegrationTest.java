@@ -6,7 +6,7 @@ import com.twohands.auth_service.application.auth.changepassword.ChangePasswordU
 import com.twohands.auth_service.application.auth.changepassword.ChangePasswordValidationService;
 import com.twohands.auth_service.application.auth.register.PasswordHashingService;
 import com.twohands.auth_service.domain.outbox.OutboxEventRepository;
-import com.twohands.auth_service.domain.session.RefreshTokenSessionRepository;
+import com.twohands.auth_service.application.session.RevokeAllUserSessionsService;
 import com.twohands.auth_service.domain.user.UserRepository;
 import com.twohands.auth_service.security.jwt.JwtTokenIssuer;
 import org.junit.jupiter.api.BeforeEach;
@@ -187,7 +187,7 @@ class ChangePasswordOutboxSerializationRollbackIntegrationTest {
         ChangePasswordUseCase changePasswordUseCase(
                 UserRepository userRepository,
                 PasswordHashingService passwordHashingService,
-                RefreshTokenSessionRepository refreshTokenSessionRepository,
+                RevokeAllUserSessionsService revokeAllUserSessionsService,
                 OutboxEventRepository outboxEventRepository
         ) {
             ObjectMapper failingObjectMapper = new ObjectMapper() {
@@ -201,7 +201,7 @@ class ChangePasswordOutboxSerializationRollbackIntegrationTest {
                     new ChangePasswordValidationService(),
                     userRepository,
                     passwordHashingService,
-                    refreshTokenSessionRepository,
+                    revokeAllUserSessionsService,
                     outboxEventRepository,
                     failingObjectMapper
             );

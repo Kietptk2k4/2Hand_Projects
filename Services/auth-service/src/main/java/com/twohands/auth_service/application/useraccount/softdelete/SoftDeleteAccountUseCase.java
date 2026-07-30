@@ -4,7 +4,7 @@ import com.twohands.auth_service.application.auth.register.PasswordHashingServic
 import com.twohands.auth_service.application.useraccount.common.UserAccountAuthContextService;
 import com.twohands.auth_service.application.useraccount.common.UserAccountOutboxService;
 import com.twohands.auth_service.domain.outbox.OutboxEventRepository;
-import com.twohands.auth_service.domain.session.RefreshTokenSessionRepository;
+import com.twohands.auth_service.application.session.RevokeAllUserSessionsService;
 import com.twohands.auth_service.domain.user.User;
 import com.twohands.auth_service.domain.user.UserRepository;
 import com.twohands.auth_service.domain.user.UserStatus;
@@ -23,7 +23,7 @@ public class SoftDeleteAccountUseCase {
 
     private final SoftDeleteAccountValidationService validationService;
     private final UserRepository userRepository;
-    private final RefreshTokenSessionRepository refreshTokenSessionRepository;
+    private final RevokeAllUserSessionsService revokeAllUserSessionsService;
     private final OutboxEventRepository outboxEventRepository;
     private final PasswordHashingService passwordHashingService;
     private final UserAccountOutboxService outboxService;
@@ -32,7 +32,7 @@ public class SoftDeleteAccountUseCase {
     public SoftDeleteAccountUseCase(
             SoftDeleteAccountValidationService validationService,
             UserRepository userRepository,
-            RefreshTokenSessionRepository refreshTokenSessionRepository,
+            RevokeAllUserSessionsService revokeAllUserSessionsService,
             OutboxEventRepository outboxEventRepository,
             PasswordHashingService passwordHashingService,
             UserAccountOutboxService outboxService,
@@ -40,7 +40,7 @@ public class SoftDeleteAccountUseCase {
     ) {
         this.validationService = validationService;
         this.userRepository = userRepository;
-        this.refreshTokenSessionRepository = refreshTokenSessionRepository;
+        this.revokeAllUserSessionsService = revokeAllUserSessionsService;
         this.outboxEventRepository = outboxEventRepository;
         this.passwordHashingService = passwordHashingService;
         this.outboxService = outboxService;
@@ -67,7 +67,7 @@ public class SoftDeleteAccountUseCase {
         user.softDelete(now);
 
         userRepository.updateStatusDeleted(user.id(), now);
-        refreshTokenSessionRepository.revokeAllByUserId(user.id());
+        revokeAllUserSessionsService.revokeAll(user.id());
         outboxEventRepository.save(outboxService.userDeleted(user.id(), user.email().normalizedValue(), now));
     }
 
