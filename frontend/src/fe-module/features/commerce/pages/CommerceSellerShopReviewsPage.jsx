@@ -8,6 +8,7 @@ import { SellerShopReviewCard } from "../components/SellerShopReviewCard";
 import { SellerShopReviewsListSkeleton } from "../components/SellerShopReviewsListSkeleton";
 import { SellerShopReviewsReplyTabs } from "../components/SellerShopReviewsReplyTabs";
 import { SellerShopReviewsStats } from "../components/SellerShopReviewsStats";
+import { CommerceFooterTrustSection } from "../components/CommerceFooterTrustSection";
 import {
   RATING_FILTER_OPTIONS,
   REVIEW_STATUS_OPTIONS,
@@ -100,13 +101,14 @@ export function CommerceSellerShopReviewsPage() {
   return (
     <CommerceShell>
       <div className="mx-auto w-full max-w-[1280px]">
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        {/* Header & Overview Stats */}
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-outline-variant/60 pb-4">
           <div>
-            <h1 className="text-headline-lg-mobile font-semibold text-on-surface md:text-headline-lg">
-              Đánh giá cửa hàng
+            <h1 className="text-xl font-black text-on-surface sm:text-2xl">
+              ĐÁNH GIÁ CỬA HÀNG
             </h1>
-            <p className="mt-1 text-body-sm text-on-surface-variant">
-              Theo dõi và phản hồi khách hàng
+            <p className="mt-1 text-xs font-semibold text-on-surface-variant">
+              Theo dõi và tương tác phản hồi ý kiến của khách hàng
             </p>
           </div>
           <SellerShopReviewsStats
@@ -115,122 +117,134 @@ export function CommerceSellerShopReviewsPage() {
           />
         </div>
 
-        <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+        {/* Reply Tabs */}
+        <div className="mb-4">
           <SellerShopReviewsReplyTabs
             activeTabId={activeReplyTab}
             tabCounts={replyTabCounts}
             onChange={changeReplyTab}
             disabled={disabled}
           />
+        </div>
 
-          <div className="flex flex-col gap-3 border-b border-outline-variant bg-surface-bright p-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="relative max-w-sm flex-1">
-              <span
-                className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-outline"
-                aria-hidden="true"
-              >
-                search
-              </span>
-              <input
-                type="search"
-                value={clientSearch}
-                onChange={(e) => setClientSearch(e.target.value)}
-                disabled={disabled}
-                placeholder="Tìm sản phẩm hoặc mã mục đơn..."
-                className="w-full rounded-lg border border-outline-variant bg-surface py-2 pl-10 pr-4 text-body-sm focus:border-primary focus:outline-none disabled:opacity-50"
-              />
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <select
-                value={ratingFilter ?? ""}
-                onChange={(e) =>
-                  changeRatingFilter(e.target.value ? Number(e.target.value) : null)
-                }
-                disabled={disabled}
-                className="rounded-lg border border-outline-variant bg-surface px-3 py-2 text-label-md text-on-surface disabled:opacity-50"
-                aria-label="Lọc theo sao"
-              >
-                {RATING_FILTER_OPTIONS.map((opt) => (
-                  <option key={opt.value || "all"} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={statusFilter}
-                onChange={(e) => changeStatusFilter(e.target.value)}
-                disabled={disabled}
-                className="rounded-lg border border-outline-variant bg-surface px-3 py-2 text-label-md text-on-surface disabled:opacity-50"
-                aria-label="Trạng thái đánh giá"
-              >
-                {REVIEW_STATUS_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+        {/* Search & Filter Bar */}
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative min-w-[260px] flex-1">
+            <span
+              className="material-symbols-outlined pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg"
+              aria-hidden="true"
+            >
+              search
+            </span>
+            <input
+              type="search"
+              value={clientSearch}
+              onChange={(e) => setClientSearch(e.target.value)}
+              disabled={disabled}
+              placeholder="Tìm sản phẩm hoặc mã mục đơn..."
+              className="w-full rounded-2xl border border-outline-variant bg-surface-container-lowest py-3 pl-10 pr-4 text-xs text-on-surface shadow-xs transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm disabled:opacity-50"
+            />
           </div>
 
-          {isLoading ? <SellerShopReviewsListSkeleton /> : null}
-
-          {!isLoading && errorMessage ? (
-            <div className="p-8 text-center">
-              <p className="text-body-md text-on-error-container">{errorMessage}</p>
-              <button
-                type="button"
-                onClick={retry}
-                className="mt-4 rounded-lg bg-primary px-4 py-2 text-label-md text-on-primary"
-              >
-                Thử lại
-              </button>
-            </div>
-          ) : null}
-
-          {showEmptyState ? (
-            <div className="p-10 text-center">
-              <span className="material-symbols-outlined mb-2 text-4xl text-outline">rate_review</span>
-              <p className="text-body-md text-on-surface-variant">
-                {isSearchEmpty
-                  ? "Không tìm thấy đánh giá phù hợp."
-                  : isFilterEmpty
-                    ? "Không có đánh giá với bộ lọc hiện tại."
-                    : "Chưa có đánh giá nào."}
-              </p>
-            </div>
-          ) : null}
-
-          {showList ? (
-            <div className="divide-y divide-outline-variant">
-              {reviews.map((review) => (
-                <SellerShopReviewCard
-                  key={review.reviewId}
-                  review={review}
-                  disabled={disabled}
-                  onReply={setReplyReview}
-                />
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={ratingFilter ?? ""}
+              onChange={(e) =>
+                changeRatingFilter(e.target.value ? Number(e.target.value) : null)
+              }
+              disabled={disabled}
+              className="rounded-2xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-xs font-bold text-on-surface shadow-xs transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 cursor-pointer"
+              aria-label="Lọc theo sao"
+            >
+              {RATING_FILTER_OPTIONS.map((opt) => (
+                <option key={opt.value || "all"} value={opt.value}>
+                  {opt.label}
+                </option>
               ))}
-            </div>
-          ) : null}
+            </select>
 
-          {showList && pagination ? (
-            <div className="border-t border-outline-variant bg-surface p-4">
-              <SellerOrderPagination
-                page={page}
-                totalPages={totalPages}
-                rangeStart={rangeStart}
-                rangeEnd={rangeEnd}
-                totalItems={totalItems}
-                disabled={disabled}
-                onPrev={() => goToPage(page - 1)}
-                onNext={() => goToPage(page + 1)}
-                onGoToPage={goToPage}
-              />
-            </div>
-          ) : null}
+            <select
+              value={statusFilter}
+              onChange={(e) => changeStatusFilter(e.target.value)}
+              disabled={disabled}
+              className="rounded-2xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-xs font-bold text-on-surface shadow-xs transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 cursor-pointer"
+              aria-label="Trạng thái đánh giá"
+            >
+              {REVIEW_STATUS_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
+
+        {/* Skeleton loader */}
+        {isLoading ? <SellerShopReviewsListSkeleton /> : null}
+
+        {/* Error Container */}
+        {!isLoading && errorMessage ? (
+          <div className="rounded-2xl border border-error/30 bg-error-container/40 p-8 text-center shadow-xs">
+            <p className="text-sm font-semibold text-on-error-container">{errorMessage}</p>
+            <button
+              type="button"
+              onClick={retry}
+              className="mt-4 rounded-xl bg-primary px-6 py-2.5 text-xs font-bold text-on-primary hover:bg-[#0050cb]"
+            >
+              Thử lại ngay
+            </button>
+          </div>
+        ) : null}
+
+        {/* Empty State */}
+        {showEmptyState ? (
+          <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-12 text-center shadow-xs">
+            <span className="material-symbols-outlined mb-2 text-5xl text-slate-300" aria-hidden="true">
+              rate_review
+            </span>
+            <p className="text-sm font-semibold text-on-surface-variant">
+              {isSearchEmpty
+                ? "Không tìm thấy đánh giá phù hợp."
+                : isFilterEmpty
+                  ? "Không có đánh giá với bộ lọc hiện tại."
+                  : "Chưa có đánh giá nào."}
+            </p>
+          </div>
+        ) : null}
+
+        {/* Review Cards List */}
+        {showList ? (
+          <div className="space-y-4">
+            {reviews.map((review) => (
+              <SellerShopReviewCard
+                key={review.reviewId}
+                review={review}
+                disabled={disabled}
+                onReply={setReplyReview}
+              />
+            ))}
+          </div>
+        ) : null}
+
+        {/* Pagination Toolbar */}
+        {showList && pagination ? (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-4 text-xs font-semibold text-on-surface-variant">
+            <SellerOrderPagination
+              page={page}
+              totalPages={totalPages}
+              rangeStart={rangeStart}
+              rangeEnd={rangeEnd}
+              totalItems={totalItems}
+              disabled={disabled}
+              onPrev={() => goToPage(page - 1)}
+              onNext={() => goToPage(page + 1)}
+              onGoToPage={goToPage}
+            />
+          </div>
+        ) : null}
+
+        {/* E-Commerce Trust Badges Footer */}
+        <CommerceFooterTrustSection />
       </div>
 
       <ReplyToReviewModal
