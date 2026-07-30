@@ -222,24 +222,11 @@ export function CommerceHomePage() {
       {/* Main Product Catalog Section */}
       <section id="product-feed-section" className="mt-8">
         {/* Sticky Filter Header Bar */}
-        <div className="sticky top-16 z-20 mb-6 flex flex-col gap-4 rounded-2xl border border-outline-variant bg-surface-container-lowest/95 p-3 backdrop-blur-md shadow-xs sm:flex-row sm:items-center sm:justify-between sm:p-4">
-          {/* Feed Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-            {FEED_TABS.map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                className={`shrink-0 rounded-xl px-4 py-2 text-xs font-bold transition-all sm:text-sm cursor-pointer ${
-                  activeTab === tab.id
-                    ? "bg-primary text-on-primary shadow-xs"
-                    : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+        <div className="sticky top-16 z-20 mb-6 flex items-center justify-between gap-4 rounded-2xl border border-outline-variant bg-surface-container-lowest/95 p-3 backdrop-blur-md shadow-xs sm:p-4">
+          <h2 className="text-sm font-black uppercase text-on-surface sm:text-base flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary text-xl">grid_view</span>
+            DÀNH CHO BẠN
+          </h2>
 
           {/* Sort Dropdown */}
           <div className="shrink-0">
