@@ -1,16 +1,12 @@
 import { getConditionLabel } from "../constants/productDetailConstants";
-import { formatVndPrice } from "../../social/utils/formatPrice";
 import {
-  getStockLabel,
   isAddToCartDisabled,
   isOwnListing,
-  isProductOnSale,
 } from "../utils/productDetailDisplay";
 
 export function ProductDetailActionCard({
   product,
   productImageUrl,
-  onComingSoon,
   onAddToCart,
   onBuyNow,
   isAddingToCart = false,
@@ -21,85 +17,65 @@ export function ProductDetailActionCard({
 
   const ownListing = isOwnListing(product, currentUserId);
   const addDisabled = isAddToCartDisabled(product, currentUserId);
-  const isOnSale = isProductOnSale(product);
-  const stockLabel = getStockLabel(product);
   const actionsDisabled = addDisabled || isAddingToCart || isBuyingNow;
+  const conditionLabel = getConditionLabel(product.condition);
 
   return (
-    <aside className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm lg:sticky lg:top-24">
-      <div className="mb-4">
-        <span
-          className={`text-headline-md font-bold ${isOnSale ? "text-error" : "text-on-surface"}`}
-        >
-          {formatVndPrice(product.effectivePrice)}
-        </span>
-        {isOnSale ? (
-          <div className="text-label-sm text-outline-variant line-through">
-            {formatVndPrice(product.price)}
-          </div>
-        ) : null}
-      </div>
-
-      <p className="mb-4 text-body-sm text-on-surface-variant">{stockLabel}</p>
-
-      <div className="mb-4 rounded-lg bg-surface-container-low p-3">
-        <p className="text-label-sm font-medium text-on-surface">Tình trạng sản phẩm</p>
-        <p className="mt-1 text-body-sm text-on-surface-variant">
-          {getConditionLabel(product.condition)} — sản phẩm được kiểm tra trước khi đăng bán.
+    <aside className="rounded-2xl border border-outline-variant/80 bg-surface-container-lowest p-6 shadow-xs">
+      {/* Product Condition Explanation Box */}
+      <div className="mb-5 rounded-xl border border-blue-100 bg-blue-50/50 p-4">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-blue-900">
+          <span className="material-symbols-outlined text-sm text-primary">verified_user</span>
+          Tình trạng sản phẩm 2Hand
+        </div>
+        <p className="mt-1 text-xs font-semibold text-slate-700">
+          <span className="font-bold text-primary">{conditionLabel}</span> — Được đội ngũ kiểm duyệt kỹ lưỡng về độ mới & chất liệu trước khi đăng bán.
         </p>
       </div>
 
       {ownListing ? (
-        <p className="mb-3 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-body-sm text-on-surface-variant">
-          Đây là sản phẩm của bạn — không thể mua.
+        <p className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-center text-xs font-bold text-amber-800">
+          Đây là sản phẩm từ Cửa hàng của bạn — Không thể tự đặt mua.
         </p>
       ) : null}
 
-      <button
-        type="button"
-        disabled={actionsDisabled}
-        onClick={() => {
-          if (!actionsDisabled) onBuyNow?.();
-        }}
-        className="mb-2 w-full rounded-lg bg-primary py-3 text-label-md font-semibold text-on-primary transition-colors hover:bg-[#0050cb] disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {isBuyingNow ? "Đang chuyển..." : "Mua ngay"}
-      </button>
+      {/* Action Buttons Row */}
+      <div className="flex flex-col gap-3 sm:flex-row">
+        {/* Add to Cart Button */}
+        <button
+          type="button"
+          disabled={actionsDisabled}
+          onClick={(event) => {
+            if (!actionsDisabled) {
+              onAddToCart?.({
+                imageUrl: productImageUrl,
+                sourceElement: event.currentTarget,
+              });
+            }
+          }}
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-primary py-3 text-xs font-bold text-primary transition-all hover:bg-primary/5 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+        >
+          <span className="material-symbols-outlined text-lg" aria-hidden="true">
+            shopping_cart
+          </span>
+          {isAddingToCart ? "Đang thêm..." : "Thêm vào giỏ"}
+        </button>
 
-      <button
-        type="button"
-        disabled={actionsDisabled}
-        onClick={(event) => {
-          if (!actionsDisabled) {
-            onAddToCart?.({
-              imageUrl: productImageUrl,
-              sourceElement: event.currentTarget,
-            });
-          }
-        }}
-        className="mb-3 w-full rounded-lg border-2 border-primary py-2.5 text-label-md font-semibold text-primary transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {isAddingToCart ? "Đang thêm..." : "Thêm vào giỏ"}
-      </button>
-
-      {/* <button
-        type="button"
-        onClick={onComingSoon}
-        className="flex w-full items-center justify-center gap-1 rounded-lg border border-outline-variant py-2 text-label-md text-on-surface transition-colors hover:bg-surface-container-low"
-      >
-        <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
-          share
-        </span>
-        Chia sẻ
-      </button> */}
-
-      {/* <button
-        type="button"
-        onClick={onComingSoon}
-        className="mt-3 w-full rounded-lg border-2 border-primary py-2 text-label-md font-medium text-primary transition-colors hover:bg-surface-container-low"
-      >
-        Đề xuất giá
-      </button> */}
+        {/* Buy Now Button */}
+        <button
+          type="button"
+          disabled={actionsDisabled}
+          onClick={() => {
+            if (!actionsDisabled) onBuyNow?.();
+          }}
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary py-3 text-xs font-bold text-on-primary shadow-xs transition-all hover:bg-[#0050cb] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+        >
+          <span className="material-symbols-outlined text-lg" aria-hidden="true">
+            bolt
+          </span>
+          {isBuyingNow ? "Đang chuyển..." : "Mua ngay"}
+        </button>
+      </div>
     </aside>
   );
 }
