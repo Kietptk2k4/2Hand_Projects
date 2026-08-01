@@ -85,6 +85,11 @@ function rewriteStoredMediaToSameOrigin(url) {
     if (!isPrivateLanHost(parsed.hostname)) {
       return url;
     }
+    if (LOCAL_HOSTS.has(window.location.hostname.toLowerCase()) && window.location.port !== "8080") {
+      parsed.hostname = "localhost";
+      parsed.port = MINIO_PORT;
+      return parsed.toString();
+    }
     return `${window.location.origin}${parsed.pathname}${parsed.search}${parsed.hash}`;
   } catch {
     return url;

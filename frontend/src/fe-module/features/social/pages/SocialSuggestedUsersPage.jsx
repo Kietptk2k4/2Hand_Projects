@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FeedLeftSidebar } from "../components/FeedLeftSidebar";
 import { FeedRightSidebar } from "../components/FeedRightSidebar";
@@ -29,6 +29,7 @@ function SuggestedUserRowSkeleton() {
 export function SocialSuggestedUsersPage() {
   const navigate = useNavigate();
   const [toastMessage, setToastMessage] = useState("");
+  const [userSearchQuery, setUserSearchQuery] = useState("");
   const {
     items,
     isInitialLoading,
@@ -44,6 +45,17 @@ export function SocialSuggestedUsersPage() {
     loadingUserId,
     followDisabled,
   } = useSuggestedUsersPage({ onToast: setToastMessage });
+
+  const filteredItems = useMemo(() => {
+    if (!userSearchQuery.trim()) return items;
+    const query = userSearchQuery.trim().toLowerCase();
+    return items.filter(
+      (user) =>
+        (user.name || "").toLowerCase().includes(query) ||
+        (user.email || "").toLowerCase().includes(query) ||
+        (user.username || "").toLowerCase().includes(query)
+    );
+  }, [items, userSearchQuery]);
 
   const showComingSoon = useCallback(() => {
     setToastMessage(COMING_SOON_MESSAGE);
@@ -70,14 +82,18 @@ export function SocialSuggestedUsersPage() {
 
   return (
     <>
-      <div className="mx-auto grid w-full max-w-[1280px] grid-cols-1 gap-6 px-4 py-8 md:px-8 lg:grid-cols-12">
+      <div className="mx-auto grid w-full max-w-[1360px] grid-cols-1 gap-4 px-2 py-0 min-h-screen md:px-4 lg:grid-cols-12 lg:gap-6">
         <FeedLeftSidebar onComingSoon={showComingSoon} />
 
-        <section className="flex flex-col gap-6 lg:col-span-6">
-          <SuggestedUsersHeader />
+        <section className="min-h-screen flex-1 border-x border-outline-variant/40 bg-surface-container-lowest lg:col-span-6">
+          <SuggestedUsersHeader
+            searchQuery={userSearchQuery}
+            onSearchChange={setUserSearchQuery}
+            onClearSearch={() => setUserSearchQuery("")}
+          />
 
           {isInitialLoading ? (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col divide-y divide-outline-variant/40">
               <SuggestedUserRowSkeleton />
               <SuggestedUserRowSkeleton />
               <SuggestedUserRowSkeleton />
@@ -85,30 +101,32 @@ export function SocialSuggestedUsersPage() {
           ) : null}
 
           {!isInitialLoading && isError ? (
-            <div className="rounded-xl border border-error/30 bg-error-container/40 p-6 text-center">
+            <div className="m-4 rounded-xl border border-error/30 bg-error-container/40 p-6 text-center">
               <p className="text-sm text-on-error-container">{errorMessage}</p>
               <button
                 type="button"
                 onClick={retry}
-                className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-on-primary hover:bg-[#0050cb]"
+                className="mt-4 rounded-full bg-zinc-900 px-5 py-2 text-xs font-bold text-white hover:bg-zinc-800"
               >
                 Thử lại
               </button>
             </div>
           ) : null}
 
-          {!isInitialLoading && !isError && items.length === 0 ? (
-            <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-8 text-center shadow-sm">
+          {!isInitialLoading && !isError && filteredItems.length === 0 ? (
+            <div className="p-8 text-center">
               <span className="material-symbols-outlined mb-2 text-4xl text-outline" aria-hidden="true">
                 group
               </span>
-              <p className="text-sm text-on-surface-variant">Chưa có gợi ý người dùng.</p>
+              <p className="text-sm text-on-surface-variant/70">
+                {userSearchQuery ? `Không tìm thấy thành viên phù hợp với "${userSearchQuery}".` : "Chưa có gợi ý người dùng."}
+              </p>
             </div>
           ) : null}
 
-          {!isInitialLoading && !isError && items.length > 0 ? (
-            <ul className="flex flex-col gap-4">
-              {items.map((item) => (
+          {!isInitialLoading && !isError && filteredItems.length > 0 ? (
+            <ul className="flex flex-col">
+              {filteredItems.map((item) => (
                 <SuggestedUserListItem
                   key={item.userId}
                   item={item}
@@ -135,7 +153,7 @@ export function SocialSuggestedUsersPage() {
                 <button
                   type="button"
                   onClick={loadMore}
-                  className="rounded-lg border border-primary px-6 py-2 text-sm font-medium text-primary transition-colors hover:bg-[#e7eeff]"
+                  className="rounded-full border border-outline-variant px-6 py-2 text-sm font-semibold text-sky-500 transition-colors hover:bg-sky-500/10"
                 >
                   Tải thêm
                 </button>

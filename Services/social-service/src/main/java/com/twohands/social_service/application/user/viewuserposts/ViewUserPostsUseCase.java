@@ -160,17 +160,19 @@ public class ViewUserPostsUseCase {
     }
 
     private ViewUserPostsResult.UserPostItem toItem(Post post) {
-        List<ViewUserPostsResult.MediaItemData> media = post.media().stream()
-                .map(this::toMedia)
-                .toList();
+        List<ViewUserPostsResult.MediaItemData> media = post.media() != null
+                ? post.media().stream().map(this::toMedia).toList()
+                : List.of();
+        List<String> hashtags = post.hashtags() != null ? post.hashtags() : List.of();
         return new ViewUserPostsResult.UserPostItem(
                 post.id(),
-                post.caption(),
+                post.authorId(),
+                post.caption() != null ? post.caption() : "",
                 media,
-                post.visibility().name(),
+                post.visibility() != null ? post.visibility().name() : "PUBLIC",
                 post.likeCount(),
                 post.replyCount(),
-                post.hashtags(),
+                hashtags,
                 post.createdAt() != null ? post.createdAt().toString() : null
         );
     }

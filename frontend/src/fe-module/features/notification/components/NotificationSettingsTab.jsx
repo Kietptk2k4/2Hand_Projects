@@ -29,12 +29,12 @@ function SettingRow({ setting, disabled, onUpdate }) {
   };
 
   return (
-    <div className="flex flex-col gap-3 border-b border-outline-variant/60 py-4 last:border-b-0 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 border-b border-outline-variant/40 py-4 last:border-b-0 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
-        <p className="text-sm font-medium text-on-surface">{setting.label}</p>
+        <p className="text-sm font-bold text-on-surface">{setting.label}</p>
         {!setting.explicitSetting ? (
-          <span className="mt-1 inline-flex rounded-full bg-surface-container-low px-2 py-0.5 text-[11px] font-medium text-on-surface-variant">
-            Mac dinh
+          <span className="mt-1 inline-flex rounded-full bg-surface-container-low px-2.5 py-0.5 text-[11px] font-bold text-on-surface-variant/70">
+            Mặc định
           </span>
         ) : null}
       </div>
@@ -53,7 +53,7 @@ function SettingRow({ setting, disabled, onUpdate }) {
           onChange={handleToggle("allowEmail")}
         />
         <SettingToggle
-          label="Trong app"
+          label="Trong ứng dụng"
           checked={setting.allowInApp}
           disabled={disabled}
           onChange={handleToggle("allowInApp")}
@@ -86,33 +86,33 @@ export function NotificationSettingsTab({ onNotify }) {
   const handleUpdate = async (eventType, nextFlags) => {
     try {
       await updateSetting(eventType, nextFlags);
-      onNotify?.({ variant: "success", message: "Da cap nhat cai dat thong bao." });
+      onNotify?.({ variant: "success", message: "Đã cập nhật cài đặt thông báo." });
     } catch (error) {
-      onNotify?.({ variant: "error", message: error?.message || "Khong the cap nhat cai dat." });
+      onNotify?.({ variant: "error", message: error?.message || "Không thể cập nhật cài đặt." });
     }
   };
 
   return (
     <div>
       <TabPanelHeader
-        title="Thong bao"
-        subtitle="Chon kenh nhan thong bao theo tung loai su kien."
+        title="Thông báo"
+        subtitle="Chọn kênh nhận thông báo theo từng loại sự kiện."
       />
 
       <AccountCard>
         {status === "loading" ? (
-          <p className="text-sm text-on-surface-variant">Dang tai cai dat...</p>
+          <p className="text-sm text-on-surface-variant/70">Đang tải cài đặt...</p>
         ) : null}
 
         {status === "error" ? (
           <div>
-            <p className="text-sm text-error">{errorMessage}</p>
+            <p className="text-sm text-error font-medium">{errorMessage}</p>
             <button
               type="button"
               onClick={reload}
-              className="mt-3 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white"
+              className="mt-3 rounded-full bg-zinc-900 px-5 py-2 text-xs font-bold text-white hover:bg-zinc-800"
             >
-              Thu lai
+              Thử lại
             </button>
           </div>
         ) : null}
@@ -121,7 +121,7 @@ export function NotificationSettingsTab({ onNotify }) {
           <div className="space-y-8">
             {groupedSettings.map((group) => (
               <section key={group.id}>
-                <h2 className="mb-2 text-base font-semibold text-on-surface">{group.label}</h2>
+                <h2 className="mb-2 text-base font-extrabold text-on-surface">{group.label}</h2>
                 <div>
                   {group.items.map((setting) => (
                     <SettingRow
@@ -137,7 +137,7 @@ export function NotificationSettingsTab({ onNotify }) {
 
             {ungroupedSettings.length > 0 ? (
               <section>
-                <h2 className="mb-2 text-base font-semibold text-on-surface">Khac</h2>
+                <h2 className="mb-2 text-base font-extrabold text-on-surface">Khác</h2>
                 <div>
                   {ungroupedSettings.map((setting) => (
                     <SettingRow

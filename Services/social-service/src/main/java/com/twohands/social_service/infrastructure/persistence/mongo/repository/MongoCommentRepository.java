@@ -52,4 +52,10 @@ public interface MongoCommentRepository extends MongoRepository<CommentDocument,
             String postId,
             String status
     );
+
+    java.util.List<CommentDocument> findByAuthorIdAndStatus(
+            String authorId,
+            String status
+    );
 }
+

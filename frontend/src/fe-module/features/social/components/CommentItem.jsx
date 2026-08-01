@@ -30,52 +30,76 @@ function CommentActions({
   writeDisabled = false,
 }) {
   return (
-    <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-on-surface-variant">
-      <span>{formatRelativeTime(createdAt)}</span>
-      <button
-        type="button"
-        className={`font-medium hover:text-primary ${likedByMe ? "text-primary" : ""}`}
-        onClick={onToggleLike}
-        disabled={writeDisabled || isLiking || !onToggleLike}
-        aria-pressed={likedByMe}
-      >
-        {likedByMe ? "Đã thích" : "Thích"}
-      </button>
-      <LikeCountButton
-        count={likeCount}
-        size="compact"
-        onPress={() =>
-          onOpenLikesList?.({
-            type: "comment",
-            targetId: commentId,
-            likeCount,
-          })
-        }
-      />
+    <div className="mt-1.5 flex flex-wrap items-center gap-4 text-xs text-on-surface-variant/70">
+      {/* Reply Action */}
       {showReply ? (
         <button
           type="button"
-          className="font-medium hover:text-primary"
+          className="group/btn flex items-center gap-1 transition-colors hover:text-sky-500 font-medium"
           onClick={onStartReply}
           disabled={writeDisabled || isSubmittingReply}
         >
-          Trả lời
+          <div className="flex h-7 w-7 items-center justify-center rounded-full transition-colors group-hover/btn:bg-sky-500/10">
+            <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
+              chat_bubble_outline
+            </span>
+          </div>
+          <span>Trả lời</span>
         </button>
       ) : null}
+
+      {/* Like Action */}
+      <div className="flex items-center">
+        <button
+          type="button"
+          className={`group/btn flex items-center gap-1 transition-colors font-medium ${
+            likedByMe ? "text-pink-600" : "hover:text-pink-600"
+          }`}
+          onClick={onToggleLike}
+          disabled={writeDisabled || isLiking || !onToggleLike}
+          aria-pressed={likedByMe}
+        >
+          <div className="flex h-7 w-7 items-center justify-center rounded-full transition-colors group-hover/btn:bg-pink-600/10">
+            <span
+              className={`material-symbols-outlined text-[16px] ${
+                likedByMe ? "fill text-pink-600" : ""
+              }`}
+              aria-hidden="true"
+            >
+              favorite
+            </span>
+          </div>
+        </button>
+        <LikeCountButton
+          count={likeCount}
+          size="compact"
+          onPress={() =>
+            onOpenLikesList?.({
+              type: "comment",
+              targetId: commentId,
+              likeCount,
+            })
+          }
+        />
+      </div>
+
+      {/* Delete Action */}
       {canDelete ? (
         <button
           type="button"
-          className="font-medium text-error hover:underline"
+          className="font-medium text-error hover:underline text-xs"
           onClick={onDelete}
           disabled={writeDisabled || isDeleting}
         >
           {isDeleting ? "Đang xóa..." : "Xóa"}
         </button>
       ) : null}
+
+      {/* Expand replies */}
       {replyCount > 0 && !isRepliesExpanded ? (
         <button
           type="button"
-          className="font-medium text-primary hover:underline"
+          className="font-semibold text-sky-500 hover:underline text-xs"
           onClick={onExpandReplies}
           disabled={isRepliesLoading}
         >
@@ -147,7 +171,7 @@ export function CommentItem({
   };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col border-b border-outline-variant/20 py-3 last:border-b-0">
       <div className="flex gap-3">
         <button
           type="button"
@@ -157,23 +181,42 @@ export function CommentItem({
         >
           <img src={avatarUrl} alt="" className="h-10 w-10 rounded-full object-cover" />
         </button>
+
         <div className="min-w-0 flex-1">
-          <div className="rounded-lg bg-surface-container-low px-3 py-2">
+          {/* Post-row sub header: Name + @handle + dot + timestamp */}
+          <div className="flex items-center gap-1 text-sm">
             <button
               type="button"
               onClick={openAuthorProfile}
-              className="text-sm font-semibold text-on-surface hover:text-primary"
+              className="font-bold text-on-surface hover:underline truncate text-[15px]"
             >
               {displayName}
             </button>
-            <p className="mt-0.5 text-sm text-on-surface">{comment.contentText}</p>
-            <CommentMediaDisplay
-              media={comment.media}
-              onMediaClick={(index) =>
-                onOpenCommentMedia?.(comment.commentId, comment.media, index)
-              }
-            />
+            <span className="text-xs text-on-surface-variant/70 truncate">
+              {(() => {
+                const email = comment.author?.email || comment.author?.username || "";
+                return email ? (email.includes("@") ? `@${email.split("@")[0]}` : `@${email}`) : `@${(displayName || "user").toLowerCase().replace(/[^a-z0-9]/gi, "")}`;
+              })()}
+            </span>
+            <span className="text-xs text-on-surface-variant/60">·</span>
+            <span className="text-xs text-on-surface-variant/70">
+              {formatRelativeTime(comment.createdAt)}
+            </span>
           </div>
+
+          <p className="mt-1 text-[15px] leading-normal text-on-surface">{comment.contentText}</p>
+
+          {comment.media && comment.media.length > 0 ? (
+            <div className="mt-2 overflow-hidden rounded-2xl border border-outline-variant/30">
+              <CommentMediaDisplay
+                media={comment.media}
+                onMediaClick={(index) =>
+                  onOpenCommentMedia?.(comment.commentId, comment.media, index)
+                }
+              />
+            </div>
+          ) : null}
+
           <CommentActions
             commentId={comment.commentId}
             createdAt={comment.createdAt}
@@ -211,7 +254,7 @@ export function CommentItem({
                 type="button"
                 onClick={onCancelReply}
                 disabled={isSubmittingReply}
-                className="text-xs font-medium text-on-surface-variant hover:text-primary"
+                className="text-xs font-medium text-on-surface-variant hover:text-sky-500"
               >
                 Hủy
               </button>
@@ -221,11 +264,11 @@ export function CommentItem({
       </div>
 
       {isRepliesExpanded ? (
-        <div className="ml-10 space-y-3 border-l-2 border-outline-variant pl-4">
+        <div className="ml-10 mt-2 space-y-2 border-l-2 border-outline-variant/40 pl-3">
           {replies.map((reply) => {
             const canDeleteReply = canDeleteComment?.(reply);
             return (
-              <div key={reply.commentId} className="flex gap-3">
+              <div key={reply.commentId} className="flex gap-2.5 py-2">
                 <button
                   type="button"
                   onClick={(event) => {
@@ -242,25 +285,40 @@ export function CommentItem({
                   />
                 </button>
                 <div className="min-w-0 flex-1">
-                  <div className="rounded-lg bg-surface-container-low px-3 py-2">
+                  <div className="flex items-center gap-1 text-sm">
                     <button
                       type="button"
                       onClick={(event) => {
                         event.stopPropagation();
                         if (reply.author?.userId) onViewProfile?.(reply.author.userId);
                       }}
-                      className="text-sm font-semibold text-on-surface hover:text-primary"
+                      className="font-bold text-on-surface hover:underline text-[14px]"
                     >
                       {reply.author?.displayName || DEFAULT_USER_DISPLAY_NAME}
                     </button>
-                    <p className="mt-0.5 text-sm text-on-surface">{reply.contentText}</p>
-                    <CommentMediaDisplay
-                      media={reply.media}
-                      onMediaClick={(index) =>
-                        onOpenCommentMedia?.(reply.commentId, reply.media, index)
-                      }
-                    />
+                    <span className="text-xs text-on-surface-variant/70">
+                      {(() => {
+                        const email = reply.author?.email || reply.author?.username || "";
+                        const name = reply.author?.displayName || DEFAULT_USER_DISPLAY_NAME;
+                        return email ? (email.includes("@") ? `@${email.split("@")[0]}` : `@${email}`) : `@${name.toLowerCase().replace(/[^a-z0-9]/gi, "")}`;
+                      })()}
+                    </span>
+                    <span className="text-xs text-on-surface-variant/60">·</span>
+                    <span className="text-xs text-on-surface-variant/70">
+                      {formatRelativeTime(reply.createdAt)}
+                    </span>
                   </div>
+                  <p className="mt-0.5 text-[14px] leading-normal text-on-surface">{reply.contentText}</p>
+                  {reply.media && reply.media.length > 0 ? (
+                    <div className="mt-1.5 overflow-hidden rounded-xl border border-outline-variant/30">
+                      <CommentMediaDisplay
+                        media={reply.media}
+                        onMediaClick={(index) =>
+                          onOpenCommentMedia?.(reply.commentId, reply.media, index)
+                        }
+                      />
+                    </div>
+                  ) : null}
                   <CommentActions
                     commentId={reply.commentId}
                     createdAt={reply.createdAt}

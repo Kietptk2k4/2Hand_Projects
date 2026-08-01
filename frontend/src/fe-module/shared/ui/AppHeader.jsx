@@ -155,64 +155,6 @@ export function AppHeader({ className = "" }) {
           <Link to={APP_ROUTES.socialFeed} className="shrink-0 text-xl font-bold text-header-brand md:text-2xl">
             2Hands
           </Link>
-
-          <div
-            ref={searchRef}
-            className="relative hidden min-w-0 max-w-[280px] flex-1 sm:block lg:max-w-[320px]"
-          >
-            <label>
-              <span className="sr-only">Tìm kiếm</span>
-              <SearchIcon />
-              <input
-                type="search"
-                name="global-search"
-                placeholder="Tìm kiếm..."
-                value={searchInput}
-                readOnly={!socialSearchEnabled}
-                aria-disabled={!socialSearchEnabled}
-                onChange={(event) => {
-                  if (!socialSearchEnabled) return;
-                  setSearchInput(event.target.value);
-                }}
-                onFocus={() => {
-                  if (!socialSearchEnabled) return;
-                  setSearchPanelMode("suggestions");
-                  setSearchOpen(true);
-                }}
-                onKeyDown={(event) => {
-                  if (!socialSearchEnabled) return;
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    submitPostSearch();
-                  }
-                }}
-                className={[
-                  "w-full rounded-lg border border-header-border bg-surface-container-lowest py-2 pl-10 pr-3 text-sm text-on-surface outline-none transition placeholder:text-header-muted focus:border-primary focus:ring-1 focus:ring-primary/30",
-                  !socialSearchEnabled ? "cursor-default opacity-70" : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-              />
-            </label>
-            {searchOpen && socialSearchEnabled && searchPanelMode === "suggestions" ? (
-              <SocialSearchSuggestionsPanel
-                onSelectKeyword={(keyword) => {
-                  setSearchInput(keyword);
-                  setSearchOpen(false);
-                  navigate(buildSocialSearchPath(keyword));
-                }}
-                onFindUsers={() => setSearchPanelMode("users")}
-              />
-            ) : null}
-            {searchOpen && socialSearchEnabled && searchPanelMode === "users" ? (
-              <SocialUserSearchDropdown
-                onClose={() => {
-                  setSearchOpen(false);
-                  setSearchPanelMode("suggestions");
-                }}
-              />
-            ) : null}
-          </div>
         </div>
 
         <div className="flex shrink-0 items-center gap-4 md:gap-6">

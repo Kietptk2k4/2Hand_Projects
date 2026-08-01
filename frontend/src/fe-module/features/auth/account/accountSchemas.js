@@ -8,7 +8,7 @@ export const SOCIAL_PLATFORMS = [
   { key: "github", label: "GitHub" },
   { key: "instagram", label: "Instagram" },
   { key: "tiktok", label: "TikTok" },
-  { key: "other", label: "Khac" },
+  { key: "other", label: "Khác" },
 ];
 
 export function isValidHttpUrl(value) {
@@ -21,22 +21,22 @@ export function validateEditProfileForm(form) {
   const displayName = (form.display_name || "").trim();
 
   if (!displayName) {
-    errors.display_name = "Ten hien thi la bat buoc.";
+    errors.display_name = "Tên hiển thị là bắt buộc.";
   } else if (displayName.length > MAX_DISPLAY_NAME) {
-    errors.display_name = `Ten hien thi toi da ${MAX_DISPLAY_NAME} ký tự.`;
+    errors.display_name = `Tên hiển thị tối đa ${MAX_DISPLAY_NAME} ký tự.`;
   }
 
   if ((form.bio || "").length > MAX_BIO) {
-    errors.bio = `Giới thiệu toi da ${MAX_BIO} ký tự.`;
+    errors.bio = `Giới thiệu tối đa ${MAX_BIO} ký tự.`;
   }
 
   if (!isValidHttpUrl(form.website)) {
-    errors.website = "URL không hợp lệ (can bat dau bang http hoac https).";
+    errors.website = "URL không hợp lệ (cần bắt đầu bằng http hoặc https).";
   }
 
   const socialRows = form.social_links || [];
   if (socialRows.length > MAX_SOCIAL_LINKS) {
-    errors.social_links = `Toi da ${MAX_SOCIAL_LINKS} lien ket.`;
+    errors.social_links = `Tối đa ${MAX_SOCIAL_LINKS} liên kết.`;
   }
 
   socialRows.forEach((row, index) => {
