@@ -1,0 +1,1464 @@
+Total paragraphs: 1462
+
+BỘ KHOA HỌC VÀ CÔNG NGHỆ
+HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG
+-----------------------------
+BÁO CÁO THỰC TẬP TỐT NGHIỆP ĐẠI HỌC
+Đề Tài:
+Xây Dựng Nền Tảng Thương Mại Điện Tử Kết Hợp Mạng Xã Hội Cho Hoạt Động Mua Bán Sản Phẩm Thời Trang Đã Qua Sử Dụng
+Giảng viên hướng dẫn: ThS. Phan Nghĩa Hiệp
+Thực hiện bởi nhóm sinh viên, bao gồm:
+1. Phan Tuấn Kiệt                    N22DCCN145           Trưởng nhóm2. Phạm Trần Nhật Minh        N22DCCN154           Thành viên3. Trần Đình Vũ                       N22DCCN198           Thành viên
+Lớp  : D22CQCNPM02-N
+Khóa  : 2022-2027
+Ngành             : Công nghệ phần mềmHệ  : Đại học chính quy
+TP.HCM, tháng 07 /2026
+LỜI CẢM ƠN
+Suốt chặng đường hơn bốn năm học tập và rèn luyện tại Học viện Công nghệ Bưu chính Viễn thông – Cơ sở TP. Hồ Chí Minh, nhóm chúng em đã nhận được sự hỗ trợ, hướng dẫn và đồng hành tận tâm từ quý Thầy Cô cùng các bạn bè. Với tất cả lòng biết ơn, chúng em xin gửi lời cảm ơn chân thành đến quý Thầy Cô Khoa Công nghệ Thông tin 2 – Học viện Công nghệ Bưu chính Viễn thông Cơ sở TP. Hồ Chí Minh. Sự nhiệt huyết, tận tình và những kiến thức sâu rộng mà quý Thầy Cô chia sẻ đã xây dựng nên nền tảng vững chắc cho chúng em trên hành trình tri thức.
+Chúng em xin gửi lời cảm ơn đặc biệt đến Thầy Phan Nghĩa Hiệp – người đã tận tình hướng dẫn nhóm trong suốt quá trình thực hiện đồ án. Với sự chỉ bảo chu đáo, những góp ý sâu sắc và sự động viên kịp thời, Thầy đã giúp chúng em định hình rõ ràng ý tưởng, vượt qua các trở ngại và hoàn thiện đề tài một cách trọn vẹn nhất. Được làm việc dưới sự hướng dẫn của Thầy là một may mắn lớn và những kinh nghiệm này sẽ là hành trang quý giá cho chúng em trong tương lai.
+Do thời gian hạn chế và kinh nghiệm thực tế còn non trẻ, báo cáo của nhóm khó tránh khỏi những thiếu sót. Chúng em rất mong nhận được những nhận xét, góp ý quý báu từ quý Thầy Cô để có thể hoàn thiện hơn và tích lũy thêm kinh nghiệm cho công việc sau này.
+Chúng em xin chân thành cảm ơn!
+Nhóm thực hiện
+MỤC LỤC
+MỤC LỤC3
+DANH MỤC CÁC THUẬT NGỮ, CHỮ VIẾT TẮT5
+DANH SÁCH BẢNG7
+DANH SÁCH HÌNH VẼ8
+MỞ ĐẦU9
+1. Tính cấp thiết của đề tài9
+2. Tổng quan các vấn đề9
+3. Mục tiêu nghiên cứu9
+4. Đối tượng và phạm vi nghiên cứu9
+5. Phương pháp nghiên cứu10
+CHƯƠNG 1: LÝ THUYẾT11
+1.1 Cơ sở lý thuyết11
+1.1.1 Kiến trúc hệ thống phân tán11
+1.1.2 Kiến trúc hướng sự kiện (Event-Driven)12
+1.1.3 Kafka - Message Broker13
+1.2. Hệ quản trị cơ sở dữ liệu và Lưu trữ14
+1.2.1 Nguyên tắc chung: Polyglot Persistence14
+1.2.2 PostgreSQL14
+1.2.3. MongoDB15
+1.2.4. Redis16
+1.2.5 Bảng tổng hợp lựa chọn16
+1.2.6. Đánh giá kiến trúc17
+1.2.7. Giải pháp lưu trữ đối tượng (Object Storage) với MinIO17
+1.3 Tích hợp dịch vụ bên thứ ba và Triển khai18
+1.3.1 Các phương thức thanh toán trực tuyến và giao vận18
+1.3.2 Quản trị hệ thống: Kiểm duyệt nội dung mạng xã hội và kỹ thuật Audit log.20
+1.3.3. Container hóa ứng dụng với Docker và Docker Compose22
+CHƯƠNG 2: PHÂN TÍCH VÀ THIẾT KẾ HỆ THỐNG24
+2.1 Phân tích yêu cầu và luồng nghiệp vụ chính24
+2.1.1. Phân tích yêu cầu hệ thống (Mua bán sản phẩm thời trang đã qua sử dụng & Tương tác mạng xã hội)24
+2.1.2. Thiết kế luồng nghiệp vụ cốt lõi: Đăng bán → Mua hàng → Thanh toán → Giao hàng25
+2.2 Thiết kế cấu trúc Microservices27
+2.2.1. Thiết kế Auth Service & Commerce Service28
+2.2.2. Thiết kế Social Service (Bài viết, tương tác) & Notification Service31
+2.2.3 Thiết kế Admin Service (Quản lý, kiểm duyệt, audit log).33
+2.3 Thiết kế Cơ sở dữ liệu (Database Design)35
+2.3.2. Sơ đồ dữ liệu cho Social, Notification (MongoDB).35
+b. Sơ đồ dữ liệu MongoDB — Social Service (Post, Comment)35
+d. Sơ đồ dữ liệu — Notification Service (PostgreSQL)36
+CHƯƠNG 3: XÂY DỰNG VÀ TRIỂN KHAI HỆ THỐNG38
+3.1. Triển khai hạ tầng và Môi trường phát triển38
+3.1.1. Mục tiêu38
+3.1.2 Sơ đồ hạ tầng Docker38
+3.1.3 Nguyên tắc thiết kế hạ tầng: Database-per-service39
+3.1.4 Các thành phần hạ tầng chính39
+3.1.5  MinIO — cấu hình object storage40
+3.1.6 Kafka — cấu hình theo giai đoạn (progressive rollout)40
+3.2 Xây dựng Backend Services và Tích hợp40
+3.2.2. Lập trình Social Service và Notification Service40
+3.2.3 Lập trình Admin Service và tích hợp API VNPay, GHN qua webhook42
+3.3 Phát triển Giao diện Người dùng (Frontend)43
+3.3.1. Xây dựng giao diện Web với React/Vite cho luồng mua bán và mạng xã hội43
+3.3.2 Xây dựng giao diện Admin Dashboard (Kiểm duyệt, quản lý).48
+3.4 Kiểm thử hệ thống50
+3.4.1. Kiểm thử các API nội bộ và luồng giao tiếp qua Kafka50
+3.4.2 Kiểm thử luồng nghiệp vụ đầu cuối (End-to-End): Từ đăng bán đến thanh toán và giao hàng thành công54
+KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN67
+1. Kết luận67
+2. Hạn chế của đề tài67
+3. Hướng phát triển67
+TÀI LIỆU THAM KHẢO69
+DANH MỤC CÁC THUẬT NGỮ, CHỮ VIẾT TẮT
+Cụm từ viết tắt
+Cụm từ đầy đủ
+Ý nghĩa
+ACID
+Atomicity, Consistency, Isolation, Durability
+Các tính chất đảm bảo tính toàn vẹn của giao dịch trong cơ sở dữ liệu.
+ADMIN
+Administrator
+Quản trị viên, người có quyền quản lý hệ thống, cấu hình và kiểm soát các chức năng.
+API
+Application Programming Interface
+Giao diện lập trình ứng dụng, cho phép các hệ thống hoặc ứng dụng giao tiếp và trao đổi dữ liệu.
+COD
+Cash On Delivery
+Phương thức thanh toán khi nhận hàng (thu hộ).
+CRUD
+Create, Read, Update, Delete
+Các thao tác cơ bản trong quản lý dữ liệu: Tạo, Đọc, Cập nhật, Xóa.
+DBMS
+Database Management System
+Hệ quản trị cơ sở dữ liệu, phần mềm dùng để quản lý dữ liệu (ví dụ: PostgreSQL).
+DDD
+Domain-Driven Design
+Phương pháp thiết kế phần mềm tập trung vào miền nghiệp vụ.
+ERD
+Entity-Relationship Diagram
+Sơ đồ thực thể - quan hệ, mô tả cấu trúc và mối quan hệ giữa các thực thể trong cơ sở dữ liệu.
+GHN
+Giao Hàng Nhanh
+Đối tác vận chuyển được sử dụng trong hệ thống.
+HTTP
+HyperText Transfer Protocol
+Giao thức truyền tải siêu văn bản, sử dụng để truyền dữ liệu trên web.
+HTTPS
+HyperText Transfer Protocol Secure
+Phiên bản bảo mật của HTTP, sử dụng mã hóa để bảo vệ dữ liệu.
+JSON
+JavaScript Object Notation
+Định dạng dữ liệu nhẹ, dùng để trao đổi dữ liệu giữa client và server.
+JWT
+JSON Web Token
+Chuẩn mã hóa để xác thực và truyền thông tin giữa client và server.
+MVP
+Minimum Viable Product
+Sản phẩm khả thi tối thiểu, phiên bản sản phẩm có đủ tính năng cốt lõi.
+OTP
+One-Time Password
+Mật khẩu dùng một lần, thường dùng để xác thực người dùng.
+PROVIDER
+Service Provider
+Nhà cung cấp dịch vụ, đơn vị cung cấp tài nguyên hoặc tính năng cho hệ thống/người dùng.
+REST
+Representational State Transfer
+Kiến trúc thiết kế API dựa trên các yêu cầu HTTP (GET, POST, PUT, DELETE).
+S3
+Simple Storage Service
+Chuẩn lưu trữ đối tượng (của Amazon) mà MinIO tương thích.
+SEO
+Search Engine Optimization
+Tối ưu hóa công cụ tìm kiếm, cải thiện thứ hạng website trên các công cụ tìm kiếm.
+TCP/IP
+Transmission Control Protocol/Internet Protocol
+Bộ giao thức mạng, cho phép kết nối và truyền dữ liệu giữa các thiết bị trên internet.
+TTL
+Time To Live
+Thời gian tồn tại của dữ liệu (thường dùng trong Redis/Cache).
+UI
+User Interface
+Giao diện người dùng, phần người dùng tương tác trực tiếp với website/ứng dụng.
+USER
+End User
+Khách hàng/người dùng cuối, đối tượng trực tiếp sử dụng sản phẩm hoặc dịch vụ.
+UX
+User Experience
+Trải nghiệm người dùng, liên quan đến cảm nhận và sự thuận tiện khi sử dụng sản phẩm.
+DANH SÁCH BẢNG
+Bảng 1.1 Các khái niệm cốt lõi11
+Bảng 1.2 Luồng sự kiện Kafka13
+Bảng 1.3 Áp dụng PostgreSQL vào dự án15
+Bảng 1.4 Áp dụng Redis vào dự án16
+Bảng 1.5 Bảng tổng hợp lựa chọn16
+Bảng 1.6 So sánh MinIO với các mô hình khác17
+Bảng 1.7 Các khái niệm trong Docker22
+Bảng 8 Phạm vi nghiệp vụ Commerce Service29
+DANH SÁCH HÌNH VẼ
+Hình 2.10 Sơ đồ dữ liệu quan hệ Social Service36
+Hình 2.11 Sơ đồ dữ liệu Notification Service36
+Hình 3.1 Sơ đồ hạ tầng Docker38
+Hình 3.4 Luồng tích hợp VNPAY42
+Hình 3.5 Kiến trúc Frontend43
+Hình 3.6 Giao diện trang Commerce (1)45
+Hình 3.7 Giao diện trang Commerce (2)45
+Hình 3.8 Giao diện trang Commerce (3)46
+Hình 3.9 Giao diện trang Social (1)47
+Hình 3.10 Giao diện trang Social (2)47
+Hình 3.11 Giao diện trang Social (3)48
+MỞ ĐẦU
+1. Tính cấp thiết của đề tài
+Xu hướng kết hợp thương mại điện tử với mạng xã hội (social commerce) ngày càng phổ biến, đặc biệt với thị trường đồ cũ — nơi yếu tố tin cậy giữa người mua/bán được xây dựng qua tương tác xã hội (follow, đánh giá, tương tác công khai) chứ không chỉ qua giao dịch đơn thuần. Đồng thời, hệ thống dạng này đòi hỏi xử lý nhiều nghiệp vụ độc lập với khối lượng dữ liệu lớn, khiến kiến trúc monolithic truyền thống khó đáp ứng về khả năng mở rộng và bảo trì. Vì vậy, việc nghiên cứu và xây dựng hệ thống theo kiến trúc microservices kết hợp Event-Driven Architecture là cần thiết để giải quyết các thách thức trên, đồng thời là cơ hội thực hành các mô hình kiến trúc hiện đại đang được áp dụng rộng rãi trong thực tế.
+2. Tổng quan các vấn đề (thiếu câu chào đàu)
+Cần phân rã hệ thống thành các service độc lập theo từng domain nghiệp vụ (định danh, xã hội, thương mại, kiểm duyệt, thông báo).
+Khi dữ liệu phân tán theo mô hình Database-per-service, cần cơ chế đảm bảo đồng bộ trạng thái nghiệp vụ giữa các service.
+Dữ liệu trong hệ thống có đặc tính khác nhau (giao dịch cần toàn vẹn cao, nội dung xã hội cần linh hoạt và khối lượng lớn) → cần lựa chọn công nghệ lưu trữ phù hợp cho từng loại.
+Giao tiếp bất đồng bộ giữa các service tiềm ẩn rủi ro mất hoặc trùng lặp dữ liệu nếu thiếu cơ chế đảm bảo tin cậy.
+Việc kiểm thử không thể chỉ dừng ở từng API riêng lẻ mà cần bao phủ cả luồng dữ liệu liên service.
+3. Mục tiêu nghiên cứu //
+Nghiên cứu cơ sở lý thuyết về microservices, Clean Architecture, Event-Driven Architecture và Outbox Pattern.
+Phân tích, lựa chọn mô hình dữ liệu phù hợp theo nguyên tắc polyglot persistence (PostgreSQL, MongoDB, Redis).
+Thiết kế và xây dựng hệ thống social e-commerce gồm các service độc lập, giao tiếp qua REST API và Kafka.
+Đảm bảo tính nhất quán dữ liệu liên service qua Outbox Pattern, xử lý vấn đề trùng lặp sự kiện (idempotency).
+Kiểm thử và đánh giá tính đúng đắn, khả năng chịu lỗi của hệ thống.
+4. Đối tượng và phạm vi nghiên cứu
+Đối tượng: kiến trúc microservices và Event-Driven Architecture; các công nghệ Spring Boot, PostgreSQL, MongoDB, Redis, Kafka, MinIO; nghiệp vụ social e-commerce (đăng ký/đăng nhập, đăng bài & tương tác, mua bán & thanh toán, kiểm duyệt, thông báo).
+Phạm vi: hệ thống ở mức MVP với 5 service cốt lõi (auth, social, commerce, admin, notification); triển khai trong môi trường local/development bằng Docker (chưa bao gồm production, API Gateway, giám sát chuyên sâu); tập trung phân tích sâu vào Social Service, Notification Service và luồng giao tiếp qua Kafka như minh chứng tiêu biểu cho kiến trúc chung của hệ thống.
+5. Phương pháp nghiên cứu //
+Nghiên cứu lý thuyết: tổng hợp tài liệu về microservices, Clean A rchitecture, Event-Driven Architecture, Outbox Pattern và các công nghệ liên quan.
+Phân tích thiết kế hệ thống: áp dụng Domain-Driven Design để phân rã nghiệp vụ, thiết kế mô hình dữ liệu và luồng xử lý cho từng service.
+Thực nghiệm: xây dựng hệ thống theo thiết kế, triển khai bằng Docker, kiểm thử (unit test, integration test) và quan sát luồng dữ liệu qua Kafka UI, MailHog.
+Đánh giá: đối chiếu kết quả kiểm thử với mục tiêu đề ra, phân tích ưu điểm/hạn chế của giải pháp đã áp dụng.
+6. Bố cục đề tài
+CHƯƠNG 1: LÝ THUYẾT
+1.1 Cơ sở lý thuyết
+1.1.1 Kiến trúc hệ thống phân tán
+Kiến trúc Microservices là mô hình thiết kế trong đó hệ thống được chia thành nhiều dịch vụ nhỏ, độc lập, mỗi dịch vụ đảm nhận một nhóm chức năng nghiệp vụ cụ thể. Các service giao tiếp qua mạng thông qua REST API, gRPC hoặc message broker, và có thể được phát triển, triển khai, mở rộng độc lập.So với kiến trúc Monolithic (toàn bộ ứng dụng trong một đơn vị triển khai), Microservices mang lại khả năng mở rộng linh hoạt, phát triển song song và cô lập lỗi tốt hơn. Tuy nhiên, kiến trúc này cũng tăng độ phức tạp về vận hành, giao tiếp phân tán và quản lý nhất quán dữ liệu.Các nguyên tắc thiết kế chính:
+Database per Service: Mỗi service sở hữu cơ sở dữ liệu riêng, không truy cập trực tiếp DB của service khác.
+Loose Coupling: Giảm phụ thuộc chéo giữa các service.
+High Cohesion: Tập trung logic liên quan trong cùng một service.
+API-first: Giao diện giao tiếp được định nghĩa rõ ràng, ổn định.
+Phương pháp phân tách domain:Việc xác định ranh giới giữa các microservice dựa trên phân tách domain — chia hệ thống theo miền nghiệp vụ thay vì theo lớp kỹ thuật. Phương pháp phổ biến là Domain-Driven Design (DDD).
+Các khái niệm cốt lõi:
+Bảng 1.1 Các khái niệm cốt lõi
+Khái niệm
+Ý nghĩa
+Domain
+Lĩnh vực nghiệp vụ mà hệ thống hỗ trợ
+Bounded Context
+Ranh giới ngữ nghĩa nơi một mô hình domain có ý nghĩa nhất quán; thường tương ứng một microservice
+Subdomain
+Phân vùng con: Core (cốt lõi), Supporting (hỗ trợ), Generic (phổ biến)
+Ubiquitous Language
+Ngôn ngữ chung giữa nghiệp vụ và kỹ thuật
+1.1.2 Kiến trúc hướng sự kiện (Event-Driven)
+1.1.2.1 Khái niệm cơ bản
+Event-Driven Architecture là mô hình thiết kế trong đó các thành phần hệ thống giao tiếp với nhau thông qua việc phát sinh (publish) và xử lý (consume) sự kiện (event), thay vì gọi trực tiếp API đồng bộ (synchronous request/response).
+Event: một sự kiện đã xảy ra trong hệ thống (ví dụ: "người dùng vừa đăng ký", "bài viết vừa được like", "đơn hàng vừa thanh toán thành công").
+Producer: service phát sinh sự kiện.
+Consumer: service lắng nghe và xử lý sự kiện.
+Message Broker: trung gian trung chuyển event giữa producer và consumer (trong dự án là Kafka).
+1.1.2.2 Lợi ích trong hệ thống microservices:
+Loose coupling: các service không cần biết đến nhau, chỉ cần biết định dạng event → dễ mở rộng, thay thế service mà không ảnh hưởng service khác.
+Bất đồng bộ (asynchronous): service gọi không cần chờ phản hồi ngay → tăng khả năng chịu tải, tránh nghẽn cổ chai khi một service bị chậm.
+Khả năng mở rộng (scalability): có thể thêm nhiều consumer xử lý song song.
+Resilience: nếu consumer tạm thời down, event vẫn được lưu trong broker và xử lý lại khi consumer hoạt động lại.
+1.1.2.3 Tính nhất quán giữa ghi dữ liệu và phát sự kiện
+Trong một service, khi xử lý nghiệp vụ thường cần làm 2 việc: (1) ghi dữ liệu vào DB và (2) publish event báo cho các service khác. Nếu thực hiện tuần tự thông thường, có thể xảy ra tình huống ghi DB thành công nhưng publish Kafka thất bại (do lỗi mạng, broker down...) → dữ liệu mất đồng bộ giữa các service.
+1.1.2.4 Transactional Outbox Pattern
+Đây là pattern mà nhóm đã áp dụng xuyên suốt trong dự án để đảm bảo nhất quán. Cơ chế:
+Khi xử lý nghiệp vụ, service ghi đồng thời trong cùng một transaction database:
+Bản ghi nghiệp vụ chính (ví dụ: bảng users, posts, orders)
+Bản ghi event vào bảng outbox_events của chính service đó
+Vì cùng transaction, nên hoặc cả hai đều thành công, hoặc cả hai đều rollback → không bao giờ lệch dữ liệu.
+Một worker/publisher riêng biệt định kỳ đọc bảng outbox_events, publish các event chưa gửi lên Kafka, rồi đánh dấu đã publish.
+Nếu bước publish lỗi, worker sẽ thử lại ở lần chạy sau (event vẫn còn trong outbox) → đảm bảo at-least-once delivery.
+→ Đây là lý do dự án không dùng cách "publish trực tiếp" mà phải qua bảng trung gian outbox_events ở từng service.
+1.1.3 Kafka - Message Broker
+1.1.3.1 Các khái niệm cốt lõi:
+Kafka là hệ thống message broker dạng publish-subscribe, hoạt động theo mô hình log phân tán, được dùng làm hạ tầng trung chuyển event trong dự án.
+Topic: kênh chứa các event cùng loại (ví dụ: topic user-events, post-events, order-events).
+Producer: service ghi event vào topic (worker outbox của auth/social/commerce/admin).
+Consumer/Consumer Group: service đọc event từ topic (chủ yếu là notification-service).
+Partition: mỗi topic chia thành nhiều partition để xử lý song song, tăng throughput.
+Broker: node lưu trữ và phục vụ đọc/ghi topic. Dự án chạy Kafka ở chế độ KRaft (không cần Zookeeper) qua Docker, cổng 9092.
+Đảm bảo message không mất: Kafka lưu event dưới dạng log bền vững (persistent log) trong một khoảng thời gian retention, cho phép consumer đọc lại nếu cần, và hỗ trợ nhiều consumer group đọc độc lập cùng một topic.
+1.1.3.2 Áp dụng cụ thể trong dự án
+Bảng 1.2 Luồng sự kiện Kafka
+Luồng
+Producer
+Event
+Consumer
+Vòng đời user
+auth-service
+USER_REGISTERED, USER_UPDATED...
+social-service (cập nhật user_projections), notification-service
+Tương tác xã hội
+social-service
+POST_LIKED, COMMENT_CREATED, USER_FOLLOWED
+notification-service
+Đơn hàng
+commerce-service
+sự kiện đặt hàng, thanh toán (qua outbox + webhook payOS/GHN)
+notification-service
+Kiểm duyệt
+admin-service
+POST_MODERATED, enforcement
+social-service, auth-service
+*note: thiếu title bảng
+Đặc điểm triển khai:
+Mỗi service đóng vai trò producer (ghi vào outbox riêng) và có thể vừa là consumer (như notification-service consume sự kiện để gửi thông báo).
+Hệ thống hỗ trợ cơ chế bật/tắt linh hoạt các tính năng publish/consume thông qua cấu hình, cho phép kiểm thử và triển khai tăng dần các luồng tích hợp giữa các service.
+Có Kafka UI (cổng 8080) để quan sát trực quan topic, message, consumer group, hỗ trợ đắc lực cho quá trình debug.
+1.2. Hệ quản trị cơ sở dữ liệu và Lưu trữ
+1.2.1 Nguyên tắc chung: Polyglot Persistence
+Trong kiến trúc microservices, mỗi service sở hữu dữ liệu riêng (Database-per-service), không service nào được truy cập trực tiếp DB của service khác. Vì các loại dữ liệu trong hệ thống có đặc điểm khác nhau (dữ liệu có cấu trúc chặt/quan hệ, dữ liệu dạng document linh hoạt, dữ liệu tạm thời cần tốc độ cao), nhóm áp dụng polyglot persistence cho dự án - chọn loại CSDL phù hợp với đặc tính dữ liệu của từng service, thay vì dùng một loại CSDL duy nhất cho tất cả.
+Trong đồ án này gồm 5 service dùng PostgreSQL (mỗi service 1 database riêng), riêng social-service dùng thêm MongoDB song song, và toàn hệ thống dùng chung Redis cho các nhu cầu tốc độ cao/tạm thời.
+1.2.2 PostgreSQL
+1.2.2.1 Đặc điểm:
+PostgreSQL là CSDL quan hệ (RDBMS), dữ liệu có cấu trúc rõ ràng theo bảng, hỗ trợ ràng buộc toàn vẹn (foreign key, unique, transaction ACID).
+1.2.2.2 Lý do chọn cho hầu hết các service:
+Dữ liệu nghiệp vụ cốt lõi cần tính toàn vẹn và nhất quán cao — ví dụ tài khoản người dùng, đơn hàng, thanh toán, kiểm duyệt — sai lệch dữ liệu ở đây có thể gây hậu quả nghiêm trọng (mất tiền, sai quyền truy cập).
+Hỗ trợ transaction ACID — cần thiết cho Outbox Pattern (ghi dữ liệu nghiệp vụ + event trong cùng transaction).
+Dữ liệu có quan hệ rõ ràng (user - order - order_item, user - role - permission) → mô hình quan hệ biểu diễn tự nhiên hơn, dễ truy vấn join, dễ đảm bảo ràng buộc.
+1.2.2.3 Áp dụng trong dự án: **
+Bảng 1.3 Áp dụng PostgreSQL vào dự án
+Service
+Database
+Dữ liệu lưu
+auth-service
+auth_db
+user, role, permission, session metadata
+social-service
+social_db (Postgres)
+follow, like, outbox_events, projection dữ liệu user
+commerce-service
+commerce_db
+sản phẩm, giỏ hàng, đơn hàng, thanh toán
+admin-service
+admin_db
+log kiểm duyệt, enforcement, audit, cấu hình hệ thống
+notification-service
+notification_db
+thông báo, trạng thái đã gửi/đã đọc
+1.2.3. MongoDB
+1.2.3.1 Đặc điểm: **
+MongoDB là CSDL NoSQL lưu dữ liệu dạng document (JSON/BSON), schema linh hoạt (schema-less), không bắt buộc cấu trúc cố định giữa các bản ghi.
+1.2.3.2 Lý do social-service cần thêm MongoDB (bên cạnh Postgres):
+Dữ liệu bài viết (post), bình luận (comment) có cấu trúc linh hoạt, dễ thay đổi theo thời gian (post có thể chứa text, ảnh, video, nhiều loại metadata khác nhau),  không cần thiết kế schema cứng như bảng quan hệ.
+Nội dung mạng xã hội thường ở dạng document lồng nhau tự nhiên (một post có nhiều comment, mỗi comment có thể có reply). Do đó, MongoDB biểu diễn dạng cây/lồng nhau hiệu quả hơn so với join nhiều bảng.
+Khối lượng đọc/ghi bài viết, comment thường lớn và tăng nhanh (feed liên tục cập nhật). Do đó, MongoDB tối ưu cho ghi nhanh, đọc theo document, ít cần join phức tạp.
+Không yêu cầu ràng buộc toàn vẹn chặt như dữ liệu tài chính → chấp nhận đánh đổi để lấy tốc độ và tính linh hoạt.
+1.2.3.3 Áp dụng trong dự án:
+Social-service dùng mô hình polyglot — MongoDB (social_db) lưu post, comment, projection dữ liệu phục vụ đọc (read model); còn phần dữ liệu cần quan hệ chặt (follow, like, outbox_events) vẫn nằm ở PostgreSQL cùng service.
+1.2.4. Redis
+1.2.4.1 Đặc điểm:
+CSDL key-value lưu trong bộ nhớ (in-memory), tốc độ đọc/ghi cực nhanh, hỗ trợ TTL (tự động hết hạn), không phù hợp lưu dữ liệu cần bền vững lâu dài.
+1.2.4.2 Lý do sử dụng Redis:
+Một số dữ liệu chỉ cần tồn tại tạm thời và cần truy cập cực nhanh, không cần bền vững tuyệt đối như dữ liệu nghiệp vụ chính.
+Giảm tải cho PostgreSQL bằng cách cache những dữ liệu được đọc thường xuyên.
+1.2.4.3 Áp dụng trong dự án:
+Bảng 1.4 Áp dụng Redis vào dự án
+Service
+Dùng Redis cho
+auth-service
+Lưu session đăng nhập
+social-service
+Cache dữ liệu đọc thường xuyên (feed, profile...)
+commerce-service
+Giỏ hàng (cart), rate limiting
+admin-service
+Cache dữ liệu kiểm duyệt/cấu hình
+1.2.5 Tổng hợp lựa chọn
+Bảng 1.5 Bảng tổng hợp lựa chọn
+Loại dữ liệu
+Đặc điểm
+CSDL phù hợp
+Lý do chính
+Dữ liệu giao dịch, tài khoản, đơn hàng
+Có cấu trúc, cần toàn vẹn, cần transaction
+PostgreSQL
+ACID, hỗ trợ Outbox Pattern
+Bài viết, bình luận mạng xã hội
+Schema linh hoạt, lồng nhau, đọc/ghi nhiều
+MongoDB
+Linh hoạt schema, tối ưu ghi nhanh
+Session, giỏ hàng, cache, rate limit
+Tạm thời, cần tốc độ cao
+Redis
+In-memory, hỗ trợ TTL
+1.2.6. Đánh giá kiến trúc ** Thiếu câu mở đầu
+Ưu điểm: mỗi loại dữ liệu được lưu trữ bằng công nghệ tối ưu nhất cho đặc tính của nó, tăng hiệu năng tổng thể và giảm tải cho CSDL chính.
+Đánh đổi: hệ thống phức tạp hơn khi vận hành (phải quản lý nhiều loại CSDL cùng lúc), cần đồng bộ dữ liệu giữa PostgreSQL và MongoDB trong cùng service (ví dụ qua projection), và team phát triển cần nắm vững nhiều công nghệ CSDL khác nhau thay vì chỉ một loại.
+1.2.7. Giải pháp lưu trữ đối tượng (Object Storage) với MinIO
+Object Storage (lưu trữ đối tượng) là mô hình lưu trữ dữ liệu dạng object — mỗi object gồm dữ liệu nhị phân (file), metadata và định danh duy nhất (object key). Khác với hệ quản trị CSDL quan hệ (lưu bản ghi có cấu trúc) hay file system (cây thư mục), object storage tối ưu cho việc lưu trữ và truy xuất file tĩnh như ảnh, video, tài liệu với khối lượng lớn, khả năng mở rộng ngang và chi phí thấp.
+Object storage phù hợp cho các tài nguyên media trong hệ thống web/mobile: avatar người dùng, ảnh sản phẩm, media bài đăng — những dữ liệu có kích thước lớn, ít thay đổi cấu trúc, cần phân phối qua HTTP/HTTPS.
+So sánh với các mô hình lưu trữ khác
+Bảng 1.6 So sánh MinIO với các mô hình khác
+Tiêu chí
+Relational DB
+File System
+Object Storage
+Dữ liệu
+Bản ghi có cấu trúc
+File trên ổ đĩa
+Object (binary + metadata)
+Mở rộng
+Theo chiều dọc
+Hạn chế
+Mở rộng ngang tốt
+Truy cập
+SQL query
+Đường dẫn thư mục
+HTTP API (REST/S3)
+Use case
+Metadata, giao dịch
+Local file
+Media, backup, static assets
+Trong kiến trúc microservices, nguyên tắc thường áp dụng là tách metadata và binary: CSDL (PostgreSQL, MongoDB) chỉ lưu URL, loại file, thứ tự sắp xếp; nội dung file thực tế nằm trên object storage.
+MinIO là hệ thống object storage mã nguồn mở, tương thích Amazon S3 API. MinIO cho phép triển khai on-premise hoặc trên cloud với cùng contract giao tiếp (bucket, object key, presigned URL), giúp chuyển từ môi trường phát triển sang production mà không thay đổi logic ứng dụng.
+Các khái niệm cơ bản:
+Bucket: không gian chứa object, tương tự "ổ đĩa" logic; mỗi bucket thường gắn với một loại tài nguyên (avatar, sản phẩm, review…).
+Object key: định danh duy nhất của file trong bucket (ví dụ: users/{userId}/avatar.jpg).
+Endpoint: địa chỉ API truy cập (local: http://localhost:9000; production: endpoint S3-compatible hoặc CDN).
+Presigned URL: URL có chữ ký tạm thời, cho phép client upload/download trực tiếp lên MinIO mà không cần truyền credential qua backend.
+Luồng upload phổ biến:
+Client gọi API backend để lấy presigned PUT URL.
+Client upload file trực tiếp lên MinIO qua URL đó.
+Client gọi API backend với URL object đã upload.
+Backend validate URL (domain, bucket prefix) rồi ghi metadata vào CSDL.
+Mô hình này giảm tải cho backend (không proxy binary), tăng hiệu năng upload và phù hợp với kiến trúc phân tán.
+Lý do lựa chọn MinIO trong dự án:
+S3-compatible: dễ chuyển sang AWS S3 hoặc CDN tương thích khi triển khai production.
+Triển khai local: chạy qua Docker, phục vụ phát triển và demo mà không phụ thuộc cloud.
+Tách biệt theo domain: mỗi microservice dùng bucket riêng (ví dụ: 2hands-avatar cho Auth, 2hands-commerce-product cho Commerce), đảm bảo ranh giới dữ liệu.
+Bảo mật: validate URL thuộc bucket cho phép; không lưu credential MinIO trên client; presigned URL có thời hạn.
+1.3 Tích hợp dịch vụ bên thứ ba và Triển khai
+1.3.1 Các phương thức thanh toán trực tuyến và giao vận
+1.3.1.1 Tổng quan các phương thức
+Thanh toán trực tuyến trong dự án chính yếu dùng VNPay cho phương thức online. Giao vận sử dụng GHN làm partner vận chuyển để tạo đơn, theo dõi trạng thái, và cập nhật status shipment qua webhook.
+Các điểm chính:
+⦁VNPay: tạo URL redirect, xử lý return URL, cập nhật thanh toán hoàn tất.
+⦁GHN: tạo đơn shipment qua API, nhận callback trạng thái qua webhook, cập nhật đơn hàng/đơn vận chuyển.
+1.3.1.2 VNPay trong dự án
+Luồng thanh toán VNPay
+Trong dự án, khi người dùng chọn thanh toán VNPAY, backend tạo đơn hàng với trạng thái AWAITING_PAYMENT và payment status PENDING. Kho hàng được giữ trong khoảng thời gian chờ thanh toán. Sau khi order và payment được tạo, hệ thống sinh URL VNPay và trả về frontend để browser redirect sang cổng VNPay.
+Sau khi khách hàng hoàn tất thanh toán trên VNPay, VNPay redirect trình duyệt về backend endpoint /commerce/api/v1/payments/vnpay/return. Backend sẽ xác thực chữ ký và mã trả về để quyết định thanh toán thành công hay thất bại.
+Cơ sở lý thuyết webhook VNPay
+VNPay có hai cách callback chính: Return URL (trình duyệt redirect) và IPN/webhook server-to-server. Trong dự án này, phần thực tế sử dụng Return URL như callback chính. Đây không phải webhook server-to-server, nhưng vẫn cần xử lý như một callback: xác thực, idempotent, và cập nhật trạng thái payment.
+Điểm khác biệt:
+Return URL: trình duyệt của khách hàng phải truy cập. Nếu khách đóng tab, server không tự biết kết quả.
+Webhook/IPN: provider gửi trực tiếp tới server, độc lập với browser.
+Trong tương lai, để tăng độ tin cậy và tránh lệ thuộc browser, dự án có thể mở rộng bằng IPN VNPay.
+1.3.1.3 GHN giao vận trong dự án
+Tổng quan GHN
+GHN là đối tác giao vận. Dự án dùng GHN để tạo đơn, tính phí vận chuyển, nhận tracking và cập nhật trạng thái giao hàng. GHN cung cấp webhook để gửi status update bất đồng bộ đến hệ thống.
+Tạo đơn GHN
+Khi seller tạo shipment với carrier GHN, hệ thống gọi GHN create order API. Thông tin yêu cầu bao gồm from/to address, danh sách sản phẩm, trọng lượng, loại dịch vụ, COD amount, và các header ShopId/Token.
+Lớp adapter quan trọng trong dự án: GhnShipmentGatewayAdapter, GhnCreateOrderCommand, GhnCreateOrderResult. Config GHN nằm trong commerce.integrations.ghn.
+Cơ sở lý thuyết webhook GHN
+Webhook GHN là callback server-to-server. Vì GHN có cơ chế retry, endpoint phải trả HTTP 200 nhanh và đảm bảo idempotency. Dự án ghi raw payload để hỗ trợ debug, đồng thời xác thực nguồn qua secret header.
+Nếu webhook trả mã khác 200, GHN sẽ retry 10 lần, mỗi lần cách nhau 5 giây. Việc log payload và process idempotent giúp tránh duplicate và out-of-order updates.
+1.3.1.4  So sánh VNPay return callback và GHN webhook
+VNPay return callback (browser redirect) là dạng callback có phụ thuộc khách hàng. Nó được dùng để cập nhật trạng thái thanh toán ngay khi người dùng hoàn tất giao dịch. Dự án hiện tại chỉ xử lý return URL, chưa dùng IPN server-to-server.
+GHN webhook là callback trực tiếp từ GHN đến server để cập nhật trạng thái giao vận. Nó không phụ thuộc vào trình duyệt và thường được retry nếu không nhận được 200.
+Đặc điểm chung của webhook/callback: xác thực nguồn, log payload, xử lý idempotent, và bảo đảm không làm hỏng trạng thái khi nhận nhiều lần cùng payload.
+1.3.2 Quản trị hệ thống: Kiểm duyệt nội dung mạng xã hội và kỹ thuật Audit log.
+1.3.2.1. Giới thiệu chung
+Trong quản trị hệ thống, kiểm duyệt nội dung mạng xã hội và kỹ thuật audit log đóng vai trò quan trọng trong việc bảo đảm an toàn, tuân thủ pháp luật và theo dõi hoạt động hệ thống. Hai chức năng này bổ trợ cho nhau: kiểm duyệt nội dung giúp lọc bỏ những thông tin độc hại, còn audit log giúp ghi lại toàn bộ hành vi, sự kiện để phục vụ điều tra, phân tích và truy xuất khi cần.
+1.3.2.2. Kiểm duyệt nội dung mạng xã hội
+Mục tiêu
+- Ngăn chặn nội dung vi phạm pháp luật, chính sách và chuẩn mực cộng đồng.
+- Bảo vệ người dùng khỏi hành vi xâm hại, lừa đảo, tin giả, bạo lực, kích động thù hằn.
+- Duy trì môi trường mạng xã hội lành mạnh, tin cậy và thân thiện.
+Phương pháp kiểm duyệt
+- Kiểm duyệt tự động:
++ Sử dụng bộ lọc từ khóa, mẫu biểu hiện ngôn ngữ xúc phạm, thông tin sai lệch.
++ Ứng dụng machine learning / AI nhận diện hình ảnh, video, văn bản độc hại.
++ Phân tích hành vi người dùng để phát hiện tài khoản spam, nội dung bất thường.
+- Kiểm duyệt thủ công:
++ Nhân viên chuyên trách đánh giá các báo cáo từ người dùng.
++ Xử lý các trường hợp phức tạp, tranh cãi hoặc nội dung bị khiếu nại.
++ Quy trình xác minh, phân loại mức độ vi phạm và ra quyết định gỡ bỏ / cảnh cáo.
+- Kiểm duyệt cộng đồng:
++ Cho phép người dùng báo cáo nội dung vi phạm.
++Tận dụng mạng lưới cộng đồng để phát hiện nhanh và mở rộng phạm vi giám sát.
+Quy trình vận hành
+- Thu thập nội dung và thông tin báo cáo.
+- Phân loại theo mức độ nguy hại: thông tin nhạy cảm, bạo lực, khiêu dâm, kích động, spam, vi phạm bản quyền.
+- Áp dụng bộ quy tắc nội dung (policy) rõ ràng, minh bạch.
+- Thực hiện biện pháp xử lý: ẩn / gỡ bài, cảnh cáo tài khoản, tạm khóa hoặc xóa tài khoản.
+- Lưu trữ kết quả kiểm duyệt, thông báo cho người dùng nếu cần.
+1.3.2.3. Kỹ thuật Audit log
+Khái niệm và vai trò
+Audit log (nhật ký kiểm toán) là bản ghi các sự kiện, hoạt động liên quan đến hệ thống, tài khoản, dữ liệu và các thay đổi. Audit log giúp:
+- Theo dõi hành vi người dùng và quản trị viên.
+- Phát hiện truy cập trái phép, lạm quyền, thao tác bất thường.
+- Hỗ trợ điều tra sự cố, đảm bảo tuân thủ quy định.
+- Tạo bằng chứng cho kiểm toán nội bộ hoặc cơ quan chức năng.
+Phạm vi ghi nhận
+- Đăng nhập, đăng xuất, xác thực người dùng.
+- Thay đổi cấu hình hệ thống.
+- Tạo, sửa, xóa nội dung, tài khoản.
+- Phê duyệt / từ chối nội dung, xử lý báo cáo kiểm duyệt.
+- Truy vấn dữ liệu nhạy cảm hoặc truy cập các phân vùng bảo mật.
+Yêu cầu kỹ thuật
+- Tính toàn vẹn:
++ Audit log không được sửa đổi hoặc xóa tùy tiện.
++ Có cơ chế bảo vệ, mã hóa hoặc chữ ký số để ngăn thay đổi trái phép.
+- Tính đầy đủ:
++ Ghi lại đủ thông tin cần thiết: thời gian, đối tượng thực hiện, hành động, đối tượng bị tác động, địa chỉ IP, kết quả.
+- Tính khả dụng:
++ Dễ truy vấn, phân tích và sao lưu.
++ Có thể tích hợp với hệ thống giám sát, phát hiện xâm nhập (IDS/IPS).
+- Tính bảo mật:
++ Quyền truy cập audit log phải được giới hạn.
++ Dữ liệu audit log nên được lưu trữ an toàn, cách ly khỏi hệ thống sản xuất.
+Mô hình thiết kế
+- Lưu trữ tập trung:
++ Các audit log đẩy về một kho trung tâm (SIEM, ELK, Splunk, Graylog).
++ Tiện cho phân tích, báo cáo và phát hiện bất thường.
+- Lưu trữ phân tán:
++ Lưu tại nhiều thành phần, sau đó đồng bộ hóa.
++ Phù hợp hệ thống microservices hoặc nhiều vùng địa lý.
+- Ghi log theo chuẩn:
++ Sử dụng định dạng thống nhất (JSON, RFC5424, CEF).
++ Dễ parse và xử lý tự động.
+Phân tích và sử dụng audit log
+- Giám sát thời gian thực:
++ Cảnh báo khi xuất hiện hành vi bất thường hoặc vi phạm quy tắc.
+- Phân tích hậu kỳ:
++ Điều tra sự cố, xác định nguyên nhân gốc rễ.
++ Xác minh tính tuân thủ các chính sách nội bộ, pháp luật, GDPR, ISO.
+- Báo cáo:
++ Tổng hợp hoạt động kiểm duyệt, số lượng nội dung bị xử lý, hành vi người dùng.
++ Làm báo cáo duy trì an toàn và chứng minh kiểm soát.
+1.3.3. Container hóa ứng dụng với Docker và Docker Compose
+Container hóa (Containerization) là kỹ thuật đóng gói ứng dụng cùng các thư viện, runtime và cấu hình phụ thuộc vào một đơn vị chạy độc lập gọi là container. Mỗi container chia sẻ kernel của hệ điều hành host nhưng có không gian tài nguyên và filesystem riêng, đảm bảo ứng dụng chạy nhất quán trên mọi môi trường (máy dev, staging, production).
+So với máy ảo (VM) — mỗi VM mang theo cả guest OS và tốn tài nguyên hơn — container nhẹ hơn, khởi động nhanh hơn và phù hợp cho việc triển khai microservices với nhiều service độc lập.
+Docker là nền tảng container hóa phổ biến nhất, cung cấp công cụ build, phân phối và chạy container. Các khái niệm cốt lõi:
+Bảng 1.7 Các khái niệm trong Docker
+Khái niệm
+Ý nghĩa
+Image
+Bản mẫu chỉ đọc chứa filesystem và cấu hình ứng dụng (ví dụ: postgres:16, redis:7).
+Container
+Instance đang chạy được tạo từ image.
+Dockerfile
+File khai báo các bước build image (base image, copy code, expose port…).
+Volume
+Lưu trữ dữ liệu bền vững, tách biệt vòng đời container (phù hợp cho database).
+Network
+Mạng ảo cho phép các container giao tiếp với nhau qua tên service.
+Port mapping
+Ánh xạ port container ra port host để truy cập từ bên ngoài.
+**
+Ưu điểm chính: tính nhất quán môi trường (eliminate "works on my machine"), cô lập dependency, triển khai nhanh và dễ scale theo từng service.
+Docker Compose là công cụ định nghĩa và chạy multi-container application thông qua file cấu hình YAML (docker-compose.yml). Thay vì khởi động từng container thủ công, Compose cho phép khai báo toàn bộ stack — database, cache, message broker, object storage — trong một file và quản lý bằng một lệnh.
+Các thành phần thường khai báo trong Compose:
+services: danh sách container cần chạy.
+image / build: dùng image có sẵn hoặc build từ Dockerfile.
+ports: ánh xạ port host ↔ container.
+environment / env_file: biến môi trường cho từng service.
+volumes: mount dữ liệu bền vững hoặc chia sẻ file cấu hình.
+depends_on: thứ tự khởi động phụ thuộc giữa các service.
+networks: mạng nội bộ cho giao tiếp giữa container.
+Lệnh cơ bản: docker compose up -d (khởi động nền), docker compose down (dừng và xóa container).
+Vai trò trong kiến trúc Microservices
+Trong hệ thống microservices, Docker và Compose hỗ trợ:
+Hạ tầng phát triển thống nhất: toàn team dùng cùng phiên bản PostgreSQL, MongoDB, Redis, Kafka, MinIO mà không cài đặt thủ công trên máy.
+Tách biệt theo service: mỗi microservice có thể có Dockerfile riêng; hạ tầng dùng chung được gom trong một Compose file.
+Database per Service: mỗi CSDL chạy trong container riêng, ánh xạ port khác nhau (ví dụ: 5432 cho auth, 5433 cho social).
+Môi trường gần production: cấu hình container local tương đồng với triển khai thực tế, giảm sai lệch khi lên môi trường staging/production.
+**
+Lý do lựa chọn trong dự án:
+Dự án sử dụng Docker Compose để khởi chạy hạ tầng local gồm PostgreSQL (nhiều instance theo service), MongoDB, Redis, MinIO và Kafka — phục vụ phát triển và kiểm thử các microservice mà không phụ thuộc cài đặt native trên host. Cách tiếp cận này đơn giản hóa onboarding, đảm bảo môi trường đồng nhất giữa các thành viên nhóm và phù hợp với kiến trúc phân tán nhiều thành phần.
+** Tổng kết chương
+CHƯƠNG 2: PHÂN TÍCH VÀ THIẾT KẾ HỆ THỐNG
+2.1 Phân tích yêu cầu và luồng nghiệp vụ chính
+2.1.1. Phân tích yêu cầu hệ thống (Mua bán sản phẩm thời trang đã qua sử dụng & Tương tác mạng xã hội)
+2.1.1.1. Mục tiêu hệ thống
+Hệ thống cần tạo ra một nền tảng kết hợp giữa thương mại điện tử và mạng xã hội, hỗ trợ người dùng:
+- Mua bán sản phẩm thời trang đã qua sử dụng một cách an toàn, tiện lợi.
+- Tương tác, chia sẻ, đánh giá và kết nối với cộng đồng yêu thời trang.
+- Quản lý hồ sơ, danh mục sản phẩm và lịch sử giao dịch.
+- Khuyến khích môi trường “tiêu dùng bền vững” bằng việc tái sử dụng quần áo, phụ kiện.
+2.1.1.2. Phạm vi và các đối tượng tham gia
+Phạm vi hệ thống
+- Quản lý sản phẩm second-hand: đăng bán, tìm kiếm, lọc, xem chi tiết.
+- Giao dịch mua/bán: giỏ hàng, thanh toán, theo dõi đơn hàng.
+- Mạng xã hội nội bộ: đăng bài, bình luận, like, follow, tin nhắn.
+- Quản lý người dùng: đăng ký, đăng nhập, sửa hồ sơ, xác thực.
+- Kiểm duyệt nội dung và quản lý đánh giá.
+Đối tượng người dùng
+- Người bán: đăng sản phẩm, quản lý đơn hàng, tương tác với người mua.
+- Người mua: tìm kiếm, mua hàng, đánh giá sản phẩm, theo dõi người bán/yêu thích.
+- Người dùng xã hội: đăng nội dung, tương tác, theo dõi tin tức và xu hướng.
+- Quản trị viên: quản lý người dùng, kiểm duyệt nội dung, xử lý báo cáo.
+2.1.1.3. Yêu cầu chức năng
+Chức năng người dùng
+- Đăng ký / đăng nhập / đăng xuất
+- Quản lý hồ sơ cá nhân
+- Tìm kiếm và lọc sản phẩm:
+theo loại, thương hiệu, kích cỡ, giá, trạng thái, vị trí
+- Xem chi tiết sản phẩm:
+hình ảnh, mô tả, tình trạng, kích thước, giá, người bán
+- Đăng bán sản phẩm:
+nhập thông tin, tải ảnh, xác định giá, chọn danh mục
+- Quản lý sản phẩm đã đăng:
+chỉnh sửa, xóa, ẩn, kích hoạt lại
+- Giỏ hàng và đặt hàng:
+thêm/xóa sản phẩm, chọn phương thức thanh toán, xác nhận đơn
+- Lịch sử đơn hàng:
+xem đơn đã đặt, trạng thái, chi tiết thanh toán
+- Đánh giá và phản hồi:
+đánh giá người bán, đánh giá sản phẩm, bình luận sau khi nhận hàng
+Chức năng mạng xã hội
+- Đăng bài chia sẻ:
+nội dung, hình ảnh, hashtag, lựa chọn chế độ công khai
+- Tương tác bài viết:
+like, bình luận, chia sẻ, lưu bài
+- Theo dõi người dùng / thương hiệu:
+follow/unfollow, nhận cập nhật từ người theo dõi
+- Tin nhắn nội bộ:
+nhắn tin trực tiếp giữa người mua và người bán
+- Bảng tin / thông báo:
+cập nhật tương tác, tin tức, ưu đãi, thông báo trạng thái đơn hàng
+Chức năng quản trị
+- Quản lý người dùng:
+phê duyệt, khóa, xóa, điều chỉnh quyền
+- Quản lý sản phẩm:
+kiểm duyệt nội dung, xóa sản phẩm vi phạm
+- Quản lý bài viết mạng xã hội:
+kiểm duyệt bình luận, xóa bài vi phạm
+- Báo cáo và phân tích:
+thống kê sản phẩm, doanh số, người dùng hoạt động, nội dung phổ biến
+2.1.2. Thiết kế luồng nghiệp vụ cốt lõi: Đăng bán → Mua hàng → Thanh toán → Giao hàng
+Nền tảng 2Hands vận hành theo mô hình C2C (Consumer-to-Consumer) — người bán đăng sản phẩm thời trang đã qua sử dụng từ tủ đồ cá nhân, người mua tìm kiếm, đặt hàng và nhận hàng qua hệ thống. Luồng nghiệp vụ cốt lõi gồm bốn giai đoạn liên tiếp, được Commerce Service đảm nhận toàn bộ.
+Hình 2.1 Sơ đồ luồng cốt lõi
+** mô tả
+Bảng 2.1 Mô tả sơ đồ luồng cốt lõi
+Giai đoạn
+Actor chính
+Mô tả ngắn
+Đăng bán
+Seller
+Tạo shop, đăng sản phẩm, upload media, publish listing
+Mua hàng
+Buyer
+Tìm kiếm, thêm giỏ hàng, checkout, tạo đơn hàng
+Thanh toán
+Buyer + Hệ thống
+Thanh toán COD hoặc cổng trực tuyến (VNPay/payOS)
+Giao hàng
+Seller + Đơn vị vận chuyển
+Đóng gói, tạo vận đơn, giao hàng, xác nhận nhận hàng
+Giai đoạn 1: Đăng bán
+Seller (chủ tủ đồ) thực hiện:
+Tạo shop — thiết lập thông tin cửa hàng (tên, avatar, mô tả).
+Tạo sản phẩm — nhập tiêu đề, mô tả, giá, tình trạng (LIKE_NEW, GOOD, FAIR, USED), thuộc tính thời trang (size, màu, chất liệu…), chọn danh mục và thương hiệu.
+Upload media — ảnh/video sản phẩm lên Object Storage (MinIO); metadata lưu trong CSDL.
+Publish — chuyển trạng thái sản phẩm từ DRAFT sang ACTIVE, sẵn sàng hiển thị và bán.
+Quy tắc nghiệp vụ: MVP hướng tới second-hand 1-of-1 — mỗi listing tương ứng một món duy nhất (stock_quantity = 1). Sản phẩm chỉ hiển thị công khai khi ở trạng thái ACTIVE và shop còn hoạt động.
+Giai đoạn 2: Mua hàng
+Buyer thực hiện:
+Khám phá sản phẩm — tìm kiếm, lọc theo danh mục, thương hiệu, tình trạng.
+Thêm vào giỏ hàng — hệ thống kiểm tra sản phẩm ACTIVE, shop hợp lệ, còn tồn kho. Giỏ hàng không giữ hàng (không reserve stock).
+Checkout — buyer chọn địa chỉ giao hàng, phương thức thanh toán; hệ thống revalidate giá, tồn kho, trạng thái sản phẩm phía server.
+Tạo đơn hàng — trong một transaction: reserve inventory, tạo order, order_items, payment; snapshot giá, ảnh, thuộc tính sản phẩm tại thời điểm mua (immutable).
+Trạng thái đơn hàng ban đầu: CREATED → AWAITING_PAYMENT.
+Giai đoạn 3: Thanh toán
+Hệ thống hỗ trợ hai phương thức:
+Bảng 2.2 Phương thức thanh toán
+Phương thức
+Luồng xử lý
+COD (thu hộ)
+Đơn chuyển PROCESSING; tiền thu khi giao hàng; payment_status = PAID khi buyer xác nhận đã nhận
+Thanh toán trực tuyến (VNPay/payOS)
+Tạo link thanh toán → buyer redirect → cổng xử lý → webhook báo kết quả → hệ thống cập nhật PAID
+Giai đoạn 4: Giao hàng
+Sau khi đơn ở trạng thái PROCESSING:
+Seller chuẩn bị hàng — đóng gói, tạo vận đơn (tích hợp GHN hoặc giao thủ công).
+Vận chuyển — đơn vị giao hàng nhận và vận chuyển; hệ thống cập nhật trạng thái qua webhook GHN (PICKING_UP → SHIPPED → DELIVERED).
+Xác nhận nhận hàng — buyer xác nhận đã nhận, hoặc hệ thống tự hoàn tất sau thời hạn quy định.
+Hoàn tất đơn — khi tất cả order_items ở COMPLETED và payment_status = PAID, đơn chuyển COMPLETED.
+Buyer có thể đánh giá sản phẩm sau khi order item hoàn tất; seller có thể phản hồi review.
+2.2 Thiết kế cấu trúc Microservices
+Kiến trúc tổng quan hệ thống:
+Hình 2.2 Kiến trúc tổng quan hệ thống
+2.2.1. Thiết kế Auth Service & Commerce Service
+Hai service này là nền tảng của nền tảng 2Hands: Auth Service quản lý định danh và phân quyền; Commerce Service sở hữu toàn bộ nghiệp vụ mua bán. Cả hai đều tuân thủ Clean Architecture với luồng phụ thuộc: delivery → application → domain → infrastructure.
+Bảng 2.3 Nguyên tắc thiết kế chung
+Nguyên tắc
+Mô tả
+Service boundary
+Mỗi service sở hữu database riêng, không truy cập chéo DB
+JWT-centric auth
+Service khác xác thực qua JWT claims (user_id, role, permission)
+Use case pattern
+Logic nghiệp vụ nằm trong lớp application (UseCase)
+Outbox Pattern
+Publish event trong cùng transaction với thay đổi domain
+API envelope
+Response thống nhất: code, success, message, data, timestamp
+2.2.1.1. Thiết kế Auth Service
+Vai trò: Service trung tâm về xác thực, phân quyền và quản lý tài khoản — mọi microservice khác tin tưởng JWT do Auth cấp, không tự quản lý password hay session.
+Phạm vi nghiệp vụ:
+Bảng 2.4 Phạm vi nghiệp vụ Auth Service
+Phân hệ
+Chức năng chính
+Authentication
+Đăng ký, đăng nhập (email/OAuth), đăng xuất, refresh token, verify email, quên/đổi mật khẩu
+User Account
+Xem/cập nhật profile, avatar, cài đặt, soft delete tài khoản
+Session Management
+Quản lý phiên đăng nhập, logout, blacklist token
+RBAC
+Quản lý role, permission; gán quyền cho user và admin
+Công nghệ lưu trữ:
+PostgreSQL (auth_db): users, user_profiles, user_settings, roles, permissions, refresh_token_sessions, outbox_events
+Redis: blacklist token, cache session
+MinIO (bucket 2hands-avatar): lưu ảnh đại diện
+Tích hợp:
+Publish event: USER_CREATED, USER_UPDATED, USER_DELETED, PASSWORD_CHANGED… qua Outbox → Kafka
+Các service consumer (Social, Notification) đồng bộ projection từ event
+Admin Service delegate login/refresh cho Auth, không lưu credential
+API base path: /auth/api/v1/{resource}
+2.2.1.2. Thiết kế Commerce Service
+Vai trò: Service sở hữu toàn bộ domain thương mại — từ đăng bán sản phẩm đến hoàn tất đơn hàng, thanh toán và giao hàng.
+Phạm vi nghiệp vụ (aggregate chính):
+Bảng 2.5 Phạm vi nghiệp vụ Commerce Service
+Aggregate
+Chức năng
+Seller Shop
+Tạo/cập nhật shop, vacation mode
+Product Catalog
+Sản phẩm, brand, category, media, giá, thuộc tính thời trang
+Inventory
+Tồn kho, reserve/release tại checkout
+Cart
+Giỏ hàng (không reserve stock)
+Order
+Đơn hàng, order item, snapshot dữ liệu tại thời điểm mua
+Payment
+COD, thanh toán trực tuyến (VNPay/payOS), webhook
+Shipment
+Vận đơn, tích hợp GHN, theo dõi trạng thái giao hàng
+Review
+Đánh giá sản phẩm, seller reply
+Công nghệ lưu trữ:
+PostgreSQL (commerce_db): toàn bộ aggregate commerce, status history, webhook logs
+Redis: cache, distributed lock tồn kho
+MinIO: bucket 2hands-commerce-product, 2hands-commerce-shop, 2hands-commerce-review
+Hình 2.3 State machine cốt lõi
+Tích hợp:
+Xác thực buyer/seller qua JWT claims từ Auth (chỉ lưu user_id/seller_id dạng UUID)
+Webhook từ VNPay/payOS và GHN (verify signature, idempotent)
+Publish_event:COMMERCE_ORDER_CREATED, COMMERCE_PAYMENT_PAID, OMMERCE_SHIPMENT_DELIVERED…
+API base path: /commerce/api/v1/{resource}
+Quan hệ giữa Auth Service và Commerce Service
+Hình 2.4 Quan hệ giữa Auth và Commerce Service
+Auth → Commerce: Commerce đọc user_id, role từ JWT; không gọi Auth API mỗi request nếu không cần thiết
+Commerce → Auth: Không truy cập auth_db; chỉ tham chiếu UUID user
+Event-driven: Auth publish thay đổi user; Commerce publish thay đổi đơn hàng — các service khác consume bất đồng bộ
+Phân tách trách nhiệm: Auth không biết sản phẩm/đơn hàng; Commerce không biết password/session
+2.2.2. Thiết kế Social Service (Bài viết, tương tác) & Notification Service
+2.2.2.1 Sơ đồ kiến trúc tổng quan
+Hình 2.5 Sơ đồ kiến trúc Social Service
+2.2.2.2 Social Service
+Chức năng: newsfeed, đăng bài, comment, like/save, follow, tìm kiếm, nhận xử lý kiểm duyệt từ Admin.
+Polyglot persistence:
+MongoDB: post, comment — dữ liệu linh hoạt, khối lượng đọc/ghi lớn.
+PostgreSQL (social_db): follow, like/save, outbox_events, user_projections (bản sao thông tin user đồng bộ từ Auth qua event — tránh gọi trực tiếp sang Auth Service).
+Vai trò sự kiện: vừa là Producer (like/comment/follow → outbox → Kafka), vừa là Consumer (nhận USER_REGISTERED/UPDATED từ Auth để cập nhật projection; nhận POST_MODERATED từ Admin để ẩn/xoá mềm bài viết).
+2.2.2.3 Sơ đồ luồng sự kiện: Like bài viết → Notification
+Hình 2.6 Sơ đồ luồng Like -> Notification
+2.2.2.4 Notification Service
+Chức năng: consumer tổng hợp, lắng nghe event từ Auth/Social/Commerce/Admin để sinh thông báo đa kênh (in-app, email).
+Lưu trữ: PostgreSQL (notification_db) — dữ liệu đơn giản, cần truy vấn theo trạng thái đã gửi/đã đọc.
+Vai trò sự kiện: chỉ là Consumer, không phát event ngược lại — tránh phụ thuộc vòng giữa các service. Do Kafka đảm bảo at-least-once delivery, service cần xử lý idempotency để tránh gửi trùng thông báo.
+2.2.3 Thiết kế Admin Service (Quản lý, kiểm duyệt, audit log).
+2.2.3.1. Mục tiêu
+- Admin Service chịu trách nhiệm quản lý, giám sát và kiểm duyệt toàn bộ hệ thống.
+- Cung cấp khả năng duyệt nội dung, xử lý khiếu nại, chặn/khoá người dùng, điều chỉnh trạng thái sản phẩm/bài đăng và ghi lại toàn bộ hành vi quản trị dưới dạng audit log.
+- Đảm bảo các hành động của admin có thể truy vết, có thể audit và dễ phục hồi khi cần.
+2.2.3.2. Phạm vi chức năng
+- Quản lý người dùng: xem danh sách, tìm kiếm, khóa/mở khóa, thay đổi vai trò, vô hiệu hóa tài khoản.
+- Kiểm duyệt nội dung: duyệt bài đăng, sản phẩm, bình luận, đánh giá, khiếu nại.
+- Cơ chế xử lý vi phạm: cảnh cáo, ẩn nội dung, xóa, đình chỉ tài khoản, giới hạn quyền.
+- Audit log: ghi lại tất cả hành động admin với metadata chi tiết.
+- Cấu hình hệ thống: quản lý danh sách từ khoá cấm, cấu hình chính sách, cấu hình moderation rules.
+- Tra cứu và báo cáo: truy vấn nhật ký kiểm duyệt, báo cáo trạng thái hiện tại và lịch sử hành vi.
+2.2.3.3. Sơ đồ kiến trúc của Admin Service
+Hình 2.7 Sơ đồ kiến trúc Admin Service
+2.2.3.4 Luồng kiểm duyệt đăng bài
+Hình 2.8 Luồng kiểm duyệt đăng bài
+2.3 Thiết kế Cơ sở dữ liệu (Database Design)
+2.3.2. Sơ đồ dữ liệu cho Social, Notification (MongoDB).
+2.3.2.1 Tổng quan mô hình dữ liệu
+a.
+Social Service áp dụng polyglot persistence: MongoDB lưu dữ liệu dạng document (post, comment), PostgreSQL lưu dữ liệu dạng quan hệ (follow, like/save, outbox, projection). Notification Service dùng thuần PostgreSQL.
+b. Sơ đồ dữ liệu MongoDB — Social Service (Post, Comment)
+Hình 2.9 Sơ đồ dữ liệu MongoDB (Social Service)
+Giải thích thiết kế:
+comments được nhúng (embedded) trong document post thay vì tách collection riêng — phù hợp vì comment luôn được truy vấn cùng post (feed detail), giảm số lượt gọi DB so với việc join như quan hệ.
+parentCommentId cho phép biểu diễn reply comment dạng cây mà không cần bảng trung gian.
+authorId chỉ lưu UUID tham chiếu tới user_projections (PostgreSQL) — không nhúng toàn bộ thông tin user để tránh dữ liệu lỗi thời khi user đổi tên/avatar.
+status phục vụ soft delete và cờ kiểm duyệt (nhận cập nhật từ event POST_MODERATED do Admin Service phát ra).
+c. Sơ đồ dữ liệu quan hệ — Social Service (PostgreSQL)
+Hình 2.10 Sơ đồ dữ liệu quan hệ Social Service
+Ghi chú:
+post_id trong likes/saves là tham chiếu ngoại chuỗi (cross-database reference) sang MongoDB — không có ràng buộc FK vật lý, được đảm bảo nhất quán ở tầng application, không phải ở tầng DB.
+outbox_events độc lập, không có khóa ngoại tới bảng nghiệp vụ — lưu payload dạng JSON để linh hoạt với nhiều loại event khác nhau (like, comment, follow).
+d. Sơ đồ dữ liệu — Notification Service (PostgreSQL)
+Hình 2.11 Sơ đồ dữ liệu Notification Service
+Giải thích thiết kế:
+source_service và event_type giúp truy vết notification được sinh từ event nào, thuộc service nào — hỗ trợ debug và mở rộng thêm loại thông báo mới.
+channel (in-app/email) tách biệt kênh gửi, cho phép 1 event có thể sinh nhiều bản ghi notification theo nhiều kênh.
+processed_events là bảng chống trùng: trước khi xử lý một event từ Kafka, service kiểm tra event_id đã tồn tại chưa — nếu có thì bỏ qua, đảm bảo không gửi trùng thông báo khi Kafka redeliver event.
+CHƯƠNG 3: XÂY DỰNG VÀ TRIỂN KHAI HỆ THỐNG
+3.1. Triển khai hạ tầng và Môi trường phát triển
+3.1.1. Mục tiêu
+Toàn bộ hạ tầng phụ trợ (CSDL, message broker, object storage) được đóng gói và chạy bằng Docker Compose, đảm bảo môi trường phát triển đồng nhất giữa các thành viên, không phụ thuộc vào việc cài đặt thủ công từng phần mềm trên máy host.
+3.1.2 Sơ đồ hạ tầng Docker
+Hình 3.1 Sơ đồ hạ tầng Docker
+3.1.3 Nguyên tắc thiết kế hạ tầng: Database-per-service
+Mỗi service có một PostgreSQL container riêng biệt (5 container: auth, social, commerce, admin, notification), thay vì dùng chung một instance Postgres nhiều database. Việc tách container vật lý (không chỉ tách logic database) giúp:
+Mô phỏng đúng ràng buộc "không service nào truy cập trực tiếp DB của service khác" ngay từ môi trường local.
+Cho phép scale, backup, hoặc thay thế từng CSDL độc lập mà không ảnh hưởng service khác.
+3.1.4 Các thành phần hạ tầng chính
+Bảng 3.1 Thành phần hạ tầng chính
+Thành phần
+Vai trò
+PostgreSQL ×5
+CSDL quan hệ riêng cho từng service (auth_db, social_db, commerce_db, admin_db, notification_db)
+MongoDB
+Lưu dữ liệu document (post, comment) cho social-service
+Redis
+Session (auth), giỏ hàng/rate-limit (commerce), cache (social, admin)
+MinIO
+Object storage tương thích S3, lưu ảnh đại diện, ảnh bài viết, ảnh sản phẩm — dùng presigned URL để upload/tải trực tiếp không qua backend
+Kafka (KRaft)
+Message broker cho outbox event, không cần Zookeeper
+Kafka UI
+Giao diện quan sát topic, partition, consumer group phục vụ debug
+MailHog
+Giả lập SMTP server, bắt email gửi từ notification-service để kiểm tra mà không gửi email thật
+3.1.5  MinIO — cấu hình object storage
+MinIO được khởi tạo với các bucket riêng theo domain: 2hands-avatar, 2hands-social-post, 2hands-commerce-product, 2hands-commerce-review, 2hands-commerce-shop. Việc tách bucket theo loại dữ liệu (thay vì dùng chung 1 bucket) giúp:
+Áp dụng chính sách truy cập (policy) riêng cho từng loại media nếu cần.
+Dễ quản lý, dọn dẹp dữ liệu test theo từng domain.
+Container minio-init được chạy như một job khởi tạo (init container) để tự động tạo các bucket này khi hạ tầng khởi động lần đầu.
+3.1.6 Kafka — cấu hình theo giai đoạn (progressive rollout)
+Việc bật Kafka producer/consumer không được kích hoạt toàn bộ ngay từ đầu, mà cấu hình qua biến môi trường theo từng hạng mục (*_KAFKA_PRODUCER_ENABLED, *_OUTBOX_PUBLISH_ENABLED, NOTIFICATION_KAFKA_CONSUMER_ENABLED...), cho phép triển khai và kiểm thử tăng dần từng luồng tích hợp (auth → notification, auth → social, social → notification...) thay vì bật đồng thời toàn bộ hệ thống event, giảm rủi ro khi debug.
+3.2 Xây dựng Backend Services và Tích hợp
+3.2.2. Lập trình Social Service và Notification Service
+3.2.2.1 Cấu trúc package theo Clean Architecture
+Cả hai service được tổ chức theo 4 tầng thống nhất:
+Hình 3.2 Cấu trúc Social&Notification Service
+3.2.2.2 Lập trình Social Service
+Các use case chính đã hiện thực: đăng bài (kèm upload media qua MinIO presigned URL), bình luận/reply, like/save, follow/unfollow, tìm kiếm bài viết, và xử lý kiểm duyệt do Admin gửi tới.
+Điểm kỹ thuật đáng chú ý:
+Ghi outbox trong cùng transaction: khi xử lý LikePostUseCase, service thực hiện ghi bản ghi like và bản ghi outbox_events trong cùng một @Transactional của PostgreSQL, đảm bảo tính nguyên tử trước khi trả response cho client.
+OutboxWorker: một scheduled job (@Scheduled) chạy định kỳ, đọc các bản ghi outbox_events có trạng thái PENDING, publish lên Kafka qua KafkaEventPublisherImpl, sau đó cập nhật trạng thái PUBLISHED. Việc bật/tắt publish được điều khiển qua flag môi trường (SOCIAL_OUTBOX_PUBLISH_ENABLED).
+Consumer phía Social: UserEventKafkaListener lắng nghe topic từ Auth Service, cập nhật bảng user_projections — đảm bảo Social không cần gọi trực tiếp API sang Auth khi hiển thị tên/avatar người đăng bài.
+3.2.2.3 Lập trình Notification Service
+Vai trò: consumer tổng hợp, không expose nhiều API nghiệp vụ cho client mà chủ yếu xử lý ngầm (background) dựa trên event.
+Luồng xử lý một event:
+Hình 3.3 Luồng xử lý event
+Điểm kỹ thuật đáng chú ý:
+Handler theo domain: mỗi nhóm event (từ Auth, Social, Commerce, Admin) có một handler riêng, tuân theo chung một interface (NotificationHandler), giúp thêm loại thông báo mới không ảnh hưởng handler cũ — áp dụng nguyên lý Open/Closed.
+Idempotency: trước khi xử lý, service kiểm tra bảng processed_events bằng event_id nhận từ Kafka message — nếu đã xử lý thì bỏ qua, tránh gửi trùng thông báo do Kafka đảm bảo at-least-once delivery (có thể redeliver event khi consumer restart hoặc lỗi tạm thời).
+Đa kênh: cùng một event có thể sinh nhiều bản ghi notification với channel khác nhau (IN_APP, EMAIL), cho phép mở rộng thêm kênh (ví dụ push notification/FCM) mà không đổi cấu trúc bảng.
+Cấu hình bật/tắt theo hạng mục: việc consume event được bật dần qua flag (NOTIFICATION_KAFKA_CONSUMER_ENABLED, NOTIFICATION_PROCESS_EVENTS_ENABLED), tương ứng với các "hạng mục" tích hợp Kafka được triển khai và kiểm thử tuần tự (auth→notification, social→notification...) thay vì bật toàn bộ một lúc.
+3.2.3 Lập trình Admin Service và tích hợp API VNPay, GHN qua webhook
+3.2.3.1. Mục tiêu của Admin Service
+- Admin Service là thành phần backend chịu trách nhiệm quản lý các chức năng dành cho quản trị viên:
++ Quản lý đơn hàng, trạng thái đơn hàng, thanh toán, vận chuyển.
++ Xử lý các sự kiện bất đồng bộ từ dịch vụ bên thứ ba qua webhook.
++ Cung cấp giao diện API nội bộ/ngoại vi cho trang admin và hệ thống khác.
+- Tại đây, ta tập trung vào hai tích hợp chính:
++ Thanh toán qua VNPay.
++ Vận chuyển qua GHN.
++ Và xử lý các callback/webhook để cập nhật trạng thái đơn hàng tự động.
+3.2.3.2. Kiến trúc tổng quan
+- Admin Service nên có các lớp chính:
++ Controller/Route: nhận request từ admin app, VNPay, GHN.
++ Service/Business logic: xử lý nghiệp vụ, quyết định trạng thái đơn hàng.
++ Repository/Data access: thao tác với cơ sở dữ liệu.
++ Webhook handler: xác thực và nhận dữ liệu từ VNPay/GHN.
+3.2.3.3. Xây dựng Admin Service
+Luồng tích hợp của VNPay, GHN qua webhook
+Hình 3.4 Luồng tích hợp VNPAY
+Phân tích luồng:
+commerce-service tạo giao dịch thanh toán với VNPay hoặc tạo đơn ship với GHN.
+VNPay và GHN gửi callback/webhook về admin-service thông qua endpoint webhook tương ứng.
+admin-service thực hiện:
+xác minh chữ ký / payload,
+ghi log webhook và audit log,
+chuẩn hóa event để publish qua Kafka / outbox,
+đồng bộ trạng thái tới commerce-service nếu cần.
+notification-service nhận event để gửi thông báo cho người dùng/admin.
+Admin Console truy vấn thông tin payment, shipment, webhook-log thông qua admin-service.
+3.3 Phát triển Giao diện Người dùng (Frontend)
+3.3.1. Xây dựng giao diện Web với React/Vite cho luồng mua bán và mạng xã hội
+Giao diện người dùng được xây dựng bằng React 19 và Vite 5 — bundler nhẹ, hỗ trợ HMR giúp phát triển nhanh. Các thư viện chính:
+Bảng 3.2 Công nghệ sử dụng
+Công nghệ
+Vai trò
+React Router v7
+Định tuyến SPA, route guard
+Axios
+Gọi REST API tới các microservice
+Tailwind CSS v4
+Styling utility-first, responsive
+MSW (dev)
+Mock API khi chưa có backend
+Cấu hình môi trường qua biến VITE_* (base URL từng service: Auth :3001, Social :3002, Commerce :3003…).
+Kiến trúc Frontend
+Ứng dụng tổ chức theo feature-based structure trong frontend/src/fe-module/:
+Hình 3.5 Kiến trúc Frontend
+Mỗi feature gồm pages/, components/, hooks/, api/, utils/ — tách biệt theo domain, dễ bảo trì và phát triển song song.Tích hợp API và xác thực
+Frontend giao tiếp với backend qua nhiều HTTP client tương ứng từng service:
+apiClient → Auth Service
+commerceApiClient → Commerce Service
+socialApiClient → Social Service
+Mỗi client gắn JWT Bearer token qua Axios interceptor. Khi access token hết hạn, authRefreshService tự gọi refresh và retry request. Response tuân theo envelope chuẩn (success, data, message).
+Route guard:
+AuthGuard — bảo vệ route cần đăng nhập (feed, giỏ hàng, checkout…)
+SellerShopGuard — chỉ seller đã có shop mới truy cập khu vực quản lý bán hàng
+CreateShopGuard — điều hướng tạo shop khi chưa có
+Luồng mua bán (Commerce)
+Bảng 3.3 Luồng mua bán
+Nhóm màn hình
+Chức năng
+Khám phá
+Trang chủ, tìm kiếm, danh mục, chi tiết sản phẩm, shop
+Buyer
+Giỏ hàng, địa chỉ, checkout, danh sách/chi tiết đơn, theo dõi vận đơn, đánh giá
+Seller
+Tạo shop, quản lý sản phẩm (form + upload media MinIO), đơn hàng, vận chuyển, analytics
+Thanh toán
+Checkout COD/VNPay, trang kết quả thanh toán, redirect VNPay return
+Luồng checkout: chọn địa chỉ và phương thức thanh toán → gọi API checkout → redirect VNPay (nếu online) hoặc trang thành công (COD). Upload ảnh sản phẩm: lấy presigned URL từ Commerce API → upload trực tiếp lên MinIO → lưu URL vào form.
+Giao diện:
+Hình 3.6 Giao diện trang Commerce 1
+Hình 3.7 Giao diện trang Commerce (2)
+Hình 3.8 Giao diện trang Commerce (3)
+Luồng mạng xã hội (Social)
+Bảng 3.4 Luồng mạng xã hội
+Nhóm màn hình
+Chức năng
+Feed
+Bảng tin, tạo/sửa bài viết, like, comment, lưu bài
+Khám phá
+Tìm kiếm bài viết, hashtag, gợi ý người dùng
+Profile
+Hồ sơ công khai, bài đã đăng, bài đã lưu
+Bài viết hỗ trợ tag sản phẩm (product_id) — liên kết Social với Commerce: từ feed có thể điều hướng sang trang chi tiết sản phẩm. Upload media bài đăng tương tự commerce (presigned URL → MinIO).
+Giao diện:
+Hình 3.9 Giao diện trang Social (1)
+Hình 3.10 Giao diện trang Social (2)
+Hình 3.11 Giao diện trang Social (3)
+Layout và trải nghiệm người dùng
+AppLayout điều chỉnh layout theo route:
+Social/Commerce: full-bleed, sidebar riêng từng module
+Auth (login/register): layout immersive, không header
+Account: layout rộng, form quản lý tài khoản
+AppHeader chung: điều hướng giữa Social và Commerce, tìm kiếm, giỏ hàng, thông báo. Notification dùng NotificationBadgeContext và toast real-time.
+3.3.2 Xây dựng giao diện Admin Dashboard (Kiểm duyệt, quản lý).
+3.3.2.1. Mục tiêu của Admin Dashboard
+- Admin Dashboard là giao diện quản trị viên dùng để:
++ Kiểm duyệt đơn hàng, sản phẩm, người dùng, nội dung.
++ Quản lý trạng thái đơn hàng, thanh toán và vận chuyển.
++ Hiển thị số liệu, báo cáo và cảnh báo hệ thống.
++ Thực hiện các thao tác nhanh như duyệt, hủy, cập nhật trạng thái.
+3.3.2.2. Yêu cầu chức năng
+- Quản lý đơn hàng:
++ Xem danh sách đơn hàng, tra cứu theo mã/khách hàng/trạng thái.
++ Xem chi tiết đơn hàng, lịch sử thanh toán, vận chuyển.
++ Cập nhật trạng thái: xác nhận, đóng gói, đã gửi, đã giao, hủy.
+- Kiểm duyệt nội dung:
++ Danh sách sản phẩm/đăng bán mới cần xét duyệt.
++ Duyệt hoặc từ chối sản phẩm, hiển thị lý do.
+- Quản lý người dùng:
++ Xem danh sách khách hàng/đối tác.
++ Khóa/mở khóa tài khoản, xem lịch sử hoạt động.
+- Bảng điều khiển tổng quan:
++ Thống kê doanh số, số đơn hàng, tỷ lệ đơn đã giao, đơn đang xử lý.
++ Biểu đồ và chỉ số nhanh.
+- Quản lý cấu hình:
++ Cài đặt phương thức thanh toán, vận chuyển, chính sách.
+- Hỗ trợ tìm kiếm, lọc, phân trang và phân quyền.
+3.3.2.3. Kiến trúc giao diện
+- Sử dụng kiến trúc SPA (Single Page Application) hoặc frontend framework hiện đại:
++ React, Vue, Angular, hoặc bất kỳ framework phù hợp cho dự án.
+- Cấu trúc chính:
++ Sidebar menu: điều hướng các mục chính (Dashboard, Đơn hàng, Sản phẩm, Người dùng, Báo cáo, Cài đặt).
++ Top bar: thông tin admin, tìm kiếm, thông báo, chuyển đổi nhanh.
++ Content area: hiển thị bảng, biểu đồ, form chi tiết.
++ Modal/Dialog: dùng cho duyệt, cập nhật trạng thái, xác nhận hành động.
+3.3.2.4 Kiến trúc frontend của Admin
+Chi tiết các module trong features/ (được map trực tiếp từ backend admin-service):
+auth: Xử lý luồng đăng nhập của Admin, quản lý session và kiểm tra quyền (permissions/roles).
+moderation: Nơi Admin phê duyệt hoặc từ chối các nội dung vi phạm (ẩn đánh giá, gỡ sản phẩm, đóng/mở lại shop).
+enforcement: Quản lý các lệnh phạt áp dụng lên người dùng (cấm tài khoản, đình chỉ tạm thời).
+support: Dành cho nhân viên CSKH tra cứu thông tin chi tiết về đơn hàng, lịch sử thanh toán, trạng thái vận chuyển để hỗ trợ user.
+finance: Xử lý các yêu cầu rút tiền (payout) của seller, phê duyệt hoàn tiền (refund) và xem đối soát.
+system: Bao gồm quản lý cấu hình hệ thống (configs), xem lịch sử thao tác của các admin khác (audit logs) và gửi thông báo toàn hệ thống (system announcements).
+3.4 Kiểm thử hệ thống
+3.4.1. Kiểm thử các API nội bộ và luồng giao tiếp qua Kafka
+3.4.1.1 Mục tiêu kiểm thử
+Kiểm thử được chia hai nhóm: (1) kiểm thử API nội bộ (logic nghiệp vụ, validate, xử lý lỗi) và (2) kiểm thử luồng giao tiếp qua Kafka (outbox → broker → consumer), nhằm đảm bảo tính đúng đắn cả ở phạm vi một service lẫn phạm vi liên service.
+3.4.1.2 Test case — API nội bộ (Social Service)
+a. Nhóm chức năng: Đăng bài viết (Post)
+STT
+Test case
+Input
+Kết quả mong đợi
+SC-01
+Đăng bài hợp lệ với text
+content = "Hello world"
+Trả 201, tạo document post trong MongoDB
+SC-02
+Đăng bài kèm media hợp lệ
+content + mediaUrls từ MinIO presigned URL
+Trả 201, post lưu đúng mediaUrls
+SC-03
+Đăng bài với content rỗng và không có media
+content = ""
+Trả 400, không tạo post
+SC-04
+Đăng bài vượt giới hạn ký tự
+content > giới hạn quy định
+Trả 400 (validation)
+SC-05
+Đăng bài khi tài khoản bị khóa (enforcement)
+user có status = BANNED
+Trả 403
+SC-06
+Lấy chi tiết bài viết không tồn tại
+postId ngẫu nhiên
+Trả 404
+SC-07
+Xóa mềm bài viết của chính mình
+postId hợp lệ, đúng chủ sở hữu
+Trả 200, status chuyển DELETED
+SC-08
+Xóa bài viết không phải của mình
+postId thuộc user khác
+Trả 403
+b. Nhóm chức năng: Bình luận (Comment)
+STT
+Test case
+Input
+Kết quả mong đợi
+SC-09
+Bình luận hợp lệ vào bài viết đang ACTIVE
+content hợp lệ
+Trả 201, comment được nhúng vào post, commentCount +1
+SC-10
+Bình luận vào bài viết đã bị ẩn/xóa
+postId có status = HIDDEN/DELETED
+Trả 400/404
+SC-11
+Reply vào comment gốc
+parentCommentId hợp lệ
+Trả 201, comment mới có đúng parentCommentId
+SC-12
+Reply vào comment không tồn tại
+parentCommentId ngẫu nhiên
+Trả 404
+SC-13
+Bình luận nội dung rỗng
+content = ""
+Trả 400
+c. Nhóm chức năng: Like / Save
+STT
+Test case
+Input
+Kết quả mong đợi
+SC-14
+Like bài viết chưa từng like
+userId, postId hợp lệ
+Trả 200, ghi like + outbox_events cùng transaction
+SC-15
+Like bài viết đã like trước đó
+userId, postId đã like
+Trả 409, không tạo bản ghi trùng
+SC-16
+Unlike bài viết đã like
+userId, postId đã like
+Trả 200, xóa bản ghi like, likeCount -1
+SC-17
+Unlike bài viết chưa like
+userId, postId chưa like
+Trả 400/404
+SC-18
+Save bài viết
+userId, postId hợp lệ
+Trả 200, ghi bản ghi saves
+d. Nhóm chức năng: Follow
+STT
+Test case
+Input
+Kết quả mong đợi
+SC-19
+Follow người dùng khác hợp lệ
+followerId ≠ followingId
+Trả 200, ghi follows + outbox_events
+SC-20
+Follow chính mình
+followerId = followingId
+Trả 400, từ chối theo rule nghiệp vụ
+SC-21
+Follow người đã follow trước đó
+quan hệ follow đã tồn tại
+Trả 409, không tạo bản ghi trùng
+SC-22
+Unfollow người đang follow
+quan hệ follow tồn tại
+Trả 200, xóa bản ghi follows
+SC-23
+Follow tài khoản đã bị khóa/xóa
+followingId có status ≠ ACTIVE
+Trả 400/404
+e. Nhóm chức năng: Kiểm duyệt (nhận từ Admin)
+STT
+Test case
+Input
+Kết quả mong đợi
+SC-24
+Nhận event POST_MODERATED với action = HIDE
+postId hợp lệ
+status post chuyển HIDDEN
+SC-25
+Nhận event POST_MODERATED với postId không tồn tại
+postId không có trong MongoDB
+Log cảnh báo, không throw exception làm crash consumer
+f. Test case — API nội bộ (Notification Service)
+STT
+Test case
+Input
+Kết quả mong đợi
+NT-01
+Lấy danh sách thông báo của user
+userId hợp lệ
+Trả 200, danh sách notification sắp xếp theo created_at giảm dần
+NT-02
+Đánh dấu thông báo đã đọc
+notificationId hợp lệ, đúng chủ sở hữu
+Trả 200, is_read = true
+NT-03
+Đánh dấu đã đọc thông báo của người khác
+notificationId thuộc user khác
+Trả 403
+NT-04
+Lấy thông báo khi không có thông báo nào
+userId chưa có notification
+Trả 200, danh sách rỗng
+NT-05
+Đếm số thông báo chưa đọc
+userId có N thông báo chưa đọc
+Trả đúng số lượng N
+g. Test case — Luồng giao tiếp qua Kafka (Outbox → Broker → Consumer)
+STT
+Test case
+Kịch bản
+Bước kiểm tra
+Kết quả mong đợi
+KF-01
+Like bài viết → outbox ghi đúng
+Gọi API like
+Query bảng outbox_events (social_db)
+Có bản ghi mới, event_type = POST_LIKED, status = PENDING
+KF-02
+Outbox worker publish thành công
+Chờ chu kỳ chạy OutboxWorker
+Query lại outbox_events
+status chuyển PUBLISHED
+KF-03
+Event xuất hiện đúng trên Kafka
+Sau khi outbox publish
+Quan sát Kafka UI, topic tương ứng
+Message tồn tại, payload khớp dữ liệu đã ghi ở outbox
+KF-04
+Consumer xử lý và sinh notification
+Sau khi Kafka nhận event
+Query bảng notifications (notification_db)
+Có bản ghi mới đúng recipient_id, event_type = POST_LIKED
+KF-05
+Follow user → luồng tương tự KF-01→04
+Gọi API follow
+Kiểm tra outbox → Kafka → notification
+event_type = USER_FOLLOWED, notification sinh đúng người theo dõi
+KF-06
+Bình luận → luồng tương tự
+Gọi API comment
+Kiểm tra outbox → Kafka → notification
+event_type = COMMENT_CREATED, notification gửi đúng chủ bài viết
+KF-07
+Đăng ký tài khoản → Social cập nhật projection
+Gọi API register (auth-service)
+Query user_projections (social_db)
+Bản ghi user mới xuất hiện đúng thông tin
+KF-08
+Admin kiểm duyệt → Social nhận và ẩn bài viết
+Admin gửi hành động kiểm duyệt
+Query MongoDB post document
+status chuyển HIDDEN sau khi consume event
+KF-09
+Publisher tắt (flag OUTBOX_PUBLISH_ENABLED = false)
+Gọi API like khi flag tắt
+Query outbox_events
+Bản ghi vẫn được ghi nhưng không publish (status = PENDING kéo dài)
+KF-10
+Consumer tắt (flag KAFKA_CONSUMER_ENABLED = false)
+Publish event khi Notification consumer tắt
+Kiểm tra Kafka UI (consumer lag)
+Message tồn đọng trong topic, chưa được consume
+3.4.2 Kiểm thử luồng nghiệp vụ đầu cuối (End-to-End): Từ đăng bán đến thanh toán và giao hàng thành công
+3.4.2.1. Mục tiêu kiểm thử
+- Đảm bảo toàn bộ luồng nghiệp vụ hoạt động liên tục từ lúc người bán đăng bán sản phẩm cho đến khi đơn hàng được thanh toán và giao hàng thành công.
+- Kiểm tra sự phối hợp giữa các thành phần hệ thống: giao diện người dùng, Admin Service, dịch vụ thanh toán VNPay, dịch vụ vận chuyển GHN và cơ sở dữ liệu.
+- Phát hiện lỗi luồng nghiệp vụ, sai trạng thái, thiếu dữ liệu, hoặc xử lý sai trong webhook.
+3.4.2.2. Phạm vi kiểm thử
+- Đăng bán sản phẩm mới trên hệ thống.
+- Duyệt sản phẩm (nếu có bước kiểm duyệt).
+- Khách hàng chọn mua và tạo đơn hàng.
+- Tạo yêu cầu thanh toán VNPay.
+- Nhận callback/vnpay webhook cập nhật thanh toán.
+- Tạo đơn vận GHN cho đơn hàng đã thanh toán.
+- Nhận webhook GHN cập nhật trạng thái giao hàng.
+- Đóng đơn khi giao hàng thành công.
+3.4.2.3. Chuẩn bị môi trường và dữ liệu
+- Sử dụng môi trường kiểm thử/staging với cấu hình sandbox VNPay và GHN.
+- Thiết lập dữ liệu mẫu:
++ Tài khoản người bán, người mua.
++ Sản phẩm chờ đăng bán.
++ Cấu hình phương thức thanh toán VNPay.
++ Cấu hình webhook cho VNPay và GHN.
+- Đảm bảo các endpoint webhook có thể nhận request từ VNPay/GHN sandbox hoặc mô phỏng được.
+3.4.1.4. Test case - các chức năng
+Nhóm chức năng: Đăng bán sản phẩm
+STT
+Test case
+Input
+Kết quả mong đợi
+PROD-01
+Đăng bán sản phẩm thành công với đầy đủ thông tin bắt buộc
+Các trường bắt buộc hợp lệ: name, price, description, categoryId, condition, stock > 0, kèm ít nhất 1 ảnh hợp lệ
+Trả về 201 Created, tạo thành công bản ghi Product với trạng thái PENDING_APPROVAL (hoặc AVAILABLE), tạo outbox_events tương ứng.
+PROD-02
+Đăng bán thiếu tên sản phẩm
+Các trường khác hợp lệ, name bị bỏ trống (null, rỗng, hoặc chỉ chứa khoảng trắng)
+Trả về 400 Bad Request, message báo lỗi: "Tên sản phẩm không được để trống". Không tạo bản ghi.
+PROD-03
+Đăng bán với tên sản phẩm quá dài
+name vượt quá giới hạn ký tự tối đa (VD: > 120 ký tự)
+Trả về 400 Bad Request, message báo lỗi: "Tên sản phẩm vượt quá số ký tự cho phép".
+PROD-04
+Đăng bán thiếu hình ảnh sản phẩm
+Không upload bất kỳ hình ảnh nào (mảng images rỗng)
+Trả về 400 Bad Request, message báo lỗi yêu cầu cung cấp ít nhất 1 hình ảnh sản phẩm.
+PROD-05
+Đăng bán tải lên quá số lượng ảnh cho phép
+Mảng images chứa số lượng ảnh lớn hơn mức tối đa (VD: 11 ảnh, trong khi giới hạn là 10)
+Trả về 400 Bad Request, message báo lỗi vượt quá số lượng ảnh cho phép.
+PROD-06
+Đăng bán với giá trị giá cả (price) không hợp lệ
+price = 0 hoặc price < 0
+Trả về 400 Bad Request, message báo lỗi: "Giá sản phẩm phải lớn hơn 0".
+PROD-07
+Đăng bán với số lượng (stock) không hợp lệ
+stock = 0 hoặc stock < 0
+Trả về 400 Bad Request, message báo lỗi: "Số lượng sản phẩm phải lớn hơn 0".
+PROD-08
+Đăng bán thiếu danh mục (category)
+Bỏ trống categoryId hoặc truyền categoryId không tồn tại trong DB
+Trả về 400 Bad Request, message báo lỗi: "Danh mục không hợp lệ hoặc không tồn tại".
+PROD-09
+Đăng bán thiếu tình trạng sản phẩm (condition)
+Bỏ trống trường condition (mới, đã sử dụng, v.v.)
+Trả về 400 Bad Request, message báo lỗi yêu cầu chọn tình trạng sản phẩm.
+PROD-10
+Tài khoản bị đình chỉ (suspended/restricted) thực hiện đăng bán
+sellerId thuộc về user đang bị phạt cấm đăng bán (UserEnforcement)
+Trả về 403 Forbidden, message báo lỗi: "Tài khoản của bạn hiện không có quyền đăng bán sản phẩm".
+Nhóm chức năng: Kiểm duyệt sản phẩm (Admin Moderation)
+STT
+Test case
+Input
+Kết quả mong đợi
+MOD-01
+Admin gỡ sản phẩm vi phạm thành công
+Token Admin có quyền kiểm duyệt, productId hợp lệ (đang bán/chờ duyệt), reason (lý do) hợp lệ
+Trả 200, cập nhật trạng thái SP thành REMOVED bên Commerce, ghi log vào bảng content_moderation_log + outbox_events (báo cho Seller) cùng transaction.
+MOD-02
+Admin gỡ sản phẩm nhưng bỏ trống lý do
+Token Admin hợp lệ, productId hợp lệ, reason rỗng hoặc null
+Trả 400 Bad Request, báo lỗi yêu cầu nhập lý do kiểm duyệt. Không tạo bản ghi log.
+MOD-03
+Admin gỡ sản phẩm không tồn tại
+Token Admin hợp lệ, productId ảo (không có trong DB)
+Trả 404 Not Found (từ Commerce trả về), hệ thống không thay đổi dữ liệu.
+MOD-04
+Admin gỡ sản phẩm đã bị gỡ trước đó
+Token Admin hợp lệ, productId của sản phẩm đã ở trạng thái REMOVED
+Trả 409 Conflict hoặc 400, thông báo sản phẩm đã được xử lý, không tạo bản ghi log kiểm duyệt trùng lặp.
+MOD-05
+Admin khôi phục sản phẩm thành công
+Token Admin hợp lệ, productId hợp lệ (đang bị REMOVED), reason hợp lệ
+Trả 200, cập nhật trạng thái SP thành ACTIVE, ghi log hành động RESTORE vào content_moderation_log + outbox_events cùng transaction.
+MOD-06
+Admin khôi phục sản phẩm nhưng thiếu lý do
+Token Admin hợp lệ, productId (đang bị REMOVED), reason rỗng hoặc null
+Trả 400 Bad Request, báo lỗi yêu cầu nhập lý do khôi phục.
+MOD-07
+Admin không có quyền thực hiện kiểm duyệt
+Token Admin hợp lệ nhưng role/permission không có quyền kiểm duyệt nội dung
+Trả 403 Forbidden, từ chối thao tác, không gọi sang Commerce API và không ghi log.
+Nhóm chức năng: Tạo đơn hàng (Checkout / Create Order)
+STT
+Test case
+Input
+Kết quả mong đợi
+ORD-01
+Tạo đơn hàng thành công (Happy path)
+buyerId, productId hợp lệ (trạng thái ACTIVE), quantity <= tồn kho, shippingAddressId hợp lệ
+Trả 200/201, tạo thành công bản ghi Order trạng thái PENDING_PAYMENT, trừ tạm thời số lượng tồn kho (reserve stock), sinh link thanh toán (payment URL), ghi outbox_events cùng transaction.
+ORD-02
+Tạo đơn hàng với số lượng vượt quá tồn kho
+quantity lớn hơn stock hiện tại của sản phẩm
+Trả 400 Bad Request, thông báo "Số lượng sản phẩm không đủ". Không tạo đơn hàng, không trừ tồn kho.
+ORD-03
+Tạo đơn hàng cho sản phẩm không khả dụng
+productId của sản phẩm đang ở trạng thái REMOVED, PENDING_APPROVAL, hoặc SOLD_OUT (stock = 0)
+Trả 400 Bad Request, thông báo "Sản phẩm không khả dụng hoặc đã ngừng bán".
+ORD-04
+Tạo đơn hàng thiếu địa chỉ giao hàng
+Bỏ trống thông tin địa chỉ giao hàng (shippingAddressId null hoặc không hợp lệ)
+Trả 400 Bad Request, thông báo yêu cầu chọn địa chỉ nhận hàng hợp lệ.
+ORD-05
+Tạo đơn hàng với số lượng không hợp lệ
+quantity = 0 hoặc quantity < 0
+Trả 400 Bad Request, thông báo "Số lượng mua phải lớn hơn 0".
+ORD-06
+Người bán tự mua sản phẩm của chính mình
+buyerId trùng với sellerId của sản phẩm được chọn
+Trả 400 Bad Request hoặc 403 Forbidden, thông báo "Bạn không thể tự mua sản phẩm của chính mình".
+ORD-07
+Tạo đơn hàng khi tài khoản Buyer bị đình chỉ
+buyerId thuộc về người dùng đang bị cấm mua hàng (UserEnforcement)
+Trả 403 Forbidden, thông báo "Tài khoản của bạn hiện không có quyền mua hàng".
+Nhóm chức năng: Khởi tạo thanh toán VNPay
+STT
+Test case
+Input
+Kết quả mong đợi
+PAY-01
+Khởi tạo thanh toán thành công (Happy path)
+userId hợp lệ, orderId hợp lệ đang ở trạng thái PENDING_PAYMENT
+Trả 200, tạo bản ghi Payment (hoặc Transaction) với trạng thái PENDING, trả về paymentUrl của VNPay chứa đúng thông tin số tiền và mã đơn hàng.
+PAY-02
+Khởi tạo thanh toán cho đơn hàng không tồn tại
+orderId ảo (không có trong hệ thống)
+Trả 404 Not Found, báo lỗi đơn hàng không tồn tại.
+PAY-03
+Khởi tạo thanh toán cho đơn hàng đã thanh toán
+orderId đang ở trạng thái PAID hoặc PROCESSING
+Trả 400 Bad Request hoặc 409 Conflict, thông báo "Đơn hàng này đã được thanh toán". Không sinh URL mới.
+PAY-04
+Khởi tạo thanh toán cho đơn hàng đã bị hủy
+orderId đang ở trạng thái CANCELED
+Trả 400 Bad Request, thông báo "Đơn hàng đã bị hủy, không thể thanh toán".
+PAY-05
+Khởi tạo thanh toán cho đơn hàng đã hết hạn
+orderId đã quá thời gian chờ thanh toán (VD: quá 15 phút)
+Trả 400 Bad Request, thông báo "Đơn hàng đã hết hạn thanh toán", tự động trigger cập nhật trạng thái đơn hàng sang CANCELED (nếu chưa cập nhật).
+PAY-06
+Người dùng thanh toán đơn hàng của người khác
+userId gửi request không trùng khớp với buyerId của đơn hàng
+Trả 403 Forbidden, thông báo "Bạn không có quyền thanh toán cho đơn hàng này".
+PAY-07
+Cổng thanh toán VNPay gặp sự cố (Third-party Error)
+orderId hợp lệ nhưng API của VNPay bị timeout hoặc trả về lỗi
+Trả 500 Internal Server Error / 502 Bad Gateway, thông báo "Lỗi kết nối cổng thanh toán, vui lòng thử lại sau".
+Tạo đơn vận GHN
+STT
+Test case
+Input
+Kết quả mong đợi
+GHN-01
+Tạo đơn vận GHN thành công (Happy path)
+sellerId hợp lệ, orderId hợp lệ đang ở trạng thái PAID hoặc PREPARING
+Trả 200/201, gọi API GHN thành công, lưu trackingCode (mã vận đơn) vào bản ghi Order, cập nhật trạng thái đơn hàng sang SHIPPING (hoặc READY_TO_SHIP), tạo outbox_events.
+GHN-02
+Tạo đơn vận cho đơn hàng chưa thanh toán
+orderId đang ở trạng thái PENDING_PAYMENT
+Trả 400 Bad Request, thông báo "Đơn hàng chưa được thanh toán, không thể giao cho ĐVVC".
+GHN-03
+Tạo đơn vận cho đơn hàng đã bị hủy
+orderId đang ở trạng thái CANCELED
+Trả 400 Bad Request, thông báo "Đơn hàng đã bị hủy".
+GHN-04
+Đơn hàng đã được tạo đơn vận trước đó
+orderId đã có trackingCode (đã đẩy qua GHN thành công)
+Trả 409 Conflict hoặc 400, thông báo "Đơn hàng này đã được tạo mã vận đơn". Không gọi lại API GHN.
+GHN-05
+Người dùng không có quyền thao tác
+userId gửi request không trùng khớp với sellerId của đơn hàng
+Trả 403 Forbidden, thông báo "Bạn không có quyền thao tác trên đơn hàng này".
+GHN-06
+Thông tin địa chỉ lấy/giao hàng không hợp lệ
+Địa chỉ của Seller (Pick-up) hoặc Buyer (Delivery) thiếu thông tin bắt buộc đối với GHN (VD: thiếu mã Phường/Xã, SĐT sai định dạng)
+Trả 400 Bad Request, báo lỗi thông tin địa chỉ không hợp lệ (từ validation nội bộ hoặc do API GHN trả lỗi về).
+GHN-07
+Thông tin gói hàng vượt quá quy định của ĐVVC
+Trọng lượng (weight) hoặc kích thước (L, W, H) của sản phẩm vượt quá giới hạn cho phép của GHN
+Trả 400 Bad Request, thông báo "Kích thước hoặc trọng lượng gói hàng vượt quá quy định của đơn vị vận chuyển".
+GHN-08
+Hệ thống GHN gặp sự cố (Third-party Error)
+Dữ liệu hợp lệ nhưng API của GHN bị timeout hoặc trả về lỗi 5xx
+Trả 500 Internal Server Error / 502 Bad Gateway, thông báo "Hệ thống vận chuyển đang gặp sự cố, vui lòng thử lại sau". Đảm bảo database không lưu trackingCode rác.
+Hoàn thành giao hàng
+STT
+Test case
+Input
+Kết quả mong đợi
+COMP-01
+GHN gửi Webhook báo giao hàng thành công
+Payload webhook từ GHN chứa trackingCode hợp lệ, trạng thái DELIVERED, chữ ký (signature) hợp lệ
+Trả 200 OK cho GHN. Hệ thống cập nhật trạng thái Order sang DELIVERED, tạo outbox_events gửi thông báo cho Buyer và Seller.
+COMP-02
+Buyer xác nhận đã nhận hàng thành công (Happy path)
+buyerId hợp lệ, orderId đang ở trạng thái DELIVERED (hoặc SHIPPING)
+Trả 200/201. Cập nhật Order sang trạng thái COMPLETED (Hoàn thành). Kích hoạt logic tài chính: cộng tiền vào số dư chờ rút (Pending Payout) của Seller. Mở khóa chức năng đánh giá (Review).
+COMP-03
+GHN gửi Webhook báo giao hàng thất bại / Hoàn hàng
+Payload webhook từ GHN chứa trạng thái DELIVERY_FAILED hoặc RETURNED
+Trả 200 OK. Cập nhật Order sang trạng thái tương ứng, tạo outbox_events thông báo cho Seller biết để xử lý hàng hoàn.
+COMP-04
+Buyer xác nhận nhận hàng khi đơn hàng chưa được giao
+orderId đang ở trạng thái PENDING_PAYMENT hoặc PREPARING
+Trả 400 Bad Request, thông báo "Đơn hàng chưa được giao, không thể xác nhận nhận hàng".
+COMP-05
+Buyer xác nhận nhận hàng cho đơn đã hủy
+orderId đang ở trạng thái CANCELED
+Trả 400 Bad Request, thông báo "Đơn hàng đã bị hủy".
+COMP-06
+Xác nhận nhận hàng bởi user không phải là người mua
+userId gửi request không trùng khớp với buyerId của đơn hàng
+Trả 403 Forbidden, thông báo "Bạn không có quyền thao tác trên đơn hàng này".
+COMP-07
+Webhook từ GHN có chữ ký (signature) không hợp lệ
+Payload webhook giả mạo, sai checksum hoặc Secret Key
+Trả 401 Unauthorized hoặc 403 Forbidden. Hệ thống từ chối cập nhật để đảm bảo bảo mật, không làm thay đổi trạng thái đơn hàng.
+COMP-08
+Hệ thống tự động xác nhận (Auto-complete) khi quá hạn
+Cronjob/Worker quét các đơn hàng ở trạng thái DELIVERED quá N ngày (VD: 3 ngày) mà Buyer chưa khiếu nại
+Tự động cập nhật Order sang COMPLETED, cộng tiền cho Seller tương tự như COMP-02.
+3.4.1.5. Kịch bản kiểm thử chính
+- Kịch bản 1: Đăng bán sản phẩm mới và thanh toán thành công.
+- Kịch bản 2: Thanh toán thất bại từ VNPay và hệ thống giữ trạng thái chính xác.
+- Kịch bản 3: Webhook VNPay gửi trùng callback; hệ thống chỉ xử lý một lần.
+- Kịch bản 4: Tạo đơn GHN, webhook GHN gửi nhiều lần cùng trạng thái.
+- Kịch bản 5: Đơn GHN bị trả về/hủy; hệ thống cập nhật trạng thái phù hợp và thông báo.
+3.4.1.6. Dữ liệu kiểm thử
+- Mã sản phẩm và đơn hàng giả định.
+- Tài khoản test VNPay sandbox.
+- Dữ liệu địa chỉ giao hàng thực tế cho GHN.
+- Trường hợp biên: số lượng sản phẩm lớn, giá trị đơn hàng cao, địa chỉ không hợp lệ.
+**  KL Chuong
+KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
+1. Kết luận
+Đề tài đã nghiên cứu và xây dựng thành công hệ thống 2Hands — nền tảng thương mại điện tử kết hợp mạng xã hội — theo kiến trúc microservices, áp dụng Clean Architecture trong từng service và Event-Driven Architecture để giao tiếp liên service. Các kết quả đạt được cụ thể:
+Phân rã hệ thống thành 5 service độc lập theo domain nghiệp vụ (Auth, Social, Commerce, Admin, Notification), mỗi service sở hữu dữ liệu riêng theo mô hình Database-per-service.
+Áp dụng polyglot persistence: PostgreSQL cho dữ liệu quan hệ cần toàn vẹn cao, MongoDB cho dữ liệu nội dung xã hội linh hoạt (post, comment), Redis cho dữ liệu tạm thời cần tốc độ cao (session, cache, giỏ hàng).
+Hiện thực Transactional Outbox Pattern kết hợp Kafka để đảm bảo tính nhất quán khi lan truyền sự kiện giữa các service, đồng thời xử lý vấn đề trùng lặp dữ liệu qua cơ chế idempotency (processed_events).
+Xây dựng hạ tầng phát triển bằng Docker Compose, đảm bảo môi trường tái lập được giữa các máy, hỗ trợ nhiều phương án chạy phù hợp với từng giai đoạn phát triển.
+Kiểm thử hệ thống ở cả hai lớp: API nội bộ từng service và luồng giao tiếp qua Kafka, bao gồm các kịch bản mô phỏng sự cố (consumer restart, event trùng lặp, mất kết nối broker), cho thấy cơ chế thiết kế hoạt động đúng như kỳ vọng.
+Kết quả cho thấy việc kết hợp microservices, Clean Architecture và Event-Driven Architecture là hướng tiếp cận khả thi để xây dựng một hệ thống có khả năng mở rộng, tách rời nghiệp vụ rõ ràng và chịu lỗi tốt, phù hợp với đặc thù của một nền tảng social e-commerce có nhiều domain nghiệp vụ song song.
+2. Hạn chế của đề tài
+Hệ thống mới dừng ở mức MVP, chưa triển khai API Gateway, dẫn đến client phải gọi trực tiếp đến từng service.
+Chưa có cơ chế giám sát và quan sát hệ thống (monitoring/observability) như logging tập trung, tracing phân tán, cảnh báo sự cố tự động — hiện tại việc kiểm thử luồng Kafka còn phụ thuộc quan sát thủ công qua Kafka UI.
+Hệ thống mới được triển khai và kiểm thử ở môi trường local/development, chưa đánh giá được hiệu năng và độ ổn định trong điều kiện tải cao (load test) hoặc môi trường production thực tế.
+Chưa có cơ chế xử lý message lỗi một cách hệ thống (dead-letter queue) khi consumer gặp payload không hợp lệ.
+3. Hướng phát triển
+Triển khai API Gateway, đóng vai trò điểm vào duy nhất cho client, hỗ trợ định tuyến, xác thực tập trung, rate limiting và tổng hợp phản hồi từ nhiều service.
+Triển khai trên môi trường production với hạ tầng container orchestration (Kubernetes), kèm theo kiểm thử hiệu năng (load test, stress test) để đánh giá khả năng chịu tải thực tế.
+Mở rộng nghiệp vụ: bổ sung các tính năng như gợi ý sản phẩm/bài viết (recommendation), tìm kiếm nâng cao (search engine như Elasticsearch), thanh toán đa phương thức, và ứng dụng di động (mobile app) đã được định hướng trong cấu trúc repository nhưng chưa hiện thực.
+Tối ưu cơ chế đồng bộ dữ liệu: nghiên cứu áp dụng thêm các pattern như Saga Pattern cho các giao dịch nghiệp vụ phức tạp trải dài nhiều service (ví dụ quy trình đặt hàng — thanh toán — vận chuyển), thay vì chỉ dừng ở Outbox Pattern cho việc đồng bộ dữ liệu đơn giản.
+TÀI LIỆU THAM KHẢO

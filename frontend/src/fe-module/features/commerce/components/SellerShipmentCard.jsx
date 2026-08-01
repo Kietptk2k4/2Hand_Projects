@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   MANUAL_NEXT_ACTIONS,
@@ -23,19 +24,15 @@ function formatDateTime(value) {
 }
 
 function carrierLabel(carrier) {
-  if (carrier === "GHN") return "GHN";
-  if (carrier === "MANUAL") return "Tự giao";
+  if (carrier === "GHN") return "Giao Hàng Nhanh (GHN)";
+  if (carrier === "MANUAL") return "Tự giao hàng";
   if (carrier === "SELF_DELIVERY") return "Tự vận chuyển";
   return carrier;
 }
 
-function copyText(text) {
-  if (!text) return;
-  navigator.clipboard?.writeText(text).catch(() => {});
-}
-
 export function SellerShipmentCard({ item, disabled, isUpdating, onRequestStatusUpdate }) {
   const navigate = useNavigate();
+  const [copied, setCopied] = useState(false);
   const isManual = item.carrier === "MANUAL" || item.carrier === "SELF_DELIVERY";
   const tracking = item.trackingNumber || item.ghnOrderCode || "—";
   const detailPath = APP_ROUTES.commerceSellerShipmentDetail.replace(
@@ -55,6 +52,15 @@ export function SellerShipmentCard({ item, disabled, isUpdating, onRequestStatus
     }
   };
 
+  const handleCopyTracking = (e) => {
+    e.stopPropagation();
+    if (!tracking || tracking === "—") return;
+    navigator.clipboard?.writeText(tracking).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   const badgeClass =
     SHIPMENT_STATUS_BADGE_CLASS[item.status] || "bg-surface-container-high text-on-surface";
 
@@ -69,29 +75,31 @@ export function SellerShipmentCard({ item, disabled, isUpdating, onRequestStatus
       role="link"
       aria-label={`Xem chi tiết vận đơn ${tracking}`}
       className={[
-        "cursor-pointer rounded-xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-sm transition-colors hover:bg-surface-container-low/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+        "cursor-pointer rounded-2xl border border-outline-variant/80 bg-surface-container-lowest p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         isManual ? "border-l-4 border-l-secondary" : "",
       ].join(" ")}
     >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1">
+          {/* Header Row: Carrier Badge & Status Badge */}
           <div className="flex flex-wrap items-center gap-2">
             <span
               className={[
-                "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-label-sm font-semibold",
+                "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold",
                 item.carrier === "GHN"
-                  ? "bg-[#ff6600]/10 text-[#c44e00]"
-                  : "bg-secondary/10 text-secondary",
+                  ? "bg-[#ff6600]/10 text-[#c44e00] border border-[#ff6600]/20"
+                  : "bg-secondary/10 text-secondary border border-secondary/20",
               ].join(" ")}
             >
-              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
+              <span className="material-symbols-outlined text-sm" aria-hidden="true">
                 {item.carrier === "GHN" ? "local_shipping" : "two_wheeler"}
               </span>
               {carrierLabel(item.carrier)}
             </span>
+
             <span
               className={[
-                "rounded-full px-2.5 py-0.5 text-label-sm font-medium",
+                "rounded-lg px-3 py-1 text-xs font-bold",
                 badgeClass,
               ].join(" ")}
             >
@@ -99,41 +107,51 @@ export function SellerShipmentCard({ item, disabled, isUpdating, onRequestStatus
             </span>
           </div>
 
+          {/* Tracking Code Chip */}
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span className="text-label-sm text-on-surface-variant">Mã vận đơn:</span>
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                copyText(tracking);
-              }}
-              className="relative z-10 font-mono text-label-md font-semibold text-primary hover:underline"
-              title="Sao chép"
-            >
-              {tracking}
-            </button>
-            <span className="material-symbols-outlined text-[16px] text-on-surface-variant">
-              content_copy
-            </span>
+            <span className="text-xs font-semibold text-on-surface-variant">Mã vận đơn:</span>
+            <div className="inline-flex items-center gap-1.5 rounded-lg bg-surface-container-high px-2.5 py-1">
+              <span className="font-mono text-xs font-bold text-primary">{tracking}</span>
+              <button
+                type="button"
+                onClick={handleCopyTracking}
+                className="relative z-10 text-slate-400 transition-colors hover:text-primary cursor-pointer"
+                title="Sao chép mã vận đơn"
+              >
+                <span className="material-symbols-outlined text-sm">
+                  {copied ? "check" : "content_copy"}
+                </span>
+              </button>
+            </div>
+            {copied ? (
+              <span className="text-[11px] font-bold text-emerald-600">Đã sao chép!</span>
+            ) : null}
           </div>
 
-          <p className="mt-2 line-clamp-2 text-body-sm text-on-surface">
-            {item.deliveryAddressSummary || "—"}
-          </p>
+          {/* Delivery Address Summary */}
+          <div className="mt-2.5 flex items-start gap-1.5 text-xs text-on-surface">
+            <span className="material-symbols-outlined text-slate-400 text-sm mt-0.5" aria-hidden="true">
+              location_on
+            </span>
+            <p className="line-clamp-2 font-medium">
+              {item.deliveryAddressSummary || "Chưa có địa chỉ chi tiết"}
+            </p>
+          </div>
 
-          <div className="mt-3 flex flex-wrap gap-4 text-label-sm text-on-surface-variant">
+          {/* Order Meta Info */}
+          <div className="mt-3 flex flex-wrap gap-4 text-xs font-semibold text-on-surface-variant">
             <span>
-              Đơn:{" "}
-              <span className="font-mono text-on-surface">
+              Đơn hàng:{" "}
+              <span className="font-mono font-bold text-on-surface">
                 {formatShortOrderId(item.orderId)}
               </span>
             </span>
-            <span>{item.orderItemCount} mục</span>
-            <span>Tạo: {formatDateTime(item.createdAt)}</span>
-            <span>Cập nhật: {formatDateTime(item.updatedAt)}</span>
+            <span>{item.orderItemCount} sản phẩm</span>
+            <span>Tạo lúc: {formatDateTime(item.createdAt)}</span>
           </div>
         </div>
 
+        {/* Action Buttons Right Column */}
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           {isManual && nextActions.length > 0
             ? nextActions.map((action) => (
@@ -146,10 +164,10 @@ export function SellerShipmentCard({ item, disabled, isUpdating, onRequestStatus
                     onRequestStatusUpdate?.(item, action);
                   }}
                   className={[
-                    "relative z-10 rounded-lg px-3 py-2 text-label-sm font-medium disabled:opacity-50",
+                    "relative z-10 rounded-xl px-4 py-2 text-xs font-bold transition-all disabled:opacity-50 cursor-pointer shadow-xs active:scale-95",
                     action.status === "FAILED"
-                      ? "border border-error text-error hover:bg-error-container/30"
-                      : "border border-secondary text-secondary hover:bg-secondary/5",
+                      ? "border border-error/40 text-error hover:bg-error-container/30"
+                      : "border border-secondary/40 text-secondary hover:bg-secondary/10",
                   ].join(" ")}
                 >
                   {action.label}
@@ -157,8 +175,8 @@ export function SellerShipmentCard({ item, disabled, isUpdating, onRequestStatus
               ))
             : null}
 
-          <span className="rounded-lg border border-primary px-4 py-2 text-label-sm font-medium text-primary">
-            Chi tiết
+          <span className="rounded-xl border border-primary px-5 py-2 text-xs font-bold text-primary transition-all hover:bg-primary hover:text-on-primary shadow-xs">
+            Xem chi tiết
           </span>
         </div>
       </div>

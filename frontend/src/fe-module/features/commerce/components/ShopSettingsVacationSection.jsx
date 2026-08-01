@@ -1,9 +1,9 @@
 import { VACATION_MESSAGE_MAX } from "../constants/shopSettingsConstants";
 
 const textareaClass =
-  "w-full rounded-lg border border-outline bg-surface-container-lowest px-4 py-2 text-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary resize-none";
+  "w-full rounded-2xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-xs text-on-surface shadow-xs transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm resize-none";
 
-const errorClass = "mt-1 text-sm text-error";
+const errorClass = "mt-1 text-xs font-bold text-error";
 
 export function ShopSettingsVacationSection({
   form,
@@ -12,17 +12,17 @@ export function ShopSettingsVacationSection({
   onFieldChange,
 }) {
   return (
-    <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm md:p-8">
+    <section className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 shadow-xs sm:p-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="flex items-center gap-2 text-headline-sm font-semibold text-on-surface">
-            <span className="material-symbols-outlined text-primary" aria-hidden="true">
+          <h2 className="flex items-center gap-2 text-lg font-black text-on-surface">
+            <span className="material-symbols-outlined text-primary text-2xl" aria-hidden="true">
               beach_access
             </span>
-            Chế độ nghỉ lễ
+            CHẾ ĐỘ NGHỈ LỄ
           </h2>
-          <p className="mt-1 text-body-sm text-on-surface-variant">
-            Tạm dừng nhận đơn hàng mới trong thời gian bạn đi vắng.
+          <p className="mt-1 text-xs font-semibold text-on-surface-variant">
+            Tạm dừng nhận đơn hàng mới trong thời gian bạn đi vắng hoặc tạm nghỉ bán.
           </p>
         </div>
 
@@ -46,10 +46,10 @@ export function ShopSettingsVacationSection({
       </div>
 
       {form.isVacation ? (
-        <div className="mt-6 border-t border-outline-variant pt-6">
+        <div className="mt-6 border-t border-outline-variant/60 pt-6">
           <label
             htmlFor="settings-vacation-message"
-            className="mb-1 block text-label-md font-medium text-on-surface"
+            className="mb-1.5 block text-xs font-bold text-on-surface sm:text-sm"
           >
             Thông báo nghỉ lễ (Tùy chọn)
           </label>
@@ -57,7 +57,7 @@ export function ShopSettingsVacationSection({
             id="settings-vacation-message"
             rows={3}
             className={textareaClass}
-            placeholder="Ví dụ: Cửa hàng tạm nghỉ từ ngày... đến ngày..."
+            placeholder="Ví dụ: Cửa hàng tạm nghỉ lễ từ ngày... đến ngày... Cảm ơn bạn!"
             value={form.vacationMessage}
             disabled={disabled}
             maxLength={VACATION_MESSAGE_MAX}
@@ -65,7 +65,7 @@ export function ShopSettingsVacationSection({
               onFieldChange("vacationMessage", event.target.value.slice(0, VACATION_MESSAGE_MAX))
             }
           />
-          <div className="mt-1 flex justify-between text-body-sm text-on-surface-variant">
+          <div className="mt-1.5 flex justify-between text-xs font-semibold text-on-surface-variant">
             {fieldErrors.vacationMessage ? (
               <p className={errorClass}>{fieldErrors.vacationMessage}</p>
             ) : (

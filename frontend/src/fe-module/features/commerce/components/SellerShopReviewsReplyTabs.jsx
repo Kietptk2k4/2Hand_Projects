@@ -2,7 +2,7 @@ import { REPLY_FILTER_TABS } from "../constants/sellerShopReviewsConstants";
 
 export function SellerShopReviewsReplyTabs({ activeTabId, tabCounts, onChange, disabled }) {
   return (
-    <div className="flex flex-wrap gap-6 border-b border-outline-variant bg-surface px-6 pt-4">
+    <div className="flex items-center gap-2 overflow-x-auto rounded-2xl border border-outline-variant bg-surface-container-lowest p-2 shadow-xs no-scrollbar">
       {REPLY_FILTER_TABS.map((tab) => {
         const active = tab.id === activeTabId;
         const count = tabCounts[tab.id] ?? 0;
@@ -14,10 +14,11 @@ export function SellerShopReviewsReplyTabs({ activeTabId, tabCounts, onChange, d
             disabled={disabled}
             onClick={() => onChange(tab.id)}
             className={[
-              "border-b-2 px-2 pb-3 text-label-md transition-colors disabled:opacity-50",
+              "shrink-0 rounded-xl px-4 py-2.5 text-xs font-bold transition-all sm:text-sm cursor-pointer",
               active
-                ? "border-primary font-medium text-primary"
-                : "border-transparent text-on-surface-variant hover:text-on-surface",
+                ? "bg-primary text-on-primary shadow-xs"
+                : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",
+              disabled ? "cursor-not-allowed opacity-60" : "",
             ].join(" ")}
           >
             {tab.label} ({count})

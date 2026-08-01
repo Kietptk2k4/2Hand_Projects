@@ -6,7 +6,7 @@ import com.twohands.auth_service.domain.enforcement.UserEnforcementActionType;
 import com.twohands.auth_service.domain.enforcement.UserEnforcementSnapshot;
 import com.twohands.auth_service.domain.enforcement.UserEnforcementSnapshotRepository;
 import com.twohands.auth_service.domain.enforcement.UserEnforcementSnapshotStatus;
-import com.twohands.auth_service.domain.session.RefreshTokenSessionRepository;
+import com.twohands.auth_service.application.session.RevokeAllUserSessionsService;
 import com.twohands.auth_service.domain.user.EmailAddress;
 import com.twohands.auth_service.domain.user.PasswordHash;
 import com.twohands.auth_service.domain.user.User;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 class ApplyUserEnforcementUseCaseTest {
 
     private final UserRepository userRepository = mock(UserRepository.class);
-    private final RefreshTokenSessionRepository refreshTokenSessionRepository = mock(RefreshTokenSessionRepository.class);
+    private final RevokeAllUserSessionsService revokeAllUserSessionsService = mock(RevokeAllUserSessionsService.class);
     private final UserEnforcementSnapshotRepository enforcementSnapshotRepository =
             mock(UserEnforcementSnapshotRepository.class);
 
@@ -40,7 +40,7 @@ class ApplyUserEnforcementUseCaseTest {
     void setUp() {
         useCase = new ApplyUserEnforcementUseCase(
                 userRepository,
-                refreshTokenSessionRepository,
+                revokeAllUserSessionsService,
                 enforcementSnapshotRepository
         );
     }
@@ -53,7 +53,7 @@ class ApplyUserEnforcementUseCaseTest {
 
         when(enforcementSnapshotRepository.findByEnforcementId(enforcementId)).thenReturn(Optional.empty());
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(refreshTokenSessionRepository.revokeAllByUserId(userId)).thenReturn(2);
+        when(revokeAllUserSessionsService.revokeAll(userId)).thenReturn(2);
 
         var result = useCase.execute(ApplyUserEnforcementCommand.forSyncApply(
                 enforcementId,
@@ -92,7 +92,7 @@ class ApplyUserEnforcementUseCaseTest {
 
         when(enforcementSnapshotRepository.findByEnforcementId(enforcementId)).thenReturn(Optional.of(snapshot));
         when(userRepository.findById(userId)).thenReturn(Optional.of(activeUser(userId)));
-        when(refreshTokenSessionRepository.revokeAllByUserId(userId)).thenReturn(1);
+        when(revokeAllUserSessionsService.revokeAll(userId)).thenReturn(1);
 
         var result = useCase.execute(ApplyUserEnforcementCommand.forSyncApply(
                 enforcementId,

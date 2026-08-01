@@ -6,15 +6,15 @@ import { ProductMediaLightbox } from "./ProductMediaLightbox";
 
 const PREVIEW_VIDEO = "video";
 const MAIN_VIEWER_CLASS =
-  "group relative aspect-square w-full max-w-[min(100%,450px)] cursor-zoom-in overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm";
+  "group relative aspect-square w-full max-w-[min(100%,480px)] cursor-zoom-in overflow-hidden rounded-2xl border border-outline-variant/80 bg-surface-container-lowest shadow-xs";
 
 function thumbButtonClass(isActive) {
   return [
-    "relative shrink-0 overflow-hidden rounded-lg border-2 bg-surface-container-lowest transition-colors",
-    "h-16 w-16 lg:h-[4.5rem] lg:w-full",
+    "relative shrink-0 overflow-hidden rounded-xl border-2 bg-surface-container-lowest transition-all cursor-pointer",
+    "h-16 w-16 lg:h-18 lg:w-full",
     isActive
-      ? "border-primary ring-2 ring-primary/30"
-      : "border-outline-variant opacity-80 hover:opacity-100",
+      ? "border-primary ring-2 ring-primary/20 shadow-xs scale-105"
+      : "border-outline-variant/60 opacity-80 hover:opacity-100 hover:scale-102",
   ].join(" ");
 }
 
@@ -82,7 +82,7 @@ function MainViewer({
         <img
           src={activeImage.mediaUrl}
           alt={product.title}
-          className="h-full w-full object-contain"
+          className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
         />
       ) : (
         <div className="flex h-full items-center justify-center">
@@ -94,7 +94,7 @@ function MainViewer({
       {stickers}
       {canOpenLightbox && !showingVideo ? (
         <div
-          className="pointer-events-none absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-lowest/90 text-on-surface shadow-md opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+          className="pointer-events-none absolute bottom-3.5 right-3.5 flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-lowest/90 text-on-surface shadow-md opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
           aria-hidden="true"
         >
           <span className="material-symbols-outlined text-[20px]">zoom_in</span>
@@ -107,9 +107,9 @@ function MainViewer({
             event.stopPropagation();
             handleOpen();
           }}
-          className="absolute bottom-3 right-3 z-10 flex items-center gap-1 rounded-full bg-surface/95 px-3 py-1.5 text-label-sm font-medium text-on-surface shadow-md backdrop-blur-sm transition-colors hover:bg-surface"
+          className="absolute bottom-3.5 right-3.5 z-10 flex items-center gap-1 rounded-full bg-surface/95 px-3 py-1.5 text-xs font-bold text-on-surface shadow-md backdrop-blur-sm transition-colors hover:bg-surface"
         >
-          <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+          <span className="material-symbols-outlined text-base" aria-hidden="true">
             fullscreen
           </span>
           Phóng to
@@ -208,7 +208,7 @@ function ShopeeStyleGallery({ product, video, images, stickers }) {
               previewMode={previewMode}
               onSelectVideo={() => setPreviewMode(PREVIEW_VIDEO)}
               onSelectImage={setPreviewMode}
-              className="hidden max-h-[min(100vw,450px)] shrink-0 flex-col gap-2 overflow-y-auto lg:flex lg:w-[4.5rem]"
+              className="hidden max-h-[min(100vw,480px)] shrink-0 flex-col gap-2 overflow-y-auto lg:flex lg:w-[4.5rem] no-scrollbar"
             />
           ) : null}
 
@@ -230,7 +230,7 @@ function ShopeeStyleGallery({ product, video, images, stickers }) {
             previewMode={previewMode}
             onSelectVideo={() => setPreviewMode(PREVIEW_VIDEO)}
             onSelectImage={setPreviewMode}
-            className="mt-3 flex gap-2 overflow-x-auto pb-1 lg:hidden"
+            className="mt-3 flex gap-2 overflow-x-auto pb-1 lg:hidden no-scrollbar"
           />
         ) : null}
       </div>

@@ -7,11 +7,13 @@ const cartsByUserId = new Map();
 
 function createCartItemFromProduct(product, overrides = {}) {
   const listProduct = findListProductById(product.product_id) || product;
+  const shop = getShopById(listProduct?.shop_id);
   return {
     cart_item_id: overrides.cart_item_id,
     product_id: listProduct.product_id,
     seller_id: overrides.seller_id || `e1000000-0000-4000-8000-${listProduct.shop_id.slice(-12)}`,
     shop_id: listProduct.shop_id,
+    shop_name: listProduct.shop_name || listProduct.shopName || shop?.shop_name || "Tủ đồ của Lan",
     product_name: listProduct.title,
     image_url: listProduct.thumbnail_url,
     quantity: overrides.quantity ?? 1,
@@ -288,6 +290,7 @@ function syncCartItemState(item) {
   item.image_url = listProduct.thumbnail_url;
   item.effective_price = listProduct.effective_price;
   item.shop_id = listProduct.shop_id;
+  item.shop_name = listProduct.shop_name || listProduct.shopName || shop?.shop_name || "Tủ đồ của Lan";
 
   if (listProduct.status !== "ACTIVE") {
     item.status = "INVALID_PRODUCT";

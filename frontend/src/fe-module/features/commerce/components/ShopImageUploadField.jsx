@@ -6,8 +6,11 @@ import {
   SHOP_MEDIA_MAX_BYTES,
 } from "../constants/shopMediaConstants";
 
+const FALLBACK_AVATAR = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80";
+const FALLBACK_COVER = "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&auto=format&fit=crop&q=80";
+
 const inputClass =
-  "w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
+  "w-full rounded-2xl border border-outline-variant bg-surface-container-lowest py-2.5 px-3.5 text-xs text-on-surface shadow-xs transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm";
 
 function resolveUploadMediaKind(uploadMediaKind, aspectHint) {
   if (uploadMediaKind) return uploadMediaKind;
@@ -28,6 +31,7 @@ export function ShopImageUploadField({
   const inputId = useId();
   const inputRef = useRef(null);
   const [previewUrl, setPreviewUrl] = useState("");
+  const [imgError, setImgError] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -47,6 +51,7 @@ export function ShopImageUploadField({
       if (!file || disabled || isUploading) return;
 
       setErrorMessage("");
+      setImgError(false);
 
       if (!SHOP_MEDIA_ALLOWED_TYPES.includes(file.type)) {
         setErrorMessage("Định dạng không được hỗ trợ. Chỉ JPG, PNG, WEBP.");
@@ -97,12 +102,15 @@ export function ShopImageUploadField({
     [aspectHint, disabled, isUploading, onChange, uploadMediaKind, value],
   );
 
-  const displayUrl = previewUrl || value;
+  const rawDisplayUrl = previewUrl || value;
+  const fallbackUrl = aspectHint === "cover" ? FALLBACK_COVER : FALLBACK_AVATAR;
+  const displayUrl = !imgError && rawDisplayUrl ? rawDisplayUrl : fallbackUrl;
+
   const fieldDisabled = disabled || isUploading;
 
   return (
     <div className="flex flex-col">
-      <label htmlFor={inputId} className="mb-1 block text-label-md font-medium text-on-surface">
+      <label htmlFor={inputId} className="mb-1.5 block text-xs font-bold text-on-surface sm:text-sm">
         {label}
       </label>
 
@@ -121,7 +129,7 @@ export function ShopImageUploadField({
         disabled={fieldDisabled}
         onClick={() => inputRef.current?.click()}
         className={[
-          "group flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-outline-variant bg-surface-container-low p-6 transition-colors hover:bg-surface-container",
+          "group flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant bg-surface-container-low p-6 transition-all hover:bg-surface-container-high shadow-xs",
           aspectHint === "cover" ? "min-h-[140px]" : "",
           fieldDisabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
         ].join(" ")}
@@ -130,8 +138,9 @@ export function ShopImageUploadField({
           <img
             src={displayUrl}
             alt=""
+            onError={() => setImgError(true)}
             className={[
-              "rounded-lg object-cover",
+              "rounded-xl object-cover shadow-xs border border-outline-variant/60",
               aspectHint === "avatar" ? "h-24 w-24" : "h-28 w-full max-w-sm",
               isUploading ? "opacity-60" : "",
             ].join(" ")}
@@ -144,14 +153,14 @@ export function ShopImageUploadField({
             >
               {icon}
             </span>
-            <span className="text-center text-label-sm text-on-surface-variant">{hint}</span>
+            <span className="text-center text-xs font-semibold text-on-surface-variant">{hint}</span>
           </>
         )}
       </button>
 
       {uploadProgress !== null ? (
         <div className="mt-2">
-          <div className="mb-1 flex justify-between text-xs text-on-surface-variant">
+          <div className="mb-1 flex justify-between text-xs font-bold text-on-surface-variant">
             <span>{uploadProgress >= 100 ? "Hoàn tất" : "Đang tải lên..."}</span>
             <span>{uploadProgress}%</span>
           </div>
@@ -163,24 +172,27 @@ export function ShopImageUploadField({
           </div>
         </div>
       ) : (
-        <p className="mt-1 text-xs text-on-surface-variant">
-          Chọn ảnh để upload lên MinIO (JPG, PNG, WEBP, tối đa 5MB).
+        <p className="mt-1.5 text-xs text-on-surface-variant font-medium">
+          Chọn tệp từ thiết bị (JPG, PNG, WEBP, tối đa 5MB).
         </p>
       )}
 
-      {errorMessage ? <p className="mt-1 text-sm text-error">{errorMessage}</p> : null}
+      {errorMessage ? <p className="mt-1 text-xs font-bold text-error">{errorMessage}</p> : null}
 
-      <label className="mt-2 block text-label-sm text-on-surface-variant" htmlFor={`${inputId}-url`}>
-        Hoặc dán URL ảnh
+      <label className="mt-3 block text-xs font-bold text-on-surface-variant" htmlFor={`${inputId}-url`}>
+        Hoặc dán URL ảnh trực tiếp
       </label>
       <input
         id={`${inputId}-url`}
         type="url"
         className={inputClass}
-        placeholder="http://localhost:9000/2hands-commerce-shop/..."
+        placeholder="https://..."
         value={value || ""}
         disabled={fieldDisabled}
-        onChange={(event) => onChange?.(event.target.value)}
+        onChange={(event) => {
+          setImgError(false);
+          onChange?.(event.target.value);
+        }}
       />
     </div>
   );

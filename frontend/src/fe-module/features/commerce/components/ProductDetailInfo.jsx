@@ -6,38 +6,44 @@ export function ProductDetailInfo({ product, onOpenReviews }) {
 
   const isOnSale = isProductOnSale(product);
   const stockLabel = getStockLabel(product);
+  const discountPercent =
+    isOnSale && product.price > 0
+      ? Math.round(((product.price - product.effectivePrice) / product.price) * 100)
+      : 0;
 
   return (
     <div>
-      <h1 className="text-headline-lg-mobile font-bold text-on-surface md:text-headline-xl">
+      <h1 className="text-xl font-black text-on-surface sm:text-2xl lg:text-3xl leading-snug">
         {product.title}
       </h1>
 
-      <div className="mt-3 flex flex-wrap items-center gap-3 text-body-sm text-on-surface-variant">
+      {/* Meta Bar: Rating & Stock */}
+      <div className="mt-3 flex flex-wrap items-center gap-3 text-xs font-semibold text-on-surface-variant sm:text-sm">
         {onOpenReviews ? (
           <button
             type="button"
             onClick={onOpenReviews}
-            className="flex items-center gap-1 text-primary transition-opacity hover:opacity-80"
+            className="flex items-center gap-1.5 text-primary transition-opacity hover:opacity-80 cursor-pointer"
           >
-            <span className="material-symbols-outlined fill text-[18px]" aria-hidden="true">
+            <span className="material-symbols-outlined fill text-amber-500 text-base" aria-hidden="true">
               star
             </span>
             {product.ratingCount > 0 ? (
-              <>
-                {product.ratingAvg} · {product.ratingCount} đánh giá
-              </>
+              <span className="font-bold">
+                {product.ratingAvg} <span className="text-slate-400 font-normal">({product.ratingCount} đánh giá)</span>
+              </span>
             ) : (
-              <>Chưa có đánh giá · Xem trang đánh giá</>
+              <span className="font-bold underline">Chưa có đánh giá</span>
             )}
           </button>
         ) : null}
+
         {stockLabel ? (
           <>
-            <span aria-hidden="true">·</span>
-            <span className="flex items-center gap-1">
-              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
-                inventory_2
+            <span className="text-slate-300" aria-hidden="true">•</span>
+            <span className="flex items-center gap-1 font-bold text-emerald-600">
+              <span className="material-symbols-outlined text-base" aria-hidden="true">
+                check_circle
               </span>
               {stockLabel}
             </span>
@@ -45,17 +51,30 @@ export function ProductDetailInfo({ product, onOpenReviews }) {
         ) : null}
       </div>
 
-      <div className="mt-6 flex flex-wrap items-end gap-3">
-        <span
-          className={`text-headline-lg font-bold ${isOnSale ? "text-error" : "text-on-surface"}`}
-        >
-          {formatVndPrice(product.effectivePrice)}
-        </span>
-        {isOnSale ? (
-          <span className="text-body-lg text-outline-variant line-through">
-            {formatVndPrice(product.price)}
+      {/* Shopee-style Price Banner */}
+      <div className="mt-5 rounded-2xl border border-rose-100 bg-rose-50/60 p-4 sm:p-5 shadow-xs">
+        <div className="flex flex-wrap items-baseline gap-3">
+          <span className="text-2xl font-black text-red-600 sm:text-3xl">
+            {formatVndPrice(product.effectivePrice)}
           </span>
-        ) : null}
+          {isOnSale ? (
+            <>
+              <span className="text-sm font-semibold text-slate-400 line-through sm:text-base">
+                {formatVndPrice(product.price)}
+              </span>
+              <span className="rounded-md bg-red-600 px-2 py-0.5 text-xs font-bold text-white shadow-xs">
+                -{discountPercent}%
+              </span>
+            </>
+          ) : null}
+        </div>
+
+        <div className="mt-2.5 flex items-center gap-1.5 text-xs font-bold text-amber-800">
+          <span className="material-symbols-outlined text-sm" aria-hidden="true">
+            verified
+          </span>
+          <span>Bảo vệ Người Mua 100% — Kiểm tra hàng trước khi nhận</span>
+        </div>
       </div>
     </div>
   );

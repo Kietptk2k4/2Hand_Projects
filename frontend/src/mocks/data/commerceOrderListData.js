@@ -59,6 +59,8 @@ function buildOrder({
   return {
     order_id: orderId,
     buyer_id: buyerId,
+    shop_id: "s1000000-0000-4000-8000-000000000001",
+    shop_name: "Bag 2hands",
     order_status: orderStatus,
     order_payment_status: orderPaymentStatus,
     payment_method: paymentMethod,

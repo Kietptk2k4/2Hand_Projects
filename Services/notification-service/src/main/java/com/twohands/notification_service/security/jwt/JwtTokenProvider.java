@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,6 +46,14 @@ public class JwtTokenProvider {
         } catch (Exception ex) {
             return false;
         }
+    }
+
+    public long getIssuedAtEpochMilli(String token) {
+        Date issuedAt = parseClaims(token).getIssuedAt();
+        if (issuedAt == null) {
+            return 0L;
+        }
+        return issuedAt.toInstant().toEpochMilli();
     }
 
     private Claims parseClaims(String token) {

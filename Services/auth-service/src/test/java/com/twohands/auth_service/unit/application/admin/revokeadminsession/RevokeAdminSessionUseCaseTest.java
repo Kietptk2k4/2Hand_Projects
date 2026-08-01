@@ -2,6 +2,7 @@ package com.twohands.auth_service.unit.application.admin.revokeadminsession;
 
 import com.twohands.auth_service.application.admin.revokeadminsession.RevokeAdminSessionCommand;
 import com.twohands.auth_service.application.admin.revokeadminsession.RevokeAdminSessionUseCase;
+import com.twohands.auth_service.application.session.RevokeAllUserSessionsService;
 import com.twohands.auth_service.domain.rbac.PermissionQueryRepository;
 import com.twohands.auth_service.domain.session.RefreshTokenSession;
 import com.twohands.auth_service.domain.session.RefreshTokenSessionRepository;
@@ -33,6 +34,7 @@ import static org.mockito.Mockito.when;
 class RevokeAdminSessionUseCaseTest {
 
     private final RefreshTokenSessionRepository refreshTokenSessionRepository = Mockito.mock(RefreshTokenSessionRepository.class);
+    private final RevokeAllUserSessionsService revokeAllUserSessionsService = Mockito.mock(RevokeAllUserSessionsService.class);
     private final UserRepository userRepository = Mockito.mock(UserRepository.class);
     private final PermissionQueryRepository permissionQueryRepository = Mockito.mock(PermissionQueryRepository.class);
 
@@ -42,6 +44,7 @@ class RevokeAdminSessionUseCaseTest {
     void setup() {
         useCase = new RevokeAdminSessionUseCase(
                 refreshTokenSessionRepository,
+                revokeAllUserSessionsService,
                 userRepository,
                 permissionQueryRepository
         );
@@ -79,7 +82,7 @@ class RevokeAdminSessionUseCaseTest {
         when(userRepository.findById(targetUserId)).thenReturn(Optional.of(activeUser(targetUserId)));
         when(permissionQueryRepository.findRoleCodesByUserId(targetUserId)).thenReturn(List.of("MODERATOR"));
         when(permissionQueryRepository.findPermissionCodesByUserId(targetUserId)).thenReturn(Set.of());
-        when(refreshTokenSessionRepository.revokeAllByUserId(targetUserId)).thenReturn(3);
+        when(revokeAllUserSessionsService.revokeAll(targetUserId)).thenReturn(3);
 
         var result = useCase.execute(new RevokeAdminSessionCommand(actorId, sessionId, true));
 

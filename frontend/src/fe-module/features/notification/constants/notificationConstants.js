@@ -5,6 +5,14 @@ export const NOTIFICATION_LIST_TABS = {
 
 export const NOTIFICATION_POLL_INTERVAL_MS = 15_000;
 
+/** Notification types that force immediate client logout (ban/suspend enforcement). */
+export const ENFORCEMENT_FORCED_LOGOUT_TYPES = new Set(["USER_SUSPENDED", "USER_BANNED"]);
+
+export const ENFORCEMENT_FORCED_LOGOUT_MESSAGES = {
+  USER_SUSPENDED: "Tài khoản của bạn đã bị đình chỉ. Vui lòng đăng nhập lại sau khi được mở khóa.",
+  USER_BANNED: "Tài khoản của bạn đã bị cấm. Phiên đăng nhập hiện tại đã kết thúc.",
+};
+
 /** Auto-dismiss duration for new-notification toasts (Phase 3). */
 export const NOTIFICATION_TOAST_AUTO_DISMISS_MS = 6_500;
 

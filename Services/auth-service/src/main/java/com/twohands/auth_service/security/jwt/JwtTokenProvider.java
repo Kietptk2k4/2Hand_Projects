@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class JwtTokenProvider {
@@ -27,6 +28,26 @@ public class JwtTokenProvider {
 
     public String getSubject(String token) {
         return parseClaims(token).getSubject();
+    }
+
+    public UUID getUserId(String token) {
+        String subject = getSubject(token);
+        if (subject == null || subject.isBlank()) {
+            return null;
+        }
+        try {
+            return UUID.fromString(subject);
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
+    }
+
+    public long getIssuedAtEpochMilli(String token) {
+        Date issuedAt = parseClaims(token).getIssuedAt();
+        if (issuedAt == null) {
+            return 0L;
+        }
+        return issuedAt.toInstant().toEpochMilli();
     }
 
     public String getEmail(String token) {

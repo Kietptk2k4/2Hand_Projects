@@ -2,7 +2,7 @@ import { STATUS_TABS } from "../constants/sellerProductConstants";
 
 export function SellerProductStatusTabs({ activeTabId, onChange, disabled }) {
   return (
-    <div className="mb-4 flex flex-wrap gap-2 border-b border-outline-variant pb-1">
+    <div className="mb-4 flex items-center gap-2 overflow-x-auto rounded-2xl border border-outline-variant bg-surface-container-lowest p-2 shadow-xs no-scrollbar">
       {STATUS_TABS.map((tab) => {
         const active = tab.id === activeTabId;
         return (
@@ -12,11 +12,11 @@ export function SellerProductStatusTabs({ activeTabId, onChange, disabled }) {
             disabled={disabled}
             onClick={() => onChange(tab.status)}
             className={[
-              "rounded-t-lg px-4 py-2 text-label-md transition-colors",
+              "shrink-0 rounded-xl px-4 py-2.5 text-xs font-bold transition-all sm:text-sm cursor-pointer",
               active
-                ? "border-b-2 border-primary font-semibold text-primary"
-                : "text-on-surface-variant hover:text-on-surface",
-              disabled ? "opacity-50" : "",
+                ? "bg-primary text-on-primary shadow-xs"
+                : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",
+              disabled ? "cursor-not-allowed opacity-60" : "",
             ].join(" ")}
           >
             {tab.label}

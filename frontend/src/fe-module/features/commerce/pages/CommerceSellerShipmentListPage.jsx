@@ -10,6 +10,7 @@ import { SellerShipmentListHeader } from "../components/SellerShipmentListHeader
 import { SellerShipmentListSkeleton } from "../components/SellerShipmentListSkeleton";
 import { SellerShipmentStatusTabs } from "../components/SellerShipmentStatusTabs";
 import { SellerShipmentUpdateConfirmDialog } from "../components/SellerShipmentUpdateConfirmDialog";
+import { CommerceFooterTrustSection } from "../components/CommerceFooterTrustSection";
 import { SHIPMENT_STATUS_LABELS } from "../constants/sellerShipmentConstants";
 import { updateSellerShipment } from "../api/sellerShipmentApi";
 import { mapSellerShipmentApiError } from "../constants/sellerShipmentConstants";
@@ -129,6 +130,7 @@ export function CommerceSellerShipmentListPage() {
   return (
     <CommerceShell>
       <div className="mx-auto w-full max-w-[1280px]">
+        {/* Header */}
         <SellerShipmentListHeader
           clientSearch={clientSearch}
           onSearchChange={setClientSearch}
@@ -136,6 +138,7 @@ export function CommerceSellerShipmentListPage() {
           searchDisabled={disabled}
         />
 
+        {/* Status Tab Cards */}
         <SellerShipmentStatusTabs
           activeTabId={activeTabId}
           tabCounts={tabCounts}
@@ -143,27 +146,31 @@ export function CommerceSellerShipmentListPage() {
           disabled={disabled}
         />
 
+        {/* Skeleton loader */}
         {isLoading ? <SellerShipmentListSkeleton /> : null}
 
+        {/* Error Container */}
         {!isLoading && errorMessage ? (
-          <div className="rounded-xl border border-error/30 bg-error-container/40 p-6 text-center">
-            <p className="text-body-md text-on-error-container">{errorMessage}</p>
+          <div className="rounded-2xl border border-error/30 bg-error-container/40 p-8 text-center shadow-xs">
+            <p className="text-sm font-semibold text-on-error-container">{errorMessage}</p>
             <button
               type="button"
               onClick={retry}
-              className="mt-4 rounded-lg bg-primary px-4 py-2 text-label-md text-on-primary"
+              className="mt-4 rounded-xl bg-primary px-6 py-2.5 text-xs font-bold text-on-primary hover:bg-[#0050cb]"
             >
-              Thử lại
+              Thử lại ngay
             </button>
           </div>
         ) : null}
 
+        {/* Empty State */}
         {!isLoading && !errorMessage && (isEmpty || isFilterEmpty || isSearchEmpty) ? (
           <SellerShipmentListEmptyState
             variant={isSearchEmpty ? "search" : isFilterEmpty ? "filter" : "none"}
           />
         ) : null}
 
+        {/* Shipment Cards List */}
         {!isLoading && !errorMessage && items.length > 0 ? (
           <>
             <div className="space-y-4">
@@ -190,6 +197,9 @@ export function CommerceSellerShipmentListPage() {
             />
           </>
         ) : null}
+
+        {/* E-Commerce Trust Badges Footer */}
+        <CommerceFooterTrustSection />
       </div>
 
       <CreateShipmentModal

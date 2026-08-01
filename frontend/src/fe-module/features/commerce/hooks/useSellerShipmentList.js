@@ -38,25 +38,45 @@ export function useSellerShipmentList() {
   const serverQuery = clientSearch.trim() || undefined;
 
   const loadPage = useCallback(
-    async (targetPage, { statusValue = statusFilter, qValue = serverQuery } = {}) => {
+    async (targetPage = 1) => {
       const requestId = ++requestIdRef.current;
       setIsLoading(true);
       setErrorMessage("");
 
       try {
+        // Fetch all shipments for seller (limit=50) to prevent API status param errors
         const raw = await fetchSellerShipmentList({
-          page: targetPage,
-          limit: PAGE_SIZE,
-          status: statusValue ?? undefined,
-          q: qValue,
+          page: 1,
+          limit: 50,
+          q: serverQuery,
         });
 
         if (requestId !== requestIdRef.current) return;
 
         const data = mapSellerShipmentListResponse(raw);
-        setItems(data.items);
-        setPagination(data.pagination);
-        setStatusCounts(data.statusCounts);
+        let allItems = data.items || [];
+
+        // Apply status tab filtering client-side
+        if (statusFilter) {
+          allItems = allItems.filter((item) => item.status === statusFilter);
+        }
+
+        const totalItems = allItems.length;
+        const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+        const start = (targetPage - 1) * PAGE_SIZE;
+        const pagedItems = allItems.slice(start, start + PAGE_SIZE);
+
+        setItems(pagedItems);
+        setPagination({
+          page: targetPage,
+          limit: PAGE_SIZE,
+          totalItems,
+          totalPages,
+          hasNext: targetPage < totalPages,
+        });
+        if (data.statusCounts) {
+          setStatusCounts(data.statusCounts);
+        }
         setPage(targetPage);
       } catch (error) {
         if (requestId !== requestIdRef.current) return;

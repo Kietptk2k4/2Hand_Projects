@@ -55,7 +55,7 @@ export function useSellerProductList() {
   }, [debouncedQ, setSearchParams]);
 
   const load = useCallback(
-    async (targetPage = page) => {
+    async (targetPage = 1) => {
       if (statusFilter === "__invalid__") {
         setItems([]);
         setStatus("error");
@@ -68,18 +68,38 @@ export function useSellerProductList() {
       setErrorMessage("");
 
       try {
+        // Fetch product list for seller (limit=50 to comply with backend API validation)
         const raw = await fetchSellerProductList({
-          page: targetPage,
-          limit: PAGE_SIZE,
-          status: statusFilter ?? undefined,
+          page: 1,
+          limit: 50,
           q: debouncedQ || undefined,
         });
         if (requestId !== requestIdRef.current) return;
 
         const data = mapSellerProductListResponse(raw);
-        setItems(data.items);
-        setPagination(data.pagination);
-        setSummary(data.summary);
+        let allItems = data.items || [];
+
+        // Apply status tab filtering
+        if (statusFilter) {
+          allItems = allItems.filter((item) => item.status === statusFilter);
+        }
+
+        const totalItems = allItems.length;
+        const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+        const start = (targetPage - 1) * PAGE_SIZE;
+        const pagedItems = allItems.slice(start, start + PAGE_SIZE);
+
+        setItems(pagedItems);
+        setPagination({
+          page: targetPage,
+          limit: PAGE_SIZE,
+          total: totalItems,
+          totalPages,
+          hasNext: targetPage < totalPages,
+        });
+        if (data.summary) {
+          setSummary(data.summary);
+        }
         setPage(targetPage);
         setStatus("ready");
       } catch (error) {
@@ -94,7 +114,7 @@ export function useSellerProductList() {
         setErrorMessage(mapSellerProductApiError(error));
       }
     },
-    [debouncedQ, page, showSessionExpired, statusFilter],
+    [debouncedQ, showSessionExpired, statusFilter],
   );
 
   useEffect(() => {

@@ -9,7 +9,7 @@ import {
 } from "react";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { fetchUnreadNotificationCount, fetchUnreadNotifications } from "../api/notificationApi";
-import { NOTIFICATION_POLL_INTERVAL_MS } from "../constants/notificationConstants";
+import { NOTIFICATION_POLL_INTERVAL_MS, ENFORCEMENT_FORCED_LOGOUT_MESSAGES, ENFORCEMENT_FORCED_LOGOUT_TYPES } from "../constants/notificationConstants";
 import { mapNotificationListResponse } from "../utils/notificationMapper";
 import { buildNewNotificationToastPayload } from "../utils/notificationToast";
 
@@ -50,7 +50,7 @@ async function seedSeenUnreadNotificationIds(seenNotificationIdsRef) {
 }
 
 export function NotificationBadgeProvider({ children }) {
-  const { isAuthenticated, user, showSessionExpired } = useAuthSession();
+  const { isAuthenticated, user, showSessionExpired, clearSession } = useAuthSession();
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationToast, setNotificationToast] = useState(null);
 
@@ -65,6 +65,23 @@ export function NotificationBadgeProvider({ children }) {
     seenNotificationIdsRef.current = new Set();
     setNotificationToast(null);
   }, []);
+
+  const forceLogoutForEnforcement = useCallback(
+    (notification) => {
+      const eventType = notification?.type;
+      if (!eventType || !ENFORCEMENT_FORCED_LOGOUT_TYPES.has(eventType)) {
+        return false;
+      }
+
+      clearSession();
+      showSessionExpired(
+        ENFORCEMENT_FORCED_LOGOUT_MESSAGES[eventType] ||
+          "Phiên đăng nhập đã kết thúc do quyết định xử lý tài khoản."
+      );
+      return true;
+    },
+    [clearSession, showSessionExpired]
+  );
 
   const showToastForNewNotifications = useCallback(async (previousCount, nextCount) => {
     const delta = nextCount - previousCount;
@@ -90,11 +107,16 @@ export function NotificationBadgeProvider({ children }) {
         (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
       )[0];
 
+      if (forceLogoutForEnforcement(newest)) {
+        setNotificationToast(null);
+        return;
+      }
+
       setNotificationToast(buildNewNotificationToastPayload(delta, newest ?? null));
     } catch {
       setNotificationToast(buildNewNotificationToastPayload(delta, null));
     }
-  }, []);
+  }, [forceLogoutForEnforcement]);
 
   const refetch = useCallback(async () => {
     if (!isAuthenticated) {

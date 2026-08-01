@@ -8,6 +8,7 @@ import { CheckoutShipmentOptions } from "../components/CheckoutShipmentOptions";
 import { CheckoutSkeleton } from "../components/CheckoutSkeleton";
 import { UserAddressFormModal } from "../components/UserAddressFormModal";
 import { CommerceShell } from "../components/CommerceShell";
+import { CommerceFooterTrustSection } from "../components/CommerceFooterTrustSection";
 import { QUOTE_DISCLAIMER } from "../constants/checkoutConstants";
 import { useCheckout } from "../hooks/useCheckout";
 import { APP_ROUTES } from "../../../shared/constants/routes";
@@ -105,53 +106,57 @@ export function CommerceCheckoutPage() {
   return (
     <CommerceShell showHomeSidebar={false}>
       <div className="mx-auto w-full max-w-[1280px]">
-        <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        {/* Header & Cart Navigation */}
+        <header className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-outline-variant/60 pb-4">
           <div>
-            <h1 className="text-headline-lg-mobile font-bold text-on-surface md:text-headline-lg">
-              Thanh toán an toàn
+            <h1 className="text-xl font-black text-on-surface sm:text-2xl">
+              XÁC NHẬN & THANH TOÁN ĐƠN HÀNG
             </h1>
-            <p className="mt-1 flex items-center gap-1 text-sm text-on-surface-variant">
+            <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-on-surface-variant">
               <span className="material-symbols-outlined text-base text-primary" aria-hidden="true">
                 lock
               </span>
-              Thông tin được bảo mật
+              Bảo mật 100% bằng mã hóa SSL/TLS 256-bit
             </p>
           </div>
           <Link
             to={APP_ROUTES.commerceCart}
-            className="text-sm font-medium text-primary hover:underline"
+            className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline cursor-pointer"
           >
-            Quay lại giỏ hàng
+            <span className="material-symbols-outlined text-sm">arrow_back</span>
+            Quay lại Giỏ hàng
           </Link>
         </header>
 
+        {/* Disclaimer Alert Box */}
         <div
-          className="mb-6 rounded-lg border border-surface-tint/30 bg-surface-container-low p-3 text-sm text-on-surface"
+          className="mb-6 rounded-2xl border border-blue-100 bg-blue-50/60 p-4 text-xs font-semibold text-blue-900 shadow-xs flex items-center gap-2"
           role="note"
         >
-          {QUOTE_DISCLAIMER}
+          <span className="material-symbols-outlined text-primary text-lg shrink-0">info</span>
+          <span>{QUOTE_DISCLAIMER}</span>
         </div>
 
         {showSkeleton ? <CheckoutSkeleton /> : null}
 
         {!showSkeleton && isEmptyAddresses ? (
-          <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-10 text-center">
-            <span className="material-symbols-outlined mb-2 text-4xl text-outline" aria-hidden="true">
+          <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-12 text-center shadow-xs">
+            <span className="material-symbols-outlined mb-3 text-5xl text-outline" aria-hidden="true">
               location_off
             </span>
-            <p className="text-sm text-on-surface-variant">
-              Bạn chưa có địa chỉ giao hàng.
+            <p className="text-sm font-semibold text-on-surface-variant">
+              Bạn chưa có địa chỉ giao hàng. Vui lòng thêm địa chỉ để tiến hành đặt hàng.
             </p>
             <button
               type="button"
               onClick={openAddressModal}
-              className="mt-6 rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-on-primary hover:bg-[#0050cb]"
+              className="mt-6 rounded-xl bg-primary px-8 py-3 text-xs font-bold text-on-primary hover:bg-[#0050cb] cursor-pointer shadow-xs active:scale-95"
             >
-              Thêm địa chỉ
+              + Thêm địa chỉ mới
             </button>
             <Link
               to={APP_ROUTES.commerceCart}
-              className="mt-4 block text-sm text-primary hover:underline"
+              className="mt-4 block text-xs font-bold text-primary hover:underline"
             >
               Quay lại giỏ hàng
             </Link>
@@ -159,59 +164,64 @@ export function CommerceCheckoutPage() {
         ) : null}
 
         {showCheckoutForm ? (
-          <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
-            <div className="flex flex-col gap-6 lg:col-span-7">
-              <CheckoutAddressSelector
-                key={addressLabelVersion}
-                addresses={addresses}
-                selectedAddressId={selectedAddressId}
-                onSelect={selectAddress}
-                onAddNew={openAddressModal}
-              />
+          <>
+            <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12 mb-8">
+              <div className="flex flex-col gap-6 lg:col-span-7">
+                <CheckoutAddressSelector
+                  key={addressLabelVersion}
+                  addresses={addresses}
+                  selectedAddressId={selectedAddressId}
+                  onSelect={selectAddress}
+                  onAddNew={openAddressModal}
+                />
 
-              <CheckoutShipmentOptions
-                quote={quote}
-                shippingFee={shippingFee}
-                isLoading={isLoadingQuote || !selectedAddressId}
-              />
+                <CheckoutShipmentOptions
+                  quote={quote}
+                  shippingFee={shippingFee}
+                  isLoading={isLoadingQuote || !selectedAddressId}
+                />
 
-              <CheckoutPaymentMethod
-                paymentMethod={paymentMethod}
-                disabled={isSubmitting}
-                onSelect={selectPayment}
-              />
+                <CheckoutPaymentMethod
+                  paymentMethod={paymentMethod}
+                  disabled={isSubmitting}
+                  onSelect={selectPayment}
+                />
 
-              {quoteError ? (
-                <div className="rounded-lg border border-error/30 bg-error-container/40 p-4">
-                  <p className="text-sm text-on-error-container">{quoteError}</p>
-                  <button
-                    type="button"
-                    onClick={refreshQuote}
-                    className="mt-2 text-sm font-medium text-primary hover:underline"
-                  >
-                    Thử lại
-                  </button>
-                </div>
-              ) : null}
+                {quoteError ? (
+                  <div className="rounded-2xl border border-error/30 bg-error-container/40 p-4 shadow-xs">
+                    <p className="text-xs font-bold text-on-error-container">{quoteError}</p>
+                    <button
+                      type="button"
+                      onClick={refreshQuote}
+                      className="mt-2 text-xs font-bold text-primary hover:underline cursor-pointer"
+                    >
+                      Thử lại
+                    </button>
+                  </div>
+                ) : null}
 
-              {submitError ? (
-                <div className="rounded-lg border border-error/30 bg-error-container/40 p-4">
-                  <p className="text-sm text-on-error-container">{submitError}</p>
-                </div>
-              ) : null}
+                {submitError ? (
+                  <div className="rounded-2xl border border-error/30 bg-error-container/40 p-4 shadow-xs">
+                    <p className="text-xs font-bold text-on-error-container">{submitError}</p>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="lg:col-span-5">
+                <CheckoutQuoteSummary
+                  quote={quote}
+                  cartItemsCache={cartItemsCache}
+                  isLoading={isLoadingQuote}
+                  canSubmit={canSubmit}
+                  isSubmitting={isSubmitting}
+                  onPlaceOrder={handlePlaceOrder}
+                />
+              </div>
             </div>
 
-            <div className="lg:col-span-5">
-              <CheckoutQuoteSummary
-                quote={quote}
-                cartItemsCache={cartItemsCache}
-                isLoading={isLoadingQuote}
-                canSubmit={canSubmit}
-                isSubmitting={isSubmitting}
-                onPlaceOrder={handlePlaceOrder}
-              />
-            </div>
-          </div>
+            {/* E-Commerce Trust Badges Footer */}
+            <CommerceFooterTrustSection />
+          </>
         ) : null}
       </div>
 

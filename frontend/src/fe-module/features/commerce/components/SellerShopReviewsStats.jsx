@@ -4,28 +4,21 @@ export function SellerShopReviewsStats({ ratingAvg, ratingCount }) {
   const displayAvg = Number(ratingAvg || 0).toFixed(1);
 
   return (
-    <div className="flex flex-wrap items-center gap-6 rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm">
-      <div className="flex flex-col">
-        <span className="text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
-          Điểm trung bình
-        </span>
-        <div className="flex items-end gap-2">
-          <span className="text-headline-xl font-bold text-primary">{displayAvg}</span>
-          <span className="mb-1 text-body-sm text-on-surface-variant">/ 5</span>
+    <div className="flex flex-wrap items-center gap-6 rounded-2xl border border-outline-variant/80 bg-surface-container-lowest p-5 shadow-xs transition-all hover:shadow-md">
+      <div className="flex items-center gap-4">
+        <div className="flex h-14 w-14 flex-col items-center justify-center rounded-2xl bg-amber-50 text-amber-600 border border-amber-200">
+          <span className="text-xl font-black">{displayAvg}</span>
+          <span className="text-[10px] font-bold text-amber-700">/ 5.0</span>
         </div>
-      </div>
-
-      <div className="hidden h-10 w-px bg-outline-variant sm:block" aria-hidden="true" />
-
-      <div className="flex flex-col">
-        <span className="text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
-          Tổng đánh giá
-        </span>
-        <span className="mt-1 text-headline-md font-semibold text-on-surface">{ratingCount}</span>
-      </div>
-
-      <div className="hidden sm:block">
-        <StarRating rating={ratingAvg} />
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+            Đánh giá cửa hàng
+          </p>
+          <div className="mt-1 flex items-center gap-2">
+            <StarRating rating={ratingAvg} />
+            <span className="text-xs font-bold text-on-surface">({ratingCount} đánh giá)</span>
+          </div>
+        </div>
       </div>
     </div>
   );
