@@ -33,7 +33,7 @@ const HERO_BANNERS = [
 const QUICK_SHORTCUTS = [
   { id: "flash-sale", label: "Flash Sale", icon: "bolt", color: "bg-amber-500 text-white" },
   { id: "2hand-select", label: "2Hand Select", icon: "verified", color: "bg-blue-600 text-white" },
-  { id: "freeship", label: "Freeship Xtra", icon: "local_shipping", color: "bg-emerald-500 text-white" },
+  { id: "freeship", label: "Giao Tận Nơi", icon: "local_shipping", color: "bg-emerald-500 text-white" },
   { id: "guarantee", label: "Mua An Toàn", icon: "verified_user", color: "bg-teal-600 text-white" },
   { id: "fashion-men", label: "Đồ Nam", icon: "apparel", color: "bg-indigo-500 text-white" },
   { id: "fashion-women", label: "Đồ Nữ", icon: "woman", color: "bg-pink-500 text-white" },
@@ -254,26 +254,6 @@ export function CommerceHomeHero({
         </div>
       </div>
 
-      {/* Quick Category Shortcuts Grid */}
-      <div className="grid grid-cols-4 gap-3 sm:grid-cols-4 md:grid-cols-8">
-        {QUICK_SHORTCUTS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => onShortcutClick?.(item.id)}
-            className="group flex flex-col items-center justify-center rounded-xl border border-outline-variant/60 bg-surface-container-lowest p-3 text-center transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm cursor-pointer"
-          >
-            <div
-              className={`flex h-11 w-11 items-center justify-center rounded-2xl ${item.color} shadow-sm transition-transform group-hover:scale-110`}
-            >
-              <span className="material-symbols-outlined text-xl">{item.icon}</span>
-            </div>
-            <span className="mt-2 text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary">
-              {item.label}
-            </span>
-          </button>
-        ))}
-      </div>
     </section>
   );
 }

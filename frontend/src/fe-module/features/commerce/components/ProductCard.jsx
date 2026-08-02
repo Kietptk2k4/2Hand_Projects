@@ -197,10 +197,6 @@ export function ProductCard({
                 {formatVndPrice(product.effectivePrice || product.price)}
               </span>
             </div>
-
-            <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600 border border-emerald-100">
-              FREESHIP XTRA
-            </span>
           </div>
 
           <div className="flex gap-2">
