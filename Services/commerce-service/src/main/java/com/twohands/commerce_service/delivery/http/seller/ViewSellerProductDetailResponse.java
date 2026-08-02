@@ -25,6 +25,8 @@ public record ViewSellerProductDetailResponse(
         BigDecimal price,
         @JsonProperty("sale_price") BigDecimal salePrice,
         @JsonProperty("effective_price") BigDecimal effectivePrice,
+        @JsonProperty("start_at") Instant startAt,
+        @JsonProperty("end_at") Instant endAt,
         @JsonProperty("price_id") UUID priceId,
         @JsonProperty("stock_quantity") Integer stockQuantity,
         @JsonProperty("low_stock_threshold") Integer lowStockThreshold,

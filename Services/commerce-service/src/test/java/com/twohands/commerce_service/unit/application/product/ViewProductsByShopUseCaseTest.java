@@ -154,6 +154,8 @@ class ViewProductsByShopUseCaseTest {
                         BigDecimal.valueOf(20_000_000),
                         null,
                         BigDecimal.valueOf(20_000_000),
+                        null,
+                        null,
                         true,
                         false,
                         BigDecimal.valueOf(4.5),

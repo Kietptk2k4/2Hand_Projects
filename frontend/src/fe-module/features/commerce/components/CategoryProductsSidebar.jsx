@@ -66,6 +66,18 @@ export function CategoryProductsSidebar({
                     ].join(" ")}
                   >
                     <span className="truncate">{item.categoryName}</span>
+                    {item.productCount != null ? (
+                      <span
+                        className={[
+                          "ml-2 shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-black tabular-nums",
+                          isActive
+                            ? "bg-on-primary/20 text-on-primary"
+                            : "bg-surface-container-high text-on-surface-variant",
+                        ].join(" ")}
+                      >
+                        {item.productCount}
+                      </span>
+                    ) : null}
                   </button>
                 </li>
               );
@@ -131,6 +143,9 @@ export function CategoryProductsMobileNav({
               ].join(" ")}
             >
               {item.categoryName}
+              {item.productCount != null ? (
+                <span className="ml-1 tabular-nums opacity-80">({item.productCount})</span>
+              ) : null}
             </button>
           );
         })}

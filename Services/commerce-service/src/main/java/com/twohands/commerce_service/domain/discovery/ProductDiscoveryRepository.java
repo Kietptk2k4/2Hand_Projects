@@ -42,4 +42,11 @@ public interface ProductDiscoveryRepository {
             PageQuery pageQuery,
             Instant now
     );
+
+    List<ProductCardSummary> findFlashSaleProducts(
+            Instant now,
+            Instant slotStart,
+            Instant slotEnd,
+            int limit
+    );
 }

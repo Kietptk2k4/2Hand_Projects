@@ -3,6 +3,7 @@ import {
   SELLER_PRODUCT_STEP1_FORM_KEYS,
   SELLER_PRODUCT_STEP2_FORM_KEYS,
 } from "../constants/sellerProductConstants";
+import { formatVndInputValue, parseVndInputToNumber } from "./vndInputFormat";
 
 function pick(obj, camel, snake) {
   return obj?.[camel] ?? obj?.[snake];
@@ -84,6 +85,8 @@ export function mapSellerProductDetailResponse(data) {
     })),
     mediaUrls: data.media_urls ?? data.mediaUrls ?? [],
     priceId: pick(data, "priceId", "price_id"),
+    priceStartAt: pick(data, "priceStartAt", "start_at"),
+    priceEndAt: pick(data, "priceEndAt", "end_at"),
     reservedQuantity: data.reserved_quantity ?? data.reservedQuantity,
     hasPrice: Boolean(data.has_price ?? data.hasPrice),
     hasInventory: Boolean(data.has_inventory ?? data.hasInventory),
@@ -91,8 +94,22 @@ export function mapSellerProductDetailResponse(data) {
   };
 }
 
+export function isoToDatetimeLocal(iso) {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = (value) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+export function datetimeLocalNow() {
+  return isoToDatetimeLocal(new Date().toISOString());
+}
+
 export function detailToFormState(detail) {
   if (!detail) return null;
+
+  const hasSalePrice = detail.salePrice != null && detail.salePrice !== "";
 
   return {
     productType: detail.productType || "PHYSICAL",
@@ -102,10 +119,11 @@ export function detailToFormState(detail) {
     title: detail.title || "",
     description: detail.description || "",
     weightGram: detail.weightGram != null ? String(detail.weightGram) : "",
-    price: detail.price != null ? String(detail.price) : "",
-    salePrice: detail.salePrice != null ? String(detail.salePrice) : "",
-    saleStartAt: "",
-    saleEndAt: "",
+    price: detail.price != null ? formatVndInputValue(detail.price) : "",
+    salePrice: hasSalePrice ? formatVndInputValue(detail.salePrice) : "",
+    saleStartAt: hasSalePrice ? isoToDatetimeLocal(detail.priceStartAt) : "",
+    saleEndAt: hasSalePrice && detail.priceEndAt ? isoToDatetimeLocal(detail.priceEndAt) : "",
+    saleEndForever: hasSalePrice ? !detail.priceEndAt : true,
     stockQuantity: detail.stockQuantity != null ? String(detail.stockQuantity) : "",
     lowStockThreshold:
       detail.lowStockThreshold != null ? String(detail.lowStockThreshold) : "0",
@@ -209,11 +227,14 @@ export function normalizeStep1ForCompare(form) {
 }
 
 export function normalizeStep2ForCompare(form) {
+  const priceNum = parseVndInputToNumber(form.price);
+  const saleNum = parseVndInputToNumber(form.salePrice);
   return {
-    price: form.price === "" ? "" : String(Number(form.price)),
-    salePrice: form.salePrice === "" ? "" : String(Number(form.salePrice)),
+    price: priceNum == null ? "" : String(priceNum),
+    salePrice: saleNum == null ? "" : String(saleNum),
     saleStartAt: form.saleStartAt || "",
-    saleEndAt: form.saleEndAt || "",
+    saleEndAt: form.saleEndForever ? "" : form.saleEndAt || "",
+    saleEndForever: Boolean(form.saleEndForever),
     stockQuantity: form.stockQuantity === "" ? "" : String(Number(form.stockQuantity)),
     lowStockThreshold:
       form.lowStockThreshold === "" || form.lowStockThreshold == null
@@ -274,24 +295,32 @@ export function resolveInitialWizardStep({ mode, detail, requestedStep }) {
 
 export function mapUpdatePricePayload(form) {
   const payload = {
-    price: Number(form.price),
-    sale_price: form.salePrice !== "" ? Number(form.salePrice) : undefined,
+    price: parseVndInputToNumber(form.price),
   };
 
-  if (form.saleStartAt?.trim()) {
-    const startDate = new Date(form.saleStartAt.trim());
-    payload.start_at = !isNaN(startDate.getTime())
-      ? startDate.toISOString()
-      : new Date().toISOString();
+  const saleNum = parseVndInputToNumber(form.salePrice);
+  const hasSalePrice = saleNum != null;
+
+  if (hasSalePrice) {
+    payload.sale_price = saleNum;
+    const startRaw = form.saleStartAt?.trim();
+    if (startRaw) {
+      const startDate = new Date(startRaw);
+      payload.start_at = !Number.isNaN(startDate.getTime())
+        ? startDate.toISOString()
+        : new Date().toISOString();
+    } else {
+      payload.start_at = new Date().toISOString();
+    }
+
+    if (!form.saleEndForever && form.saleEndAt?.trim()) {
+      const endDate = new Date(form.saleEndAt.trim());
+      if (!Number.isNaN(endDate.getTime())) {
+        payload.end_at = endDate.toISOString();
+      }
+    }
   } else {
     payload.start_at = new Date().toISOString();
-  }
-
-  if (form.saleEndAt?.trim()) {
-    const endDate = new Date(form.saleEndAt.trim());
-    if (!isNaN(endDate.getTime())) {
-      payload.end_at = endDate.toISOString();
-    }
   }
 
   return payload;
@@ -299,7 +328,7 @@ export function mapUpdatePricePayload(form) {
 
 export function formatVnd(amount) {
   if (amount == null || amount === "") return "—";
-  const n = Number(amount);
+  const n = parseVndInputToNumber(amount) ?? Number(amount);
   if (!Number.isFinite(n)) return "—";
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
 }

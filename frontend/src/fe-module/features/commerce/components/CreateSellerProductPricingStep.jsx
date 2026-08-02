@@ -1,3 +1,6 @@
+import { SellerProductPromotionFields } from "./SellerProductPromotionFields";
+import { VndPriceInput } from "./VndPriceInput";
+
 const inputClass =
   "w-full rounded-lg border border-outline bg-surface-container-lowest px-4 py-2.5 text-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary";
 
@@ -22,34 +25,27 @@ export function CreateSellerProductPricingStep({
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         <div>
           <label htmlFor="price" className="mb-1 block text-label-md font-medium text-on-surface">
-            Giá bán (₫) <span className="text-error">*</span>
+            Giá niêm yết (₫) <span className="text-error">*</span>
           </label>
-          <input
+          <VndPriceInput
             id="price"
-            type="number"
-            min={0}
             className={inputClass}
+            placeholder="Ví dụ: 800.000"
             value={form.price}
             disabled={disabled}
-            onChange={(e) => onFieldChange("price", e.target.value)}
+            onChange={(value) => onFieldChange("price", value)}
           />
           {fieldErrors.price ? <p className={errorClass}>{fieldErrors.price}</p> : null}
         </div>
 
-        <div>
-          <label htmlFor="sale-price" className="mb-1 block text-label-md font-medium text-on-surface">
-            Giá khuyến mãi (₫)
-          </label>
-          <input
-            id="sale-price"
-            type="number"
-            min={0}
-            className={inputClass}
-            value={form.salePrice}
+        <div className="contents">
+          <SellerProductPromotionFields
+            form={form}
+            fieldErrors={fieldErrors}
             disabled={disabled}
-            onChange={(e) => onFieldChange("salePrice", e.target.value)}
+            onFieldChange={onFieldChange}
+            inputClassName={inputClass}
           />
-          {fieldErrors.salePrice ? <p className={errorClass}>{fieldErrors.salePrice}</p> : null}
         </div>
 
         <div>

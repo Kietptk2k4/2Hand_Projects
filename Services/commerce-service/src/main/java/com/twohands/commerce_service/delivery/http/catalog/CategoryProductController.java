@@ -119,6 +119,8 @@ public class CategoryProductController {
                 item.price(),
                 item.salePrice(),
                 item.effectivePrice(),
+                item.promotionStartAt(),
+                item.promotionEndAt(),
                 item.inStock(),
                 item.lowStock(),
                 item.ratingAvg(),

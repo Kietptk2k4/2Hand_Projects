@@ -101,6 +101,8 @@ class ViewSellerProductDetailUseCaseTest {
                 BigDecimal.valueOf(100_000),
                 null,
                 BigDecimal.valueOf(100_000),
+                NOW,
+                null,
                 UUID.randomUUID(),
                 5,
                 3,

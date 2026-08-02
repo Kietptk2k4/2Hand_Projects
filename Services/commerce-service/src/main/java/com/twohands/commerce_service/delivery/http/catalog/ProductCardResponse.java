@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.twohands.commerce_service.domain.product.ProductStatus;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 public record ProductCardResponse(
@@ -18,6 +19,8 @@ public record ProductCardResponse(
         BigDecimal price,
         @JsonProperty("sale_price") BigDecimal salePrice,
         @JsonProperty("effective_price") BigDecimal effectivePrice,
+        @JsonProperty("promotion_start_at") Instant promotionStartAt,
+        @JsonProperty("promotion_end_at") Instant promotionEndAt,
         @JsonProperty("in_stock") boolean inStock,
         @JsonProperty("low_stock") boolean lowStock,
         @JsonProperty("rating_avg") BigDecimal ratingAvg,

@@ -67,6 +67,7 @@ export const SELLER_PRODUCT_STEP2_FORM_KEYS = [
   "salePrice",
   "saleStartAt",
   "saleEndAt",
+  "saleEndForever",
   "stockQuantity",
   "lowStockThreshold",
 ];
@@ -85,6 +86,7 @@ export const EMPTY_CREATE_PRODUCT_FORM = {
   salePrice: "",
   saleStartAt: "",
   saleEndAt: "",
+  saleEndForever: true,
   stockQuantity: "1",
   lowStockThreshold: "0",
 };

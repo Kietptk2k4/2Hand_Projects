@@ -132,7 +132,9 @@ export function CommerceCategoryProductsPage() {
                 <CategoryProductsHeader
                   categoryName={category?.categoryName || "..."}
                   categorySlug={category?.categorySlug}
-                  totalItems={displayItems.length}
+                  totalItems={
+                    pagination?.totalItems != null ? pagination.totalItems : displayItems.length
+                  }
                   sort={sort}
                   onSortChange={changeSort}
                   includeChildren={includeChildren}

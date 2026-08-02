@@ -13,6 +13,8 @@ public record HomeProductSnapshot(
         UUID brandId,
         String title,
         String thumbnailUrl,
+        BigDecimal listPrice,
+        BigDecimal salePrice,
         BigDecimal effectivePrice,
         Instant createdAt,
         BigDecimal ratingAvg,

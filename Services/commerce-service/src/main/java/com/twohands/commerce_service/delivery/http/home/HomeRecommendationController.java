@@ -54,6 +54,8 @@ public class HomeRecommendationController {
                                 item.id(),
                                 item.title(),
                                 item.price(),
+                                item.salePrice(),
+                                item.effectivePrice(),
                                 item.thumbnail(),
                                 new HomeRecommendationResponse.ShopSummaryResponse(item.shop().id(), item.shop().name()),
                                 item.rating() == null

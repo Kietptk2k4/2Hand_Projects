@@ -1,14 +1,14 @@
 export function mapCategorySummaryItem(item) {
-  if (!item?.category_id) return null;
+  if (!item?.category_id && !item?.categoryId) return null;
 
   return {
-    categoryId: item.category_id,
-    categoryName: item.category_name || "",
-    categorySlug: item.category_slug || "",
-    parentId: item.parent_id || null,
+    categoryId: item.category_id ?? item.categoryId,
+    categoryName: item.category_name ?? item.categoryName ?? "",
+    categorySlug: item.category_slug ?? item.categorySlug ?? "",
+    parentId: item.parent_id ?? item.parentId ?? null,
     level: item.level ?? 0,
-    isLeaf: Boolean(item.is_leaf),
-    productCount: item.product_count ?? 0,
+    isLeaf: Boolean(item.is_leaf ?? item.isLeaf),
+    productCount: item.product_count ?? item.productCount ?? 0,
   };
 }
 

@@ -244,6 +244,8 @@ class RecommendCommerceHomeUseCaseTest {
                 "Item " + productId,
                 "https://cdn.example/item.jpg",
                 BigDecimal.valueOf(100),
+                null,
+                BigDecimal.valueOf(100),
                 createdAt,
                 BigDecimal.valueOf(ratingAvg),
                 ratingCount,

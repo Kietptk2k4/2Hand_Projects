@@ -102,6 +102,7 @@ public class CategoryReadRepositoryAdapter implements CategoryReadRepository {
                                    ON desc_cat.id = p.category_id
                                   AND desc_cat.is_active = TRUE
                                   AND desc_cat.path LIKE pc.path || '%'
+                               INNER JOIN product_inventories pi ON pi.product_id = p.id
                                INNER JOIN LATERAL (
                                    SELECT price, sale_price
                                    FROM product_prices pp
@@ -111,7 +112,8 @@ public class CategoryReadRepositoryAdapter implements CategoryReadRepository {
                                    ORDER BY pp.start_at DESC
                                    LIMIT 1
                                ) active_price ON TRUE
-                               WHERE p.status IN ('ACTIVE', 'OUT_OF_STOCK')
+                               WHERE p.status = 'ACTIVE'
+                                 AND COALESCE(pi.stock_quantity, 0) > 0
                            ), 0) AS product_count
                     """);
         } else {

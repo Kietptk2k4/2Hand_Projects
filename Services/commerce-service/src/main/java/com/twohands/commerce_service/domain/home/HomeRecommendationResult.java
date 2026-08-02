@@ -15,6 +15,8 @@ public record HomeRecommendationResult(
             UUID id,
             String title,
             BigDecimal price,
+            BigDecimal salePrice,
+            BigDecimal effectivePrice,
             String thumbnail,
             Shop shop,
             Rating rating

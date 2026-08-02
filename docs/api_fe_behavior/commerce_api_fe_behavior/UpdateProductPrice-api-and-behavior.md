@@ -16,8 +16,8 @@ Seller tao **record gia moi** trong `product_prices` (khong overwrite gia cu). G
 |-------|------|----------|-------|
 | `price` | number | yes | >= 0 |
 | `sale_price` | number | no | >= 0 va <= `price` |
-| `start_at` | ISO-8601 | yes | Thoi diem bat dau hieu luc |
-| `end_at` | ISO-8601 | no | Phai sau `start_at` neu co |
+| `start_at` | ISO-8601 | yes | Thoi diem bat dau hieu luc (khi co `sale_price` la thoi gian bat dau khuyen mai) |
+| `end_at` | ISO-8601 | no | Phai sau `start_at` neu co; `null` = khong gioi han (khong du dieu kien Flash Sale subset) |
 
 ```json
 {

@@ -152,6 +152,8 @@ class FilterProductsByCategoryUseCaseTest {
                 BigDecimal.valueOf(20_000_000),
                 BigDecimal.valueOf(18_000_000),
                 BigDecimal.valueOf(18_000_000),
+                null,
+                null,
                 true,
                 false,
                 BigDecimal.valueOf(4.5),

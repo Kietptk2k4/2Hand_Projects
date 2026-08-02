@@ -33,6 +33,8 @@ public class ProductDiscoveryRepositoryAdapter implements ProductDiscoveryReposi
                    active_price.price,
                    active_price.sale_price,
                    COALESCE(active_price.sale_price, active_price.price) AS effective_price,
+                   active_price.start_at AS promotion_start_at,
+                   active_price.end_at AS promotion_end_at,
                    COALESCE(pi.stock_quantity, 0) AS stock_quantity,
                    COALESCE(pi.low_stock_threshold, 0) AS low_stock_threshold,
                    s.rating_avg,
@@ -46,7 +48,7 @@ public class ProductDiscoveryRepositoryAdapter implements ProductDiscoveryReposi
             INNER JOIN seller_shops s ON s.id = p.shop_id AND s.status = 'ACTIVE'
             INNER JOIN product_categories pc ON pc.id = p.category_id AND pc.is_active = TRUE
             INNER JOIN LATERAL (
-                SELECT price, sale_price
+                SELECT price, sale_price, start_at, end_at
                 FROM product_prices pp
                 WHERE pp.product_id = p.id
                   AND pp.start_at <= :now
@@ -216,6 +218,34 @@ public class ProductDiscoveryRepositoryAdapter implements ProductDiscoveryReposi
         return jdbcTemplate.query(sql, params, this::mapProductCard);
     }
 
+    @Override
+    public List<ProductCardSummary> findFlashSaleProducts(
+            Instant now,
+            Instant slotStart,
+            Instant slotEnd,
+            int limit
+    ) {
+        String sql = VISIBLE_PRODUCT_SELECT
+                + VISIBLE_PRODUCT_FROM
+                + IN_STOCK_ONLY_PREDICATE
+                + """
+                  AND COALESCE(ss.is_vacation, FALSE) = FALSE
+                  AND active_price.sale_price IS NOT NULL
+                  AND active_price.sale_price < active_price.price
+                  AND active_price.start_at < :slotEnd
+                  AND (active_price.end_at IS NULL OR active_price.end_at > :slotStart)
+                ORDER BY active_price.end_at ASC NULLS LAST, p.created_at DESC
+                LIMIT :limit
+                """;
+
+        MapSqlParameterSource params = baseParams(now)
+                .addValue("slotStart", Timestamp.from(slotStart))
+                .addValue("slotEnd", Timestamp.from(slotEnd))
+                .addValue("limit", limit);
+
+        return jdbcTemplate.query(sql, params, this::mapProductCard);
+    }
+
     private MapSqlParameterSource baseParams(Instant now) {
         return new MapSqlParameterSource().addValue("now", Timestamp.from(now));
     }
@@ -237,6 +267,8 @@ public class ProductDiscoveryRepositoryAdapter implements ProductDiscoveryReposi
         BigDecimal price = rs.getBigDecimal("price");
         BigDecimal salePrice = rs.getBigDecimal("sale_price");
         BigDecimal effectivePrice = rs.getBigDecimal("effective_price");
+        Timestamp promotionStartAt = rs.getTimestamp("promotion_start_at");
+        Timestamp promotionEndAt = rs.getTimestamp("promotion_end_at");
 
         return new ProductCardSummary(
                 UUID.fromString(rs.getString("product_id")),
@@ -250,6 +282,8 @@ public class ProductDiscoveryRepositoryAdapter implements ProductDiscoveryReposi
                 price,
                 salePrice,
                 effectivePrice,
+                promotionStartAt == null ? null : promotionStartAt.toInstant(),
+                promotionEndAt == null ? null : promotionEndAt.toInstant(),
                 inStock,
                 lowStock,
                 rs.getBigDecimal("rating_avg").setScale(2, RoundingMode.HALF_UP),

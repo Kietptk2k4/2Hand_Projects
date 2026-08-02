@@ -95,6 +95,8 @@ public class ViewSellerProductCatalogRepositoryAdapter implements ViewSellerProd
                    active_price.price,
                    active_price.sale_price,
                    active_price.effective_price,
+                   active_price.start_at AS price_start_at,
+                   active_price.end_at AS price_end_at,
                    pi.stock_quantity,
                    pi.low_stock_threshold,
                    pi.reserved_quantity,
@@ -105,7 +107,12 @@ public class ViewSellerProductCatalogRepositoryAdapter implements ViewSellerProd
             INNER JOIN product_categories pc ON pc.id = p.category_id
             LEFT JOIN product_inventories pi ON pi.product_id = p.id
             LEFT JOIN LATERAL (
-                SELECT pp.id, pp.price, pp.sale_price, COALESCE(pp.sale_price, pp.price) AS effective_price
+                SELECT pp.id,
+                       pp.price,
+                       pp.sale_price,
+                       COALESCE(pp.sale_price, pp.price) AS effective_price,
+                       pp.start_at,
+                       pp.end_at
                 FROM product_prices pp
                 WHERE pp.product_id = p.id
                   AND pp.start_at <= :now
@@ -244,6 +251,8 @@ public class ViewSellerProductCatalogRepositoryAdapter implements ViewSellerProd
                 header.price(),
                 header.salePrice(),
                 header.effectivePrice(),
+                header.priceStartAt(),
+                header.priceEndAt(),
                 header.priceId(),
                 header.stockQuantity(),
                 header.lowStockThreshold(),
@@ -364,6 +373,8 @@ public class ViewSellerProductCatalogRepositoryAdapter implements ViewSellerProd
                 rs.getBigDecimal("price"),
                 rs.getBigDecimal("sale_price"),
                 rs.getBigDecimal("effective_price"),
+                toInstant(rs.getTimestamp("price_start_at")),
+                toInstant(rs.getTimestamp("price_end_at")),
                 getNullableInt(rs, "stock_quantity"),
                 getNullableInt(rs, "low_stock_threshold"),
                 getNullableInt(rs, "reserved_quantity"),
@@ -376,6 +387,10 @@ public class ViewSellerProductCatalogRepositoryAdapter implements ViewSellerProd
     private static Integer getNullableInt(ResultSet rs, String column) throws SQLException {
         int value = rs.getInt(column);
         return rs.wasNull() ? null : value;
+    }
+
+    private static Instant toInstant(Timestamp timestamp) {
+        return timestamp == null ? null : timestamp.toInstant();
     }
 
     private static boolean isHttpUrl(String url) {
@@ -400,6 +415,8 @@ public class ViewSellerProductCatalogRepositoryAdapter implements ViewSellerProd
             BigDecimal price,
             BigDecimal salePrice,
             BigDecimal effectivePrice,
+            Instant priceStartAt,
+            Instant priceEndAt,
             Integer stockQuantity,
             Integer lowStockThreshold,
             Integer reservedQuantity,

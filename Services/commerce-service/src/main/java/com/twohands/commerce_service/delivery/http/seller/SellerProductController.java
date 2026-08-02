@@ -440,6 +440,8 @@ public class SellerProductController {
                 detail.price(),
                 detail.salePrice(),
                 detail.effectivePrice(),
+                detail.priceStartAt(),
+                detail.priceEndAt(),
                 detail.priceId(),
                 detail.stockQuantity(),
                 detail.lowStockThreshold(),

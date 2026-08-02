@@ -42,6 +42,7 @@ import {
   pickStep2FormSlice,
   resolveInitialWizardStep,
 } from "../utils/sellerProductMapper";
+import { parseVndInputToNumber } from "../utils/vndInputFormat";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 
 function isUnauthorizedError(error) {
@@ -259,26 +260,32 @@ export function useSellerProductForm({ mode, productId: routeProductId, initialS
 
   const validateStep2 = useCallback(() => {
     const errors = {};
-    const price = Number(form.price);
-    if (form.price === "" || !Number.isFinite(price) || price < 0) {
+    const price = parseVndInputToNumber(form.price);
+    if (price == null || price < 0) {
       errors.price = "Vui lòng nhập giá niêm yết hợp lệ.";
     }
     if (form.salePrice !== "") {
-      const sale = Number(form.salePrice);
-      if (!Number.isFinite(sale) || sale < 0 || sale > price) {
+      const sale = parseVndInputToNumber(form.salePrice);
+      if (sale == null || sale < 0 || (price != null && sale > price)) {
         errors.salePrice = "Giá khuyến mãi phải từ 0 đến giá niêm yết.";
       }
-    }
-    if (form.saleEndAt?.trim()) {
-      const startMs = form.saleStartAt?.trim()
-        ? new Date(form.saleStartAt.trim()).getTime()
-        : Date.now();
-      const endMs = new Date(form.saleEndAt.trim()).getTime();
+      if (form.saleStartAt?.trim()) {
+        const startMs = new Date(form.saleStartAt.trim()).getTime();
+        if (Number.isNaN(startMs)) {
+          errors.saleStartAt = "Ngày bắt đầu không hợp lệ.";
+        }
+      }
+      if (!form.saleEndForever && form.saleEndAt?.trim()) {
+        const startMs = form.saleStartAt?.trim()
+          ? new Date(form.saleStartAt.trim()).getTime()
+          : Date.now();
+        const endMs = new Date(form.saleEndAt.trim()).getTime();
 
-      if (Number.isNaN(endMs)) {
-        errors.saleEndAt = "Ngày kết thúc không hợp lệ.";
-      } else if (endMs <= startMs) {
-        errors.saleEndAt = "Ngày kết thúc khuyến mãi phải sau ngày bắt đầu.";
+        if (Number.isNaN(endMs)) {
+          errors.saleEndAt = "Ngày kết thúc không hợp lệ.";
+        } else if (endMs <= startMs) {
+          errors.saleEndAt = "Ngày kết thúc khuyến mãi phải sau ngày bắt đầu.";
+        }
       }
     }
     const stock = Number(form.stockQuantity);

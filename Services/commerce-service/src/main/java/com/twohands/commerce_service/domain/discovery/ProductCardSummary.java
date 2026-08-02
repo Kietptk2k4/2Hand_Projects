@@ -3,6 +3,7 @@ package com.twohands.commerce_service.domain.discovery;
 import com.twohands.commerce_service.domain.product.ProductStatus;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 public record ProductCardSummary(
@@ -17,6 +18,8 @@ public record ProductCardSummary(
         BigDecimal price,
         BigDecimal salePrice,
         BigDecimal effectivePrice,
+        Instant promotionStartAt,
+        Instant promotionEndAt,
         boolean inStock,
         boolean lowStock,
         BigDecimal ratingAvg,

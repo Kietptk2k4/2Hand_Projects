@@ -14,6 +14,7 @@ import { useCommerceAddToCart } from "../hooks/useCommerceAddToCart";
 import { useCommerceBuyNow } from "../hooks/useCommerceBuyNow";
 import { useProductList } from "../hooks/useProductList";
 import { useHomeRecommendations } from "../hooks/useHomeRecommendations";
+import { useFlashSaleProducts } from "../hooks/useFlashSaleProducts";
 import { useCommerceCategories } from "../hooks/useCommerceCategories";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { useSellerShop } from "../context/SellerShopContext";
@@ -43,6 +44,7 @@ export function CommerceHomePage() {
   const catalog = useProductList();
   const useHybridHome = Boolean(user) && activeTab === "recommend";
   const homeRecs = useHomeRecommendations({ enabled: useHybridHome });
+  const flashSale = useFlashSaleProducts({ enabled: true, limit: 20 });
 
   const items = useHybridHome ? homeRecs.items : catalog.items;
   const sort = catalog.sort;
@@ -222,8 +224,9 @@ export function CommerceHomePage() {
       {/* Flash Sale Section */}
       <div id="flash-sale-section">
         <CommerceFlashSaleSection
-          products={items}
-          isLoading={isInitialLoading}
+          products={flashSale.items}
+          isLoading={flashSale.isLoading}
+          slotEnd={flashSale.slotEnd}
           onOpenProduct={openProduct}
           onViewAll={handleViewAllFlashSales}
         />

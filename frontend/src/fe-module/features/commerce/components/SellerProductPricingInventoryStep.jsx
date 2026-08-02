@@ -1,3 +1,6 @@
+import { SellerProductPromotionFields } from "./SellerProductPromotionFields";
+import { VndPriceInput } from "./VndPriceInput";
+
 const inputClass =
   "w-full rounded-2xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-xs text-on-surface shadow-xs transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm";
 
@@ -22,64 +25,25 @@ export function SellerProductPricingInventoryStep({ form, fieldErrors, disabled,
             <label htmlFor="price" className="mb-1.5 block text-xs font-bold text-on-surface sm:text-sm">
               Giá niêm yết (₫) <span className="text-rose-600">*</span>
             </label>
-            <input
+            <VndPriceInput
               id="price"
-              type="number"
-              min={0}
               className={inputClass}
-              placeholder="Ví dụ: 250000"
+              placeholder="Ví dụ: 800.000"
               value={form.price}
               disabled={disabled}
-              onChange={(e) => onFieldChange("price", e.target.value)}
+              onChange={(value) => onFieldChange("price", value)}
             />
             {fieldErrors.price ? <p className={errorClass}>{fieldErrors.price}</p> : null}
           </div>
 
-          <div>
-            <label htmlFor="sale-price" className="mb-1.5 block text-xs font-bold text-on-surface sm:text-sm">
-              Giá khuyến mãi (₫) (Tùy chọn)
-            </label>
-            <input
-              id="sale-price"
-              type="number"
-              min={0}
-              className={inputClass}
-              placeholder="Ví dụ: 199000"
-              value={form.salePrice}
+          <div className="contents">
+            <SellerProductPromotionFields
+              form={form}
+              fieldErrors={fieldErrors}
               disabled={disabled}
-              onChange={(e) => onFieldChange("salePrice", e.target.value)}
+              onFieldChange={onFieldChange}
+              inputClassName={inputClass}
             />
-            {fieldErrors.salePrice ? <p className={errorClass}>{fieldErrors.salePrice}</p> : null}
-          </div>
-
-          <div>
-            <label htmlFor="sale-start" className="mb-1.5 block text-xs font-bold text-on-surface sm:text-sm">
-              Ngày bắt đầu khuyến mãi
-            </label>
-            <input
-              id="sale-start"
-              type="datetime-local"
-              className={inputClass}
-              value={form.saleStartAt}
-              disabled={disabled}
-              onChange={(e) => onFieldChange("saleStartAt", e.target.value)}
-            />
-            {fieldErrors.saleStartAt ? <p className={errorClass}>{fieldErrors.saleStartAt}</p> : null}
-          </div>
-
-          <div>
-            <label htmlFor="sale-end" className="mb-1.5 block text-xs font-bold text-on-surface sm:text-sm">
-              Ngày kết thúc khuyến mãi
-            </label>
-            <input
-              id="sale-end"
-              type="datetime-local"
-              className={inputClass}
-              value={form.saleEndAt}
-              disabled={disabled}
-              onChange={(e) => onFieldChange("saleEndAt", e.target.value)}
-            />
-            {fieldErrors.saleEndAt ? <p className={errorClass}>{fieldErrors.saleEndAt}</p> : null}
           </div>
         </div>
       </section>

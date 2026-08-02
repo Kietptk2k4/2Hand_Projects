@@ -22,6 +22,8 @@ public record SellerProductDetail(
         BigDecimal price,
         BigDecimal salePrice,
         BigDecimal effectivePrice,
+        Instant priceStartAt,
+        Instant priceEndAt,
         UUID priceId,
         Integer stockQuantity,
         Integer lowStockThreshold,

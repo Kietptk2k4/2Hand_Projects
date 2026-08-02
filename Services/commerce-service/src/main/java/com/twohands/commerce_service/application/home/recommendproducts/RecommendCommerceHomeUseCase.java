@@ -479,6 +479,8 @@ public class RecommendCommerceHomeUseCase {
         return new HomeRecommendationResult.Item(
                 product.productId(),
                 product.title(),
+                product.listPrice(),
+                product.salePrice(),
                 product.effectivePrice(),
                 product.thumbnailUrl(),
                 new HomeRecommendationResult.Shop(product.shopId(), product.shopName()),

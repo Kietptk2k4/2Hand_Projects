@@ -5,6 +5,9 @@ import com.twohands.commerce_service.application.product.searchproduct.SearchPro
 import com.twohands.commerce_service.application.product.viewproductdetail.ViewProductDetailCommand;
 import com.twohands.commerce_service.application.product.viewproductdetail.ViewProductDetailUseCase;
 import com.twohands.commerce_service.application.product.viewproductlist.ViewProductListCommand;
+import com.twohands.commerce_service.application.product.viewflashsaleproducts.ViewFlashSaleProductsCommand;
+import com.twohands.commerce_service.application.product.viewflashsaleproducts.ViewFlashSaleProductsResult;
+import com.twohands.commerce_service.application.product.viewflashsaleproducts.ViewFlashSaleProductsUseCase;
 import com.twohands.commerce_service.application.product.viewproductlist.ViewProductListUseCase;
 import com.twohands.commerce_service.application.review.viewproductreviews.ViewProductReviewsCommand;
 import com.twohands.commerce_service.application.review.viewproductreviews.ViewProductReviewsUseCase;
@@ -43,19 +46,22 @@ public class ProductSearchController {
     private final ViewProductDetailUseCase viewProductDetailUseCase;
     private final ViewProductReviewsUseCase viewProductReviewsUseCase;
     private final TrackHomeProductClickUseCase trackHomeProductClickUseCase;
+    private final ViewFlashSaleProductsUseCase viewFlashSaleProductsUseCase;
 
     public ProductSearchController(
             ViewProductListUseCase viewProductListUseCase,
             SearchProductUseCase searchProductUseCase,
             ViewProductDetailUseCase viewProductDetailUseCase,
             ViewProductReviewsUseCase viewProductReviewsUseCase,
-            TrackHomeProductClickUseCase trackHomeProductClickUseCase
+            TrackHomeProductClickUseCase trackHomeProductClickUseCase,
+            ViewFlashSaleProductsUseCase viewFlashSaleProductsUseCase
     ) {
         this.viewProductListUseCase = viewProductListUseCase;
         this.searchProductUseCase = searchProductUseCase;
         this.viewProductDetailUseCase = viewProductDetailUseCase;
         this.viewProductReviewsUseCase = viewProductReviewsUseCase;
         this.trackHomeProductClickUseCase = trackHomeProductClickUseCase;
+        this.viewFlashSaleProductsUseCase = viewFlashSaleProductsUseCase;
     }
 
     @GetMapping
@@ -72,6 +78,25 @@ public class ProductSearchController {
                 HttpStatus.OK.value(),
                 viewProductListUseCase.successMessage(),
                 toListResponse(result)
+        ));
+    }
+
+    @GetMapping("/flash-sale")
+    public ResponseEntity<ApiResponse<ViewFlashSaleProductsResponse>> listFlashSaleProducts(
+            @RequestParam(required = false) Integer limit
+    ) {
+        ViewFlashSaleProductsResult result = viewFlashSaleProductsUseCase.execute(
+                new ViewFlashSaleProductsCommand(limit)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewFlashSaleProductsUseCase.successMessage(),
+                new ViewFlashSaleProductsResponse(
+                        result.items().stream().map(this::toProductCard).toList(),
+                        result.slotStart(),
+                        result.slotEnd()
+                )
         ));
     }
 
@@ -289,6 +314,8 @@ public class ProductSearchController {
                 item.price(),
                 item.salePrice(),
                 item.effectivePrice(),
+                item.promotionStartAt(),
+                item.promotionEndAt(),
                 item.inStock(),
                 item.lowStock(),
                 item.ratingAvg(),

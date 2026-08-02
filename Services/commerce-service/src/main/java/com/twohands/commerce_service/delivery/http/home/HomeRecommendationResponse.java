@@ -17,6 +17,8 @@ public record HomeRecommendationResponse(
             UUID id,
             String title,
             BigDecimal price,
+            @JsonProperty("sale_price") BigDecimal salePrice,
+            @JsonProperty("effective_price") BigDecimal effectivePrice,
             String thumbnail,
             ShopSummaryResponse shop,
             RatingSummaryResponse rating
