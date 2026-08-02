@@ -160,9 +160,7 @@ export function CommerceFlashSaleSection({ products = [], isLoading = false, onO
             const mins = Math.max(1, Math.floor(secs / 60));
             let tag = FLASH_TAGS[idx % FLASH_TAGS.length];
             if (idx === 0) {
-              tag = `⚡ CHỈ CÒN ${mins} PHÚT`;
-            } else if (idx === 1) {
-              tag = `🔥 SẮP HẾT GIỜ SALE`;
+              tag = "🔥 SẮP HẾT GIỜ SALE";
             }
 
             const imageSrc =
