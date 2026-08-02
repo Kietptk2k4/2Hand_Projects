@@ -17,7 +17,7 @@ export function mapProductItem(item) {
     inStock: item.in_stock,
     lowStock: item.low_stock,
     ratingAvg: item.rating_avg,
-    ratingCount: item.rating_count,
+    endAt: item.end_at ?? item.endAt ?? item.sale_end_at ?? null,
     shopVacation: item.shop_vacation,
     vacationMessage: item.vacation_message,
   };

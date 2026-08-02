@@ -12,18 +12,36 @@ const FALLBACK_FLASH_IMAGES = [
 
 const FLASH_TAGS = ["ĐANG BÁN CHẠY", "HOT DEAL", "SẮP HẾT HÀNG", "CHỈ CÒN 1 ĐÔI", "GẦN CHÁY HÀNG"];
 
+function calculateTimeLeftInCurrentSlot() {
+  const now = new Date();
+  const currentHour = now.getHours();
+  const slotHours = 3;
+  const nextSlotHour = Math.floor(currentHour / slotHours) * slotHours + slotHours;
+
+  const target = new Date(now);
+  if (nextSlotHour >= 24) {
+    target.setHours(24, 0, 0, 0);
+  } else {
+    target.setHours(nextSlotHour, 0, 0, 0);
+  }
+
+  const diffMs = Math.max(0, target.getTime() - now.getTime());
+  const totalSeconds = Math.floor(diffMs / 1000);
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return { hours, minutes, seconds };
+}
+
 export function CommerceFlashSaleSection({ products = [], isLoading = false, onOpenProduct, onViewAll }) {
-  const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 45, seconds: 12 });
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeftInCurrentSlot);
   const [failedImages, setFailedImages] = useState({});
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
-        if (prev.minutes > 0) return { ...prev, minutes: 59, seconds: 59 };
-        if (prev.hours > 0) return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        return { hours: 3, minutes: 0, seconds: 0 };
-      });
+      setTimeLeft(calculateTimeLeftInCurrentSlot());
     }, 1000);
     return () => clearInterval(timer);
   }, []);
@@ -60,6 +78,21 @@ export function CommerceFlashSaleSection({ products = [], isLoading = false, onO
     }
   }
 
+  const getRemainingSeconds = (product, idx) => {
+    const rawEnd = product?.endAt || product?.saleEndAt || product?.end_at;
+    if (rawEnd) {
+      const diffMs = new Date(rawEnd).getTime() - Date.now();
+      if (diffMs > 0) return Math.floor(diffMs / 1000);
+    }
+    // Fallback remaining sale durations in minutes: 15m, 28m, 45m, 70m, 110m
+    const fallbackMinutes = [15, 28, 45, 70, 110];
+    const mins = fallbackMinutes[idx % fallbackMinutes.length];
+    return mins * 60;
+  };
+
+  // Sort products so the ones expiring SOONEST (least remaining time) appear FIRST
+  flashProducts.sort((a, b) => getRemainingSeconds(a, 0) - getRemainingSeconds(b, 0));
+
   if (!isLoading && flashProducts.length === 0) {
     return null;
   }
@@ -78,14 +111,22 @@ export function CommerceFlashSaleSection({ products = [], isLoading = false, onO
             </h2>
           </div>
 
-          <div className="flex items-center gap-1 text-xs font-bold text-slate-800">
-            <span className="hidden sm:inline">KẾT THÚC TRONG</span>
-            <div className="flex items-center gap-1">
-              <span className="rounded bg-slate-900 px-2 py-1 text-white">{formatDigit(timeLeft.hours)}</span>
-              <span>:</span>
-              <span className="rounded bg-slate-900 px-2 py-1 text-white">{formatDigit(timeLeft.minutes)}</span>
-              <span>:</span>
-              <span className="rounded bg-red-600 px-2 py-1 text-white">{formatDigit(timeLeft.seconds)}</span>
+          <div className="flex items-center gap-2 rounded-xl bg-white/80 px-3 py-1 border border-rose-200/80 backdrop-blur-xs shadow-2xs">
+            <span className="hidden sm:inline text-[11px] font-black uppercase text-slate-600 tracking-wider">
+              Kết thúc trong
+            </span>
+            <div className="flex items-center gap-1 font-mono text-xs font-black">
+              <span className="rounded bg-slate-900 px-2 py-0.5 text-white shadow-2xs">
+                {formatDigit(timeLeft.hours)}
+              </span>
+              <span className="text-slate-700 animate-pulse font-bold">:</span>
+              <span className="rounded bg-slate-900 px-2 py-0.5 text-white shadow-2xs">
+                {formatDigit(timeLeft.minutes)}
+              </span>
+              <span className="text-slate-700 animate-pulse font-bold">:</span>
+              <span className="rounded bg-red-600 px-2 py-0.5 text-white shadow-2xs">
+                {formatDigit(timeLeft.seconds)}
+              </span>
             </div>
           </div>
         </div>
@@ -114,7 +155,15 @@ export function CommerceFlashSaleSection({ products = [], isLoading = false, onO
             const originalPrice = Number(product.price);
             const savingsAmount = originalPrice - salePrice;
             const discountPercent = Math.round((savingsAmount / originalPrice) * 100);
-            const tag = FLASH_TAGS[idx % FLASH_TAGS.length];
+            
+            const secs = getRemainingSeconds(product, idx);
+            const mins = Math.max(1, Math.floor(secs / 60));
+            let tag = FLASH_TAGS[idx % FLASH_TAGS.length];
+            if (idx === 0) {
+              tag = `⚡ CHỈ CÒN ${mins} PHÚT`;
+            } else if (idx === 1) {
+              tag = `🔥 SẮP HẾT GIỜ SALE`;
+            }
 
             const imageSrc =
               !failedImages[product.productId] && product.thumbnailUrl
