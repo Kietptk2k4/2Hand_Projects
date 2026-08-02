@@ -12,7 +12,7 @@ const FALLBACK_FLASH_IMAGES = [
 
 const FLASH_TAGS = ["ĐANG BÁN CHẠY", "HOT DEAL", "SẮP HẾT HÀNG", "CHỈ CÒN 1 ĐÔI", "GẦN CHÁY HÀNG"];
 
-export function CommerceFlashSaleSection({ products = [], isLoading = false, onOpenProduct }) {
+export function CommerceFlashSaleSection({ products = [], isLoading = false, onOpenProduct, onViewAll }) {
   const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 45, seconds: 12 });
   const [failedImages, setFailedImages] = useState({});
 
@@ -72,7 +72,8 @@ export function CommerceFlashSaleSection({ products = [], isLoading = false, onO
 
         <button
           type="button"
-          className="flex items-center gap-1 text-xs font-bold text-red-600 transition-colors hover:text-red-700"
+          onClick={onViewAll}
+          className="flex items-center gap-1 text-xs font-bold text-red-600 transition-colors hover:text-red-700 cursor-pointer"
         >
           <span>Xem tất cả Deal Flash</span>
           <span className="material-symbols-outlined text-sm">chevron_right</span>
@@ -91,11 +92,8 @@ export function CommerceFlashSaleSection({ products = [], isLoading = false, onO
           {flashProducts.map((product, idx) => {
             const salePrice = Number(product.salePrice);
             const originalPrice = Number(product.price);
-            const discountPercent = Math.round(((originalPrice - salePrice) / originalPrice) * 100);
-
-            const soldCount = 10 + ((idx * 7) % 15);
-            const totalStock = soldCount + 5;
-            const percentSold = Math.round((soldCount / totalStock) * 100);
+            const savingsAmount = originalPrice - salePrice;
+            const discountPercent = Math.round((savingsAmount / originalPrice) * 100);
             const tag = FLASH_TAGS[idx % FLASH_TAGS.length];
 
             const imageSrc =
@@ -145,15 +143,10 @@ export function CommerceFlashSaleSection({ products = [], isLoading = false, onO
                     </span>
                   </div>
 
-                  {/* Sales Progress Bar */}
-                  <div className="relative mt-3 h-4 w-full overflow-hidden rounded-full bg-red-100">
-                    <div
-                      className="h-full bg-gradient-to-r from-orange-500 to-red-600 transition-all"
-                      style={{ width: `${percentSold}%` }}
-                    />
-                    <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-slate-900 drop-shadow-xs">
-                      Đã bán {soldCount}
-                    </span>
+                  {/* High-conversion Savings Pill */}
+                  <div className="mt-3 flex items-center justify-center gap-1 rounded-full bg-gradient-to-r from-red-600 to-orange-500 py-1 px-2 text-[11px] font-bold text-white shadow-xs transition-all group-hover:from-red-700 group-hover:to-orange-600">
+                    <span className="material-symbols-outlined text-xs">savings</span>
+                    <span>Tiết kiệm {formatVndPrice(savingsAmount)}</span>
                   </div>
                 </div>
               </article>

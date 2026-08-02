@@ -182,6 +182,14 @@ export function CommerceHomePage() {
     [navigate]
   );
 
+  const handleViewAllFlashSales = useCallback(() => {
+    setActiveTab("flash");
+    const el = document.getElementById("product-feed-section");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  }, []);
+
   return (
     <CommerceShell onComingSoon={showComingSoon}>
       {/* Mobile Top Bell */}
@@ -207,6 +215,7 @@ export function CommerceHomePage() {
           products={items}
           isLoading={isInitialLoading}
           onOpenProduct={openProduct}
+          onViewAll={handleViewAllFlashSales}
         />
       </div>
 
