@@ -37,18 +37,24 @@ export function ProductCard({
   const [imgError, setImgError] = useState(false);
   const imageRef = useRef(null);
 
+  const priceVal = product.price != null ? Number(product.price) : null;
+  const salePriceVal =
+    product.salePrice != null
+      ? Number(product.salePrice)
+      : product.effectivePrice != null && priceVal != null && Number(product.effectivePrice) < priceVal
+      ? Number(product.effectivePrice)
+      : null;
+
   const isOnSale =
-    product.salePrice != null &&
-    product.price != null &&
-    Number(product.salePrice) < Number(product.price);
+    salePriceVal != null && priceVal != null && salePriceVal < priceVal;
   const isOutOfStock = !product.inStock || product.status === "OUT_OF_STOCK";
   const actionsDisabled = disabledActions || isOutOfStock || isAddingToCart || isBuyingNow;
 
   const canOpenProduct = Boolean(product?.productId && onOpenProduct);
 
   const discountPercent =
-    isOnSale && product.price
-      ? Math.round(((Number(product.price) - Number(product.salePrice)) / Number(product.price)) * 100)
+    isOnSale && priceVal
+      ? Math.round(((priceVal - salePriceVal) / priceVal) * 100)
       : 0;
 
   const handleAddToCart = (event) => {
@@ -184,9 +190,9 @@ export function ProductCard({
         <div className="mt-auto border-t border-surface-container-high pt-3">
           <div className="mb-3 flex items-baseline justify-between gap-1">
             <div className="flex flex-col">
-              {isOnSale ? (
+              {isOnSale && priceVal ? (
                 <span className="text-[11px] text-outline line-through">
-                  {formatVndPrice(product.price)}
+                  {formatVndPrice(priceVal)}
                 </span>
               ) : null}
               <span
@@ -194,7 +200,7 @@ export function ProductCard({
                   isOnSale ? "text-red-600" : "text-primary"
                 }`}
               >
-                {formatVndPrice(product.effectivePrice || product.price)}
+                {formatVndPrice(isOnSale ? salePriceVal : (product.effectivePrice || priceVal))}
               </span>
             </div>
           </div>

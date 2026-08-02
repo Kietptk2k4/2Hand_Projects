@@ -52,7 +52,12 @@ export function CommerceFlashSaleSection({ products = [], isLoading = false, onO
   const realSaleProducts = (products || []).filter((product) => {
     if (!product) return false;
     const price = Number(product.price || 0);
-    const salePrice = product.salePrice != null ? Number(product.salePrice) : null;
+    const salePrice =
+      product.salePrice != null
+        ? Number(product.salePrice)
+        : product.effectivePrice != null && Number(product.effectivePrice) < price
+        ? Number(product.effectivePrice)
+        : null;
     return price > 0 && salePrice != null && salePrice > 0 && salePrice < price;
   });
 
@@ -65,8 +70,21 @@ export function CommerceFlashSaleSection({ products = [], isLoading = false, onO
     for (let i = 0; i < candidateProducts.length && flashProducts.length < 5; i++) {
       const p = candidateProducts[i];
       const basePrice = Number(p.price || 0);
-      if (basePrice > 0) {
-        // Apply attractive flash deal discount (15% - 25%)
+      const sPrice =
+        p.salePrice != null
+          ? Number(p.salePrice)
+          : p.effectivePrice != null && Number(p.effectivePrice) < basePrice
+          ? Number(p.effectivePrice)
+          : null;
+
+      if (sPrice != null && sPrice < basePrice) {
+        flashProducts.push({
+          ...p,
+          price: basePrice,
+          salePrice: sPrice,
+        });
+      } else if (basePrice > 0) {
+        // Fallback for items with no sale price defined in DB
         const discountFactor = 0.85 - (i % 3) * 0.05;
         const computedSalePrice = Math.round(basePrice * discountFactor);
         flashProducts.push({
@@ -151,10 +169,21 @@ export function CommerceFlashSaleSection({ products = [], isLoading = false, onO
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {flashProducts.map((product, idx) => {
-            const salePrice = Number(product.salePrice);
-            const originalPrice = Number(product.price);
-            const savingsAmount = originalPrice - salePrice;
-            const discountPercent = Math.round((savingsAmount / originalPrice) * 100);
+            const rawPrice = Number(product.price || 0);
+            const rawSalePrice =
+              product.salePrice != null
+                ? Number(product.salePrice)
+                : product.effectivePrice != null && Number(product.effectivePrice) < rawPrice
+                ? Number(product.effectivePrice)
+                : rawPrice;
+
+            const salePrice = rawSalePrice < rawPrice ? rawSalePrice : rawPrice;
+            const originalPrice = rawPrice > salePrice ? rawPrice : Math.round(salePrice * 1.25);
+            const savingsAmount = Math.max(0, originalPrice - salePrice);
+            const discountPercent =
+              originalPrice > 0 && savingsAmount > 0
+                ? Math.round((savingsAmount / originalPrice) * 100)
+                : 0;
             
             const secs = getRemainingSeconds(product, idx);
             const mins = Math.max(1, Math.floor(secs / 60));
