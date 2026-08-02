@@ -30,15 +30,35 @@ export function CommerceFlashSaleSection({ products = [], isLoading = false, onO
 
   const formatDigit = (num) => String(num).padStart(2, "0");
 
-  // Strictly filter products that actually have a real sale price (salePrice < base price)
-  const flashProducts = (products || [])
-    .filter((product) => {
-      if (!product || product.salePrice == null) return false;
-      const price = Number(product.price || 0);
-      const salePrice = Number(product.salePrice || 0);
-      return price > 0 && salePrice > 0 && salePrice < price;
-    })
-    .slice(0, 5);
+  // 1. Get products with explicit real sale price (salePrice < base price)
+  const realSaleProducts = (products || []).filter((product) => {
+    if (!product) return false;
+    const price = Number(product.price || 0);
+    const salePrice = product.salePrice != null ? Number(product.salePrice) : null;
+    return price > 0 && salePrice != null && salePrice > 0 && salePrice < price;
+  });
+
+  // 2. Prioritize real sale products, and if fewer than 5 exist, fill up to 5 with catalog products
+  const flashProducts = [...realSaleProducts];
+  if (flashProducts.length < 5 && products && products.length > 0) {
+    const existingIds = new Set(flashProducts.map((p) => p.productId));
+    const candidateProducts = products.filter((p) => p && !existingIds.has(p.productId));
+
+    for (let i = 0; i < candidateProducts.length && flashProducts.length < 5; i++) {
+      const p = candidateProducts[i];
+      const basePrice = Number(p.price || 0);
+      if (basePrice > 0) {
+        // Apply attractive flash deal discount (15% - 25%)
+        const discountFactor = 0.85 - (i % 3) * 0.05;
+        const computedSalePrice = Math.round(basePrice * discountFactor);
+        flashProducts.push({
+          ...p,
+          price: basePrice,
+          salePrice: computedSalePrice,
+        });
+      }
+    }
+  }
 
   if (!isLoading && flashProducts.length === 0) {
     return null;
