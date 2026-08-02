@@ -28,7 +28,50 @@ function getCountdownTarget(product, slotEnd) {
   if (promoEndMs && slotEndMs) {
     return Math.min(promoEndMs, slotEndMs);
   }
-  return promoEndMs || slotEndMs || Date.now();
+  return promoEndMs || slotEndMs || null;
+}
+
+function getCatchyBadgeText(remainingSeconds, index = 0) {
+  if (remainingSeconds <= 0) {
+    return "💥 Hết suất Sale!";
+  }
+
+  if (remainingSeconds < 60) {
+    return `⚡ Sắp hết: ${remainingSeconds}s!`;
+  }
+
+  const remainingMinutes = Math.ceil(remainingSeconds / 60);
+
+  if (remainingMinutes <= 15) {
+    const templates = [
+      `⚡ Săn lẹ kẻo tiếc: ${remainingMinutes}p`,
+      `🔥 Cháy hàng đến nơi: ${remainingMinutes}p`,
+      `💥 Chốt ngay: ${remainingMinutes}p nữa`,
+      `🚀 Deal cực khét: còn ${remainingMinutes}p`,
+    ];
+    return templates[index % templates.length];
+  }
+
+  if (remainingMinutes <= 60) {
+    const templates = [
+      `⏰ Chớp thời cơ: ${remainingMinutes}p`,
+      `🔥 Giờ vàng sắp tắt: ${remainingMinutes}p`,
+      `⚡ Deal hot có hạn: ${remainingMinutes}p`,
+      `💥 Sưu tầm lẹ: ${remainingMinutes}p`,
+    ];
+    return templates[index % templates.length];
+  }
+
+  const hours = Math.floor(remainingMinutes / 60);
+  const mins = remainingMinutes % 60;
+  const timeStr = mins > 0 ? `${hours}h${mins}p` : `${hours}h`;
+
+  const templates = [
+    `⏳ Giờ vàng: còn ${timeStr}`,
+    `🚀 Săn deal hot: ${timeStr}`,
+    `🔥 Đang giảm cực hời: ${timeStr}`,
+  ];
+  return templates[index % templates.length];
 }
 
 export function CommerceFlashSaleSection({
@@ -53,7 +96,37 @@ export function CommerceFlashSaleSection({
     return () => clearInterval(timer);
   }, [slotEndMs]);
 
-  if (!isLoading && products.length === 0) {
+  // Filter products currently within sale timeframe & sort by shortest remaining time first
+  const displayProducts = useMemo(() => {
+    const now = Date.now();
+
+    return products
+      .map((product) => {
+        const promoStartMs = product.promotionStartAt
+          ? new Date(product.promotionStartAt).getTime()
+          : null;
+        const targetMs = getCountdownTarget(product, slotEnd);
+
+        // Effective end target (fallback to slot default if available)
+        const effectiveTarget = targetMs || slotEndMs || now + 3 * 60 * 60 * 1000;
+        const remainingMs = effectiveTarget - now;
+
+        const isStarted = !promoStartMs || now >= promoStartMs;
+        const isNotEnded = remainingMs > 0;
+        const isActive = isStarted && isNotEnded;
+
+        return {
+          product,
+          remainingMs,
+          isActive,
+        };
+      })
+      .filter((item) => item.isActive)
+      .sort((a, b) => a.remainingMs - b.remainingMs)
+      .map((item) => item.product);
+  }, [products, slotEnd, slotEndMs, Math.floor(timeLeft.seconds)]);
+
+  if (!isLoading && displayProducts.length === 0) {
     return null;
   }
 
@@ -108,7 +181,7 @@ export function CommerceFlashSaleSection({
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {products.map((product, idx) => {
+          {displayProducts.map((product, idx) => {
             const listPrice = Number(product.price || 0);
             const salePrice = Number(product.salePrice ?? product.effectivePrice ?? 0);
             const savingsAmount = Math.max(0, listPrice - salePrice);
@@ -117,8 +190,9 @@ export function CommerceFlashSaleSection({
                 ? Math.round((savingsAmount / listPrice) * 100)
                 : 0;
             const countdownTarget = getCountdownTarget(product, slotEnd);
-            const remainingSeconds = Math.max(0, Math.floor((countdownTarget - Date.now()) / 1000));
-            const remainingMinutes = Math.max(1, Math.ceil(remainingSeconds / 60));
+            const targetMs = countdownTarget || slotEndMs || Date.now() + 3 * 60 * 60 * 1000;
+            const remainingSeconds = Math.max(0, Math.floor((targetMs - Date.now()) / 1000));
+            const catchyBadgeText = getCatchyBadgeText(remainingSeconds, idx);
 
             const imageSrc =
               !failedImages[product.productId] && product.thumbnailUrl
@@ -146,8 +220,8 @@ export function CommerceFlashSaleSection({
                       -{discountPercent}%
                     </div>
                   ) : null}
-                  <div className="absolute bottom-2 left-2 rounded-md bg-slate-900/80 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-xs">
-                    Còn {remainingMinutes} phút
+                  <div className="absolute bottom-2 left-2 rounded-md bg-slate-900/85 px-2 py-0.5 text-[10px] font-extrabold text-white backdrop-blur-xs shadow-xs border border-white/10 flex items-center gap-1">
+                    {catchyBadgeText}
                   </div>
                 </div>
 
