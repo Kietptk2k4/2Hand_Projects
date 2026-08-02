@@ -25,7 +25,7 @@ export function CategoryProductsHeader({
             </h1>
             {totalItems != null ? (
               <span className="rounded-xl bg-primary/10 px-3 py-1 text-xs font-bold text-primary border border-primary/20">
-                🏷️ {totalItems} sản phẩm
+                🏷️ {totalItems} sản phẩm đang bán
               </span>
             ) : null}
           </div>

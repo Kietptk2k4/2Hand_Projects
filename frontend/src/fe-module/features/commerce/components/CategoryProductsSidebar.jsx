@@ -24,6 +24,7 @@ export function CategoryProductsSidebar({
   categoryName,
   categoryItems = [],
   isLoadingCategories = false,
+  activeCount,
   includeChildren,
   onIncludeChildrenChange,
 }) {
@@ -51,6 +52,7 @@ export function CategoryProductsSidebar({
             ) : null}
             {categoryItems.map((item) => {
               const isActive = item.categoryId === activeCategoryId;
+              const displayCount = isActive && activeCount != null ? activeCount : item.productCount;
               return (
                 <li key={item.categoryId}>
                   <button
@@ -65,16 +67,18 @@ export function CategoryProductsSidebar({
                     ].join(" ")}
                   >
                     <span className="truncate">{item.categoryName}</span>
-                    <span
-                      className={[
-                        "rounded-md px-2 py-0.5 text-[10px] font-bold shrink-0 ml-2",
-                        isActive
-                          ? "bg-white/20 text-white"
-                          : "bg-surface-container-high text-on-surface-variant",
-                      ].join(" ")}
-                    >
-                      {item.productCount}
-                    </span>
+                    {displayCount != null ? (
+                      <span
+                        className={[
+                          "rounded-md px-2 py-0.5 text-[10px] font-bold shrink-0 ml-2",
+                          isActive
+                            ? "bg-white/20 text-white"
+                            : "bg-surface-container-high text-on-surface-variant",
+                        ].join(" ")}
+                      >
+                        {displayCount}
+                      </span>
+                    ) : null}
                   </button>
                 </li>
               );

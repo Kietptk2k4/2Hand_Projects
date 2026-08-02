@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { FeedToast } from "../../social/components/FeedToast";
 import { CategoryProductsHeader } from "../components/CategoryProductsHeader";
@@ -79,6 +79,16 @@ export function CommerceCategoryProductsPage() {
     [navigate]
   );
 
+  const displayItems = useMemo(() => {
+    return (items || []).filter((product) => {
+      if (!product) return false;
+      if (product.status === "OUT_OF_STOCK") return false;
+      if (product.inStock === false) return false;
+      if (product.stockQuantity != null && product.stockQuantity <= 0) return false;
+      return true;
+    });
+  }, [items]);
+
   return (
     <CommerceShell onComingSoon={showComingSoon}>
       <div className="mx-auto w-full max-w-[1280px]">
@@ -89,6 +99,7 @@ export function CommerceCategoryProductsPage() {
             categoryName={category?.categoryName}
             categoryItems={sidebarItems}
             isLoadingCategories={isLoadingCategories}
+            activeCount={displayItems.length}
             includeChildren={includeChildren}
             onIncludeChildrenChange={changeIncludeChildren}
           />
@@ -121,7 +132,7 @@ export function CommerceCategoryProductsPage() {
                 <CategoryProductsHeader
                   categoryName={category?.categoryName || "..."}
                   categorySlug={category?.categorySlug}
-                  totalItems={pagination?.totalItems}
+                  totalItems={displayItems.length}
                   sort={sort}
                   onSortChange={changeSort}
                   includeChildren={includeChildren}
@@ -144,20 +155,20 @@ export function CommerceCategoryProductsPage() {
                   </div>
                 ) : null}
 
-                {!isInitialLoading && !errorMessage && items.length === 0 ? (
+                {!isInitialLoading && !errorMessage && displayItems.length === 0 ? (
                   <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-12 text-center shadow-xs">
                     <span className="material-symbols-outlined mb-3 text-5xl text-outline" aria-hidden="true">
                       inventory_2
                     </span>
                     <p className="text-sm font-semibold text-on-surface-variant">
-                      Chưa có sản phẩm nào trong danh mục này.
+                      Chưa có sản phẩm nào đang bán trong danh mục này.
                     </p>
                   </div>
                 ) : null}
 
-                {!isInitialLoading && !errorMessage && items.length > 0 ? (
+                {!isInitialLoading && !errorMessage && displayItems.length > 0 ? (
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 sm:gap-4 lg:gap-5">
-                    {items.map((product) => (
+                    {displayItems.map((product) => (
                       <ProductCard
                         key={product.productId}
                         product={product}
