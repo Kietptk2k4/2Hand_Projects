@@ -45,7 +45,7 @@ public class ProductAttributesUpdatedOutboxService {
         return new OutboxEvent(
                 UUID.randomUUID(),
                 EVENT_TYPE,
-                "product:" + productId + ":attributes:updated",
+                "product:" + productId + ":attributes:updated:" + updatedAt.toEpochMilli(),
                 productId,
                 SOURCE,
                 serialize(payload),

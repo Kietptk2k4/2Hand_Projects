@@ -75,6 +75,18 @@ export function useCreateSellerProduct() {
         errors.salePrice = "Giá khuyến mãi phải từ 0 đến giá bán.";
       }
     }
+    if (form.saleEndAt?.trim()) {
+      const startMs = form.saleStartAt?.trim()
+        ? new Date(form.saleStartAt.trim()).getTime()
+        : Date.now();
+      const endMs = new Date(form.saleEndAt.trim()).getTime();
+
+      if (Number.isNaN(endMs)) {
+        errors.saleEndAt = "Ngày kết thúc không hợp lệ.";
+      } else if (endMs <= startMs) {
+        errors.saleEndAt = "Ngày kết thúc khuyến mãi phải sau ngày bắt đầu.";
+      }
+    }
     const stock = Number(form.stockQuantity);
     if (form.stockQuantity === "" || !Number.isInteger(stock) || (stock !== 0 && stock !== 1)) {
       errors.stockQuantity = "Tồn kho chỉ được 0 hoặc 1 (mỗi listing là một món).";

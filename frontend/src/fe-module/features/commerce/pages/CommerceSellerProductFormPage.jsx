@@ -8,6 +8,7 @@ import { SellerProductPricingInventoryStep } from "../components/SellerProductPr
 import { SellerProductReviewStep } from "../components/SellerProductReviewStep";
 import { SellerProductWizardFooter } from "../components/SellerProductWizardFooter";
 import { SellerProductWizardLayout } from "../components/SellerProductWizardLayout";
+import { CommerceFooterTrustSection } from "../components/CommerceFooterTrustSection";
 import { useSellerProductForm } from "../hooks/useSellerProductForm";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
@@ -90,20 +91,20 @@ export function CommerceSellerProductFormPage({ mode: modeProp }) {
   }, [navigateToList, publishProductAction]);
 
   const breadcrumb = (
-    <nav className="text-body-sm text-on-surface-variant">
-      <Link to={listPath} className="hover:text-primary">
+    <nav className="flex flex-wrap items-center text-xs font-semibold text-on-surface-variant">
+      <Link to={listPath} className="transition-colors hover:text-primary">
         Quản lý sản phẩm
       </Link>
-      <span className="mx-1">›</span>
-      <span className="text-on-surface">{pageTitle}</span>
+      <span className="material-symbols-outlined mx-1 text-sm">chevron_right</span>
+      <span className="font-bold text-on-surface">{pageTitle}</span>
     </nav>
   );
 
   if (isLoading) {
     return (
       <CommerceShell>
-        <div className="mx-auto max-w-6xl px-4 py-16 text-center text-on-surface-variant">
-          Đang tải sản phẩm...
+        <div className="mx-auto max-w-6xl px-4 py-16 text-center text-xs font-bold text-on-surface-variant">
+          Đang tải thông tin sản phẩm...
         </div>
       </CommerceShell>
     );
@@ -111,109 +112,116 @@ export function CommerceSellerProductFormPage({ mode: modeProp }) {
 
   return (
     <CommerceShell onComingSoon={() => setToastMessage("Tính năng đang được phát triển.")}>
-      {!canEdit ? (
-        <div className="mx-auto max-w-6xl px-4 pt-6">
-          <div className="rounded-lg border border-outline-variant bg-surface-container-high p-4 text-body-md text-on-surface">
-            Sản phẩm đã lưu trữ — chỉ xem, không thể chỉnh sửa.
-          </div>
-        </div>
-      ) : null}
-
-      <SellerProductWizardLayout
-        title={pageTitle}
-        breadcrumb={breadcrumb}
-        status={status}
-        lastSavedAt={lastSavedAt}
-        currentStep={step}
-        maxUnlockedStep={maxUnlockedStep}
-        canEdit={canEdit}
-        onStepClick={(n) => goToStep(n)}
-        onSaveDraft={handleSaveDraft}
-        isSubmitting={isSubmitting}
-      >
-        {apiError && step !== 4 ? (
-          <div className="mb-4 rounded-lg border border-error/30 bg-error-container/40 p-4" role="alert">
-            <p className="text-sm text-on-error-container">{apiError}</p>
+      <div className="pb-24">
+        {!canEdit ? (
+          <div className="mx-auto max-w-6xl px-4 pt-6">
+            <div className="rounded-2xl border border-outline-variant bg-surface-container-high p-4 text-xs font-bold text-on-surface shadow-xs">
+              Sản phẩm đã lưu trữ — Chỉ xem thông tin, không thể chỉnh sửa.
+            </div>
           </div>
         ) : null}
 
-        {step === 1 ? (
-          <SellerProductInfoStep
-            form={form}
-            fieldErrors={fieldErrors}
-            categories={categories}
-            brands={brands}
-            disabled={disabled}
-            onFieldChange={updateField}
-          />
-        ) : null}
+        <SellerProductWizardLayout
+          title={pageTitle}
+          breadcrumb={breadcrumb}
+          status={status}
+          lastSavedAt={lastSavedAt}
+          currentStep={step}
+          maxUnlockedStep={maxUnlockedStep}
+          canEdit={canEdit}
+          onStepClick={(n) => goToStep(n)}
+          onSaveDraft={handleSaveDraft}
+          isSubmitting={isSubmitting}
+        >
+          {apiError && step !== 4 ? (
+            <div className="mb-4 rounded-2xl border border-error/30 bg-error-container/40 p-4 shadow-xs" role="alert">
+              <p className="text-xs font-bold text-on-error-container">{apiError}</p>
+            </div>
+          ) : null}
 
-        {step === 2 ? (
-          <SellerProductPricingInventoryStep
-            form={form}
-            fieldErrors={fieldErrors}
-            disabled={disabled}
-            onFieldChange={updateField}
-          />
-        ) : null}
-
-        {step === 3 ? (
-          <SellerProductMediaAttributesStep
-            productId={productId}
-            mediaUrls={mediaUrls}
-            attributes={attributes}
-            fieldErrors={fieldErrors}
-            disabled={disabled}
-            onMediaChange={setMediaUrls}
-            onAttributesChange={setAttributes}
-          />
-        ) : null}
-
-        {step === 4 ? (
-          <>
-            <SellerProductReviewStep
+          {step === 1 ? (
+            <SellerProductInfoStep
               form={form}
+              fieldErrors={fieldErrors}
               categories={categories}
               brands={brands}
+              disabled={disabled}
+              onFieldChange={updateField}
+            />
+          ) : null}
+
+          {step === 2 ? (
+            <SellerProductPricingInventoryStep
+              form={form}
+              fieldErrors={fieldErrors}
+              disabled={disabled}
+              onFieldChange={updateField}
+            />
+          ) : null}
+
+          {step === 3 ? (
+            <SellerProductMediaAttributesStep
+              productId={productId}
               mediaUrls={mediaUrls}
               attributes={attributes}
-              status={status}
-              reviewChecklist={reviewChecklist}
-              canPublish={canPublish}
-              apiError={apiError}
+              fieldErrors={fieldErrors}
+              disabled={disabled}
+              onMediaChange={setMediaUrls}
+              onAttributesChange={setAttributes}
             />
-            <div className="mt-6 flex flex-wrap justify-end gap-3">
-              {(status === "DRAFT" || status === "PAUSED") && canEdit ? (
+          ) : null}
+
+          {step === 4 ? (
+            <>
+              <SellerProductReviewStep
+                form={form}
+                categories={categories}
+                brands={brands}
+                mediaUrls={mediaUrls}
+                attributes={attributes}
+                status={status}
+                reviewChecklist={reviewChecklist}
+                canPublish={canPublish}
+                apiError={apiError}
+              />
+              <div className="mt-6 flex flex-wrap justify-end gap-3">
+                {(status === "DRAFT" || status === "PAUSED") && canEdit ? (
+                  <button
+                    type="button"
+                    onClick={handlePublish}
+                    disabled={!canPublish || isSubmitting}
+                    className="rounded-xl bg-primary px-8 py-3 text-xs font-bold text-on-primary shadow-xs transition-all hover:bg-[#0050cb] active:scale-95 disabled:opacity-50 cursor-pointer"
+                  >
+                    {isSubmitting ? "Đang xử lý..." : "Đăng bán sản phẩm ngay"}
+                  </button>
+                ) : null}
                 <button
                   type="button"
-                  onClick={handlePublish}
-                  disabled={!canPublish || isSubmitting}
-                  className="rounded-lg bg-primary px-6 py-2.5 text-label-md font-medium text-on-primary hover:bg-[#0050cb] disabled:opacity-50"
+                  onClick={navigateToList}
+                  className="rounded-xl border border-outline-variant px-6 py-3 text-xs font-bold text-on-surface hover:bg-surface-container-low cursor-pointer"
                 >
-                  {isSubmitting ? "Đang xử lý..." : "Đăng bán ngay"}
+                  {status === "ACTIVE" || status === "OUT_OF_STOCK" ? "Hoàn tất" : "Quay về danh sách"}
                 </button>
-              ) : null}
-              <button
-                type="button"
-                onClick={navigateToList}
-                className="rounded-lg border border-outline-variant px-6 py-2.5 text-label-md font-medium text-on-surface hover:bg-surface-container-low"
-              >
-                {status === "ACTIVE" || status === "OUT_OF_STOCK" ? "Hoàn tất" : "Quay về danh sách"}
-              </button>
-            </div>
-          </>
-        ) : (
-          <SellerProductWizardFooter
-            step={step}
-            canEdit={canEdit}
-            isSubmitting={isSubmitting}
-            onBack={goBack}
-            onSaveDraft={handleSaveDraft}
-            onNext={handleNext}
-            nextLabel={step === 3 ? "Xem lại" : "Tiếp theo"}
-          />
-        )}
-      </SellerProductWizardLayout>
+              </div>
+            </>
+          ) : (
+            <SellerProductWizardFooter
+              step={step}
+              canEdit={canEdit}
+              isSubmitting={isSubmitting}
+              onBack={goBack}
+              onSaveDraft={handleSaveDraft}
+              onNext={handleNext}
+              nextLabel={step === 3 ? "Xem lại" : "Tiếp theo"}
+            />
+          )}
+        </SellerProductWizardLayout>
+
+        {/* E-Commerce Trust Badges Footer */}
+        <div className="mx-auto max-w-6xl px-4 mt-8">
+          <CommerceFooterTrustSection />
+        </div>
+      </div>
 
       <FeedToast message={toastMessage} onDismiss={() => setToastMessage("")} />
     </CommerceShell>

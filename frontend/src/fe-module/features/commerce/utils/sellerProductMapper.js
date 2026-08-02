@@ -212,6 +212,8 @@ export function normalizeStep2ForCompare(form) {
   return {
     price: form.price === "" ? "" : String(Number(form.price)),
     salePrice: form.salePrice === "" ? "" : String(Number(form.salePrice)),
+    saleStartAt: form.saleStartAt || "",
+    saleEndAt: form.saleEndAt || "",
     stockQuantity: form.stockQuantity === "" ? "" : String(Number(form.stockQuantity)),
     lowStockThreshold:
       form.lowStockThreshold === "" || form.lowStockThreshold == null
@@ -274,11 +276,22 @@ export function mapUpdatePricePayload(form) {
   const payload = {
     price: Number(form.price),
     sale_price: form.salePrice !== "" ? Number(form.salePrice) : undefined,
-    start_at: form.saleStartAt?.trim() || new Date().toISOString(),
   };
 
+  if (form.saleStartAt?.trim()) {
+    const startDate = new Date(form.saleStartAt.trim());
+    payload.start_at = !isNaN(startDate.getTime())
+      ? startDate.toISOString()
+      : new Date().toISOString();
+  } else {
+    payload.start_at = new Date().toISOString();
+  }
+
   if (form.saleEndAt?.trim()) {
-    payload.end_at = form.saleEndAt.trim();
+    const endDate = new Date(form.saleEndAt.trim());
+    if (!isNaN(endDate.getTime())) {
+      payload.end_at = endDate.toISOString();
+    }
   }
 
   return payload;

@@ -43,7 +43,7 @@ public class ProductUpdatedOutboxService {
         return new OutboxEvent(
                 UUID.randomUUID(),
                 EVENT_TYPE,
-                "product:" + productId + ":updated",
+                "product:" + productId + ":updated:" + updatedAt.toEpochMilli(),
                 productId,
                 SOURCE,
                 serialize(payload),

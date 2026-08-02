@@ -1,9 +1,9 @@
 import { PRODUCT_CONDITIONS, PRODUCT_TYPE_OPTIONS, TITLE_MAX } from "../constants/sellerProductConstants";
 
 const inputClass =
-  "w-full rounded-lg border border-outline bg-surface-container-lowest px-4 py-2.5 text-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary";
+  "w-full rounded-2xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-xs text-on-surface shadow-xs transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-sm";
 
-const errorClass = "mt-1 text-sm text-error";
+const errorClass = "mt-1 text-xs font-bold text-error";
 
 export function SellerProductInfoStep({
   form,
@@ -14,12 +14,17 @@ export function SellerProductInfoStep({
   onFieldChange,
 }) {
   return (
-    <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm md:p-8">
-      <h2 className="mb-6 text-headline-sm font-semibold text-on-surface">Thông tin cơ bản</h2>
+    <div className="rounded-2xl border border-outline-variant/80 bg-surface-container-lowest p-6 shadow-xs sm:p-8">
+      <h2 className="mb-6 text-base font-black text-on-surface sm:text-lg flex items-center gap-2 border-b border-outline-variant/60 pb-3.5">
+        <span className="material-symbols-outlined text-primary text-xl" aria-hidden="true">
+          info
+        </span>
+        THÔNG TIN CƠ BẢN
+      </h2>
 
       <div className="space-y-5">
         <div>
-          <label htmlFor="product-type" className="mb-1 block text-label-md font-medium text-on-surface">
+          <label htmlFor="product-type" className="mb-1.5 block text-xs font-bold text-on-surface sm:text-sm">
             Loại sản phẩm
           </label>
           <select
@@ -38,8 +43,8 @@ export function SellerProductInfoStep({
         </div>
 
         <div>
-          <label htmlFor="category-id" className="mb-1 block text-label-md font-medium text-on-surface">
-            Danh mục <span className="text-error">*</span>
+          <label htmlFor="category-id" className="mb-1.5 block text-xs font-bold text-on-surface sm:text-sm">
+            Danh mục sản phẩm <span className="text-rose-600">*</span>
           </label>
           <select
             id="category-id"
@@ -59,8 +64,8 @@ export function SellerProductInfoStep({
         </div>
 
         <div>
-          <label htmlFor="brand-id" className="mb-1 block text-label-md font-medium text-on-surface">
-            Thương hiệu <span className="text-error">*</span>
+          <label htmlFor="brand-id" className="mb-1.5 block text-xs font-bold text-on-surface sm:text-sm">
+            Thương hiệu <span className="text-rose-600">*</span>
           </label>
           <select
             id="brand-id"
@@ -79,8 +84,8 @@ export function SellerProductInfoStep({
         </div>
 
         <div>
-          <label htmlFor="condition" className="mb-1 block text-label-md font-medium text-on-surface">
-            Tình trạng <span className="text-error">*</span>
+          <label htmlFor="condition" className="mb-1.5 block text-xs font-bold text-on-surface sm:text-sm">
+            Tình trạng sản phẩm 2Hand <span className="text-rose-600">*</span>
           </label>
           <select
             id="condition"
@@ -98,19 +103,20 @@ export function SellerProductInfoStep({
         </div>
 
         <div>
-          <label htmlFor="product-title" className="mb-1 block text-label-md font-medium text-on-surface">
-            Tên sản phẩm <span className="text-error">*</span>
+          <label htmlFor="product-title" className="mb-1.5 block text-xs font-bold text-on-surface sm:text-sm">
+            Tên sản phẩm <span className="text-rose-600">*</span>
           </label>
           <input
             id="product-title"
             type="text"
             maxLength={TITLE_MAX}
             className={inputClass}
+            placeholder="Nhập tên sản phẩm (Ví dụ: Áo khoác Vintage Denim Levis Size L...)"
             value={form.title}
             disabled={disabled}
             onChange={(e) => onFieldChange("title", e.target.value)}
           />
-          <p className="mt-1 text-right text-body-sm text-on-surface-variant">
+          <p className="mt-1 text-right text-xs font-semibold text-on-surface-variant">
             {form.title.length}/{TITLE_MAX}
           </p>
           {fieldErrors.title ? <p className={errorClass}>{fieldErrors.title}</p> : null}
@@ -119,20 +125,20 @@ export function SellerProductInfoStep({
         <div>
           <label
             htmlFor="product-description"
-            className="mb-1 block text-label-md font-medium text-on-surface"
+            className="mb-1.5 block text-xs font-bold text-on-surface sm:text-sm"
           >
-            Mô tả <span className="text-error">*</span>
+            Mô tả sản phẩm <span className="text-rose-600">*</span>
           </label>
-          <div className="mb-2 flex gap-1 rounded-t-lg border border-b-0 border-outline-variant bg-surface-container-low px-2 py-1">
+          <div className="mb-2 flex gap-1 rounded-t-2xl border border-b-0 border-outline-variant bg-surface-container-low px-3 py-1.5">
             {["format_bold", "format_italic", "format_list_bulleted", "link"].map((icon) => (
               <button
                 key={icon}
                 type="button"
                 disabled
-                className="rounded p-1 text-on-surface-variant opacity-50"
+                className="rounded-lg p-1 text-on-surface-variant opacity-50"
                 aria-hidden="true"
               >
-                <span className="material-symbols-outlined text-[18px]">{icon}</span>
+                <span className="material-symbols-outlined text-base">{icon}</span>
               </button>
             ))}
           </div>
@@ -140,6 +146,7 @@ export function SellerProductInfoStep({
             id="product-description"
             rows={5}
             className={`${inputClass} rounded-t-none`}
+            placeholder="Mô tả chi tiết chất liệu, kích thước, độ mới và xuất xứ của sản phẩm..."
             value={form.description}
             disabled={disabled}
             onChange={(e) => onFieldChange("description", e.target.value)}
@@ -148,14 +155,15 @@ export function SellerProductInfoStep({
         </div>
 
         <div>
-          <label htmlFor="weight-gram" className="mb-1 block text-label-md font-medium text-on-surface">
-            Cân nặng (gram) <span className="text-error">*</span>
+          <label htmlFor="weight-gram" className="mb-1.5 block text-xs font-bold text-on-surface sm:text-sm">
+            Cân nặng đóng gói (gram) <span className="text-rose-600">*</span>
           </label>
           <input
             id="weight-gram"
             type="number"
             min={1}
             className={inputClass}
+            placeholder="Ví dụ: 350"
             value={form.weightGram}
             disabled={disabled}
             onChange={(e) => onFieldChange("weightGram", e.target.value)}
