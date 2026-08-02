@@ -20,8 +20,9 @@ export function AppLayout() {
     location.pathname === APP_ROUTES.verifyEmail ||
     isAdminLoginRoute;
 
+  const isSocialFeedRoute = location.pathname === APP_ROUTES.socialFeed;
   const isSocialRoute =
-    location.pathname === APP_ROUTES.socialFeed ||
+    isSocialFeedRoute ||
     location.pathname.startsWith(`${APP_ROUTES.socialFeed}/`);
   const isCommerceRoute =
     location.pathname === APP_ROUTES.commerceHome ||
@@ -117,7 +118,7 @@ export function AppLayout() {
       >
         <Outlet />
       </main>
-      <AppFooter />
+      {!isSocialFeedRoute ? <AppFooter /> : null}
       <NotificationToastHost />
       <SessionExpiredModal
         open={sessionExpiredState.isOpen}

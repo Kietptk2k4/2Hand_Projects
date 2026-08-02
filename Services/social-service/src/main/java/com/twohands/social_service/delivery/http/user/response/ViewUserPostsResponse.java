@@ -8,6 +8,7 @@ public record ViewUserPostsResponse(
 ) {
     public record UserPostItemResponse(
             String postId,
+            String authorId,
             String caption,
             List<MediaItemResponse> media,
             String visibility,

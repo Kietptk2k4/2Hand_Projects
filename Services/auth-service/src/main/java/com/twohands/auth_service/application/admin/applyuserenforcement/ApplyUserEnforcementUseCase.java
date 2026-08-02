@@ -4,7 +4,7 @@ import com.twohands.auth_service.domain.enforcement.UserEnforcementActionType;
 import com.twohands.auth_service.domain.enforcement.UserEnforcementSnapshot;
 import com.twohands.auth_service.domain.enforcement.UserEnforcementSnapshotRepository;
 import com.twohands.auth_service.domain.enforcement.UserEnforcementSnapshotStatus;
-import com.twohands.auth_service.domain.session.RefreshTokenSessionRepository;
+import com.twohands.auth_service.application.session.RevokeAllUserSessionsService;
 import com.twohands.auth_service.domain.user.User;
 import com.twohands.auth_service.domain.user.UserRepository;
 import com.twohands.auth_service.domain.user.UserStatus;
@@ -25,16 +25,16 @@ public class ApplyUserEnforcementUseCase {
     private static final Logger log = LoggerFactory.getLogger(ApplyUserEnforcementUseCase.class);
 
     private final UserRepository userRepository;
-    private final RefreshTokenSessionRepository refreshTokenSessionRepository;
+    private final RevokeAllUserSessionsService revokeAllUserSessionsService;
     private final UserEnforcementSnapshotRepository enforcementSnapshotRepository;
 
     public ApplyUserEnforcementUseCase(
             UserRepository userRepository,
-            RefreshTokenSessionRepository refreshTokenSessionRepository,
+            RevokeAllUserSessionsService revokeAllUserSessionsService,
             UserEnforcementSnapshotRepository enforcementSnapshotRepository
     ) {
         this.userRepository = userRepository;
-        this.refreshTokenSessionRepository = refreshTokenSessionRepository;
+        this.revokeAllUserSessionsService = revokeAllUserSessionsService;
         this.enforcementSnapshotRepository = enforcementSnapshotRepository;
     }
 
@@ -105,7 +105,7 @@ public class ApplyUserEnforcementUseCase {
                 .map(snapshot -> {
                     int revokedSessionCount = 0;
                     if (command.actionType().blocksLogin()) {
-                        revokedSessionCount = refreshTokenSessionRepository.revokeAllByUserId(command.userId());
+                        revokedSessionCount = revokeAllUserSessionsService.revokeAll(command.userId());
                     }
                     return new ApplyUserEnforcementResult(
                             command.userId(),
@@ -154,7 +154,7 @@ public class ApplyUserEnforcementUseCase {
             userRepository.updateStatus(user.id(), user.status(), user.updatedAt());
         }
 
-        int revokedSessionCount = refreshTokenSessionRepository.revokeAllByUserId(user.id());
+        int revokedSessionCount = revokeAllUserSessionsService.revokeAll(user.id());
         saveAppliedSnapshot(command, now);
 
         return new ApplyUserEnforcementResult(
@@ -264,7 +264,7 @@ public class ApplyUserEnforcementUseCase {
                 userId,
                 resolveStatusName(userId),
                 snapshot.actionType().blocksLogin()
-                        ? refreshTokenSessionRepository.revokeAllByUserId(userId)
+                        ? revokeAllUserSessionsService.revokeAll(userId)
                         : 0,
                 idempotentReplay,
                 false

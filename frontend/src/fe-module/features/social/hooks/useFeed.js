@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { fetchFollowingFeed, fetchForYouFeed } from "../api/feedApi";
+import { fetchFollowingFeed, fetchForYouFeed, fetchGlobalFeed } from "../api/feedApi";
 import { FEED_TABS, FEED_PAGE_SIZE } from "../constants/feedTabs";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 
 const FETCH_BY_TAB = {
   [FEED_TABS.FOR_YOU]: fetchForYouFeed,
   [FEED_TABS.FOLLOWING]: fetchFollowingFeed,
+  global: fetchGlobalFeed,
 };
 
 export function useFeed(activeTab) {

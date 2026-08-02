@@ -1,5 +1,6 @@
 package com.twohands.auth_service.application.admin.revokeadminsession;
 
+import com.twohands.auth_service.application.session.RevokeAllUserSessionsService;
 import com.twohands.auth_service.domain.rbac.AdminPortalAccessPolicy;
 import com.twohands.auth_service.domain.rbac.AuthorizationDomainService;
 import com.twohands.auth_service.domain.rbac.PermissionQueryRepository;
@@ -25,16 +26,19 @@ public class RevokeAdminSessionUseCase {
     private static final String SUCCESS_MESSAGE = "Thu hoi phien admin thanh cong.";
 
     private final RefreshTokenSessionRepository refreshTokenSessionRepository;
+    private final RevokeAllUserSessionsService revokeAllUserSessionsService;
     private final UserRepository userRepository;
     private final PermissionQueryRepository permissionQueryRepository;
     private final AuthorizationDomainService authorizationDomainService;
 
     public RevokeAdminSessionUseCase(
             RefreshTokenSessionRepository refreshTokenSessionRepository,
+            RevokeAllUserSessionsService revokeAllUserSessionsService,
             UserRepository userRepository,
             PermissionQueryRepository permissionQueryRepository
     ) {
         this.refreshTokenSessionRepository = refreshTokenSessionRepository;
+        this.revokeAllUserSessionsService = revokeAllUserSessionsService;
         this.userRepository = userRepository;
         this.permissionQueryRepository = permissionQueryRepository;
         this.authorizationDomainService = new AuthorizationDomainService();
@@ -56,7 +60,7 @@ public class RevokeAdminSessionUseCase {
         Instant now = Instant.now();
         int revokedCount;
         if (command.revokeAllSessions()) {
-            revokedCount = refreshTokenSessionRepository.revokeAllByUserId(session.userId());
+            revokedCount = revokeAllUserSessionsService.revokeAll(session.userId());
         } else {
             revokedCount = refreshTokenSessionRepository.markRevokedIfActive(session.id(), now);
         }

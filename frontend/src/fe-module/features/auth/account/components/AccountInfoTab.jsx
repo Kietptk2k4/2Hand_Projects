@@ -5,9 +5,9 @@ import { AccountCard, TabPanelHeader } from "../../../../shared/ui/auth/authUi.j
 
 function InfoRow({ label, value, children }) {
   return (
-    <div className="flex flex-col gap-1 border-b border-outline-variant/50 py-3 last:border-0 sm:flex-row sm:items-center sm:justify-between">
-      <span className="text-sm font-medium text-on-surface-variant">{label}</span>
-      <div className="text-sm text-on-surface">{children || value || NOT_UPDATED}</div>
+    <div className="flex flex-col gap-1 border-b border-outline-variant/30 py-3 last:border-0 sm:flex-row sm:items-center sm:justify-between">
+      <span className="text-xs font-bold text-on-surface-variant/80">{label}</span>
+      <div className="text-sm font-medium text-on-surface">{children || value || NOT_UPDATED}</div>
     </div>
   );
 }
@@ -15,13 +15,13 @@ function InfoRow({ label, value, children }) {
 function StatusBadge({ status }) {
   const styles =
     status === "ACTIVE"
-      ? "bg-green-50 text-green-800"
+      ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
       : status === "PENDING_VERIFICATION"
-        ? "bg-amber-50 text-amber-800"
+        ? "bg-amber-500/10 text-amber-600 border border-amber-500/20"
         : "bg-outline-variant/30 text-on-surface-variant";
 
   return (
-    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${styles}`}>
+    <span className={`inline-flex rounded-full px-3 py-0.5 text-xs font-bold ${styles}`}>
       {getUserStatusLabel(status)}
     </span>
   );
@@ -54,7 +54,7 @@ export function AccountInfoTab({ profile, onTabChange }) {
 
       <div className="space-y-6">
         <AccountCard>
-          <h2 className="mb-4 text-lg font-semibold text-on-surface">Tài khoản</h2>
+          <h2 className="mb-3 text-lg font-extrabold text-on-surface leading-tight">Tài khoản</h2>
           <InfoRow label="Email" value={user?.email} />
           <InfoRow label="Trạng thái">
             <StatusBadge status={user?.status || "UNKNOWN"} />
@@ -67,21 +67,21 @@ export function AccountInfoTab({ profile, onTabChange }) {
         </AccountCard>
 
         <AccountCard>
-          <h2 className="mb-4 text-lg font-semibold text-on-surface">Hồ sơ</h2>
+          <h2 className="mb-3 text-lg font-extrabold text-on-surface leading-tight">Hồ sơ</h2>
           <div className="mb-4 flex items-center gap-4">
             {userProfile?.avatar_url ? (
               <img
                 src={userProfile.avatar_url}
                 alt=""
-                className="h-16 w-16 rounded-full border border-outline-variant object-cover"
+                className="h-14 w-14 rounded-full border-2 border-surface-container-low object-cover shadow-2xs"
               />
             ) : null}
             <div>
-              <p className="font-medium text-on-surface">{userProfile?.display_name || NOT_UPDATED}</p>
+              <p className="font-bold text-on-surface text-base">{userProfile?.display_name || NOT_UPDATED}</p>
               <button
                 type="button"
                 onClick={() => onTabChange("edit")}
-                className="mt-1 text-sm font-medium text-primary hover:underline"
+                className="mt-0.5 text-xs font-bold text-sky-500 hover:underline"
               >
                 Chỉnh sửa hồ sơ
               </button>
@@ -90,7 +90,7 @@ export function AccountInfoTab({ profile, onTabChange }) {
           <InfoRow label="Giới thiệu" value={userProfile?.bio} />
           <InfoRow label="Website">
             {userProfile?.website ? (
-              <a href={userProfile.website} className="text-primary hover:underline" target="_blank" rel="noreferrer">
+              <a href={userProfile.website} className="text-sky-500 hover:underline font-medium" target="_blank" rel="noreferrer">
                 {userProfile.website}
               </a>
             ) : null}
@@ -100,7 +100,7 @@ export function AccountInfoTab({ profile, onTabChange }) {
               <ul className="space-y-1">
                 {Object.entries(userProfile.social_links).map(([key, url]) => (
                   <li key={key}>
-                    <a href={url} className="text-primary hover:underline" target="_blank" rel="noreferrer">
+                    <a href={url} className="text-sky-500 hover:underline font-medium" target="_blank" rel="noreferrer">
                       {key}: {url}
                     </a>
                   </li>
@@ -114,29 +114,29 @@ export function AccountInfoTab({ profile, onTabChange }) {
         </AccountCard>
 
         <AccountCard>
-          <h2 className="mb-4 text-lg font-semibold text-on-surface">Cài đặt (tóm tắt)</h2>
+          <h2 className="mb-3 text-lg font-extrabold text-on-surface leading-tight">Cài đặt (tóm tắt)</h2>
           <InfoRow
             label="Giao diện"
             value={APPEARANCE_LABELS[settings?.appearance_mode] || settings?.appearance_mode}
           />
-          <div className="mt-4 flex flex-wrap gap-3 text-sm">
-            <button type="button" onClick={() => onTabChange("settings")} className="font-medium text-primary hover:underline">
+          <div className="mt-4 flex flex-wrap gap-4 text-xs font-bold">
+            <button type="button" onClick={() => onTabChange("settings")} className="text-sky-500 hover:underline">
               Cập nhật cài đặt
             </button>
-            <Link to={APP_ROUTES.accountPassword} className="font-medium text-primary hover:underline">
+            <Link to={APP_ROUTES.accountPassword} className="text-sky-500 hover:underline">
               Đổi mật khẩu
             </Link>
           </div>
         </AccountCard>
 
         <AccountCard>
-          <h2 className="mb-4 text-lg font-semibold text-on-surface">Bảo mật</h2>
-          <p className="text-sm text-on-surface-variant">
+          <h2 className="mb-3 text-lg font-extrabold text-on-surface leading-tight">Bảo mật</h2>
+          <p className="text-sm text-on-surface-variant/70">
             Xem phiên đăng nhập đang hoạt động và lịch sử đăng nhập của tài khoản.
           </p>
           <div className="mt-4">
-            <Link to={APP_ROUTES.accountSecurity} className="font-medium text-primary hover:underline">
-              Bảo mật tài khoản
+            <Link to={APP_ROUTES.accountSecurity} className="text-xs font-bold text-sky-500 hover:underline">
+              Bảo mật tài khoản →
             </Link>
           </div>
         </AccountCard>

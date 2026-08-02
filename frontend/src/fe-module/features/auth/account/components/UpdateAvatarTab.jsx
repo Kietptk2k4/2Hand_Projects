@@ -135,17 +135,17 @@ function UploadProgressBlock({ uploadProgress, selectedFile }) {
   if (uploadProgress === null) return null;
 
   return (
-    <div className="rounded-lg border border-outline-variant bg-account-surface-low p-4">
-      <div className="mb-2 flex justify-between text-xs font-semibold">
-        <span className="text-primary">
-          {uploadProgress >= 100 ? "Hoan tat" : "Đang tải len..."}
+    <div className="rounded-xl border border-outline-variant/40 bg-surface-container-low/40 p-4">
+      <div className="mb-2 flex justify-between text-xs font-bold">
+        <span className="text-sky-500">
+          {uploadProgress >= 100 ? "Hoàn tất" : "Đang tải lên..."}
           {selectedFile?.name ? ` ${selectedFile.name}` : ""}
         </span>
         <span>{uploadProgress}%</span>
       </div>
       <div className="h-2 w-full overflow-hidden rounded-full bg-outline-variant/30">
         <div
-          className="h-full rounded-full bg-primary-container transition-all duration-300"
+          className="h-full rounded-full bg-sky-500 transition-all duration-300"
           style={{ width: `${uploadProgress}%` }}
         />
       </div>
@@ -166,7 +166,7 @@ export function UpdateAvatarTab({ profile, refetch, onNotify }) {
     persistImageUrl: (url) => updateMyAvatar({ avatar_url: url }),
     getPublicUrl: (meta) => meta.avatar_url,
     invalidTypeMessage: "Định dạng không được hỗ trợ. Chỉ JPG, PNG, WEBP.",
-    maxSizeMessage: "Tep vuot qua 5MB.",
+    maxSizeMessage: "Tệp vượt quá 5MB.",
   });
 
   const cover = useProfileImageUpload({
@@ -178,14 +178,14 @@ export function UpdateAvatarTab({ profile, refetch, onNotify }) {
     persistImageUrl: (url) => updateMyCover({ cover_url: url }),
     getPublicUrl: (meta) => meta.cover_url,
     invalidTypeMessage: "Định dạng không được hỗ trợ. Chỉ JPG, PNG, WEBP.",
-    maxSizeMessage: "Tep vuot qua 5MB.",
+    maxSizeMessage: "Tệp vượt quá 5MB.",
   });
 
   const submitAvatar = async () => {
     try {
       await avatar.onSubmit();
       await refetch();
-      onNotify?.({ variant: "success", message: "Cập nhật anh dai dien thành công." });
+      onNotify?.({ variant: "success", message: "Cập nhật ảnh đại diện thành công." });
     } catch (error) {
       onNotify?.({ variant: "error", message: error?.message });
     }
@@ -195,7 +195,7 @@ export function UpdateAvatarTab({ profile, refetch, onNotify }) {
     try {
       await cover.onSubmit();
       await refetch();
-      onNotify?.({ variant: "success", message: "Cập nhật anh bia thanh cong." });
+      onNotify?.({ variant: "success", message: "Cập nhật ảnh bìa thành công." });
     } catch (error) {
       onNotify?.({ variant: "error", message: error?.message });
     }
@@ -205,8 +205,8 @@ export function UpdateAvatarTab({ profile, refetch, onNotify }) {
     <div className="space-y-10">
       <section>
         <TabPanelHeader
-          title="Cập nhật anh dai dien"
-          subtitle="Chọn một buc anh the hien su chuyen nghiep của ban."
+          title="Cập nhật ảnh đại diện"
+          subtitle="Chọn một bức ảnh thể hiện sự chuyên nghiệp của bạn."
         />
 
         <AccountCard>
@@ -218,21 +218,21 @@ export function UpdateAvatarTab({ profile, refetch, onNotify }) {
                 className="group relative"
                 aria-label="Chọn ảnh đại diện"
               >
-                <div className="relative h-48 w-48 overflow-hidden rounded-full border-4 border-white shadow-sm md:h-64 md:w-64">
+                <div className="relative h-44 w-44 overflow-hidden rounded-full border-4 border-surface-container-low shadow-2xs md:h-56 md:w-56 shrink-0">
                   <img
                     src={avatar.previewUrl}
                     alt=""
                     className={[
-                      "h-full w-full object-cover transition",
+                      "h-full w-full object-cover transition duration-300 group-hover:scale-105",
                       avatar.uploadProgress !== null && avatar.uploadProgress < 100 ? "opacity-50" : "",
                     ].join(" ")}
                   />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition group-hover:opacity-100">
-                    <span className="text-3xl text-white">📷</span>
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition duration-200 group-hover:opacity-100">
+                    <span className="material-symbols-outlined text-3xl text-white">photo_camera</span>
                   </div>
                 </div>
               </button>
-              <p className="mt-4 text-center text-xs font-semibold text-on-surface-variant">Nhap vào anh de thay doi</p>
+              <p className="mt-3 text-center text-xs font-bold text-on-surface-variant/70">Nhấp vào ảnh để thay đổi</p>
               <input
                 ref={avatar.fileInputRef}
                 type="file"
@@ -244,22 +244,22 @@ export function UpdateAvatarTab({ profile, refetch, onNotify }) {
 
             <div className="space-y-6">
               <div>
-                <h3 className="mb-3 text-base font-semibold text-on-surface">Huong dan tai len</h3>
-                <ul className="space-y-2 text-sm text-on-surface-variant">
-                  <li>• Su dung hinh anh ro net, chup chinh dien khuon mat.</li>
-                  <li>• Dinh dang: JPG, PNG, WEBP.</li>
-                  <li>• Toi da 5MB. Do phan giai khuyen dung 500x500px.</li>
+                <h3 className="mb-2 text-base font-extrabold text-on-surface">Hướng dẫn tải lên</h3>
+                <ul className="space-y-2 text-xs font-medium text-on-surface-variant/70">
+                  <li>• Sử dụng hình ảnh rõ nét, chụp chính diện khuôn mặt.</li>
+                  <li>• Định dạng: JPG, PNG, WEBP.</li>
+                  <li>• Tối đa 5MB. Độ phân giải khuyến dùng 500x500px.</li>
                 </ul>
               </div>
 
               <UploadProgressBlock uploadProgress={avatar.uploadProgress} selectedFile={avatar.selectedFile} />
-              {avatar.errorMessage ? <p className="text-sm text-error">{avatar.errorMessage}</p> : null}
+              {avatar.errorMessage ? <p className="text-xs text-error font-medium">{avatar.errorMessage}</p> : null}
             </div>
           </div>
 
-          <div className="mt-8 flex justify-end gap-3 border-t border-outline-variant pt-6">
+          <div className="mt-8 flex justify-end gap-3 border-t border-outline-variant/30 pt-6">
             <SecondaryButton type="button" onClick={avatar.resetSelection} disabled={avatar.isSubmitting}>
-              Huy
+              Hủy
             </SecondaryButton>
             <PrimaryButton
               type="button"
@@ -267,7 +267,7 @@ export function UpdateAvatarTab({ profile, refetch, onNotify }) {
               loading={avatar.isSubmitting}
               disabled={!avatar.selectedFile || avatar.isSubmitting}
             >
-              Cập nhật anh dai dien
+              Cập nhật ảnh đại diện
             </PrimaryButton>
           </div>
         </AccountCard>
@@ -275,7 +275,7 @@ export function UpdateAvatarTab({ profile, refetch, onNotify }) {
 
       <section>
         <TabPanelHeader
-          title="Cập nhật anh bia"
+          title="Cập nhật ảnh bìa"
           subtitle="Chọn ảnh nền hiển thị trên trang hồ sơ của bạn."
         />
 
@@ -288,21 +288,21 @@ export function UpdateAvatarTab({ profile, refetch, onNotify }) {
                 className="group relative w-full max-w-xl"
                 aria-label="Chọn ảnh bìa"
               >
-                <div className="relative h-40 w-full overflow-hidden rounded-xl border border-outline-variant shadow-sm md:h-52">
+                <div className="relative h-40 w-full overflow-hidden rounded-2xl border border-outline-variant/40 shadow-2xs md:h-52">
                   <img
                     src={cover.previewUrl}
                     alt=""
                     className={[
-                      "h-full w-full object-cover transition",
+                      "h-full w-full object-cover transition duration-300 group-hover:scale-105",
                       cover.uploadProgress !== null && cover.uploadProgress < 100 ? "opacity-50" : "",
                     ].join(" ")}
                   />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition group-hover:opacity-100">
-                    <span className="text-3xl text-white">📷</span>
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition duration-200 group-hover:opacity-100">
+                    <span className="material-symbols-outlined text-3xl text-white">photo_camera</span>
                   </div>
                 </div>
               </button>
-              <p className="mt-4 text-center text-xs font-semibold text-on-surface-variant">Nhap vào anh bia de thay doi</p>
+              <p className="mt-3 text-center text-xs font-bold text-on-surface-variant/70">Nhấp vào ảnh bìa để thay đổi</p>
               <input
                 ref={cover.fileInputRef}
                 type="file"
@@ -314,22 +314,22 @@ export function UpdateAvatarTab({ profile, refetch, onNotify }) {
 
             <div className="space-y-6">
               <div>
-                <h3 className="mb-3 text-base font-semibold text-on-surface">Huong dan tai len</h3>
-                <ul className="space-y-2 text-sm text-on-surface-variant">
-                  <li>• Su dung hinh anh ngang, ro net, khong chua noi dung nhay cam.</li>
-                  <li>• Dinh dang: JPG, PNG, WEBP.</li>
-                  <li>• Toi da 5MB. Do phan giai khuyen dung 1500x500px.</li>
+                <h3 className="mb-2 text-base font-extrabold text-on-surface">Hướng dẫn tải lên</h3>
+                <ul className="space-y-2 text-xs font-medium text-on-surface-variant/70">
+                  <li>• Sử dụng hình ảnh ngang, rõ nét, không chứa nội dung nhạy cảm.</li>
+                  <li>• Định dạng: JPG, PNG, WEBP.</li>
+                  <li>• Tối đa 5MB. Độ phân giải khuyến dùng 1500x500px.</li>
                 </ul>
               </div>
 
               <UploadProgressBlock uploadProgress={cover.uploadProgress} selectedFile={cover.selectedFile} />
-              {cover.errorMessage ? <p className="text-sm text-error">{cover.errorMessage}</p> : null}
+              {cover.errorMessage ? <p className="text-xs text-error font-medium">{cover.errorMessage}</p> : null}
             </div>
           </div>
 
-          <div className="mt-8 flex justify-end gap-3 border-t border-outline-variant pt-6">
+          <div className="mt-8 flex justify-end gap-3 border-t border-outline-variant/30 pt-6">
             <SecondaryButton type="button" onClick={cover.resetSelection} disabled={cover.isSubmitting}>
-              Huy
+              Hủy
             </SecondaryButton>
             <PrimaryButton
               type="button"
@@ -337,7 +337,7 @@ export function UpdateAvatarTab({ profile, refetch, onNotify }) {
               loading={cover.isSubmitting}
               disabled={!cover.selectedFile || cover.isSubmitting}
             >
-              Cập nhật anh bia
+              Cập nhật ảnh bìa
             </PrimaryButton>
           </div>
         </AccountCard>

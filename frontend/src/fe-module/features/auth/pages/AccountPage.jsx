@@ -49,14 +49,14 @@ export function AccountPage() {
         <ErrorState
           message={
             status === "not_found"
-              ? errorMessage || "Không tìm thay tài khoản."
-              : errorMessage || "Không tải duoc thông tin tài khoản."
+              ? errorMessage || "Không tìm thấy tài khoản."
+              : errorMessage || "Không tải được thông tin tài khoản."
           }
         />
         <button
           type="button"
           onClick={refetch}
-          className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white"
+          className="mt-4 rounded-full bg-zinc-900 px-5 py-2 text-xs font-bold text-white hover:bg-zinc-800"
         >
           Thử lại
         </button>

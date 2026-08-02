@@ -282,11 +282,14 @@ public class PostRepositoryAdapter implements PostRepository {
     }
 
     private Post toDomain(PostDocument postDocument) {
-        List<MediaItem> media = postDocument.getMedia().stream()
-                .map(this::toMedia)
-                .toList();
+        List<MediaItem> media = postDocument.getMedia() != null
+                ? postDocument.getMedia().stream().map(this::toMedia).toList()
+                : List.of();
         List<ProductTag> productTags = postDocument.getProductTags() != null
                 ? postDocument.getProductTags().stream().map(this::toProductTag).toList()
+                : List.of();
+        List<String> hashtags = postDocument.getHashtags() != null
+                ? postDocument.getHashtags()
                 : List.of();
         return new Post(
                 postDocument.getId(),
@@ -298,7 +301,7 @@ public class PostRepositoryAdapter implements PostRepository {
                 PostVisibility.valueOf(postDocument.getVisibility()),
                 postDocument.getLikeCount(),
                 postDocument.getReplyCount(),
-                postDocument.getHashtags(),
+                hashtags,
                 postDocument.isAllowComments(),
                 resolveModerationStatus(postDocument),
                 postDocument.getModerationReason(),

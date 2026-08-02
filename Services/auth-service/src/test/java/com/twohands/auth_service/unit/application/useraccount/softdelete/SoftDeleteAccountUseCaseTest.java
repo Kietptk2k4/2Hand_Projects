@@ -7,7 +7,7 @@ import com.twohands.auth_service.application.useraccount.softdelete.SoftDeleteAc
 import com.twohands.auth_service.application.useraccount.softdelete.SoftDeleteAccountUseCase;
 import com.twohands.auth_service.application.useraccount.softdelete.SoftDeleteAccountValidationService;
 import com.twohands.auth_service.domain.outbox.OutboxEventRepository;
-import com.twohands.auth_service.domain.session.RefreshTokenSessionRepository;
+import com.twohands.auth_service.application.session.RevokeAllUserSessionsService;
 import com.twohands.auth_service.domain.user.EmailAddress;
 import com.twohands.auth_service.domain.user.PasswordHash;
 import com.twohands.auth_service.domain.user.User;
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.when;
 class SoftDeleteAccountUseCaseTest {
 
     private final UserRepository userRepository = Mockito.mock(UserRepository.class);
-    private final RefreshTokenSessionRepository refreshTokenSessionRepository = Mockito.mock(RefreshTokenSessionRepository.class);
+    private final RevokeAllUserSessionsService revokeAllUserSessionsService = Mockito.mock(RevokeAllUserSessionsService.class);
     private final OutboxEventRepository outboxEventRepository = Mockito.mock(OutboxEventRepository.class);
     private final PasswordHashingService passwordHashingService = Mockito.mock(PasswordHashingService.class);
     private final UserAccountOutboxService outboxService = Mockito.mock(UserAccountOutboxService.class);
@@ -46,7 +46,7 @@ class SoftDeleteAccountUseCaseTest {
         useCase = new SoftDeleteAccountUseCase(
                 new SoftDeleteAccountValidationService(),
                 userRepository,
-                refreshTokenSessionRepository,
+                revokeAllUserSessionsService,
                 outboxEventRepository,
                 passwordHashingService,
                 outboxService,
@@ -66,7 +66,7 @@ class SoftDeleteAccountUseCaseTest {
 
         assertEquals("Mat khau khong chinh xac.", ex.getMessage());
         verify(userRepository, never()).updateStatusDeleted(any(), any());
-        verify(refreshTokenSessionRepository, never()).revokeAllByUserId(any());
+        verify(revokeAllUserSessionsService, never()).revokeAll(any());
         verify(outboxEventRepository, never()).save(any());
     }
 

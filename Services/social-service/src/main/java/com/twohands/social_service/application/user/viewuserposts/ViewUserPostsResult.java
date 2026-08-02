@@ -23,6 +23,7 @@ public record ViewUserPostsResult(
 
     public record UserPostItem(
             String postId,
+            String authorId,
             String caption,
             List<MediaItemData> media,
             String visibility,

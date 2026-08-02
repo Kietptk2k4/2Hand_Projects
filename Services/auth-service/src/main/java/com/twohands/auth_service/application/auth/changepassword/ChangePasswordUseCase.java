@@ -6,7 +6,7 @@ import com.twohands.auth_service.application.auth.register.PasswordHashingServic
 import com.twohands.auth_service.domain.outbox.OutboxEvent;
 import com.twohands.auth_service.domain.outbox.OutboxEventRepository;
 import com.twohands.auth_service.domain.outbox.OutboxStatus;
-import com.twohands.auth_service.domain.session.RefreshTokenSessionRepository;
+import com.twohands.auth_service.application.session.RevokeAllUserSessionsService;
 import com.twohands.auth_service.domain.user.User;
 import com.twohands.auth_service.domain.user.UserRepository;
 import com.twohands.auth_service.exception.AppException;
@@ -28,7 +28,7 @@ public class ChangePasswordUseCase {
     private final ChangePasswordValidationService validationService;
     private final UserRepository userRepository;
     private final PasswordHashingService passwordHashingService;
-    private final RefreshTokenSessionRepository refreshTokenSessionRepository;
+    private final RevokeAllUserSessionsService revokeAllUserSessionsService;
     private final OutboxEventRepository outboxEventRepository;
     private final ObjectMapper objectMapper;
 
@@ -36,14 +36,14 @@ public class ChangePasswordUseCase {
             ChangePasswordValidationService validationService,
             UserRepository userRepository,
             PasswordHashingService passwordHashingService,
-            RefreshTokenSessionRepository refreshTokenSessionRepository,
+            RevokeAllUserSessionsService revokeAllUserSessionsService,
             OutboxEventRepository outboxEventRepository,
             ObjectMapper objectMapper
     ) {
         this.validationService = validationService;
         this.userRepository = userRepository;
         this.passwordHashingService = passwordHashingService;
-        this.refreshTokenSessionRepository = refreshTokenSessionRepository;
+        this.revokeAllUserSessionsService = revokeAllUserSessionsService;
         this.outboxEventRepository = outboxEventRepository;
         this.objectMapper = objectMapper;
     }
@@ -71,7 +71,7 @@ public class ChangePasswordUseCase {
         Instant now = Instant.now();
         var newPasswordHash = passwordHashingService.hash(command.newPassword());
         userRepository.updatePassword(user.id(), newPasswordHash, now);
-        refreshTokenSessionRepository.revokeAllByUserId(user.id());
+        revokeAllUserSessionsService.revokeAll(user.id());
         outboxEventRepository.save(buildPasswordChangedOutboxEvent(user.id(), user.email().normalizedValue(), now));
     }
 

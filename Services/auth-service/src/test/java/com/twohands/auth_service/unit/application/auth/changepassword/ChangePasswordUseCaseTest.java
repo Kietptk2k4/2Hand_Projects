@@ -6,7 +6,7 @@ import com.twohands.auth_service.application.auth.changepassword.ChangePasswordU
 import com.twohands.auth_service.application.auth.changepassword.ChangePasswordValidationService;
 import com.twohands.auth_service.application.auth.register.PasswordHashingService;
 import com.twohands.auth_service.domain.outbox.OutboxEventRepository;
-import com.twohands.auth_service.domain.session.RefreshTokenSessionRepository;
+import com.twohands.auth_service.application.session.RevokeAllUserSessionsService;
 import com.twohands.auth_service.domain.user.EmailAddress;
 import com.twohands.auth_service.domain.user.PasswordHash;
 import com.twohands.auth_service.domain.user.User;
@@ -32,7 +32,7 @@ class ChangePasswordUseCaseTest {
 
     private final UserRepository userRepository = Mockito.mock(UserRepository.class);
     private final PasswordHashingService passwordHashingService = Mockito.mock(PasswordHashingService.class);
-    private final RefreshTokenSessionRepository refreshTokenSessionRepository = Mockito.mock(RefreshTokenSessionRepository.class);
+    private final RevokeAllUserSessionsService revokeAllUserSessionsService = Mockito.mock(RevokeAllUserSessionsService.class);
     private final OutboxEventRepository outboxEventRepository = Mockito.mock(OutboxEventRepository.class);
 
     private ChangePasswordUseCase useCase;
@@ -45,7 +45,7 @@ class ChangePasswordUseCaseTest {
                 new ChangePasswordValidationService(),
                 userRepository,
                 passwordHashingService,
-                refreshTokenSessionRepository,
+                revokeAllUserSessionsService,
                 outboxEventRepository,
                 new ObjectMapper()
         );
@@ -65,7 +65,7 @@ class ChangePasswordUseCaseTest {
 
         assertEquals("Mat khau hien tai khong chinh xac.", ex.getMessage());
         verify(userRepository, never()).updatePassword(any(), any(), any());
-        verify(refreshTokenSessionRepository, never()).revokeAllByUserId(any());
+        verify(revokeAllUserSessionsService, never()).revokeAll(any());
         verify(outboxEventRepository, never()).save(any());
     }
 

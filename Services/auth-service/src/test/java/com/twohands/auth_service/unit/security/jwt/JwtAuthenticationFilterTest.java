@@ -1,5 +1,6 @@
 package com.twohands.auth_service.unit.security.jwt;
 
+import com.twohands.auth_service.domain.session.AccessTokenInvalidationStore;
 import com.twohands.auth_service.security.jwt.JwtAuthenticationFilter;
 import com.twohands.auth_service.security.jwt.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
@@ -20,6 +21,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
@@ -31,6 +33,9 @@ class JwtAuthenticationFilterTest {
 
     @Mock
     private JwtTokenProvider jwtTokenProvider;
+
+    @Mock
+    private AccessTokenInvalidationStore accessTokenInvalidationStore;
 
     @Mock
     private FilterChain filterChain;
@@ -56,6 +61,13 @@ class JwtAuthenticationFilterTest {
 
         when(jwtTokenProvider.isValid("access-token")).thenReturn(true);
         when(jwtTokenProvider.getSubject("access-token")).thenReturn("5f86934e-6061-4d10-897c-d2569ac02d35");
+        when(jwtTokenProvider.getUserId("access-token"))
+                .thenReturn(UUID.fromString("5f86934e-6061-4d10-897c-d2569ac02d35"));
+        when(jwtTokenProvider.getIssuedAtEpochMilli("access-token")).thenReturn(1_700_000_000_000L);
+        when(accessTokenInvalidationStore.isTokenInvalidated(
+                UUID.fromString("5f86934e-6061-4d10-897c-d2569ac02d35"),
+                1_700_000_000_000L
+        )).thenReturn(false);
         doReturn(List.of(new SimpleGrantedAuthority("ROLE_USER")))
                 .when(jwtTokenProvider).getAuthorities("access-token");
 
@@ -68,6 +80,27 @@ class JwtAuthenticationFilterTest {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         assertThat(authentication).isInstanceOf(UsernamePasswordAuthenticationToken.class);
         assertThat(authentication.getPrincipal()).isEqualTo("5f86934e-6061-4d10-897c-d2569ac02d35");
+        verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    void shouldNotAuthenticateWhenAccessTokenWasInvalidated() throws Exception {
+        when(jwtTokenProvider.isValid("access-token")).thenReturn(true);
+        when(jwtTokenProvider.getUserId("access-token"))
+                .thenReturn(UUID.fromString("5f86934e-6061-4d10-897c-d2569ac02d35"));
+        when(jwtTokenProvider.getIssuedAtEpochMilli("access-token")).thenReturn(1_699_000_000_000L);
+        when(accessTokenInvalidationStore.isTokenInvalidated(
+                UUID.fromString("5f86934e-6061-4d10-897c-d2569ac02d35"),
+                1_699_000_000_000L
+        )).thenReturn(true);
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Authorization", "Bearer access-token");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        jwtAuthenticationFilter.doFilter(request, response, filterChain);
+
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
         verify(filterChain).doFilter(request, response);
     }
 }
