@@ -30,7 +30,15 @@ export function CommerceFlashSaleSection({ products = [], isLoading = false, onO
 
   const formatDigit = (num) => String(num).padStart(2, "0");
 
-  const flashProducts = (products && products.length > 0 ? products : []).slice(0, 5);
+  // Strictly filter products that actually have a real sale price (salePrice < base price)
+  const flashProducts = (products || [])
+    .filter((product) => {
+      if (!product || product.salePrice == null) return false;
+      const price = Number(product.price || 0);
+      const salePrice = Number(product.salePrice || 0);
+      return price > 0 && salePrice > 0 && salePrice < price;
+    })
+    .slice(0, 5);
 
   if (!isLoading && flashProducts.length === 0) {
     return null;
@@ -81,13 +89,10 @@ export function CommerceFlashSaleSection({ products = [], isLoading = false, onO
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {flashProducts.map((product, idx) => {
-            const salePrice = product.salePrice || product.effectivePrice || product.price;
-            const originalPrice = product.price && Number(product.price) > Number(salePrice)
-              ? Number(product.price)
-              : Math.round(Number(salePrice) * 1.3);
-            
-            const discountPercent = Math.round(((originalPrice - salePrice) / originalPrice) * 100) || 25;
-            
+            const salePrice = Number(product.salePrice);
+            const originalPrice = Number(product.price);
+            const discountPercent = Math.round(((originalPrice - salePrice) / originalPrice) * 100);
+
             const soldCount = 10 + ((idx * 7) % 15);
             const totalStock = soldCount + 5;
             const percentSold = Math.round((soldCount / totalStock) * 100);
@@ -159,3 +164,4 @@ export function CommerceFlashSaleSection({ products = [], isLoading = false, onO
     </section>
   );
 }
+
