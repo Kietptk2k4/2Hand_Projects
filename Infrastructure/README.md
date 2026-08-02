@@ -91,6 +91,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile dev up
 - Frontend: Vite dev server cổng 5173
 - **Không** chạy đồng thời `apps` và `dev` (trùng tên container)
 - **Recsys ONNX (Social):** `recsys-offline/data/artifacts` được mount read-only vào `/models/recsys`. Env `SOCIAL_RECOMMENDATION_MODEL_ROOT=/models/recsys` (ops alias `MODEL_ROOT`). DB `model_artifacts.artifact_path` chỉ lưu basename (vd `feed_ranker_v1.onnx`). Sau khi đổi mount/env: `docker compose ... up -d --force-recreate social-service`.
+- **Recsys ONNX (Commerce Home):** `recsys-offline/data/home_artifacts` → `/models/home`. Env `COMMERCE_HOME_MODEL_ROOT=/models/home`, `COMMERCE_HOME_MODEL_NAME=commerce_home_ranker`. Commerce DB `model_artifacts.artifact_path` = basename (vd `commerce_home_ranker_v1.onnx`) + sidecar `*.feature_order.json` / `*.popularity_normalizer.json`. Sau khi đổi: `docker compose ... up -d --force-recreate commerce-service`.
 
 ### Luồng bootRun trên host (không Docker app)
 

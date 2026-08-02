@@ -88,6 +88,7 @@ services:
     container_name: commerce-service
     volumes:
       - ../Services/commerce-service:/app
+      - ../Services/recsys-offline/data/home_artifacts:/models/home:ro
       - commerce-service-gradle-cache:/root/.gradle
     ports:
       - "3003:3003"
@@ -98,6 +99,8 @@ services:
         required: false
     environment:
       DEBUG_PORT: "5003"
+      COMMERCE_HOME_MODEL_ROOT: /models/home
+      COMMERCE_HOME_MODEL_NAME: commerce_home_ranker
     depends_on:
       postgres-commerce:
         condition: service_started

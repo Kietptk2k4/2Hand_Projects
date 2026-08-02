@@ -13,6 +13,7 @@ import { NotificationBell } from "../../notification/components/NotificationBell
 import { useCommerceAddToCart } from "../hooks/useCommerceAddToCart";
 import { useCommerceBuyNow } from "../hooks/useCommerceBuyNow";
 import { useProductList } from "../hooks/useProductList";
+import { useHomeRecommendations } from "../hooks/useHomeRecommendations";
 import { useCommerceCategories } from "../hooks/useCommerceCategories";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { useSellerShop } from "../context/SellerShopContext";
@@ -39,17 +40,20 @@ export function CommerceHomePage() {
   const { user } = useAuthSession();
   const { isSeller } = useSellerShop();
 
-  const {
-    items,
-    sort,
-    changeSort,
-    isInitialLoading,
-    isLoadingMore,
-    hasNext,
-    errorMessage,
-    loadMore,
-    retry,
-  } = useProductList();
+  const catalog = useProductList();
+  const useHybridHome = Boolean(user) && activeTab === "recommend";
+  const homeRecs = useHomeRecommendations({ enabled: useHybridHome });
+
+  const items = useHybridHome ? homeRecs.items : catalog.items;
+  const sort = catalog.sort;
+  const changeSort = catalog.changeSort;
+  const isInitialLoading = useHybridHome ? homeRecs.isInitialLoading : catalog.isInitialLoading;
+  const isLoadingMore = useHybridHome ? false : catalog.isLoadingMore;
+  const hasNext = useHybridHome ? false : catalog.hasNext;
+  const errorMessage = useHybridHome ? homeRecs.errorMessage : catalog.errorMessage;
+  const loadMore = useHybridHome ? homeRecs.loadMore : catalog.loadMore;
+  const retry = useHybridHome ? homeRecs.retry : catalog.retry;
+  const homeRequestId = useHybridHome ? homeRecs.requestId : null;
 
   const {
     categories,
@@ -77,9 +81,15 @@ export function CommerceHomePage() {
   const openProduct = useCallback(
     (productId) => {
       if (!productId) return;
-      navigate(APP_ROUTES.commerceProductDetail.replace(":productId", productId));
+      const base = APP_ROUTES.commerceProductDetail.replace(":productId", productId);
+      if (useHybridHome && homeRequestId) {
+        const params = new URLSearchParams({ from: "home", request_id: homeRequestId });
+        navigate(`${base}?${params.toString()}`);
+        return;
+      }
+      navigate(base);
     },
-    [navigate]
+    [homeRequestId, navigate, useHybridHome]
   );
 
   const navigateToCategory = useCallback(
@@ -237,10 +247,12 @@ export function CommerceHomePage() {
             DÀNH CHO BẠN
           </h2>
 
-          {/* Sort Dropdown */}
-          <div className="shrink-0">
-            <ProductListSortSelect value={sort} onChange={changeSort} disabled={isInitialLoading} />
-          </div>
+          {/* Sort Dropdown — catalog tabs only; hybrid Home is ranked */}
+          {!useHybridHome ? (
+            <div className="shrink-0">
+              <ProductListSortSelect value={sort} onChange={changeSort} disabled={isInitialLoading} />
+            </div>
+          ) : null}
         </div>
 
         {/* Loading Skeletons */}

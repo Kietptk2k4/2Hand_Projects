@@ -85,7 +85,13 @@ export function formatMetricNumber(value, digits = 4) {
 }
 
 export function formatRuntimeModeLabel(mode) {
-  return RUNTIME_MODE_LABELS[mode] || mode || "—";
+  if (!mode) return "—";
+  const key = String(mode);
+  return RUNTIME_MODE_LABELS[key] || RUNTIME_MODE_LABELS[key.toLowerCase()] || key;
+}
+
+export function isLightgbmRuntimeMode(mode) {
+  return String(mode || "").toLowerCase() === "lightgbm";
 }
 
 export function formatRuntimeReasonLabel(reason) {
@@ -97,8 +103,24 @@ export function summarizeMetrics(item) {
   const metrics = item?.metrics;
   if (!metrics) return { auc: "—", precisionAt10: "—" };
 
+  // Social export: top-level auc / precision_at_10
+  // Commerce Home export: nested under evaluate.lightgbm (or lightgbm)
+  const lightgbm =
+    metrics.lightgbm ||
+    metrics.evaluate?.lightgbm ||
+    (typeof metrics.evaluate === "object" ? metrics.evaluate?.lightgbm : null) ||
+    {};
+
+  const auc = metrics.auc ?? lightgbm.auc ?? metrics.gate?.auc_lightgbm;
+  const precisionAt10 =
+    metrics.precision_at_10 ??
+    metrics.precisionAt10 ??
+    lightgbm.precision_at_10 ??
+    lightgbm.precisionAt10 ??
+    metrics.gate?.precision_at_10_lightgbm;
+
   return {
-    auc: formatMetricNumber(metrics.auc),
-    precisionAt10: formatMetricNumber(metrics.precision_at_10 ?? metrics.precisionAt10),
+    auc: formatMetricNumber(auc),
+    precisionAt10: formatMetricNumber(precisionAt10),
   };
 }

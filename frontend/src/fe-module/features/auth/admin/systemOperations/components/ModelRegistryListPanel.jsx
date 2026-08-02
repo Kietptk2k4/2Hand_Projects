@@ -1,6 +1,10 @@
 import { useCallback, useMemo, useState } from "react";
 import { FeedToast } from "../../../../social/components/FeedToast";
-import { MODEL_REGISTRY_VIEW_MODES } from "../constants/modelRegistryConstants.js";
+import {
+  DEFAULT_MODEL_NAME,
+  MODEL_REGISTRY_TARGETS,
+  MODEL_REGISTRY_VIEW_MODES,
+} from "../constants/modelRegistryConstants.js";
 import { useRecommendationModelArtifacts } from "../hooks/useRecommendationModelArtifacts.js";
 import { useRecommendationModelStatus } from "../hooks/useRecommendationModelStatus.js";
 import {
@@ -22,16 +26,23 @@ export function ModelRegistryListPanel({
   onModelRegistrySelectionChange,
 }) {
   const [toastMessage, setToastMessage] = useState("");
+  const [selectedModelName, setSelectedModelName] = useState(DEFAULT_MODEL_NAME);
 
-  const { status, items, errorMessage, refetch } = useRecommendationModelArtifacts({ enabled: true });
+  const { status, items, errorMessage, refetch } = useRecommendationModelArtifacts({
+    enabled: true,
+    modelName: selectedModelName,
+  });
   const {
     status: runtimeStatusState,
     runtimeStatus,
     errorMessage: runtimeStatusError,
     refetch: refetchRuntimeStatus,
-  } = useRecommendationModelStatus({ enabled: true });
+  } = useRecommendationModelStatus({ enabled: true, modelName: selectedModelName });
 
   const statusFilter = modelRegistryFilters?.status || "";
+  const selectedTarget =
+    MODEL_REGISTRY_TARGETS.find((t) => t.modelName === selectedModelName) ||
+    MODEL_REGISTRY_TARGETS[0];
 
   const filteredItems = useMemo(
     () => filterModelRegistryItems(items, statusFilter),
@@ -76,6 +87,11 @@ export function ModelRegistryListPanel({
     });
   };
 
+  const handleModelChange = (nextModelName) => {
+    setSelectedModelName(nextModelName);
+    onModelRegistrySelectionChange?.({ mrVersion: null, mrView: null });
+  };
+
   return (
     <>
       <ModelRegistryListView
@@ -95,6 +111,10 @@ export function ModelRegistryListPanel({
         items={filteredItems}
         selectedVersion={mrVersion}
         onRowSelect={handleRowSelect}
+        modelTargets={MODEL_REGISTRY_TARGETS}
+        selectedModelName={selectedModelName}
+        onModelChange={handleModelChange}
+        modelLabel={selectedTarget.label}
         drawer={
           mrVersion ? (
             <ModelRegistryDrawer

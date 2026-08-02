@@ -4,7 +4,7 @@ import { mapProductDetailResponse } from "../utils/productDetailMapper";
 
 const NOT_FOUND_CODE = "COMMERCE-404-PRODUCT";
 
-export function useProductDetail(productId) {
+export function useProductDetail(productId, { from = null, requestId = null } = {}) {
   const [product, setProduct] = useState(null);
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -23,7 +23,7 @@ export function useProductDetail(productId) {
     setProduct(null);
 
     try {
-      const raw = await fetchProductDetail(productId);
+      const raw = await fetchProductDetail(productId, { from, requestId });
       setProduct(mapProductDetailResponse(raw));
       setStatus("ready");
     } catch (error) {
@@ -38,7 +38,7 @@ export function useProductDetail(productId) {
       setErrorCode(error?.code || 500);
       setErrorMessage(error?.message || "Không tải được chi tiết sản phẩm. Vui lòng thử lại.");
     }
-  }, [productId]);
+  }, [from, productId, requestId]);
 
   useEffect(() => {
     load();

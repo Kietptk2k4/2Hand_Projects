@@ -4,6 +4,7 @@ import {
   deriveArtifactStatus,
   filterModelRegistryItems,
   computeModelRegistryStats,
+  summarizeMetrics,
 } from "./modelRegistryDisplayUtils.js";
 
 describe("deriveArtifactStatus", () => {
@@ -64,5 +65,28 @@ describe("computeModelRegistryStats", () => {
     expect(stats.active).toBe(1);
     expect(stats.rejected).toBe(1);
     expect(stats.inactive).toBe(1);
+  });
+});
+
+describe("summarizeMetrics", () => {
+  it("reads Social top-level auc / precision_at_10", () => {
+    expect(
+      summarizeMetrics({
+        metrics: { auc: 0.81, precision_at_10: 0.42 },
+      }),
+    ).toEqual({ auc: "0.8100", precisionAt10: "0.4200" });
+  });
+
+  it("reads Commerce Home nested evaluate.lightgbm metrics", () => {
+    expect(
+      summarizeMetrics({
+        metrics: {
+          gate: { passed: true },
+          evaluate: {
+            lightgbm: { auc: 0.5787, precision_at_10: 0.1917 },
+          },
+        },
+      }),
+    ).toEqual({ auc: "0.5787", precisionAt10: "0.1917" });
   });
 });
