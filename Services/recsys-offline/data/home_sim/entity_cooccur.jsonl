@@ -1,0 +1,8 @@
+{"entity_type": "BRAND", "entity_id": "b2000000-0000-4000-8000-000000000001", "neighbor_type": "LEAF_CATEGORY", "neighbor_id": "c3000000-0000-4000-8000-000000000001", "score": 4.219507705176108}
+{"entity_type": "LEAF_CATEGORY", "entity_id": "c3000000-0000-4000-8000-000000000001", "neighbor_type": "BRAND", "neighbor_id": "b2000000-0000-4000-8000-000000000001", "score": 4.219507705176108}
+{"entity_type": "BRAND", "entity_id": "b2000000-0000-4000-8000-000000000002", "neighbor_type": "LEAF_CATEGORY", "neighbor_id": "c3000000-0000-4000-8000-000000000002", "score": 4.237000862623625}
+{"entity_type": "LEAF_CATEGORY", "entity_id": "c3000000-0000-4000-8000-000000000002", "neighbor_type": "BRAND", "neighbor_id": "b2000000-0000-4000-8000-000000000002", "score": 4.237000862623625}
+{"entity_type": "BRAND", "entity_id": "b2000000-0000-4000-8000-000000000003", "neighbor_type": "LEAF_CATEGORY", "neighbor_id": "c3000000-0000-4000-8000-000000000003", "score": 3.8753590210565556}
+{"entity_type": "LEAF_CATEGORY", "entity_id": "c3000000-0000-4000-8000-000000000003", "neighbor_type": "BRAND", "neighbor_id": "b2000000-0000-4000-8000-000000000003", "score": 3.8753590210565556}
+{"entity_type": "BRAND", "entity_id": "b2000000-0000-4000-8000-000000000004", "neighbor_type": "LEAF_CATEGORY", "neighbor_id": "c3000000-0000-4000-8000-000000000004", "score": 3.970291913552123}
+{"entity_type": "LEAF_CATEGORY", "entity_id": "c3000000-0000-4000-8000-000000000004", "neighbor_type": "BRAND", "neighbor_id": "b2000000-0000-4000-8000-000000000004", "score": 3.970291913552123}

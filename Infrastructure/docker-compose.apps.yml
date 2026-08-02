@@ -85,10 +85,15 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3003:3003"
+    volumes:
+      - ../Services/recsys-offline/data/home_artifacts:/models/home:ro
     env_file:
       - ../Services/commerce-service/.env.docker
       - path: ../Services/commerce-service/.env.docker.local
         required: false
+    environment:
+      COMMERCE_HOME_MODEL_ROOT: /models/home
+      COMMERCE_HOME_MODEL_NAME: commerce_home_ranker
     depends_on:
       postgres-commerce:
         condition: service_started

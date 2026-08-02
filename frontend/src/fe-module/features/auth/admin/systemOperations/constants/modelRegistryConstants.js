@@ -1,5 +1,20 @@
 export const DEFAULT_MODEL_NAME = "feed_ranker";
 
+export const MODEL_REGISTRY_TARGETS = [
+  {
+    id: "feed_ranker",
+    label: "Social For You",
+    modelName: "feed_ranker",
+    source: "social",
+  },
+  {
+    id: "commerce_home_ranker",
+    label: "Commerce Home",
+    modelName: "commerce_home_ranker",
+    source: "commerce",
+  },
+];
+
 export const ARTIFACT_STATUS = {
   ACTIVE: "active",
   REJECTED: "rejected",
@@ -26,7 +41,10 @@ export const MODEL_REGISTRY_QUICK_FILTER_PRESETS = [
 
 export const RUNTIME_MODE_LABELS = {
   lightgbm: "LightGBM",
+  LIGHTGBM: "LightGBM",
   rule_based: "Rule-based fallback",
+  DEGRADED: "Degraded fallback",
+  degraded: "Degraded fallback",
 };
 
 export const RUNTIME_REASON_LABELS = {

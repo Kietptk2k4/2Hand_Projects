@@ -22,7 +22,7 @@ function ListSkeleton() {
   );
 }
 
-function ModelRegistryEmptyState() {
+function ModelRegistryEmptyState({ modelLabel = "feed_ranker" }) {
   return (
     <div className="rounded-xl border border-dashed border-admin-border px-6 py-12 text-center">
       <span
@@ -33,7 +33,7 @@ function ModelRegistryEmptyState() {
       </span>
       <p className="mt-4 text-sm font-medium text-admin-text">Chưa có phiên bản model nào</p>
       <p className="mx-auto mt-2 max-w-md text-sm text-admin-text-secondary">
-        Mô hình feed_ranker được tạo qua pipeline recsys-offline (export-activate). Giao diện admin chỉ
+        Mô hình {modelLabel} được tạo qua pipeline recsys-offline (export-activate). Giao diện admin chỉ
         xem registry — không kích hoạt export từ đây.
       </p>
     </div>
@@ -58,6 +58,10 @@ export function ModelRegistryListView({
   selectedVersion,
   onRowSelect,
   drawer,
+  modelTargets = [],
+  selectedModelName,
+  onModelChange,
+  modelLabel = "feed_ranker",
 }) {
   if (status === "forbidden") {
     return (
@@ -73,7 +77,7 @@ export function ModelRegistryListView({
   }
 
   const summary =
-    status === "success" ? `${items?.length ?? 0} phiên bản · feed_ranker` : "";
+    status === "success" ? `${items?.length ?? 0} phiên bản · ${modelLabel}` : "";
 
   return (
     <div className="mb-6 max-w-full min-w-0 space-y-6">
@@ -94,11 +98,36 @@ export function ModelRegistryListView({
         }
       />
 
+      {modelTargets.length > 0 ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <label htmlFor="model-registry-target" className="text-sm font-medium text-admin-text">
+            Model
+          </label>
+          <select
+            id="model-registry-target"
+            className="min-h-11 rounded-lg border border-admin-border bg-admin-surface px-3 text-sm text-admin-text"
+            value={selectedModelName}
+            onChange={(event) => onModelChange?.(event.target.value)}
+          >
+            {modelTargets.map((target) => (
+              <option key={target.id} value={target.modelName}>
+                {target.label} ({target.modelName})
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : null}
+
       <ModelRegistryRuntimeStatusCard
         runtimeStatus={runtimeStatus}
         status={runtimeStatusState}
         errorMessage={runtimeStatusError}
         onRetry={onRuntimeStatusRetry}
+        statusTitle={
+          selectedModelName === "commerce_home_ranker"
+            ? "Trạng thái phục vụ Commerce Home"
+            : "Trạng thái phục vụ Social For You"
+        }
       />
 
       {status === "success" ? (
@@ -141,7 +170,7 @@ export function ModelRegistryListView({
                 onRowSelect={onRowSelect}
               />
             ) : (
-              <ModelRegistryEmptyState />
+              <ModelRegistryEmptyState modelLabel={modelLabel} />
             )}
           </div>
         ) : null}
@@ -151,3 +180,4 @@ export function ModelRegistryListView({
     </div>
   );
 }
+

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { fetchRecommendationModelStatus } from "../api/recommendationModelStatusApi.js";
+import { DEFAULT_MODEL_NAME } from "../constants/modelRegistryConstants.js";
 
 function mapStatus(data) {
   if (!data) return null;
@@ -13,7 +14,10 @@ function mapStatus(data) {
   };
 }
 
-export function useRecommendationModelStatus({ enabled = true } = {}) {
+export function useRecommendationModelStatus({
+  enabled = true,
+  modelName = DEFAULT_MODEL_NAME,
+} = {}) {
   const [status, setStatus] = useState(enabled ? "loading" : "idle");
   const [runtimeStatus, setRuntimeStatus] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -29,7 +33,7 @@ export function useRecommendationModelStatus({ enabled = true } = {}) {
     setErrorMessage("");
 
     try {
-      const data = await fetchRecommendationModelStatus();
+      const data = await fetchRecommendationModelStatus(modelName);
       setRuntimeStatus(mapStatus(data));
       setStatus("success");
     } catch (error) {
@@ -37,7 +41,7 @@ export function useRecommendationModelStatus({ enabled = true } = {}) {
       setErrorMessage(error?.message || "Không tải được trạng thái runtime.");
       setStatus(error?.code === 403 || error?.code === "FORBIDDEN" ? "forbidden" : "error");
     }
-  }, [enabled]);
+  }, [enabled, modelName]);
 
   useEffect(() => {
     refetch();

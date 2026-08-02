@@ -26,7 +26,7 @@ app = FastAPI(
         "Offline jobs only (clean / build-dataset / train / evaluate / export). "
         "Social Service must NOT call this during recommend-feed requests."
     ),
-    version="0.3.0",
+    version="0.4.0",
 )
 
 
@@ -153,3 +153,145 @@ def jobs_export_purchase_profile(
         detail="Purchase profile export completed",
         result=summary,
     )
+
+
+@app.post("/jobs/home-build-dataset", response_model=JobAccepted)
+def jobs_home_build_dataset() -> JobAccepted:
+    settings = get_settings()
+    try:
+        from pathlib import Path
+
+        from pipelines.home_dataset_job import run_home_build_dataset_job
+        from pipelines.home_train_mode import resolve_home_train_mode
+
+        mode_cfg = resolve_home_train_mode(
+            admin_base_url=settings.admin_base_url,
+            admin_token=settings.admin_service_token,
+        )
+        summary = run_home_build_dataset_job(
+            Path(settings.recsys_home_sim_dir),
+            Path(settings.recsys_home_artifact_dir),
+            mode_cfg=mode_cfg,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Home build-dataset failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return JobAccepted(status="success", detail="Home build-dataset completed", result=summary)
+
+
+@app.post("/jobs/home-train", response_model=JobAccepted)
+def jobs_home_train() -> JobAccepted:
+    settings = get_settings()
+    try:
+        from pathlib import Path
+
+        from pipelines.home_train import run_home_train_job
+
+        summary = run_home_train_job(Path(settings.recsys_home_artifact_dir))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Home train failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return JobAccepted(status="success", detail="Home LightGBM train completed", result=summary)
+
+
+@app.post("/jobs/home-sim", response_model=JobAccepted)
+def jobs_home_sim() -> JobAccepted:
+    settings = get_settings()
+    try:
+        settings.require_sim_allow()
+        from pathlib import Path
+
+        from pipelines.home_sim import run_home_sim_to_dir
+
+        sim_dir = Path(settings.recsys_home_sim_dir)
+        summary = run_home_sim_to_dir(sim_dir)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Home sim job failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return JobAccepted(status="success", detail="Home sim completed", result=summary)
+
+
+@app.post("/jobs/home-load-artifact", response_model=JobAccepted)
+def jobs_home_load_artifact() -> JobAccepted:
+    settings = get_settings()
+    try:
+        settings.require_commerce_url()
+        from pathlib import Path
+
+        from pipelines.home_load_artifact import load_home_artifacts
+
+        counts = load_home_artifacts(
+            settings.commerce_postgres_url,
+            Path(settings.recsys_home_sim_dir),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Home load-artifact failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return JobAccepted(status="success", detail="Home artifacts loaded", result=counts)
+
+
+@app.post("/jobs/home-export-activate", response_model=JobAccepted)
+def jobs_home_export_activate() -> JobAccepted:
+    settings = get_settings()
+    try:
+        from pipelines.home_export_activate import run_home_export_activate
+
+        summary = run_home_export_activate(settings)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Home export-activate failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    job_status = str(summary.get("status") or "success")
+    detail = (
+        "Home model activated"
+        if job_status == "activated"
+        else "Home model exported but not activated (gate rejected)"
+        if job_status == "exported_not_activated"
+        else "Home export-activate completed"
+    )
+    return JobAccepted(status=job_status, detail=detail, result=summary)
+
+
+@app.post("/jobs/home-retrain", response_model=JobAccepted)
+def jobs_home_retrain() -> JobAccepted:
+    """Run Home retrain orchestrator step order (jobs may be dry until dataset/train wired)."""
+    settings = get_settings()
+    try:
+        from pathlib import Path
+
+        from pipelines.home_export_activate import run_home_export_activate
+        from pipelines.home_load_artifact import load_home_artifacts
+        from pipelines.home_orchestrator import HomeRetrainOrchestrator
+        from pipelines.home_train_mode import resolve_home_train_mode
+
+        mode_cfg = resolve_home_train_mode(
+            admin_base_url=settings.admin_base_url,
+            admin_token=settings.admin_service_token,
+        )
+        sim_dir = Path(settings.recsys_home_sim_dir)
+        orchestrator = HomeRetrainOrchestrator()
+        jobs = {
+            "load_artifact": lambda: load_home_artifacts(
+                settings.commerce_postgres_url, sim_dir
+            )
+            if settings.commerce_postgres_url
+            else None,
+            "export_activate": lambda: run_home_export_activate(settings),
+        }
+        ran = orchestrator.run(mode_cfg=mode_cfg, sim_dir=sim_dir, jobs=jobs)
+        summary = {"steps": ran, "train_data_mode": mode_cfg.train_data_mode}
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Home retrain orchestrator failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return JobAccepted(status="success", detail="Home retrain orchestrator completed", result=summary)

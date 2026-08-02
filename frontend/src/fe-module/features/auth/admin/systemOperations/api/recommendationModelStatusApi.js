@@ -1,4 +1,6 @@
 import { socialApiClient } from "../../../../../services/http/socialApiClient";
+import { commerceApiClient } from "../../../../../services/http/commerceApiClient";
+import { MODEL_REGISTRY_TARGETS } from "../constants/modelRegistryConstants.js";
 
 function normalizeErrors(errors) {
   if (!errors) return [];
@@ -24,8 +26,21 @@ function unwrapResponse(response) {
   return payload.data;
 }
 
-export async function fetchRecommendationModelStatus() {
+function resolveTarget(modelName) {
+  return (
+    MODEL_REGISTRY_TARGETS.find((t) => t.modelName === modelName) || MODEL_REGISTRY_TARGETS[0]
+  );
+}
+
+export async function fetchRecommendationModelStatus(modelName = "feed_ranker") {
+  const target = resolveTarget(modelName);
   try {
+    if (target.source === "commerce") {
+      const response = await commerceApiClient.get(
+        "/commerce/api/v1/admin/home/recommendation-model-status",
+      );
+      return unwrapResponse(response);
+    }
     const response = await socialApiClient.get("/api/v1/social/admin/recommendation-model-status");
     return unwrapResponse(response);
   } catch (error) {

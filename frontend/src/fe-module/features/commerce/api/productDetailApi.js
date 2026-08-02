@@ -1,9 +1,14 @@
 import { commerceApiClient } from "../../../services/http/commerceApiClient";
 import { mapAxiosError, unwrapResponse } from "./commerceApiResponse";
 
-export async function fetchProductDetail(productId) {
+export async function fetchProductDetail(productId, { from, requestId } = {}) {
   try {
-    const response = await commerceApiClient.get(`/commerce/api/v1/products/${productId}`);
+    const params = {};
+    if (from) params.from = from;
+    if (requestId) params.request_id = requestId;
+    const response = await commerceApiClient.get(`/commerce/api/v1/products/${productId}`, {
+      params,
+    });
     return unwrapResponse(response);
   } catch (error) {
     throw mapAxiosError(error);

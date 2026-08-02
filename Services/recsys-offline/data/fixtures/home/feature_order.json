@@ -1,0 +1,17 @@
+[
+  "recency_score",
+  "popularity_score",
+  "rating_score",
+  "category_match",
+  "brand_match",
+  "shop_match",
+  "price_affinity",
+  "cross_domain_score",
+  "cf_score",
+  "semantic_similarity",
+  "is_popular",
+  "is_personal",
+  "is_cf",
+  "is_cross_domain",
+  "is_semantic"
+]

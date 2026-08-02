@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { FeedToast } from "../../social/components/FeedToast";
 import { CommerceShell } from "../components/CommerceShell";
 import { ProductDetailActionCard } from "../components/ProductDetailActionCard";
@@ -28,11 +28,19 @@ const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
 
 export function CommerceProductDetailPage() {
   const { productId } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuthSession();
   const [toastMessage, setToastMessage] = useState("");
-  const { product, isLoading, isNotFound, isError, errorMessage, retry } =
-    useProductDetail(productId);
+  const attributionFrom = searchParams.get("from");
+  const attributionRequestId = searchParams.get("request_id");
+  const { product, isLoading, isNotFound, isError, errorMessage, retry } = useProductDetail(
+    productId,
+    {
+      from: attributionFrom,
+      requestId: attributionRequestId,
+    },
+  );
 
   const {
     shop: previewShop,

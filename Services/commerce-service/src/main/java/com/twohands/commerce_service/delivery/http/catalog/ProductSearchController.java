@@ -8,6 +8,7 @@ import com.twohands.commerce_service.application.product.viewproductlist.ViewPro
 import com.twohands.commerce_service.application.product.viewproductlist.ViewProductListUseCase;
 import com.twohands.commerce_service.application.review.viewproductreviews.ViewProductReviewsCommand;
 import com.twohands.commerce_service.application.review.viewproductreviews.ViewProductReviewsUseCase;
+import com.twohands.commerce_service.application.home.recommendproducts.TrackHomeProductClickUseCase;
 import com.twohands.commerce_service.common.dto.ApiResponse;
 import com.twohands.commerce_service.common.pagination.PageMeta;
 import com.twohands.commerce_service.domain.discovery.ProductCardSummary;
@@ -21,8 +22,10 @@ import com.twohands.commerce_service.domain.review.ProductReviewSellerReply;
 import com.twohands.commerce_service.domain.review.ReviewMediaItem;
 import com.twohands.commerce_service.domain.review.ReviewShopSummary;
 import com.twohands.commerce_service.domain.review.ViewProductReviewsResult;
+import com.twohands.commerce_service.security.AuthenticatedUser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,17 +42,20 @@ public class ProductSearchController {
     private final SearchProductUseCase searchProductUseCase;
     private final ViewProductDetailUseCase viewProductDetailUseCase;
     private final ViewProductReviewsUseCase viewProductReviewsUseCase;
+    private final TrackHomeProductClickUseCase trackHomeProductClickUseCase;
 
     public ProductSearchController(
             ViewProductListUseCase viewProductListUseCase,
             SearchProductUseCase searchProductUseCase,
             ViewProductDetailUseCase viewProductDetailUseCase,
-            ViewProductReviewsUseCase viewProductReviewsUseCase
+            ViewProductReviewsUseCase viewProductReviewsUseCase,
+            TrackHomeProductClickUseCase trackHomeProductClickUseCase
     ) {
         this.viewProductListUseCase = viewProductListUseCase;
         this.searchProductUseCase = searchProductUseCase;
         this.viewProductDetailUseCase = viewProductDetailUseCase;
         this.viewProductReviewsUseCase = viewProductReviewsUseCase;
+        this.trackHomeProductClickUseCase = trackHomeProductClickUseCase;
     }
 
     @GetMapping
@@ -90,11 +96,15 @@ public class ProductSearchController {
 
     @GetMapping("/{productId}")
     public ResponseEntity<ApiResponse<ViewProductDetailResponse>> viewProductDetail(
-            @PathVariable UUID productId
+            @PathVariable UUID productId,
+            @RequestParam(name = "from", required = false) String from,
+            @RequestParam(name = "request_id", required = false) String requestId,
+            Authentication authentication
     ) {
         ViewProductDetailResult result = viewProductDetailUseCase.execute(
                 new ViewProductDetailCommand(productId)
         );
+        maybeTrackHomeClick(productId, from, requestId, authentication);
 
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK.value(),
@@ -286,5 +296,20 @@ public class ProductSearchController {
                 item.shopVacation(),
                 item.vacationMessage()
         );
+    }
+
+    private void maybeTrackHomeClick(
+            UUID productId,
+            String from,
+            String requestId,
+            Authentication authentication
+    ) {
+        if (!"home".equalsIgnoreCase(from)) {
+            return;
+        }
+        if (authentication == null || !(authentication.getPrincipal() instanceof AuthenticatedUser principal)) {
+            return;
+        }
+        trackHomeProductClickUseCase.track(principal.userId(), productId, requestId);
     }
 }

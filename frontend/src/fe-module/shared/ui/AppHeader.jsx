@@ -166,6 +166,7 @@ export function AppHeader({ className = "" }) {
           <Link to={APP_ROUTES.commerceHome} className="shrink-0 text-xl font-bold text-header-brand md:text-2xl">
             2Hands
           </Link>
+
           <div
             ref={searchRef}
             className="relative hidden min-w-0 max-w-[280px] flex-1 sm:block lg:max-w-[360px]"

@@ -1,13 +1,20 @@
 import {
   formatRuntimeModeLabel,
   formatRuntimeReasonLabel,
+  isLightgbmRuntimeMode,
 } from "../utils/modelRegistryDisplayUtils.js";
 
 function StatusSkeleton() {
   return <div className="h-24 animate-pulse rounded-xl border border-admin-border bg-admin-surface-muted" />;
 }
 
-export function ModelRegistryRuntimeStatusCard({ runtimeStatus, status, errorMessage, onRetry }) {
+export function ModelRegistryRuntimeStatusCard({
+  runtimeStatus,
+  status,
+  errorMessage,
+  onRetry,
+  statusTitle = "Trạng thái phục vụ",
+}) {
   if (status === "loading") return <StatusSkeleton />;
 
   if (status === "error") {
@@ -25,7 +32,7 @@ export function ModelRegistryRuntimeStatusCard({ runtimeStatus, status, errorMes
 
   if (!runtimeStatus) return null;
 
-  const isLightgbm = runtimeStatus.mode === "lightgbm";
+  const isLightgbm = isLightgbmRuntimeMode(runtimeStatus.mode);
   const reasonLabel = formatRuntimeReasonLabel(runtimeStatus.reason);
 
   return (
@@ -39,7 +46,7 @@ export function ModelRegistryRuntimeStatusCard({ runtimeStatus, status, errorMes
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-xs font-medium tracking-wide text-admin-text-muted uppercase">
-            Trạng thái phục vụ feed
+            {statusTitle}
           </p>
           <p className="mt-2 text-lg font-semibold text-admin-text">
             {isLightgbm

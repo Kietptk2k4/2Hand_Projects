@@ -53,6 +53,7 @@ public enum ErrorCode {
     INVALID_PAGINATION("COMMERCE-400-PAGINATION", HttpStatus.BAD_REQUEST, "Invalid pagination parameters"),
     INVALID_SEARCH_KEYWORD("COMMERCE-400-SEARCH-KEYWORD", HttpStatus.BAD_REQUEST, "Invalid search keyword"),
     INVALID_RATING("COMMERCE-400-RATING", HttpStatus.BAD_REQUEST, "Invalid rating"),
+    HOME_RECOMMEND_DISABLED("COMMERCE-404-HOME-RECOMMEND", HttpStatus.NOT_FOUND, "Commerce home recommend is disabled"),
     ORDER_ITEM_NOT_REVIEWABLE("COMMERCE-409-ORDER-ITEM-REVIEW", HttpStatus.CONFLICT, "Order item is not reviewable"),
     REVIEW_ALREADY_EXISTS("COMMERCE-409-REVIEW-EXISTS", HttpStatus.CONFLICT, "Review already exists for this order item"),
     ORDER_NOT_PROCESSING("COMMERCE-409-ORDER-PROCESSING", HttpStatus.CONFLICT, "Order is not in PROCESSING status"),

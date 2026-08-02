@@ -163,3 +163,25 @@ commerce:
       track-sync-cooldown-seconds: ${COMMERCE_GHN_TRACK_SYNC_COOLDOWN_SECONDS:300}
       print-token-ttl-minutes: ${COMMERCE_GHN_PRINT_TOKEN_TTL_MINUTES:30}
       print-base-url: ${COMMERCE_GHN_PRINT_BASE_URL:}
+  home:
+    recommend:
+      enabled: ${COMMERCE_HOME_RECOMMEND_ENABLED:true}
+    diversity:
+      enabled: ${COMMERCE_HOME_DIVERSITY_ENABLED:true}
+      k: ${COMMERCE_HOME_DIVERSITY_K:50}
+      max-per-category: ${COMMERCE_HOME_DIVERSITY_MAX_PER_CATEGORY:8}
+      max-per-brand: ${COMMERCE_HOME_DIVERSITY_MAX_PER_BRAND:5}
+      max-per-shop: ${COMMERCE_HOME_DIVERSITY_MAX_PER_SHOP:4}
+    recommendation:
+      model-path: ${COMMERCE_HOME_MODEL_PATH:commerce_home_ranker.onnx}
+      model-root: ${COMMERCE_HOME_MODEL_ROOT:}
+      model-name: ${COMMERCE_HOME_MODEL_NAME:commerce_home_ranker}
+      ranking-model: ${COMMERCE_HOME_RANKING_MODEL:lightgbm}
+      reload-cron: ${COMMERCE_HOME_MODEL_RELOAD_CRON:0 */5 * * * *}
+    cf:
+      max-products-per-entity: ${COMMERCE_HOME_CF_MAX_PRODUCTS_PER_ENTITY:20}
+    ar:
+      max-products-per-category: ${COMMERCE_HOME_AR_MAX_PRODUCTS_PER_CATEGORY:20}
+      min-confidence: ${COMMERCE_HOME_AR_MIN_CONFIDENCE:0.05}
+    personal:
+      fetch-limit: ${COMMERCE_HOME_PERSONAL_FETCH_LIMIT:250}

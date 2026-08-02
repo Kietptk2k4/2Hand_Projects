@@ -1,8 +1,20 @@
+from pathlib import Path
+
+from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Load .env into os.environ so pipelines that use os.getenv
+# (e.g. RECSYS_HOME_CONFIG_FROM_ENV / HOME_LTR_*) see the same file.
+_ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(_ENV_PATH, override=False)
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=str(_ENV_PATH),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     social_postgres_url: str | None = None
     social_mongo_url: str | None = None
@@ -11,6 +23,10 @@ class Settings(BaseSettings):
     auth_postgres_url: str | None = None
     recsys_dataset_output_dir: str = "data/cleaned"
     recsys_artifact_dir: str = "data/artifacts"
+    recsys_home_sim_dir: str = "data/home_sim"
+    recsys_home_artifact_dir: str = "data/home_artifacts"
+    admin_base_url: str | None = None
+    admin_service_token: str | None = None
     recsys_sim_allow: bool = False
 
     def require_db_urls(self) -> None:
