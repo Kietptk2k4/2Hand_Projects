@@ -122,11 +122,17 @@ export function ProductCard({
           </div>
         ) : null}
 
-        {/* Top-left Quality Badge */}
+        {/* Top-left Quality / Sale Badge */}
         <div className="absolute left-2 top-2 z-10 flex flex-col gap-1">
-          <span className="rounded-md bg-slate-900/80 px-2 py-0.5 text-[10px] font-bold text-amber-400 backdrop-blur-sm shadow-xs">
-            2HAND SELECT
-          </span>
+          {isOnSale ? (
+            <span className="rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-black text-white shadow-md uppercase tracking-wider border border-white/30">
+              GIẢM GIÁ
+            </span>
+          ) : (
+            <span className="rounded-md bg-slate-900/80 px-2 py-0.5 text-[10px] font-bold text-amber-400 backdrop-blur-sm shadow-xs">
+              2HAND SELECT
+            </span>
+          )}
         </div>
 
         <ProductImageStickers
