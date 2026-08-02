@@ -108,6 +108,18 @@ export function CommerceBuyerSidebar({ onComingSoon, pulseToken = 0 }) {
       title="2Hands Commerce"
       subtitle="Chợ mua bán 2Hand"
     >
+      {/* Return to Social Feed Button */}
+      <button
+        type="button"
+        onClick={() => navigate(APP_ROUTES.socialFeed)}
+        className="mb-3 flex w-full items-center gap-3 rounded-xl border border-blue-200/80 bg-blue-50/70 px-4 py-2.5 text-left text-xs font-bold text-blue-700 transition-all hover:bg-blue-100 hover:border-blue-300 shadow-2xs group cursor-pointer"
+      >
+        <span className="material-symbols-outlined text-lg text-blue-600 group-hover:-translate-x-0.5 transition-transform">
+          arrow_back
+        </span>
+        <span className="min-w-0 flex-1 truncate font-extrabold">Về Mạng xã hội (Social)</span>
+      </button>
+
       {links.map((link) => {
         const active = isBuyerLinkActive(link, pathname);
 
