@@ -44,7 +44,7 @@ function renderCaptionWithHashtags(text, extraHashtags = [], onHashtagClick) {
       <a
         key={`h-${index}-${part.value}`}
         href="#"
-        className="text-primary hover:underline"
+        className="text-sky-500 hover:underline font-medium"
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
@@ -82,7 +82,7 @@ export function PostCaption({
             event.stopPropagation();
             setExpanded((prev) => !prev);
           }}
-          className="mt-1 text-sm font-medium text-primary hover:underline"
+          className="mt-1 text-sm font-semibold text-sky-500 hover:underline"
         >
           {expanded ? "Thu gọn" : "Xem thêm"}
         </button>

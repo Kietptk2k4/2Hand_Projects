@@ -141,14 +141,14 @@ export function SocialSavedPostsPage() {
 
   return (
     <>
-      <div className="mx-auto grid w-full max-w-[1280px] grid-cols-1 gap-6 px-4 py-8 md:px-8 lg:grid-cols-12">
+      <div className="mx-auto grid w-full max-w-[1360px] grid-cols-1 gap-4 px-2 py-0 min-h-screen md:px-4 lg:grid-cols-12 lg:gap-6">
         <FeedLeftSidebar stats={sidebarStats} onComingSoon={showComingSoon} />
 
-        <section className="flex flex-col gap-6 lg:col-span-6">
-          <SavedPostsHeader />
+        <section className="min-h-screen flex-1 border-x border-outline-variant/40 bg-surface-container-lowest lg:col-span-6">
+          <SavedPostsHeader totalElements={items?.length} />
 
           {isInitialLoading ? (
-            <div className="flex flex-col gap-6">
+            <div className="divide-y divide-outline-variant/40">
               <SavedPostCardSkeleton />
               <SavedPostCardSkeleton />
               <SavedPostCardSkeleton />
@@ -156,12 +156,12 @@ export function SocialSavedPostsPage() {
           ) : null}
 
           {!isInitialLoading && errorMessage ? (
-            <div className="rounded-xl border border-error/30 bg-error-container/40 p-6 text-center">
+            <div className="m-4 rounded-xl border border-error/30 bg-error-container/40 p-6 text-center">
               <p className="text-sm text-on-error-container">{errorMessage}</p>
               <button
                 type="button"
                 onClick={retry}
-                className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-on-primary hover:bg-[#0050cb]"
+                className="mt-4 rounded-full bg-zinc-900 px-5 py-2 text-xs font-bold text-white hover:bg-zinc-800"
               >
                 Thử lại
               </button>
@@ -169,16 +169,16 @@ export function SocialSavedPostsPage() {
           ) : null}
 
           {!isInitialLoading && !errorMessage && items.length === 0 ? (
-            <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-8 text-center shadow-sm">
+            <div className="p-8 text-center">
               <span className="material-symbols-outlined mb-2 text-4xl text-outline" aria-hidden="true">
                 bookmark
               </span>
-              <p className="text-sm text-on-surface-variant">Bạn chưa lưu bài viết nào.</p>
+              <p className="text-sm text-on-surface-variant/70">Bạn chưa lưu bài viết nào.</p>
             </div>
           ) : null}
 
           {!isInitialLoading && !errorMessage && items.length > 0 ? (
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4 p-4">
               {items.map((post) => (
                 <SavedPostCard
                   key={post.postId}
@@ -206,7 +206,7 @@ export function SocialSavedPostsPage() {
                 <button
                   type="button"
                   onClick={loadMore}
-                  className="rounded-lg border border-primary px-6 py-2 text-sm font-medium text-primary transition-colors hover:bg-[#e7eeff]"
+                  className="rounded-full border border-outline-variant px-6 py-2 text-sm font-semibold text-sky-500 transition-colors hover:bg-sky-500/10"
                 >
                   Tải thêm
                 </button>

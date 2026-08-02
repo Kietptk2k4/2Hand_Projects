@@ -2,6 +2,7 @@ import { delay, http, HttpResponse } from "msw";
 import {
   buildSocialProfile,
   buildUserPostsPage,
+  buildUserRepliedPostsPage,
   MOCK_SOCIAL_USER_IDS,
 } from "../data/socialProfileData";
 import { getUserByToken } from "../utils/socialMockAuth";
@@ -146,4 +147,47 @@ export const socialProfileHandlers = [
       { status: 200 }
     );
   }),
+
+  http.get("*/api/v1/social/users/:userId/replied-posts", async ({ params, request }) => {
+    await delay(450);
+
+    const user = getUserByToken(request);
+    if (!user) {
+      return HttpResponse.json(apiError(401, "Authentication required"), { status: 401 });
+    }
+
+    const userId = params.userId;
+    if (!isValidUuid(userId)) {
+      return HttpResponse.json(apiError(400, "userId khong hop le."), { status: 400 });
+    }
+
+    if (userId === MOCK_SOCIAL_USER_IDS.NOT_FOUND) {
+      return HttpResponse.json(apiError(404, "Khong tim thay nguoi dung."), { status: 404 });
+    }
+
+    const pagination = parsePostsPagination(new URL(request.url));
+    if (pagination.error) {
+      return HttpResponse.json(pagination.error, { status: 400 });
+    }
+
+    const result = buildUserRepliedPostsPage(userId, user.id, pagination);
+    if (result.error === 404) {
+      return HttpResponse.json(apiError(404, "Khong tim thay nguoi dung."), { status: 404 });
+    }
+    if (result.error === 403) {
+      return HttpResponse.json(
+        apiError(403, "Ban khong co quyen xem bai viet cua nguoi dung nay."),
+        { status: 403 }
+      );
+    }
+
+    return HttpResponse.json(
+      apiSuccess(200, "Lay danh sach bai viet da phan hoi thanh cong.", {
+        items: result.items,
+        meta: result.meta,
+      }),
+      { status: 200 }
+    );
+  }),
 ];
+

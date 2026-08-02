@@ -39,55 +39,68 @@ export function SavedPostCard({
   };
 
   return (
-    <article className="flex flex-col overflow-hidden rounded-lg border border-outline-variant bg-surface-container-lowest shadow-sm transition-all hover:shadow-md md:flex-row">
-      <button
-        type="button"
-        onClick={handleOpenPost}
-        className="relative h-48 flex-shrink-0 bg-surface-variant md:h-auto md:w-1/3"
-        aria-label="Xem chi tiết bài viết"
-      >
-        <PostMediaThumbnail item={primaryMedia} fallbackSrc={PLACEHOLDER_IMAGE} />
-        <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full border border-outline-variant bg-surface-container-lowest/90 px-2 py-1 backdrop-blur-sm">
-          <span
-            className="material-symbols-outlined text-[16px] text-primary"
-            style={{ fontVariationSettings: "'FILL' 1" }}
-            aria-hidden="true"
-          >
-            bookmark
-          </span>
-        </div>
-      </button>
+    <article className="flex flex-col gap-3 overflow-hidden rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-4 shadow-sm transition-all hover:border-sky-500/40 hover:shadow-md md:flex-row md:items-start">
+      {primaryMedia ? (
+        <button
+          type="button"
+          onClick={handleOpenPost}
+          className="relative h-44 w-full flex-shrink-0 overflow-hidden rounded-xl bg-surface-container-low border border-outline-variant/30 md:h-36 md:w-36 group"
+          aria-label="Xem chi tiết bài viết"
+        >
+          <PostMediaThumbnail item={primaryMedia} fallbackSrc={PLACEHOLDER_IMAGE} />
+          <div className="absolute right-2.5 top-2.5 flex items-center gap-1 rounded-full border border-outline-variant/40 bg-surface-container-lowest/90 px-2 py-0.5 text-xs backdrop-blur-sm shadow-xs">
+            <span
+              className="material-symbols-outlined text-[14px] text-sky-500"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+              aria-hidden="true"
+            >
+              bookmark
+            </span>
+          </div>
+        </button>
+      ) : null}
 
-      <div className="flex flex-grow flex-col p-4">
-        <div className="mb-2 flex items-start justify-between">
+      <div className="flex flex-grow flex-col min-w-0">
+        <div className="mb-2 flex items-center justify-between gap-2">
           <button
             type="button"
             onClick={handleViewProfile}
-            className="flex items-center gap-2 text-left"
+            className="flex items-center gap-2.5 text-left group/author"
           >
-            <img src={author.avatarUrl} alt="" className="h-8 w-8 rounded-full object-cover" />
-            <h3 className="text-sm font-medium text-on-surface">{author.displayName}</h3>
+            <img src={author.avatarUrl} alt="" className="h-8 w-8 rounded-full object-cover border border-outline-variant/40" />
+            <div className="flex flex-col min-w-0">
+              <h3 className="truncate text-xs font-bold text-on-surface group-hover/author:text-sky-500 transition-colors">
+                {author.displayName}
+              </h3>
+              {savedLabel ? (
+                <span className="text-[11px] text-on-surface-variant/60">
+                  Đã lưu vào {savedLabel}
+                </span>
+              ) : null}
+            </div>
           </button>
           <button
             type="button"
-            title="Bỏ lưu"
+            title="Bỏ lưu bài viết"
             disabled={isUnsaveLoading}
             onClick={handleUnsave}
-            className="p-1 text-on-surface-variant transition-colors hover:text-error disabled:opacity-50"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant/60 transition-colors hover:bg-error/10 hover:text-error disabled:opacity-50"
             aria-label="Bỏ lưu bài viết"
           >
-            <span className="material-symbols-outlined" aria-hidden="true">
+            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
               bookmark_remove
             </span>
           </button>
         </div>
 
-        <button type="button" onClick={handleOpenPost} className="text-left">
-          <h2 className="mb-1 line-clamp-2 text-lg font-semibold text-on-surface">{titleText}</h2>
+        <button type="button" onClick={handleOpenPost} className="text-left group/title">
+          <h2 className="mb-1.5 line-clamp-2 text-base font-bold text-on-surface leading-snug group-hover/title:text-sky-500 transition-colors">
+            {titleText}
+          </h2>
         </button>
 
         {enrichedProductTags.length > 0 ? (
-          <div className="my-3">
+          <div className="my-2">
             <PostProductTagsBlock
               tags={enrichedProductTags}
               variant="compact"
@@ -96,11 +109,11 @@ export function SavedPostCard({
           </div>
         ) : null}
 
-        <div className="mt-auto flex items-center justify-between border-t border-outline-variant pt-3">
-          <div className="flex items-center gap-4 text-sm text-on-surface-variant">
-            <div className="flex items-center gap-1.5">
+        <div className="mt-3 flex items-center justify-between border-t border-outline-variant/30 pt-2.5 text-xs text-on-surface-variant/70">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5 font-semibold">
               <span
-                className="material-symbols-outlined text-[16px] text-on-surface-variant"
+                className="material-symbols-outlined text-[15px] text-sky-500"
                 aria-hidden="true"
               >
                 thumb_up
@@ -121,20 +134,15 @@ export function SavedPostCard({
             <button
               type="button"
               onClick={handleOpenComments}
-              className="flex items-center gap-1 transition-colors hover:text-primary"
+              className="flex items-center gap-1 font-semibold transition-colors hover:text-sky-500"
               aria-label="Xem bình luận"
             >
-              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
+              <span className="material-symbols-outlined text-[15px]" aria-hidden="true">
                 comment
               </span>
               <span>{post.replyCount ?? 0}</span>
             </button>
           </div>
-          {savedLabel ? (
-            <span className="text-xs font-semibold text-tertiary-container">
-              Đã lưu vào {savedLabel}
-            </span>
-          ) : null}
         </div>
       </div>
     </article>

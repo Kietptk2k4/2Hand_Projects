@@ -142,7 +142,7 @@ export function PostFormModal({
                   type="button"
                   onClick={handleSaveDraft}
                   disabled={isBusy}
-                  className="flex items-center gap-1 rounded-full bg-primary-fixed px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary-fixed-dim disabled:opacity-50"
+                  className="flex items-center gap-1.5 rounded-full border border-outline-variant/60 bg-surface-container-low px-4 py-2 text-sm font-bold text-on-surface transition-colors hover:bg-surface-container-high disabled:opacity-50"
                 >
                   <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                     draft
@@ -153,7 +153,7 @@ export function PostFormModal({
                   type="button"
                   onClick={handlePublish}
                   disabled={isBusy}
-                  className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-on-primary shadow-sm transition-colors hover:bg-[#0050cb] disabled:opacity-50"
+                  className="rounded-full bg-on-surface px-5 py-2 text-sm font-bold text-surface-container-lowest shadow-sm transition-all hover:opacity-90 disabled:opacity-50"
                 >
                   {isSubmitting ? "Đang đăng..." : "Đăng bài"}
                 </button>
@@ -239,9 +239,9 @@ export function PostFormModal({
                 <button
                   type="button"
                   onClick={() => setShowProductPicker(true)}
-                  className="absolute left-1/2 top-4 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full border border-outline-variant/30 bg-surface-container-lowest/90 px-3 py-1.5 text-xs font-semibold shadow-sm backdrop-blur-md transition hover:bg-surface-container-lowest"
+                  className="absolute left-1/2 top-4 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full border border-outline-variant/30 bg-surface-container-lowest/90 px-3.5 py-1.5 text-xs font-bold shadow-sm backdrop-blur-md transition hover:bg-surface-container-lowest"
                 >
-                  <span className="material-symbols-outlined text-[16px] text-primary" aria-hidden="true">
+                  <span className="material-symbols-outlined text-[16px] text-on-surface" aria-hidden="true">
                     sell
                   </span>
                   Gắn sản phẩm
@@ -274,7 +274,7 @@ export function PostFormModal({
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={mediaItems.length >= 10}
-                    className="rounded-full bg-primary p-2 text-on-primary shadow-sm hover:bg-[#0050cb] disabled:opacity-50"
+                    className="rounded-full bg-on-surface p-2 text-surface-container-lowest shadow-sm hover:opacity-90 disabled:opacity-50"
                     aria-label="Thêm media"
                   >
                     <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
@@ -287,7 +287,7 @@ export function PostFormModal({
                   <div className="absolute inset-x-0 bottom-16 z-10 px-6">
                     <div className="h-1.5 overflow-hidden rounded-full bg-surface-container-lowest/80">
                       <div
-                        className="h-full bg-primary transition-all"
+                        className="h-full bg-on-surface transition-all"
                         style={{ width: `${activeMedia.progress || 0}%` }}
                       />
                     </div>
@@ -303,7 +303,7 @@ export function PostFormModal({
                       onClick={() => setActiveMediaIndex(index)}
                       className={[
                         "h-16 w-16 overflow-hidden rounded-lg border-2",
-                        index === activeMediaIndex ? "border-primary" : "border-outline-variant/50",
+                        index === activeMediaIndex ? "border-on-surface" : "border-outline-variant/50",
                       ].join(" ")}
                     >
                       {item.previewUrl ? (
@@ -332,7 +332,7 @@ export function PostFormModal({
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={mediaItems.length >= 10}
-                  className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-dashed border-outline-variant text-outline hover:border-primary hover:text-primary disabled:opacity-50"
+                  className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-dashed border-outline-variant text-outline hover:border-on-surface hover:text-on-surface disabled:opacity-50"
                   aria-label="Thêm file"
                 >
                   <span className="material-symbols-outlined" aria-hidden="true">
@@ -453,7 +453,7 @@ export function PostFormModal({
                     <button
                       type="button"
                       onClick={() => setShowProductPicker(true)}
-                      className="text-xs font-medium text-primary hover:underline"
+                      className="text-xs font-bold text-on-surface hover:underline"
                     >
                       {productTags.length > 0 ? "Đổi" : "Thêm"}
                     </button>
@@ -486,7 +486,7 @@ export function PostFormModal({
                             />
                           </div>
                           <div className="flex flex-col items-end gap-2">
-                            <span className="text-sm font-semibold">{formatVndPrice(tag.price)}</span>
+                            <span className="text-sm font-semibold text-on-surface">{formatVndPrice(tag.price)}</span>
                             <button
                               type="button"
                               onClick={() => removeProductTag(tag.productId)}
@@ -506,7 +506,7 @@ export function PostFormModal({
                     type="checkbox"
                     checked={allowComments}
                     onChange={(event) => setAllowComments(event.target.checked)}
-                    className="rounded border-outline-variant text-primary focus:ring-primary"
+                    className="rounded border-outline-variant text-on-surface focus:ring-on-surface"
                   />
                   <span className="text-sm text-on-surface">Cho phép bình luận</span>
                 </label>
@@ -542,7 +542,7 @@ export function PostFormModal({
                 type="button"
                 onClick={handleUpdate}
                 disabled={isBusy || Boolean(loadError)}
-                className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-on-primary shadow-sm transition-colors hover:bg-[#0050cb] disabled:opacity-50"
+                className="rounded-full bg-on-surface px-6 py-2.5 text-sm font-bold text-surface-container-lowest shadow-sm transition-all hover:opacity-90 disabled:opacity-50"
               >
                 {isSubmitting ? "Đang lưu..." : "Cập nhật"}
               </button>

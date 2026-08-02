@@ -1,42 +1,41 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { fetchFollowingFeed, fetchForYouFeed, fetchGlobalFeed } from "../api/feedApi";
-import { FEED_TABS, FEED_PAGE_SIZE } from "../constants/feedTabs";
+import { fetchUserPosts, fetchUserRepliedPosts } from "../api/userPostsApi";
+import { PROFILE_POSTS_PAGE_SIZE } from "../constants/socialProfileConstants";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 
-const FETCH_BY_TAB = {
-  [FEED_TABS.FOR_YOU]: fetchForYouFeed,
-  [FEED_TABS.FOLLOWING]: fetchFollowingFeed,
-  global: fetchGlobalFeed,
-};
-
-export function useFeed(activeTab) {
+export function useUserRepliedPosts(userId, { enabled = true } = {}) {
   const { showSessionExpired } = useAuthSession();
   const [page, setPage] = useState(0);
   const [items, setItems] = useState([]);
   const [meta, setMeta] = useState(null);
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [errorCode, setErrorCode] = useState(null);
   const requestIdRef = useRef(0);
 
-  const resetFeed = useCallback(() => {
+  const reset = useCallback(() => {
     setPage(0);
     setItems([]);
     setMeta(null);
     setErrorMessage("");
+    setErrorCode(null);
     setStatus("idle");
   }, []);
 
   const loadPage = useCallback(
     async (targetPage, { append = false } = {}) => {
-      const fetchFn = FETCH_BY_TAB[activeTab];
-      if (!fetchFn) return;
+      if (!userId || !enabled) return;
 
       const requestId = ++requestIdRef.current;
       setStatus(append ? "loadingMore" : "loading");
       setErrorMessage("");
+      setErrorCode(null);
 
       try {
-        const data = await fetchFn({ page: targetPage, size: FEED_PAGE_SIZE });
+        const data = await fetchUserRepliedPosts(userId, {
+          page: targetPage,
+          size: PROFILE_POSTS_PAGE_SIZE,
+        });
         if (requestId !== requestIdRef.current) return;
 
         const nextItems = data?.items || [];
@@ -53,16 +52,19 @@ export function useFeed(activeTab) {
         }
 
         setStatus("error");
-        setErrorMessage(error?.message || "Không tải được feed. Vui lòng thử lại.");
+        setErrorCode(error?.code || 500);
+        setErrorMessage(error?.message || "Không tải được danh sách bài viết phản hồi.");
       }
     },
-    [activeTab, showSessionExpired]
+    [enabled, showSessionExpired, userId]
   );
 
   useEffect(() => {
-    resetFeed();
-    loadPage(0, { append: false });
-  }, [activeTab, resetFeed, loadPage]);
+    reset();
+    if (enabled && userId) {
+      loadPage(0, { append: false });
+    }
+  }, [enabled, userId, reset, loadPage]);
 
   const loadMore = useCallback(() => {
     if (status === "loadingMore" || !meta?.hasNext) return;
@@ -114,6 +116,7 @@ export function useFeed(activeTab) {
     meta,
     status,
     errorMessage,
+    errorCode,
     isInitialLoading: status === "loading" && items.length === 0,
     isLoadingMore: status === "loadingMore",
     hasNext: Boolean(meta?.hasNext),

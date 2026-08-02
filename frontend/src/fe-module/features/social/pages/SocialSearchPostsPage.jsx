@@ -9,7 +9,11 @@ import { PostCard } from "../components/PostCard";
 import { LikesListModal } from "../components/LikesListModal";
 import { PostDetailModal } from "../components/PostDetailModal";
 import { useLikesListModal } from "../hooks/useLikesListModal";
+import { APP_ROUTES } from "../../../shared/constants/routes";
+import { FeedLeftSidebar } from "../components/FeedLeftSidebar";
+import { FeedRightSidebar } from "../components/FeedRightSidebar";
 import { SearchResultsHeader } from "../components/SearchResultsHeader";
+import { ExploreDefaultOverview } from "../components/ExploreDefaultOverview";
 import { SearchSidebar } from "../components/SearchSidebar";
 import { useEditPostModal } from "../hooks/useEditPostModal";
 import { usePostActions } from "../hooks/usePostActions";
@@ -134,39 +138,39 @@ export function SocialSearchPostsPage() {
 
   return (
     <>
-      <div className="mx-auto grid w-full max-w-[1280px] grid-cols-1 gap-6 px-4 py-8 md:px-8 lg:grid-cols-12">
-        <SearchSidebar
-          onSelectKeyword={handleSelectKeyword}
-          onSelectHashtag={viewHashtag}
-          refreshKey={displayKeyword}
-        />
+      <div className="mx-auto grid w-full max-w-[1360px] grid-cols-1 gap-4 px-2 py-0 min-h-screen md:px-4 lg:grid-cols-12 lg:gap-6">
+        <FeedLeftSidebar onComingSoon={showComingSoon} />
 
-        <section className="flex flex-col gap-6 lg:col-span-9">
-          <SearchResultsHeader keyword={displayKeyword} totalElements={totalElements} />
+        <section className="min-h-screen flex-1 border-x border-outline-variant/40 bg-surface-container-lowest lg:col-span-6">
+          <SearchResultsHeader
+            keyword={displayKeyword}
+            totalElements={totalElements}
+            onSearch={handleSelectKeyword}
+            onClear={() => navigate(APP_ROUTES.socialSearchPosts)}
+          />
 
           {emptyQuery ? (
-            <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-8 text-center shadow-sm">
-              <span className="material-symbols-outlined mb-2 text-4xl text-outline" aria-hidden="true">
-                search
-              </span>
-              <p className="text-sm text-on-surface-variant">Nhập từ khóa để tìm bài viết</p>
-            </div>
+            <ExploreDefaultOverview
+              onSelectKeyword={handleSelectKeyword}
+              onSelectHashtag={viewHashtag}
+              onOpenPost={openPost}
+            />
           ) : null}
 
-          {isInitialLoading ? (
-            <div className="flex flex-col gap-6">
+          {!emptyQuery && isInitialLoading ? (
+            <div className="divide-y divide-outline-variant/40">
               <FeedPostSkeleton />
               <FeedPostSkeleton />
             </div>
           ) : null}
 
           {!emptyQuery && !isInitialLoading && errorMessage ? (
-            <div className="rounded-xl border border-error/30 bg-error-container/40 p-6 text-center">
+            <div className="m-4 rounded-xl border border-error/30 bg-error-container/40 p-6 text-center">
               <p className="text-sm text-on-error-container">{errorMessage}</p>
               <button
                 type="button"
                 onClick={retry}
-                className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-on-primary hover:bg-[#0050cb]"
+                className="mt-4 rounded-full bg-zinc-900 px-5 py-2 text-xs font-bold text-white hover:bg-zinc-800"
               >
                 Thử lại
               </button>
@@ -174,18 +178,18 @@ export function SocialSearchPostsPage() {
           ) : null}
 
           {emptyResults ? (
-            <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-8 text-center shadow-sm">
+            <div className="p-8 text-center">
               <span className="material-symbols-outlined mb-2 text-4xl text-outline" aria-hidden="true">
                 search_off
               </span>
-              <p className="text-sm text-on-surface-variant">
-                Không tìm thấy bài viết cho &quot;{displayKeyword}&quot;
+              <p className="text-sm text-on-surface-variant/70">
+                Không tìm thấy bài viết cho &quot;<span className="text-sky-500 font-semibold">{displayKeyword}</span>&quot;
               </p>
             </div>
           ) : null}
 
           {!emptyQuery && !isInitialLoading && !errorMessage && items.length > 0 ? (
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col">
               {items.map((post) => (
                 <PostCard
                   key={post.postId}
@@ -220,7 +224,7 @@ export function SocialSearchPostsPage() {
                 <button
                   type="button"
                   onClick={loadMore}
-                  className="rounded-lg border border-primary px-6 py-2 text-sm font-medium text-primary transition-colors hover:bg-[#e7eeff]"
+                  className="rounded-full border border-outline-variant px-6 py-2 text-sm font-semibold text-sky-500 transition-colors hover:bg-sky-500/10"
                 >
                   Tải thêm
                 </button>
@@ -228,6 +232,13 @@ export function SocialSearchPostsPage() {
             </div>
           ) : null}
         </section>
+
+        <FeedRightSidebar
+          onComingSoon={showComingSoon}
+          onViewProfile={viewProfile}
+          onSelectHashtag={viewHashtag}
+          onToast={setToastMessage}
+        />
       </div>
 
       {isOpen ? (

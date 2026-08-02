@@ -2,7 +2,7 @@ import { FEED_TAB_OPTIONS } from "../constants/feedTabs";
 
 export function FeedTabs({ activeTab, onChange }) {
   return (
-    <div className="flex overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+    <div className="sticky top-16 z-30 flex border-b border-outline-variant/40 bg-surface-container-lowest/90 backdrop-blur-md">
       {FEED_TAB_OPTIONS.map((tab) => {
         const isActive = tab.id === activeTab;
         return (
@@ -10,16 +10,16 @@ export function FeedTabs({ activeTab, onChange }) {
             key={tab.id}
             type="button"
             onClick={() => onChange(tab.id)}
-            className={[
-              "flex-1 py-4 text-center text-sm font-medium transition-colors",
-              isActive
-                ? "border-b-2 border-primary bg-surface-container-low text-primary"
-                : "text-on-surface-variant hover:bg-surface-container-low",
-            ].join(" ")}
+            className="relative flex flex-1 items-center justify-center py-3.5 text-sm font-semibold transition-colors hover:bg-surface-container-low/50"
             aria-selected={isActive}
             role="tab"
           >
-            {tab.label}
+            <span className={isActive ? "font-bold text-on-surface" : "text-on-surface-variant"}>
+              {tab.label}
+            </span>
+            {isActive ? (
+              <span className="absolute bottom-0 h-1 w-14 rounded-full bg-primary" />
+            ) : null}
           </button>
         );
       })}

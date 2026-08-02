@@ -22,7 +22,7 @@ function ProductThumbnail({ imageUrl, name }) {
       <img
         src={imageUrl}
         alt=""
-        className="h-12 w-12 shrink-0 rounded-lg object-cover"
+        className="h-12 w-12 shrink-0 rounded-xl border border-outline-variant/30 object-cover"
         loading="lazy"
       />
     );
@@ -30,7 +30,7 @@ function ProductThumbnail({ imageUrl, name }) {
 
   return (
     <div
-      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-surface-container-high"
+      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-outline-variant/30 bg-surface-container-high"
       aria-hidden="true"
     >
       <span className="material-symbols-outlined text-outline">inventory_2</span>
@@ -58,7 +58,7 @@ function TagMetaLinks({ tag, onViewCategory, onViewShop }) {
             event.stopPropagation();
             onViewCategory?.(tag.categoryId);
           }}
-          className="font-medium text-primary hover:underline"
+          className="font-semibold text-sky-500 hover:underline"
         >
           {tag.category || "Danh mục"}
         </button>
@@ -73,7 +73,7 @@ function TagMetaLinks({ tag, onViewCategory, onViewShop }) {
             event.stopPropagation();
             onViewShop?.(tag.shopId);
           }}
-          className="font-medium text-primary hover:underline"
+          className="font-semibold text-sky-500 hover:underline"
         >
           Xem shop
         </button>
@@ -85,28 +85,21 @@ function TagMetaLinks({ tag, onViewCategory, onViewShop }) {
 function CompactStrip({ tags, onViewProduct, onViewCategory, onViewShop, showUnavailable }) {
   const count = tags.length;
   const first = tags[0];
-  const label = count === 1 ? first.name : `${count} sản phẩm`;
+  const label = count === 1 ? first.name : `${count} sản phẩm gắn kèm`;
   const priceLabel = count === 1 ? formatVndPrice(first.price) : `từ ${formatVndPrice(first.price)}`;
 
   return (
     <div
-      className="flex items-center justify-between gap-3 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2"
+      className="flex items-center justify-between gap-3 rounded-2xl border border-outline-variant/40 bg-surface-container-low/30 p-2.5 transition-all hover:bg-surface-container-low/70 hover:border-outline-variant/60"
       onClick={(event) => event.stopPropagation()}
       onKeyDown={(event) => event.stopPropagation()}
       role="presentation"
     >
-      <div className="flex min-w-0 flex-1 items-center gap-2">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
         <ProductThumbnail imageUrl={first.imageUrl} name={first.name} />
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-on-surface">{label}</p>
-          {count === 1 ? (
-            <TagMetaLinks
-              tag={first}
-              onViewCategory={onViewCategory}
-              onViewShop={onViewShop}
-            />
-          ) : null}
-          <p className="text-xs text-on-surface-variant">{priceLabel}</p>
+          <p className="truncate text-xs font-bold text-on-surface">{label}</p>
+          <p className="mt-0.5 text-xs font-extrabold text-on-surface">{priceLabel}</p>
         </div>
       </div>
       <button
@@ -115,9 +108,9 @@ function CompactStrip({ tags, onViewProduct, onViewCategory, onViewShop, showUna
           event.stopPropagation();
           handleViewProduct(first, onViewProduct, showUnavailable);
         }}
-        className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-on-primary hover:bg-[#0050cb]"
+        className="shrink-0 rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-zinc-800 active:scale-95"
       >
-        Xem
+        Xem sản phẩm
       </button>
     </div>
   );
@@ -125,11 +118,11 @@ function CompactStrip({ tags, onViewProduct, onViewCategory, onViewShop, showUna
 
 function DetailList({ tags, onViewProduct, onViewCategory, onViewShop, showUnavailable }) {
   return (
-    <ul className="max-h-80 space-y-2 overflow-y-auto">
+    <ul className="max-h-80 space-y-2.5 overflow-y-auto">
       {tags.map((tag) => (
         <li
           key={tag.productId}
-          className="flex items-center justify-between gap-3 rounded-lg border border-outline-variant bg-surface-container-low p-3 shadow-sm"
+          className="flex items-center justify-between gap-3 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-3 shadow-xs transition-all hover:border-outline-variant/70"
         >
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <ProductThumbnail imageUrl={tag.imageUrl} name={tag.name} />
@@ -140,7 +133,7 @@ function DetailList({ tags, onViewProduct, onViewCategory, onViewShop, showUnava
                 onViewCategory={onViewCategory}
                 onViewShop={onViewShop}
               />
-              <p className="text-sm font-medium text-primary">{formatVndPrice(tag.price)}</p>
+              <p className="mt-0.5 text-sm font-extrabold text-on-surface">{formatVndPrice(tag.price)}</p>
             </div>
           </div>
           <button
@@ -149,7 +142,7 @@ function DetailList({ tags, onViewProduct, onViewCategory, onViewShop, showUnava
               event.stopPropagation();
               handleViewProduct(tag, onViewProduct, showUnavailable);
             }}
-            className="shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-on-primary shadow-sm hover:bg-[#0050cb]"
+            className="shrink-0 rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-zinc-800 active:scale-95"
           >
             Xem sản phẩm
           </button>

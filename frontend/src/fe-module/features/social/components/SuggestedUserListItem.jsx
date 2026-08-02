@@ -11,7 +11,7 @@ function SuggestedUserAvatar({ userId, avatarUrl, displayName }) {
     <img
       src={resolvedUrl}
       alt={displayName ? `Avatar ${displayName}` : ""}
-      className="h-10 w-10 shrink-0 rounded-full object-cover"
+      className="h-12 w-12 shrink-0 rounded-full object-cover"
       onError={() => setHasError(true)}
     />
   );
@@ -35,8 +35,8 @@ export function SuggestedUserListItem({
     <li
       className={
         variant === "page"
-          ? "flex items-center justify-between gap-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm"
-          : "flex items-center justify-between gap-2"
+          ? "flex items-center justify-between gap-4 border-b border-outline-variant/40 px-4 py-3.5 hover:bg-surface-container-low/50 transition-colors"
+          : "flex items-center justify-between gap-3 px-4 py-3 hover:bg-surface-container-low/50 transition-colors"
       }
     >
       <button
@@ -50,10 +50,10 @@ export function SuggestedUserListItem({
           displayName={item.name}
         />
         <div className="min-w-0 flex flex-col">
-          <span className="truncate text-sm font-medium text-on-surface hover:text-primary">
+          <span className="truncate text-[15px] font-bold leading-tight text-on-surface hover:underline">
             {item.name}
           </span>
-          <span className="truncate text-xs font-semibold text-on-surface-variant">
+          <span className="truncate text-[15px] text-on-surface-variant/70">
             {suggestionSubtitle(item.mutualFollowCount)}
           </span>
         </div>
@@ -63,10 +63,10 @@ export function SuggestedUserListItem({
         disabled={followDisabled || isFollowLoading}
         onClick={() => onFollowToggle(item.userId, item.followStatus)}
         className={[
-          "shrink-0 rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
+          "shrink-0 rounded-full px-4 py-1.5 text-[15px] font-bold transition-all shadow-2xs",
           isFollowing
-            ? "border-outline-variant text-on-surface-variant hover:bg-surface-container-high"
-            : "border-primary text-primary hover:bg-[#e7eeff]",
+            ? "border border-outline-variant/60 text-on-surface hover:bg-surface-container-high"
+            : "bg-zinc-900 text-white hover:bg-zinc-800 active:scale-[0.97]",
           followDisabled || isFollowLoading ? "cursor-not-allowed opacity-60" : "",
         ].join(" ")}
       >

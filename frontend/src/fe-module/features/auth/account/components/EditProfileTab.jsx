@@ -18,7 +18,7 @@ import {
 function resolveFieldErrors(errors = []) {
   return errors.reduce((acc, item) => {
     if (item?.field && !acc[item.field]) {
-      acc[item.field] = item.reason || "Truong dữ liệu không hợp lệ.";
+      acc[item.field] = item.reason || "Trường dữ liệu không hợp lệ.";
     }
     return acc;
   }, {});
@@ -124,7 +124,7 @@ export function EditProfileTab({ profile, refetch, onNotify }) {
     <div>
       <TabPanelHeader
         title="Chỉnh sửa hồ sơ"
-        subtitle="Cập nhật thông tin ca nhan và cach bạn xuat hien trên nen tang."
+        subtitle="Cập nhật thông tin cá nhân và cách bạn xuất hiện trên nền tảng."
       />
 
       <AccountCard>
@@ -133,7 +133,7 @@ export function EditProfileTab({ profile, refetch, onNotify }) {
 
           <div className="flex flex-col gap-1.5">
             <AccountFieldLabel htmlFor="display_name" required>
-              Ten hien thi
+              Tên hiển thị
             </AccountFieldLabel>
             <AccountTextInput
               id="display_name"
@@ -155,15 +155,16 @@ export function EditProfileTab({ profile, refetch, onNotify }) {
               value={form.bio ?? ""}
               onChange={updateField("bio")}
               maxLength={500}
+              placeholder="Viết vài dòng giới thiệu về bản thân bạn..."
               className={[
-                "w-full resize-none rounded-lg border bg-white px-3 py-2.5 text-base outline-none transition",
+                "w-full resize-none rounded-xl border bg-surface-container-lowest px-3.5 py-2.5 text-sm text-on-surface outline-none transition placeholder:text-on-surface-variant/50",
                 errors.bio
-                  ? "border-error focus:border-error"
-                  : "border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary/30",
+                  ? "border-error focus:border-error focus:ring-1 focus:ring-error"
+                  : "border-outline-variant/50 focus:border-sky-500 focus:ring-1 focus:ring-sky-500/30",
               ].join(" ")}
             />
-            <p className="text-xs text-on-surface-variant">{bioCount}/500</p>
-            {errors.bio ? <p className="text-sm text-error">{errors.bio}</p> : null}
+            <p className="text-xs text-on-surface-variant/70">{bioCount}/500</p>
+            {errors.bio ? <p className="text-xs text-error font-medium">{errors.bio}</p> : null}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -178,28 +179,28 @@ export function EditProfileTab({ profile, refetch, onNotify }) {
             />
           </div>
 
-          <hr className="border-outline-variant" />
+          <hr className="border-outline-variant/30" />
 
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h3 className="text-base font-semibold text-on-surface">Lien ket mang xa hoi</h3>
-                <p className="text-sm text-on-surface-variant">Them lien ket den các trang ca nhan của ban.</p>
+                <h3 className="text-base font-extrabold text-on-surface">Liên kết mạng xã hội</h3>
+                <p className="text-xs text-on-surface-variant/70">Thêm liên kết đến các trang cá nhân của bạn.</p>
               </div>
               <SecondaryButton type="button" onClick={addSocialRow} disabled={form.social_links.length >= 10}>
-                + Them lien ket
+                + Thêm liên kết
               </SecondaryButton>
             </div>
 
             {form.social_links.map((row, index) => (
               <div
                 key={`social-${index}`}
-                className="flex flex-col gap-2 rounded-lg border border-outline-variant bg-account-surface-low p-3 sm:flex-row sm:items-center"
+                className="flex flex-col gap-2 rounded-xl border border-outline-variant/40 bg-surface-container-low/40 p-3 sm:flex-row sm:items-center"
               >
                 <select
                   value={row.platform}
                   onChange={(e) => updateSocialRow(index, "platform", e.target.value)}
-                  className="rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm"
+                  className="rounded-xl border border-outline-variant/50 bg-surface-container-lowest px-3 py-2 text-xs font-bold text-on-surface outline-none focus:border-sky-500"
                 >
                   {SOCIAL_PLATFORMS.map((p) => (
                     <option key={p.key} value={p.key}>
@@ -212,30 +213,30 @@ export function EditProfileTab({ profile, refetch, onNotify }) {
                   value={row.url ?? ""}
                   onChange={(e) => updateSocialRow(index, "url", e.target.value)}
                   placeholder="https://"
-                  className="min-w-0 flex-1 rounded-lg border border-outline-variant bg-white px-3 py-2 text-sm outline-none focus:border-primary"
+                  className="min-w-0 flex-1 rounded-xl border border-outline-variant/50 bg-surface-container-lowest px-3.5 py-2 text-sm text-on-surface outline-none transition focus:border-sky-500 focus:ring-1 focus:ring-sky-500/30"
                 />
                 <button
                   type="button"
                   onClick={() => removeSocialRow(index)}
-                  className="text-sm text-on-surface-variant hover:text-error"
-                  aria-label="Xoa lien ket"
+                  className="text-xs font-bold text-on-surface-variant/70 hover:text-error transition-colors px-2"
+                  aria-label="Xóa liên kết"
                 >
-                  Xoa
+                  Xóa
                 </button>
                 {errors[`social_links.${index}.url`] ? (
-                  <p className="w-full text-sm text-error sm:order-4">{errors[`social_links.${index}.url`]}</p>
+                  <p className="w-full text-xs text-error font-medium sm:order-4">{errors[`social_links.${index}.url`]}</p>
                 ) : null}
               </div>
             ))}
-            {errors.social_links ? <p className="text-sm text-error">{errors.social_links}</p> : null}
+            {errors.social_links ? <p className="text-xs text-error font-medium">{errors.social_links}</p> : null}
           </div>
 
-          <div className="flex justify-end gap-3 border-t border-outline-variant pt-6">
+          <div className="flex justify-end gap-3 border-t border-outline-variant/30 pt-6">
             <SecondaryButton type="button" onClick={resetForm} disabled={isSubmitting}>
-              Huy
+              Hủy
             </SecondaryButton>
             <PrimaryButton type="submit" loading={isSubmitting} disabled={!validation.isValid}>
-              Luu thay doi
+              Lưu thay đổi
             </PrimaryButton>
           </div>
         </form>

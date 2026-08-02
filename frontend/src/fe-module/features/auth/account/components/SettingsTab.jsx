@@ -56,7 +56,7 @@ export function SettingsTab({ profile, refetch, onNotify }) {
 
       <AccountCard>
         <form onSubmit={onSubmit}>
-          <h2 className="mb-6 text-lg font-semibold text-on-surface">Giao diện</h2>
+          <h2 className="mb-5 text-lg font-extrabold text-on-surface leading-tight">Giao diện</h2>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {THEME_OPTIONS.map((option) => {
@@ -65,8 +65,8 @@ export function SettingsTab({ profile, refetch, onNotify }) {
                 <label
                   key={option.value}
                   className={[
-                    "cursor-pointer rounded-lg border-2 p-4 transition",
-                    selected ? "border-primary bg-account-surface-low" : "border-outline-variant hover:border-primary/50",
+                    "cursor-pointer rounded-2xl border-2 p-4 transition-all",
+                    selected ? "border-sky-500 bg-surface-container-low/60 shadow-2xs" : "border-outline-variant/40 hover:border-sky-500/50",
                   ].join(" ")}
                 >
                   <input
@@ -79,7 +79,7 @@ export function SettingsTab({ profile, refetch, onNotify }) {
                   />
                   <div
                     className={[
-                      "mb-3 flex h-28 items-center justify-center rounded-lg border border-outline-variant text-4xl",
+                      "mb-3 flex h-24 items-center justify-center rounded-xl border border-outline-variant/30 text-3xl shadow-2xs",
                       option.previewClass,
                     ].join(" ")}
                   >
@@ -89,22 +89,22 @@ export function SettingsTab({ profile, refetch, onNotify }) {
                     <span
                       className={[
                         "flex h-4 w-4 items-center justify-center rounded-full border",
-                        selected ? "border-primary" : "border-outline-variant",
+                        selected ? "border-sky-500" : "border-outline-variant/60",
                       ].join(" ")}
                     >
-                      {selected ? <span className="h-2 w-2 rounded-full bg-primary" /> : null}
+                      {selected ? <span className="h-2 w-2 rounded-full bg-sky-500" /> : null}
                     </span>
-                    <span className="text-sm font-medium text-on-surface">{option.label}</span>
+                    <span className="text-xs font-bold text-on-surface">{option.label}</span>
                   </div>
-                  {option.hint ? <p className="mt-2 text-xs text-on-surface-variant">{option.hint}</p> : null}
+                  {option.hint ? <p className="mt-1.5 text-xs text-on-surface-variant/70">{option.hint}</p> : null}
                 </label>
               );
             })}
           </div>
 
-          {errorMessage ? <p className="mt-4 text-sm text-error">{errorMessage}</p> : null}
+          {errorMessage ? <p className="mt-4 text-xs font-medium text-error">{errorMessage}</p> : null}
 
-          <div className="mt-8 flex justify-end border-t border-outline-variant pt-6">
+          <div className="mt-8 flex justify-end border-t border-outline-variant/30 pt-6">
             <PrimaryButton type="submit" loading={isSubmitting}>
               Lưu cài đặt
             </PrimaryButton>

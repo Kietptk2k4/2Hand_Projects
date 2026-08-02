@@ -17,7 +17,7 @@ public class ViewTrendingHashtagsUseCase {
     public static final int DEFAULT_LIMIT = 5;
     public static final int MIN_LIMIT = 1;
     public static final int MAX_LIMIT = 20;
-    public static final int WINDOW_DAYS = 7;
+    public static final int WINDOW_HOURS = 24;
     public static final int POST_COUNT_WEIGHT = 10;
 
     private final TrendingHashtagsRepository trendingHashtagsRepository;
@@ -33,7 +33,7 @@ public class ViewTrendingHashtagsUseCase {
         }
 
         int limit = resolveLimit(command.limit());
-        Instant createdAfter = Instant.now().minus(WINDOW_DAYS, ChronoUnit.DAYS);
+        Instant createdAfter = Instant.now().minus(WINDOW_HOURS, ChronoUnit.HOURS);
 
         List<ViewTrendingHashtagsResult.TrendingHashtagItem> items = trendingHashtagsRepository
                 .findTrendingHashtags(createdAfter, limit, POST_COUNT_WEIGHT)

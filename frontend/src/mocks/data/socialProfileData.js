@@ -1,6 +1,7 @@
 import { mockUsers } from "./authData";
 import { MOCK_SOCIAL_USER_IDS as FE_MOCK_USER_IDS } from "../../fe-module/features/social/constants/socialProfileConstants";
 import { MOCK_FOLLOWEE_IDS, mockGlobalFeedPosts, mockPostId } from "./socialFeedData";
+import { resolveAuthor } from "./socialPostDetailData";
 export const MOCK_SOCIAL_USER_IDS = FE_MOCK_USER_IDS;
 
 const ACTIVE_USER_ID = MOCK_SOCIAL_USER_IDS.ACTIVE;
@@ -211,6 +212,7 @@ function canViewerSeePost(post, viewerId, authorId, followStatus) {
 function toGridItem(post) {
   return {
     postId: post.postId,
+    authorId: post.authorId,
     caption: post.caption || "",
     media: post.media || [],
     visibility: post.visibility || "PUBLIC",
@@ -259,4 +261,51 @@ export function buildUserPostsPage(userId, viewerId, { page, size, statusFilter 
     },
   };
 }
+
+export function buildUserRepliedPostsPage(userId, viewerId, { page, size }) {
+  const profile = buildSocialProfile(userId, viewerId);
+  if (!profile) return { error: 404 };
+  if (!profile.canViewFullProfile) return { error: 403 };
+
+  let posts = mockGlobalFeedPosts.filter(
+    (post) => post.authorId !== userId && (post.replyCount || 0) > 0
+  );
+
+  if (posts.length < 3) {
+    const extra = mockGlobalFeedPosts.filter(
+      (post) => (post.replyCount || 0) > 0
+    );
+    posts = Array.from(new Set([...posts, ...extra]));
+  }
+
+  posts = posts.filter((post) => (post.status || "ACTIVE") !== "DELETED");
+  posts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  const totalElements = posts.length;
+  const totalPages = totalElements === 0 ? 0 : Math.ceil(totalElements / size);
+  const start = page * size;
+  const slice = posts.slice(start, start + size).map((post) => {
+    const author = resolveAuthor(post.authorId);
+    return {
+      ...toGridItem(post),
+      authorId: post.authorId,
+      authorDisplayName: author.displayName,
+      authorAvatarUrl: author.avatarUrl,
+      likedByMe: post.likedByMe ?? false,
+      savedByMe: post.savedByMe ?? false,
+    };
+  });
+
+  return {
+    items: slice,
+    meta: {
+      page,
+      size,
+      totalElements,
+      totalPages,
+      hasNext: start + size < totalElements,
+    },
+  };
+}
+
 

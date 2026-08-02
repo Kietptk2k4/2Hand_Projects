@@ -3,8 +3,14 @@ import { ACCOUNT_TABS } from "../accountTabs.js";
 const DEFAULT_AVATAR = "https://i.pravatar.cc/160?img=11";
 
 function NavIcon({ name, active, danger }) {
-  const stroke = danger ? "currentColor" : active ? "#0066ff" : "currentColor";
-  const className = `h-5 w-5 shrink-0 ${danger ? "text-account-danger" : active ? "text-primary" : "text-on-surface-variant group-hover:text-primary"}`;
+  const stroke = danger ? "currentColor" : active ? "#0ea5e9" : "currentColor";
+  const className = `h-5 w-5 shrink-0 transition-colors ${
+    danger
+      ? "text-red-600"
+      : active
+        ? "text-sky-500"
+        : "text-on-surface-variant/70 group-hover:text-on-surface"
+  }`;
 
   const paths = {
     account: (
@@ -80,12 +86,12 @@ function NavItem({ tab, isActive, onSelect }) {
         type="button"
         onClick={() => onSelect(tab.id)}
         className={[
-          "group flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors",
-          isActive ? "bg-red-50 text-account-danger" : "text-account-danger hover:bg-red-50",
+          "group flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left text-sm font-semibold transition-colors",
+          isActive ? "bg-red-500/10 text-red-600" : "text-red-600 hover:bg-red-500/10",
         ].join(" ")}
       >
         <NavIcon name={tab.icon} active={isActive} danger />
-        <span className="text-sm font-medium">{tab.labelVn}</span>
+        <span>{tab.labelVn}</span>
       </button>
     );
   }
@@ -95,16 +101,16 @@ function NavItem({ tab, isActive, onSelect }) {
       type="button"
       onClick={() => onSelect(tab.id)}
       className={[
-        "group relative flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors",
+        "group relative flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left text-sm transition-colors",
         isActive
-          ? "bg-account-surface-low font-semibold text-primary"
-          : "text-on-surface-variant hover:bg-account-surface-low hover:text-primary",
+          ? "bg-surface-container-low font-bold text-on-surface"
+          : "text-on-surface-variant/80 hover:bg-surface-container-low/60 hover:text-on-surface",
       ].join(" ")}
     >
       <NavIcon name={tab.icon} active={isActive} />
-      <span className="text-sm">{tab.labelVn}</span>
+      <span>{tab.labelVn}</span>
       {isActive ? (
-        <span className="absolute right-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-l-full bg-primary" aria-hidden="true" />
+        <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-sky-500" aria-hidden="true" />
       ) : null}
     </button>
   );
@@ -115,25 +121,25 @@ export function AccountTabNav({ activeTab, onTabChange, avatarUrl }) {
   const deleteTab = ACCOUNT_TABS.find((tab) => tab.danger);
 
   return (
-    <aside className="flex w-full shrink-0 flex-col overflow-hidden rounded-lg border border-account-surface-dim bg-account-surface shadow-sm md:w-[280px] md:min-h-[720px]">
-      <div className="flex flex-col items-center px-6 pb-6 pt-8 text-center">
+    <aside className="flex w-full shrink-0 flex-col overflow-hidden rounded-2xl border border-outline-variant/40 bg-surface-container-lowest shadow-2xs md:w-[280px]">
+      <div className="flex flex-col items-center px-6 pb-6 pt-7 text-center border-b border-outline-variant/30">
         <img
           src={avatarUrl || DEFAULT_AVATAR}
           alt=""
-          className="mb-4 h-20 w-20 rounded-full border-2 border-white object-cover shadow-sm"
+          className="mb-3.5 h-18 w-18 rounded-full border-2 border-surface-container-low object-cover shadow-2xs"
         />
-        <h2 className="text-xl font-semibold text-on-surface">Cài đặt hồ sơ</h2>
-        <p className="mt-1 text-sm text-on-surface-variant">Quản lý tài khoản 2Hands của bạn</p>
+        <h2 className="text-xl font-extrabold text-on-surface leading-tight">Cài đặt tài khoản</h2>
+        <p className="mt-1 text-xs text-on-surface-variant/70">Quản lý tài khoản 2Hands của bạn</p>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-1 px-4" aria-label="Cài đặt tài khoản">
+      <nav className="flex flex-1 flex-col gap-1.5 p-3.5" aria-label="Cài đặt tài khoản">
         {mainTabs.map((tab) => (
           <NavItem key={tab.id} tab={tab} isActive={activeTab === tab.id} onSelect={onTabChange} />
         ))}
       </nav>
 
       {deleteTab ? (
-        <div className="mt-auto border-t border-account-surface-dim p-6">
+        <div className="mt-auto border-t border-outline-variant/30 p-3.5">
           <NavItem tab={deleteTab} isActive={activeTab === deleteTab.id} onSelect={onTabChange} />
         </div>
       ) : null}

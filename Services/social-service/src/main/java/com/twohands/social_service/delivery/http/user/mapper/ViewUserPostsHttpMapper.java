@@ -29,6 +29,7 @@ public class ViewUserPostsHttpMapper {
                 .toList();
         return new ViewUserPostsResponse.UserPostItemResponse(
                 item.postId(),
+                item.authorId(),
                 item.caption(),
                 media,
                 item.visibility(),
