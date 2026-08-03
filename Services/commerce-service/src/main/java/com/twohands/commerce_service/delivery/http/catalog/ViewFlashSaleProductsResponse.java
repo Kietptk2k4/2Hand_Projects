@@ -7,6 +7,7 @@ import java.util.List;
 
 public record ViewFlashSaleProductsResponse(
         List<ProductCardResponse> items,
+        PageMetaResponse pagination,
         @JsonProperty("slot_start") Instant slotStart,
         @JsonProperty("slot_end") Instant slotEnd
 ) {

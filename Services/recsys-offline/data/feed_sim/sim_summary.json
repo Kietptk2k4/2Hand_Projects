@@ -1,0 +1,44 @@
+{
+  "sim_dir": "D:\\Projects\\2Hand_Projects\\Services\\recsys-offline\\data\\feed_sim",
+  "scale": "smoke",
+  "seed": 42,
+  "skeleton": {
+    "scale": "smoke",
+    "users": 10,
+    "sellers": 4,
+    "shops": 4,
+    "products": 24,
+    "posts": 40,
+    "posts_with_product_tags": 24,
+    "product_tag_rate": 0.6,
+    "sessions_per_user": 5,
+    "feed_size": 8,
+    "expected_raw_impressions": 400
+  },
+  "sim_meta": {
+    "impressions": 400,
+    "unique_pairs": 400,
+    "likes": 47,
+    "saves": 19,
+    "comments": 6,
+    "follows": 9,
+    "searches": 26,
+    "carts": 21,
+    "orders": 15,
+    "buyer_rate": 1.0,
+    "seed": 42,
+    "start_at": "2026-01-01T00:00:00Z"
+  },
+  "counts": {
+    "posts": 40,
+    "comments": 6,
+    "post_likes": 47,
+    "post_saves": 19,
+    "follows": 9,
+    "search_history": 26,
+    "post_impression_log": 400,
+    "user_purchase_profile": 10
+  },
+  "data_source": "SEED",
+  "shared_db_writes": false
+}

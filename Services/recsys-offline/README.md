@@ -15,6 +15,52 @@ Social Service ranks posts in-process (ONNX + rule-based fallback) and never cal
 - `POST /jobs/evaluate` — pointwise ROC-AUC + Precision/Recall/HitRate@10 (by `request_id`) vs rule-based baseline → `evaluate_report.json`
 - `POST /jobs/export-activate` — LightGBM→ONNX, parity smoke, versioned `model_artifacts` insert, metric gate, activate or soft-reject
 - `POST /jobs/export-purchase-profile` — read-only Commerce export → `user_purchase_profile.csv` (optional `as_of` / `T_cut`)
+- `POST /jobs/feed-sim` — **file-only** Social feed sim → CSVs under `RECSYS_FEED_SIM_DIR` (no Auth/Social/Commerce inserts)
+- `POST /jobs/feed-build-dataset` — mode-aware build (`SEED_ONLY` | `HYBRID` | `REAL_ONLY`) from Admin `social.feed.ltr.*`
+- `POST /jobs/feed-retrain` — orchestrate resolve → (feed-sim) → (clean) → build → split → train → evaluate → export-activate
+
+## Feed train modes (preferred cold-start)
+
+Admin system-configs (tab **Cấu hình hệ thống**):
+
+| Key | Default | Meaning |
+|-----|---------|---------|
+| `social.feed.ltr.train_data_mode` | `SEED_ONLY` | `SEED_ONLY` \| `HYBRID` \| `REAL_ONLY` |
+| `social.feed.ltr.seed_row_weight` | `0.5` | LightGBM sample weight for SEED rows in HYBRID |
+| `social.feed.ltr.real_only_min_impressions` | `5000` | Fail closed if REAL_ONLY corpus too thin |
+
+Dev override (skip Admin HTTP): set `RECSYS_FEED_CONFIG_FROM_ENV=1` plus `FEED_LTR_*` (see `.env.example`).
+
+```bash
+# SEED_ONLY cold-start (no shared-DB pollution)
+set RECSYS_SIM_ALLOW=1
+set RECSYS_FEED_CONFIG_FROM_ENV=1
+set FEED_LTR_TRAIN_DATA_MODE=SEED_ONLY
+curl -X POST http://localhost:8095/jobs/feed-retrain
+```
+
+**Deprecated for train:** `python -m simulation.cli seed-db --simulate` writes fake users/posts/impressions into shared DBs and fills `user_seen_posts`. Prefer `feed-sim` / `feed-retrain`. Keep `seed-db` only for legacy demos.
+
+### Cleanup checklist (after prior seed-db pollution)
+
+Run manually against **dev** DBs only:
+
+```sql
+-- Social Postgres
+DELETE FROM user_seen_posts;
+DELETE FROM post_impression_log WHERE model_name IS NULL; -- adjust filter for sim rows
+-- Optionally delete sim likes/saves/follows/search_history by known bot user ids
+
+-- Social Mongo: remove posts with caption prefix "Sim "
+-- Auth: remove bot users created by seed-db
+-- Commerce: remove sim shops/products/orders if seeded
+```
+
+## Fashion simulation seed (dev-only / legacy DB seed)
+
+Generates Fashion Social + Fashion Commerce training corpus (no laptop/gaming). Personas: `config/personas.yaml`.
+
+> **Prefer file feed-sim for `feed_ranker` train.** Shared-DB seed below is legacy.
 
 ## Config (env)
 
@@ -27,13 +73,12 @@ Social Service ranks posts in-process (ONNX + rule-based fallback) and never cal
 | `AUTH_POSTGRES_URL` | Auth Postgres for sim user seed (optional) |
 | `RECSYS_DATASET_OUTPUT_DIR` | Cleaned CSV + `dataset.parquet` directory (default `data/cleaned`) |
 | `RECSYS_ARTIFACT_DIR` | Model artifact directory (`model.txt`, `train_meta.json`, ONNX, reports). Offline **writes** files here. Social reads via `SOCIAL_RECOMMENDATION_MODEL_ROOT` (same folder when Docker-mounted). |
-| `RECSYS_SIM_ALLOW` | Must be `1`/`true` to run DB seed/simulate writers (dev-only) |
+| `RECSYS_FEED_SIM_DIR` | File-only feed sim CSV directory (default `data/feed_sim`) |
+| `RECSYS_SIM_ALLOW` | Must be `1`/`true` to run feed-sim / home-sim / legacy seed-db (dev-only) |
 
 **Portable model path:** `model_artifacts.artifact_path` stores only the ONNX **basename** (e.g. `feed_ranker_v1.onnx`). Social joins `SOCIAL_RECOMMENDATION_MODEL_ROOT` (ops alias: `MODEL_ROOT`) + that basename. Do not store host-absolute paths in the DB.
 
-## Fashion simulation seed (dev-only)
-
-Generates Fashion Social + Fashion Commerce training corpus (no laptop/gaming). Personas: `config/personas.yaml`.
+## Fashion simulation seed details (legacy DB path)
 
 **Default full volumes:** 120 users, 40 sellers/shops, 600 posts (~60% product tags), 400 products, 12 sessions × feed 20 → ~28.8k raw impressions (target ≥20k cleaned rows).
 

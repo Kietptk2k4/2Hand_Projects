@@ -3,7 +3,7 @@ import { fetchProductList } from "../api/productListApi";
 import { DEFAULT_SORT, PAGE_SIZE } from "../constants/productListConstants";
 import { mapProductListResponse } from "../utils/productListMapper";
 
-export function useProductList() {
+export function useProductList({ enabled = true } = {}) {
   const [sort, setSort] = useState(DEFAULT_SORT);
   const [page, setPage] = useState(1);
   const [items, setItems] = useState([]);
@@ -14,6 +14,12 @@ export function useProductList() {
 
   const loadPage = useCallback(
     async (targetPage, { append = false, sortValue = sort } = {}) => {
+      if (!enabled) {
+        setItems([]);
+        setStatus("idle");
+        return;
+      }
+
       const requestId = ++requestIdRef.current;
       setStatus(append ? "loadingMore" : "loading");
       setErrorMessage("");
@@ -37,12 +43,12 @@ export function useProductList() {
         setErrorMessage(error?.message || "Không tải được danh sách sản phẩm. Vui lòng thử lại.");
       }
     },
-    [sort]
+    [enabled, sort]
   );
 
   const changeSort = useCallback(
     (nextSort) => {
-      if (nextSort === sort) return;
+      if (!enabled || nextSort === sort) return;
       setSort(nextSort);
       setPage(1);
       setItems([]);
@@ -51,14 +57,19 @@ export function useProductList() {
       requestIdRef.current += 1;
       loadPage(1, { append: false, sortValue: nextSort });
     },
-    [loadPage, sort]
+    [enabled, loadPage, sort]
   );
 
   useEffect(() => {
+    if (!enabled) {
+      setItems([]);
+      setPagination(null);
+      setStatus("idle");
+      return;
+    }
     loadPage(1, { append: false, sortValue: DEFAULT_SORT });
-    // Initial fetch only; sort changes go through changeSort.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [enabled]);
 
   const loadMore = useCallback(() => {
     if (status === "loadingMore" || !pagination?.hasNext) return;

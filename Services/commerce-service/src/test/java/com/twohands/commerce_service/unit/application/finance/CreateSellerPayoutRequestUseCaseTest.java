@@ -1,8 +1,8 @@
 package com.twohands.commerce_service.unit.application.finance;
 
+import com.twohands.commerce_service.application.finance.CommerceFinanceConfigResolver;
 import com.twohands.commerce_service.application.finance.payout.createsellerpayoutrequest.CreateSellerPayoutRequestCommand;
 import com.twohands.commerce_service.application.finance.payout.createsellerpayoutrequest.CreateSellerPayoutRequestUseCase;
-import com.twohands.commerce_service.config.CommerceFinanceProperties;
 import com.twohands.commerce_service.domain.finance.PayoutRequestStatus;
 import com.twohands.commerce_service.domain.finance.SellerBalanceSummary;
 import com.twohands.commerce_service.domain.finance.SellerLedgerRepository;
@@ -17,7 +17,6 @@ import com.twohands.commerce_service.exception.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -45,9 +44,9 @@ class CreateSellerPayoutRequestUseCaseTest {
     @Mock
     private SellerLedgerRepository sellerLedgerRepository;
 
-    private CommerceFinanceProperties financeProperties;
+    @Mock
+    private CommerceFinanceConfigResolver financeConfigResolver;
 
-    @InjectMocks
     private CreateSellerPayoutRequestUseCase useCase;
 
     private final UUID sellerId = UUID.randomUUID();
@@ -56,14 +55,13 @@ class CreateSellerPayoutRequestUseCaseTest {
 
     @BeforeEach
     void setUp() {
-        financeProperties = new CommerceFinanceProperties();
-        financeProperties.setMinPayoutAmount(new BigDecimal("100000"));
         useCase = new CreateSellerPayoutRequestUseCase(
                 sellerShopRepository,
                 sellerPayoutRepository,
                 sellerLedgerRepository,
-                financeProperties
+                financeConfigResolver
         );
+        when(financeConfigResolver.resolveMinPayoutAmount()).thenReturn(new BigDecimal("100000"));
     }
 
     @Test

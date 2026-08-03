@@ -295,3 +295,110 @@ def jobs_home_retrain() -> JobAccepted:
         logger.exception("Home retrain orchestrator failed")
         raise HTTPException(status_code=500, detail=str(exc)) from exc
     return JobAccepted(status="success", detail="Home retrain orchestrator completed", result=summary)
+
+
+@app.post("/jobs/feed-sim", response_model=JobAccepted)
+def jobs_feed_sim() -> JobAccepted:
+    settings = get_settings()
+    try:
+        settings.require_sim_allow()
+        from pathlib import Path
+
+        from pipelines.feed_sim import run_feed_sim_to_dir
+
+        summary = run_feed_sim_to_dir(Path(settings.recsys_feed_sim_dir))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Feed sim job failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return JobAccepted(status="success", detail="Feed sim completed", result=summary)
+
+
+@app.post("/jobs/feed-build-dataset", response_model=JobAccepted)
+def jobs_feed_build_dataset() -> JobAccepted:
+    settings = get_settings()
+    try:
+        from pathlib import Path
+
+        from pipelines.feed_build_dataset import run_feed_build_dataset_job
+        from pipelines.feed_train_mode import resolve_feed_train_mode
+
+        mode_cfg = resolve_feed_train_mode(
+            admin_base_url=settings.admin_base_url,
+            admin_token=settings.admin_service_token,
+        )
+        summary = run_feed_build_dataset_job(
+            mode_cfg=mode_cfg,
+            seed_dir=Path(settings.recsys_feed_sim_dir),
+            real_dir=Path(settings.recsys_dataset_output_dir),
+            output_dir=Path(settings.recsys_dataset_output_dir),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Feed build-dataset failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return JobAccepted(status="success", detail="Feed build-dataset completed", result=summary)
+
+
+@app.post("/jobs/feed-retrain", response_model=JobAccepted)
+def jobs_feed_retrain() -> JobAccepted:
+    """Mode-aware feed retrain: resolve → sim → clean → build → split → train → evaluate → export."""
+    settings = get_settings()
+    try:
+        from pathlib import Path
+
+        from pipelines.feed_build_dataset import run_feed_build_dataset_job
+        from pipelines.feed_orchestrator import FeedRetrainOrchestrator
+        from pipelines.feed_train_mode import resolve_feed_train_mode
+
+        mode_cfg = resolve_feed_train_mode(
+            admin_base_url=settings.admin_base_url,
+            admin_token=settings.admin_service_token,
+        )
+        sim_dir = Path(settings.recsys_feed_sim_dir)
+        data_dir = Path(settings.recsys_dataset_output_dir)
+
+        def _clean_real() -> None:
+            run_clean_job(settings)
+
+        def _build() -> None:
+            run_feed_build_dataset_job(
+                mode_cfg=mode_cfg,
+                seed_dir=sim_dir,
+                real_dir=data_dir,
+                output_dir=data_dir,
+            )
+
+        def _split() -> None:
+            run_split_dataset(settings)
+
+        def _train() -> None:
+            run_train_job(settings)
+
+        def _evaluate() -> None:
+            run_evaluate_job(settings)
+
+        def _export() -> None:
+            run_export_activate_job(settings)
+
+        orchestrator = FeedRetrainOrchestrator()
+        jobs = {
+            "clean_real": _clean_real,
+            "build_dataset": _build,
+            "split": _split,
+            "train": _train,
+            "evaluate": _evaluate,
+            "export_activate": _export,
+        }
+        if mode_cfg.train_data_mode == "SEED_ONLY":
+            settings.require_sim_allow()
+        ran = orchestrator.run(mode_cfg=mode_cfg, sim_dir=sim_dir, jobs=jobs)
+        summary = {"steps": ran, "train_data_mode": mode_cfg.train_data_mode}
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Feed retrain orchestrator failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return JobAccepted(status="success", detail="Feed retrain orchestrator completed", result=summary)

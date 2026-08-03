@@ -47,8 +47,10 @@ def _require_lightgbm():
     return lgb
 
 
-def load_xy(parquet_path: Path) -> tuple[list[list[float]], list[int], int]:
-    """Load X/y from parquet. Returns (X, y, nan_filled_count)."""
+def load_xy(
+    parquet_path: Path,
+) -> tuple[list[list[float]], list[int], int, list[float]]:
+    """Load X/y/(optional weights) from parquet. Returns (X, y, nan_filled_count, weights)."""
     try:
         import pyarrow.parquet as pq
     except ImportError as exc:
@@ -72,6 +74,7 @@ def load_xy(parquet_path: Path) -> tuple[list[list[float]], list[int], int]:
 
     x_rows: list[list[float]] = []
     y_vals: list[int] = []
+    weights: list[float] = []
     nan_filled = 0
 
     for row in rows:
@@ -103,14 +106,20 @@ def load_xy(parquet_path: Path) -> tuple[list[list[float]], list[int], int]:
             continue
         x_rows.append(features)
         y_vals.append(label)
+        try:
+            weights.append(float(row.get("sample_weight") if row.get("sample_weight") is not None else 1.0))
+        except (TypeError, ValueError):
+            weights.append(1.0)
 
     if not x_rows:
         raise ValueError(f"No usable training rows in {parquet_path}")
 
-    return x_rows, y_vals, nan_filled
+    return x_rows, y_vals, nan_filled, weights
 
 
-def _try_load_val(path: Path) -> tuple[list[list[float]], list[int], int] | None:
+def _try_load_val(
+    path: Path,
+) -> tuple[list[list[float]], list[int], int, list[float]] | None:
     if not path.exists():
         return None
     try:
@@ -127,6 +136,7 @@ def train_lightgbm(
     params: dict[str, Any] | None = None,
     num_boost_round: int = NUM_BOOST_ROUND,
     early_stopping_rounds: int = EARLY_STOPPING_ROUNDS,
+    sample_weight: list[float] | None = None,
 ) -> tuple[Any, dict[str, Any]]:
     lgb = _require_lightgbm()
     try:
@@ -140,8 +150,15 @@ def train_lightgbm(
 
     x_train_np = np.asarray(x_train, dtype=np.float64)
     y_train_np = np.asarray(y_train, dtype=np.float64)
+    weight_kw: dict[str, Any] = {}
+    if sample_weight is not None and len(sample_weight) == len(y_train):
+        weight_kw["weight"] = np.asarray(sample_weight, dtype=np.float64)
     dtrain = lgb.Dataset(
-        x_train_np, label=y_train_np, feature_name=FEATURE_ORDER, free_raw_data=False
+        x_train_np,
+        label=y_train_np,
+        feature_name=FEATURE_ORDER,
+        free_raw_data=False,
+        **weight_kw,
     )
     valid_sets = [dtrain]
     valid_names = ["train"]
@@ -210,7 +227,7 @@ def run_train_job(settings: Settings | None = None) -> dict[str, Any]:
     train_path = data_dir / "dataset_train.parquet"
     val_path = data_dir / "dataset_val.parquet"
 
-    x_train, y_train, nan_train = load_xy(train_path)
+    x_train, y_train, nan_train, w_train = load_xy(train_path)
     warnings: list[str] = []
     if nan_train:
         warnings.append(f"nan_filled_train={nan_train}")
@@ -221,16 +238,18 @@ def run_train_job(settings: Settings | None = None) -> dict[str, Any]:
     if val_loaded is None:
         warnings.append("no_early_stopping")
     else:
-        x_val, y_val, nan_val = val_loaded
+        x_val, y_val, nan_val, _ = val_loaded
         if nan_val:
             warnings.append(f"nan_filled_val={nan_val}")
 
     # If val path missing, train_lightgbm will also add no_early_stopping — dedupe later
+    use_weights = any(abs(w - 1.0) > 1e-9 for w in w_train)
     booster, train_info = train_lightgbm(
         x_train,
         y_train,
         x_val=x_val,
         y_val=y_val,
+        sample_weight=w_train if use_weights else None,
     )
     for w in train_info.get("warnings") or []:
         if w not in warnings:
@@ -240,6 +259,14 @@ def run_train_job(settings: Settings | None = None) -> dict[str, Any]:
     model_path = artifact_dir / "model.txt"
     meta_path = artifact_dir / "train_meta.json"
     booster.save_model(str(model_path))
+
+    dataset_meta: dict[str, Any] = {}
+    dataset_meta_path = data_dir / "dataset_meta.json"
+    if dataset_meta_path.exists():
+        try:
+            dataset_meta = json.loads(dataset_meta_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            dataset_meta = {}
 
     summary: dict[str, Any] = {
         "feature_order": FEATURE_ORDER,
@@ -260,6 +287,8 @@ def run_train_job(settings: Settings | None = None) -> dict[str, Any]:
         "warnings": warnings,
         "num_boost_round": train_info["num_boost_round"],
         "early_stopping_rounds": train_info["early_stopping_rounds"],
+        "used_sample_weight": use_weights,
+        "train_data_mode": dataset_meta.get("train_data_mode"),
     }
     # Keep truncated evals for debugging (last values only already in metrics)
     meta_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")

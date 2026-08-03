@@ -1,6 +1,6 @@
 package com.twohands.commerce_service.application.finance.payout.createsellerpayoutrequest;
 
-import com.twohands.commerce_service.config.CommerceFinanceProperties;
+import com.twohands.commerce_service.application.finance.CommerceFinanceConfigResolver;
 import com.twohands.commerce_service.domain.finance.SellerBalanceSummary;
 import com.twohands.commerce_service.domain.finance.SellerLedgerRepository;
 import com.twohands.commerce_service.domain.finance.SellerPayoutRequest;
@@ -21,18 +21,18 @@ public class CreateSellerPayoutRequestUseCase {
     private final SellerShopRepository sellerShopRepository;
     private final SellerPayoutRepository sellerPayoutRepository;
     private final SellerLedgerRepository sellerLedgerRepository;
-    private final CommerceFinanceProperties financeProperties;
+    private final CommerceFinanceConfigResolver financeConfigResolver;
 
     public CreateSellerPayoutRequestUseCase(
             SellerShopRepository sellerShopRepository,
             SellerPayoutRepository sellerPayoutRepository,
             SellerLedgerRepository sellerLedgerRepository,
-            CommerceFinanceProperties financeProperties
+            CommerceFinanceConfigResolver financeConfigResolver
     ) {
         this.sellerShopRepository = sellerShopRepository;
         this.sellerPayoutRepository = sellerPayoutRepository;
         this.sellerLedgerRepository = sellerLedgerRepository;
-        this.financeProperties = financeProperties;
+        this.financeConfigResolver = financeConfigResolver;
     }
 
     @Transactional
@@ -44,7 +44,7 @@ public class CreateSellerPayoutRequestUseCase {
                 .orElseThrow(() -> new AppException(ErrorCode.PAYOUT_ACCOUNT_NOT_FOUND));
 
         BigDecimal amount = command.amount();
-        BigDecimal minAmount = financeProperties.getMinPayoutAmount();
+        BigDecimal minAmount = financeConfigResolver.resolveMinPayoutAmount();
         if (amount.compareTo(minAmount) < 0) {
             throw new AppException(ErrorCode.PAYOUT_AMOUNT_BELOW_MINIMUM);
         }

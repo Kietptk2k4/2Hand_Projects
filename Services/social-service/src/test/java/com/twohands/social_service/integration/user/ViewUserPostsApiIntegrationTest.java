@@ -89,6 +89,7 @@ class ViewUserPostsApiIntegrationTest {
         ViewUserPostsResult result = new ViewUserPostsResult(
                 List.of(new ViewUserPostsResult.UserPostItem(
                         postId,
+                        targetId.toString(),
                         "Preview caption",
                         List.of(new ViewUserPostsResult.MediaItemData("https://cdn/1.jpg", "IMAGE", null, null)),
                         "PUBLIC",

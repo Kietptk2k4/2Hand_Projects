@@ -10,4 +10,11 @@ public interface UserSeenPostsRepository {
     Set<String> findSeenPostIds(UUID userId);
 
     void upsertSeenPosts(UUID userId, List<String> postIds, Instant seenAt);
+
+    /**
+     * Deletes seen rows with {@code seen_at} strictly before {@code cutoff}.
+     *
+     * @return number of deleted rows
+     */
+    int deleteSeenBefore(Instant cutoff);
 }

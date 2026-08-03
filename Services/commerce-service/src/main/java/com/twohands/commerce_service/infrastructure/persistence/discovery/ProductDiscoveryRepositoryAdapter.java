@@ -218,30 +218,42 @@ public class ProductDiscoveryRepositoryAdapter implements ProductDiscoveryReposi
         return jdbcTemplate.query(sql, params, this::mapProductCard);
     }
 
+    private static final String FLASH_SALE_PREDICATE = """
+              AND COALESCE(ss.is_vacation, FALSE) = FALSE
+              AND active_price.sale_price IS NOT NULL
+              AND active_price.sale_price < active_price.price
+              AND active_price.start_at < :slotEnd
+              AND (active_price.end_at IS NULL OR active_price.end_at > :slotStart)
+            """;
+
+    @Override
+    public long countFlashSaleProducts(Instant now, Instant slotStart, Instant slotEnd) {
+        String sql = "SELECT COUNT(DISTINCT p.id) "
+                + VISIBLE_PRODUCT_FROM
+                + IN_STOCK_ONLY_PREDICATE
+                + FLASH_SALE_PREDICATE;
+        Long count = jdbcTemplate.queryForObject(sql, flashSaleParams(now, slotStart, slotEnd), Long.class);
+        return count == null ? 0 : count;
+    }
+
     @Override
     public List<ProductCardSummary> findFlashSaleProducts(
             Instant now,
             Instant slotStart,
             Instant slotEnd,
-            int limit
+            ProductDiscoverySort sort,
+            PageQuery pageQuery
     ) {
         String sql = VISIBLE_PRODUCT_SELECT
                 + VISIBLE_PRODUCT_FROM
                 + IN_STOCK_ONLY_PREDICATE
-                + """
-                  AND COALESCE(ss.is_vacation, FALSE) = FALSE
-                  AND active_price.sale_price IS NOT NULL
-                  AND active_price.sale_price < active_price.price
-                  AND active_price.start_at < :slotEnd
-                  AND (active_price.end_at IS NULL OR active_price.end_at > :slotStart)
-                ORDER BY active_price.end_at ASC NULLS LAST, p.created_at DESC
-                LIMIT :limit
-                """;
+                + FLASH_SALE_PREDICATE
+                + " ORDER BY " + flashSaleOrderByClause(sort)
+                + " LIMIT :limit OFFSET :offset";
 
-        MapSqlParameterSource params = baseParams(now)
-                .addValue("slotStart", Timestamp.from(slotStart))
-                .addValue("slotEnd", Timestamp.from(slotEnd))
-                .addValue("limit", limit);
+        MapSqlParameterSource params = flashSaleParams(now, slotStart, slotEnd)
+                .addValue("limit", pageQuery.limit())
+                .addValue("offset", pageQuery.offset());
 
         return jdbcTemplate.query(sql, params, this::mapProductCard);
     }
@@ -250,11 +262,25 @@ public class ProductDiscoveryRepositoryAdapter implements ProductDiscoveryReposi
         return new MapSqlParameterSource().addValue("now", Timestamp.from(now));
     }
 
+    private MapSqlParameterSource flashSaleParams(Instant now, Instant slotStart, Instant slotEnd) {
+        return baseParams(now)
+                .addValue("slotStart", Timestamp.from(slotStart))
+                .addValue("slotEnd", Timestamp.from(slotEnd));
+    }
+
     private String orderByClause(ProductDiscoverySort sort) {
         return switch (sort) {
             case PRICE_ASC -> "effective_price ASC, p.created_at DESC";
             case PRICE_DESC -> "effective_price DESC, p.created_at DESC";
             default -> "p.created_at DESC";
+        };
+    }
+
+    private String flashSaleOrderByClause(ProductDiscoverySort sort) {
+        return switch (sort) {
+            case PRICE_ASC -> "effective_price ASC, active_price.end_at ASC NULLS LAST, p.created_at DESC";
+            case PRICE_DESC -> "effective_price DESC, active_price.end_at ASC NULLS LAST, p.created_at DESC";
+            default -> "p.created_at DESC, active_price.end_at ASC NULLS LAST";
         };
     }
 

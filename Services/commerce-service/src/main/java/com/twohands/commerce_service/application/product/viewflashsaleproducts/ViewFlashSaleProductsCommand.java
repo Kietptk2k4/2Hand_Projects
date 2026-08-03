@@ -1,4 +1,4 @@
 package com.twohands.commerce_service.application.product.viewflashsaleproducts;
 
-public record ViewFlashSaleProductsCommand(Integer limit) {
+public record ViewFlashSaleProductsCommand(Integer page, Integer limit, String sort) {
 }

@@ -72,10 +72,11 @@ def test_load_xy_fills_nan(tmp_path: Path):
     row["recency_score"] = float("nan")
     row["label"] = 0
     pq.write_table(pa.Table.from_pylist([row]), path)
-    x, y, nan_filled = load_xy(path)
+    x, y, nan_filled, weights = load_xy(path)
     assert y == [0]
     assert x[0][0] == 0.0
     assert nan_filled >= 1
+    assert weights == [1.0]
 
 
 def test_train_lightgbm_direct():

@@ -43,10 +43,13 @@ public interface ProductDiscoveryRepository {
             Instant now
     );
 
+    long countFlashSaleProducts(Instant now, Instant slotStart, Instant slotEnd);
+
     List<ProductCardSummary> findFlashSaleProducts(
             Instant now,
             Instant slotStart,
             Instant slotEnd,
-            int limit
+            ProductDiscoverySort sort,
+            PageQuery pageQuery
     );
 }

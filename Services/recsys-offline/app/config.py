@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     recsys_artifact_dir: str = "data/artifacts"
     recsys_home_sim_dir: str = "data/home_sim"
     recsys_home_artifact_dir: str = "data/home_artifacts"
+    recsys_feed_sim_dir: str = "data/feed_sim"
     admin_base_url: str | None = None
     admin_service_token: str | None = None
     recsys_sim_allow: bool = False

@@ -166,7 +166,7 @@ net_seller_credit = gross_revenue - platform_fee
 | Phi ship trong doanh thu seller | **Khong** | — | Customer chiu; chi `final_price` vao gross |
 | Block payout cho GHN settlement | **Khong** | — | Khong can GHN da CK ve TK san moi cho rut; admin chiu float ngan han |
 
-Commerce doc cac tham so tu Admin `system_config` khi ghi ledger / validate payout (HTTP internal hoac cache/event).
+Commerce doc cac tham so tu Admin `system_config` khi ghi ledger / validate payout (HTTP `GET /admin/api/v1/system-configs` exact key; fallback env `COMMERCE_PLATFORM_COMMISSION_RATE` / `COMMERCE_MIN_PAYOUT_AMOUNT` neu Admin unreachable).
 
 ### 6.3 So du seller
 

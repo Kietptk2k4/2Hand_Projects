@@ -24,6 +24,8 @@ export const APP_ROUTES = {
   socialProfile: "/social/users/:userId",
   commerceHome: "/commerce",
   commerceSearch: "/commerce/search",
+  commerceFlashSale: "/commerce/flash-sale",
+  commerceNewest: "/commerce/newest",
   commerceCategoryProducts: "/commerce/categories/:categoryId",
   commerceShopProducts: "/commerce/shops/:shopId",
   commerceShopReviews: "/commerce/shops/:shopId/reviews",

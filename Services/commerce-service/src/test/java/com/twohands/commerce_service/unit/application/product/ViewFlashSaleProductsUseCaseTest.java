@@ -3,8 +3,10 @@ package com.twohands.commerce_service.unit.application.product;
 import com.twohands.commerce_service.application.product.viewflashsaleproducts.ViewFlashSaleProductsCommand;
 import com.twohands.commerce_service.application.product.viewflashsaleproducts.ViewFlashSaleProductsResult;
 import com.twohands.commerce_service.application.product.viewflashsaleproducts.ViewFlashSaleProductsUseCase;
+import com.twohands.commerce_service.common.pagination.PageQuery;
 import com.twohands.commerce_service.domain.discovery.ProductCardSummary;
 import com.twohands.commerce_service.domain.discovery.ProductDiscoveryRepository;
+import com.twohands.commerce_service.domain.discovery.ProductDiscoverySort;
 import com.twohands.commerce_service.domain.product.ProductStatus;
 import com.twohands.commerce_service.exception.AppException;
 import com.twohands.commerce_service.exception.ErrorCode;
@@ -49,23 +51,37 @@ class ViewFlashSaleProductsUseCaseTest {
     @Test
     void executeShouldReturnFlashSaleItemsWithinCurrentSlot() {
         ProductCardSummary card = sampleCard();
-        when(productDiscoveryRepository.findFlashSaleProducts(eq(NOW), any(), any(), eq(20)))
-                .thenReturn(List.of(card));
+        when(productDiscoveryRepository.countFlashSaleProducts(eq(NOW), any(), any())).thenReturn(1L);
+        when(productDiscoveryRepository.findFlashSaleProducts(
+                eq(NOW), any(), any(), eq(ProductDiscoverySort.NEWEST), any(PageQuery.class)
+        )).thenReturn(List.of(card));
 
-        ViewFlashSaleProductsResult result = useCase.execute(new ViewFlashSaleProductsCommand(null));
+        ViewFlashSaleProductsResult result = useCase.execute(new ViewFlashSaleProductsCommand(null, null, null));
 
         assertThat(result.items()).hasSize(1);
+        assertThat(result.pagination().totalItems()).isEqualTo(1);
+        assertThat(result.pagination().page()).isEqualTo(1);
         assertThat(result.slotStart()).isNotNull();
         assertThat(result.slotEnd()).isAfter(result.slotStart());
-        verify(productDiscoveryRepository).findFlashSaleProducts(eq(NOW), any(), any(), eq(20));
+        verify(productDiscoveryRepository).findFlashSaleProducts(
+                eq(NOW), any(), any(), eq(ProductDiscoverySort.NEWEST), any(PageQuery.class)
+        );
     }
 
     @Test
     void executeShouldRejectInvalidLimit() {
-        assertThatThrownBy(() -> useCase.execute(new ViewFlashSaleProductsCommand(0)))
+        assertThatThrownBy(() -> useCase.execute(new ViewFlashSaleProductsCommand(1, 0, null)))
                 .isInstanceOf(AppException.class)
                 .extracting(ex -> ((AppException) ex).getErrorCode())
                 .isEqualTo(ErrorCode.INVALID_PAGINATION);
+    }
+
+    @Test
+    void executeShouldRejectInvalidSort() {
+        assertThatThrownBy(() -> useCase.execute(new ViewFlashSaleProductsCommand(1, 20, "BAD")))
+                .isInstanceOf(AppException.class)
+                .extracting(ex -> ((AppException) ex).getErrorCode())
+                .isEqualTo(ErrorCode.VALIDATION_ERROR);
     }
 
     private ProductCardSummary sampleCard() {

@@ -5,11 +5,14 @@ import { useTrendingHashtags, formatTrendingPostCount } from "../hooks/useTrendi
 import { buildSocialHashtagPath } from "../utils/socialHashtagRoutes";
 import { SuggestedUserListItem } from "./SuggestedUserListItem";
 import { useProductList } from "../../commerce/hooks/useProductList";
+import { useHomeRecommendations } from "../../commerce/hooks/useHomeRecommendations";
+import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { formatVndPrice } from "../utils/formatPrice";
 import { buildCommerceProductDetailPath } from "../../commerce/utils/commerceRoutes";
 
 export function FeedRightSidebar({ onComingSoon, onViewProfile, onSelectHashtag, onToast }) {
   const navigate = useNavigate();
+  const { user } = useAuthSession();
   const {
     items: trendingItems,
     isLoading: isTrendingLoading,
@@ -29,9 +32,24 @@ export function FeedRightSidebar({ onComingSoon, onViewProfile, onSelectHashtag,
     followDisabled,
   } = useSuggestedUsers({ onToast });
 
-  // TODO: swap to /recommend/products API when ready
-  const { items: productItems, isInitialLoading: isProductsLoading } = useProductList();
-  const interestedProducts = (productItems || []).slice(0, 4);
+  const useRecs = Boolean(user);
+  const homeRecs = useHomeRecommendations({ enabled: useRecs });
+  const catalog = useProductList({ enabled: !useRecs });
+  const productSource = useRecs ? homeRecs : catalog;
+  const interestedProducts = (productSource.items || []).slice(0, 4);
+  const isProductsLoading = useRecs ? homeRecs.isInitialLoading : catalog.isInitialLoading;
+  const homeRequestId = useRecs ? homeRecs.requestId : null;
+
+  const openRecommendedProduct = (productId) => {
+    if (!productId) return;
+    const base = buildCommerceProductDetailPath(productId);
+    if (homeRequestId) {
+      const params = new URLSearchParams({ from: "home", request_id: homeRequestId });
+      navigate(`${base}?${params.toString()}`);
+      return;
+    }
+    navigate(base);
+  };
 
   const goToHashtag = (tag) => {
     const normalized = tag?.replace(/^#+/, "").trim();
@@ -144,7 +162,7 @@ export function FeedRightSidebar({ onComingSoon, onViewProfile, onSelectHashtag,
 
       {/* Recommended Products Widget ("Có thể bạn quan tâm") */}
       <div className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest overflow-hidden">
-        <h3 className="text-xl font-extrabold px-4 pt-4 pb-2 text-on-surface">Có thể bạn quan tâm</h3>
+        <h3 className="text-xl font-extrabold px-4 pt-4 pb-2 text-on-surface">Có thể bạn cũng thích</h3>
         {isProductsLoading ? (
           <p className="px-4 py-3 text-[15px] text-on-surface-variant/70">Đang tải...</p>
         ) : interestedProducts.length === 0 ? (
@@ -157,7 +175,7 @@ export function FeedRightSidebar({ onComingSoon, onViewProfile, onSelectHashtag,
                 <li key={product.productId || index}>
                   <button
                     type="button"
-                    onClick={() => navigate(buildCommerceProductDetailPath(product.productId))}
+                    onClick={() => openRecommendedProduct(product.productId)}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-surface-container-low/50 transition-colors group w-full text-left"
                   >
                     {product.thumbnailUrl ? (

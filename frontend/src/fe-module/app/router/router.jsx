@@ -25,6 +25,8 @@ import { SocialSearchPostsPage } from "../../features/social/pages/SocialSearchP
 import { SocialHashtagPostsPage } from "../../features/social/pages/SocialHashtagPostsPage";
 import { SocialSuggestedUsersPage } from "../../features/social/pages/SocialSuggestedUsersPage";
 import { CommerceHomePage } from "../../features/commerce/pages/CommerceHomePage";
+import { CommerceFlashSalePage } from "../../features/commerce/pages/CommerceFlashSalePage";
+import { CommerceNewestPage } from "../../features/commerce/pages/CommerceNewestPage";
 import { CommerceProductDetailPage } from "../../features/commerce/pages/CommerceProductDetailPage";
 import { CommerceCategoryProductsPage } from "../../features/commerce/pages/CommerceCategoryProductsPage";
 import { CommerceSearchPage } from "../../features/commerce/pages/CommerceSearchPage";
@@ -71,6 +73,8 @@ export const router = createBrowserRouter([
       { path: APP_ROUTES.adminLogin.slice(1), element: <AdminLoginPage /> },
       { path: APP_ROUTES.commerceHome.slice(1), element: <CommerceHomePage /> },
       { path: APP_ROUTES.commerceSearch.slice(1), element: <CommerceSearchPage /> },
+      { path: APP_ROUTES.commerceFlashSale.slice(1), element: <CommerceFlashSalePage /> },
+      { path: APP_ROUTES.commerceNewest.slice(1), element: <CommerceNewestPage /> },
       {
         path: APP_ROUTES.commerceCategoryProducts.slice(1),
         element: <CommerceCategoryProductsPage />,

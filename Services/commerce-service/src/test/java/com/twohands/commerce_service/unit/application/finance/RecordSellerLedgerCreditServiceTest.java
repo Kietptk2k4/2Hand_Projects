@@ -1,14 +1,13 @@
 package com.twohands.commerce_service.unit.application.finance;
 
+import com.twohands.commerce_service.application.finance.CommerceFinanceConfigResolver;
 import com.twohands.commerce_service.application.finance.recordsellerledgercredit.RecordSellerLedgerCreditService;
-import com.twohands.commerce_service.config.CommerceFinanceProperties;
 import com.twohands.commerce_service.domain.finance.OrderItemLedgerSnapshot;
 import com.twohands.commerce_service.domain.finance.SellerLedgerCreditDraft;
 import com.twohands.commerce_service.domain.finance.SellerLedgerRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -28,14 +27,14 @@ class RecordSellerLedgerCreditServiceTest {
     @Mock
     private SellerLedgerRepository sellerLedgerRepository;
 
-    @InjectMocks
-    private RecordSellerLedgerCreditService service;
+    @Mock
+    private CommerceFinanceConfigResolver financeConfigResolver;
 
     @Test
     void shouldRecordCreditWithConfiguredCommissionRate() {
-        CommerceFinanceProperties properties = new CommerceFinanceProperties();
-        properties.setPlatformCommissionRate(new BigDecimal("0.10"));
-        service = new RecordSellerLedgerCreditService(sellerLedgerRepository, properties);
+        RecordSellerLedgerCreditService service =
+                new RecordSellerLedgerCreditService(sellerLedgerRepository, financeConfigResolver);
+        when(financeConfigResolver.resolvePlatformCommissionRate()).thenReturn(new BigDecimal("0.10"));
 
         UUID orderItemId = UUID.randomUUID();
         UUID sellerId = UUID.randomUUID();
@@ -54,5 +53,6 @@ class RecordSellerLedgerCreditServiceTest {
         verify(sellerLedgerRepository).insertCreditIfAbsent(captor.capture());
         assertThat(captor.getValue().amounts().platformFeeAmount()).isEqualByComparingTo(BigDecimal.valueOf(100_000));
         assertThat(captor.getValue().amounts().netAmount()).isEqualByComparingTo(BigDecimal.valueOf(900_000));
+        assertThat(captor.getValue().amounts().commissionRateSnapshot()).isEqualByComparingTo("0.10");
     }
 }

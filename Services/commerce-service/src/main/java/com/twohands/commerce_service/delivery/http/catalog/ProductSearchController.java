@@ -8,6 +8,8 @@ import com.twohands.commerce_service.application.product.viewproductlist.ViewPro
 import com.twohands.commerce_service.application.product.viewflashsaleproducts.ViewFlashSaleProductsCommand;
 import com.twohands.commerce_service.application.product.viewflashsaleproducts.ViewFlashSaleProductsResult;
 import com.twohands.commerce_service.application.product.viewflashsaleproducts.ViewFlashSaleProductsUseCase;
+import com.twohands.commerce_service.application.product.viewnewestproducts.ViewNewestProductsCommand;
+import com.twohands.commerce_service.application.product.viewnewestproducts.ViewNewestProductsUseCase;
 import com.twohands.commerce_service.application.product.viewproductlist.ViewProductListUseCase;
 import com.twohands.commerce_service.application.review.viewproductreviews.ViewProductReviewsCommand;
 import com.twohands.commerce_service.application.review.viewproductreviews.ViewProductReviewsUseCase;
@@ -47,6 +49,7 @@ public class ProductSearchController {
     private final ViewProductReviewsUseCase viewProductReviewsUseCase;
     private final TrackHomeProductClickUseCase trackHomeProductClickUseCase;
     private final ViewFlashSaleProductsUseCase viewFlashSaleProductsUseCase;
+    private final ViewNewestProductsUseCase viewNewestProductsUseCase;
 
     public ProductSearchController(
             ViewProductListUseCase viewProductListUseCase,
@@ -54,7 +57,8 @@ public class ProductSearchController {
             ViewProductDetailUseCase viewProductDetailUseCase,
             ViewProductReviewsUseCase viewProductReviewsUseCase,
             TrackHomeProductClickUseCase trackHomeProductClickUseCase,
-            ViewFlashSaleProductsUseCase viewFlashSaleProductsUseCase
+            ViewFlashSaleProductsUseCase viewFlashSaleProductsUseCase,
+            ViewNewestProductsUseCase viewNewestProductsUseCase
     ) {
         this.viewProductListUseCase = viewProductListUseCase;
         this.searchProductUseCase = searchProductUseCase;
@@ -62,6 +66,7 @@ public class ProductSearchController {
         this.viewProductReviewsUseCase = viewProductReviewsUseCase;
         this.trackHomeProductClickUseCase = trackHomeProductClickUseCase;
         this.viewFlashSaleProductsUseCase = viewFlashSaleProductsUseCase;
+        this.viewNewestProductsUseCase = viewNewestProductsUseCase;
     }
 
     @GetMapping
@@ -83,20 +88,47 @@ public class ProductSearchController {
 
     @GetMapping("/flash-sale")
     public ResponseEntity<ApiResponse<ViewFlashSaleProductsResponse>> listFlashSaleProducts(
-            @RequestParam(required = false) Integer limit
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) String sort
     ) {
         ViewFlashSaleProductsResult result = viewFlashSaleProductsUseCase.execute(
-                new ViewFlashSaleProductsCommand(limit)
+                new ViewFlashSaleProductsCommand(page, limit, sort)
         );
+        PageMeta pagination = result.pagination();
 
         return ResponseEntity.ok(ApiResponse.success(
                 HttpStatus.OK.value(),
                 viewFlashSaleProductsUseCase.successMessage(),
                 new ViewFlashSaleProductsResponse(
                         result.items().stream().map(this::toProductCard).toList(),
+                        new PageMetaResponse(
+                                pagination.page(),
+                                pagination.limit(),
+                                pagination.totalItems(),
+                                pagination.totalPages(),
+                                pagination.hasNext()
+                        ),
                         result.slotStart(),
                         result.slotEnd()
                 )
+        ));
+    }
+
+    @GetMapping("/newest")
+    public ResponseEntity<ApiResponse<ViewProductListResponse>> listNewestProducts(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) String sort
+    ) {
+        ViewProductListResult result = viewNewestProductsUseCase.execute(
+                new ViewNewestProductsCommand(page, limit, sort)
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                viewNewestProductsUseCase.successMessage(),
+                toListResponse(result)
         ));
     }
 

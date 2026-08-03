@@ -132,12 +132,20 @@ social:
       max-retries: ${SOCIAL_OUTBOX_RETRY_MAX_RETRIES:5}
       pending-timeout-seconds: ${SOCIAL_OUTBOX_RETRY_PENDING_TIMEOUT_SECONDS:300}
       batch-size: ${SOCIAL_OUTBOX_RETRY_BATCH_SIZE:50}
+  admin:
+    base-url: ${ADMIN_SERVICE_BASE_URL:}
+    service-token: ${SOCIAL_ADMIN_SERVICE_TOKEN:}
+    connect-timeout-ms: ${SOCIAL_ADMIN_CONNECT_TIMEOUT_MS:3000}
+    read-timeout-ms: ${SOCIAL_ADMIN_READ_TIMEOUT_MS:5000}
   recommendation:
     model-path: ${SOCIAL_RECOMMENDATION_MODEL_PATH:models/recommend_post_model.onnx}
     model-name: ${SOCIAL_RECOMMENDATION_MODEL_NAME:feed_ranker}
     # Ops alias MODEL_ROOT — directory containing portable artifact basenames from model_artifacts
     model-root: ${SOCIAL_RECOMMENDATION_MODEL_ROOT:}
     reload-cron: ${SOCIAL_RECOMMENDATION_RELOAD_CRON:0 0 * * * *}
+    # Fallback when Admin system-configs unreachable (Admin key: social.feed.seen_posts_retention_days)
+    seen-posts-retention-days: ${SOCIAL_FEED_SEEN_POSTS_RETENTION_DAYS:7}
+    seen-posts-cleanup-cron: ${SOCIAL_FEED_SEEN_POSTS_CLEANUP_CRON:0 15 3 * * *}
     recall:
       # Widen created_at window when unseen pool size < min-pool-size (recency half-life stays 7d)
       min-pool-size: ${SOCIAL_RECOMMENDATION_RECALL_MIN_POOL_SIZE:20}

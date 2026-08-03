@@ -1,6 +1,6 @@
 package com.twohands.commerce_service.application.finance.recordsellerledgercredit;
 
-import com.twohands.commerce_service.config.CommerceFinanceProperties;
+import com.twohands.commerce_service.application.finance.CommerceFinanceConfigResolver;
 import com.twohands.commerce_service.domain.finance.OrderItemLedgerSnapshot;
 import com.twohands.commerce_service.domain.finance.SellerLedgerAmounts;
 import com.twohands.commerce_service.domain.finance.SellerLedgerCommission;
@@ -17,14 +17,14 @@ import java.util.UUID;
 public class RecordSellerLedgerCreditService {
 
     private final SellerLedgerRepository sellerLedgerRepository;
-    private final CommerceFinanceProperties financeProperties;
+    private final CommerceFinanceConfigResolver financeConfigResolver;
 
     public RecordSellerLedgerCreditService(
             SellerLedgerRepository sellerLedgerRepository,
-            CommerceFinanceProperties financeProperties
+            CommerceFinanceConfigResolver financeConfigResolver
     ) {
         this.sellerLedgerRepository = sellerLedgerRepository;
-        this.financeProperties = financeProperties;
+        this.financeConfigResolver = financeConfigResolver;
     }
 
     public int recordCreditsForCompletedOrderItems(List<UUID> orderItemIds, Instant occurredAt) {
@@ -32,7 +32,7 @@ public class RecordSellerLedgerCreditService {
             return 0;
         }
 
-        BigDecimal commissionRate = financeProperties.getPlatformCommissionRate();
+        BigDecimal commissionRate = financeConfigResolver.resolvePlatformCommissionRate();
         int recorded = 0;
         for (OrderItemLedgerSnapshot snapshot : sellerLedgerRepository.findEligibleCreditSnapshots(orderItemIds)) {
             SellerLedgerAmounts amounts = SellerLedgerCommission.calculate(snapshot.finalPrice(), commissionRate);

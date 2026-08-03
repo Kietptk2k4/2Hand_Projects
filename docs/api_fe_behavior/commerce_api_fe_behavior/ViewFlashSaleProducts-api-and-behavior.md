@@ -16,7 +16,9 @@ Khuyen mai duoc tinh la thuoc slot neu **giao nhau** voi khoang `[slot_start, sl
 
 | Param | Type | Default | Mo ta |
 |-------|------|---------|-------|
+| `page` | int | 1 | >= 1 |
 | `limit` | int | 20 | 1..50 |
+| `sort` | string | `NEWEST` | `NEWEST`, `PRICE_ASC`, `PRICE_DESC` |
 
 ## 3. Response – Success
 
@@ -35,6 +37,13 @@ Khuyen mai duoc tinh la thuoc slot neu **giao nhau** voi khoang `[slot_start, sl
         "promotion_end_at": "2026-08-02T10:30:00Z"
       }
     ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total_items": 1,
+      "total_pages": 1,
+      "has_next": false
+    },
     "slot_start": "2026-08-02T08:00:00Z",
     "slot_end": "2026-08-02T11:00:00Z"
   }
@@ -47,9 +56,9 @@ Khuyen mai duoc tinh la thuoc slot neu **giao nhau** voi khoang `[slot_start, sl
 - `sale_price` bat buoc va nho hon `price`.
 - Khuyen mai dang active tai `now` (qua lateral join `product_prices`).
 - **Giao slot:** `start_at < slot_end` va (`end_at IS NULL` hoac `end_at > slot_start`). Khuyen mai vo han van duoc bao gom.
-- Sap xep: `end_at` som nhat truoc; `end_at` null (vo han) xep sau.
+- Sap xep: `NEWEST` = `created_at DESC` (tie-break `end_at`); `PRICE_*` theo `effective_price` + tie-break `end_at`.
 
 ## 5. FE Integration
 
-- Home page goi API rieng, khong dung danh sach feed chinh.
+- Home preview goi API rieng (limit nho), trang `/commerce/flash-sale` dung pagination + sort.
 - Hien thi gia khuyen mai + gia niem yet gach ngang + tiet kiem = `price - sale_price`.

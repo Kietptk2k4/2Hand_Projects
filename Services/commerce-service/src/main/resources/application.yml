@@ -61,9 +61,15 @@ logging:
     org.springframework.jdbc: INFO
     
 commerce:
+  admin:
+    base-url: ${ADMIN_SERVICE_BASE_URL:}
+    service-token: ${COMMERCE_ADMIN_SERVICE_TOKEN:}
+    connect-timeout-ms: ${COMMERCE_ADMIN_CONNECT_TIMEOUT_MS:3000}
+    read-timeout-ms: ${COMMERCE_ADMIN_READ_TIMEOUT_MS:5000}
   checkout:
     cod-only-enabled: ${COMMERCE_CHECKOUT_COD_ONLY_ENABLED:false}
   finance:
+    # Fallback when Admin system-configs unreachable (Admin keys: COMMERCE_PLATFORM_COMMISSION_RATE, COMMERCE_MIN_PAYOUT_AMOUNT)
     platform-commission-rate: ${COMMERCE_PLATFORM_COMMISSION_RATE:0.10}
     min-payout-amount: ${COMMERCE_MIN_PAYOUT_AMOUNT:100000}
   object-storage:

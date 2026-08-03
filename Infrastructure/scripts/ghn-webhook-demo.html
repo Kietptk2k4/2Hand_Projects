@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GHN Webhook Demo — 2Hands</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --panel: #1a2332;
+      --border: #2d3a4d;
+      --text: #e7ecf3;
+      --muted: #8b9bb4;
+      --accent: #3b82f6;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --err: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      padding: 1.5rem;
+    }
+    h1 { font-size: 1.35rem; margin: 0 0 0.35rem; }
+    .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem 1.25rem;
+      max-width: 720px;
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+    input {
+      width: 100%;
+      padding: 0.65rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #0d1218;
+      color: var(--text);
+      font-size: 0.95rem;
+      margin-bottom: 0.9rem;
+    }
+    input:focus {
+      outline: 2px solid var(--accent);
+      border-color: transparent;
+    }
+    .hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin: -0.5rem 0 0.9rem;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+    button.status {
+      border: none;
+      border-radius: 8px;
+      padding: 0.55rem 0.85rem;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      color: #fff;
+      background: #334155;
+    }
+    button.status:hover { filter: brightness(1.12); }
+    button.status:disabled { opacity: 0.5; cursor: wait; }
+    button.status[data-key="ready_to_pick"] { background: #0ea5e9; }
+    button.status[data-key="picking"] { background: #8b5cf6; }
+    button.status[data-key="delivering"] { background: #f59e0b; color: #111; }
+    button.status[data-key="delivered"] { background: #22c55e; color: #111; }
+    button.status[data-key="cancel"] { background: #ef4444; }
+    button.status[data-key="return"] { background: #64748b; }
+    .map {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.75rem;
+    }
+    .map code { color: #93c5fd; }
+    pre {
+      background: #0d1218;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem;
+      overflow: auto;
+      font-size: 0.8rem;
+      min-height: 4rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .badge.idle { background: #334155; }
+    .badge.ok { background: #14532d; color: #86efac; }
+    .badge.err { background: #7f1d1d; color: #fecaca; }
+    .badge.wait { background: #713f12; color: #fde68a; }
+    .warn-box {
+      border-left: 3px solid var(--warn);
+      padding-left: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>GHN Webhook Demo</h1>
+  <p class="sub">
+    Dev-only: POST giả callback GHN tới commerce qua ngrok. Máy khác mở file này, dán URL ngrok + mã vận đơn, bấm status.
+  </p>
+
+  <div class="panel">
+    <label for="baseUrl">Webhook base URL (ngrok HTTPS)</label>
+    <input id="baseUrl" type="url" placeholder="https://xxxx.ngrok-free.dev" autocomplete="off" />
+    <p class="hint">Không cần kèm path. Tool sẽ gọi <code>/commerce/api/v1/shipments/webhooks/ghn</code>.</p>
+
+    <label for="secret">Webhook secret (COMMERCE_GHN_WEBHOOK_SECRET)</label>
+    <input id="secret" type="password" placeholder="Để trống nếu verify đang tắt" autocomplete="off" />
+
+    <label for="orderCode">OrderCode (ghn_order_code)</label>
+    <input id="orderCode" type="text" placeholder="vd. 5ENLKKHD" autocomplete="off" />
+
+    <label for="clientOrderCode">ClientOrderCode (tuỳ chọn — shipmentId UUID)</label>
+    <input id="clientOrderCode" type="text" placeholder="Để trống nếu đã có OrderCode" autocomplete="off" />
+
+    <label>Gửi status</label>
+    <div class="row" id="statusButtons"></div>
+    <p class="map">
+      Map: <code>ready_to_pick</code>→READY_TO_SHIP ·
+      <code>picking</code>→PICKING_UP ·
+      <code>delivering</code>→SHIPPED ·
+      <code>delivered</code>→DELIVERED ·
+      <code>cancel</code>→CANCELLED ·
+      <code>return</code>→RETURNED
+    </p>
+    <div class="warn-box">
+      Tôn trọng transition policy: ví dụ PENDING → <strong>delivering</strong> rồi mới <strong>delivered</strong>.
+      Không nhảy thẳng delivered nếu shipment còn PENDING (Commerce sẽ ignore).
+    </div>
+  </div>
+
+  <div class="panel">
+    <div id="statusBadge" class="badge idle">Chưa gửi</div>
+    <label>Response</label>
+    <pre id="output">{}</pre>
+  </div>
+
+  <script>
+    const STATUSES = [
+      { key: "ready_to_pick", label: "ready_to_pick" },
+      { key: "picking", label: "picking" },
+      { key: "delivering", label: "delivering" },
+      { key: "delivered", label: "delivered" },
+      { key: "cancel", label: "cancel" },
+      { key: "return", label: "return" },
+    ];
+
+    const STORAGE_KEY = "ghn-webhook-demo-v1";
+    const baseUrlEl = document.getElementById("baseUrl");
+    const secretEl = document.getElementById("secret");
+    const orderCodeEl = document.getElementById("orderCode");
+    const clientOrderCodeEl = document.getElementById("clientOrderCode");
+    const outputEl = document.getElementById("output");
+    const badgeEl = document.getElementById("statusBadge");
+    const buttonsEl = document.getElementById("statusButtons");
+
+    function loadSaved() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        if (data.baseUrl) baseUrlEl.value = data.baseUrl;
+        if (data.secret) secretEl.value = data.secret;
+        if (data.orderCode) orderCodeEl.value = data.orderCode;
+        if (data.clientOrderCode) clientOrderCodeEl.value = data.clientOrderCode;
+      } catch (_) { /* ignore */ }
+    }
+
+    function saveForm() {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          baseUrl: baseUrlEl.value.trim(),
+          secret: secretEl.value,
+          orderCode: orderCodeEl.value.trim(),
+          clientOrderCode: clientOrderCodeEl.value.trim(),
+        })
+      );
+    }
+
+    [baseUrlEl, secretEl, orderCodeEl, clientOrderCodeEl].forEach((el) => {
+      el.addEventListener("change", saveForm);
+      el.addEventListener("blur", saveForm);
+    });
+
+    function setBadge(kind, text) {
+      badgeEl.className = "badge " + kind;
+      badgeEl.textContent = text;
+    }
+
+    function setButtonsDisabled(disabled) {
+      buttonsEl.querySelectorAll("button").forEach((b) => {
+        b.disabled = disabled;
+      });
+    }
+
+    function buildWebhookUrl(base) {
+      const trimmed = base.replace(/\/+$/, "");
+      return trimmed + "/commerce/api/v1/shipments/webhooks/ghn";
+    }
+
+    function buildPayload(status) {
+      return {
+        CODAmount: 0,
+        CODTransferDate: null,
+        ClientOrderCode: clientOrderCodeEl.value.trim() || "",
+        ConvertedWeight: 200,
+        Description: "2Hands GHN webhook demo: " + status,
+        Height: 10,
+        IsPartialReturn: false,
+        Length: 10,
+        OrderCode: orderCodeEl.value.trim(),
+        PartialReturnCode: "",
+        PaymentType: 1,
+        Reason: "",
+        ReasonCode: "",
+        ShopID: 0,
+        Status: status,
+        Time: new Date().toISOString(),
+        TotalFee: 0,
+        Type: "switch_status",
+        Warehouse: "Demo",
+        Weight: 200,
+        Width: 10,
+      };
+    }
+
+    async function sendStatus(status) {
+      saveForm();
+      const base = baseUrlEl.value.trim();
+      const orderCode = orderCodeEl.value.trim();
+      const clientOrderCode = clientOrderCodeEl.value.trim();
+
+      if (!base) {
+        setBadge("err", "Thiếu base URL");
+        outputEl.textContent = "Nhập webhook base URL (ngrok HTTPS).";
+        return;
+      }
+      if (!orderCode && !clientOrderCode) {
+        setBadge("err", "Thiếu mã đơn");
+        outputEl.textContent = "Cần OrderCode (ghn_order_code) hoặc ClientOrderCode (shipmentId).";
+        return;
+      }
+
+      const url = buildWebhookUrl(base);
+      const headers = {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
+      };
+      const secret = secretEl.value.trim();
+      if (secret) {
+        headers["Token"] = secret;
+      }
+
+      setButtonsDisabled(true);
+      setBadge("wait", "Đang gửi " + status + "…");
+      outputEl.textContent = "POST " + url;
+
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(buildPayload(status)),
+        });
+        const text = await res.text();
+        let pretty = text;
+        try {
+          pretty = JSON.stringify(JSON.parse(text), null, 2);
+        } catch (_) { /* keep raw */ }
+
+        const ok = res.ok;
+        setBadge(ok ? "ok" : "err", "HTTP " + res.status + (ok ? " OK" : " ERROR"));
+        outputEl.textContent = pretty;
+      } catch (err) {
+        setBadge("err", "Network error");
+        outputEl.textContent = String(err && err.message ? err.message : err);
+      } finally {
+        setButtonsDisabled(false);
+      }
+    }
+
+    STATUSES.forEach(({ key, label }) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "status";
+      btn.dataset.key = key;
+      btn.textContent = label;
+      btn.addEventListener("click", () => sendStatus(key));
+      buttonsEl.appendChild(btn);
+    });
+
+    loadSaved();
+  </script>
+</body>
+</html>

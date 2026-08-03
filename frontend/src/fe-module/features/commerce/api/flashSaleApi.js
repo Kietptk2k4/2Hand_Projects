@@ -1,10 +1,14 @@
 import { commerceApiClient } from "../../../services/http/commerceApiClient";
 import { mapAxiosError, unwrapResponse } from "./commerceApiResponse";
 
-export async function fetchFlashSaleProducts({ limit = 20 } = {}) {
+export async function fetchFlashSaleProducts({
+  page = 1,
+  limit = 20,
+  sort = "NEWEST",
+} = {}) {
   try {
     const response = await commerceApiClient.get("/commerce/api/v1/products/flash-sale", {
-      params: { limit },
+      params: { page, limit, sort },
     });
     return unwrapResponse(response);
   } catch (error) {

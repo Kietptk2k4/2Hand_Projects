@@ -28,6 +28,11 @@ public class UserSeenPostsRepositoryAdapter implements UserSeenPostsRepository {
             DO UPDATE SET seen_at = EXCLUDED.seen_at
             """;
 
+    private static final String DELETE_BEFORE = """
+            DELETE FROM user_seen_posts
+            WHERE seen_at < :cutoff
+            """;
+
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
     public UserSeenPostsRepositoryAdapter(NamedParameterJdbcTemplate jdbcTemplate) {
@@ -65,5 +70,16 @@ public class UserSeenPostsRepositoryAdapter implements UserSeenPostsRepository {
             return;
         }
         jdbcTemplate.batchUpdate(UPSERT, batch);
+    }
+
+    @Override
+    public int deleteSeenBefore(Instant cutoff) {
+        if (cutoff == null) {
+            return 0;
+        }
+        return jdbcTemplate.update(
+                DELETE_BEFORE,
+                new MapSqlParameterSource("cutoff", Timestamp.from(cutoff))
+        );
     }
 }

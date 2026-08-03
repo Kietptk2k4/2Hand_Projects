@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FeedToast } from "../../social/components/FeedToast";
 import { CommerceHomeHero } from "../components/CommerceHomeHero";
 import { CommerceFlashSaleSection } from "../components/CommerceFlashSaleSection";
+import { CommerceNewestSection } from "../components/CommerceNewestSection";
 import { CommerceCategoryGridSection } from "../components/CommerceCategoryGridSection";
 import { CommerceFooterTrustSection } from "../components/CommerceFooterTrustSection";
 import { CommerceShell } from "../components/CommerceShell";
@@ -15,6 +16,7 @@ import { useCommerceBuyNow } from "../hooks/useCommerceBuyNow";
 import { useProductList } from "../hooks/useProductList";
 import { useHomeRecommendations } from "../hooks/useHomeRecommendations";
 import { useFlashSaleProducts } from "../hooks/useFlashSaleProducts";
+import { useNewestProducts } from "../hooks/useNewestProducts";
 import { useCommerceCategories } from "../hooks/useCommerceCategories";
 import { useAuthSession } from "../../auth/hooks/useAuthSession.jsx";
 import { useSellerShop } from "../context/SellerShopContext";
@@ -25,26 +27,19 @@ import { MIN_KEYWORD_LENGTH } from "../constants/productSearchConstants";
 import { APP_ROUTES } from "../../../shared/constants/routes";
 
 const COMING_SOON_MESSAGE = "Tính năng đang được phát triển.";
-
-const FEED_TABS = [
-  { id: "recommend", label: "🔥 Gợi ý cho bạn" },
-  { id: "flash", label: "⚡ Deal hời nhất" },
-  { id: "newest", label: "✨ Hàng mới về" },
-  { id: "bestseller", label: "🏆 Bán chạy" },
-  { id: "vip", label: "💎 2Hand Select" },
-];
+const HOME_PREVIEW_LIMIT = 10;
 
 export function CommerceHomePage() {
   const navigate = useNavigate();
   const [toastMessage, setToastMessage] = useState("");
-  const [activeTab, setActiveTab] = useState("recommend");
   const { user } = useAuthSession();
   const { isSeller } = useSellerShop();
 
-  const catalog = useProductList();
-  const useHybridHome = Boolean(user) && activeTab === "recommend";
+  const useHybridHome = Boolean(user);
+  const catalog = useProductList({ enabled: !useHybridHome });
   const homeRecs = useHomeRecommendations({ enabled: useHybridHome });
-  const flashSale = useFlashSaleProducts({ enabled: true, limit: 20 });
+  const flashSale = useFlashSaleProducts({ enabled: true, limit: HOME_PREVIEW_LIMIT });
+  const newest = useNewestProducts({ enabled: true, limit: HOME_PREVIEW_LIMIT });
 
   const items = useHybridHome ? homeRecs.items : catalog.items;
   const sort = catalog.sort;
@@ -124,8 +119,7 @@ export function CommerceHomePage() {
   const handleBannerCtaClick = useCallback(
     (bannerId) => {
       if (bannerId === 1) {
-        const el = document.getElementById("flash-sale-section");
-        if (el) el.scrollIntoView({ behavior: "smooth" });
+        navigate(APP_ROUTES.commerceFlashSale);
       } else if (bannerId === 2) {
         const vintageCat = categories.find((c) =>
           c.categoryName?.toLowerCase().includes("vintage")
@@ -146,10 +140,8 @@ export function CommerceHomePage() {
   const handleShortcutClick = useCallback(
     (shortcutId) => {
       if (shortcutId === "flash-sale") {
-        const el = document.getElementById("flash-sale-section");
-        if (el) el.scrollIntoView({ behavior: "smooth" });
+        navigate(APP_ROUTES.commerceFlashSale);
       } else if (shortcutId === "2hand-select") {
-        setActiveTab("vip");
         const el = document.getElementById("product-feed-section");
         if (el) el.scrollIntoView({ behavior: "smooth" });
       } else if (shortcutId === "freeship" || shortcutId === "guarantee") {
@@ -195,21 +187,19 @@ export function CommerceHomePage() {
   );
 
   const handleViewAllFlashSales = useCallback(() => {
-    setActiveTab("flash");
-    const el = document.getElementById("product-feed-section");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
-    }
-  }, []);
+    navigate(APP_ROUTES.commerceFlashSale);
+  }, [navigate]);
+
+  const handleViewAllNewest = useCallback(() => {
+    navigate(APP_ROUTES.commerceNewest);
+  }, [navigate]);
 
   return (
     <CommerceShell onComingSoon={showComingSoon}>
-      {/* Mobile Top Bell */}
       <div className="mb-4 flex items-center justify-end gap-2 lg:hidden">
         <NotificationBell buttonClassName="h-10 w-10 text-on-surface-variant hover:bg-surface-container-low hover:text-primary" />
       </div>
 
-      {/* Hero Module (Banners, Shortcuts, Search, Create Shop, Shipping Exploration) */}
       <CommerceHomeHero
         onSearchSubmit={handleSearchSubmit}
         onCategoryClick={navigateToCategory}
@@ -221,7 +211,6 @@ export function CommerceHomePage() {
         isLoadingNav={isLoadingCategories}
       />
 
-      {/* Flash Sale Section */}
       <div id="flash-sale-section">
         <CommerceFlashSaleSection
           products={flashSale.items}
@@ -232,7 +221,13 @@ export function CommerceHomePage() {
         />
       </div>
 
-      {/* Featured Categories Showcase */}
+      <CommerceNewestSection
+        products={newest.items}
+        isLoading={newest.isLoading}
+        onOpenProduct={openProduct}
+        onViewAll={handleViewAllNewest}
+      />
+
       <div id="category-section">
         <CommerceCategoryGridSection
           categories={categories}
@@ -241,16 +236,20 @@ export function CommerceHomePage() {
         />
       </div>
 
-      {/* Main Product Catalog Section */}
       <section id="product-feed-section" className="mt-8">
-        {/* Sticky Filter Header Bar */}
         <div className="sticky top-16 z-20 mb-6 flex items-center justify-between gap-4 rounded-2xl border border-outline-variant bg-surface-container-lowest/95 p-3 backdrop-blur-md shadow-xs sm:p-4">
-          <h2 className="text-sm font-black uppercase text-on-surface sm:text-base flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-xl">grid_view</span>
-            DÀNH CHO BẠN
-          </h2>
+          <div>
+            <h2 className="text-sm font-black uppercase text-on-surface sm:text-base flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-xl">grid_view</span>
+              DÀNH CHO BẠN
+            </h2>
+            {useHybridHome ? (
+              <p className="mt-0.5 text-[11px] font-semibold text-on-surface-variant">
+                Gợi ý cho bạn
+              </p>
+            ) : null}
+          </div>
 
-          {/* Sort Dropdown — catalog tabs only; hybrid Home is ranked */}
           {!useHybridHome ? (
             <div className="shrink-0">
               <ProductListSortSelect value={sort} onChange={changeSort} disabled={isInitialLoading} />
@@ -258,10 +257,8 @@ export function CommerceHomePage() {
           ) : null}
         </div>
 
-        {/* Loading Skeletons */}
         {isInitialLoading ? <ProductListSkeleton /> : null}
 
-        {/* Error State */}
         {!isInitialLoading && errorMessage ? (
           <div className="rounded-2xl border border-error/30 bg-error-container/40 p-8 text-center shadow-xs">
             <p className="text-sm font-medium text-on-error-container">{errorMessage}</p>
@@ -275,7 +272,6 @@ export function CommerceHomePage() {
           </div>
         ) : null}
 
-        {/* Empty State */}
         {!isInitialLoading && !errorMessage && items.length === 0 ? (
           <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-12 text-center shadow-xs">
             <span className="material-symbols-outlined mb-3 text-5xl text-outline" aria-hidden="true">
@@ -285,7 +281,6 @@ export function CommerceHomePage() {
           </div>
         ) : null}
 
-        {/* Product Cards Grid */}
         {!isInitialLoading && !errorMessage && items.length > 0 ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 sm:gap-4 lg:gap-5">
             {items.map((product) => (
@@ -303,7 +298,6 @@ export function CommerceHomePage() {
           </div>
         ) : null}
 
-        {/* Load More Button */}
         {!isInitialLoading && !errorMessage && hasNext ? (
           <div className="mt-10 flex justify-center">
             {isLoadingMore ? (
@@ -324,12 +318,10 @@ export function CommerceHomePage() {
         ) : null}
       </section>
 
-      {/* Trust & Guarantee Section */}
       <div id="trust-shipping-section">
         <CommerceFooterTrustSection />
       </div>
 
-      {/* Toast Notifications */}
       <FeedToast message={toastMessage} onDismiss={dismissToast} />
     </CommerceShell>
   );
